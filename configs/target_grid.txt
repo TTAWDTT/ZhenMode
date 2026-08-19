@@ -1,0 +1,21 @@
+# CDO target grid description
+# 128 x 128 points, 0.1 deg resolution
+# Centered at lon=150.0E, lat=35.0N
+# lon: 143.6 to 156.3 (128 points, xfirst=143.6, xinc=0.1)
+# lat: 28.6 to 41.3 (128 points, yfirst=28.6, yinc=0.1)
+
+gridtype  = lonlat
+gridsize  = 16384
+xsize     = 128
+ysize     = 128
+xname     = lon
+xlongname = "longitude"
+xunits    = "degrees_east"
+yname     = lat
+ylongname = "latitude"
+yunits    = "degrees_north"
+xfirst    = 143.6
+xinc      = 0.1
+yfirst    = 28.6
+yinc      = 0.1
+scanningMode = 64
