@@ -52,16 +52,17 @@ def compute_hydrostatic_pressure(state, grid, physics):
     # p_bc(z_k) = g * sum_{j=0}^{k-1} 0.5*(rho'[j] + rho'[j+1]) * dz[j]
     # where dz[j] = |z[j+1] - z[j]| (positive thickness)
     nz = grid.nz
-    p_bc = np.zeros_like(state.T)  # (nx, ny, nz)
 
-    # Trapezoidal integration: layer by layer
-    for k in range(nz - 1):
-        # Average density anomaly across the layer between z[k] and z[k+1]
-        rho_avg = 0.5 * (rho_prime[..., k] + rho_prime[..., k + 1])
-        # Pressure contribution from this layer
-        dp = G_EARTH * rho_avg * grid.dz[k]
-        # Accumulate: p_bc at level k+1 includes all layers above it
-        p_bc[..., k + 1] = p_bc[..., k] + dp
+    # Layer-averaged density anomaly: 0.5*(rho'[k] + rho'[k+1])
+    rho_avg = 0.5 * (rho_prime[..., :-1] + rho_prime[..., 1:])  # (nx, ny, nz-1)
+
+    # Pressure increment per layer: dp = g * rho_avg * dz
+    dz = grid.dz.reshape([1] * (rho_avg.ndim - 1) + [-1])
+    dp = G_EARTH * rho_avg * dz  # (nx, ny, nz-1)
+
+    # Cumulative sum: p_bc[0] = 0, p_bc[k+1] = sum(dp[0:k+1])
+    p_bc = np.zeros_like(state.T)  # (nx, ny, nz)
+    p_bc[..., 1:] = np.cumsum(dp, axis=-1)
 
     # Barotropic pressure: rho_0 * g * eta (same at all depths)
     p_bt = RHO_0 * G_EARTH * state.eta  # (nx, ny)

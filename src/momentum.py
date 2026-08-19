@@ -49,16 +49,11 @@ def compute_momentum_tendency(state, grid, physics):
     z = grid.z   # (nz,) negative downward
 
     # ── 1. Nonlinear advection (flux form, dealiased) ──
-    # advection_flux_form is 2D only, so apply per z-level
-    adv_u = np.zeros_like(state.u)
-    adv_v = np.zeros_like(state.v)
-    for k in range(nz):
-        au, av = advection_flux_form(
-            state.u[:, :, k], state.v[:, :, k],
-            grid.dx, grid.dy, dealias=True
-        )
-        adv_u[:, :, k] = au
-        adv_v[:, :, k] = av
+    # advection_flux_form supports 3D arrays directly (batched over z-axis)
+    adv_u, adv_v = advection_flux_form(
+        state.u, state.v,
+        grid.dx, grid.dy, dealias=True
+    )
 
     # ── 2. Coriolis force (full 2D f) ──
     # f shape: (nx, ny) -> broadcast to (nx, ny, nz)
@@ -116,19 +111,20 @@ def compute_vertical_velocity(state, grid):
 
     Returns: w (nx, ny, nz) [m/s], with w[..., -1] = 0
     """
-    nz = grid.nz
-
     # Horizontal divergence at each level
     div_h = divergence_h(state.u, state.v, grid.dx, grid.dy)  # (nx, ny, nz)
 
-    # Integrate from bottom upward
+    # Layer-averaged divergence between z[k] and z[k+1]
+    div_avg = 0.5 * (div_h[..., :-1] + div_h[..., 1:])  # (nx, ny, nz-1)
+
+    # Weighted by layer thickness, then reverse-cumsum from bottom
+    # w[k] = w[k+1] - div_avg[k]*dz[k],  w[bottom]=0
+    #  =>  w[k] = -sum_{j=k}^{nz-2} div_avg[j]*dz[j]
+    dz = grid.dz.reshape([1] * (div_avg.ndim - 1) + [-1])
+    integrand = div_avg * dz  # (nx, ny, nz-1)
+
     w = np.zeros_like(state.u)
-    # w[..., nz-1] = 0 (bottom boundary condition)
-    for k in range(nz - 2, -1, -1):
-        # Layer-averaged divergence between z[k] and z[k+1]
-        div_avg = 0.5 * (div_h[..., k] + div_h[..., k + 1])
-        # w at level k = w at level k+1 - div * dz
-        # (dz[k] = thickness between z[k] and z[k+1], positive)
-        w[..., k] = w[..., k + 1] - div_avg * grid.dz[k]
+    # Reverse, cumsum, reverse back — gives cumulative sum from each level to bottom
+    w[..., :-1] = -np.cumsum(integrand[..., ::-1], axis=-1)[..., ::-1]
 
     return w

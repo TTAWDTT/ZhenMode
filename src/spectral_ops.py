@@ -8,17 +8,65 @@ This means:
   - Poisson   -> IFFT(f_hat / (-k^2))        O(N log N), non-iterative!
   - exp(L*dt) -> IFFT(exp(L_diag*dt) * FFT(u))  element-wise, unconditionally stable
 
-Framework: JAX (with numpy fallback for testing).
+FFT backend: scipy.fft (multi-threaded, ~3-4x faster than numpy.fft).
+Falls back to numpy.fft if scipy is unavailable.
 """
 import numpy as np
 from numpy import pi
 
+# ── FFT backend selection ────────────────────────────────────────────
+# scipy.fft uses pocketfft with multi-threading (workers=-1 -> all cores).
+# numpy.fft is single-threaded and ~3-4x slower for our grid sizes.
 try:
-    import jax.numpy as jnp
-    HAS_JAX = True
+    from scipy.fft import fft as _fft, ifft as _ifft, fft2 as _fft2, ifft2 as _ifft2
+    _HAS_SCIPY = True
 except ImportError:
-    jnp = np
-    HAS_JAX = False
+    _fft = np.fft.fft
+    _ifft = np.fft.ifft
+    _fft2 = np.fft.fft2
+    _ifft2 = np.fft.ifft2
+    _HAS_SCIPY = False
+
+
+def _fft_call(a, axis=None, axes=None):
+    """Unified FFT dispatcher: scipy (multi-threaded) or numpy fallback."""
+    if _HAS_SCIPY:
+        if axes is not None:
+            return _fft2(a, axes=axes, workers=-1)
+        return _fft(a, axis=axis, workers=-1)
+    else:
+        if axes is not None:
+            return _fft2(a, axes=axes)
+        return _fft(a, axis=axis)
+
+
+def _ifft_call(a, axis=None, axes=None):
+    """Unified IFFT dispatcher: scipy (multi-threaded) or numpy fallback."""
+    if _HAS_SCIPY:
+        if axes is not None:
+            return _ifft2(a, axes=axes, workers=-1)
+        return _ifft(a, axis=axis, workers=-1)
+    else:
+        if axes is not None:
+            return _ifft2(a, axes=axes)
+        return _ifft(a, axis=axis)
+
+
+# ── Precomputed dealiasing masks (2/3 rule) ──────────────────────────
+# Cache masks so we don't allocate a new array on every call.
+_dealias_cache = {}
+
+
+def _get_dealias_mask(n, dtype):
+    """Get or create a 1D dealiasing mask of length n, cached for reuse."""
+    key = (n, dtype)
+    if key not in _dealias_cache:
+        cutoff = n // 3
+        mask = np.zeros(n, dtype=dtype)
+        mask[:cutoff] = 1.0
+        mask[-cutoff:] = 1.0  # negative frequencies
+        _dealias_cache[key] = mask
+    return _dealias_cache[key]
 
 
 # ── Wavenumber generation ───────────────────────────────────────────
@@ -42,7 +90,7 @@ def wavenumber_grid(nx, ny, dx, dy):
       k2:     kx^2 + ky^2  (for Laplacian / Poisson)
 
     Array convention: axis 0 = x (zonal), axis 1 = y (meridional).
-    This matches numpy.fft.fft2 / jnp.fft.fft2 default axes.
+    This matches numpy.fft.fft2 / scipy.fft.fft2 default axes.
     """
     kx_1d = wavenumbers(nx, dx)
     ky_1d = wavenumbers(ny, dy)
@@ -69,9 +117,9 @@ def d_dx(u, dx):
     shape = [nx] + [1] * (u.ndim - 1)
     kx = kx.reshape(shape)
 
-    u_hat = np.fft.fft(u, axis=0)
+    u_hat = _fft_call(u, axis=0)
     du_hat = 1j * kx * u_hat
-    return np.real(np.fft.ifft(du_hat, axis=0))
+    return np.real(_ifft_call(du_hat, axis=0))
 
 
 def d_dy(u, dy):
@@ -89,9 +137,9 @@ def d_dy(u, dy):
     shape = [1, ny] + [1] * (u.ndim - 2)
     ky = ky.reshape(shape)
 
-    u_hat = np.fft.fft(u, axis=1)
+    u_hat = _fft_call(u, axis=1)
     du_hat = 1j * ky * u_hat
-    return np.real(np.fft.ifft(du_hat, axis=1))
+    return np.real(_ifft_call(du_hat, axis=1))
 
 
 # ── Second derivative / Laplacian ───────────────────────────────────
@@ -103,9 +151,9 @@ def d2_dx2(u, dx):
     shape = [nx] + [1] * (u.ndim - 1)
     kx2 = (kx**2).reshape(shape)
 
-    u_hat = np.fft.fft(u, axis=0)
+    u_hat = _fft_call(u, axis=0)
     d2u_hat = -kx2 * u_hat
-    return np.real(np.fft.ifft(d2u_hat, axis=0))
+    return np.real(_ifft_call(d2u_hat, axis=0))
 
 
 def d2_dy2(u, dy):
@@ -115,9 +163,9 @@ def d2_dy2(u, dy):
     shape = [1, ny] + [1] * (u.ndim - 2)
     ky2 = (ky**2).reshape(shape)
 
-    u_hat = np.fft.fft(u, axis=1)
+    u_hat = _fft_call(u, axis=1)
     d2u_hat = -ky2 * u_hat
-    return np.real(np.fft.ifft(d2u_hat, axis=1))
+    return np.real(_ifft_call(d2u_hat, axis=1))
 
 
 def laplacian_h(u, dx, dy):
@@ -136,9 +184,9 @@ def laplacian_h(u, dx, dy):
     if u.ndim == 3:
         k2 = k2[:, :, np.newaxis]
 
-    u_hat = np.fft.fft2(u, axes=(0, 1))
+    u_hat = _fft_call(u, axes=(0, 1))
     lap_hat = -k2 * u_hat
-    return np.real(np.fft.ifft2(lap_hat, axes=(0, 1)))
+    return np.real(_ifft_call(lap_hat, axes=(0, 1)))
 
 
 # ── Divergence ──────────────────────────────────────────────────────
@@ -175,14 +223,14 @@ def solve_poisson(rhs, dx, dy):
     nx, ny = rhs.shape[0], rhs.shape[1]
     kx, ky, k2 = wavenumber_grid(nx, ny, dx, dy)
 
-    rhs_hat = np.fft.fft2(rhs)
+    rhs_hat = _fft_call(rhs, axes=(0, 1))
     # Avoid division by zero at k=0 (mean mode): set pressure reference to 0
     k2_safe = np.where(k2 == 0, 1.0, k2)
     p_hat = rhs_hat / (-k2_safe)
     # Zero the mean mode (pressure is defined up to a constant)
     p_hat[0, 0] = 0.0
 
-    return np.real(np.fft.ifft2(p_hat))
+    return np.real(_ifft_call(p_hat, axes=(0, 1)))
 
 
 def pressure_projection(u, v, dx, dy, rho0=1025.0):
@@ -246,9 +294,9 @@ def linear_step_diffusion(u, nu, dx, dy, dt):
     # Exponential decay factor in frequency domain
     decay = np.exp(-nu * k2 * dt)
 
-    u_hat = np.fft.fft2(u, axes=(0, 1))
+    u_hat = _fft_call(u, axes=(0, 1))
     u_hat_new = decay * u_hat
-    return np.real(np.fft.ifft2(u_hat_new, axes=(0, 1)))
+    return np.real(_ifft_call(u_hat_new, axes=(0, 1)))
 
 
 def linear_step_coriolis(u, v, f0, dt):
@@ -287,6 +335,8 @@ def dealias_2_3(u_hat, axis=None):
 
     For an array of N modes, keep modes |k| <= N/3 (i.e., zero out |k| > N/3).
 
+    Uses precomputed masks for zero allocation overhead on repeated calls.
+
     Args:
         u_hat: Fourier coefficients (from fft)
         axis: axis along which to dealias. If None, dealias all spatial axes.
@@ -295,14 +345,11 @@ def dealias_2_3(u_hat, axis=None):
     """
     if axis is not None:
         n = u_hat.shape[axis]
-        cutoff = n // 3
-        # Create a mask: 1 for kept modes, 0 for truncated
-        mask = np.zeros(n, dtype=u_hat.dtype)
-        mask[:cutoff] = 1.0
-        mask[-cutoff:] = 1.0  # negative frequencies
+        mask_1d = _get_dealias_mask(n, u_hat.dtype)
+        # Reshape for broadcasting along the target axis
         shape = [1] * u_hat.ndim
         shape[axis] = n
-        mask = mask.reshape(shape)
+        mask = mask_1d.reshape(shape)
         return u_hat * mask
     else:
         result = u_hat.copy()
@@ -323,7 +370,7 @@ def advection_flux_form(u, v, dx, dy, dealias=True):
     cancel exactly, so total momentum changes only from boundary fluxes.
 
     Args:
-        u, v: 2D velocity arrays (nx, ny)
+        u, v: velocity arrays (nx, ny) or (nx, ny, nz)
         dx, dy: grid spacings [m]
         dealias: apply 2/3 rule to nonlinear products
 
@@ -333,15 +380,16 @@ def advection_flux_form(u, v, dx, dy, dealias=True):
     fluxes = [u * u, u * v, v * v]
 
     if dealias:
-        # Transform to spectral, dealias, transform back (in-place per flux)
+        # Transform to spectral, dealias axes 0+1 only (not z-axis), transform back
         for i in range(len(fluxes)):
-            f_hat = np.fft.fft2(fluxes[i])
-            f_hat = dealias_2_3(f_hat)
-            fluxes[i] = np.real(np.fft.ifft2(f_hat))
+            f_hat = _fft_call(fluxes[i], axes=(0, 1))
+            f_hat = dealias_2_3(f_hat, axis=0)
+            f_hat = dealias_2_3(f_hat, axis=1)
+            fluxes[i] = np.real(_ifft_call(f_hat, axes=(0, 1)))
 
     uu, uv, vv = fluxes
 
-    # Derivatives in spectral space
+    # Derivatives in spectral space (d_dx/d_dy already handle 3D via axis=0/1)
     adv_u = -(d_dx(uu, dx) + d_dy(uv, dy))
     adv_v = -(d_dx(uv, dx) + d_dy(vv, dy))
     return adv_u, adv_v
@@ -366,10 +414,10 @@ def advection_scalar(T, u, v, dx, dy, dealias=True):
 
     if dealias:
         for i in range(len(fluxes)):
-            f_hat = np.fft.fft2(fluxes[i], axes=(0, 1))
+            f_hat = _fft_call(fluxes[i], axes=(0, 1))
             f_hat = dealias_2_3(f_hat, axis=0)
             f_hat = dealias_2_3(f_hat, axis=1)
-            fluxes[i] = np.real(np.fft.ifft2(f_hat, axes=(0, 1)))
+            fluxes[i] = np.real(_ifft_call(f_hat, axes=(0, 1)))
 
     uT, vT = fluxes
     return -(d_dx(uT, dx) + d_dy(vT, dy))
@@ -382,6 +430,8 @@ def d_dz(u, z_levels):
     Vertical first derivative on non-uniform z-grid.
     Uses centered differences for interior, one-sided at boundaries.
 
+    Vectorized over all interior levels — no Python loop.
+
     Args:
         u: array with vertical axis as last axis, shape (..., nz)
         z_levels: 1D array of z coordinates [m], negative downward
@@ -389,17 +439,18 @@ def d_dz(u, z_levels):
     Returns: du/dz, same shape as u
     """
     nz = u.shape[-1]
-    dz = np.diff(z_levels)  # negative (z decreases downward)
     du = np.zeros_like(u)
 
     # Interior: centered difference with non-uniform spacing
-    for k in range(1, nz - 1):
-        dz_up = z_levels[k] - z_levels[k - 1]   # usually negative
-        dz_dn = z_levels[k + 1] - z_levels[k]   # usually negative
-        du[..., k] = (u[..., k + 1] - u[..., k - 1]) / (dz_up + dz_dn)
+    # du[..., k] = (u[..., k+1] - u[..., k-1]) / ((z[k]-z[k-1]) + (z[k+1]-z[k]))
+    dz_up = z_levels[1:-1] - z_levels[:-2]  # z[k] - z[k-1], length nz-2
+    dz_dn = z_levels[2:]   - z_levels[1:-1]  # z[k+1] - z[k], length nz-2
+    denom = (dz_up + dz_dn).reshape([1] * (u.ndim - 1) + [nz - 2])
+
+    du[..., 1:-1] = (u[..., 2:] - u[..., :-2]) / denom
 
     # Boundary: one-sided
-    du[..., 0] = (u[..., 1] - u[..., 0]) / (z_levels[1] - z_levels[0])
+    du[..., 0]  = (u[..., 1]  - u[..., 0])  / (z_levels[1]  - z_levels[0])
     du[..., -1] = (u[..., -1] - u[..., -2]) / (z_levels[-1] - z_levels[-2])
 
     return du
@@ -410,6 +461,8 @@ def d2_dz2(u, z_levels):
     Vertical second derivative on non-uniform z-grid.
     Uses second-order accurate formula for non-uniform spacing.
 
+    Vectorized over all interior levels — no Python loop.
+
     Args:
         u: array with vertical axis as last axis, shape (..., nz)
         z_levels: 1D array of z coordinates [m]
@@ -419,26 +472,23 @@ def d2_dz2(u, z_levels):
     nz = u.shape[-1]
     du = np.zeros_like(u)
 
-    for k in range(1, nz - 1):
-        h1 = z_levels[k] - z_levels[k - 1]  # spacing to level below (going up)
-        h2 = z_levels[k + 1] - z_levels[k]  # spacing to level above (going up)
-        # Actually z is negative downward, so h1, h2 < 0
-        # Standard non-uniform second derivative:
-        # d2u/dz2 = 2*(u[k-1] - u[k]*((h1+h2)/h2) + u[k+1]*(h1/h2)) / (h1*(h1+h2))
-        # But let's use absolute spacing for clarity
-        hm = abs(z_levels[k - 1] - z_levels[k])      # distance to k-1
-        hp = abs(z_levels[k + 1] - z_levels[k])      # distance to k+1
+    # Interior: non-uniform second derivative, vectorized over k=1..nz-2
+    #   hm = |z[k-1] - z[k]|, hp = |z[k+1] - z[k]|
+    #   d2u/dz2[k] = (u[k+1]*hm + u[k-1]*hp - u[k]*(hm+hp)) / (hm*hp*(hm+hp)/2)
+    hm = np.abs(z_levels[:-2] - z_levels[1:-1])  # length nz-2
+    hp = np.abs(z_levels[2:]   - z_levels[1:-1])  # length nz-2
+    denom = (hm * hp * (hm + hp) / 2.0).reshape([1] * (u.ndim - 1) + [nz - 2])
+    hm = hm.reshape([1] * (u.ndim - 1) + [nz - 2])
+    hp = hp.reshape([1] * (u.ndim - 1) + [nz - 2])
 
-        du[..., k] = (u[..., k + 1] * hm + u[..., k - 1] * hp
-                      - u[..., k] * (hm + hp)) / (hm * hp * (hm + hp) / 2)
+    du[..., 1:-1] = (u[..., 2:] * hm + u[..., :-2] * hp
+                     - u[..., 1:-1] * (hm + hp)) / denom
 
-    # Boundaries: simple second-order one-sided
+    # Boundaries: simple second-order one-sided (assumes near-uniform spacing)
     h0 = abs(z_levels[1] - z_levels[0])
-    h1 = abs(z_levels[2] - z_levels[0])
     du[..., 0] = (u[..., 2] - 2 * u[..., 1] + u[..., 0]) / (h0 * h0)
 
     h0 = abs(z_levels[-1] - z_levels[-2])
-    h1 = abs(z_levels[-2] - z_levels[-3])
     du[..., -1] = (u[..., -3] - 2 * u[..., -2] + u[..., -1]) / (h0 * h0)
 
     return du
@@ -462,7 +512,7 @@ def spectral_truncate(u, keep_fraction, dx=None, dy=None):
     Returns: filtered u
     """
     nx, ny = u.shape
-    u_hat = np.fft.fft2(u)
+    u_hat = _fft_call(u, axes=(0, 1))
 
     nx_keep = max(1, int(nx * keep_fraction))
     ny_keep = max(1, int(ny * keep_fraction))
@@ -473,4 +523,4 @@ def spectral_truncate(u, keep_fraction, dx=None, dy=None):
     mask[:nx_keep, -ny_keep:] = 1.0
     mask[-nx_keep:, -ny_keep:] = 1.0
 
-    return np.real(np.fft.ifft2(u_hat * mask))
+    return np.real(_ifft_call(u_hat * mask, axes=(0, 1)))
