@@ -63,6 +63,13 @@ SolverParams = namedtuple('SolverParams', [
     'nu_h', 'nu_v', 'kappa_h', 'kappa_v',
     'T_ref', 'S_ref',
     'tau_x', 'tau_y', 'Q_heat', 'r_bot',
+    # Free surface (2D spectral)
+    'kx_2d', 'ky_2d',           # (nx,1), (1,ny) for 2D ops
+    'omega_sw',                  # (nx,ny) shallow water frequency
+    'sw_sin', 'sw_cos',         # (nx,ny) Rodrigues coefficients for dt/2
+    'H_mean',                    # scalar, mean ocean depth [m] (bathymetry)
+    'H_sw',                      # scalar, effective SW depth = sum(dz) [m]
+    'dz_norm',                   # (1,1,nz-1) dz/H_sw for barotropic vel
     # Time
     'dt',
 ])
@@ -123,6 +130,30 @@ def _compute_params(grid, physics, dt):
     surface_mask = jnp.zeros(nz).at[0].set(1.0).reshape(1, 1, -1)
     bottom_mask = jnp.zeros(nz).at[-1].set(1.0).reshape(1, 1, -1)
 
+    # ── Free surface parameters ──
+    # Mean ocean depth (bathymetry) and effective SW depth
+    H_mean = float(grid.depth[grid.ocean_mask].mean())
+    H_sw = float(jnp.sum(dz))   # z-grid vertical span = sum(dz)
+
+    # 2D wavenumbers for 2D spectral ops (no trailing dimension)
+    kx_2d = kx_1d.reshape(nx, 1)
+    ky_2d = ky_1d.reshape(1, ny)
+    k2_2d = kx_2d ** 2 + ky_2d ** 2  # (nx, ny)
+
+    # Shallow water frequency: omega = sqrt(g * H_sw * k^2)
+    # H_sw = sum(dz) ensures consistency between barotropic velocity
+    # extraction, wave frequency, and projection back to 3D fields.
+    omega_sw = jnp.sqrt(G_EARTH * H_sw * k2_2d)  # (nx, ny)
+
+    # Rodrigues coefficients for half-step (dt/2)
+    sw_sin = jnp.sin(omega_sw * dt_half)   # (nx, ny)
+    sw_cos = jnp.cos(omega_sw * dt_half)   # (nx, ny)
+
+    # Normalized layer thicknesses for barotropic velocity
+    # dz_norm sums to 1, so ubt = sum(u_avg * dz_norm) is a true
+    # depth-average over the z-grid span, consistent with projection.
+    dz_norm = dz.reshape(1, 1, -1) / H_sw   # (1, 1, nz-1)
+
     return SolverParams(
         kx=kx, ky=ky, k2=k2,
         dealias_2d=dealias_2d,
@@ -139,6 +170,9 @@ def _compute_params(grid, physics, dt):
         T_ref=physics.T_ref, S_ref=physics.S_ref,
         tau_x=physics.tau_x, tau_y=physics.tau_y,
         Q_heat=physics.Q_heat, r_bot=physics.r_bot,
+        kx_2d=kx_2d, ky_2d=ky_2d,
+        omega_sw=omega_sw, sw_sin=sw_sin, sw_cos=sw_cos,
+        H_mean=H_mean, H_sw=H_sw, dz_norm=dz_norm,
         dt=dt,
     )
 
@@ -180,6 +214,18 @@ def _laplacian_h(u, p):
 def _divergence_h(u, v, p):
     """du/dx + dv/dy."""
     return _d_dx(u, p) + _d_dy(v, p)
+
+
+def _d_dx_2d(eta, p):
+    """Spectral d(eta)/dx for 2D field (nx, ny)."""
+    eta_hat = jnp.fft.fft(eta, axis=0)
+    return jnp.real(jnp.fft.ifft(1j * p.kx_2d * eta_hat, axis=0))
+
+
+def _d_dy_2d(eta, p):
+    """Spectral d(eta)/dy for 2D field (nx, ny)."""
+    eta_hat = jnp.fft.fft(eta, axis=1)
+    return jnp.real(jnp.fft.ifft(1j * p.ky_2d * eta_hat, axis=1))
 
 
 def _d_dz(u, p):
@@ -349,14 +395,87 @@ def _coriolis_rotation(u, v, f0, dt):
     return u_new, v_new
 
 
+def _barotropic_velocity(u, v, p):
+    """Depth-averaged (barotropic) horizontal velocity.
+
+    ubt = sum(0.5*(u[k]+u[k+1]) * dz_norm, axis=-1)
+
+    Returns:
+        ubt, vbt: (nx, ny) barotropic velocities
+    """
+    u_avg = 0.5 * (u[..., :-1] + u[..., 1:])
+    v_avg = 0.5 * (v[..., :-1] + v[..., 1:])
+    ubt = jnp.sum(u_avg * p.dz_norm, axis=-1)
+    vbt = jnp.sum(v_avg * p.dz_norm, axis=-1)
+    return ubt, vbt
+
+
+def _free_surface_step(eta, u, v, p):
+    """Exact linear shallow water step in spectral space (no Coriolis).
+
+    Solves the coupled (eta, ubt, vbt) system per wavenumber:
+        d(eta)/dt  = -H * (ikx*ubt + iky*vbt)     [continuity]
+        d(ubt)/dt  = -g * ikx * eta               [x-momentum]
+        d(vbt)/dt  = -g * iky * eta               [y-momentum]
+
+    via matrix exponential:  expm(A*dt) = I + s*A + c2*A^2
+    where s = sin(w*dt)/w,  c2 = (1-cos(w*dt))/w^2,  w = sqrt(g*H*k^2).
+
+    The k=0 mode (omega=0) is identity - mean mass and momentum conserved.
+    Barotropic velocity changes are projected uniformly back to 3D fields.
+    """
+    ubt, vbt = _barotropic_velocity(u, v, p)
+
+    # Spectral space
+    eta_hat = jnp.fft.fft2(eta)
+    ubt_hat = jnp.fft.fft2(ubt)
+    vbt_hat = jnp.fft.fft2(vbt)
+
+    # Safe-division coefficients (k=0 mode -> 0, leaving mean unchanged)
+    k2_2d = p.kx_2d ** 2 + p.ky_2d ** 2
+    sin_div_w = jnp.where(p.omega_sw > 0.0, p.sw_sin / p.omega_sw, 0.0)
+    omc_div_k2 = jnp.where(k2_2d > 0.0, (1.0 - p.sw_cos) / k2_2d, 0.0)
+
+    ikx = 1j * p.kx_2d   # (nx, 1)
+    iky = 1j * p.ky_2d   # (1, ny)
+
+    # eta:  eta_new = cos(w dt) * eta  -  H_sw * sin(w dt)/w * (ikx*ubt + iky*vbt)
+    eta_hat_new = (p.sw_cos * eta_hat
+                   - p.H_sw * sin_div_w * (ikx * ubt_hat + iky * vbt_hat))
+
+    # ubt:  ubt + s*(-g*ikx)*eta  -  (1-cos)/k^2 * (kx^2*ubt + kx*ky*vbt)
+    ubt_hat_new = (ubt_hat
+                   - G_EARTH * ikx * sin_div_w * eta_hat
+                   - omc_div_k2 * (p.kx_2d ** 2 * ubt_hat + p.kx_2d * p.ky_2d * vbt_hat))
+
+    # vbt:  vbt + s*(-g*iky)*eta  -  (1-cos)/k^2 * (kx*ky*ubt + ky^2*vbt)
+    vbt_hat_new = (vbt_hat
+                   - G_EARTH * iky * sin_div_w * eta_hat
+                   - omc_div_k2 * (p.kx_2d * p.ky_2d * ubt_hat + p.ky_2d ** 2 * vbt_hat))
+
+    # Back to physical space
+    eta_new = jnp.real(jnp.fft.ifft2(eta_hat_new))
+    ubt_new = jnp.real(jnp.fft.ifft2(ubt_hat_new))
+    vbt_new = jnp.real(jnp.fft.ifft2(vbt_hat_new))
+
+    # Project barotropic delta back to 3D velocity (uniform over depth)
+    delta_ubt = (ubt_new - ubt)[:, :, None]
+    delta_vbt = (vbt_new - vbt)[:, :, None]
+    u_new = u + delta_ubt
+    v_new = v + delta_vbt
+
+    return eta_new, u_new, v_new
+
+
 def _linear_half_step(state, p, dt_half):
-    """Diffusion (exact spectral decay) + Coriolis (exact rotation)."""
+    """Linear half-step: diffusion + Coriolis + free surface (all exact)."""
     u = _linear_step_diffusion(state.u, p.decay_u)
     v = _linear_step_diffusion(state.v, p.decay_u)
     T = _linear_step_diffusion(state.T, p.decay_T)
     S = _linear_step_diffusion(state.S, p.decay_T)
     u, v = _coriolis_rotation(u, v, p.f0, dt_half)
-    return JaxState(u, v, T, S, state.eta)
+    eta, u, v = _free_surface_step(state.eta, u, v, p)
+    return JaxState(u, v, T, S, eta)
 
 
 def _explicit_full_step(state, p, dt):
@@ -371,6 +490,12 @@ def _explicit_full_step(state, p, dt):
     dSdt = dSdt - p.kappa_h * _laplacian_h(state.S, p)
     dudt = dudt - p.f0 * state.v
     dvdt = dvdt + p.f0 * state.u
+
+    # Subtract barotropic PGF: -g*grad(eta) is handled by _free_surface_step
+    bt_pgf_x = -G_EARTH * _d_dx_2d(state.eta, p)
+    bt_pgf_y = -G_EARTH * _d_dy_2d(state.eta, p)
+    dudt = dudt - bt_pgf_x[:, :, None]
+    dvdt = dvdt - bt_pgf_y[:, :, None]
 
     u_new = state.u + dudt * dt
     v_new = state.v + dvdt * dt

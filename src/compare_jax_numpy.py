@@ -46,7 +46,11 @@ def main():
     v_init = rng.normal(0, 0.01, shape)
     T_init = np.full(shape, physics.T_ref) + rng.normal(0, 0.01, shape)
     S_init = np.full(shape, physics.S_ref)
-    eta_init = np.zeros((grid.nx, grid.ny))
+    # Add Gaussian SSH bump to exercise free surface dynamics
+    xx, yy = np.meshgrid(np.arange(grid.nx), np.arange(grid.ny), indexing='ij')
+    cx, cy = grid.nx // 2, grid.ny // 2
+    sigma = 20.0
+    eta_init = 0.1 * np.exp(-((xx - cx)**2 + (yy - cy)**2) / (2 * sigma**2))
 
     # numpy state
     np_state = ModelState(
@@ -90,11 +94,13 @@ def main():
     np_v = np_state.v
     np_T = np_state.T
     np_S = np_state.S
+    np_eta = np_state.eta
 
     jax_u = np.array(jax_state.u)
     jax_v = np.array(jax_state.v)
     jax_T = np.array(jax_state.T)
     jax_S = np.array(jax_state.S)
+    jax_eta = np.array(jax_state.eta)
 
     print(f"Steps: {n_steps}")
     print()
@@ -102,7 +108,8 @@ def main():
     print("-" * 70)
 
     for name, a, b in [("u", np_u, jax_u), ("v", np_v, jax_v),
-                        ("T", np_T, jax_T), ("S", np_S, jax_S)]:
+                        ("T", np_T, jax_T), ("S", np_S, jax_S),
+                        ("eta", np_eta, jax_eta)]:
         abs_diff = np.abs(a - b)
         max_abs = np.max(abs_diff)
         # relative diff: |a-b| / max(|a|, |b|, 1e-30)
@@ -122,6 +129,7 @@ def main():
         np.max(np.abs(np_v - jax_v)),
         np.max(np.abs(np_T - jax_T)),
         np.max(np.abs(np_S - jax_S)),
+        np.max(np.abs(np_eta - jax_eta)),
     )
     print()
     if all_diff < 1e-10:
