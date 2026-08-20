@@ -71,6 +71,9 @@ SolverParams = namedtuple('SolverParams', [
     'H_mean',                    # scalar, mean ocean depth [m] (bathymetry)
     'H_sw',                      # scalar, effective SW depth = sum(dz) [m]
     'dz_norm',                   # (1,1,nz-1) dz/H_sw for barotropic vel
+    # Barotropic wind forcing (for forced free surface step)
+    'F_bt_x_hat', 'F_bt_y_hat', # (nx,ny) FFT of barotropic wind forcing
+    'sw_sin_div_w',             # (nx,ny) sin(w*dt/2)/w, k=0 limit = dt/2
     # Time
     'dt',
     # EOS
@@ -179,6 +182,19 @@ def _compute_params(grid, physics, dt, forcing=None, eos_type='linear'):
     else:
         tau_x_2d, tau_y_2d, Q_heat_2d = (jnp.array(f) for f in forcing)
 
+    # ── Barotropic wind forcing (for forced free surface step) ──
+    # F_bt = tau / (rho_0 * H_sw) is the depth-uniform body force.
+    # The free surface step solves the forced shallow water equation
+    # exactly, preventing the Strang splitting resonance that occurs
+    # when wind forcing is only in the explicit step.
+    F_bt_x = tau_x_2d / (RHO_0 * H_sw)
+    F_bt_y = tau_y_2d / (RHO_0 * H_sw)
+    F_bt_x_hat = jnp.fft.fft2(F_bt_x)
+    F_bt_y_hat = jnp.fft.fft2(F_bt_y)
+
+    # sin(omega*dt/2)/omega with k=0 limit = 0 (mean mode handled separately)
+    sw_sin_div_w = jnp.where(omega_sw > 0.0, sw_sin / omega_sw, 0.0)
+
     return SolverParams(
         kx=kx, ky=ky, k2=k2,
         dealias_2d=dealias_2d,
@@ -195,9 +211,11 @@ def _compute_params(grid, physics, dt, forcing=None, eos_type='linear'):
         T_ref=physics.T_ref, S_ref=physics.S_ref,
         tau_x_2d=tau_x_2d, tau_y_2d=tau_y_2d,
         Q_heat_2d=Q_heat_2d, r_bot=physics.r_bot,
-        kx_2d=kx_2d, ky_2d=ky_2d,
         omega_sw=omega_sw, sw_sin=sw_sin, sw_cos=sw_cos,
+        kx_2d=kx_2d, ky_2d=ky_2d,
         H_mean=H_mean, H_sw=H_sw, dz_norm=dz_norm,
+        F_bt_x_hat=F_bt_x_hat, F_bt_y_hat=F_bt_y_hat,
+        sw_sin_div_w=sw_sin_div_w,
         dt=dt,
         eos_type=eos_type,
         cd=physics.cd,
@@ -548,6 +566,22 @@ def _free_surface_step(eta, u, v, p):
                    - G_EARTH * iky * sin_div_w * eta_hat
                    - omc_div_k2 * (p.kx_2d * p.ky_2d * ubt_hat + p.ky_2d ** 2 * vbt_hat))
 
+    # ── Particular solution for constant barotropic wind forcing ──
+    # Forced SW system dx/dt = A*x + F with F = (0, F_bt_x, F_bt_y).
+    # Exact particular solution: integral of expm(A*t) from 0 to dt_half,
+    # multiplied by F. Simplified using omega^2 = g*H_sw*k^2:
+    #   eta_part  = -(1-cos)/(g*k^2) * div_F
+    #   ubt_part  = dt_half*F_bt_x + (dt_half - sin/w)/k^2 * ikx*div_F
+    #   vbt_part  = dt_half*F_bt_y + (dt_half - sin/w)/k^2 * iky*div_F
+    # k=0 mode: div_F=0, so only ubt/vbt accelerate by dt_half*F_bt.
+    dt_half = p.dt / 2.0
+    div_F = ikx * p.F_bt_x_hat + iky * p.F_bt_y_hat
+    c3_div_k2 = jnp.where(k2_2d > 0.0, (dt_half - sin_div_w) / k2_2d, 0.0)
+
+    eta_hat_new = eta_hat_new - (omc_div_k2 / G_EARTH) * div_F
+    ubt_hat_new = ubt_hat_new + dt_half * p.F_bt_x_hat + c3_div_k2 * ikx * div_F
+    vbt_hat_new = vbt_hat_new + dt_half * p.F_bt_y_hat + c3_div_k2 * iky * div_F
+
     # Back to physical space
     eta_new = jnp.real(jnp.fft.ifft2(eta_hat_new))
     ubt_new = jnp.real(jnp.fft.ifft2(ubt_hat_new))
@@ -574,15 +608,38 @@ def _linear_half_step(state, p, dt_half):
 
 
 def _explicit_full_step(state, p, dt):
-    """Nonlinear tendencies via explicit Euler, minus linear parts."""
-    dudt, dvdt = _compute_momentum_tendency(state, p)
+    """Nonlinear tendencies via explicit Euler, minus linear parts.
+
+    Semi-implicit baroclinic PGF (tracer-first scheme): tracers are
+    updated first, then the baroclinic pressure gradient for the
+    momentum update is computed from the *updated* T/S.  This breaks
+    the unstable forward-Euler feedback loop
+        u -> advection -> T anomaly -> baroclinic PGF -> u
+    that would otherwise amplify internal gravity waves unconditionally
+    (forward Euler on an oscillatory system has |lambda| > 1 for any dt).
+
+    Only the baroclinic PGF benefits from the updated density field;
+    advection, Coriolis, diffusion, wind, and bottom friction still use
+    the old u/v (none of them depend on T/S).
+    """
+    # --- Phase 1: update tracers (explicit Euler, old velocities) ---
     dTdt, dSdt = _compute_tracer_tendency(state, p)
+    dTdt = dTdt - p.kappa_h * _laplacian_h(state.T, p)   # subtract linear part
+    dSdt = dSdt - p.kappa_h * _laplacian_h(state.S, p)
+    T_new = state.T + dTdt * dt
+    S_new = state.S + dSdt * dt
+
+    # --- Phase 2: update momentum with semi-implicit baroclinic PGF ---
+    # Build a temporary state whose T/S are updated but whose u/v/eta
+    # are still the old values.  _compute_momentum_tendency uses u/v for
+    # advection, Coriolis, diffusion, wind, bottom friction (all old) and
+    # T/S/eta only for the pressure gradient (T/S updated, eta old).
+    state_pgf = JaxState(state.u, state.v, T_new, S_new, state.eta)
+    dudt, dvdt = _compute_momentum_tendency(state_pgf, p)
 
     # Subtract linear parts (handled by _linear_half_step)
     dudt = dudt - p.nu_h * _laplacian_h(state.u, p)
     dvdt = dvdt - p.nu_h * _laplacian_h(state.v, p)
-    dTdt = dTdt - p.kappa_h * _laplacian_h(state.T, p)
-    dSdt = dSdt - p.kappa_h * _laplacian_h(state.S, p)
     dudt = dudt - p.f0 * state.v
     dvdt = dvdt + p.f0 * state.u
 
@@ -592,10 +649,16 @@ def _explicit_full_step(state, p, dt):
     dudt = dudt - bt_pgf_x[:, :, None]
     dvdt = dvdt - bt_pgf_y[:, :, None]
 
+    # Subtract barotropic wind forcing: tau/(rho_0*H_sw) is the
+    # depth-uniform body force handled by _free_surface_step.
+    # This leaves only the baroclinic wind (depth-varying) component.
+    bt_wind_x = p.tau_x_2d / (RHO_0 * p.H_sw)
+    bt_wind_y = p.tau_y_2d / (RHO_0 * p.H_sw)
+    dudt = dudt - bt_wind_x[:, :, None]
+    dvdt = dvdt - bt_wind_y[:, :, None]
+
     u_new = state.u + dudt * dt
     v_new = state.v + dvdt * dt
-    T_new = state.T + dTdt * dt
-    S_new = state.S + dSdt * dt
     return JaxState(u_new, v_new, T_new, S_new, state.eta)
 
 
