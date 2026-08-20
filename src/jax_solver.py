@@ -62,7 +62,8 @@ SolverParams = namedtuple('SolverParams', [
     # Physics scalars
     'nu_h', 'nu_v', 'kappa_h', 'kappa_v',
     'T_ref', 'S_ref',
-    'tau_x', 'tau_y', 'Q_heat', 'r_bot',
+    # Surface forcing (2D fields, nx x ny)
+    'tau_x_2d', 'tau_y_2d', 'Q_heat_2d', 'r_bot', 'cd', 'bottom_friction',
     # Free surface (2D spectral)
     'kx_2d', 'ky_2d',           # (nx,1), (1,ny) for 2D ops
     'omega_sw',                  # (nx,ny) shallow water frequency
@@ -72,11 +73,24 @@ SolverParams = namedtuple('SolverParams', [
     'dz_norm',                   # (1,1,nz-1) dz/H_sw for barotropic vel
     # Time
     'dt',
+    # EOS
+    'eos_type',                   # 'linear' or 'unesco'
+    # Smagorinsky
+    'smag_cs',                    # Smagorinsky constant (0 = disabled)
+    'dx',                         # grid spacing for Smagorinsky length scale
 ])
 
 
-def _compute_params(grid, physics, dt):
-    """Pre-compute all static JAX arrays from grid and physics."""
+def _compute_params(grid, physics, dt, forcing=None, eos_type='linear'):
+    """Pre-compute all static JAX arrays from grid and physics.
+
+    Args:
+        grid: OceanGrid
+        physics: PhysicsConfig
+        dt: time step [s]
+        forcing: optional (tau_x_2d, tau_y_2d, Q_heat_2d) tuple of
+            (nx, ny) arrays. If None, defaults to zero forcing (rest).
+    """
     nx, ny, nz = grid.nx, grid.ny, grid.nz
     dx, dy = grid.dx, grid.dy
     dt_half = dt / 2.0
@@ -154,6 +168,17 @@ def _compute_params(grid, physics, dt):
     # depth-average over the z-grid span, consistent with projection.
     dz_norm = dz.reshape(1, 1, -1) / H_sw   # (1, 1, nz-1)
 
+    # ── Surface forcing (2D fields) ──
+    # forcing is a (tau_x_2d, tau_y_2d, Q_heat_2d) tuple of (nx, ny) arrays,
+    # or None for rest-state (zero) forcing. Convert to jnp arrays so they
+    # are captured as XLA constants in the JIT closure.
+    if forcing is None:
+        tau_x_2d = jnp.zeros((nx, ny))
+        tau_y_2d = jnp.zeros((nx, ny))
+        Q_heat_2d = jnp.zeros((nx, ny))
+    else:
+        tau_x_2d, tau_y_2d, Q_heat_2d = (jnp.array(f) for f in forcing)
+
     return SolverParams(
         kx=kx, ky=ky, k2=k2,
         dealias_2d=dealias_2d,
@@ -168,12 +193,17 @@ def _compute_params(grid, physics, dt):
         nu_h=physics.nu_h, nu_v=physics.nu_v,
         kappa_h=physics.kappa_h, kappa_v=physics.kappa_v,
         T_ref=physics.T_ref, S_ref=physics.S_ref,
-        tau_x=physics.tau_x, tau_y=physics.tau_y,
-        Q_heat=physics.Q_heat, r_bot=physics.r_bot,
+        tau_x_2d=tau_x_2d, tau_y_2d=tau_y_2d,
+        Q_heat_2d=Q_heat_2d, r_bot=physics.r_bot,
         kx_2d=kx_2d, ky_2d=ky_2d,
         omega_sw=omega_sw, sw_sin=sw_sin, sw_cos=sw_cos,
         H_mean=H_mean, H_sw=H_sw, dz_norm=dz_norm,
         dt=dt,
+        eos_type=eos_type,
+        cd=physics.cd,
+        bottom_friction=physics.bottom_friction,
+        smag_cs=physics.smag_cs,
+        dx=dx,
     )
 
 
@@ -299,9 +329,57 @@ def _linear_step_diffusion(u, decay):
 
 # ── Physics ──────────────────────────────────────────────────────────
 
+# ── UNESCO 1980 nonlinear EOS (JAX-compatible) ─────────────────────
+# Reference: Fofonoff & Millard (1983), UNESCO Tech. Papers in Marine
+# Science No. 44. Valid at atmospheric pressure (0 dbar gauge).
+# All functions use jnp for JIT compatibility.
+
+def _rho_smow_jax(T):
+    """Density of Standard Mean Ocean Water (pure water) [kg/m^3]."""
+    return (
+        999.842594
+        + 6.793952e-2 * T
+        - 9.095290e-3 * T**2
+        + 1.001685e-4 * T**3
+        - 1.120083e-6 * T**4
+        + 6.536332e-9 * T**5
+    )
+
+
+def _b_jax(T):
+    """Salinity coefficient B(T) for UNESCO EOS."""
+    return (
+        8.24493e-1
+        - 4.0899e-3 * T
+        + 7.6438e-5 * T**2
+        - 8.2467e-7 * T**3
+        + 5.3875e-9 * T**4
+    )
+
+
+def _c_jax(T):
+    """Salinity coefficient C(T) for UNESCO EOS."""
+    return -5.72466e-3 + 1.0227e-4 * T - 1.6546e-6 * T**2
+
+
+def _density_unesco_jax(T, S):
+    """UNESCO 1980 nonlinear EOS at 1 atm, JAX-compatible.
+
+    rho(T,S) = rho_smow(T) + B(T)*S + C(T)*S^(3/2) + D*S^2
+    """
+    _D = 4.8314e-4
+    smow = _rho_smow_jax(T)
+    S_safe = jnp.maximum(S, 0.0)
+    S_sqrt = jnp.sqrt(S_safe)
+    return smow + _b_jax(T) * S + _c_jax(T) * S_sqrt * S + _D * S**2
+
+
 def _density_anomaly(T, S, p):
-    """rho' = rho - rho_0 [kg/m^3]."""
-    return RHO_0 * (-ALPHA_T * (T - p.T_ref) + BETA_S * (S - p.S_ref))
+    """rho' = rho - rho_0 [kg/m^3]. Branches on eos_type."""
+    if p.eos_type == 'unesco':
+        return _density_unesco_jax(T, S) - RHO_0
+    else:
+        return RHO_0 * (-ALPHA_T * (T - p.T_ref) + BETA_S * (S - p.S_ref))
 
 
 def _compute_hydrostatic_pressure(state, p):
@@ -338,15 +416,32 @@ def _compute_momentum_tendency(state, p):
     diff_h_u = p.nu_h * _laplacian_h(state.u, p)
     diff_h_v = p.nu_h * _laplacian_h(state.v, p)
 
+    # Smagorinsky subgrid closure (state-dependent viscosity)
+    if p.smag_cs > 0:
+        dudx = _d_dx(state.u, p)
+        dvdy = _d_dy(state.v, p)
+        dudy = _d_dy(state.u, p)
+        dvdx = _d_dx(state.v, p)
+        def_strain = jnp.sqrt((dudx - dvdy)**2 + (dudy + dvdx)**2)
+        nu_smg = (p.smag_cs * p.dx)**2 * def_strain
+        diff_h_u = diff_h_u + nu_smg * _laplacian_h(state.u, p)
+        diff_h_v = diff_h_v + nu_smg * _laplacian_h(state.v, p)
+
     diff_v_u = p.nu_v * _d2_dz2(state.u, p)
     diff_v_v = p.nu_v * _d2_dz2(state.v, p)
 
     wind_factor = 1.0 / (RHO_0 * p.dz_surface)
-    wind_u = p.tau_x * wind_factor * p.surface_mask
-    wind_v = p.tau_y * wind_factor * p.surface_mask
+    wind_u = p.tau_x_2d[:, :, None] * wind_factor * p.surface_mask
+    wind_v = p.tau_y_2d[:, :, None] * wind_factor * p.surface_mask
 
-    bot_u = -p.r_bot * state.u * p.bottom_mask
-    bot_v = -p.r_bot * state.v * p.bottom_mask
+    # Bottom friction
+    if p.bottom_friction == 'quadratic':
+        speed = jnp.sqrt(state.u**2 + state.v**2)
+        bot_u = -p.cd * speed * state.u * p.bottom_mask
+        bot_v = -p.cd * speed * state.v * p.bottom_mask
+    else:
+        bot_u = -p.r_bot * state.u * p.bottom_mask
+        bot_v = -p.r_bot * state.v * p.bottom_mask
 
     dudt = adv_u + cor_u + pgf_x + diff_h_u + diff_v_u + wind_u + bot_u
     dvdt = adv_v + cor_v + pgf_y + diff_h_v + diff_v_v + wind_v + bot_v
@@ -364,8 +459,8 @@ def _compute_tracer_tendency(state, p):
     diff_v_T = p.kappa_v * _d2_dz2(state.T, p)
     diff_v_S = p.kappa_v * _d2_dz2(state.S, p)
 
-    heat_factor = p.Q_heat / (RHO_0 * C_P * p.dz_surface)
-    heat_T = heat_factor * p.surface_mask
+    heat_factor = 1.0 / (RHO_0 * C_P * p.dz_surface)
+    heat_T = p.Q_heat_2d[:, :, None] * heat_factor * p.surface_mask
 
     dTdt = adv_T + diff_h_T + diff_v_T + heat_T
     dSdt = adv_S + diff_h_S + diff_v_S
@@ -515,7 +610,7 @@ def _step_impl(state, p):
 
 # ── Public API ───────────────────────────────────────────────────────
 
-def make_solver(grid, physics, dt):
+def make_solver(grid, physics, dt, forcing=None, eos_type='linear'):
     """
     Create a JIT-compiled ocean solver.
 
@@ -528,13 +623,17 @@ def make_solver(grid, physics, dt):
         grid: OceanGrid (from grid.py)
         physics: PhysicsConfig (from config.py)
         dt: time step [s]
+        forcing: optional (tau_x_2d, tau_y_2d, Q_heat_2d) tuple of
+            (nx, ny) numpy arrays for spatially-varying surface forcing.
+            If None, defaults to zero forcing (rest state).
+        eos_type: 'linear' (default) or 'unesco' for nonlinear EOS.
 
     Returns:
         step_fn: JIT-compiled (state: JaxState) -> JaxState
         init_state: () -> JaxState (rest state)
         diagnostics: JIT-compiled (state) -> (rho, pressure, w)
     """
-    params = _compute_params(grid, physics, dt)
+    params = _compute_params(grid, physics, dt, forcing=forcing, eos_type=eos_type)
 
     @jax.jit
     def step(state):
@@ -542,8 +641,8 @@ def make_solver(grid, physics, dt):
 
     @jax.jit
     def diagnostics(state):
-        rho = RHO_0 * (1.0 - ALPHA_T * (state.T - params.T_ref)
-                        + BETA_S * (state.S - params.S_ref))
+        rho_prime = _density_anomaly(state.T, state.S, params)
+        rho = RHO_0 + rho_prime
         pressure = _compute_hydrostatic_pressure(state, params)
         w = _compute_vertical_velocity(state, params)
         return rho, pressure, w
@@ -561,18 +660,25 @@ if __name__ == "__main__":
     sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
     from config import DEFAULT_CONFIG
     from grid import make_grid
+    from forcing import wind_stress_gyre, heat_flux_meridional
 
     grid = make_grid(DEFAULT_CONFIG.grid, DEFAULT_CONFIG.bathymetry_file)
     physics = DEFAULT_CONFIG.physics
     dt = 300.0
 
+    # 2D surface forcing (Stommel gyre wind + meridional heat flux)
+    tau_x, tau_y = wind_stress_gyre(grid, tau0=0.1)
+    Q_heat = heat_flux_meridional(grid, Q0=50.0)
+    forcing = (tau_x, tau_y, Q_heat)
+
     print("=== JAX Ocean Solver Benchmark ===")
     print(f"Backend: {jax.default_backend()}")
     print(f"Devices: {jax.devices()}")
     print(f"Grid: {grid.nx}x{grid.ny}x{grid.nz}")
+    print(f"Forcing: wind_stress_gyre(tau0=0.1), heat_flux_meridional(Q0=50)")
     print()
 
-    step_fn, init_state, diag_fn = make_solver(grid, physics, dt)
+    step_fn, init_state, diag_fn = make_solver(grid, physics, dt, forcing=forcing)
 
     state = init_state()
     key = jax.random.PRNGKey(42)

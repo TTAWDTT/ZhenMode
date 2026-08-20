@@ -46,7 +46,7 @@ def compute_hydrostatic_pressure(state, grid, physics):
     Returns: pressure array (nx, ny, nz) [Pa]
     """
     # Density anomaly rho' = rho - rho_0
-    rho_prime = density_anomaly(state.T, state.S, physics)  # (nx, ny, nz)
+    rho_prime = density_anomaly(state.T, state.S, physics, eos_type=physics.eos_type)  # (nx, ny, nz)
 
     # Baroclinic pressure: integrate rho' * g * dz from surface downward
     # p_bc(z_k) = g * sum_{j=0}^{k-1} 0.5*(rho'[j] + rho'[j+1]) * dz[j]

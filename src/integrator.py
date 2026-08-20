@@ -179,14 +179,14 @@ def _linear_half_step(state, grid, physics, dt):
     _free_surface_step(state, grid, dt)
 
 
-def _explicit_full_step(state, grid, physics, dt):
+def _explicit_full_step(state, grid, physics, dt, forcing=None):
     """Nonlinear tendencies via explicit Euler, minus linear parts."""
     # Force fresh pressure computation from current T, S, eta
     state.p = None
 
     # Compute full tendencies (includes all terms)
-    dudt, dvdt = compute_momentum_tendency(state, grid, physics)
-    dTdt, dSdt = compute_tracer_tendency(state, grid, physics)
+    dudt, dvdt = compute_momentum_tendency(state, grid, physics, forcing)
+    dTdt, dSdt = compute_tracer_tendency(state, grid, physics, forcing)
 
     # Subtract horizontal diffusion (handled by linear_step_diffusion)
     dudt -= physics.nu_h * laplacian_h(state.u, grid.dx, grid.dy)
@@ -218,14 +218,14 @@ def _update_diagnostics(state, grid, physics):
     Called after each full step to keep diagnostics consistent with
     the updated prognostic variables.
     """
-    state.rho = compute_density(state.T, state.S, physics)
+    state.rho = compute_density(state.T, state.S, physics, eos_type=physics.eos_type)
     state.p = compute_hydrostatic_pressure(state, grid, physics)
     state.w = compute_vertical_velocity(state, grid)
 
 
 # ── Public API ───────────────────────────────────────────────────────
 
-def step(state, grid, physics, time_cfg, dt=None):
+def step(state, grid, physics, time_cfg, dt=None, forcing=None):
     """
     Advance the state by one timestep using Strang splitting IMEX.
 
@@ -235,6 +235,8 @@ def step(state, grid, physics, time_cfg, dt=None):
         physics: PhysicsConfig
         time_cfg: TimeConfig (uses time_cfg.dt if dt is None)
         dt: override timestep [s] (optional, for testing)
+        forcing: optional Forcing with 2D (nx, ny) surface fields; when
+            None the physics scalars are used (uniform forcing / rest state)
 
     Returns:
         state (same object, modified in-place)
@@ -244,7 +246,7 @@ def step(state, grid, physics, time_cfg, dt=None):
 
     # Strang splitting: L(dt/2) -> N(dt) -> L(dt/2)
     _linear_half_step(state, grid, physics, dt / 2.0)
-    _explicit_full_step(state, grid, physics, dt)
+    _explicit_full_step(state, grid, physics, dt, forcing)
     _linear_half_step(state, grid, physics, dt / 2.0)
 
     # Update diagnostics
@@ -253,7 +255,7 @@ def step(state, grid, physics, time_cfg, dt=None):
     return state
 
 
-def integrate(state, grid, physics, time_cfg, callback=None):
+def integrate(state, grid, physics, time_cfg, callback=None, forcing=None):
     """
     Integrate the model forward in time.
 
@@ -263,6 +265,8 @@ def integrate(state, grid, physics, time_cfg, callback=None):
         physics: PhysicsConfig
         time_cfg: TimeConfig
         callback: optional function(t, state) called at output intervals
+        forcing: optional Forcing with 2D (nx, ny) surface fields; when
+            None the physics scalars are used (uniform forcing / rest state)
 
     Returns:
         state (same object, modified in-place)
@@ -281,7 +285,7 @@ def integrate(state, grid, physics, time_cfg, callback=None):
         callback(0.0, state)
 
     for n in range(n_steps):
-        step(state, grid, physics, time_cfg, dt)
+        step(state, grid, physics, time_cfg, dt, forcing)
 
         if callback is not None and (n + 1) % output_every == 0:
             callback((n + 1) * dt, state)

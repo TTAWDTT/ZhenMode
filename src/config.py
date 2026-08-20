@@ -92,15 +92,19 @@ class GridConfig:
 @dataclass(frozen=True)
 class PhysicsConfig:
     """Physics parameterization — hydrostatic primitive equations."""
-    # ── Turbulence closure: constant eddy viscosity (v0.1) ──
-    nu_h: float = 100.0        # m²/s  horizontal eddy viscosity
+    # ── Turbulence closure ──
+    nu_h: float = 100.0        # m²/s  horizontal eddy viscosity (background)
     nu_v: float = 1.0e-4       # m²/s  vertical eddy viscosity
     kappa_h: float = 100.0     # m²/s  horizontal diffusivity (T, S)
     kappa_v: float = 1.0e-5    # m²/s  vertical diffusivity (T, S)
 
-    # ── Equation of state (linearized) ──
+    # ── Smagorinsky subgrid closure ──
+    smag_cs: float = 0.0       # Smagorinsky constant (0 = disabled)
+
+    # ── Equation of state ──
     T_ref: float = 15.0        # °C    reference temperature
     S_ref: float = 35.0        # psu   reference salinity
+    eos_type: str = 'linear'   # 'linear' or 'unesco'
 
     # ── Surface forcing (defaults, can be overridden at runtime) ──
     tau_x: float = 0.0         # N/m²  zonal wind stress
@@ -108,8 +112,9 @@ class PhysicsConfig:
     Q_heat: float = 0.0        # W/m²  surface heat flux
 
     # ── Bottom friction ──
-    cd: float = 2.5e-3         # drag coefficient (quadratic, for future use)
-    r_bot: float = 1.0e-3      # m/s  linear bottom friction coefficient (v0.1)
+    cd: float = 2.5e-3         # quadratic drag coefficient
+    r_bot: float = 1.0e-3      # linear bottom friction coefficient
+    bottom_friction: str = 'linear'  # 'linear' or 'quadratic'
 
 
 @dataclass(frozen=True)

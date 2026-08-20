@@ -32,9 +32,10 @@ from spectral_ops import (
     advection_flux_form,
 )
 from pressure import compute_pressure_gradient
+from forcing import Forcing
 
 
-def compute_momentum_tendency(state, grid, physics):
+def compute_momentum_tendency(state, grid, physics, forcing=None):
     """
     Compute du/dt and dv/dt for the hydrostatic primitive equations.
 
@@ -42,6 +43,9 @@ def compute_momentum_tendency(state, grid, physics):
         state: ModelState (u, v, T, S, eta; p computed if needed)
         grid: OceanGrid (f, z, dz, dx, dy, nz)
         physics: PhysicsConfig (nu_h, nu_v, tau_x, tau_y, r_bot)
+        forcing: optional Forcing with 2D (nx, ny) tau_x, tau_y arrays.
+            When provided, its fields override the physics scalars; any
+            field left None falls back to the physics scalar.
 
     Returns: (dudt, dvdt) each (nx, ny, nz) [m/s^2]
     """
@@ -64,9 +68,29 @@ def compute_momentum_tendency(state, grid, physics):
     # ── 3. Pressure gradient force ──
     pgf_x, pgf_y = compute_pressure_gradient(state, grid, physics)
 
-    # ── 4. Horizontal diffusion (spectral Laplacian) ──
+    # ── 4. Horizontal diffusion ──
+    # Background constant viscosity (always present)
     diff_h_u = physics.nu_h * laplacian_h(state.u, grid.dx, grid.dy)
     diff_h_v = physics.nu_h * laplacian_h(state.v, grid.dx, grid.dy)
+
+    # Smagorinsky subgrid closure: nu_smg = (Cs * dx)^2 * |D|
+    # where |D| is the deformation rate magnitude.
+    # Only active when smag_cs > 0.
+    if physics.smag_cs > 0:
+        dudx = d_dx(state.u, grid.dx)
+        dudy = d_dy(state.u, grid.dy)
+        dvdx = d_dx(state.v, grid.dx)
+        dvdy = d_dy(state.v, grid.dy)
+        # Deformation rate: |D| = sqrt(2 * (dudx - dvdy)^2 + 2 * (dudy + dvdx)^2) / 2
+        # Simplified: |D| = sqrt((dudx - dvdy)^2 + (dudy + dvdx)^2)
+        strain = np.sqrt((dudx - dvdy) ** 2 + (dudy + dvdx) ** 2)
+        dx = grid.dx
+        nu_smg = (physics.smag_cs * dx) ** 2 * strain
+        # Apply as Laplacian with spatially-varying viscosity:
+        # d/dx(nu_smg * du/dx) + d/dy(nu_smg * du/dy)
+        # For spectral solver, approximate as nu_smg * lap_h(u) (local scaling)
+        diff_h_u = diff_h_u + nu_smg * laplacian_h(state.u, grid.dx, grid.dy)
+        diff_h_v = diff_h_v + nu_smg * laplacian_h(state.v, grid.dx, grid.dy)
 
     # ── 5. Vertical diffusion (finite difference on non-uniform z) ──
     diff_v_u = physics.nu_v * d2_dz2(state.u, z)
@@ -75,17 +99,28 @@ def compute_momentum_tendency(state, grid, physics):
     # ── 6. Surface wind stress (body force in top layer) ──
     # tau [N/m^2] / (rho_0 * dz_top) -> acceleration [m/s^2]
     # dz_top = thickness of surface layer = |z[0] - z[1]|
+    # tau may be a 2D (nx, ny) field (from forcing) or a scalar (physics);
+    # numpy broadcasting handles either when assigning into the top layer.
     dz_surface = abs(z[0] - z[1])
+    tau_x = physics.tau_x if forcing is None or forcing.tau_x is None else forcing.tau_x
+    tau_y = physics.tau_y if forcing is None or forcing.tau_y is None else forcing.tau_y
     wind_u = np.zeros_like(state.u)
     wind_v = np.zeros_like(state.v)
-    wind_u[:, :, 0] = physics.tau_x / (RHO_0 * dz_surface)
-    wind_v[:, :, 0] = physics.tau_y / (RHO_0 * dz_surface)
+    wind_u[:, :, 0] = tau_x / (RHO_0 * dz_surface)
+    wind_v[:, :, 0] = tau_y / (RHO_0 * dz_surface)
 
-    # ── 7. Linear bottom friction (at deepest level) ──
+    # ── 7. Bottom friction ──
     bot_u = np.zeros_like(state.u)
     bot_v = np.zeros_like(state.v)
-    bot_u[:, :, -1] = -physics.r_bot * state.u[:, :, -1]
-    bot_v[:, :, -1] = -physics.r_bot * state.v[:, :, -1]
+    if physics.bottom_friction == 'quadratic':
+        u_bot = state.u[:, :, -1]
+        v_bot = state.v[:, :, -1]
+        speed = np.sqrt(u_bot ** 2 + v_bot ** 2)
+        bot_u[:, :, -1] = -physics.cd * speed * u_bot
+        bot_v[:, :, -1] = -physics.cd * speed * v_bot
+    else:
+        bot_u[:, :, -1] = -physics.r_bot * state.u[:, :, -1]
+        bot_v[:, :, -1] = -physics.r_bot * state.v[:, :, -1]
 
     # ── Sum all tendencies ──
     dudt = adv_u + coriolis_u + pgf_x + diff_h_u + diff_v_u + wind_u + bot_u
