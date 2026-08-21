@@ -8,8 +8,8 @@ script extends that check to a multi-day integration to confirm the fix
 holds over longer time horizons and that sustained forcing does NOT cause
 the slow temperature drift (T: 23.88 -> ~29.5C) seen before the fix.
 
-Config: WOA init + Stommel gyre wind + meridional heat flux, dt=300s,
-        integrated for 4 days (345,600 s = 1152 steps).
+Config: WOA init + Stommel gyre wind + meridional heat flux, dt=300s.
+        Integration length is set via --days (default 4 days).
 
 Pass criteria:
   - no NaN / Inf in u, v, T
@@ -18,7 +18,7 @@ Pass criteria:
     over the final quarter must not exceed (init max + 2.0 C) nor show a
     sustained upward trend.
 
-Run:  python src/verify_real_run_long.py > logs/verify_real_run_long.log 2>&1
+Run:  python src/verify_real_run_long.py [--days N] > logs/verify_real_run_long.log 2>&1
 """
 import sys
 import os
@@ -37,25 +37,31 @@ from jax_solver import make_solver
 from woa_data import get_initial_fields
 from forcing import wind_stress_gyre, heat_flux_meridional
 
-DT = 300.0
-N_STEPS = 1152            # 4 days at dt=300s
-DAYS = N_STEPS * DT / 86400.0
-DRIFT_TOL_C = 2.0         # allowed max temperature growth over the run (C)
-MAX_U_BOUND = 10.0        # m/s, below the DEGRADED (>10) threshold
+DT = 300.0               # s
+DRIFT_TOL_C = 2.0        # allowed max temperature growth over the run (C)
+MAX_U_BOUND = 10.0       # m/s, below the DEGRADED (>10) threshold
 
 
 def main():
+    import argparse
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--days", type=float, default=4.0,
+                    help="Days to integrate (default 4.0)")
+    args = ap.parse_args()
+    days = args.days
+    n_steps = int(round(days * 86400.0 / DT))
+
     grid = make_grid(DEFAULT_CONFIG.grid, DEFAULT_CONFIG.bathymetry_file)
     physics = DEFAULT_CONFIG.physics
     dt = DT
 
     print("=" * 60)
-    print("LONG FORCED RUN - Real WOA + wind + heat (multi-day)")
+    print(f"LONG FORCED RUN - Real WOA + wind + heat ({days:.1f} days)")
     print("=" * 60)
     print(f"Grid: {grid.nx}x{grid.ny}x{grid.nz}")
     print(f"Physics: nu_h={physics.nu_h}, kappa_h={physics.kappa_h}, "
           f"nu_v={physics.nu_v}, kappa_v={physics.kappa_v}")
-    print(f"dt={dt}s, steps={N_STEPS} => {DAYS:.1f} days simulated")
+    print(f"dt={dt}s, steps={n_steps} => {days:.1f} days simulated")
     print()
 
     # WOA initial fields
@@ -83,13 +89,13 @@ def main():
     # Track max|T| history to detect sustained drift
     maxT_history = [float(jnp.max(state.T))]
 
-    check_interval = 100
-    n_checks = 0
+    # Check ~50 times across the run, at least every 100 steps
+    check_interval = max(100, n_steps // 50)
     max_u_peak = 0.0
 
-    for i in range(2, N_STEPS + 1):
+    for i in range(2, n_steps + 1):
         state = step_fn(state)
-        if i % check_interval == 0 or i == N_STEPS:
+        if i % check_interval == 0 or i == n_steps:
             jax.block_until_ready(state.u)
             max_u = float(jnp.max(jnp.abs(state.u)))
             max_T = float(jnp.max(jnp.abs(state.T)))
@@ -97,8 +103,7 @@ def main():
             nan = int(jnp.isnan(state.u).sum() + jnp.isnan(state.T).sum())
             max_u_peak = max(max_u_peak, max_u)
             maxT_history.append(max_T)
-            n_checks += 1
-            print(f"  day {i*dt/86400.0:5.2f}  step {i:5d}: "
+            print(f"  day {i*dt/86400.0:6.2f}  step {i:6d}: "
                   f"max|u|={max_u:7.3f}  max|T|={max_T:7.3f}  "
                   f"top-mean T={mean_T_top:7.3f}  NaN={nan}")
 
@@ -116,8 +121,8 @@ def main():
     max_u_final = float(jnp.max(jnp.abs(state.u)))
     max_T_final = float(jnp.max(jnp.abs(state.T)))
 
-    # Drift: compare first-half vs final max temperature.  If the final
-    # quarter's max exceeds (init max + tolerance), the run is drifting up.
+    # Drift: compare first half vs final-quarter max temperature.  If the
+    # final quarter's max exceeds (init max + tolerance), the run drifts up.
     quarters = len(maxT_history)
     first_half_maxT = max(maxT_history[:quarters // 2])
     final_quarter_maxT = max(maxT_history[3 * quarters // 4:])
@@ -140,13 +145,14 @@ def main():
               and not drift_up and not monotonic_drift)
 
     if stable:
-        print(f"PASS: Stable over {DAYS:.1f} days forced run, no T drift")
+        print(f"PASS: Stable over {days:.1f} days forced run, no T drift")
     else:
         print(f"FAIL: nan={has_nan} inf={has_inf} "
               f"max_u={max_u_final:.2f} drift_up={drift_up} "
               f"monotonic_drift={monotonic_drift}")
     print("=" * 60)
     return 0 if stable else 1
+
 
 
 if __name__ == "__main__":
