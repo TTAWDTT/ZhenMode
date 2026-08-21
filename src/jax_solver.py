@@ -43,6 +43,7 @@ JaxState = namedtuple('JaxState', ['u', 'v', 'T', 'S', 'eta'])
 SolverParams = namedtuple('SolverParams', [
     # Spectral (reshaped for 3D broadcasting)
     'kx', 'ky', 'k2',              # (nx,1,1), (1,ny,1), (nx,ny,1)
+    'k4',                          # (nx,ny,1) k4 = k2^2 for biharmonic
     'dealias_2d',                  # (nx,ny,1) combined 2/3 dealias mask
     'decay_u', 'decay_T',          # (nx,ny,1) diffusion decay for dt/2
     # Grid
@@ -61,6 +62,7 @@ SolverParams = namedtuple('SolverParams', [
     'bottom_mask',                 # (1,1,nz) 1 at k=-1
     # Physics scalars
     'nu_h', 'nu_v', 'kappa_h', 'kappa_v',
+    'nu_bi', 'kappa_bi',           # biharmonic horizontal viscosity/diffusivity
     'T_ref', 'S_ref',
     # Surface forcing (2D fields, nx x ny)
     'tau_x_2d', 'tau_y_2d', 'Q_heat_2d', 'r_bot', 'cd', 'bottom_friction',
@@ -104,6 +106,7 @@ def _compute_params(grid, physics, dt, forcing=None, eos_type='linear'):
     kx = kx_1d.reshape(nx, 1, 1)
     ky = ky_1d.reshape(1, ny, 1)
     k2 = kx ** 2 + ky ** 2  # (nx, ny, 1)
+    k4 = k2 ** 2            # (nx, ny, 1) for biharmonic (scale-selective)
 
     # ── Dealias mask (2/3 rule) ──
     cx = nx // 3
@@ -113,8 +116,11 @@ def _compute_params(grid, physics, dt, forcing=None, eos_type='linear'):
     dealias_2d = (mx[:, None] * my[None, :])[:, :, None]  # (nx, ny, 1)
 
     # ── Diffusion decay factors (for linear half-step, dt/2) ──
-    decay_u = jnp.exp(-physics.nu_h * k2 * dt_half)
-    decay_T = jnp.exp(-physics.kappa_h * k2 * dt_half)
+    # Combined Laplacian (k^2) + biharmonic (k^4). Biharmonic damps
+    # grid-scale modes ∝ k^4 far more than large scales, so it kills the
+    # baroclinic eddy-instability blowup while leaving basin flow intact.
+    decay_u = jnp.exp(-(physics.nu_h * k2 + physics.nu_bi * k4) * dt_half)
+    decay_T = jnp.exp(-(physics.kappa_h * k2 + physics.kappa_bi * k4) * dt_half)
 
     # ── Coriolis ──
     f = jnp.array(grid.f)
@@ -196,7 +202,7 @@ def _compute_params(grid, physics, dt, forcing=None, eos_type='linear'):
     sw_sin_div_w = jnp.where(omega_sw > 0.0, sw_sin / omega_sw, 0.0)
 
     return SolverParams(
-        kx=kx, ky=ky, k2=k2,
+        kx=kx, ky=ky, k2=k2, k4=k4,
         dealias_2d=dealias_2d,
         decay_u=decay_u, decay_T=decay_T,
         f=f, f0=f0, nx=nx, ny=ny, nz=nz,
@@ -208,6 +214,7 @@ def _compute_params(grid, physics, dt, forcing=None, eos_type='linear'):
         surface_mask=surface_mask, bottom_mask=bottom_mask,
         nu_h=physics.nu_h, nu_v=physics.nu_v,
         kappa_h=physics.kappa_h, kappa_v=physics.kappa_v,
+        nu_bi=physics.nu_bi, kappa_bi=physics.kappa_bi,
         T_ref=physics.T_ref, S_ref=physics.S_ref,
         tau_x_2d=tau_x_2d, tau_y_2d=tau_y_2d,
         Q_heat_2d=Q_heat_2d, r_bot=physics.r_bot,
@@ -265,11 +272,24 @@ def _d_dy(u, p):
     u_hat = jnp.fft.fft(u, axis=1)
     return jnp.real(jnp.fft.ifft(1j * p.ky * u_hat, axis=1))
 
-
 def _laplacian_h(u, p):
     """Horizontal Laplacian = IFFT(-k^2 * FFT(u))."""
     u_hat = jnp.fft.fft2(u, axes=(0, 1))
     return jnp.real(jnp.fft.ifft2(-p.k2 * u_hat, axes=(0, 1)))
+
+
+def _biharmonic_h(u, p):
+    """Horizontal biharmonic = IFFT(k^4 * FFT(u)).
+
+    ∇⁴ operator. Biharmonic dissipation is scale-selective: it damps
+    grid-scale modes ∝ k⁴ but leaves large-scale flow nearly untouched,
+    so it kills the baroclinic eddy-instability blowup without smearing
+    the basin-scale circulation. Note the sign: ∇⁴ = ∇²(∇²) has spectrum
+    +k⁴. The Schr operator convolution (u - nu_bi*∇⁴u) gives decay
+    exp(-nu_bi*k⁴*dt) in the linear half-step.
+    """
+    u_hat = jnp.fft.fft2(u, axes=(0, 1))
+    return jnp.real(jnp.fft.ifft2(p.k4 * u_hat, axes=(0, 1)))
 
 
 def _divergence_h(u, v, p):
@@ -709,6 +729,8 @@ def _compute_tracer_residual(state, p):
     dTdt, dSdt = _compute_tracer_tendency(state, p)
     dTdt = dTdt - p.kappa_h * _laplacian_h(state.T, p)
     dSdt = dSdt - p.kappa_h * _laplacian_h(state.S, p)
+    dTdt = dTdt - p.kappa_bi * _biharmonic_h(state.T, p)
+    dSdt = dSdt - p.kappa_bi * _biharmonic_h(state.S, p)
     return dTdt, dSdt
 
 
@@ -727,6 +749,8 @@ def _compute_momentum_residual(state, p):
     dudt, dvdt = _compute_momentum_tendency(state, p)
     dudt = dudt - p.nu_h * _laplacian_h(state.u, p)
     dvdt = dvdt - p.nu_h * _laplacian_h(state.v, p)
+    dudt = dudt - p.nu_bi * _biharmonic_h(state.u, p)
+    dvdt = dvdt - p.nu_bi * _biharmonic_h(state.v, p)
     dudt = dudt - p.f0 * state.v
     dvdt = dvdt + p.f0 * state.u
     # Barotropic PGF from free surface (eta)

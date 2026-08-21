@@ -98,6 +98,13 @@ class PhysicsConfig:
     kappa_h: float = 100.0     # m²/s  horizontal diffusivity (T, S)
     kappa_v: float = 1.0e-5    # m²/s  vertical diffusivity (T, S)
 
+    # ── Scale-selective (biharmonic) viscosity/diffusivity ──
+    # Damp grid-scale baroclinic eddy modes (∇⁴, ∝ k⁴) far more than
+    # the large-scale flow, killing the eddy-instability blowup while
+    # leaving basin-scale physics intact. 0 = disabled (Laplacian only).
+    nu_bi: float = 1.0e12      # m⁴/s  biharmonic horizontal viscosity (calibrated 2026-08-21)
+    kappa_bi: float = 1.0e12   # m⁴/s  biharmonic horizontal diffusivity
+
     # ── Smagorinsky subgrid closure ──
     smag_cs: float = 0.0       # Smagorinsky constant (0 = disabled)
 
