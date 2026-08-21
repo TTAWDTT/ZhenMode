@@ -295,48 +295,57 @@ def _d2_dz2(u, p):
     return jnp.concatenate([d2u_top, d2u_interior, d2u_bot], axis=-1)
 
 
-def _advection_flux_form(u, v, p):
+def _advection_flux_form(u, v, w, p):
     """
-    Flux-form advection with spectral-space derivative chaining.
+    3D advective-form momentum advection.
 
-    Optimization: FFT each flux once, apply dealias + derivative operator
-    (ik) in spectral space, then IFFT. This saves ~50% FFT calls vs the
-    numpy version which FFTs twice per derivative (once for dealias,
-    once for derivative).
+    adv_u = -(u*du/dx + v*du/dy + w*du/dz)
+    adv_v = -(u*dv/dx + v*dv/dy + w*dv/dz)
 
-    3 FFT + 4 IFFT  (vs 7 FFT + 7 IFFT in numpy version)
+    The advective form (rather than flux form) avoids spurious
+    source terms proportional to div_h(u) that arise in the flux
+    form d(uu)/dx + d(uv)/dy = u*du/dx + v*du/dy + u*div_h when
+    vertical advection is absent.  In a 3D hydrostatic model,
+    div_h(u) != 0 (balanced by dw/dz), so the flux form creates a
+    non-physical source proportional to horizontal divergence.
+
+    Horizontal derivatives: spectral (exact).
+    Vertical derivative: non-uniform finite difference.
     """
-    uu = u * u
-    uv = u * v
-    vv = v * v
+    du_dx = _d_dx(u, p)
+    du_dy = _d_dy(u, p)
+    dv_dx = _d_dx(v, p)
+    dv_dy = _d_dy(v, p)
 
-    uu_hat = jnp.fft.fft2(uu, axes=(0, 1)) * p.dealias_2d
-    uv_hat = jnp.fft.fft2(uv, axes=(0, 1)) * p.dealias_2d
-    vv_hat = jnp.fft.fft2(vv, axes=(0, 1)) * p.dealias_2d
+    du_dz = _d_dz(u, p)
+    dv_dz = _d_dz(v, p)
 
-    d_dx_uu = jnp.real(jnp.fft.ifft2(1j * p.kx * uu_hat, axes=(0, 1)))
-    d_dy_uv = jnp.real(jnp.fft.ifft2(1j * p.ky * uv_hat, axes=(0, 1)))
-    d_dx_uv = jnp.real(jnp.fft.ifft2(1j * p.kx * uv_hat, axes=(0, 1)))
-    d_dy_vv = jnp.real(jnp.fft.ifft2(1j * p.ky * vv_hat, axes=(0, 1)))
-
-    adv_u = -(d_dx_uu + d_dy_uv)
-    adv_v = -(d_dx_uv + d_dy_vv)
+    adv_u = -(u * du_dx + v * du_dy + w * du_dz)
+    adv_v = -(u * dv_dx + v * dv_dy + w * dv_dz)
     return adv_u, adv_v
 
 
-def _advection_scalar(T, u, v, p):
+def _advection_scalar(T, u, v, w, p):
     """
-    Scalar advection with spectral-space derivative chaining.
+    3D advective-form scalar advection.
 
-    2 FFT + 2 IFFT  (vs 4 FFT + 4 IFFT in numpy version)
+    adv_T = -(u*dT/dx + v*dT/dy + w*dT/dz)
+
+    Advective form (rather than flux form) avoids spurious source
+    terms proportional to T*div_h(u) that arise in the flux form
+    d(uT)/dx + d(vT)/dy = u*dT/dx + v*dT/dy + T*div_h when vertical
+    advection is absent.  In a 3D hydrostatic model, div_h(u) != 0
+    (balanced by dw/dz), so the flux form creates a non-physical
+    source proportional to horizontal divergence.
+
+    Horizontal derivatives: spectral (exact).
+    Vertical derivative: non-uniform finite difference.
     """
-    uT_hat = jnp.fft.fft2(u * T, axes=(0, 1)) * p.dealias_2d
-    vT_hat = jnp.fft.fft2(v * T, axes=(0, 1)) * p.dealias_2d
+    dT_dx = _d_dx(T, p)
+    dT_dy = _d_dy(T, p)
+    dT_dz = _d_dz(T, p)
 
-    d_dx_uT = jnp.real(jnp.fft.ifft2(1j * p.kx * uT_hat, axes=(0, 1)))
-    d_dy_vT = jnp.real(jnp.fft.ifft2(1j * p.ky * vT_hat, axes=(0, 1)))
-
-    return -(d_dx_uT + d_dy_vT)
+    return -(u * dT_dx + v * dT_dy + w * dT_dz)
 
 
 def _linear_step_diffusion(u, decay):
@@ -421,9 +430,40 @@ def _compute_pressure_gradient(state, p):
     return pgf_x, pgf_y
 
 
+def _compute_bt_rho_pgf(state, p):
+    """Barotropic (depth-averaged) PGF from density anomalies.
+
+    The full hydrostatic PGF has both barotropic and baroclinic
+    components.  The barotropic component (depth-averaged) drives
+    the fast external mode and must be handled by the exact SW
+    solver in the linear step, not the explicit nonlinear step.
+
+    Computes:  F = -1/rho_0 * grad( depth_mean(p_bc) )
+    where p_bc is the baroclinic pressure from density anomalies.
+
+    Returns:
+        bt_rho_pgf_x, bt_rho_pgf_y: (nx, ny) 2D barotropic forcing
+    """
+    rho_prime = _density_anomaly(state.T, state.S, p)
+    rho_avg = 0.5 * (rho_prime[..., :-1] + rho_prime[..., 1:])
+    dp = G_EARTH * rho_avg * p.dz_3d
+
+    p_bc = jnp.zeros_like(state.T)
+    p_bc = p_bc.at[..., 1:].set(jnp.cumsum(dp, axis=-1))
+
+    p_bc_avg = jnp.sum(
+        0.5 * (p_bc[..., :-1] + p_bc[..., 1:]) * p.dz_norm, axis=-1
+    )
+
+    bt_rho_pgf_x = -_d_dx_2d(p_bc_avg, p) / RHO_0
+    bt_rho_pgf_y = -_d_dy_2d(p_bc_avg, p) / RHO_0
+    return bt_rho_pgf_x, bt_rho_pgf_y
+
+
 def _compute_momentum_tendency(state, p):
     """du/dt, dv/dt for hydrostatic primitive equations."""
-    adv_u, adv_v = _advection_flux_form(state.u, state.v, p)
+    w = _compute_vertical_velocity(state, p)
+    adv_u, adv_v = _advection_flux_form(state.u, state.v, w, p)
 
     f_3d = p.f[:, :, None]
     cor_u = f_3d * state.v
@@ -468,8 +508,9 @@ def _compute_momentum_tendency(state, p):
 
 def _compute_tracer_tendency(state, p):
     """dT/dt, dS/dt for tracer transport."""
-    adv_T = _advection_scalar(state.T, state.u, state.v, p)
-    adv_S = _advection_scalar(state.S, state.u, state.v, p)
+    w = _compute_vertical_velocity(state, p)
+    adv_T = _advection_scalar(state.T, state.u, state.v, w, p)
+    adv_S = _advection_scalar(state.S, state.u, state.v, w, p)
 
     diff_h_T = p.kappa_h * _laplacian_h(state.T, p)
     diff_h_S = p.kappa_h * _laplacian_h(state.S, p)
@@ -523,19 +564,23 @@ def _barotropic_velocity(u, v, p):
     return ubt, vbt
 
 
-def _free_surface_step(eta, u, v, p):
+def _free_surface_step(eta, u, v, p, F_rho_x=None, F_rho_y=None):
     """Exact linear shallow water step in spectral space (no Coriolis).
 
     Solves the coupled (eta, ubt, vbt) system per wavenumber:
         d(eta)/dt  = -H * (ikx*ubt + iky*vbt)     [continuity]
-        d(ubt)/dt  = -g * ikx * eta               [x-momentum]
-        d(vbt)/dt  = -g * iky * eta               [y-momentum]
+        d(ubt)/dt  = -g * ikx * eta + F_x          [x-momentum]
+        d(vbt)/dt  = -g * iky * eta + F_y          [y-momentum]
 
     via matrix exponential:  expm(A*dt) = I + s*A + c2*A^2
     where s = sin(w*dt)/w,  c2 = (1-cos(w*dt))/w^2,  w = sqrt(g*H*k^2).
 
     The k=0 mode (omega=0) is identity - mean mass and momentum conserved.
     Barotropic velocity changes are projected uniformly back to 3D fields.
+
+    Optional forcing F = (0, F_x, F_y) includes both wind and density-
+    driven barotropic PGF.  The particular solution is the exact
+    integral of expm(A*t)*F from 0 to dt_half.
     """
     ubt, vbt = _barotropic_velocity(u, v, p)
 
@@ -566,21 +611,30 @@ def _free_surface_step(eta, u, v, p):
                    - G_EARTH * iky * sin_div_w * eta_hat
                    - omc_div_k2 * (p.kx_2d * p.ky_2d * ubt_hat + p.ky_2d ** 2 * vbt_hat))
 
-    # ── Particular solution for constant barotropic wind forcing ──
-    # Forced SW system dx/dt = A*x + F with F = (0, F_bt_x, F_bt_y).
+    # ── Particular solution for barotropic forcing ──
+    # Forced SW system dx/dt = A*x + F with F = (0, F_x, F_y).
+    # F includes wind + density-driven barotropic PGF.
     # Exact particular solution: integral of expm(A*t) from 0 to dt_half,
     # multiplied by F. Simplified using omega^2 = g*H_sw*k^2:
     #   eta_part  = -(1-cos)/(g*k^2) * div_F
-    #   ubt_part  = dt_half*F_bt_x + (dt_half - sin/w)/k^2 * ikx*div_F
-    #   vbt_part  = dt_half*F_bt_y + (dt_half - sin/w)/k^2 * iky*div_F
-    # k=0 mode: div_F=0, so only ubt/vbt accelerate by dt_half*F_bt.
+    #   ubt_part  = dt_half*F_x + (dt_half - sin/w)/k^2 * ikx*div_F
+    #   vbt_part  = dt_half*F_y + (dt_half - sin/w)/k^2 * iky*div_F
+    # k=0 mode: div_F=0, so only ubt/vbt accelerate by dt_half*F.
     dt_half = p.dt / 2.0
-    div_F = ikx * p.F_bt_x_hat + iky * p.F_bt_y_hat
+
+    # Combine wind + density barotropic forcing
+    F_x_hat = p.F_bt_x_hat
+    F_y_hat = p.F_bt_y_hat
+    if F_rho_x is not None:
+        F_x_hat = F_x_hat + jnp.fft.fft2(F_rho_x)
+        F_y_hat = F_y_hat + jnp.fft.fft2(F_rho_y)
+
+    div_F = ikx * F_x_hat + iky * F_y_hat
     c3_div_k2 = jnp.where(k2_2d > 0.0, (dt_half - sin_div_w) / k2_2d, 0.0)
 
     eta_hat_new = eta_hat_new - (omc_div_k2 / G_EARTH) * div_F
-    ubt_hat_new = ubt_hat_new + dt_half * p.F_bt_x_hat + c3_div_k2 * ikx * div_F
-    vbt_hat_new = vbt_hat_new + dt_half * p.F_bt_y_hat + c3_div_k2 * iky * div_F
+    ubt_hat_new = ubt_hat_new + dt_half * F_x_hat + c3_div_k2 * ikx * div_F
+    vbt_hat_new = vbt_hat_new + dt_half * F_y_hat + c3_div_k2 * iky * div_F
 
     # Back to physical space
     eta_new = jnp.real(jnp.fft.ifft2(eta_hat_new))
@@ -596,69 +650,120 @@ def _free_surface_step(eta, u, v, p):
     return eta_new, u_new, v_new
 
 
+
 def _linear_half_step(state, p, dt_half):
-    """Linear half-step: diffusion + Coriolis + free surface (all exact)."""
+    """Linear half-step: diffusion + Coriolis + free surface (all exact).
+
+    The free surface step includes both wind and density-driven
+    barotropic PGF as forcing, ensuring the fast external mode is
+    driven consistently by all barotropic forces.
+    """
     u = _linear_step_diffusion(state.u, p.decay_u)
     v = _linear_step_diffusion(state.v, p.decay_u)
     T = _linear_step_diffusion(state.T, p.decay_T)
     S = _linear_step_diffusion(state.S, p.decay_T)
     u, v = _coriolis_rotation(u, v, p.f0, dt_half)
-    eta, u, v = _free_surface_step(state.eta, u, v, p)
+
+    # Compute density-driven barotropic PGF from current T/S state
+    F_rho_x, F_rho_y = _compute_bt_rho_pgf(state, p)
+    eta, u, v = _free_surface_step(state.eta, u, v, p, F_rho_x, F_rho_y)
     return JaxState(u, v, T, S, eta)
 
 
-def _explicit_full_step(state, p, dt):
-    """Nonlinear tendencies via explicit Euler, minus linear parts.
 
-    Semi-implicit baroclinic PGF (tracer-first scheme): tracers are
-    updated first, then the baroclinic pressure gradient for the
-    momentum update is computed from the *updated* T/S.  This breaks
-    the unstable forward-Euler feedback loop
-        u -> advection -> T anomaly -> baroclinic PGF -> u
-    that would otherwise amplify internal gravity waves unconditionally
-    (forward Euler on an oscillatory system has |lambda| > 1 for any dt).
+def _compute_tracer_residual(state, p):
+    """Tracer tendency residual (linear parts subtracted).
 
-    Only the baroclinic PGF benefits from the updated density field;
-    advection, Coriolis, diffusion, wind, and bottom friction still use
-    the old u/v (none of them depend on T/S).
+    Returns (dTdt, dSdt) with horizontal diffusion removed
+    (handled by _linear_half_step).  What remains:
+      - advection + vertical diffusion + heat flux
     """
-    # --- Phase 1: update tracers (explicit Euler, old velocities) ---
     dTdt, dSdt = _compute_tracer_tendency(state, p)
-    dTdt = dTdt - p.kappa_h * _laplacian_h(state.T, p)   # subtract linear part
+    dTdt = dTdt - p.kappa_h * _laplacian_h(state.T, p)
     dSdt = dSdt - p.kappa_h * _laplacian_h(state.S, p)
-    T_new = state.T + dTdt * dt
-    S_new = state.S + dSdt * dt
+    return dTdt, dSdt
 
-    # --- Phase 2: update momentum with semi-implicit baroclinic PGF ---
-    # Build a temporary state whose T/S are updated but whose u/v/eta
-    # are still the old values.  _compute_momentum_tendency uses u/v for
-    # advection, Coriolis, diffusion, wind, bottom friction (all old) and
-    # T/S/eta only for the pressure gradient (T/S updated, eta old).
-    state_pgf = JaxState(state.u, state.v, T_new, S_new, state.eta)
-    dudt, dvdt = _compute_momentum_tendency(state_pgf, p)
 
-    # Subtract linear parts (handled by _linear_half_step)
+def _compute_momentum_residual(state, p):
+    """Momentum tendency residual (linear parts subtracted).
+
+    Returns (dudt, dvdt) with horizontal diffusion, Coriolis,
+    barotropic PGF (from both eta and density), and barotropic
+    wind removed (handled by _linear_half_step).  What remains:
+      - advection + pure baroclinic PGF + vertical diffusion
+        + baroclinic wind + bottom friction
+
+    The baroclinic PGF depends on T/S via density anomaly,
+    enabling forward-backward coupling.
+    """
+    dudt, dvdt = _compute_momentum_tendency(state, p)
     dudt = dudt - p.nu_h * _laplacian_h(state.u, p)
     dvdt = dvdt - p.nu_h * _laplacian_h(state.v, p)
     dudt = dudt - p.f0 * state.v
     dvdt = dvdt + p.f0 * state.u
-
-    # Subtract barotropic PGF: -g*grad(eta) is handled by _free_surface_step
+    # Barotropic PGF from free surface (eta)
     bt_pgf_x = -G_EARTH * _d_dx_2d(state.eta, p)
     bt_pgf_y = -G_EARTH * _d_dy_2d(state.eta, p)
     dudt = dudt - bt_pgf_x[:, :, None]
     dvdt = dvdt - bt_pgf_y[:, :, None]
-
-    # Subtract barotropic wind forcing: tau/(rho_0*H_sw) is the
-    # depth-uniform body force handled by _free_surface_step.
-    # This leaves only the baroclinic wind (depth-varying) component.
+    # Barotropic PGF from density anomaly (depth-averaged baroclinic PGF)
+    bt_rho_pgf_x, bt_rho_pgf_y = _compute_bt_rho_pgf(state, p)
+    dudt = dudt - bt_rho_pgf_x[:, :, None]
+    dvdt = dvdt - bt_rho_pgf_y[:, :, None]
+    # Barotropic wind forcing
     bt_wind_x = p.tau_x_2d / (RHO_0 * p.H_sw)
     bt_wind_y = p.tau_y_2d / (RHO_0 * p.H_sw)
     dudt = dudt - bt_wind_x[:, :, None]
     dvdt = dvdt - bt_wind_y[:, :, None]
+    return dudt, dvdt
 
-    u_new = state.u + dudt * dt
-    v_new = state.v + dvdt * dt
+
+
+def _explicit_full_step(state, p, dt):
+    """Forward-backward RK2 for nonlinear tendencies.
+
+    The baroclinic PGF-Tracer coupling produces internal gravity waves
+    with purely imaginary eigenvalues.  Symmetric RK2 has |lambda|>1
+    for such modes (4th-order growth), causing blowup.
+
+    Forward-backward coupling breaks the oscillation: tracers are
+    updated first (using old velocity), then momentum uses the updated
+    tracers for the baroclinic PGF.  This shifts eigenvalues from the
+    imaginary axis to the left half-plane, giving neutral stability
+    (|lambda|=1) for the linear internal wave modes.
+
+    Scheme (2nd-order predictor-corrector):
+      Predictor:
+        T_pred = T + dt * R_T(state)          [forward: old velocity]
+        u_pred = u + dt * R_u(state_T_pred)   [backward: new T for PGF]
+      Corrector:
+        T_new = T + 0.5*dt * (R_T(state) + R_T(state_pred))
+        u_new = u + 0.5*dt * (R_u(state) + R_u(state_T_new))
+    """
+    # ── Predictor ──
+    # Forward: tracer using old velocity
+    dT1, dS1 = _compute_tracer_residual(state, p)
+    T_pred = state.T + dT1 * dt
+    S_pred = state.S + dS1 * dt
+    state_T = JaxState(state.u, state.v, T_pred, S_pred, state.eta)
+
+    # Backward: momentum using predicted T for baroclinic PGF
+    du1, dv1 = _compute_momentum_residual(state_T, p)
+    u_pred = state.u + du1 * dt
+    v_pred = state.v + dv1 * dt
+    state_pred = JaxState(u_pred, v_pred, T_pred, S_pred, state.eta)
+
+    # ── Corrector ──
+    # Forward: tracer using predicted velocity
+    dT2, dS2 = _compute_tracer_residual(state_pred, p)
+    T_new = state.T + 0.5 * (dT1 + dT2) * dt
+    S_new = state.S + 0.5 * (dS1 + dS2) * dt
+    state_T_new = JaxState(state.u, state.v, T_new, S_new, state.eta)
+
+    # Backward: momentum using corrected T for baroclinic PGF
+    du2, dv2 = _compute_momentum_residual(state_T_new, p)
+    u_new = state.u + 0.5 * (du1 + du2) * dt
+    v_new = state.v + 0.5 * (dv1 + dv2) * dt
     return JaxState(u_new, v_new, T_new, S_new, state.eta)
 
 
