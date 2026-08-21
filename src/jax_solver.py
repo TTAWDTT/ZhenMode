@@ -225,14 +225,27 @@ def _compute_params(grid, physics, dt, forcing=None, eos_type='linear'):
     )
 
 
-def _init_state(grid, physics):
-    """Create initial rest state as JAX arrays."""
+def _init_state(grid, physics, T_init=None, S_init=None):
+    """Create initial state as JAX arrays.
+
+    If T_init/S_init are provided (e.g., from WOA climatology), they
+    are used as the initial temperature/salinity fields. Otherwise,
+    uniform T_ref/S_ref is used (rest state).
+
+    Velocity and eta are always initialized to zero.
+    """
     nx, ny, nz = grid.nx, grid.ny, grid.nz
+    if T_init is not None:
+        T = jnp.array(T_init)
+        S = jnp.array(S_init)
+    else:
+        T = jnp.full((nx, ny, nz), physics.T_ref)
+        S = jnp.full((nx, ny, nz), physics.S_ref)
     return JaxState(
         u=jnp.zeros((nx, ny, nz)),
         v=jnp.zeros((nx, ny, nz)),
-        T=jnp.full((nx, ny, nz), physics.T_ref),
-        S=jnp.full((nx, ny, nz), physics.S_ref),
+        T=T,
+        S=S,
         eta=jnp.zeros((nx, ny)),
     )
 
@@ -295,9 +308,21 @@ def _d2_dz2(u, p):
     return jnp.concatenate([d2u_top, d2u_interior, d2u_bot], axis=-1)
 
 
+def _dealias_h(field, p):
+    """Apply 2/3 dealiasing rule to a 3D field (horizontal axes only).
+
+    Nonlinear products in physical space (e.g. u * du/dx) generate
+    spurious high-wavenumber energy via aliasing.  This FFTs the
+    product, zeros the upper 1/3 of wavenumbers, and IFFTs back.
+    """
+    field_hat = jnp.fft.fft2(field, axes=(0, 1))
+    field_hat = field_hat * p.dealias_2d
+    return jnp.real(jnp.fft.ifft2(field_hat, axes=(0, 1)))
+
+
 def _advection_flux_form(u, v, w, p):
     """
-    3D advective-form momentum advection.
+    3D advective-form momentum advection (dealiased).
 
     adv_u = -(u*du/dx + v*du/dy + w*du/dz)
     adv_v = -(u*dv/dx + v*dv/dy + w*dv/dz)
@@ -311,6 +336,7 @@ def _advection_flux_form(u, v, w, p):
 
     Horizontal derivatives: spectral (exact).
     Vertical derivative: non-uniform finite difference.
+    Nonlinear products: dealiased via 2/3 rule (horizontal axes).
     """
     du_dx = _d_dx(u, p)
     du_dy = _d_dy(u, p)
@@ -322,12 +348,12 @@ def _advection_flux_form(u, v, w, p):
 
     adv_u = -(u * du_dx + v * du_dy + w * du_dz)
     adv_v = -(u * dv_dx + v * dv_dy + w * dv_dz)
-    return adv_u, adv_v
+    return _dealias_h(adv_u, p), _dealias_h(adv_v, p)
 
 
 def _advection_scalar(T, u, v, w, p):
     """
-    3D advective-form scalar advection.
+    3D advective-form scalar advection (dealiased).
 
     adv_T = -(u*dT/dx + v*dT/dy + w*dT/dz)
 
@@ -340,12 +366,14 @@ def _advection_scalar(T, u, v, w, p):
 
     Horizontal derivatives: spectral (exact).
     Vertical derivative: non-uniform finite difference.
+    Nonlinear products: dealiased via 2/3 rule (horizontal axes).
     """
     dT_dx = _d_dx(T, p)
     dT_dy = _d_dy(T, p)
     dT_dz = _d_dz(T, p)
 
-    return -(u * dT_dx + v * dT_dy + w * dT_dz)
+    adv_T = -(u * dT_dx + v * dT_dy + w * dT_dz)
+    return _dealias_h(adv_T, p)
 
 
 def _linear_step_diffusion(u, decay):
@@ -798,7 +826,9 @@ def make_solver(grid, physics, dt, forcing=None, eos_type='linear'):
 
     Returns:
         step_fn: JIT-compiled (state: JaxState) -> JaxState
-        init_state: () -> JaxState (rest state)
+        init_state: (T_init=None, S_init=None) -> JaxState
+            If T_init/S_init are provided (e.g., from WOA climatology),
+             they override uniform T_ref/S_ref.
         diagnostics: JIT-compiled (state) -> (rho, pressure, w)
     """
     params = _compute_params(grid, physics, dt, forcing=forcing, eos_type=eos_type)
@@ -815,8 +845,8 @@ def make_solver(grid, physics, dt, forcing=None, eos_type='linear'):
         w = _compute_vertical_velocity(state, params)
         return rho, pressure, w
 
-    def init_state():
-        return _init_state(grid, physics)
+    def init_state(T_init=None, S_init=None):
+        return _init_state(grid, physics, T_init, S_init)
 
     return step, init_state, diagnostics
 
