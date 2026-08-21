@@ -384,7 +384,7 @@ def _compute_bt_rho_pgf(state, p):
     return bt_rho_pgf_x, bt_rho_pgf_y
 
 
-def _compute_momentum_tendency(state, p):
+def _compute_momentum_tendency(state, p, lap_u=None, lap_v=None):
     w = _compute_vertical_velocity(state, p)
     adv_u, adv_v = _advection_flux_form(state.u, state.v, w, p)
     f_3d = p.f[:, :, None]
@@ -392,9 +392,12 @@ def _compute_momentum_tendency(state, p):
     cor_v = -f_3d * state.u
     pgf_x, pgf_y = _compute_pressure_gradient(state, p)
 
-    diff_h_u = p.nu_h * _laplacian_h(state.u, p)
-    diff_h_v = p.nu_h * _laplacian_h(state.v, p)
-
+    if lap_u is None:
+        lap_u = _laplacian_h(state.u, p)
+    if lap_v is None:
+        lap_v = _laplacian_h(state.v, p)
+    diff_h_u = p.nu_h * lap_u
+    diff_h_v = p.nu_h * lap_v
     if p.smag_cs > 0:
         dudx = _d_dx(state.u, p)
         dvdy = _d_dy(state.v, p)
@@ -425,12 +428,17 @@ def _compute_momentum_tendency(state, p):
     return dudt, dvdt
 
 
-def _compute_tracer_tendency(state, p):
+def _compute_tracer_tendency(state, p, lap_T=None, lap_S=None):
     w = _compute_vertical_velocity(state, p)
     adv_T = _advection_scalar(state.T, state.u, state.v, w, p)
     adv_S = _advection_scalar(state.S, state.u, state.v, w, p)
-    diff_h_T = p.kappa_h * _laplacian_h(state.T, p)
-    diff_h_S = p.kappa_h * _laplacian_h(state.S, p)
+    # Optional CSE: pass precomputed laplacian to avoid double FFTs.
+    if lap_T is None:
+        lap_T = _laplacian_h(state.T, p)
+    if lap_S is None:
+        lap_S = _laplacian_h(state.S, p)
+    diff_h_T = p.kappa_h * lap_T
+    diff_h_S = p.kappa_h * lap_S
     diff_v_T = p.kappa_v * _d2_dz2(state.T, p)
     diff_v_S = p.kappa_v * _d2_dz2(state.S, p)
     heat_factor = 1.0 / (RHO_0 * C_P * p.dz_surface)
@@ -537,18 +545,28 @@ def _linear_half_step(state, p, dt_half):
 
 
 def _compute_tracer_residual(state, p):
-    dTdt, dSdt = _compute_tracer_tendency(state, p)
-    dTdt = dTdt - p.kappa_h * _laplacian_h(state.T, p)
-    dSdt = dSdt - p.kappa_h * _laplacian_h(state.S, p)
+    # CSE: compute laplacian once, reuse for the tendency's +diff and the
+    # residual's subtraction (net horizontal diffusion cancels). Biharmonic
+    # stays in the residual (it is not part of the tendency).
+    lap_T = _laplacian_h(state.T, p)
+    lap_S = _laplacian_h(state.S, p)
+    dTdt, dSdt = _compute_tracer_tendency(state, p, lap_T=lap_T, lap_S=lap_S)
+    dTdt = dTdt - p.kappa_h * lap_T
+    dSdt = dSdt - p.kappa_h * lap_S
     dTdt = dTdt - p.kappa_bi * _biharmonic_h(state.T, p)
     dSdt = dSdt - p.kappa_bi * _biharmonic_h(state.S, p)
     return dTdt, dSdt
 
 
 def _compute_momentum_residual(state, p):
-    dudt, dvdt = _compute_momentum_tendency(state, p)
-    dudt = dudt - p.nu_h * _laplacian_h(state.u, p)
-    dvdt = dvdt - p.nu_h * _laplacian_h(state.v, p)
+    # CSE: compute laplacian once, reuse for the tendency's +diff and the
+    # residual's subtraction (net horizontal diffusion cancels). Biharmonic
+    # stays in the residual (it is not part of the tendency).
+    lap_u = _laplacian_h(state.u, p)
+    lap_v = _laplacian_h(state.v, p)
+    dudt, dvdt = _compute_momentum_tendency(state, p, lap_u=lap_u, lap_v=lap_v)
+    dudt = dudt - p.nu_h * lap_u
+    dvdt = dvdt - p.nu_h * lap_v
     dudt = dudt - p.nu_bi * _biharmonic_h(state.u, p)
     dvdt = dvdt - p.nu_bi * _biharmonic_h(state.v, p)
     dudt = dudt - p.f0 * state.v
