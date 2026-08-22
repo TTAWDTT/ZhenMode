@@ -44,6 +44,22 @@ from woa_data import get_initial_fields
 DT = 300.0
 # True mesoscale eddy band (km) — the band the Step 5 diagnostic found empty.
 EDDY_LMIN, EDDY_LMAX = 50.0, 400.0
+# Blow-up precursor: normalized SSH amplitude beyond which we stop and record
+# a DIVERGED verdict instead of reporting a misleading NaN table. Real mesoscale
+# eddies stay well under ~1.5 m in this domain; exponential divergence explodes
+# past it in a few steps (day-50 max was 0.998 m before the day-60 NaN).
+ETA_BLOWUP_M = 3.0
+
+
+def state_is_finite(state, eta):
+    """True if every model field is finite (catches divergence that starts in
+    u/v/T/S and only later poisons eta)."""
+    fields = (state.u, state.v, state.T, state.S, state.eta)
+    for f in fields:
+        a = np.asarray(f)
+        if not np.isfinite(a).all():
+            return False
+    return np.isfinite(eta).all()
 
 
 def radial_power_frac(field, l_lo_km, l_hi_km, dx_m, ocean):
@@ -73,6 +89,7 @@ def main():
     ap.add_argument("--month", default="2023-01")
     ap.add_argument("--spinup-days", type=float, default=90.0)
     ap.add_argument("--snap-days", type=float, default=10.0)
+    ap.add_argument("--dt", type=float, default=300.0)
     ap.add_argument("--nu-bi", type=float, default=1e12)
     ap.add_argument("--tau-restore-days", type=float, default=30.0)
     ap.add_argument("--out", default="results/spin_evo_90d.npz")
@@ -97,56 +114,76 @@ def main():
     physics = replace(DEFAULT_CONFIG.physics, nu_bi=args.nu_bi,
                       kappa_bi=args.nu_bi)
     T_init, S_init = get_initial_fields(grid)
+    DT_eff = args.dt
 
-    step, init_state, _ = make_solver(grid, physics, DT,
+    step, init_state, _ = make_solver(grid, physics, DT_eff,
                                       forcing=(tau_x, tau_y, Q_heat),
                                       T_sst=T_init[:, :, 0],
                                       tau_restore_days=args.tau_restore_days)
     state = init_state(T_init=jnp.array(T_init), S_init=jnp.array(S_init))
 
-    n_total = int(round(args.spinup_days * 86400.0 / DT))
-    n_snap = max(1, int(round(args.snap_days * 86400.0 / DT)))
+    n_total = int(round(args.spinup_days * 86400.0 / DT_eff))
+    n_snap = max(1, int(round(args.snap_days * 86400.0 / DT_eff)))
 
     print("=" * 68)
     print("SPIN-UP EVOLUTION — does baroclinic instability develop?")
     print("=" * 68)
     print(f"grid {grid.nx}x{grid.ny}x{grid.nz} nu_bi={args.nu_bi:g} "
-          f"restore={args.tau_restore_days:g}d wind={wind_src}")
+          f"restore={args.tau_restore_days:g}d wind={wind_src} dt={DT_eff:.0f}s")
     print(f"eddy band {EDDY_LMIN:.0f}-{EDDY_LMAX:.0f} km "
           f"(spinup={args.spinup_days:.0f}d, snap={args.snap_days:.0f}d)")
-    print(f"{'day':>6} {'SSH_std(m)':>10} {'eddy_frac(50-400km)':>21}")
-    print("-" * 68)
-
+    print(f"{'day':>6} {'SSH_std(m)':>10} {'SSH_max(m)':>10} "
+          f"{'eddy_frac(50-400km)':>21}")
+    print("-" * 74)
     snap_days = []; snap_eta = []; snap_std = []; snap_frac = []
     t0 = time.time()
     cur = 0                      # absolute step count completed
+    diverged_at = None
     while cur < n_total:
         take = min(n_snap, n_total - cur)
         for _ in range(take):
             state = step(state)
         cur += take
-        day = cur * DT / 86400.0
+        day = cur * DT_eff / 86400.0
         eta = np.asarray(state.eta)
         std = float(np.std(eta[ocean]))
+        etamax = float(np.nanmax(np.abs(eta))) if np.isfinite(eta).any() else float('nan')
         frac = radial_power_frac(eta, EDDY_LMIN, EDDY_LMAX, dx_m, ocean)
         snap_days.append(day); snap_eta.append(eta)
         snap_std.append(std); snap_frac.append(frac)
-        print(f"{day:7.1f} {std:10.4f} {frac:21.4f}")
+        print(f"{day:7.1f} {std:10.4f} {etamax:10.3f} {frac:21.4f}")
+        # Watchdog: stop cleanly on divergence / blow-up precursor instead of
+        # recording NaN rows that mislead the verdict.
+        if not state_is_finite(state, eta):
+            diverged_at = float(day)
+            print(f"  *** DIVERGED: non-finite field at day {day:.1f} (step {cur})")
+            break
+        if etamax > ETA_BLOWUP_M:
+            diverged_at = float(day)
+            print(f"  *** DIVERGED: |eta| max {etamax:.2f} m > {ETA_BLOWUP_M} m "
+                  f"at day {day:.1f} (blow-up precursor)")
+            break
     wall = time.time() - t0
     print(f"\n  wall time {wall:.0f}s")
     np.savez(args.out,
              days=np.array(snap_days), std=np.array(snap_std),
              eddy_frac=np.array(snap_frac),
              eta=np.stack([np.asarray(x) for x in snap_eta], 0),
+             diverged_at=np.float64(diverged_at),
              config=dict(spinup_days=args.spinup_days, snap_days=args.snap_days,
-                         nu_bi=args.nu_bi, tau_restore_days=args.tau_restore_days,
-                         month=args.month))
+                         dt=DT_eff, nu_bi=args.nu_bi,
+                         tau_restore_days=args.tau_restore_days, month=args.month))
     print(f"  saved {args.out}")
 
     # ── Verdict ──
     f0 = snap_frac[0]; f1 = snap_frac[-1]
     print("\n  VERDICT:")
-    if f1 - f0 > 0.05:
+    if diverged_at is not None:
+        print(f"  DIVERGED at day {diverged_at:.0f} (before clean end): "
+              f"eddy frac {f0*100:.1f}% -> {f1*100:.1f}%. Numeric stability "
+              f"ceiling hit before instability could be confirmed — reduce dt "
+              f"or damp before judging H1.")
+    elif f1 - f0 > 0.05:
         print(f"  eddy frac {f0*100:.1f}% -> {f1*100:.1f}% over {snap_days[-1]:.0f}d: "
               "INSTABILITY DEVELOPING — longer spin-up is justified; re-score "
               "real-data after eddies equilibrate.")
