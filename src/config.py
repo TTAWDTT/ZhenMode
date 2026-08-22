@@ -97,6 +97,12 @@ class PhysicsConfig:
     nu_v: float = 1.0e-4       # m²/s  vertical eddy viscosity
     kappa_h: float = 100.0     # m²/s  horizontal diffusivity (T, S)
     kappa_v: float = 1.0e-5    # m²/s  vertical diffusivity (T, S)
+    # Convective adjustment: enhanced vertical diffusivity applied to
+    # statically-unstable columns (heavier over lighter). Standard OGCM
+    # remedy for the columnar warm-water accumulation that surface-only
+    # restoring cannot remove. Chosen below the explicit RK2 vertical
+    # CFL limit for the thin (5 m) top layer at dt=300 s (~0.083 m^2/s).
+    kappa_conv: float = 0.05     # m²/s  convective vertical diffusivity
 
     # ── Scale-selective (biharmonic) viscosity/diffusivity ──
     # Damp grid-scale baroclinic eddy modes (∇⁴, ∝ k⁴) far more than
@@ -180,7 +186,7 @@ if __name__ == "__main__":
     p = cfg.physics
     print("--- Physics ---")
     print(f"nu_h = {p.nu_h} m^2/s,  nu_v = {p.nu_v} m^2/s")
-    print(f"kappa_h = {p.kappa_h} m^2/s,  kappa_v = {p.kappa_v} m^2/s")
+    print(f"kappa_h = {p.kappa_h} m^2/s,  kappa_v = {p.kappa_v} m^2/s,  kappa_conv = {p.kappa_conv} m^2/s")
     print(f"EOS: rho = rho0[1 - alpha*(T-T0) + beta*(S-S0)]")
     print(f"  T0 = {p.T_ref} C,  S0 = {p.S_ref} psu")
     print()

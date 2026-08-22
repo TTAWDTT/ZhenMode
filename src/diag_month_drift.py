@@ -37,6 +37,9 @@ def main():
     ap.add_argument("--days", type=float, default=8.0)
     ap.add_argument("--noheat", action="store_true",
                     help="disable heat flux (wind only) to isolate driver")
+    ap.add_argument("--restore-days", type=float, default=0.0,
+                    help="surface T restoring timescale in days "
+                         "(Haney relaxation to initial SST); 0 = disabled")
     args = ap.parse_args()
 
     grid = make_grid(DEFAULT_CONFIG.grid, DEFAULT_CONFIG.bathymetry_file)
@@ -56,7 +59,17 @@ def main():
         np.zeros_like(tau_x)
     forcing = (tau_x, tau_y, Q_heat)
 
-    step_fn, init_state, diag_fn = make_solver(grid, physics, dt, forcing=forcing)
+    # Surface temperature restoring target = initial upper-level T.
+    # When --restore-days > 0, this anchors the surface temperature to the
+    # initial field, preventing spurious wind-driven thermal runaway.
+    T_sst = T_init[:, :, 0] if args.restore_days > 0 else None
+
+    if T_sst is not None:
+        step_fn, init_state, diag_fn = make_solver(
+            grid, physics, dt, forcing=forcing,
+            T_sst=T_sst, tau_restore_days=args.restore_days)
+    else:
+        step_fn, init_state, diag_fn = make_solver(grid, physics, dt, forcing=forcing)
     state = init_state(T_init=T_init, S_init=S_init)
 
     t0 = time.perf_counter()
