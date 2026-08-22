@@ -84,6 +84,50 @@ def radial_power_frac(field, l_lo_km, l_hi_km, dx_m, ocean):
     return float(sel / tot) if tot > 0 else float('nan')
 
 
+def bandlimited_noise_2d(nx, ny, rng, l_lo_km, l_hi_km, dx_m):
+    """White-noise field band-passed to wavelengths [l_lo, l_hi] km, RMS=1.
+
+    Used to seed mesoscale instability exactly where the Step 5 diagnostic
+    found the model empty (the 50-400 km eddy band). Returns an (nx, ny)
+    field with zero mean and unit RMS confined to the requested band.
+    """
+    n = rng.standard_normal((nx, ny))
+    n = n - n.mean()
+    N = np.fft.fftshift(np.fft.fft2(n))
+    kx = np.fft.fftshift(np.fft.fftfreq(nx, d=dx_m))    # [1/m]
+    ky = np.fft.fftshift(np.fft.fftfreq(ny, d=dx_m))
+    KX, KY = np.meshgrid(kx, ky, indexing='ij')
+    K = np.sqrt(KX ** 2 + KY ** 2)
+    Lkm = (2 * np.pi / np.where(K > 0, K, 1.0)) / 1e3
+    mask = (Lkm >= l_lo_km) & (Lkm <= l_hi_km)
+    N = N * mask
+    out = np.real(np.fft.ifft2(np.fft.ifftshift(N)))
+    out = out - out.mean()
+    rms = np.sqrt((out ** 2).mean())
+    return out / rms if rms > 0 else np.zeros((nx, ny))
+
+
+def inject_perturbation(state, physics, grid, amp_degC, seed, dx_m):
+    """Add a surface-intensified, band-limited mesoscale T/S perturbation to
+    the initial state. amp_degC<=0 returns the state unchanged. Perturbing the
+    density field seeds baroclinic instability, discriminating 'no instability
+    seed' from 'over-dissipation' in one run."""
+    if amp_degC <= 0:
+        return state
+    rng = np.random.default_rng(seed)
+    nx, ny, nz = grid.nx, grid.ny, grid.nz
+    bl = bandlimited_noise_2d(nx, ny, rng, EDDY_LMIN, EDDY_LMAX, dx_m)
+    # Surface-intensified vertical structure (real eddies decay over the
+    # pycnocline, ~a quarter of the model depth).
+    vert = np.exp(-np.arange(nz, dtype=np.float64) / (nz / 4.0))
+    Tp = amp_degC * bl[:, :, None] * vert[None, None, :]
+    Sp = 0.1 * amp_degC * bl[:, :, None] * vert[None, None, :]
+    return state._replace(
+        T=state.T + jnp.array(Tp),
+        S=state.S + jnp.array(Sp),
+    )
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--month", default="2023-01")
@@ -92,6 +136,9 @@ def main():
     ap.add_argument("--dt", type=float, default=300.0)
     ap.add_argument("--nu-bi", type=float, default=1e12)
     ap.add_argument("--tau-restore-days", type=float, default=30.0)
+    ap.add_argument("--pert-amp", type=float, default=0.0,
+                    help="mesoscale T perturb (degC) to seed instability; 0 = off")
+    ap.add_argument("--pert-seed", type=int, default=0)
     ap.add_argument("--out", default="results/spin_evo_90d.npz")
     args = ap.parse_args()
 
@@ -121,6 +168,8 @@ def main():
                                       T_sst=T_init[:, :, 0],
                                       tau_restore_days=args.tau_restore_days)
     state = init_state(T_init=jnp.array(T_init), S_init=jnp.array(S_init))
+    state = inject_perturbation(state, physics, grid, args.pert_amp,
+                                args.pert_seed, dx_m)
 
     n_total = int(round(args.spinup_days * 86400.0 / DT_eff))
     n_snap = max(1, int(round(args.snap_days * 86400.0 / DT_eff)))
@@ -132,6 +181,9 @@ def main():
           f"restore={args.tau_restore_days:g}d wind={wind_src} dt={DT_eff:.0f}s")
     print(f"eddy band {EDDY_LMIN:.0f}-{EDDY_LMAX:.0f} km "
           f"(spinup={args.spinup_days:.0f}d, snap={args.snap_days:.0f}d)")
+    if args.pert_amp > 0:
+        print(f"perturbation: mesoscale T amp {args.pert_amp:.2f} degC, "
+              f"seed {args.pert_seed}")
     print(f"{'day':>6} {'SSH_std(m)':>10} {'SSH_max(m)':>10} "
           f"{'eddy_frac(50-400km)':>21}")
     print("-" * 74)
@@ -172,7 +224,8 @@ def main():
              diverged_at=np.float64(diverged_at),
              config=dict(spinup_days=args.spinup_days, snap_days=args.snap_days,
                          dt=DT_eff, nu_bi=args.nu_bi,
-                         tau_restore_days=args.tau_restore_days, month=args.month))
+                         tau_restore_days=args.tau_restore_days, month=args.month,
+                         pert_amp=args.pert_amp, pert_seed=args.pert_seed))
     print(f"  saved {args.out}")
 
     # ── Verdict ──
