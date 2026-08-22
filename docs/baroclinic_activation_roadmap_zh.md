@@ -105,3 +105,32 @@
 - **不挪移已注册的证据 bar**（R1/R4），T3-1 的 FAIL 如实保留，路线图是一次**新实验**不是重写历史。
 - 每个实验注册到 `research_experiment`，走双门（inspector 代码门 + auditor 红线门）。
 - 遵循 append-only 研究轨迹。
+
+## 六、执行更新（spin-up 诊断，2026-08-23）
+
+> 本节为 append-only 追加，不改动上面历史结论。记录对“分层为何没起涡”的诊断进展。
+
+### 6.1 已做：spin-up 长度诊断（H1）
+- 新增 `src/bench_baroclinic_spin_evo.py`：分层(W斜)初场 + Haney 30d 海表恢复 +
+  真实 2023-01 风，跑 90 天，每 10 天采样 SSH_std / SSH_max / 50-400km 谱带功率占比。
+- dt=300 首跑：day50 后数值发散(NaN)，day10-50 “eddy_frac 0.10%→0.23%” 实为**逼近失稳
+  前的数值伪影**，不是真实不稳定性。
+- **修数值上限**：加发散 watchdog + `--dt`，dt=150（90 天稳定，SSH_max 全程 0.87-0.91m）。
+- **H1 证伪（决定性）**：dt=150、90 天积分全有限、SSH_std 0.4833→0.5171（慢升），
+  **eddy_frac(50-400km) 全程 ~0.0018%-0.0031%（≈0）**。子 meso 20-99km 0.000%。
+  → 模型处于**正压大尺度平衡**，90 天内不发展斜压不稳定。**spin-up 长度不是阻碍**。
+
+### 6.2 下一步（当前实验 #1：初始扰动播种）
+- 已加 `bandlimited_noise_2d` + `inject_perturbation`（commit 2584f9d）：把 50-400km
+  带限 m尺 T/S 扰动(表增强，垂直按 nz/4 衰减, S=0.1×T)注入初场。
+- 冒烟验证：4d、amp0.5°C 跑通(exit0, wall164s)，扰动打印正常，eddy_frac 4d 仍 0.0001。
+- **90 天 perturbed 跑（spin_evo_90d_pert05, amp0.5°C, seed7）已后台启动(~59min)**：
+  - 若 eddy_frac 上升→播种有效，H1 是红鲱鱼，阻碍是“缺初始噪声”→ 接日风(Step: #3)或降粘性。
+  - 若 eddy_frac 仍≈0→ `nu_bi=1e12` 过度耗散把种子压掉 → 实验 #2：在稳定包络内降 `nu_bi`
+    （如 3e11/5e11，已知 <1e12 需配 Haney 恢复 + dt 保持稳定）。
+
+### 6.3 与上面路线图的关系
+- 上面的 Step 1（激活分层，已过）/ Step 2（粘性重标定）/ Step 3（海表恢复，已启 30d）仍适用；
+  本次新增一个**更靠前的判别实验**（#1 播种），比 Step 2 更便宜、能先区分“缺种子”vs“过度耗散”。
+- 红线不变：不挪 R1/R4，T3-1 的 FAIL 如实保留；生产 `PhysicsConfig` 默认值不动；结果在
+  `results/spin_evo_90d_pert05.npz` + `logs/spin_evo_90d_pert05.log`。
