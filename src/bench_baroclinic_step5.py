@@ -108,7 +108,12 @@ def main():
     ap.add_argument("--nu-bi", type=float, default=1e12)
     ap.add_argument("--tau-restore-days", type=float, default=30.0)
     ap.add_argument("--force-fetch", action="store_true")
+    ap.add_argument("--save-eta", default=None,
+                    help="optional path (npz) to cache the model SSH field")
     args = ap.parse_args()
+
+
+
 
     grid = make_grid(DEFAULT_CONFIG.grid, DEFAULT_CONFIG.bathymetry_file)
     ocean = np.asarray(grid.ocean_mask, dtype=bool)
@@ -144,6 +149,8 @@ def main():
                               args.spinup_days, args.tau_restore_days)
     print(f"  model spin-up {args.spinup_days:.0f}d -> {time.time()-t0:.0f}s")
     print(f"  model SSH ocean std = {np.std(model_eta[ocean]):.4f} m")
+    if args.save_eta:
+        np.savez(args.save_eta, eta=np.asarray(model_eta))
 
     # ── Observed SLA (cached or fetch) ──
     cache = f"data/t3_sla_{args.month}.npz"
