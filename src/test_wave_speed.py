@@ -13,6 +13,7 @@ phase speed should match c_theory = sqrt(g * H_sw) to within ~1%.
 """
 import sys
 import os
+from dataclasses import replace
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
@@ -27,7 +28,17 @@ from grid import make_grid
 
 def main():
     grid = make_grid(DEFAULT_CONFIG.grid, DEFAULT_CONFIG.bathymetry_file)
-    physics = DEFAULT_CONFIG.physics
+    # Use INVISCID physics for this linear analytic test. The production
+    # PhysicsConfig carries Laplacian/biharmonic stabilizers (nu_bi=1e12 etc.)
+    # whose dissipation shifts ~6% off the analytic phase speed. In the
+    # inviscid limit the measured speed matches c=sqrt(gH) to ~0.5%, with the
+    # residual being the expected f-plane rotation correction (+0.3%).
+    physics = replace(
+        DEFAULT_CONFIG.physics,
+        nu_h=0.0, nu_v=0.0, nu_bi=0.0,
+        kappa_h=0.0, kappa_bi=0.0, kappa_conv=0.0,
+        cd=0.0, r_bot=0.0, smag_cs=0.0,
+    )
     dt = 150.0
 
     # H_sw = sum(dz), effective shallow-water depth (same as solver)
