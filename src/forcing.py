@@ -33,6 +33,24 @@ class Forcing:
 
 
 
+def taper_weight_1d(ny, taper_cells):
+    """Raised-cosine y-edge taper weight (multiplicative mask).
+
+    Returns a ``(ny,)`` weight that is 1 in the interior and ramps smoothly
+    to 0 over ``taper_cells`` cells at each meridional edge.  Used to zero
+    forcing at the periodic FFT seam in both 1D profiles and 2D fields.
+    """
+    taper_cells = int(taper_cells)
+    weight = np.ones(int(ny), dtype=np.float64)
+    if taper_cells <= 0:
+        return weight
+    taper_cells = min(taper_cells, int(ny) // 2)
+    taper = 0.5 * (1.0 - np.cos(np.pi * np.linspace(0.0, 1.0, taper_cells)))
+    weight[:taper_cells] = taper
+    weight[-taper_cells:] = taper[::-1]
+    return weight
+
+
 def _taper_y(profile, ny, taper_cells):
     """Force a 1D y-profile to zero smoothly at both meridional edges.
 
@@ -54,16 +72,17 @@ def _taper_y(profile, ny, taper_cells):
     Returns:
         (ny,) tapered profile.
     """
-    profile = np.asarray(profile, dtype=np.float64)
-    taper_cells = int(taper_cells)
-    if taper_cells <= 0:
-        return profile
-    taper_cells = min(taper_cells, ny // 2)
-    taper = 0.5 * (1.0 - np.cos(np.pi * np.linspace(0.0, 1.0, taper_cells)))
-    tapered = profile.copy()
-    tapered[:taper_cells] *= taper
-    tapered[ny - taper_cells:] *= taper[::-1]
-    return tapered
+    return np.asarray(profile, dtype=np.float64) * taper_weight_1d(ny, taper_cells)
+
+
+def taper_2d_y(field, ny, taper_cells):
+    """Apply the meridional y-edge taper to a 2D ``(nx, ny)`` forcing field.
+
+    The 1D taper weight is broadcast along axis 1 so the whole field reaches
+    zero at both y-edges, keeping it continuous across the periodic seam.
+    """
+    field = np.asarray(field, dtype=np.float64)
+    return field * taper_weight_1d(ny, taper_cells)[None, :]
 
 def wind_stress_gyre(grid, tau0=0.1):
     """Subtropical gyre wind stress (classic Stommel profile).

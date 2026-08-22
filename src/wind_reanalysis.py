@@ -137,13 +137,25 @@ def wind_stress_from_wind(u10, v10):
     return tau_x, tau_y
 
 
-def real_wind_forcing(month_idx=-1, grid=None):
+def real_wind_forcing(month_idx=-1, grid=None, taper_cells=None):
     """End-to-end: load real 10m wind and return (tau_x, tau_y) on solver grid.
 
     Convenience wrapper for make_solver(grid, physics, dt, forcing=(tau_x, tau_y, Q)).
+
+    The reanalysis wind is non-periodic in the meridional direction, so it
+    gets the same y-edge taper as the idealized gyre fields per the confirmed
+    root cause (periodic FFT seam step-discontinuity -> boundary heat pump).
+    ``taper_cells`` defaults to ``grid.forcing_taper_cells`` (8).
     """
     u10, v10 = load_monthly_wind(month_idx=month_idx, grid=grid)
-    return wind_stress_from_wind(u10, v10)
+    tau_x, tau_y = wind_stress_from_wind(u10, v10)
+    if taper_cells is None:
+        taper_cells = getattr(grid, "forcing_taper_cells", 8)
+    ny = grid.ny if grid is not None else tau_x.shape[1]
+    from forcing import taper_2d_y
+    tau_x = taper_2d_y(tau_x, ny, taper_cells)
+    tau_y = taper_2d_y(tau_y, ny, taper_cells)
+    return tau_x, tau_y
 
 
 if __name__ == "__main__":

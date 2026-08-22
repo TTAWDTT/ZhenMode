@@ -39,6 +39,7 @@ from grid import make_grid
 from jax_solver import make_solver
 from woa_data import get_initial_fields
 from forcing import wind_stress_gyre, heat_flux_meridional
+from wind_reanalysis import real_wind_forcing
 
 DT = 300.0               # s
 DRIFT_TOL_C = 2.0        # allowed max temperature growth over the run (C)
@@ -59,6 +60,9 @@ def main():
     ap.add_argument("--kappa-conv", type=float, default=None,
                     help="override convective vertical diffusivity (m^2/s); "
                          "None = physics default")
+    ap.add_argument("--real-wind", action="store_true",
+                    help="use NCEP/NCAR R1 reanalysis wind stress (NOAA PSL) "
+                         "instead of the idealized Stommel gyre wind")
     args = ap.parse_args()
     days = args.days
     n_steps = int(round(days * 86400.0 / DT))
@@ -85,8 +89,14 @@ def main():
     T_init_max = float(np.max(T_init))
     print(f"  T_init range=[{T_init.min():.2f}, {T_init_max:.2f}]C")
 
-    # Forcing: Stommel gyre wind + meridional heat flux
-    tau_x, tau_y = wind_stress_gyre(grid, tau0=0.1)
+    # Forcing: Stommel gyre wind (default) or NOAA PSL reanalysis wind
+    # (--real-wind), both tapered at the y-edges; + meridional heat flux.
+    if args.real_wind:
+        tau_x, tau_y = real_wind_forcing(grid=grid)
+        print(f"  wind: NCEP/NCAR R1 reanalysis (months of stress, y-tapered)")
+    else:
+        tau_x, tau_y = wind_stress_gyre(grid, tau0=0.1)
+        print(f"  wind: idealized Stommel gyre (tau0=0.1, y-tapered)")
     Q_heat = heat_flux_meridional(grid, Q0=50.0)
     forcing = (tau_x, tau_y, Q_heat)
 
