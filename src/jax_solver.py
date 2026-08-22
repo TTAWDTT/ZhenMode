@@ -61,7 +61,7 @@ SolverParams = namedtuple('SolverParams', [
     'surface_mask',                # (1,1,nz) 1 at k=0
     'bottom_mask',                 # (1,1,nz) 1 at k=-1
     # Physics scalars
-    'nu_h', 'nu_v', 'kappa_h', 'kappa_v',
+    'nu_h', 'nu_v', 'kappa_h', 'kappa_v', 'kappa_conv',
     'nu_bi', 'kappa_bi',           # biharmonic horizontal viscosity/diffusivity
     'T_ref', 'S_ref',
     # Surface forcing (2D fields, nx x ny)
@@ -83,10 +83,14 @@ SolverParams = namedtuple('SolverParams', [
     # Smagorinsky
     'smag_cs',                    # Smagorinsky constant (0 = disabled)
     'dx',                         # grid spacing for Smagorinsky length scale
+    # Surface temperature restoring (Haney relaxation)
+    'T_sst_3d',                   # (nx,ny,1) restoring target (upper level T)
+    'restore_coef_T',             # 1/tau_restore [1/s]; 0 disables restoring
 ])
 
 
-def _compute_params(grid, physics, dt, forcing=None, eos_type='linear'):
+def _compute_params(grid, physics, dt, forcing=None, eos_type='linear',
+                    T_sst=None, tau_restore_days=0.0):
     """Pre-compute all static JAX arrays from grid and physics.
 
     Args:
@@ -95,6 +99,10 @@ def _compute_params(grid, physics, dt, forcing=None, eos_type='linear'):
         dt: time step [s]
         forcing: optional (tau_x_2d, tau_y_2d, Q_heat_2d) tuple of
             (nx, ny) arrays. If None, defaults to zero forcing (rest).
+        T_sst: optional (nx, ny) 2D array of surface restoring target
+            temperatures [degC]. If None, restoring is disabled.
+        tau_restore_days: restoring timescale in days. Must be > 0
+            together with T_sst for restoring to activate. 0 disables.
     """
     nx, ny, nz = grid.nx, grid.ny, grid.nz
     dx, dy = grid.dx, grid.dy
@@ -201,6 +209,20 @@ def _compute_params(grid, physics, dt, forcing=None, eos_type='linear'):
     # sin(omega*dt/2)/omega with k=0 limit = 0 (mean mode handled separately)
     sw_sin_div_w = jnp.where(omega_sw > 0.0, sw_sin / omega_sw, 0.0)
 
+    # ── Surface temperature restoring (Haney relaxation) ──
+    # Restore the upper-level temperature to a target field on a
+    # timescale tau_restore. Standard OGCM practice: without an air-sea
+    # heat anchor, wind-driven downwelling accumulates warm surface
+    # water in columns (western-boundary convergence) that is never
+    # dissipated, driving a spurious month-scale thermal runaway.
+    # tau_restore_days=0 (default) disables restoring entirely.
+    if T_sst is not None and tau_restore_days > 0.0:
+        restore_coef_T = 1.0 / (tau_restore_days * 86400.0)
+        T_sst_3d = jnp.array(T_sst)[:, :, None]  # (nx, ny, 1)
+    else:
+        restore_coef_T = 0.0
+        T_sst_3d = jnp.zeros((nx, ny, 1))
+
     return SolverParams(
         kx=kx, ky=ky, k2=k2, k4=k4,
         dealias_2d=dealias_2d,
@@ -214,6 +236,7 @@ def _compute_params(grid, physics, dt, forcing=None, eos_type='linear'):
         surface_mask=surface_mask, bottom_mask=bottom_mask,
         nu_h=physics.nu_h, nu_v=physics.nu_v,
         kappa_h=physics.kappa_h, kappa_v=physics.kappa_v,
+        kappa_conv=physics.kappa_conv,
         nu_bi=physics.nu_bi, kappa_bi=physics.kappa_bi,
         T_ref=physics.T_ref, S_ref=physics.S_ref,
         tau_x_2d=tau_x_2d, tau_y_2d=tau_y_2d,
@@ -229,6 +252,7 @@ def _compute_params(grid, physics, dt, forcing=None, eos_type='linear'):
         bottom_friction=physics.bottom_friction,
         smag_cs=physics.smag_cs,
         dx=dx,
+        T_sst_3d=T_sst_3d, restore_coef_T=restore_coef_T,
     )
 
 
@@ -566,23 +590,52 @@ def _compute_tracer_tendency(state, p):
     diff_v_T = p.kappa_v * _d2_dz2(state.T, p)
     diff_v_S = p.kappa_v * _d2_dz2(state.S, p)
 
+    # Convective adjustment: apply a large vertical diffusivity to
+    # statically-unstable columns (heavier water over lighter, i.e.
+    # rho[k] > rho[k+1]) to mix the column toward neutral stability.
+    # This removes the warm surface plume that wind-driven downwelling
+    # accumulates below the thin top layer — the mechanism that
+    # surface-only restoring cannot arrest.  rhop = rho - RHO_0, so the
+    # unstable comparison is unchanged; the boolean column mask is
+    # re-derived each step from the current T/S.
+    rho_prime = _density_anomaly(state.T, state.S, p)      # (nx,ny,nz)
+    unstable_iface = rho_prime[..., :-1] > rho_prime[..., 1:]  # heavier over lighter
+    conv_mask_3d = jnp.any(unstable_iface, axis=-1, keepdims=True)  # (nx,ny,1)
+    conv_T = p.kappa_conv * conv_mask_3d * _d2_dz2(state.T, p)
+    conv_S = p.kappa_conv * conv_mask_3d * _d2_dz2(state.S, p)
+
     heat_factor = 1.0 / (RHO_0 * C_P * p.dz_surface)
     heat_T = p.Q_heat_2d[:, :, None] * heat_factor * p.surface_mask
 
-    dTdt = adv_T + diff_h_T + diff_v_T + heat_T
-    dSdt = adv_S + diff_h_S + diff_v_S
+    # Surface temperature restoring (Haney relaxation). Pulls the upper
+    # level's temperature toward the target field on a tau_restore
+    # timescale. Acts only on the top layer. When restore_coef_T == 0
+    # (default), this term vanishes so the baseline behavior is unchanged.
+    restore_T = p.restore_coef_T * (p.T_sst_3d - state.T[:, :, 0:1]) * p.surface_mask
+
+    dTdt = adv_T + diff_h_T + diff_v_T + heat_T + restore_T + conv_T
+    dSdt = adv_S + diff_h_S + diff_v_S + conv_S
     return dTdt, dSdt
 
 
 def _compute_vertical_velocity(state, p):
-    """Diagnose w from horizontal continuity. w=0 at bottom."""
+    """Diagnose w from horizontal continuity. w=0 at bottom.
+
+    The raw spectral divergence inherits grid-scale noise from the
+    weakly-damped high-wavenumber velocity modes.  Vertically
+    integrating that noisy divergence produces spurious w that, when
+    multiplied by the steep near-surface dT/dz in the thin 5 m top
+    layer, pumps heat into isolated columns and drives a spurious
+    month-scale temperature drift.  Dealias w (2/3 rule) so only
+    resolved scales contribute to vertical advection.
+    """
     div_h = _divergence_h(state.u, state.v, p)
     div_avg = 0.5 * (div_h[..., :-1] + div_h[..., 1:])
     integrand = div_avg * p.dz_3d
 
     w = jnp.zeros_like(state.u)
     w = w.at[..., :-1].set(-jnp.cumsum(integrand[..., ::-1], axis=-1)[..., ::-1])
-    return w
+    return _dealias_h(w, p)
 
 
 # ── Integrator (Strang splitting IMEX) ───────────────────────────────
@@ -830,7 +883,8 @@ def _step_impl(state, p):
 
 # ── Public API ───────────────────────────────────────────────────────
 
-def make_solver(grid, physics, dt, forcing=None, eos_type='linear'):
+def make_solver(grid, physics, dt, forcing=None, eos_type='linear',
+                T_sst=None, tau_restore_days=0.0):
     """
     Create a JIT-compiled ocean solver.
 
@@ -847,6 +901,12 @@ def make_solver(grid, physics, dt, forcing=None, eos_type='linear'):
             (nx, ny) numpy arrays for spatially-varying surface forcing.
             If None, defaults to zero forcing (rest state).
         eos_type: 'linear' (default) or 'unesco' for nonlinear EOS.
+        T_sst: optional (nx, ny) 2D array of surface restoring target
+            temperatures [degC] (e.g. initial WOA surface temperature).
+            If None, restoring is disabled.
+        tau_restore_days: restoring timescale in days (Haney / Rayleigh
+            relaxation). Must be > 0 together with T_sst to activate.
+            0 (default) disables restoring.
 
     Returns:
         step_fn: JIT-compiled (state: JaxState) -> JaxState
@@ -855,7 +915,8 @@ def make_solver(grid, physics, dt, forcing=None, eos_type='linear'):
              they override uniform T_ref/S_ref.
         diagnostics: JIT-compiled (state) -> (rho, pressure, w)
     """
-    params = _compute_params(grid, physics, dt, forcing=forcing, eos_type=eos_type)
+    params = _compute_params(grid, physics, dt, forcing=forcing, eos_type=eos_type,
+                             T_sst=T_sst, tau_restore_days=tau_restore_days)
 
     @jax.jit
     def step(state):

@@ -32,6 +32,39 @@ class Forcing:
     Q_heat: Optional[np.ndarray] = None  # (nx, ny) surface heat flux [W/m^2]
 
 
+
+def _taper_y(profile, ny, taper_cells):
+    """Force a 1D y-profile to zero smoothly at both meridional edges.
+
+    The solver differentiates horizontally with periodic (FFT) spectral
+    derivatives in both x and y.  A wind/heat profile that is non-zero at
+    the southern (y=0) or northern (y=ny-1) edge creates a step
+    discontinuity at the periodic meridional seam, which injects spurious
+    grid-scale forcing energy at those boundaries (observed as a persistent
+    NW-corner heat pump).  This applies a raised-cosine taper over
+    ``taper_cells`` grid cells at each edge so the profile reaches zero at
+    both ends and is continuous across the periodic seam.
+
+    Args:
+        profile: (ny,) 1D meridional profile before tapering.
+        ny: number of meridional grid cells.
+        taper_cells: number of edge cells over which the profile is
+            smoothly ramped to zero at each boundary.
+
+    Returns:
+        (ny,) tapered profile.
+    """
+    profile = np.asarray(profile, dtype=np.float64)
+    taper_cells = int(taper_cells)
+    if taper_cells <= 0:
+        return profile
+    taper_cells = min(taper_cells, ny // 2)
+    taper = 0.5 * (1.0 - np.cos(np.pi * np.linspace(0.0, 1.0, taper_cells)))
+    tapered = profile.copy()
+    tapered[:taper_cells] *= taper
+    tapered[ny - taper_cells:] *= taper[::-1]
+    return tapered
+
 def wind_stress_gyre(grid, tau0=0.1):
     """Subtropical gyre wind stress (classic Stommel profile).
 
@@ -50,10 +83,14 @@ def wind_stress_gyre(grid, tau0=0.1):
         tau_x, tau_y: (nx, ny) wind stress fields [N/m^2]
     """
     ny = grid.ny
+    taper_cells = getattr(grid, "forcing_taper_cells", 8)
     # Normalized meridional coordinate: 0 at south, 1 at north
     y_frac = np.arange(ny, dtype=np.float64) / (ny - 1)
 
     tau_x_profile = -tau0 * np.cos(np.pi * y_frac)  # (ny,)
+    # Taper to zero at both y-edges so the profile is continuous across the
+    # periodic meridional seam (avoids a spectral step-discontinuity artifact).
+    tau_x_profile = _taper_y(tau_x_profile, ny, taper_cells)
     tau_x = np.broadcast_to(tau_x_profile[None, :], (grid.nx, ny)).copy()
     tau_y = np.zeros((grid.nx, ny))
     return tau_x, tau_y
@@ -78,9 +115,11 @@ def heat_flux_meridional(grid, Q0=50.0):
         Q_heat: (nx, ny) heat flux field [W/m^2]
     """
     ny = grid.ny
+    taper_cells = getattr(grid, "forcing_taper_cells", 8)
     y_frac = np.arange(ny, dtype=np.float64) / (ny - 1)
 
     q_profile = -Q0 * (2.0 * y_frac - 1.0)  # (ny,)
+    q_profile = _taper_y(q_profile, ny, taper_cells)
     return np.broadcast_to(q_profile[None, :], (grid.nx, ny)).copy()
 
 
@@ -99,11 +138,13 @@ def wind_stress_seasonal(grid, tau0=0.1, season_frac=0.0):
         tau_x, tau_y: (nx, ny) wind stress fields [N/m^2]
     """
     ny = grid.ny
+    taper_cells = getattr(grid, "forcing_taper_cells", 8)
     y_frac = np.arange(ny, dtype=np.float64) / (ny - 1)
 
     # Seasonal amplitude: stronger winds in winter (season_frac=0)
     seasonal_amp = 0.3 * np.cos(2.0 * np.pi * season_frac)
     tau_x_profile = -tau0 * np.cos(np.pi * y_frac) * (1.0 + seasonal_amp)
+    tau_x_profile = _taper_y(tau_x_profile, ny, taper_cells)
     tau_x = np.broadcast_to(tau_x_profile[None, :], (grid.nx, ny)).copy()
     tau_y = np.zeros((grid.nx, ny))
     return tau_x, tau_y

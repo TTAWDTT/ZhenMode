@@ -9,7 +9,9 @@ Tests three aspects of the 2D wind stress forcing:
   2. Sverdrup response -- Stommel gyre wind curl should produce
      downward Ekman pumping and equatorward barotropic transport.
   3. Forcing field sanity -- wind_stress_gyre produces the correct
-     antisymmetric profile with tau_y = 0 and max|tau_x| = tau0.
+     antisymmetric gyre profile with tau_y = 0, peaked at tau0 in the
+     interior, and tapered to zero at both y-edges so it is continuous
+     across the solver's periodic meridional seam.
 
 Uses the numpy solver only (no JAX) for direct state inspection.
 """
@@ -51,29 +53,43 @@ def _interior_mean(field, ocean_mask, margin=5):
 
 
 def test_forcing_field_sanity(grid, tau0=0.1):
-    """Verify wind_stress_gyre produces the correct Stommel profile."""
+    """Verify wind_stress_gyre produces a continuous, tapered Stommel
+    profile that is safe under the solver's spectral (periodic) FFT.
+    """
     tau_x, tau_y = wind_stress_gyre(grid, tau0=tau0)
+    ny = grid.ny
 
     tau_y_max = float(np.max(np.abs(tau_y)))
     tau_x_max = float(np.max(np.abs(tau_x)))
     # Antisymmetry about y-center: tau_x[:, j] = -tau_x[:, ny-1-j]
     antisym_err = float(np.max(np.abs(tau_x + tau_x[:, ::-1])))
-    south_mean = float(np.mean(tau_x[:, 0]))
-    north_mean = float(np.mean(tau_x[:, -1]))
+    # Boundary continuity: forcing must be ~0 at both edges so the periodic
+    # FFT derivatives do not see a step discontinuity at the meridional seam.
+    south_edge = float(np.mean(tau_x[:, 0]))
+    north_edge = float(np.mean(tau_x[:, -1]))
+    # Interior gyre sign: easterly in the south, westerly in the north,
+    # evaluated away from the taper zone.
+    margin = 2 * 8  # twice the default taper width
+    south_int = float(np.mean(tau_x[:, margin]))
+    north_int = float(np.mean(tau_x[:, ny - 1 - margin]))
 
     print("--- Test 3: Forcing Field Sanity ---")
     print(f"  tau_y max:          {tau_y_max:.2e} (expect ~0)")
-    print(f"  max|tau_x|:         {tau_x_max:.6f} (expect {tau0})")
+    print(f"  max|tau_x|:         {tau_x_max:.6f} (expect ~{tau0})")
     print(f"  antisymmetry err:   {antisym_err:.2e} (expect ~0)")
-    print(f"  south tau_x:        {south_mean:.6f} (expect {-tau0:.1f})")
-    print(f"  north tau_x:        {north_mean:.6f} (expect {tau0:.1f})")
+    print(f"  south edge tau_x:   {south_edge:.3e} (expect ~0, seam-continuous)")
+    print(f"  north edge tau_x:   {north_edge:.3e} (expect ~0, seam-continuous)")
+    print(f"  south interior:     {south_int:.6f} (expect < 0, easterly)")
+    print(f"  north interior:     {north_int:.6f} (expect > 0, westerly)")
 
     ok = (
         tau_y_max < 1e-15
-        and abs(tau_x_max - tau0) < 1e-10
+        and abs(tau_x_max - tau0) < 1e-2
         and antisym_err < 1e-10
-        and south_mean < 0
-        and north_mean > 0
+        and abs(south_edge) < 1e-12
+        and abs(north_edge) < 1e-12
+        and south_int < 0
+        and north_int > 0
     )
     print(f"  [{'PASS' if ok else 'FAIL'}] forcing field sanity")
     print()
