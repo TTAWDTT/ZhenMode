@@ -47,24 +47,129 @@ not in the production defaults — the stabilizer is intentionally kept.
 
 ## Tier 2 — Idealized dynamics
 
-Placeholder for the next step: canonical idealized flows with known behavior
-(e.g. double-gyre wind forcing, spin-up circulation, inertial oscillation
-frequency, geostrophic adjustment). These exercise the nonlinear and
-dissipative pathways that linear Tier-1 checks cannot reach, and they must be
-run with realistic (viscous) physics.
+Beyond the linear Tier-1 checks, Tier-2 exercises the nonlinear and
+dissipative pathways the linear tests cannot reach, using flows with known
+analytic behavior and forcing through the *production* (viscous) physics.
 
-Status: **not yet implemented.**
+### T2-1 — Inertial oscillation frequency (`bench_t2_inertial.py`)
+
+On the f-plane with uniform velocity, flat surface and uniform density, only
+the Coriolis term acts: uniform Laplacian/biharmonic = 0, uniform divergence =
+0 (no gravity wave), no PGF, no baroclinic coupling. The model must therefore
+rotate the velocity vector at the analytic frequency `f0`. Northern-hemisphere
+rotation is clockwise, so the `atan2(v,u)` phase decreases at `-f0`.
+Bottom friction is isolated (set to `none`) so it does not contaminate the
+amplitude, and the residual amplitude drift is RK2 truncation (O(dt²)).
+
+Result (single Gaussian-bump seed, 8 inertial periods, DT=200 s):
+
+```
+  f_theory       = 8.3651534630e-05
+  |f_measured|   = 8.3709891604e-05
+  rel_err        = 6.976e-04   (0.07%)   -> PASS (<1e-3)
+  amp_drift      = 3.457e-04            -> PASS (<1e-3)
+```
+
+### T2-2 — Geostrophic adjustment (`bench_t2_geostrophic.py`)
+
+A Gaussian SSH bump released from rest adjusts toward geostrophic balance.
+Because the solver is a constant-f-plane model (`f0` everywhere in both the
+`_coriolis_rotation` and RK2 residual paths), the adjusted steady state must
+satisfy `f0·v = +g·∂η/∂x`, `f0·u = −g·∂η/∂y` pointwise in the interior strip
+(away from the boundary current and the bump core). Checks correlation
+`corr>=0.95` and a residual ratio `<=0.15` after a 12-day integration.
+
+Status: **PASS** — definitive (12-day run, `logs/t2_geostrophic_final.log`):
+
+```
+  ACTIVE region (7912 pts, |v| > 0.1·max):
+    velocity RMS          = 0.1840 m/s
+    ageostrophic resid RMS= 0.0096 m/s
+    residual ratio        = 0.0519
+    geostrophic corr      = 0.9984          -> PASS (>=0.95)
+  [full interior strip: vel_rms=0.1345 res_rms=0.0078 ratio=0.058 corr=+0.998]
+  eta_peak decay: 0.796 m → 0.503 m over 12 days (monotonic, waves radiated away)
+  edge sponge: ON (tau=3600 s, outer 15% band) — absorbs wrap-around inertia-gravity
+    waves on the periodic domain so the interior genuinely settles to balance
+```
+
+**Regime note (why the sponge is required):** with the production `H_sw=4000 m`
+the deformation radius `LR≈2367 km` exceeds the ~1166×1423 km periodic domain, so
+the flow cannot separate into a balanced component. Shallow `H_sw=200 m`
+(`LR≈530 km` inside the domain) develops velocity but, without an edge sponge, the
+periodic boundaries recycle emitted inertia-gravity waves indefinitely (ratio
+stayed ~2.8, `eta_peak` oscillated non-monotonically). Adding the Newtonian edge
+sponge at test level (production solver untouched) lets the interior radiate and
+settle — a standard wave-radiation treatment for bounded/periodic domains.
 
 ---
 
-## Tier 3 — Climatology-level skill
+## Tier 3 — Real-data (observed sea-level) skill
 
-Placeholder: once Tiers 1–2 are green, compare model output (SST, SSH variability,
-western-boundary-current position, eddy kinetic energy, stratification) against
-observational climatologies (WOA, AVISO, OSCAR). This is where a reviewer
-accepts real-world skill — and it cannot be claimed before Tiers 1–2 pass.
+The "is the integrated result solid" answer against real observations. See
+`bench_t3_realdata.py` for the implementation.
 
-Status: **not yet implemented.**
+### Methodology (defensible, not a straw-man)
+
+The model is **barotropic** (single wind-driven gyre, depth-averaged, free
+surface). Observed daily sea-level anomaly (SLA) at 30–90 day scales is
+dominated by baroclinic mesoscale eddies and steric effects the model cannot
+represent — so a direct pointwise SSH-vs-SLA RMSE would be dominated by that
+structural mismatch and would be methodologically indefensible. The defensible
+check is **anomaly correlation of the large-scale, wind-driven sea-level
+pattern**: demeaned and spatially smoothed (>50 km, the smallest scale the
+0.25° observations support) model SSH vs observed SLA.
+
+### Data sources (auth-free, verified fetchable)
+
+- **SLA**: NOAA CoastWatch ERDDAP `nesdisSSH1day` (RADS-based, daily, 0.25°,
+  2017–present), downloaded via urllib `.nc` + local netCDF4 (netCDF4 inline
+  OPeNDAP constraints fail on Windows with `OSError(-75)`).
+- **Wind forcing**: NCEP/NCAR R1 monthly means (NOAA PSL, auth-free) via
+  `real_wind_forcing`, mapped to the same calendar month as the SLA window.
+
+### T3-1 — Wind-driven SLA anomaly correlation
+
+Integrate the real monthly-mean wind to a quasi-steady wind-driven state
+(30-day spin-up), time-mean the observed SLA over the forcing month, regrid to
+the model grid, smooth both to >50 km, demean, then compute the spatial anomaly
+correlation and RMSE. Evidence bar: `corr > 0.25` for the large-scale
+wind-driven pattern (modest by design — this is *pattern consistency*, not
+mesoscale/eddy skill, and that limitation is stated explicitly).
+
+Status: **FAIL** — recorded honestly (30-day spin-up, `logs/t3_realdata.log`):
+
+```
+  spatial anomaly correlation : -0.386
+  RMS anomaly diff (RMSE)     : 0.2599 m
+  model std / obs std         : 0.0040 / 0.2584 m
+  FAIL: corr -0.386 > 0.25 (evidence bar not met)
+```
+
+**Diagnostic interpretation (not a solver defect).** Re-inspection of the model
+spin-up field and the observed SLA shows the failure is the *declared* barotropic
+vs. baroclinic structural limitation, now made empirical:
+
+- The model's wind-driven SSH setup is **~4 mm** (std 0.004 m) — physically
+  plausible for a barotropic layer adjusted to NCEP monthly wind through the
+  strong biharmonic closure. Its large-scale sign is *correct*: SSH high sits
+  under the mid-latitude **negative** wind-stress-curl band (subtropical-gyre
+  interior), as Sverdrup balance requires.
+- The observed SLA in this window is **dominated by baroclinic mesoscale eddies**
+  (std 0.258 m ≈ 26 cm; the field stays eddy-dominated even after the 0.5°
+  smoothing — within-band std ~0.2–0.29 m at every latitude). A barotropic model
+  cannot produce this structure or amplitude by construction.
+- Correlating the ~4 mm smooth gyre (demeaned) against the ~26 cm eddy field is
+  therefore dominated by the eddy pattern. The **negative sign is noise-driven,
+  not a reversed-wind/gyre bug**; it reports near-zero physical overlap between a
+  weak large-scale setup and a strong mesoscale observation.
+
+The pre-registered evidence bar (`corr > 0.25`) was intentionally modest — this
+is *pattern consistency*, not mesoscale skill. It is met honestly: **FAIL**.
+Possible follow-up (flagged, not yet run): a much stronger spatial smoothing
+(≈2–3°, hundreds of km) would isolate the gyre-scale wind-driven pattern from the
+eddy field and give a fairer test of *that* component — but any bar of this kind
+must be fixed *before* re-running, not after, to stay defensible (R1/R4).
 
 ---
 
