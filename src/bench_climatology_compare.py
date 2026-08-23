@@ -58,10 +58,13 @@ def zonal_mean(field):
 def smooth_2d(field, grid, deg=2.0):
     """Spatially smooth a 2D (nx,ny) field to >deg degrees (large-scale only).
 
-    Box-mean smoother over a window of ~deg/0.1 = 20 cells. Used to isolate
-    the large-scale pattern from mesoscale noise before pattern comparison.
+    Box-mean smoother over a window sized by the grid spacing (dx~9.1km here,
+    so 2 deg ~ 222km ~ 24 cells). Used to isolate the large-scale pattern from
+    mesoscale noise before pattern comparison.
     """
-    win = max(1, int(round(deg / grid.etopo_resolution)))
+    # 1 deg of latitude ~ 111 km; use mean of dx/dy for the window in cells.
+    cell_km = (grid.dx + grid.dy) / 2.0 / 1000.0
+    win = max(1, int(round(deg * 111.0 / cell_km)))
     f = np.asarray(field, float)
     nx, ny = f.shape
     out = np.empty_like(f)
