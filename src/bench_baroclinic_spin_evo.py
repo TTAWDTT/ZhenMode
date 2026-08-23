@@ -38,7 +38,7 @@ from config import DEFAULT_CONFIG
 from grid import make_grid
 from jax_solver import make_solver
 from forcing import heat_flux_meridional
-from wind_reanalysis import real_wind_forcing
+from wind_reanalysis import real_wind_forcing, daily_wind_forcing
 from woa_data import get_initial_fields
 
 DT = 300.0
@@ -139,6 +139,8 @@ def main():
     ap.add_argument("--pert-amp", type=float, default=0.0,
                     help="mesoscale T perturb (degC) to seed instability; 0 = off")
     ap.add_argument("--pert-seed", type=int, default=0)
+    ap.add_argument("--daily-wind", action="store_true",
+                    help="use daily-climatology wind instead of monthly mean")
     ap.add_argument("--out", default="results/spin_evo_90d.npz")
     args = ap.parse_args()
 
@@ -148,25 +150,56 @@ def main():
 
     y, m = int(args.month[:4]), int(args.month[5:7])
     month_idx = (y - 1948) * 12 + (m - 1)
-    try:
-        tau_x, tau_y = real_wind_forcing(month_idx=month_idx, grid=grid)
-        wind_src = f"real {args.month}"
-    except Exception as e:
-        print(f"  real wind fetch failed ({e!r}); fallback Stommel gyre")
-        from forcing import wind_stress_gyre
-        tau_x, tau_y = wind_stress_gyre(grid, tau0=0.1)
-        wind_src = "stommel"
     Q_heat = heat_flux_meridional(grid, Q0=50.0)
+
+    tau_x = tau_y = tau_x_d = tau_y_d = None
+    use_daily_steps = False
+    if args.daily_wind:
+        try:
+            tau_x_d, tau_y_d = daily_wind_forcing(month=m, grid=grid)
+            wind_src = f"real daily clim {args.month}"
+            use_daily_steps = True
+        except Exception as e:
+            print(f"  daily wind fetch failed ({e!r}); fallback monthly")
+            tau_x, tau_y = real_wind_forcing(month_idx=month_idx, grid=grid)
+            wind_src = f"real {args.month}"
+    else:
+        try:
+            tau_x, tau_y = real_wind_forcing(month_idx=month_idx, grid=grid)
+            wind_src = f"real {args.month}"
+        except Exception as e:
+            print(f"  real wind fetch failed ({e!r}); fallback Stommel gyre")
+            from forcing import wind_stress_gyre
+            tau_x, tau_y = wind_stress_gyre(grid, tau0=0.1)
+            wind_src = "stommel"
 
     physics = replace(DEFAULT_CONFIG.physics, nu_bi=args.nu_bi,
                       kappa_bi=args.nu_bi)
     T_init, S_init = get_initial_fields(grid)
     DT_eff = args.dt
 
-    step, init_state, _ = make_solver(grid, physics, DT_eff,
-                                      forcing=(tau_x, tau_y, Q_heat),
-                                      T_sst=T_init[:, :, 0],
-                                      tau_restore_days=args.tau_restore_days)
+    if use_daily_steps:
+        # Pre-build 31 daily step functions. Each is JIT-compiled for its own
+        # wind snapshot; startup cost is 31 x compile but keeps the core solver
+        # unchanged. We only keep the step closures; init_state comes from the
+        # first make_solver call.
+        print("  building 31 daily-wind step functions (this may take a minute)...")
+        steps_d = []
+        init_state = None
+        for d in range(tau_x_d.shape[0]):
+            step_d, init_state_d, _ = make_solver(grid, physics, DT_eff,
+                                                  forcing=(tau_x_d[d], tau_y_d[d], Q_heat),
+                                                  T_sst=T_init[:, :, 0],
+                                                  tau_restore_days=args.tau_restore_days)
+            if init_state is None:
+                init_state = init_state_d
+            steps_d.append(step_d)
+        step = steps_d[0]
+    else:
+        step, init_state, _ = make_solver(grid, physics, DT_eff,
+                                          forcing=(tau_x, tau_y, Q_heat),
+                                          T_sst=T_init[:, :, 0],
+                                          tau_restore_days=args.tau_restore_days)
     state = init_state(T_init=jnp.array(T_init), S_init=jnp.array(S_init))
     state = inject_perturbation(state, physics, grid, args.pert_amp,
                                 args.pert_seed, dx_m)
@@ -194,7 +227,11 @@ def main():
     while cur < n_total:
         take = min(n_snap, n_total - cur)
         for _ in range(take):
-            state = step(state)
+            if use_daily_steps:
+                day_idx = int((cur * DT_eff) / 86400.0) % tau_x_d.shape[0]
+                state = steps_d[day_idx](state)
+            else:
+                state = step(state)
         cur += take
         day = cur * DT_eff / 86400.0
         eta = np.asarray(state.eta)
