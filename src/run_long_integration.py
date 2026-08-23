@@ -40,6 +40,13 @@ import time
 import argparse
 from dataclasses import replace
 
+# Unbuffered stdout so progress is visible immediately when redirected to a
+# log file (Python defaults to block-buffering when stdout is not a tty).
+try:
+    sys.stdout.reconfigure(line_buffering=True)
+except Exception:
+    pass
+
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 import jax
@@ -117,6 +124,9 @@ def main():
     ap.add_argument("--tag", default=None, help="output file tag")
     ap.add_argument("--out-dir", default="results")
     ap.add_argument("--log-dir", default="logs")
+    ap.add_argument("--save-3d", action="store_true",
+                    help="save 3D T + u,v snapshots (larger npz; needed for "
+                         "full zonal-mean profile + Sverdrup in stage 3)")
     args = ap.parse_args()
 
     if args.days is None:
@@ -224,6 +234,9 @@ def main():
     snap_ke = []
     snap_eta = []          # full eta field at each snapshot (for climatology)
     snap_T_top = []        # surface T field at each snapshot
+    snap_T3d = []          # full 3D T field (only if --save-3d)
+    snap_U = []            # full 3D u field (only if --save-3d)
+    snap_V = []            # full 3D v field (only if --save-3d)
     maxT_history = []      # for monotonic_drift criterion
     max_u_peak = 0.0
     diverged_at = None
@@ -249,6 +262,10 @@ def main():
         snap_ke.append(ke)
         snap_eta.append(eta.copy())
         snap_T_top.append(np.asarray(state.T[:, :, 0]).copy())
+        if args.save_3d:
+            snap_T3d.append(np.asarray(state.T).copy())
+            snap_U.append(np.asarray(state.u).copy())
+            snap_V.append(np.asarray(state.v).copy())
         maxT_history.append(maxT)
         print(f"{day:7.1f} {cur_step:8d} {maxu:9.3f} {maxT:8.3f} "
               f"{maxeta:9.3f} {sshstd:9.4f} {ke:12.4e} {nan:6d}")
@@ -347,7 +364,7 @@ def main():
               f"= {hotspot['T_max_val']:.3f}C")
 
     # ── Save ──
-    np.savez(out_npz,
+    save_dict = dict(
              days=np.array(snap_days),
              max_u=np.array(snap_maxu),
              max_T=np.array(snap_maxT),
@@ -373,6 +390,11 @@ def main():
              config=dict(stage=args.stage, days=args.days, dt=args.dt,
                          nu_bi=args.nu_bi, restore_days=args.restore_days,
                          snap_days=args.snap_days, wind=wind_src))
+    if args.save_3d and snap_T3d:
+        save_dict['T3d'] = np.stack([np.asarray(x) for x in snap_T3d], 0)
+        save_dict['U'] = np.stack([np.asarray(x) for x in snap_U], 0)
+        save_dict['V'] = np.stack([np.asarray(x) for x in snap_V], 0)
+    np.savez(out_npz, **save_dict)
     print(f"  saved {out_npz}")
 
     # also tee the verdict to the log by re-printing (caller redirects stdout)
