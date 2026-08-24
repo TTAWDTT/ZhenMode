@@ -139,6 +139,15 @@ def main():
     os.makedirs(args.log_dir, exist_ok=True)
     out_npz = os.path.join(args.out_dir, f"long_run_{tag}.npz")
     out_log = os.path.join(args.log_dir, f"long_run_{tag}.log")
+    # 3D snapshots are streamed here one file per snapshot (T, U, V stacked),
+    # instead of accumulated in a Python list. A 128x128x14 float64 snapshot
+    # is ~18 MB per field; holding 37 of them x3 fields in memory (~2 GB) is
+    # what OOM'd the process at day 140. Writing each immediately caps memory
+    # at one snapshot regardless of run length.
+    three_d_dir = None
+    if args.save_3d:
+        three_d_dir = os.path.join(args.out_dir, f"long_run_{tag}_3d")
+        os.makedirs(three_d_dir, exist_ok=True)
 
     grid = make_grid(DEFAULT_CONFIG.grid, DEFAULT_CONFIG.bathymetry_file)
     ocean = np.asarray(grid.ocean_mask, dtype=bool)
@@ -231,9 +240,9 @@ def main():
     snap_ke = []
     snap_eta = []          # full eta field at each snapshot (for climatology)
     snap_T_top = []        # surface T field at each snapshot
-    snap_T3d = []          # full 3D T field (only if --save-3d)
-    snap_U = []            # full 3D u field (only if --save-3d)
-    snap_V = []            # full 3D v field (only if --save-3d)
+    # 3D T/u/v are streamed to disk per snapshot (three_d_dir), NOT held here
+    # — accumulating them in a list OOM'd the process on long runs (day 140).
+    n_3d_snaps = 0         # count of streamed 3D snapshots written
     maxT_history = []      # for monotonic_drift criterion
     max_u_peak = 0.0
     diverged_at = None
@@ -260,9 +269,18 @@ def main():
         snap_eta.append(eta.copy())
         snap_T_top.append(np.asarray(state.T[:, :, 0]).copy())
         if args.save_3d:
-            snap_T3d.append(np.asarray(state.T).copy())
-            snap_U.append(np.asarray(state.u).copy())
-            snap_V.append(np.asarray(state.v).copy())
+            # Stream each 3D snapshot to its own .npy immediately so the
+            # process never holds more than one snapshot's worth of 3D
+            # data. File holds a (3, nx, ny, nz) stack of [T, U, V].
+            snap3d = np.stack([
+                np.asarray(state.T).copy(),
+                np.asarray(state.u).copy(),
+                np.asarray(state.v).copy(),
+            ], axis=0)
+            np.save(os.path.join(three_d_dir,
+                                 f"snap_{n_3d_snaps:05d}.npy"), snap3d)
+            del snap3d
+            n_3d_snaps += 1
         maxT_history.append(maxT)
         print(f"{day:7.1f} {cur_step:8d} {maxu:9.3f} {maxT:8.3f} "
               f"{maxeta:9.3f} {sshstd:9.4f} {ke:12.4e} {nan:6d}")
@@ -387,10 +405,13 @@ def main():
              config=dict(stage=args.stage, days=args.days, dt=args.dt,
                          nu_bi=args.nu_bi, restore_days=args.restore_days,
                          snap_days=args.snap_days, wind=wind_src))
-    if args.save_3d and snap_T3d:
-        save_dict['T3d'] = np.stack([np.asarray(x) for x in snap_T3d], 0)
-        save_dict['U'] = np.stack([np.asarray(x) for x in snap_U], 0)
-        save_dict['V'] = np.stack([np.asarray(x) for x in snap_V], 0)
+    if args.save_3d and n_3d_snaps > 0:
+        # 3D snapshots were streamed to three_d_dir/snap_XXXXX.npy (each a
+        # (3,nx,ny,nz) [T,U,V] stack). Record the path + count so downstream
+        # tools (Sverdrup balance) can load them lazily instead of needing
+        # them in the npz (which would double memory at save time).
+        save_dict['three_d_dir'] = np.array(three_d_dir)
+        save_dict['n_3d_snaps'] = np.int64(n_3d_snaps)
     np.savez(out_npz, **save_dict)
     print(f"  saved {out_npz}")
 
