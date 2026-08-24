@@ -363,21 +363,31 @@ def main():
     if diverged_at is not None:
         T_arr = np.asarray(state.T)
         eta_arr = np.asarray(state.eta)
-        # where is the temperature extreme? T_arr is (nx, ny, nz)
-        flat_idx = int(np.nanargmax(np.abs(T_arr)))
-        ix, iy, iz = np.unravel_index(flat_idx, T_arr.shape)
-        hotspot = dict(
-            T_max_loc=(int(ix), int(iy), int(iz)),
-            T_max_val=float(np.nanmax(np.abs(T_arr))),
-            eta_max_loc=tuple(int(a) for a in np.unravel_index(
-                int(np.nanargmax(np.abs(eta_arr))), eta_arr.shape)),
-            lon_at_Tmax=float(grid.lon[ix]),
-            lat_at_Tmax=float(grid.lat[iy]),
-            z_at_Tmax=float(grid.z[iz]),
-        )
-        print(f"  HOTSPOT: T max at (i={ix},j={iy},k={iz}) "
-              f"({grid.lon[ix]:.1f}E,{grid.lat[iy]:.1f}N,z={grid.z[iz]:.0f}m) "
-              f"= {hotspot['T_max_val']:.3f}C")
+        # If the field is fully NaN (explosive blow-up fills everything),
+        # nanargmax raises "All-NaN slice encountered" — guard so the run
+        # still saves its history npz for post-mortem analysis.
+        T_finite = np.isfinite(T_arr).any()
+        eta_finite = np.isfinite(eta_arr).any()
+        if T_finite:
+            flat_idx = int(np.nanargmax(np.abs(T_arr)))
+            ix, iy, iz = np.unravel_index(flat_idx, T_arr.shape)
+            hotspot = dict(
+                T_max_loc=(int(ix), int(iy), int(iz)),
+                T_max_val=float(np.nanmax(np.abs(T_arr))),
+                lon_at_Tmax=float(grid.lon[ix]),
+                lat_at_Tmax=float(grid.lat[iy]),
+                z_at_Tmax=float(grid.z[iz]),
+            )
+            if eta_finite:
+                eflat = int(np.nanargmax(np.abs(eta_arr)))
+                hotspot['eta_max_loc'] = tuple(
+                    int(a) for a in np.unravel_index(eflat, eta_arr.shape))
+            print(f"  HOTSPOT: T max at (i={ix},j={iy},k={iz}) "
+                  f"({grid.lon[ix]:.1f}E,{grid.lat[iy]:.1f}N,z={grid.z[iz]:.0f}m) "
+                  f"= {hotspot['T_max_val']:.3f}C")
+        else:
+            print("  HOTSPOT: field fully NaN (explosive blow-up) — "
+                  "no finite extreme to locate; consult streamed 3D snapshots")
 
     # ── Save ──
     save_dict = dict(
