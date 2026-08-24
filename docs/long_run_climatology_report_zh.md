@@ -76,9 +76,22 @@
 
 ## 阶段 2：365 天年尺度 — 进行中 🔄
 
-**配置**：同阶段 1，但风场改为 **12 个月季节循环**（NCEP 2023 全年，每 30 天切月），snap 10 天。预计 wall ~4.4h。
+**配置**：同阶段 1，但风场改为 **12 个月季节循环**（NCEP 2023 全年，每 30 天切月），snap 10 天，`--save-3d`（存 3D T/u/v 供阶段 3 Sverdrup）。预计 wall ~4.4h。
 
-**早期监控**（day 10）：max|u|=1.254, max|T|=25.44, 0 NaN——与阶段 1 day 10 一致，正常推进。
+### 首次运行：day 20–50 静默崩溃（已修复）
+
+首次 stage-2 跑在 day 20–50 间静默退出（`EXIT=1`，无 traceback、无 NaN、无 npz）。崩溃点不固定（day40–50 / day20–25 两次）→ 非确定性，非数值爆炸。
+
+**根因**：旧版 `run_long_integration.py` 为季节风预编译了 **12 个独立 JIT step 闭包**（每月一个 `make_solver`，各自把当月风场烘焙进 XLA 图作常量），单步 445 MB → 12 步 941 MB+，长时间运行内存累积触发进程级崩溃（系统 31.4 GB 总内存，free 仅 3.3 GB）。阶段 1 用单步（固定 1 月风）跑 90 天稳定，将崩溃隔离到 12-闭包设计而非数值。
+
+**修复**（commit `9113d46`，已合并 main）：forcing 从 JIT 闭包常量改为 step 运行时参数。
+- `jax_solver.py`：新增 `JaxForcing` namedtuple（5 个 forcing 叶子）；`_step_impl(state,p,forcing=None)` 给 forcing 时 `p._replace` 换叶子→动态 JIT 输入，其余常量折叠，内部物理函数全不变；`step(state,forcing=None)` 单参数=烘焙 forcing（所有旧 caller 不变），双参数=单图+forcing 作数据；`make_forcing(grid,...)` 构造 JaxForcing。
+- `run_long_integration.py`：seasonal 路径 build **1 个** solver + 12 个 JaxForcing 数据对象，每步传当月 forcing。单编译图，无内存倍增。
+- **物理等价验证**：动态 vs 静态路径 3 步随机 forcing，max diff 4e-14（浮点 round-off）。pytest 55 passed / 0 failed。15 天 seasonal smoke 跑通，数值与旧多图路径一致（day15 max|u|=1.407, max|T|=26.181）。
+
+### 重启运行（修复后）
+
+修复后从主仓库（main @ 9113d46）重启 365 天跑。单图常驻内存 ~473 MB（vs 旧版 941 MB+），不再倍增。关键里程碑：越过 day 50（旧崩溃窗口上界）即确认修复生效。
 
 **待完成后**：若 PASS，用末 90 天做正式气候态对比（阶段 3 正式版），产出最终报告。
 
