@@ -36,6 +36,25 @@ from config import RHO_0, ALPHA_T, BETA_S, C_P, G_EARTH
 JaxState = namedtuple('JaxState', ['u', 'v', 'T', 'S', 'eta'])
 
 
+# ── Runtime forcing ──────────────────────────────────────────────────
+# A JaxForcing carries the five forcing leaves that, in the static
+# (baked-in) path, live inside SolverParams and are captured as XLA
+# constants by the JIT closure. Passing a JaxForcing to step(state, jf)
+# makes those leaves *dynamic* inputs to a single JIT graph instead —
+# so a long seasonal run can swap wind/heat fields each month without
+# re-compiling or holding 12 separate compiled graphs in memory (the
+# mechanism behind the stage-2 12-step memory-multiplication crash).
+#
+# F_bt_{x,y}_hat are the FFTs of the barotropic wind body force
+# tau/(rho0*H_sw); they are derived from tau_{x,y} but kept pre-FFT'd
+# here so the free-surface step stays a single spectral multiply.
+
+JaxForcing = namedtuple('JaxForcing', [
+    'tau_x', 'tau_y', 'Q_heat',          # (nx, ny) physical-space forcing
+    'F_bt_x_hat', 'F_bt_y_hat',          # (nx, ny) spectral barotropic wind
+])
+
+
 # ── Solver parameters ────────────────────────────────────────────────
 # All pre-computed static data. When captured in @jax.jit closure,
 # XLA treats these as constants and constant-folds them.
@@ -872,8 +891,22 @@ def _explicit_full_step(state, p, dt):
     return JaxState(u_new, v_new, T_new, S_new, state.eta)
 
 
-def _step_impl(state, p):
-    """Strang splitting: L(dt/2) -> N(dt) -> L(dt/2)."""
+def _step_impl(state, p, forcing=None):
+    """Strang splitting: L(dt/2) -> N(dt) -> L(dt/2).
+
+    If ``forcing`` (a JaxForcing) is given, the five forcing leaves of
+    ``p`` are replaced by its values for this step — making them dynamic
+    JIT inputs rather than baked-in constants. The physics is identical;
+    only the parameter plumbing differs. When ``forcing`` is None the
+    forcing baked into ``p`` at make_solver time is used (the original
+    behavior and the path every existing caller takes).
+    """
+    if forcing is not None:
+        p = p._replace(
+            tau_x_2d=forcing.tau_x, tau_y_2d=forcing.tau_y,
+            Q_heat_2d=forcing.Q_heat,
+            F_bt_x_hat=forcing.F_bt_x_hat, F_bt_y_hat=forcing.F_bt_y_hat,
+        )
     dt_half = p.dt / 2.0
     state = _linear_half_step(state, p, dt_half)
     state = _explicit_full_step(state, p, p.dt)
@@ -909,7 +942,12 @@ def make_solver(grid, physics, dt, forcing=None, eos_type='linear',
             0 (default) disables restoring.
 
     Returns:
-        step_fn: JIT-compiled (state: JaxState) -> JaxState
+        step_fn: JIT-compiled (state: JaxState, forcing: JaxForcing=None) -> JaxState
+            With one argument this is the original baked-in-forcing step
+            (every existing caller). Passing a JaxForcing as the second
+            argument drives a single compiled graph with that forcing as
+            data — the path long seasonal runs use to swap wind/heat
+            monthly without re-compiling.
         init_state: (T_init=None, S_init=None) -> JaxState
             If T_init/S_init are provided (e.g., from WOA climatology),
              they override uniform T_ref/S_ref.
@@ -919,8 +957,8 @@ def make_solver(grid, physics, dt, forcing=None, eos_type='linear',
                              T_sst=T_sst, tau_restore_days=tau_restore_days)
 
     @jax.jit
-    def step(state):
-        return _step_impl(state, params)
+    def step(state, forcing=None):
+        return _step_impl(state, params, forcing)
 
     @jax.jit
     def diagnostics(state):
@@ -934,6 +972,35 @@ def make_solver(grid, physics, dt, forcing=None, eos_type='linear',
         return _init_state(grid, physics, T_init, S_init)
 
     return step, init_state, diagnostics
+
+
+def make_forcing(grid, tau_x, tau_y, Q_heat):
+    """Build a JaxForcing from physical-space wind-stress + heat-flux fields.
+
+    This is the runtime counterpart to the forcing baked into SolverParams
+    by _compute_params: it pre-FFTs the barotropic wind body force
+    tau/(rho_0*H_sw) so the free-surface step stays a single spectral
+    multiply, exactly as in the static path. Callers with a monthly cycle
+    build one JaxForcing per month and pass the current one to
+    step(state, forcing) — a single compiled graph, no per-month JIT.
+
+    Args:
+        grid: OceanGrid (used only for the effective shallow-water depth
+            H_sw = sum(dz), the same quantity _compute_params bakes in).
+        tau_x, tau_y: (nx, ny) wind stress [N/m^2] (numpy or jax arrays).
+        Q_heat: (nx, ny) surface heat flux [W/m^2].
+    """
+    H_sw = float(jnp.sum(jnp.asarray(grid.dz)))
+    tau_x = jnp.asarray(tau_x)
+    tau_y = jnp.asarray(tau_y)
+    Q_heat = jnp.asarray(Q_heat)
+    F_bt_x = tau_x / (RHO_0 * H_sw)
+    F_bt_y = tau_y / (RHO_0 * H_sw)
+    return JaxForcing(
+        tau_x=tau_x, tau_y=tau_y, Q_heat=Q_heat,
+        F_bt_x_hat=jnp.fft.fft2(F_bt_x),
+        F_bt_y_hat=jnp.fft.fft2(F_bt_y),
+    )
 
 
 # ── Benchmark ────────────────────────────────────────────────────────

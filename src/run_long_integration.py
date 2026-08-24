@@ -56,7 +56,7 @@ import numpy as np
 
 from config import DEFAULT_CONFIG
 from grid import make_grid
-from jax_solver import make_solver
+from jax_solver import make_solver, make_forcing
 from forcing import heat_flux_meridional
 from wind_reanalysis import real_wind_forcing
 from woa_data import get_initial_fields
@@ -158,7 +158,6 @@ def main():
 
     # ── Wind forcing ──
     seasonal = args.seasonal_wind
-    wind_steps = None
     if seasonal:
         print(f"Loading 12 monthly NCEP wind snapshots (year {args.wind_year})...")
         try:
@@ -173,24 +172,22 @@ def main():
         tau_x, tau_y = real_wind_forcing(month_idx=month_idx, grid=grid)
         wind_src = f"fixed {args.month} (NCEP R1)"
 
-    # ── Build solver(s) ──
-    # For seasonal wind we pre-build 12 JIT step closures (one per month),
-    # each capturing its own wind snapshot as an XLA constant. For fixed wind
-    # we build one. init_state comes from the first make_solver call.
+    # ── Build solver ──
+    # A SINGLE compiled step graph is used for the whole run, whether the
+    # wind is fixed or seasonal. For seasonal wind the 12 monthly snapshots
+    # become JaxForcing data objects swapped at runtime (step(state, jf)),
+    # not 12 separate JIT closures — the earlier 12-closure design multiplied
+    # XLA memory 12× and silently crashed the process mid-run (see
+    # docs/long_run_climatology_report_zh.md, stage 2). Physically identical:
+    # verified to round-off against the baked-in path.
     T_sst = T_init[:, :, 0]
     if seasonal:
-        print("  building 12 monthly step functions (JIT compile, may take a minute)...")
-        wind_steps = []
-        init_state = None
-        for mi, (tx, ty) in enumerate(wind_months):
-            s, init_s, _ = make_solver(grid, physics, args.dt,
-                                       forcing=(tx, ty, Q_heat),
-                                       T_sst=T_sst,
-                                       tau_restore_days=args.restore_days)
-            wind_steps.append(s)
-            if init_state is None:
-                init_state = init_s
-        step = wind_steps[0]
+        step, init_state, _ = make_solver(grid, physics, args.dt,
+                                          forcing=None,
+                                          T_sst=T_sst,
+                                          tau_restore_days=args.restore_days)
+        wind_forcings = [make_forcing(grid, tx, ty, Q_heat)
+                         for (tx, ty) in wind_months]
     else:
         step, init_state, _ = make_solver(grid, physics, args.dt,
                                           forcing=(tau_x, tau_y, Q_heat),
@@ -280,7 +277,7 @@ def main():
                 # cycle monthly wind: which month does the current step fall in?
                 day_idx = int((cur * args.dt) / 86400.0)
                 mi = (day_idx // 30) % 12
-                state = wind_steps[mi](state)
+                state = step(state, wind_forcings[mi])
             else:
                 state = step(state)
             cur += 1
