@@ -252,6 +252,7 @@ def main():
 
     # initial snapshot
     def snapshot(cur_step):
+        nonlocal n_3d_snaps
         day = cur_step * args.dt / 86400.0
         eta = np.asarray(state.eta)
         maxu = float(np.max(np.abs(np.asarray(state.u))))
