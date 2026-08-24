@@ -105,11 +105,17 @@ SolverParams = namedtuple('SolverParams', [
     # Surface temperature restoring (Haney relaxation)
     'T_sst_3d',                   # (nx,ny,1) restoring target (upper level T)
     'restore_coef_T',             # 1/tau_restore [1/s]; 0 disables restoring
+    # Lateral sponge layer (Rayleigh damping at periodic boundaries)
+    'sponge_rate',                # (nx,ny,1) Rayleigh damping rate [1/s]; 0 interior
+    'sponge_rate_2d',             # (nx,ny) 2D damping for free-surface step
+    'T_clim_3d',                  # (nx,ny,nz) T climatology to relax toward in sponge
+    'S_clim_3d',                  # (nx,ny,nz) S climatology to relax toward in sponge
 ])
 
 
 def _compute_params(grid, physics, dt, forcing=None, eos_type='linear',
-                    T_sst=None, tau_restore_days=0.0):
+                    T_sst=None, tau_restore_days=0.0,
+                    sponge_days=0.0, sponge_cells=0, T_init=None, S_init=None):
     """Pre-compute all static JAX arrays from grid and physics.
 
     Args:
@@ -122,6 +128,14 @@ def _compute_params(grid, physics, dt, forcing=None, eos_type='linear',
             temperatures [degC]. If None, restoring is disabled.
         tau_restore_days: restoring timescale in days. Must be > 0
             together with T_sst for restoring to activate. 0 disables.
+        sponge_days: Rayleigh damping timescale [days] in the lateral
+            sponge band. 0 disables the sponge entirely (default).
+        sponge_cells: half-width of the sponge band at each N/S boundary
+            [grid points]. 0 disables. Damping is maximal at the edge,
+            cosine-tapered to 0 at sponge_cells into the interior.
+        T_init, S_init: optional (nx,ny,nz) initial/climatological T/S
+            fields the sponge relaxes tracers toward. If None, the sponge
+            only damps velocity (no tracer relaxation).
     """
     nx, ny, nz = grid.nx, grid.ny, grid.nz
     dx, dy = grid.dx, grid.dy
@@ -242,6 +256,40 @@ def _compute_params(grid, physics, dt, forcing=None, eos_type='linear',
         restore_coef_T = 0.0
         T_sst_3d = jnp.zeros((nx, ny, 1))
 
+    # ── Lateral sponge layer (Rayleigh damping at periodic boundaries) ──
+    # The pseudo-spectral solver uses jnp.fft.fftfreq → doubly-periodic BC.
+    # On a regional domain, wind-driven flow piles up against the implicit
+    # periodic boundaries with nothing to absorb it — the N/S edges
+    # accumulate ~9x the interior KE and blow up at month transitions (day
+    # 140-150). A Rayleigh sponge in a boundary band damps velocity/eta back
+    # to rest and relaxes tracers to climatology, absorbing the trapped
+    # energy the same way a real open boundary would. cosine-tapered so the
+    # damping is smooth (no new spectral discontinuity). sponge_days<=0 or
+    # sponge_cells<=0 disables it entirely (all-zero field).
+    if sponge_days > 0.0 and sponge_cells > 0:
+        r_max = 1.0 / (sponge_days * 86400.0)
+        nc = int(sponge_cells)
+        # cosine taper: 1 at edge (j=0), 0 at j=nc into the interior
+        j = np.arange(ny)
+        taper = np.zeros(ny)
+        edge = np.minimum(j, ny - 1 - j)  # distance to nearest edge
+        in_band = edge < nc
+        taper[in_band] = 0.5 * (1.0 + np.cos(np.pi * edge[in_band] / nc))
+        sponge_2d_np = (r_max * taper).reshape(1, ny)  # (1, ny), broadcast over x
+        sponge_rate_2d = jnp.array(np.broadcast_to(sponge_2d_np, (nx, ny)))
+        sponge_rate = sponge_rate_2d[:, :, None]  # (nx, ny, 1)
+        if T_init is not None:
+            T_clim_3d = jnp.array(T_init)
+            S_clim_3d = jnp.array(S_init) if S_init is not None else jnp.zeros_like(T_clim_3d)
+        else:
+            T_clim_3d = jnp.zeros((nx, ny, nz))
+            S_clim_3d = jnp.zeros((nx, ny, nz))
+    else:
+        sponge_rate_2d = jnp.zeros((nx, ny))
+        sponge_rate = jnp.zeros((nx, ny, 1))
+        T_clim_3d = jnp.zeros((nx, ny, nz))
+        S_clim_3d = jnp.zeros((nx, ny, nz))
+
     return SolverParams(
         kx=kx, ky=ky, k2=k2, k4=k4,
         dealias_2d=dealias_2d,
@@ -272,6 +320,8 @@ def _compute_params(grid, physics, dt, forcing=None, eos_type='linear',
         smag_cs=physics.smag_cs,
         dx=dx,
         T_sst_3d=T_sst_3d, restore_coef_T=restore_coef_T,
+        sponge_rate=sponge_rate, sponge_rate_2d=sponge_rate_2d,
+        T_clim_3d=T_clim_3d, S_clim_3d=S_clim_3d,
     )
 
 
@@ -592,8 +642,14 @@ def _compute_momentum_tendency(state, p):
         bot_u = -p.r_bot * state.u * p.bottom_mask
         bot_v = -p.r_bot * state.v * p.bottom_mask
 
-    dudt = adv_u + cor_u + pgf_x + diff_h_u + diff_v_u + wind_u + bot_u
-    dvdt = adv_v + cor_v + pgf_y + diff_h_v + diff_v_v + wind_v + bot_v
+    # Lateral sponge (Rayleigh damping) — absorbs boundary-trapped energy
+    # that the periodic spectral BC cannot. sponge_rate is 0 in the interior
+    # so this term vanishes there (baseline behavior unchanged).
+    sponge_u = -p.sponge_rate * state.u
+    sponge_v = -p.sponge_rate * state.v
+
+    dudt = adv_u + cor_u + pgf_x + diff_h_u + diff_v_u + wind_u + bot_u + sponge_u
+    dvdt = adv_v + cor_v + pgf_y + diff_h_v + diff_v_v + wind_v + bot_v + sponge_v
     return dudt, dvdt
 
 
@@ -632,8 +688,14 @@ def _compute_tracer_tendency(state, p):
     # (default), this term vanishes so the baseline behavior is unchanged.
     restore_T = p.restore_coef_T * (p.T_sst_3d - state.T[:, :, 0:1]) * p.surface_mask
 
-    dTdt = adv_T + diff_h_T + diff_v_T + heat_T + restore_T + conv_T
-    dSdt = adv_S + diff_h_S + diff_v_S + conv_S
+    # Lateral sponge: Newtonian relaxation of T/S toward climatology in the
+    # boundary band. Prevents the warm-water pump at the periodic edges.
+    # sponge_rate is 0 in the interior (no effect there).
+    sponge_T = p.sponge_rate * (p.T_clim_3d - state.T)
+    sponge_S = p.sponge_rate * (p.S_clim_3d - state.S)
+
+    dTdt = adv_T + diff_h_T + diff_v_T + heat_T + restore_T + conv_T + sponge_T
+    dSdt = adv_S + diff_h_S + diff_v_S + conv_S + sponge_S
     return dTdt, dSdt
 
 
@@ -760,6 +822,18 @@ def _free_surface_step(eta, u, v, p, F_rho_x=None, F_rho_y=None):
     eta_new = jnp.real(jnp.fft.ifft2(eta_hat_new))
     ubt_new = jnp.real(jnp.fft.ifft2(ubt_hat_new))
     vbt_new = jnp.real(jnp.fft.ifft2(vbt_hat_new))
+
+    # ── Lateral sponge on the free surface ──
+    # The exact SW solve conserves eta/ubt/vbt globally (k=0 mode =
+    # identity), so boundary-trapped surface elevation has no dissipation
+    # path and climbs until blow-up (eta 0.89→1.19 over day 90→130 in the
+    # failed run). Rayleigh-damp eta and barotropic velocity toward rest in
+    # the sponge band, exactly integrated over dt_half: x *= exp(-r*dt).
+    # sponge_rate_2d is 0 in the interior so the SW solution is untouched there.
+    sw_sponge_decay = jnp.exp(-p.sponge_rate_2d * dt_half)
+    eta_new = eta_new * sw_sponge_decay
+    ubt_new = ubt_new * sw_sponge_decay
+    vbt_new = vbt_new * sw_sponge_decay
 
     # Project barotropic delta back to 3D velocity (uniform over depth)
     delta_ubt = (ubt_new - ubt)[:, :, None]
@@ -917,7 +991,8 @@ def _step_impl(state, p, forcing=None):
 # ── Public API ───────────────────────────────────────────────────────
 
 def make_solver(grid, physics, dt, forcing=None, eos_type='linear',
-                T_sst=None, tau_restore_days=0.0):
+                T_sst=None, tau_restore_days=0.0,
+                sponge_days=0.0, sponge_cells=0, T_init=None, S_init=None):
     """
     Create a JIT-compiled ocean solver.
 
@@ -940,6 +1015,12 @@ def make_solver(grid, physics, dt, forcing=None, eos_type='linear',
         tau_restore_days: restoring timescale in days (Haney / Rayleigh
             relaxation). Must be > 0 together with T_sst to activate.
             0 (default) disables restoring.
+        sponge_days: Rayleigh damping timescale [days] in the lateral
+            sponge band at the N/S periodic boundaries. 0 disables.
+        sponge_cells: half-width of the sponge band [grid points]. 0 disables.
+        T_init, S_init: (nx,ny,nz) climatology the sponge relaxes tracers
+            toward in the boundary band. Required for tracer relaxation;
+            if None only velocity/eta are damped.
 
     Returns:
         step_fn: JIT-compiled (state: JaxState, forcing: JaxForcing=None) -> JaxState
@@ -954,7 +1035,9 @@ def make_solver(grid, physics, dt, forcing=None, eos_type='linear',
         diagnostics: JIT-compiled (state) -> (rho, pressure, w)
     """
     params = _compute_params(grid, physics, dt, forcing=forcing, eos_type=eos_type,
-                             T_sst=T_sst, tau_restore_days=tau_restore_days)
+                             T_sst=T_sst, tau_restore_days=tau_restore_days,
+                             sponge_days=sponge_days, sponge_cells=sponge_cells,
+                             T_init=T_init, S_init=S_init)
 
     @jax.jit
     def step(state, forcing=None):

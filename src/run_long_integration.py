@@ -69,6 +69,12 @@ AMPLITUDE_CAP_C = 12.0      # C, absolute ceiling above init max (true runaway)
 ETA_BLOWUP_M = 3.0          # m, divergence watchdog (real eddies << 1.5 m)
 RESTORE_DAYS_DEFAULT = 5.0  # Haney SST restoring (3rd-blowup-fix anchor)
 NU_BI_DEFAULT = 1e12        # production default (do not change in experiments)
+# Lateral sponge at the N/S periodic boundaries — absorbs the boundary-
+# trapped energy that the doubly-periodic spectral BC cannot, the root
+# cause of the day-140/150 blow-ups (KE at N-edge = 8.7x interior). 5-day
+# damping over an 8-cell cosine-tapered band; 0/0 = disabled (baseline).
+SPONGE_DAYS_DEFAULT = 5.0   # Rayleigh damping timescale in the sponge band
+SPONGE_CELLS_DEFAULT = 8    # half-width of the N/S sponge band (grid points)
 
 
 def state_is_finite(state):
@@ -159,6 +165,13 @@ def main():
     ap.add_argument("--dt", type=float, default=DT_DEFAULT)
     ap.add_argument("--nu-bi", type=float, default=NU_BI_DEFAULT)
     ap.add_argument("--restore-days", type=float, default=RESTORE_DAYS_DEFAULT)
+    ap.add_argument("--sponge-days", type=float, default=SPONGE_DAYS_DEFAULT,
+                    help="Rayleigh damping timescale [days] in the N/S boundary "
+                         "sponge band (0 = disabled). Absorbs the boundary-"
+                         "trapped energy from the doubly-periodic spectral BC.")
+    ap.add_argument("--sponge-cells", type=int, default=SPONGE_CELLS_DEFAULT,
+                    help="half-width of the N/S sponge band [grid points] "
+                         "(0 = disabled). cosine-tapered into the interior.")
     ap.add_argument("--snap-days", type=float, default=10.0,
                     help="snapshot/monitor interval in days")
     ap.add_argument("--seasonal-wind", action="store_true",
@@ -240,18 +253,27 @@ def main():
     # docs/long_run_climatology_report_zh.md, stage 2). Physically identical:
     # verified to round-off against the baked-in path.
     T_sst = T_init[:, :, 0]
+    # Pass the full 3D initial T/S as the sponge-zone climatology so the
+    # lateral sponge relaxes boundary tracers toward the WOA initial state
+    # (the only "climatology" we have in-process) rather than to zero.
     if seasonal:
         step, init_state, _ = make_solver(grid, physics, args.dt,
                                           forcing=None,
                                           T_sst=T_sst,
-                                          tau_restore_days=args.restore_days)
+                                          tau_restore_days=args.restore_days,
+                                          sponge_days=args.sponge_days,
+                                          sponge_cells=args.sponge_cells,
+                                          T_init=T_init, S_init=S_init)
         wind_forcings = [make_forcing(grid, tx, ty, Q_heat)
                          for (tx, ty) in wind_months]
     else:
         step, init_state, _ = make_solver(grid, physics, args.dt,
                                           forcing=(tau_x, tau_y, Q_heat),
                                           T_sst=T_sst,
-                                          tau_restore_days=args.restore_days)
+                                          tau_restore_days=args.restore_days,
+                                          sponge_days=args.sponge_days,
+                                          sponge_cells=args.sponge_cells,
+                                          T_init=T_init, S_init=S_init)
     state = init_state(T_init=jnp.array(T_init), S_init=jnp.array(S_init))
 
     n_total = int(round(args.days * 86400.0 / args.dt))
@@ -275,6 +297,12 @@ def main():
                       f"each month boundary (removes month-step discontinuity)")
     elif seasonal:
         header.append("wind blend: NONE (step/discontinuous at month boundaries)")
+    if args.sponge_days > 0 and args.sponge_cells > 0:
+        header.append(f"sponge: {args.sponge_cells}-cell N/S band, "
+                      f"Rayleigh tau={args.sponge_days:g}d "
+                      f"(absorbs periodic-BC boundary energy)")
+    else:
+        header.append("sponge: NONE (periodic-BC boundary energy unabsorbed)")
     header.append(f"init: T_init_max={T_init_max:.2f}C  "
                   f"amplitude_cap={T_init_max + AMPLITUDE_CAP_C:.2f}C")
     header.append(f"criteria: max|u|<{MAX_U_BOUND}  drift_tol={DRIFT_TOL_C}C  "
@@ -483,6 +511,7 @@ def main():
              hotspot_z=np.float64(hotspot.get('z_at_Tmax', 0.0)),
              config=dict(stage=args.stage, days=args.days, dt=args.dt,
                          nu_bi=args.nu_bi, restore_days=args.restore_days,
+                         sponge_days=args.sponge_days, sponge_cells=args.sponge_cells,
                          snap_days=args.snap_days, wind=wind_src))
     if args.save_3d and n_3d_snaps > 0:
         # 3D snapshots were streamed to three_d_dir/snap_XXXXX.npy (each a
