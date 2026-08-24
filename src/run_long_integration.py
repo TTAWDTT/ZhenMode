@@ -105,6 +105,51 @@ def build_seasonal_wind(grid, year=2023, taper_cells=8):
     return months
 
 
+def interp_seasonal_wind(wind_months, day, blend_days=5.0):
+    """Linearly blend monthly wind-stress snapshots near month boundaries.
+
+    The raw seasonal cycle is a piecewise-step function: tau snaps
+    instantaneously from month m to month m+1 at each 30-day boundary.
+    That artificial discontinuity excited a boundary spectral instability
+    that blew the run up at day 150 (a month boundary). Real wind doesn't
+    step, so we linearly interpolate across a `blend_days` window centered
+    on each boundary.
+
+    Within a month's interior (>|blend_days/2| from either edge) the wind is
+    exactly that month's snapshot. In the blend window straddling the
+    boundary between month m and m+1, tau = (1-w)*tau_m + w*tau_{m+1} where
+    w ramps 0->1 across the window. The year wraps (Dec->Jan).
+
+    `day` is the fractional day-of-year (0..365). Returns (tau_x, tau_y)
+    as numpy arrays (NOT yet FFT'd / wrapped in JaxForcing).
+    """
+    month_len = 30.0
+    # position within the 30-day month [0, 30)
+    mpos = day % month_len
+    mi = int(day // month_len) % 12
+    half = blend_days / 2.0
+    if blend_days <= 0.0 or mpos >= half and mpos <= month_len - half:
+        # interior of the month — pure snapshot, no blend
+        return wind_months[mi]
+    if mpos < half:
+        # blend window before month start: between month (mi-1) and mi
+        # w goes 0 (at mpos=month_len-half, i.e. end of prev month) ... but
+        # mpos here is small (just after boundary) -> w near 1 (mostly mi)
+        # Re-express: distance into the window from the boundary (mpos=0)
+        w = (half + mpos) / blend_days  # 0.5 at boundary, 1 at mpos=half
+        prev = wind_months[(mi - 1) % 12]
+        cur = wind_months[mi]
+        return ((1.0 - w) * prev[0] + w * cur[0],
+                (1.0 - w) * prev[1] + w * cur[1])
+    # mpos > month_len - half: blend window before next month boundary
+    # w goes 0 (at mpos=month_len-half) -> 1 (at mpos=month_len, =next mi+1)
+    w = (mpos - (month_len - half)) / blend_days
+    cur = wind_months[mi]
+    nxt = wind_months[(mi + 1) % 12]
+    return ((1.0 - w) * cur[0] + w * nxt[0],
+            (1.0 - w) * cur[1] + w * nxt[1])
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--stage", type=int, default=1, choices=[1, 2],
@@ -119,6 +164,11 @@ def main():
     ap.add_argument("--seasonal-wind", action="store_true",
                     help="cycle 12 monthly NCEP wind snapshots (stage 2)")
     ap.add_argument("--wind-year", type=int, default=2023)
+    ap.add_argument("--wind-blend-days", type=float, default=0.0,
+                    help="linear-blend window (days) at each month boundary "
+                         "for seasonal wind (0 = step/discontinuous, the old "
+                         "behavior; 5 recommended — removes the artificial "
+                         "month-step that destabilized the N-edge)")
     ap.add_argument("--month", default="2023-01",
                     help="fixed wind month for stage 1 (YYYY-MM)")
     ap.add_argument("--tag", default=None, help="output file tag")
@@ -220,6 +270,11 @@ def main():
     header.append(f"physics: nu_bi={args.nu_bi:g}  kappa_conv={physics.kappa_conv}  "
                   f"restore={args.restore_days:g}d")
     header.append(f"wind: {wind_src}")
+    if seasonal and args.wind_blend_days > 0:
+        header.append(f"wind blend: {args.wind_blend_days:g}d linear window at "
+                      f"each month boundary (removes month-step discontinuity)")
+    elif seasonal:
+        header.append("wind blend: NONE (step/discontinuous at month boundaries)")
     header.append(f"init: T_init_max={T_init_max:.2f}C  "
                   f"amplitude_cap={T_init_max + AMPLITUDE_CAP_C:.2f}C")
     header.append(f"criteria: max|u|<{MAX_U_BOUND}  drift_tol={DRIFT_TOL_C}C  "
@@ -289,14 +344,27 @@ def main():
 
     maxu, maxeta, nan = snapshot(0)
 
+    # When wind blending is off, use pre-built monthly JaxForcing objects
+    # (no per-step FFT). When blending is on, the interpolated wind changes
+    # every step inside a blend window, so we rebuild the JaxForcing each
+    # step there (make_forcing = 2 FFTs of a 128x128 field, cheap vs a step).
+    blend = args.wind_blend_days if seasonal else 0.0
+
     while cur < n_total:
         take = min(n_snap, n_total - cur)
         for _ in range(take):
             if seasonal:
-                # cycle monthly wind: which month does the current step fall in?
-                day_idx = int((cur * args.dt) / 86400.0)
-                mi = (day_idx // 30) % 12
-                state = step(state, wind_forcings[mi])
+                if blend > 0.0:
+                    # fractional day-of-year for this step's midpoint
+                    day_frac = (cur + 0.5) * args.dt / 86400.0
+                    tx, ty = interp_seasonal_wind(wind_months, day_frac, blend)
+                    jf = make_forcing(grid, tx, ty, Q_heat)
+                    state = step(state, jf)
+                else:
+                    # old behavior: hard month-step
+                    day_idx = int((cur * args.dt) / 86400.0)
+                    mi = (day_idx // 30) % 12
+                    state = step(state, wind_forcings[mi])
             else:
                 state = step(state)
             cur += 1
