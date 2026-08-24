@@ -34,6 +34,27 @@ from config import RHO_0, ALPHA_T, BETA_S, C_P, G_EARTH
 TorchState = namedtuple('TorchState', ['u', 'v', 'T', 'S', 'eta'])
 
 
+# ── Runtime forcing ──────────────────────────────────────────────────
+# TorchForcing is the PyTorch counterpart of jax_solver.JaxForcing. It
+# carries the five forcing leaves that, in the baked-in path, live inside
+# SolverParams. Passing a TorchForcing to step(state, forcing) swaps those
+# leaves for this step's wind/heat — so a long seasonal run can swap
+# forcing fields each month without re-capturing parameters or holding one
+# parameter set per month. Torch has no JIT-closure constant-capture to
+# multiply memory (the jax stage-2 crash driver), so this is purely an
+# interface-parity port for cross-validation between the two backends; the
+# physics is identical either way (verified to round-off against the
+# baked-in path, matching the jax dynamic-vs-static equivalence at 4e-14).
+#
+# F_bt_{x,y}_hat are the FFTs of the barotropic wind body force
+# tau/(rho0*H_sw); kept pre-FFT'd so the free-surface step stays a single
+# spectral multiply, exactly as _compute_params does in the static path.
+TorchForcing = namedtuple('TorchForcing', [
+    'tau_x', 'tau_y', 'Q_heat',          # (nx, ny) physical-space forcing
+    'F_bt_x_hat', 'F_bt_y_hat',          # (nx, ny) spectral barotropic wind
+])
+
+
 # ── Solver parameters (mirrors JAX SolverParams) ─────────────────────
 SolverParams = namedtuple('SolverParams', [
     'kx', 'ky', 'k2',              # (nx,1,1), (1,ny,1), (nx,ny,1)
@@ -609,7 +630,23 @@ def _explicit_full_step(state, p, dt):
     return TorchState(u_new, v_new, T_new, S_new, state.eta)
 
 
-def _step_impl(state, p):
+def _step_impl(state, p, forcing=None):
+    """Strang splitting: L(dt/2) -> N(dt) -> L(dt/2).
+
+    If ``forcing`` (a TorchForcing) is given, the five forcing leaves of
+    ``p`` are replaced by its values for this step — making the wind/heat
+    fields per-step data rather than the values baked into ``p`` at
+    make_solver time. The physics is identical; only the parameter
+    plumbing differs. When ``forcing`` is None the forcing baked into ``p``
+    is used (the original behavior and the path every existing caller
+    takes). This mirrors jax_solver._step_impl's dynamic-forcing path.
+    """
+    if forcing is not None:
+        p = p._replace(
+            tau_x_2d=forcing.tau_x, tau_y_2d=forcing.tau_y,
+            Q_heat_2d=forcing.Q_heat,
+            F_bt_x_hat=forcing.F_bt_x_hat, F_bt_y_hat=forcing.F_bt_y_hat,
+        )
     dt_half = p.dt / 2.0
     state = _linear_half_step(state, p, dt_half)
     state = _explicit_full_step(state, p, p.dt)
@@ -626,13 +663,22 @@ def make_solver(grid, physics, dt, forcing=None, eos_type='linear',
     Mirrors jax_solver.make_solver. If compile=True, torch.compile is
     applied to the full step (falling back to eager if unavailable).
 
-    Returns: step_fn, init_state, diagnostics
+    Returns:
+        step_fn: (state: TorchState, forcing: TorchForcing=None) -> TorchState
+            With one argument this uses the forcing baked into ``params``
+            at make_solver time (every existing caller). Passing a
+            TorchForcing as the second argument swaps the wind/heat leaves
+            for that step — the path long seasonal runs use to cycle
+            forcing without re-capturing parameters (mirrors the jax
+            dynamic-forcing fix for the stage-2 12-graph memory crash).
+        init_state: (T_init=None, S_init=None) -> TorchState
+        diagnostics: (state) -> (rho, pressure, w)
     """
     params = _compute_params(grid, physics, dt, forcing=forcing,
                              eos_type=eos_type)
 
-    def step(state):
-        return _step_impl(state, params)
+    def step(state, forcing=None):
+        return _step_impl(state, params, forcing)
 
     if compile:
         try:
@@ -651,6 +697,37 @@ def make_solver(grid, physics, dt, forcing=None, eos_type='linear',
         return _init_state(grid, physics, T_init, S_init)
 
     return step, init_state, diagnostics
+
+
+def make_forcing(grid, tau_x, tau_y, Q_heat):
+    """Build a TorchForcing from physical-space wind-stress + heat-flux fields.
+
+    This is the runtime counterpart to the forcing baked into SolverParams
+    by _compute_params: it pre-FFTs the barotropic wind body force
+    tau/(rho_0*H_sw) so the free-surface step stays a single spectral
+    multiply, exactly as in the static path. Callers with a monthly cycle
+    build one TorchForcing per month and pass the current one to
+    step(state, forcing) — no per-month parameter capture. Mirrors
+    jax_solver.make_forcing field-for-field so the two backends' runtime
+    forcing objects are interchangeable in shape and meaning.
+
+    Args:
+        grid: OceanGrid (used only for the effective shallow-water depth
+            H_sw = sum(dz), the same quantity _compute_params bakes in).
+        tau_x, tau_y: (nx, ny) wind stress [N/m^2] (numpy or torch arrays).
+        Q_heat: (nx, ny) surface heat flux [W/m^2].
+    """
+    H_sw = float(torch.sum(_t(grid.dz)))
+    tau_x = _t(tau_x)
+    tau_y = _t(tau_y)
+    Q_heat = _t(Q_heat)
+    F_bt_x = tau_x / (RHO_0 * H_sw)
+    F_bt_y = tau_y / (RHO_0 * H_sw)
+    return TorchForcing(
+        tau_x=tau_x, tau_y=tau_y, Q_heat=Q_heat,
+        F_bt_x_hat=torch.fft.fft2(F_bt_x),
+        F_bt_y_hat=torch.fft.fft2(F_bt_y),
+    )
 
 
 # ── Benchmark ────────────────────────────────────────────────────────

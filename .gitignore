@@ -45,3 +45,6 @@ nul
 # Misc
 *.log
 .env
+
+# GPU torch isolation venv (worker-connor, jax->torch migration)
+.venv-gpu-torch/
