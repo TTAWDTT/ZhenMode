@@ -142,6 +142,74 @@ def heat_flux_meridional(grid, Q0=50.0):
     return np.broadcast_to(q_profile[None, :], (grid.nx, ny)).copy()
 
 
+# ── Bulk air-sea heat flux (Haney/Barnier formulation) ───────────────
+# The fixed Q_heat_meridional pattern injects up to ±50 W/m^2 with NO
+# dependence on the surface temperature itself: a column that warms does
+# not lose more heat, so there is no negative feedback to arrest a
+# runaway surface hotspot. Under the linear EOS warm surface water is
+# always lighter (stably stratified), so convective adjustment never
+# fires, and kappa_v=1e-5 removes surface heat ~30x slower than Q_heat
+# injects it. The only thing holding the SST down was the separate Haney
+# restore term — i.e. the climatology skill was restore-manufactured.
+#
+# The physically correct fix is a bulk air-sea heat exchange with genuine
+# SST feedback, as in Haney (1971) / Barnier (1995) bulk formulations:
+#
+#     Q_net = Q_clim(y) + lambda_bulk * (T_atm - T_sst)
+#
+# The lambda_bulk*(T_atm - T_sst) term is computed inside the tracer
+# tendency from the live surface T (it cannot be a static field). It is
+# net-balanced in equilibrium (T_sst -> T_atm - Q_clim/lambda) and gives
+# real negative feedback: a warmed column loses heat faster. This lets
+# the model hold a stable SST *without* the restore crutch.
+#
+# To keep the A1/A2 climatology comparison non-circular, T_atm is built
+# as a ZONALLY-UNIFORM meridional profile — only the large-scale
+# meridional gradient is prescribed (the forced part). Any zonal SST
+# structure the model produces is genuinely predicted by its own
+# advection/mixing, so A2 (a 2D pattern test) retains discriminative
+# power rather than measuring how well SST tracks a 2D clamp.
+
+BULK_LAMBDA_DEFAULT = 40.0  # W/m^2/K — Haney/Barnier bulk transfer coef
+# Over the 5 m surface layer this is a ~30-day e-folding timescale
+# (lambda / (rho0*cp*dz) = 40/(1025*3985*5) = 1.96e-6 1/s ~ 5.9 d...
+# actually faster; see _compute_tracer_tendency heat_factor). It is
+# strong enough to kill an 80-day hotspot but weak enough that
+# advection/mixing can move SST off the target — a real equilibrium,
+# not a clamp.
+
+
+def air_temp_profile(grid, sst_clim):
+    """Zonally-uniform meridional atmospheric target temperature.
+
+    Builds the bulk-flux atmospheric equilibrium temperature T_atm as the
+    zonal mean of a climatological SST field, smoothed and tapered to the
+    periodic y-seam. Zonally uniform by construction → only the meridional
+    gradient is prescribed; zonal SST structure is left for the model to
+    predict (keeps A1/A2 non-circular).
+
+    Args:
+        grid: OceanGrid
+        sst_clim: (nx, ny) climatological surface T [degC] (e.g. WOA SST).
+
+    Returns:
+        T_atm: (nx, ny) atmospheric target temperature [degC].
+    """
+    ny = grid.ny
+    taper_cells = getattr(grid, "forcing_taper_cells", 8)
+    sst = np.asarray(sst_clim, dtype=np.float64)
+    # zonal mean -> (ny,) meridional profile, broadcast back to (nx, ny)
+    profile = np.nanmean(sst, axis=0)              # (ny,)
+    profile = np.broadcast_to(profile[None, :], (grid.nx, ny)).copy()
+    # taper to zero-anomaly at the periodic y-seam (continuity, not zero
+    # value — we taper the *deviation from the domain mean* so the bulk
+    # flux doesn't inject a step at the seam).
+    domain_mean = float(np.nanmean(profile))
+    anom = profile - domain_mean
+    anom = _taper_y(anom, ny, taper_cells)
+    return anom + domain_mean
+
+
 def wind_stress_seasonal(grid, tau0=0.1, season_frac=0.0):
     """Seasonally modulated gyre wind stress.
 

@@ -57,7 +57,7 @@ import numpy as np
 from config import DEFAULT_CONFIG
 from grid import make_grid
 from jax_solver import make_solver, make_forcing
-from forcing import heat_flux_meridional
+from forcing import heat_flux_meridional, air_temp_profile, BULK_LAMBDA_DEFAULT
 from wind_reanalysis import real_wind_forcing
 from woa_data import get_initial_fields
 
@@ -75,6 +75,14 @@ NU_BI_DEFAULT = 1e12        # production default (do not change in experiments)
 # damping over an 8-cell cosine-tapered band; 0/0 = disabled (baseline).
 SPONGE_DAYS_DEFAULT = 5.0   # Rayleigh damping timescale in the sponge band
 SPONGE_CELLS_DEFAULT = 8    # half-width of the N/S sponge band (grid points)
+# Bulk air-sea heat flux (Haney/Barnier). lambda_bulk*(T_atm - T_sst) is a
+# SST-dependent surface heat exchange with genuine negative feedback — the
+# physically correct fix for the no-restore day-120 blowup (fixed Q_heat
+# has no SST feedback; under linear EOS convection is inert and kappa_v is
+# too weak, so the restore crutch was the only thing holding SST down).
+# 0 disables (legacy fixed-Q_heat-only behavior); BULK_LAMBDA_DEFAULT
+# (40 W/m^2/K, ~Haney/Barnier) is the physically grounded value.
+LAMBDA_BULK_DEFAULT = BULK_LAMBDA_DEFAULT
 
 
 def state_is_finite(state):
@@ -165,6 +173,15 @@ def main():
     ap.add_argument("--dt", type=float, default=DT_DEFAULT)
     ap.add_argument("--nu-bi", type=float, default=NU_BI_DEFAULT)
     ap.add_argument("--restore-days", type=float, default=RESTORE_DAYS_DEFAULT)
+    ap.add_argument("--lambda-bulk", type=float, default=LAMBDA_BULK_DEFAULT,
+                    help="bulk air-sea heat-transfer coefficient [W/m^2/K] "
+                         "(Haney/Barnier). Q_bulk=lambda*(T_atm-T_sst) gives SST "
+                         "negative feedback so free-running thermodynamics holds "
+                         "without the restore crutch. 0 disables (legacy).")
+    ap.add_argument("--no-bulk-flux", action="store_true",
+                    help="disable the bulk air-sea flux (lambda_bulk=0, legacy "
+                         "fixed-Q_heat-only behavior). Use to reproduce the "
+                         "pre-fix no-restore blowup as a control.")
     ap.add_argument("--sponge-days", type=float, default=SPONGE_DAYS_DEFAULT,
                     help="Rayleigh damping timescale [days] in the N/S boundary "
                          "sponge band (0 = disabled). Absorbs the boundary-"
@@ -253,6 +270,19 @@ def main():
     # docs/long_run_climatology_report_zh.md, stage 2). Physically identical:
     # verified to round-off against the baked-in path.
     T_sst = T_init[:, :, 0]
+    # Bulk air-sea heat flux (Haney/Barnier). T_atm is the zonally-uniform
+    # meridional atmospheric target derived from WOA SST — only the
+    # large-scale meridional gradient is prescribed (the forced part); any
+    # zonal SST structure is left for the model to predict (keeps A1/A2
+    # non-circular rather than measuring how well SST tracks a 2D clamp).
+    # The bulk term lambda*(T_atm - T_sst) gives genuine negative feedback
+    # so the free-running thermodynamics holds without the restore crutch.
+    lambda_bulk = 0.0 if args.no_bulk_flux else args.lambda_bulk
+    T_atm = air_temp_profile(grid, T_sst) if lambda_bulk > 0.0 else None
+    if lambda_bulk > 0.0:
+        print(f"  bulk air-sea flux: lambda={lambda_bulk:.1f} W/m^2/K, "
+              f"T_atm=zonally-uniform WOA SST profile "
+              f"({float(np.nanmin(T_atm)):.2f}..{float(np.nanmax(T_atm)):.2f} C)")
     # Pass the full 3D initial T/S as the sponge-zone climatology so the
     # lateral sponge relaxes boundary tracers toward the WOA initial state
     # (the only "climatology" we have in-process) rather than to zero.
@@ -263,7 +293,8 @@ def main():
                                           tau_restore_days=args.restore_days,
                                           sponge_days=args.sponge_days,
                                           sponge_cells=args.sponge_cells,
-                                          T_init=T_init, S_init=S_init)
+                                          T_init=T_init, S_init=S_init,
+                                          T_atm=T_atm, lambda_bulk=lambda_bulk)
         wind_forcings = [make_forcing(grid, tx, ty, Q_heat)
                          for (tx, ty) in wind_months]
     else:
@@ -273,7 +304,8 @@ def main():
                                           tau_restore_days=args.restore_days,
                                           sponge_days=args.sponge_days,
                                           sponge_cells=args.sponge_cells,
-                                          T_init=T_init, S_init=S_init)
+                                          T_init=T_init, S_init=S_init,
+                                          T_atm=T_atm, lambda_bulk=lambda_bulk)
     state = init_state(T_init=jnp.array(T_init), S_init=jnp.array(S_init))
 
     n_total = int(round(args.days * 86400.0 / args.dt))
@@ -290,7 +322,9 @@ def main():
     header.append(f"dt={args.dt:.0f}s  steps={n_total}  snap every {n_snap} steps "
                   f"({args.snap_days:.0f}d)")
     header.append(f"physics: nu_bi={args.nu_bi:g}  kappa_conv={physics.kappa_conv}  "
-                  f"restore={args.restore_days:g}d")
+                  f"restore={args.restore_days:g}d  "
+                  f"bulk_flux={lambda_bulk:g} W/m^2/K"
+                  + (" (Haney/Barnier, T_atm=zonal WOA)" if lambda_bulk > 0.0 else " (off)"))
     header.append(f"wind: {wind_src}")
     if seasonal and args.wind_blend_days > 0:
         header.append(f"wind blend: {args.wind_blend_days:g}d linear window at "
@@ -511,6 +545,7 @@ def main():
              hotspot_z=np.float64(hotspot.get('z_at_Tmax', 0.0)),
              config=dict(stage=args.stage, days=args.days, dt=args.dt,
                          nu_bi=args.nu_bi, restore_days=args.restore_days,
+                         lambda_bulk=lambda_bulk,
                          sponge_days=args.sponge_days, sponge_cells=args.sponge_cells,
                          snap_days=args.snap_days, wind=wind_src))
     if args.save_3d and n_3d_snaps > 0:

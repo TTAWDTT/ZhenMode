@@ -105,6 +105,13 @@ SolverParams = namedtuple('SolverParams', [
     # Surface temperature restoring (Haney relaxation)
     'T_sst_3d',                   # (nx,ny,1) restoring target (upper level T)
     'restore_coef_T',             # 1/tau_restore [1/s]; 0 disables restoring
+    # Bulk air-sea heat flux (Haney/Barnier). The lambda_bulk*(T_atm - T_sst)
+    # term is a SST-dependent surface heat exchange computed from live state
+    # in _compute_tracer_tendency. Gives negative feedback (warm SST -> heat
+    # loss) so free-running thermodynamics holds without the restore crutch.
+    # lambda_bulk=0 disables (legacy fixed-Q_heat-only behavior).
+    'T_atm_3d',                   # (nx,ny,1) atmospheric target T [degC]
+    'lambda_bulk',                # W/m^2/K bulk heat-transfer coefficient
     # Lateral sponge layer (Rayleigh damping at periodic boundaries)
     'sponge_rate',                # (nx,ny,1) Rayleigh damping rate [1/s]; 0 interior
     'sponge_rate_2d',             # (nx,ny) 2D damping for free-surface step
@@ -115,7 +122,8 @@ SolverParams = namedtuple('SolverParams', [
 
 def _compute_params(grid, physics, dt, forcing=None, eos_type='linear',
                     T_sst=None, tau_restore_days=0.0,
-                    sponge_days=0.0, sponge_cells=0, T_init=None, S_init=None):
+                    sponge_days=0.0, sponge_cells=0, T_init=None, S_init=None,
+                    T_atm=None, lambda_bulk=0.0):
     """Pre-compute all static JAX arrays from grid and physics.
 
     Args:
@@ -136,6 +144,11 @@ def _compute_params(grid, physics, dt, forcing=None, eos_type='linear',
         T_init, S_init: optional (nx,ny,nz) initial/climatological T/S
             fields the sponge relaxes tracers toward. If None, the sponge
             only damps velocity (no tracer relaxation).
+        T_atm: optional (nx, ny) 2D atmospheric target temperature
+            [degC] for the bulk air-sea heat flux. If None or
+            lambda_bulk==0, the bulk term is disabled.
+        lambda_bulk: bulk heat-transfer coefficient [W/m^2/K]. 0
+            disables the bulk air-sea flux (legacy fixed-Q_heat-only).
     """
     nx, ny, nz = grid.nx, grid.ny, grid.nz
     dx, dy = grid.dx, grid.dy
@@ -256,6 +269,18 @@ def _compute_params(grid, physics, dt, forcing=None, eos_type='linear',
         restore_coef_T = 0.0
         T_sst_3d = jnp.zeros((nx, ny, 1))
 
+    # ── Bulk air-sea heat flux (Haney/Barnier) ──
+    # lambda_bulk*(T_atm - T_sst) is a SST-dependent surface heat exchange
+    # that gives genuine negative feedback (a warmed column loses heat
+    # faster), so free-running thermodynamics holds without the restore
+    # crutch. The term is applied in _compute_tracer_tendency from the live
+    # surface T. lambda_bulk=0 (default) disables it entirely.
+    if T_atm is not None and lambda_bulk > 0.0:
+        T_atm_3d = jnp.array(T_atm)[:, :, None]   # (nx, ny, 1)
+    else:
+        T_atm_3d = jnp.zeros((nx, ny, 1))
+        lambda_bulk = 0.0
+
     # ── Lateral sponge layer (Rayleigh damping at periodic boundaries) ──
     # The pseudo-spectral solver uses jnp.fft.fftfreq → doubly-periodic BC.
     # On a regional domain, wind-driven flow piles up against the implicit
@@ -320,6 +345,7 @@ def _compute_params(grid, physics, dt, forcing=None, eos_type='linear',
         smag_cs=physics.smag_cs,
         dx=dx,
         T_sst_3d=T_sst_3d, restore_coef_T=restore_coef_T,
+        T_atm_3d=T_atm_3d, lambda_bulk=lambda_bulk,
         sponge_rate=sponge_rate, sponge_rate_2d=sponge_rate_2d,
         T_clim_3d=T_clim_3d, S_clim_3d=S_clim_3d,
     )
@@ -680,7 +706,19 @@ def _compute_tracer_tendency(state, p):
     conv_S = p.kappa_conv * conv_mask_3d * _d2_dz2(state.S, p)
 
     heat_factor = 1.0 / (RHO_0 * C_P * p.dz_surface)
+    # Fixed climatological surface heat flux (prescribed W/m^2 pattern).
     heat_T = p.Q_heat_2d[:, :, None] * heat_factor * p.surface_mask
+
+    # Bulk air-sea heat flux (Haney/Barnier). A SST-dependent surface heat
+    # exchange Q_bulk = lambda_bulk * (T_atm - T_sst) [W/m^2] that gives
+    # genuine negative feedback: a warmed surface loses heat faster. This
+    # is what holds the free-running thermodynamics stable without the
+    # restore crutch — the fixed Q_heat alone has no such feedback and
+    # blows up at day ~80 under the linear EOS (convection inert, kappa_v
+    # too weak). Net-balanced in equilibrium (T_sst -> T_atm - Q_heat/lambda).
+    # lambda_bulk=0 disables (legacy fixed-Q_heat-only behavior).
+    bulk_T = (p.lambda_bulk * (p.T_atm_3d - state.T[:, :, 0:1])
+              * heat_factor * p.surface_mask)
 
     # Surface temperature restoring (Haney relaxation). Pulls the upper
     # level's temperature toward the target field on a tau_restore
@@ -694,7 +732,7 @@ def _compute_tracer_tendency(state, p):
     sponge_T = p.sponge_rate * (p.T_clim_3d - state.T)
     sponge_S = p.sponge_rate * (p.S_clim_3d - state.S)
 
-    dTdt = adv_T + diff_h_T + diff_v_T + heat_T + restore_T + conv_T + sponge_T
+    dTdt = adv_T + diff_h_T + diff_v_T + heat_T + bulk_T + restore_T + conv_T + sponge_T
     dSdt = adv_S + diff_h_S + diff_v_S + conv_S + sponge_S
     return dTdt, dSdt
 
@@ -992,7 +1030,8 @@ def _step_impl(state, p, forcing=None):
 
 def make_solver(grid, physics, dt, forcing=None, eos_type='linear',
                 T_sst=None, tau_restore_days=0.0,
-                sponge_days=0.0, sponge_cells=0, T_init=None, S_init=None):
+                sponge_days=0.0, sponge_cells=0, T_init=None, S_init=None,
+                T_atm=None, lambda_bulk=0.0):
     """
     Create a JIT-compiled ocean solver.
 
@@ -1021,6 +1060,11 @@ def make_solver(grid, physics, dt, forcing=None, eos_type='linear',
         T_init, S_init: (nx,ny,nz) climatology the sponge relaxes tracers
             toward in the boundary band. Required for tracer relaxation;
             if None only velocity/eta are damped.
+        T_atm: optional (nx, ny) 2D atmospheric target temperature [degC]
+            for the bulk air-sea heat flux. If None or lambda_bulk==0,
+            the bulk term is disabled.
+        lambda_bulk: bulk heat-transfer coefficient [W/m^2/K]. 0 disables
+            the bulk air-sea flux (legacy fixed-Q_heat-only behavior).
 
     Returns:
         step_fn: JIT-compiled (state: JaxState, forcing: JaxForcing=None) -> JaxState
@@ -1037,7 +1081,8 @@ def make_solver(grid, physics, dt, forcing=None, eos_type='linear',
     params = _compute_params(grid, physics, dt, forcing=forcing, eos_type=eos_type,
                              T_sst=T_sst, tau_restore_days=tau_restore_days,
                              sponge_days=sponge_days, sponge_cells=sponge_cells,
-                             T_init=T_init, S_init=S_init)
+                             T_init=T_init, S_init=S_init,
+                             T_atm=T_atm, lambda_bulk=lambda_bulk)
 
     @jax.jit
     def step(state, forcing=None):
