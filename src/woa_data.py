@@ -148,6 +148,11 @@ def interpolate_to_grid(woa, grid_lon, grid_lat, grid_z):
     woa_depth = woa['depth']   # (ndepth,)
     woa_data = woa['data']     # (ndepth, nlat, nlon)
 
+    # Normalize target longitudes to the WOA convention [-180, 180).
+    # The global grid uses 0..360 lon centers; the regional grid used
+    # ~150E (already in range). This makes both work without extrapolation.
+    grid_lon = np.mod(np.asarray(grid_lon, dtype=np.float64) + 180.0, 360.0) - 180.0
+
     # Fill NaN values vertically before interpolation
     woa_data = _fill_nan_vertical(woa_data)
 

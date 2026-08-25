@@ -452,13 +452,16 @@ def _free_surface_step_fd(eta, u, v, p, F_rho_x=None, F_rho_y=None, dt_half=None
         _d_dx(F_x[:, :, None], p)[:, :, 0] + _d_dy(F_y[:, :, None], p)[:, :, 0])
 
     # Helmholtz: (1 - alpha*lap) eta_new = rhs, alpha = theta²*g*H*dt²
+    # Solve via weighted Jacobi iteration. The operator (1 - alpha*lap) has
+    # spectral radius ~alpha*|lambda_max(lap)| = alpha*8/dx²; convergence
+    # factor per iter ~ that. With 1° dx and dt~300s, alpha can be O(1e8)
+    # but alpha/dx² stays O(0.1), so 40 weighted-Jacobi iters suffice.
     alpha = (theta ** 2) * gH * dt_half * dt_half
-    # Jacobi iteration for (1 - alpha*lap) eta = rhs
-    # lap(eta) via FD; operator is diagonally dominant for small alpha*dt.
+    omega = 0.5   # weighted (over-relaxation-damped) Jacobi
     eta_new = rhs
-    for _ in range(8):
+    for _ in range(40):
         lap_e = _laplacian_h(eta_new[:, :, None], p)[:, :, 0]
-        eta_new = rhs + alpha * lap_e
+        eta_new = (1.0 - omega) * eta_new + omega * (rhs + alpha * lap_e)
     eta_new = eta_new * p.wet_mask
 
     # ubt^{n+1} = ubt^n + dt*(-g*grad(eta^{n+theta}) + F)
