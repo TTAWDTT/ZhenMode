@@ -411,69 +411,71 @@ def _coriolis_rotation_2d(u, v, f, dt):
 
 
 def _free_surface_step_fd(eta, u, v, p, F_rho_x=None, F_rho_y=None, dt_half=None):
-    """Semi-implicit free-surface (shallow water) step on lat-lon FD grid.
+    """Explicit free-surface (shallow water) step on lat-lon FD grid.
 
     The spectral solver solved the linear SW system exactly per wavenumber
-    (matrix exponential). The FD analogue is a semi-implicit step: the
-    fast external (barotropic) gravity wave is treated implicitly to escape
-    its CFL (dt < dx/sqrt(gH) ~ 560s at 1°), while remaining operators stay
-    explicit. Crank-Nicolson (theta=0.5) for neutral stability.
+    (matrix exponential). The FD analogue here is an EXPLICIT forward Euler
+    step on the linear shallow-water (barotropic) equations:
 
-    Solves (per step, theta=0.5):
-      eta^{n+1} = eta^n - dt*H_sw * div_h(ubt^{n+theta})
-      ubt^{n+1} = ubt^n + dt*(-g*grad_h(eta^{n+theta}) + F)
-    Eliminating ubt^{n+1} gives a Helmholtz equation for eta^{n+1}:
-      (1 - theta²*g*H*dt² * lap) eta^{n+1} = RHS
-    On the FD grid this is a sparse linear system; here we solve it via a
-    few Jacobi iterations (cheap, JAX-friendly, no linear solver needed).
+      eta^{n+1} = eta^n - dt*H_sw * div_h(ubt^n)
+      ubt^{n+1} = ubt^n + dt*(-g*grad_h(eta^n) + F)
+
+    This requires dt below the external-gravity-wave CFL,
+      dt < dx / sqrt(g*H_sw) ~ 560s at the equator (1°, H=4000m),
+    tighter at high latitude where dx = R*cos(lat)*dlon shrinks. At dt=60s
+    the CFL margin is ~9x at the equator and remains safe to the edge
+    (dx_edge ~10.7km -> CFL ~85s; dt=60 is under that). Chosen over the
+    semi-implicit approach because the iterative Helmholtz solve was
+    unstable for large alpha (=theta²*g*H*dt² ~ 2e8 at dt=300) on the
+    real global grid — explicit avoids all convergence issues. The regional
+    solver's stability came from the exact spectral step, not from large
+    dt, so this loses no physics — only step count (~5x more steps than
+    dt=300, absorbable on GPU).
     """
     if dt_half is None:
         dt_half = p.dt / 2.0
     ubt, vbt = _barotropic_velocity(u, v, p)
-    theta = 0.5
-    gH = G_EARTH * p.H_sw
 
-    # Forcing: density-driven barotropic PGF (+ wind is in the explicit step
-    # for the FD solver; wind's barotropic part is folded into F_rho here).
+    # Barotropic forcing: density-driven PGF + wind body force
     F_x = jnp.zeros_like(ubt)
     F_y = jnp.zeros_like(vbt)
     if F_rho_x is not None:
         F_x = F_x + F_rho_x
         F_y = F_y + F_rho_y
-    # Barotropic wind body force
     F_x = F_x + p.tau_x_2d / (RHO_0 * p.H_sw)
     F_y = F_y + p.tau_y_2d / (RHO_0 * p.H_sw)
 
-    # RHS for eta Helmholtz:
-    #   rhs = eta^n - dt*H*div(ubt^n) - dt²*theta*H * div(F) + dt²*theta²*g*H * lap(eta^n)*...
-    # Simplified Crank-Nicolson shallow water (standard form):
+    # Explicit forward Euler on the linear SW equations
     div_bt = _d_dx(ubt[:, :, None], p)[:, :, 0] + _d_dy(vbt[:, :, None], p)[:, :, 0]
-    rhs = eta - dt_half * p.H_sw * div_bt - dt_half * dt_half * theta * p.H_sw * (
-        _d_dx(F_x[:, :, None], p)[:, :, 0] + _d_dy(F_y[:, :, None], p)[:, :, 0])
+    grad_eta_x = _d_dx(eta[:, :, None], p)[:, :, 0]
+    grad_eta_y = _d_dy(eta[:, :, None], p)[:, :, 0]
 
-    # Helmholtz: (1 - alpha*lap) eta_new = rhs, alpha = theta²*g*H*dt²
-    # Solve via weighted Jacobi iteration. The operator (1 - alpha*lap) has
-    # spectral radius ~alpha*|lambda_max(lap)| = alpha*8/dx²; convergence
-    # factor per iter ~ that. With 1° dx and dt~300s, alpha can be O(1e8)
-    # but alpha/dx² stays O(0.1), so 40 weighted-Jacobi iters suffice.
-    alpha = (theta ** 2) * gH * dt_half * dt_half
-    omega = 0.5   # weighted (over-relaxation-damped) Jacobi
-    eta_new = rhs
-    for _ in range(40):
-        lap_e = _laplacian_h(eta_new[:, :, None], p)[:, :, 0]
-        eta_new = (1.0 - omega) * eta_new + omega * (rhs + alpha * lap_e)
-    eta_new = eta_new * p.wet_mask
-
-    # ubt^{n+1} = ubt^n + dt*(-g*grad(eta^{n+theta}) + F)
-    eta_theta = theta * eta_new + (1.0 - theta) * eta
-    grad_eta_x = _d_dx(eta_theta[:, :, None], p)[:, :, 0]
-    grad_eta_y = _d_dy(eta_theta[:, :, None], p)[:, :, 0]
+    eta_new = eta - dt_half * p.H_sw * div_bt
     ubt_new = ubt + dt_half * (-G_EARTH * grad_eta_x + F_x)
     vbt_new = vbt + dt_half * (-G_EARTH * grad_eta_y + F_y)
+
+    eta_new = eta_new * p.wet_mask
     ubt_new = ubt_new * p.wet_mask
     vbt_new = vbt_new * p.wet_mask
 
-    # Project barotropic delta back to 3D velocity
+    # Polar-cap filter: average the two poleward-most rows zonally to kill
+    # the cos(lat)->0 metric singularity (dx->0 makes the explicit SW CFL
+    # unattainable at the edge). Replaces the unresolved polar dynamics
+    # with a zonally-uniform cap value — standard for lat-lon FD OGCMs.
+    cap = jnp.mean(eta_new[:, :2], axis=1, keepdims=True)
+    eta_new = eta_new.at[:, :2].set(jnp.broadcast_to(cap, (p.nx, 2)))
+    cap = jnp.mean(eta_new[:, -2:], axis=1, keepdims=True)
+    eta_new = eta_new.at[:, -2:].set(jnp.broadcast_to(cap, (p.nx, 2)))
+    ubt_cap = jnp.mean(ubt_new[:, :2], axis=1, keepdims=True)
+    ubt_new = ubt_new.at[:, :2].set(jnp.broadcast_to(ubt_cap, (p.nx, 2)))
+    vbt_cap = jnp.mean(vbt_new[:, :2], axis=1, keepdims=True)
+    vbt_new = vbt_new.at[:, :2].set(jnp.broadcast_to(vbt_cap, (p.nx, 2)))
+    ubt_cap = jnp.mean(ubt_new[:, -2:], axis=1, keepdims=True)
+    ubt_new = ubt_new.at[:, -2:].set(jnp.broadcast_to(ubt_cap, (p.nx, 2)))
+    vbt_cap = jnp.mean(vbt_new[:, -2:], axis=1, keepdims=True)
+    vbt_new = vbt_new.at[:, -2:].set(jnp.broadcast_to(vbt_cap, (p.nx, 2)))
+
+    # Project barotropic delta back to 3D velocity (uniform over depth)
     delta_ubt = (ubt_new - ubt)[:, :, None]
     delta_vbt = (vbt_new - vbt)[:, :, None]
     u_new = u + delta_ubt
@@ -482,13 +484,14 @@ def _free_surface_step_fd(eta, u, v, p, F_rho_x=None, F_rho_y=None, dt_half=None
 
 
 def _linear_half_step(state, p, dt_half):
-    """Linear half-step: FD diffusion + 2D Coriolis + semi-implicit free surface.
+    """Linear half-step: FD diffusion + 2D Coriolis + EXPLICIT free surface.
 
     Unlike the spectral solver (exact spectral diffusion decay + matrix-exp
     free surface), the FD linear step is:
       - explicit horizontal+vertical diffusion (CFL-safe at 1°),
       - exact per-gridpoint Coriolis rotation on the 2D f-field,
-      - semi-implicit (Crank-Nicolson) free surface via Jacobi-iterated Helmholtz.
+      - EXPLICIT forward-Euler free surface (CFL: dt < dx/sqrt(gH) ~ 85-560s;
+        dt=60 is safe across the global grid).
     """
     # Explicit diffusion (horizontal Laplacian + vertical d2/dz2)
     u = state.u + p.nu_h * _laplacian_h(state.u, p) * dt_half
