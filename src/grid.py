@@ -13,7 +13,7 @@ import numpy as np
 from netCDF4 import Dataset
 from dataclasses import dataclass
 
-from config import GridConfig, R_EARTH, OMEGA
+from config import GridConfig, GlobalGridConfig, R_EARTH, OMEGA
 
 
 # ── Data structures ─────────────────────────────────────────────────
@@ -189,30 +189,193 @@ def make_grid(grid_config: GridConfig, bathymetry_file: str) -> OceanGrid:
     )
 
 
+# ── Global grid (finite-difference solver) ───────────────────────────
+
+@dataclass
+class GlobalOceanGrid:
+    """Global lat-lon grid for the FD solver.
+
+    Convention (same as regional OceanGrid):
+      - 2D arrays: shape (nx, ny), axis 0 = zonal (lon), axis 1 = meridional (lat)
+      - lon is periodic (axis 0 wraps); lat is bounded (±lat_max, no wrap)
+      - Vertical: z negative downward, z=0 at surface
+    """
+    # Horizontal coordinates (1D)
+    lon: np.ndarray       # (nx,) longitude [degrees E], periodic
+    lat: np.ndarray       # (ny,) latitude [degrees N], ±lat_max
+
+    # Grid spacing — dx varies with latitude (spherical metric)
+    dx_2d: np.ndarray     # (nx, ny) zonal spacing [m] = R*cos(lat)*dlon
+    dy: float             # (ny,) meridional spacing [m] (constant)
+    cos_lat: np.ndarray   # (ny,) cos(lat) metric factor
+
+    # Coriolis
+    f: np.ndarray         # (nx, ny) Coriolis parameter [1/s] = 2*Omega*sin(lat)
+
+    # Vertical grid
+    z: np.ndarray         # (nz,) level depths [m, negative downward]
+    dz: np.ndarray        # (nz-1,) layer thicknesses [m, positive]
+    nz: int
+
+    # Bathymetry
+    depth: np.ndarray     # (nx, ny) ocean depth [m, positive; 0 on land]
+    wet_mask: np.ndarray  # (nx, ny) float, 1.0 = ocean (wet), 0.0 = land (dry)
+    ocean_mask: np.ndarray  # (nx, ny) bool, True = ocean (alias of wet_mask>0)
+    land_mask: np.ndarray   # (nx, ny) bool, True = land
+
+    # Dimensions
+    nx: int
+    ny: int
+
+
+def _read_etopo_global(filepath, resolution=1.0, lat_max=85.0):
+    """Read global ETOPO2022 bathymetry, downsampled to target resolution.
+
+    ETOPO is 0.1° (3600×1800); for a 1° grid we average 10×10 blocks.
+    Returns global depth on (nx, ny) with lon=0.05..359.95 (periodic) and
+    lat covering ±lat_max. Land = 0 depth.
+    """
+    ds = Dataset(filepath)
+    etopo_lon = np.array(ds.variables['lon'][:])   # 0.0..359.9 (3600,)
+    etopo_lat = np.array(ds.variables['lat'][:])   # -89.95..89.95 (1800,)
+    # Full field: z[lat, lon] = (1800, 3600)
+    z_full = ds.variables['z'][:, :]
+    ds.close()
+
+    if hasattr(z_full, 'filled'):
+        z_full = z_full.filled(-99999.0)
+    z_full = np.asarray(z_full, dtype=np.float64)
+    z_full[z_full <= -9999.0] = 0.0
+
+    # Block-average to target resolution
+    step = int(round(resolution / 0.1))   # 10 for 1°
+    nlon = len(etopo_lon) // step         # 360
+    nlat_full = len(etopo_lat) // step    # 180
+
+    # Trim to full blocks
+    z_trim = z_full[:nlat_full * step, :nlon * step]   # (1800, 3600)
+    # Reshape and mean over blocks: (nlat_full, step, nlon, step) -> (nlat_full, nlon)
+    z_coarse = z_trim.reshape(nlat_full, step, nlon, step).mean(axis=(1, 3))
+
+    # Coarse lat/lon centers
+    lon_c = step * 0.1 * (0.5 + np.arange(nlon))    # 0.05, 1.05, ... 359.05
+    lat_c = -90.0 + step * 0.1 * (0.5 + np.arange(nlat_full))  # -89.95, ...
+
+    # Clip to ±lat_max
+    lat_keep = np.abs(lat_c) <= lat_max
+    lat_c = lat_c[lat_keep]
+    z_coarse = z_coarse[lat_keep, :]    # (ny, nlon)
+
+    # ETOPO z positive up, ocean negative -> depth positive
+    depth = np.where(z_coarse < 0, -z_coarse, 0.0)   # (ny, nlon)
+
+    # Transpose to (nx, ny) = (lon, lat) convention
+    depth = depth.T    # (nlon, ny)
+    return depth, lon_c, lat_c
+
+
+def make_global_grid(grid_config, bathymetry_file):
+    """Generate a global lat-lon OceanGrid from ETOPO bathymetry.
+
+    Unlike make_grid (regional plane), this builds a true global grid with:
+      - periodic longitude (axis 0 wraps),
+      - spherical metric (dx varies with latitude),
+      - a real wet_mask (1=ocean, 0=land) for the FD solver's no-flux land BC,
+      - full 2D Coriolis f = 2*Omega*sin(lat).
+    Polar regions above lat_max are excluded (polar cap); the FD solver
+    applies a polar-cap filter on the poleward-most row to handle the
+    cos(lat)->0 metric singularity.
+    """
+    gc = grid_config
+    depth, lon, lat = _read_etopo_global(
+        bathymetry_file, resolution=gc.resolution, lat_max=gc.lat_max,
+    )
+    nx, ny = depth.shape
+    assert nx == gc.nx, f"lon dim {nx} != config nx {gc.nx}"
+    assert ny == gc.ny, f"lat dim {ny} != config ny {gc.ny}"
+
+    # ── Spherical metric ──
+    cos_lat = np.cos(np.radians(lat))            # (ny,)
+    dx_2d = np.broadcast_to(
+        R_EARTH * np.radians(gc.dlon) * cos_lat, (nx, ny)
+    ).copy()                                      # (nx, ny) varies with lat
+    dy = R_EARTH * np.radians(gc.dlat)
+
+    # ── Coriolis: f = 2*Omega*sin(lat), full 2D field ──
+    lon_2d, lat_2d = np.meshgrid(lon, lat, indexing='ij')   # (nx, ny)
+    f = 2.0 * OMEGA * np.sin(np.radians(lat_2d))
+
+    # ── Vertical grid ──
+    z = np.array(gc.z_levels, dtype=np.float64)
+    dz = np.abs(np.diff(z))
+
+    # ── Masks ──
+    ocean_mask = depth > 0.0
+    land_mask = ~ocean_mask
+    wet_mask = ocean_mask.astype(np.float64)     # 1.0 ocean, 0.0 land
+
+    return GlobalOceanGrid(
+        lon=lon, lat=lat,
+        dx_2d=dx_2d, dy=float(dy), cos_lat=cos_lat,
+        f=f,
+        z=z, dz=dz, nz=gc.nz,
+        depth=depth, wet_mask=wet_mask,
+        ocean_mask=ocean_mask, land_mask=land_mask,
+        nx=nx, ny=ny,
+    )
+
+
 # ── CLI / smoke test ────────────────────────────────────────────────
 
 if __name__ == "__main__":
-    from config import DEFAULT_CONFIG
+    import sys
+    from config import DEFAULT_CONFIG, GlobalGridConfig
 
-    grid = make_grid(DEFAULT_CONFIG.grid, DEFAULT_CONFIG.bathymetry_file)
-
-    print("=== Ocean Grid ===")
-    print(f"Horizontal: {grid.nx} x {grid.ny} (lon x lat)")
-    print(f"Vertical:   {grid.nz} levels")
-    print(f"lon: [{grid.lon[0]:.1f}, {grid.lon[-1]:.1f}E]")
-    print(f"lat: [{grid.lat[0]:.1f}, {grid.lat[-1]:.1f}N]")
-    print(f"dx = {grid.dx:.1f} m,  dy = {grid.dy:.1f} m")
-    print(f"f0 = {grid.f0:.5e} /s,  beta = {grid.beta:.5e} /(m*s)")
-    print()
-    n_total = grid.nx * grid.ny
-    n_ocean = grid.ocean_mask.sum()
-    n_land = grid.land_mask.sum()
-    print(f"Ocean points: {n_ocean} / {n_total}  ({100*n_ocean/n_total:.1f}%)")
-    print(f"Land points:  {n_land} / {n_total}  ({100*n_land/n_total:.1f}%)")
-    if n_ocean > 0:
+    if "--global" in sys.argv:
+        gc = GlobalGridConfig()
+        grid = make_global_grid(gc, DEFAULT_CONFIG.bathymetry_file)
+        print("=== Global Ocean Grid (FD solver) ===")
+        print(f"Horizontal: {grid.nx} x {grid.ny} (lon x lat)")
+        print(f"Vertical:   {grid.nz} levels")
+        print(f"lon: [{grid.lon[0]:.2f}, {grid.lon[-1]:.2f}E] (periodic)")
+        print(f"lat: [{grid.lat[0]:.2f}, {grid.lat[-1]:.2f}N] (±{gc.lat_max}°)")
+        print(f"dy = {grid.dy:.1f} m (constant)")
+        print(f"dx_2d: equator = {grid.dx_2d[0, grid.ny//2]:.1f} m, "
+              f"edge = {grid.dx_2d[0, 0]:.1f} m")
+        print(f"cos_lat: equator = {grid.cos_lat[grid.ny//2]:.4f}, "
+              f"edge = {grid.cos_lat[0]:.4f}")
+        print(f"f: equator = {grid.f[0, grid.ny//2]:.5e} /s, "
+              f"edge = {grid.f[0, 0]:.5e} /s")
+        n_total = grid.nx * grid.ny
+        n_ocean = grid.ocean_mask.sum()
+        print(f"Ocean points: {n_ocean} / {n_total}  ({100*n_ocean/n_total:.1f}%)")
+        print(f"Land points:  {n_total - n_ocean} / {n_total}  "
+              f"({100*(n_total-n_ocean)/n_total:.1f}%)")
         d = grid.depth[grid.ocean_mask]
-        print(f"Depth range:  {d.min():.0f} - {d.max():.0f} m")
-        print(f"Mean depth:   {d.mean():.0f} m")
-    print()
-    print(f"z levels: {grid.z}")
-    print(f"dz:       {grid.dz}")
+        print(f"Depth range:  {d.min():.0f} - {d.max():.0f} m, mean {d.mean():.0f} m")
+        print()
+        print(f"z levels: {grid.z}")
+        print(f"dz:       {grid.dz}")
+    else:
+        grid = make_grid(DEFAULT_CONFIG.grid, DEFAULT_CONFIG.bathymetry_file)
+
+        print("=== Ocean Grid ===")
+        print(f"Horizontal: {grid.nx} x {grid.ny} (lon x lat)")
+        print(f"Vertical:   {grid.nz} levels")
+        print(f"lon: [{grid.lon[0]:.1f}, {grid.lon[-1]:.1f}E]")
+        print(f"lat: [{grid.lat[0]:.1f}, {grid.lat[-1]:.1f}N]")
+        print(f"dx = {grid.dx:.1f} m,  dy = {grid.dy:.1f} m")
+        print(f"f0 = {grid.f0:.5e} /s,  beta = {grid.beta:.5e} /(m*s)")
+        print()
+        n_total = grid.nx * grid.ny
+        n_ocean = grid.ocean_mask.sum()
+        n_land = grid.land_mask.sum()
+        print(f"Ocean points: {n_ocean} / {n_total}  ({100*n_ocean/n_total:.1f}%)")
+        print(f"Land points:  {n_land} / {n_total}  ({100*n_land/n_total:.1f}%)")
+        if n_ocean > 0:
+            d = grid.depth[grid.ocean_mask]
+            print(f"Depth range:  {d.min():.0f} - {d.max():.0f} m")
+            print(f"Mean depth:   {d.mean():.0f} m")
+        print()
+        print(f"z levels: {grid.z}")
+        print(f"dz:       {grid.dz}")
