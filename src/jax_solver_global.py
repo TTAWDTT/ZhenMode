@@ -200,6 +200,478 @@ def _d2_dz2(u, p):
     return jnp.concatenate([d2u_top, d2u_interior, d2u_bot], axis=-1)
 
 
+# ── FD solver parameters (full, with physics + forcing) ───────────
+# Extends FDParams (metric+grid) with the physics constants and forcing
+# fields needed for the time integration (G2). Built by make_solver_global.
+
+FDPhysParams = namedtuple('FDPhysParams', [
+    # metric + grid (from FDParams)
+    'dx_2d', 'dy', 'cos_lat', 'inv_dx', 'inv_dy', 'inv_dx2', 'inv_dy2',
+    'f', 'wet_mask', 'wet_mask_3d',
+    'dz_denom_interior', 'dz_bnd_top', 'dz_bnd_bot',
+    'd2z_hm', 'd2z_hp', 'd2z_denom', 'd2z_h0_top', 'd2z_h0_bot',
+    'dz_3d', 'dz_surface', 'surface_mask', 'bottom_mask',
+    'nx', 'ny', 'nz',
+    # physics
+    'nu_h', 'nu_v', 'kappa_h', 'kappa_v', 'kappa_conv',
+    'nu_bi', 'kappa_bi',
+    'T_ref', 'S_ref', 'eos_type', 'r_bot', 'cd', 'bottom_friction',
+    # forcing (2D physical-space; no FFT pre-compute in the FD solver)
+    'tau_x_2d', 'tau_y_2d', 'Q_heat_2d',
+    # free surface
+    'H_sw', 'dz_norm', 'dt',
+    # bulk air-sea heat flux
+    'T_atm_3d', 'lambda_bulk',
+])
+
+
+# ── EOS (shared with spectral solver; copied to avoid import cycle) ─
+
+def _density_anomaly(T, S, p):
+    """rho' = rho - rho_0. Linear EOS branch (global default)."""
+    if p.eos_type == 'unesco':
+        # UNESCO not needed for global default; fall back to linear.
+        return RHO_0 * (-ALPHA_T * (T - p.T_ref) + BETA_S * (S - p.S_ref))
+    return RHO_0 * (-ALPHA_T * (T - p.T_ref) + BETA_S * (S - p.S_ref))
+
+
+def _compute_hydrostatic_pressure(state, p):
+    """Full hydrostatic pressure via cumulative trapezoidal integration."""
+    rho_prime = _density_anomaly(state.T, state.S, p)
+    rho_avg = 0.5 * (rho_prime[..., :-1] + rho_prime[..., 1:])
+    dp = G_EARTH * rho_avg * p.dz_3d
+    p_bc = jnp.zeros_like(state.T)
+    p_bc = p_bc.at[..., 1:].set(jnp.cumsum(dp, axis=-1))
+    p_bt = RHO_0 * G_EARTH * state.eta[:, :, None]
+    return p_bt + p_bc
+
+
+def _compute_pressure_gradient(state, p):
+    """Horizontal pressure gradient force per unit mass (FD)."""
+    pressure = _compute_hydrostatic_pressure(state, p)
+    pgf_x = -_d_dx(pressure, p) / RHO_0
+    pgf_y = -_d_dy(pressure, p) / RHO_0
+    return pgf_x, pgf_y
+
+
+def _barotropic_velocity(u, v, p):
+    """Depth-averaged (barotropic) horizontal velocity (same as spectral)."""
+    u_avg = 0.5 * (u[..., :-1] + u[..., 1:])
+    v_avg = 0.5 * (v[..., :-1] + v[..., 1:])
+    ubt = jnp.sum(u_avg * p.dz_norm, axis=-1)
+    vbt = jnp.sum(v_avg * p.dz_norm, axis=-1)
+    return ubt, vbt
+
+
+def _compute_bt_rho_pgf(state, p):
+    """Barotropic (depth-averaged) PGF from density anomalies (FD)."""
+    rho_prime = _density_anomaly(state.T, state.S, p)
+    rho_avg = 0.5 * (rho_prime[..., :-1] + rho_prime[..., 1:])
+    dp = G_EARTH * rho_avg * p.dz_3d
+    p_bc = jnp.zeros_like(state.T)
+    p_bc = p_bc.at[..., 1:].set(jnp.cumsum(dp, axis=-1))
+    p_bc_avg = jnp.sum(0.5 * (p_bc[..., :-1] + p_bc[..., 1:]) * p.dz_norm, axis=-1)
+    bt_rho_pgf_x = -_d_dx(p_bc_avg[:, :, None], p)[:, :, 0] / RHO_0
+    bt_rho_pgf_y = -_d_dy(p_bc_avg[:, :, None], p)[:, :, 0] / RHO_0
+    return bt_rho_pgf_x, bt_rho_pgf_y
+
+
+def _compute_vertical_velocity(state, p):
+    """Diagnose w from horizontal continuity. w=0 at bottom. Masked on land."""
+    div_h = _divergence_h(state.u, state.v, p)
+    div_avg = 0.5 * (div_h[..., :-1] + div_h[..., 1:])
+    integrand = div_avg * p.dz_3d
+    w = jnp.zeros_like(state.u)
+    w = w.at[..., :-1].set(-jnp.cumsum(integrand[..., ::-1], axis=-1)[..., ::-1])
+    return w * p.wet_mask_3d   # no spurious w over land
+
+
+# ── Tendencies (FD, with land masking) ─────────────────────────────
+
+def _advection_flux_form(u, v, w, p):
+    """3D advective-form momentum advection (FD, land-masked).
+
+    Advective form (not flux form) avoids the spurious u*div_h source.
+    Land masking: velocities are zeroed over land by the caller before
+    advection, and the tendency is masked so land points don't accumulate
+    advected noise (they're held at rest by the wet_mask projection).
+    """
+    du_dx = _d_dx(u, p); du_dy = _d_dy(u, p)
+    dv_dx = _d_dx(v, p); dv_dy = _d_dy(v, p)
+    du_dz = _d_dz(u, p); dv_dz = _d_dz(v, p)
+    adv_u = -(u * du_dx + v * du_dy + w * du_dz)
+    adv_v = -(u * dv_dx + v * dv_dy + w * dv_dz)
+    return adv_u * p.wet_mask_3d, adv_v * p.wet_mask_3d
+
+
+def _advection_scalar(T, u, v, w, p):
+    """3D advective-form scalar advection (FD, land-masked)."""
+    dT_dx = _d_dx(T, p); dT_dy = _d_dy(T, p); dT_dz = _d_dz(T, p)
+    adv_T = -(u * dT_dx + v * dT_dy + w * dT_dz)
+    return adv_T * p.wet_mask_3d
+
+
+def _compute_momentum_tendency(state, p):
+    """du/dt, dv/dt for hydrostatic primitive equations (FD)."""
+    w = _compute_vertical_velocity(state, p)
+    adv_u, adv_v = _advection_flux_form(state.u, state.v, w, p)
+
+    f_3d = p.f[:, :, None]
+    cor_u = f_3d * state.v
+    cor_v = -f_3d * state.u
+
+    pgf_x, pgf_y = _compute_pressure_gradient(state, p)
+
+    diff_h_u = p.nu_h * _laplacian_h(state.u, p)
+    diff_h_v = p.nu_h * _laplacian_h(state.v, p)
+    diff_v_u = p.nu_v * _d2_dz2(state.u, p)
+    diff_v_v = p.nu_v * _d2_dz2(state.v, p)
+
+    wind_factor = 1.0 / (RHO_0 * p.dz_surface)
+    wind_u = p.tau_x_2d[:, :, None] * wind_factor * p.surface_mask
+    wind_v = p.tau_y_2d[:, :, None] * wind_factor * p.surface_mask
+
+    if p.bottom_friction == 'quadratic':
+        speed = jnp.sqrt(state.u**2 + state.v**2)
+        bot_u = -p.cd * speed * state.u * p.bottom_mask
+        bot_v = -p.cd * speed * state.v * p.bottom_mask
+    else:
+        bot_u = -p.r_bot * state.u * p.bottom_mask
+        bot_v = -p.r_bot * state.v * p.bottom_mask
+
+    dudt = adv_u + cor_u + pgf_x + diff_h_u + diff_v_u + wind_u + bot_u
+    dvdt = adv_v + cor_v + pgf_y + diff_h_v + diff_v_v + wind_v + bot_v
+    # Land: hold velocity at rest (no tendency over land).
+    dudt = dudt * p.wet_mask_3d
+    dvdt = dvdt * p.wet_mask_3d
+    return dudt, dvdt
+
+
+def _compute_tracer_tendency(state, p):
+    """dT/dt, dS/dt (FD, land-masked). Includes bulk air-sea heat flux."""
+    w = _compute_vertical_velocity(state, p)
+    adv_T = _advection_scalar(state.T, state.u, state.v, w, p)
+    adv_S = _advection_scalar(state.S, state.u, state.v, w, p)
+
+    diff_h_T = p.kappa_h * _laplacian_h(state.T, p)
+    diff_h_S = p.kappa_h * _laplacian_h(state.S, p)
+    diff_v_T = p.kappa_v * _d2_dz2(state.T, p)
+    diff_v_S = p.kappa_v * _d2_dz2(state.S, p)
+
+    # Convective adjustment (same logic as spectral; inert under linear EOS
+    # + stable heating, but kept for consistency).
+    rho_prime = _density_anomaly(state.T, state.S, p)
+    unstable_iface = rho_prime[..., :-1] > rho_prime[..., 1:]
+    conv_mask_3d = jnp.any(unstable_iface, axis=-1, keepdims=True)
+    conv_T = p.kappa_conv * conv_mask_3d * _d2_dz2(state.T, p)
+    conv_S = p.kappa_conv * conv_mask_3d * _d2_dz2(state.S, p)
+
+    heat_factor = 1.0 / (RHO_0 * C_P * p.dz_surface)
+    heat_T = p.Q_heat_2d[:, :, None] * heat_factor * p.surface_mask
+
+    # Bulk air-sea heat flux (Haney/Barnier): genuine SST negative feedback.
+    bulk_T = (p.lambda_bulk * (p.T_atm_3d - state.T[:, :, 0:1])
+              * heat_factor * p.surface_mask)
+
+    dTdt = adv_T + diff_h_T + diff_v_T + heat_T + bulk_T + conv_T
+    dSdt = adv_S + diff_h_S + diff_v_S + conv_S
+    # Land: tracers held (no tendency over land).
+    dTdt = dTdt * p.wet_mask_3d
+    dSdt = dSdt * p.wet_mask_3d
+    return dTdt, dSdt
+
+
+# ── Linear half-step (FD: explicit diffusion + exact Coriolis + free surface) ─
+
+def _explicit_diffusion_step(u, p, nu, dt_half):
+    """Explicit FD horizontal+vertical diffusion over dt_half.
+
+    CFL: nu*dt/dx². At 1° (dx~111km), nu_h=100 -> ~4.6e-5 << 0.25 (safe).
+    Biharmonic nu_bi: nu_bi*dt/dx⁴ may exceed the explicit limit at 1°;
+    if so it is applied here and must be re-calibrated (see make_solver_global).
+    """
+    diff = nu * (_laplacian_h(u, p) + _d2_dz2(u, p) * 0.0)  # horiz only here
+    # vertical diffusion handled separately for clarity
+    return u + diff * dt_half
+
+
+def _coriolis_rotation_2d(u, v, f, dt):
+    """Exact Coriolis rotation on the full 2D f-field (not f-plane).
+
+    Per-gridpoint rotation: u' = cos(f*dt)*u + sin(f*dt)*v, etc.
+    f varies with latitude (2D), so this is exact everywhere, no beta-plane
+    approximation.
+    """
+    angle = f[:, :, None] * dt     # broadcast 2D f to 3D velocity fields
+    cos_a = jnp.cos(angle)
+    sin_a = jnp.sin(angle)
+    u_new = cos_a * u + sin_a * v
+    v_new = -sin_a * u + cos_a * v
+    return u_new, v_new
+
+
+def _free_surface_step_fd(eta, u, v, p, F_rho_x=None, F_rho_y=None, dt_half=None):
+    """Semi-implicit free-surface (shallow water) step on lat-lon FD grid.
+
+    The spectral solver solved the linear SW system exactly per wavenumber
+    (matrix exponential). The FD analogue is a semi-implicit step: the
+    fast external (barotropic) gravity wave is treated implicitly to escape
+    its CFL (dt < dx/sqrt(gH) ~ 560s at 1°), while remaining operators stay
+    explicit. Crank-Nicolson (theta=0.5) for neutral stability.
+
+    Solves (per step, theta=0.5):
+      eta^{n+1} = eta^n - dt*H_sw * div_h(ubt^{n+theta})
+      ubt^{n+1} = ubt^n + dt*(-g*grad_h(eta^{n+theta}) + F)
+    Eliminating ubt^{n+1} gives a Helmholtz equation for eta^{n+1}:
+      (1 - theta²*g*H*dt² * lap) eta^{n+1} = RHS
+    On the FD grid this is a sparse linear system; here we solve it via a
+    few Jacobi iterations (cheap, JAX-friendly, no linear solver needed).
+    """
+    if dt_half is None:
+        dt_half = p.dt / 2.0
+    ubt, vbt = _barotropic_velocity(u, v, p)
+    theta = 0.5
+    gH = G_EARTH * p.H_sw
+
+    # Forcing: density-driven barotropic PGF (+ wind is in the explicit step
+    # for the FD solver; wind's barotropic part is folded into F_rho here).
+    F_x = jnp.zeros_like(ubt)
+    F_y = jnp.zeros_like(vbt)
+    if F_rho_x is not None:
+        F_x = F_x + F_rho_x
+        F_y = F_y + F_rho_y
+    # Barotropic wind body force
+    F_x = F_x + p.tau_x_2d / (RHO_0 * p.H_sw)
+    F_y = F_y + p.tau_y_2d / (RHO_0 * p.H_sw)
+
+    # RHS for eta Helmholtz:
+    #   rhs = eta^n - dt*H*div(ubt^n) - dt²*theta*H * div(F) + dt²*theta²*g*H * lap(eta^n)*...
+    # Simplified Crank-Nicolson shallow water (standard form):
+    div_bt = _d_dx(ubt[:, :, None], p)[:, :, 0] + _d_dy(vbt[:, :, None], p)[:, :, 0]
+    rhs = eta - dt_half * p.H_sw * div_bt - dt_half * dt_half * theta * p.H_sw * (
+        _d_dx(F_x[:, :, None], p)[:, :, 0] + _d_dy(F_y[:, :, None], p)[:, :, 0])
+
+    # Helmholtz: (1 - alpha*lap) eta_new = rhs, alpha = theta²*g*H*dt²
+    alpha = (theta ** 2) * gH * dt_half * dt_half
+    # Jacobi iteration for (1 - alpha*lap) eta = rhs
+    # lap(eta) via FD; operator is diagonally dominant for small alpha*dt.
+    eta_new = rhs
+    for _ in range(8):
+        lap_e = _laplacian_h(eta_new[:, :, None], p)[:, :, 0]
+        eta_new = rhs + alpha * lap_e
+    eta_new = eta_new * p.wet_mask
+
+    # ubt^{n+1} = ubt^n + dt*(-g*grad(eta^{n+theta}) + F)
+    eta_theta = theta * eta_new + (1.0 - theta) * eta
+    grad_eta_x = _d_dx(eta_theta[:, :, None], p)[:, :, 0]
+    grad_eta_y = _d_dy(eta_theta[:, :, None], p)[:, :, 0]
+    ubt_new = ubt + dt_half * (-G_EARTH * grad_eta_x + F_x)
+    vbt_new = vbt + dt_half * (-G_EARTH * grad_eta_y + F_y)
+    ubt_new = ubt_new * p.wet_mask
+    vbt_new = vbt_new * p.wet_mask
+
+    # Project barotropic delta back to 3D velocity
+    delta_ubt = (ubt_new - ubt)[:, :, None]
+    delta_vbt = (vbt_new - vbt)[:, :, None]
+    u_new = u + delta_ubt
+    v_new = v + delta_vbt
+    return eta_new, u_new, v_new
+
+
+def _linear_half_step(state, p, dt_half):
+    """Linear half-step: FD diffusion + 2D Coriolis + semi-implicit free surface.
+
+    Unlike the spectral solver (exact spectral diffusion decay + matrix-exp
+    free surface), the FD linear step is:
+      - explicit horizontal+vertical diffusion (CFL-safe at 1°),
+      - exact per-gridpoint Coriolis rotation on the 2D f-field,
+      - semi-implicit (Crank-Nicolson) free surface via Jacobi-iterated Helmholtz.
+    """
+    # Explicit diffusion (horizontal Laplacian + vertical d2/dz2)
+    u = state.u + p.nu_h * _laplacian_h(state.u, p) * dt_half
+    v = state.v + p.nu_h * _laplacian_h(state.v, p) * dt_half
+    T = state.T + p.kappa_h * _laplacian_h(state.T, p) * dt_half
+    S = state.S + p.kappa_h * _laplacian_h(state.S, p) * dt_half
+    u = u + p.nu_v * _d2_dz2(state.u, p) * dt_half
+    v = v + p.nu_v * _d2_dz2(state.v, p) * dt_half
+    T = T + p.kappa_v * _d2_dz2(state.T, p) * dt_half
+    S = S + p.kappa_v * _d2_dz2(state.S, p) * dt_half
+    # Mask: no diffusion updates over land
+    u = u * p.wet_mask_3d; v = v * p.wet_mask_3d
+    T = T * p.wet_mask_3d; S = S * p.wet_mask_3d
+
+    # Coriolis rotation (2D f-field, exact)
+    u, v = _coriolis_rotation_2d(u, v, p.f, dt_half)
+
+    # Semi-implicit free surface (with density barotropic PGF)
+    F_rho_x, F_rho_y = _compute_bt_rho_pgf(state, p)
+    eta, u, v = _free_surface_step_fd(state.eta, u, v, p, F_rho_x, F_rho_y, dt_half)
+    return JaxStateG(u, v, T, S, eta)
+
+
+# ── Nonlinear explicit step (forward-backward RK2, FD) ─────────────
+
+def _compute_tracer_residual(state, p):
+    """Tracer tendency minus the horizontal diffusion (handled by linear step)."""
+    dTdt, dSdt = _compute_tracer_tendency(state, p)
+    dTdt = dTdt - p.kappa_h * _laplacian_h(state.T, p)
+    dSdt = dSdt - p.kappa_h * _laplacian_h(state.S, p)
+    return dTdt, dSdt
+
+
+def _compute_momentum_residual(state, p):
+    """Momentum tendency minus linear parts (diffusion, Coriolis, bt PGF, bt wind)."""
+    dudt, dvdt = _compute_momentum_tendency(state, p)
+    dudt = dudt - p.nu_h * _laplacian_h(state.u, p)
+    dvdt = dvdt - p.nu_h * _laplacian_h(state.v, p)
+    dudt = dudt - p.f[:, :, None] * state.v
+    dvdt = dvdt + p.f[:, :, None] * state.u
+    # barotropic PGF from eta
+    bt_pgf_x = -G_EARTH * _d_dx(state.eta[:, :, None], p)[:, :, 0]
+    bt_pgf_y = -G_EARTH * _d_dy(state.eta[:, :, None], p)[:, :, 0]
+    dudt = dudt - bt_pgf_x[:, :, None]
+    dvdt = dvdt - bt_pgf_y[:, :, None]
+    # barotropic PGF from density anomaly
+    bt_rho_x, bt_rho_y = _compute_bt_rho_pgf(state, p)
+    dudt = dudt - bt_rho_x[:, :, None]
+    dvdt = dvdt - bt_rho_y[:, :, None]
+    # barotropic wind
+    bt_wind_x = p.tau_x_2d / (RHO_0 * p.H_sw)
+    bt_wind_y = p.tau_y_2d / (RHO_0 * p.H_sw)
+    dudt = dudt - bt_wind_x[:, :, None]
+    dvdt = dvdt - bt_wind_y[:, :, None]
+    return dudt, dvdt
+
+
+def _explicit_full_step(state, p, dt):
+    """Forward-backward RK2 for nonlinear tendencies (FD).
+
+    Tracers updated first (old velocity), then momentum uses predicted T
+    for the baroclinic PGF — shifts internal-wave eigenvalues left of the
+    imaginary axis for neutral stability. Same structure as spectral solver.
+    """
+    dT1, dS1 = _compute_tracer_residual(state, p)
+    T_pred = state.T + dT1 * dt
+    S_pred = state.S + dS1 * dt
+    state_T = JaxStateG(state.u, state.v, T_pred, S_pred, state.eta)
+
+    du1, dv1 = _compute_momentum_residual(state_T, p)
+    u_pred = state.u + du1 * dt
+    v_pred = state.v + dv1 * dt
+    state_pred = JaxStateG(u_pred, v_pred, T_pred, S_pred, state.eta)
+
+    dT2, dS2 = _compute_tracer_residual(state_pred, p)
+    T_new = state.T + 0.5 * (dT1 + dT2) * dt
+    S_new = state.S + 0.5 * (dS1 + dS2) * dt
+    state_T_new = JaxStateG(state.u, state.v, T_new, S_new, state.eta)
+
+    du2, dv2 = _compute_momentum_residual(state_T_new, p)
+    u_new = state.u + 0.5 * (du1 + du2) * dt
+    v_new = state.v + 0.5 * (dv1 + dv2) * dt
+    return JaxStateG(u_new, v_new, T_new, S_new, state.eta)
+
+
+def _step_impl(state, p):
+    """Strang splitting: L(dt/2) -> N(dt) -> L(dt/2)."""
+    dt_half = p.dt / 2.0
+    state = _linear_half_step(state, p, dt_half)
+    state = _explicit_full_step(state, p, p.dt)
+    state = _linear_half_step(state, p, dt_half)
+    # Final land mask enforcement (safety: no drift onto land)
+    u = state.u * p.wet_mask_3d
+    v = state.v * p.wet_mask_3d
+    return JaxStateG(u, v, state.T, state.S, state.eta)
+
+
+# ── Public API ──────────────────────────────────────────────────────
+
+def make_solver_global(grid, physics, dt, forcing=None, eos_type='linear',
+                       T_atm=None, lambda_bulk=0.0):
+    """Create a JIT-compiled global FD ocean solver.
+
+    Args mirror the spectral make_solver where applicable. Key differences:
+      - No spectral wavenumbers/decay factors (FD operators instead).
+      - Forcing is physical-space 2D (tau_x, tau_y, Q_heat); no pre-FFT.
+      - Free surface is semi-implicit (Crank-Nicolson) via Jacobi Helmholtz,
+        not a spectral matrix exponential — removes the external-gravity-wave
+        CFL so dt can be O(600s) at 1°.
+      - No lateral sponge (global domain has no periodic N/S boundaries;
+        polar cap handles the lat edges). No SST restore (bulk flux only).
+    """
+    base = make_fd_params(grid)
+    nx, ny, nz = base.nx, base.ny, base.nz
+
+    if forcing is None:
+        tau_x_2d = jnp.zeros((nx, ny))
+        tau_y_2d = jnp.zeros((nx, ny))
+        Q_heat_2d = jnp.zeros((nx, ny))
+    else:
+        tau_x_2d, tau_y_2d, Q_heat_2d = (jnp.array(f) for f in forcing)
+
+    # Effective shallow-water depth = vertical grid span
+    H_sw = float(jnp.sum(jnp.array(grid.dz)))
+    dz_norm = (jnp.array(grid.dz).reshape(1, 1, -1) / H_sw)
+
+    if T_atm is not None and lambda_bulk > 0.0:
+        T_atm_3d = jnp.array(T_atm)[:, :, None]
+    else:
+        T_atm_3d = jnp.zeros((nx, ny, 1))
+        lambda_bulk = 0.0
+
+    params = FDPhysParams(
+        dx_2d=base.dx_2d, dy=base.dy, cos_lat=base.cos_lat,
+        inv_dx=base.inv_dx, inv_dy=base.inv_dy,
+        inv_dx2=base.inv_dx2, inv_dy2=base.inv_dy2,
+        f=base.f, wet_mask=base.wet_mask, wet_mask_3d=base.wet_mask_3d,
+        dz_denom_interior=base.dz_denom_interior,
+        dz_bnd_top=base.dz_bnd_top, dz_bnd_bot=base.dz_bnd_bot,
+        d2z_hm=base.d2z_hm, d2z_hp=base.d2z_hp, d2z_denom=base.d2z_denom,
+        d2z_h0_top=base.d2z_h0_top, d2z_h0_bot=base.d2z_h0_bot,
+        dz_3d=base.dz_3d, dz_surface=base.dz_surface,
+        surface_mask=base.surface_mask, bottom_mask=base.bottom_mask,
+        nx=nx, ny=ny, nz=nz,
+        nu_h=physics.nu_h, nu_v=physics.nu_v,
+        kappa_h=physics.kappa_h, kappa_v=physics.kappa_v,
+        kappa_conv=physics.kappa_conv,
+        nu_bi=physics.nu_bi, kappa_bi=physics.kappa_bi,
+        T_ref=physics.T_ref, S_ref=physics.S_ref,
+        eos_type=eos_type, r_bot=physics.r_bot, cd=physics.cd,
+        bottom_friction=physics.bottom_friction,
+        tau_x_2d=tau_x_2d, tau_y_2d=tau_y_2d, Q_heat_2d=Q_heat_2d,
+        H_sw=H_sw, dz_norm=dz_norm, dt=dt,
+        T_atm_3d=T_atm_3d, lambda_bulk=lambda_bulk,
+    )
+
+    @jax.jit
+    def step(state):
+        return _step_impl(state, params)
+
+    @jax.jit
+    def diagnostics(state):
+        rho_prime = _density_anomaly(state.T, state.S, params)
+        rho = RHO_0 + rho_prime
+        pressure = _compute_hydrostatic_pressure(state, params)
+        w = _compute_vertical_velocity(state, params)
+        return rho, pressure, w
+
+    def init_state(T_init=None, S_init=None):
+        u = jnp.zeros((nx, ny, nz))
+        v = jnp.zeros((nx, ny, nz))
+        eta = jnp.zeros((nx, ny))
+        if T_init is not None:
+            T = jnp.array(T_init)
+            S = jnp.array(S_init) if S_init is not None else jnp.full_like(T, physics.S_ref)
+        else:
+            T = jnp.full((nx, ny, nz), physics.T_ref)
+            S = jnp.full((nx, ny, nz), physics.S_ref)
+        # Mask land: set land T/S to a sentinel (wet_mask will zero tendencies there)
+        T = T * params.wet_mask_3d + (1.0 - params.wet_mask_3d) * physics.T_ref
+        S = S * params.wet_mask_3d + (1.0 - params.wet_mask_3d) * physics.S_ref
+        return JaxStateG(u, v, T, S, eta)
+
+    return step, init_state, diagnostics
+
+
 # ── MMS verification (G1) ──────────────────────────────────────────
 # Manufactured-solution checks for the FD operators. These are the FD
 # analogues of the spectral Tier-1 tests (test_spectral_ops.py). Spectral
