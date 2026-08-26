@@ -233,6 +233,13 @@ FDPhysParams = namedtuple('FDPhysParams', [
     'H_sw', 'dz_norm', 'dt',
     # bulk air-sea heat flux
     'T_atm_3d', 'lambda_bulk',
+    # lateral sponge (polar-edge Rayleigh damping; global analogue of the
+    # regional N/S-boundary sponge — absorbs wind-driven barotropic energy
+    # that Laplacian dissipation can't within its CFL cap)
+    'sponge_rate',       # (nx, ny, 1) damping rate [1/s]; 0 interior
+    'sponge_rate_2d',    # (nx, ny) 2D damping for the free-surface step
+    'T_clim_3d', 'S_clim_3d',   # (nx, ny, nz) climatology the sponge relaxes to
+    'polar_cap_rows',    # int: poleward rows zonally averaged per step (metric singularity)
 ])
 
 
@@ -431,32 +438,24 @@ def _coriolis_rotation_2d(u, v, f, dt):
 
 
 def _free_surface_step_fd(eta, u, v, p, F_rho_x=None, F_rho_y=None, dt_half=None):
-    """Explicit free-surface (shallow water) step on lat-lon FD grid.
+    """Explicit forward-Euler free-surface (shallow water) step on lat-lon FD.
 
-    The spectral solver solved the linear SW system exactly per wavenumber
-    (matrix exponential). The FD analogue here is an EXPLICIT forward Euler
-    step on the linear shallow-water (barotropic) equations:
+      eta^{n+1} = eta^n - dt*H_sw*div_h(ubt^n)
+      ubt^{n+1} = (ubt^n + dt*(-g*grad_h(eta^n) + F)) / (1 + r_bt*dt)
 
-      eta^{n+1} = eta^n - dt*H_sw * div_h(ubt^n)
-      ubt^{n+1} = ubt^n + dt*(-g*grad_h(eta^n) + F)
-
-    This requires dt below the external-gravity-wave CFL,
-      dt < dx / sqrt(g*H_sw) ~ 560s at the equator (1°, H=4000m),
-    tighter at high latitude where dx = R*cos(lat)*dlon shrinks. At dt=60s
-    the CFL margin is ~9x at the equator and remains safe to the edge
-    (dx_edge ~10.7km -> CFL ~85s; dt=60 is under that). Chosen over the
-    semi-implicit approach because the iterative Helmholtz solve was
-    unstable for large alpha (=theta²*g*H*dt² ~ 2e8 at dt=300) on the
-    real global grid — explicit avoids all convergence issues. The regional
-    solver's stability came from the exact spectral step, not from large
-    dt, so this loses no physics — only step count (~5x more steps than
-    dt=300, absorbable on GPU).
+    with implicit linear barotropic bottom drag (unconditionally stable, no CFL).
+    The spectral solver solved the linear SW exactly per wavenumber (matrix
+    exponential); the FD explicit step needs dt below the external-gravity-wave
+    CFL (dt < dx/sqrt(g*H) ~ 85-560s; dt=60 is safe). A semi-implicit Helmholtz
+    variant was tried and gave no benefit — the G2 divergence is in the 3D
+    diffusion/advection operators at the polar-edge metric singularity
+    (1/cos^2(lat) -> inf), NOT in the free-surface barotropic mode, so
+    implicit gravity waves do not address it. Explicit + small dt is simplest.
     """
     if dt_half is None:
         dt_half = p.dt / 2.0
     ubt, vbt = _barotropic_velocity(u, v, p)
 
-    # Barotropic forcing: density-driven PGF + wind body force
     F_x = jnp.zeros_like(ubt)
     F_y = jnp.zeros_like(vbt)
     if F_rho_x is not None:
@@ -465,35 +464,62 @@ def _free_surface_step_fd(eta, u, v, p, F_rho_x=None, F_rho_y=None, dt_half=None
     F_x = F_x + p.tau_x_2d / (RHO_0 * p.H_sw)
     F_y = F_y + p.tau_y_2d / (RHO_0 * p.H_sw)
 
-    # Explicit forward Euler on the linear SW equations
+    r_bt = p.r_bot if p.bottom_friction == 'linear' else 0.0
+    drag = 1.0 / (1.0 + r_bt * dt_half)
     div_bt = _d_dx(ubt[:, :, None], p)[:, :, 0] + _d_dy(vbt[:, :, None], p)[:, :, 0]
     grad_eta_x = _d_dx(eta[:, :, None], p)[:, :, 0]
     grad_eta_y = _d_dy(eta[:, :, None], p)[:, :, 0]
 
     eta_new = eta - dt_half * p.H_sw * div_bt
-    ubt_new = ubt + dt_half * (-G_EARTH * grad_eta_x + F_x)
-    vbt_new = vbt + dt_half * (-G_EARTH * grad_eta_y + F_y)
+    ubt_new = (ubt + dt_half * (-G_EARTH * grad_eta_x + F_x)) * drag
+    vbt_new = (vbt + dt_half * (-G_EARTH * grad_eta_y + F_y)) * drag
 
     eta_new = eta_new * p.wet_mask
     ubt_new = ubt_new * p.wet_mask
     vbt_new = vbt_new * p.wet_mask
 
-    # Polar-cap filter: average the two poleward-most rows zonally to kill
-    # the cos(lat)->0 metric singularity (dx->0 makes the explicit SW CFL
-    # unattainable at the edge). Replaces the unresolved polar dynamics
-    # with a zonally-uniform cap value — standard for lat-lon FD OGCMs.
-    cap = jnp.mean(eta_new[:, :2], axis=1, keepdims=True)
-    eta_new = eta_new.at[:, :2].set(jnp.broadcast_to(cap, (p.nx, 2)))
-    cap = jnp.mean(eta_new[:, -2:], axis=1, keepdims=True)
-    eta_new = eta_new.at[:, -2:].set(jnp.broadcast_to(cap, (p.nx, 2)))
-    ubt_cap = jnp.mean(ubt_new[:, :2], axis=1, keepdims=True)
-    ubt_new = ubt_new.at[:, :2].set(jnp.broadcast_to(ubt_cap, (p.nx, 2)))
-    vbt_cap = jnp.mean(vbt_new[:, :2], axis=1, keepdims=True)
-    vbt_new = vbt_new.at[:, :2].set(jnp.broadcast_to(vbt_cap, (p.nx, 2)))
-    ubt_cap = jnp.mean(ubt_new[:, -2:], axis=1, keepdims=True)
-    ubt_new = ubt_new.at[:, -2:].set(jnp.broadcast_to(ubt_cap, (p.nx, 2)))
-    vbt_cap = jnp.mean(vbt_new[:, -2:], axis=1, keepdims=True)
-    vbt_new = vbt_new.at[:, -2:].set(jnp.broadcast_to(vbt_cap, (p.nx, 2)))
+    # Lateral sponge on the barotropic mode (2D): exponential decay of
+    # eta/ubt/vbt toward the (flat) rest state in the sponge band. Matches
+    # the 3D velocity sponge in _linear_half_step so depth-integrated
+    # momentum is damped consistently. No-op when sponge_rate_2d == 0.
+    sw_decay = jnp.exp(-p.sponge_rate_2d * dt_half)
+    eta_new = eta_new * sw_decay
+    ubt_new = ubt_new * sw_decay
+    vbt_new = vbt_new * sw_decay
+
+    # Polar-cap filter: zonally average the two poleward-most rows to kill the
+    # cos(lat)->0 metric singularity (dx->0 makes the explicit SW CFL
+    # unattainable at the edge). Replaces the unresolved polar dynamics with a
+    # zonally-uniform cap value — standard for lat-lon FD OGCMs.
+    #
+    # CRITICAL: average over WET points only and write back to WET points only.
+    # The polar rows are ~30% land (coastlines at high lat). A naive all-column
+    # mean mixes ocean (eta != 0) with land (eta == 0), forcing a zonally-
+    # uniform value that creates a spurious PGF at EVERY coastline point in the
+    # band -> wind-driven barotropic energy injection exactly there. This was
+    # the G2 wind-forced blow-up nucleation (max|u| diverged at (79.5, 124.5),
+    # a wet point flanked by land, sub-inertial, CFL-safe — not a CFL failure).
+    def _cap(field2d):
+        """Zonal mean over wet points of the 2 poleward rows; land stays 0."""
+        nc = p.polar_cap_rows
+        if nc <= 0:
+            return field2d
+        s_row = field2d[:, :nc] * p.wet_mask[:, :nc]      # (nx, nc)
+        w_row = p.wet_mask[:, :nc]
+        cap_n = jnp.sum(s_row, axis=0, keepdims=True) / jnp.maximum(
+            jnp.sum(w_row, axis=0, keepdims=True), 1.0)  # (1, nc)
+        field2d = field2d.at[:, :nc].set(
+            jnp.broadcast_to(cap_n, (p.nx, nc)) * p.wet_mask[:, :nc])
+        s_row = field2d[:, -nc:] * p.wet_mask[:, -nc:]
+        w_row = p.wet_mask[:, -nc:]
+        cap_s = jnp.sum(s_row, axis=0, keepdims=True) / jnp.maximum(
+            jnp.sum(w_row, axis=0, keepdims=True), 1.0)
+        field2d = field2d.at[:, -nc:].set(
+            jnp.broadcast_to(cap_s, (p.nx, nc)) * p.wet_mask[:, -nc:])
+        return field2d
+    eta_new = _cap(eta_new)
+    ubt_new = _cap(ubt_new)
+    vbt_new = _cap(vbt_new)
 
     # Project barotropic delta back to 3D velocity (uniform over depth)
     delta_ubt = (ubt_new - ubt)[:, :, None]
@@ -536,6 +562,18 @@ def _linear_half_step(state, p, dt_half):
     # Mask: no diffusion updates over land or below seafloor (ghost water)
     u = u * p.wet_mask_z; v = v * p.wet_mask_z
     T = T * p.wet_mask_z; S = S * p.wet_mask_z
+
+    # Lateral sponge (Rayleigh damping) — exponential decay, unconditional
+    # (no damping CFL). Applied in the linear half-step so Strang splitting
+    # gives total sponge time = dt per full step. Absorbs the wind-driven
+    # barotropic energy that Laplacian dissipation can't arrest within its
+    # CFL cap, which otherwise piles up at the polar edge rows. No-op when
+    # sponge_rate == 0 (decay == 1, T_clim == 0 -> T unchanged).
+    decay = jnp.exp(-p.sponge_rate * dt_half)            # (nx,ny,1)
+    u = u * decay
+    v = v * decay
+    T = p.T_clim_3d + (T - p.T_clim_3d) * decay
+    S = p.S_clim_3d + (S - p.S_clim_3d) * decay
 
     # Coriolis rotation (2D f-field, exact)
     u, v = _coriolis_rotation_2d(u, v, p.f, dt_half)
@@ -614,32 +652,78 @@ def _explicit_full_step(state, p, dt):
     return JaxStateG(u_new, v_new, T_new, S_new, state.eta)
 
 
+def _polar_cap_3d(field3d, p):
+    """Zonally average the poleward-most `polar_cap_rows` rows of a 3D field.
+
+    The cos(lat)->0 metric singularity makes the spherical Laplacian /
+    advection operators blow up at the polar edge (1/cos²φ in ∂²/∂x²,
+    tanφ/R in the metric correction). The free-surface polar-cap filter
+    handles the barotropic mode; this extends the same idea to the FULL 3D
+    field (u, v, T, S) so no meridional gradient survives in the cap rows
+    for the singular operators to amplify. This is the standard lat-lon FD
+    OGCM treatment (e.g. MOM6's polar cap / Arctic fold).
+
+    Wet-point-only zonal mean (land excluded); land stays at its masked
+    value. Applied once per full step (in _step_impl), which is sufficient
+    because the cap rows' dynamics are unresolved by construction.
+    """
+    ncap = p.polar_cap_rows
+    if ncap <= 0:
+        return field3d
+    wm = p.wet_mask                          # (nx, ny)
+    # North cap
+    s = field3d[:, -ncap:] * wm[:, -ncap:, None]
+    w = jnp.maximum(wm[:, -ncap:], 1e-12)
+    cap_n = jnp.sum(s, axis=0, keepdims=True) / jnp.sum(
+        jnp.broadcast_to(w[:, :, None], s.shape), axis=0, keepdims=True)  # (1,ncap,nz)
+    cap_n = jnp.broadcast_to(cap_n, field3d[:, -ncap:].shape) * wm[:, -ncap:, None]
+    # South cap
+    s = field3d[:, :ncap] * wm[:, :ncap, None]
+    cap_s = jnp.sum(s, axis=0, keepdims=True) / jnp.sum(
+        jnp.broadcast_to(w[:, :, None], s.shape), axis=0, keepdims=True)
+    cap_s = jnp.broadcast_to(cap_s, field3d[:, :ncap].shape) * wm[:, :ncap, None]
+    return jnp.concatenate([cap_s, field3d[:, ncap:-ncap], cap_n], axis=1)
+
+
 def _step_impl(state, p):
     """Strang splitting: L(dt/2) -> N(dt) -> L(dt/2)."""
     dt_half = p.dt / 2.0
     state = _linear_half_step(state, p, dt_half)
     state = _explicit_full_step(state, p, p.dt)
     state = _linear_half_step(state, p, dt_half)
+    # 3D polar-cap filter: zonally average the cap rows of u,v,T,S to kill
+    # the cos(lat)->0 metric singularity in the diffusion/advection operators.
+    u = _polar_cap_3d(state.u, p)
+    v = _polar_cap_3d(state.v, p)
+    T = _polar_cap_3d(state.T, p)
+    S = _polar_cap_3d(state.S, p)
     # Final mask enforcement (safety: no drift onto land or ghost water)
-    u = state.u * p.wet_mask_z
-    v = state.v * p.wet_mask_z
-    return JaxStateG(u, v, state.T, state.S, state.eta)
+    u = u * p.wet_mask_z
+    v = v * p.wet_mask_z
+    T = T * p.wet_mask_z
+    S = S * p.wet_mask_z
+    return JaxStateG(u, v, T, S, state.eta)
 
 
 # ── Public API ──────────────────────────────────────────────────────
 
 def make_solver_global(grid, physics, dt, forcing=None, eos_type='linear',
-                       T_atm=None, lambda_bulk=0.0):
+                       T_atm=None, lambda_bulk=0.0,
+                       sponge_days=0.0, sponge_cells=0,
+                       T_init=None, S_init=None,
+                       polar_cap_rows=2):
     """Create a JIT-compiled global FD ocean solver.
 
     Args mirror the spectral make_solver where applicable. Key differences:
       - No spectral wavenumbers/decay factors (FD operators instead).
       - Forcing is physical-space 2D (tau_x, tau_y, Q_heat); no pre-FFT.
-      - Free surface is semi-implicit (Crank-Nicolson) via Jacobi Helmholtz,
-        not a spectral matrix exponential — removes the external-gravity-wave
-        CFL so dt can be O(600s) at 1°.
-      - No lateral sponge (global domain has no periodic N/S boundaries;
-        polar cap handles the lat edges). No SST restore (bulk flux only).
+      - Free surface is EXPLICIT forward-Euler (not semi-implicit) + polar-cap
+        filter; requires dt below the external-gravity-wave CFL.
+      - Lateral sponge at the POLAR EDGE rows (not N/S periodic boundaries):
+        the global polar edge is the analogue of the regional N/S boundary.
+        Wind-driven barotropic energy piles up there (Laplacian can't arrest
+        it within its CFL cap); the sponge absorbs it. cosine-tapered.
+      - No SST restore (bulk flux only).
     """
     base = make_fd_params(grid)
     nx, ny, nz = base.nx, base.ny, base.nz
@@ -660,6 +744,33 @@ def make_solver_global(grid, physics, dt, forcing=None, eos_type='linear',
     else:
         T_atm_3d = jnp.zeros((nx, ny, 1))
         lambda_bulk = 0.0
+
+    # ── Lateral sponge (polar-edge Rayleigh damping) ──
+    # Same construction as the regional spectral solver's N/S sponge, but
+    # applied at both lat edges (the polar cap rows). cosine-tapered from
+    # r_max at the edge to 0 at sponge_cells into the interior.
+    if sponge_days > 0.0 and sponge_cells > 0:
+        r_max = 1.0 / (sponge_days * 86400.0)
+        nc = int(sponge_cells)
+        j = np.arange(ny)
+        taper = np.zeros(ny)
+        edge = np.minimum(j, ny - 1 - j)   # distance to nearest N/S edge
+        in_band = edge < nc
+        taper[in_band] = 0.5 * (1.0 + np.cos(np.pi * edge[in_band] / nc))
+        sponge_2d_np = (r_max * taper).reshape(1, ny)
+        sponge_rate_2d = jnp.array(np.broadcast_to(sponge_2d_np, (nx, ny)))
+        sponge_rate = sponge_rate_2d[:, :, None]   # (nx, ny, 1)
+        if T_init is not None:
+            T_clim_3d = jnp.array(T_init)
+            S_clim_3d = jnp.array(S_init) if S_init is not None else jnp.zeros_like(T_clim_3d)
+        else:
+            T_clim_3d = jnp.zeros((nx, ny, nz))
+            S_clim_3d = jnp.zeros((nx, ny, nz))
+    else:
+        sponge_rate_2d = jnp.zeros((nx, ny))
+        sponge_rate = jnp.zeros((nx, ny, 1))
+        T_clim_3d = jnp.zeros((nx, ny, nz))
+        S_clim_3d = jnp.zeros((nx, ny, nz))
 
     params = FDPhysParams(
         dx_2d=base.dx_2d, dy=base.dy, cos_lat=base.cos_lat,
@@ -684,6 +795,9 @@ def make_solver_global(grid, physics, dt, forcing=None, eos_type='linear',
         tau_x_2d=tau_x_2d, tau_y_2d=tau_y_2d, Q_heat_2d=Q_heat_2d,
         H_sw=H_sw, dz_norm=dz_norm, dt=dt,
         T_atm_3d=T_atm_3d, lambda_bulk=lambda_bulk,
+        sponge_rate=sponge_rate, sponge_rate_2d=sponge_rate_2d,
+        T_clim_3d=T_clim_3d, S_clim_3d=S_clim_3d,
+        polar_cap_rows=int(polar_cap_rows),
     )
 
     @jax.jit
