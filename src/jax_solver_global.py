@@ -271,6 +271,7 @@ FDPhysParams = namedtuple('FDPhysParams', [
     'sponge_rate_2d',    # (nx, ny) 2D damping for the free-surface step
     'T_clim_3d', 'S_clim_3d',   # (nx, ny, nz) climatology the sponge relaxes to
     'polar_cap_rows',    # int: poleward rows zonally averaged per step (metric singularity)
+    'dealias_lon_mask',  # (nx, 1, 1) 2/3-rule FFT dealias mask for the periodic lon axis
 ])
 
 
@@ -334,13 +335,46 @@ def _compute_bt_rho_pgf(state, p):
     return bt_rho_pgf_x, bt_rho_pgf_y
 
 
+def _dealias_w_fd(w, p):
+    """Remove 2-dx grid-scale noise from the diagnosed w (FD analogue of the
+    spectral baseline's _dealias_h).
+
+    Central-difference divergence amplifies the 2-dx mode in u/v, so the w
+    diagnosed from div_h carries 2-dx noise. Multiplied by the steep
+    near-surface dT/dz this becomes a spurious vertical-advection heat source
+    that nucleates a boundary heat pump (the G3 day-5 blow-up root cause).
+    The spectral solver removes it with a 2/3 FFT rule; here we do the same
+    in the periodic lon direction (exact) plus a 5-pt binomial low-pass in
+    the closed lat direction (kills 2-dx without injecting high-freq, unlike
+    a box average). lon FFT is exact because lon is periodic; lat cannot use
+    FFT (closed no-flux wall), so a binomial filter substitutes.
+    """
+    # 2/3 FFT dealias in lon (axis 0, periodic).
+    w_hat = jnp.fft.fft(w, axis=0)
+    w_hat = w_hat * p.dealias_lon_mask
+    w_lon = jnp.real(jnp.fft.ifft(w_hat, axis=0))
+    # 5-pt binomial low-pass [1,4,6,4,1]/16 in lat (axis 1, edge-padded for the wall).
+    wp = jnp.pad(w_lon, ((0, 0), (2, 2), (0, 0)), mode='edge')
+    w_sm = (wp[:, :-4] + 4.0 * wp[:, 1:-3] + 6.0 * wp[:, 2:-2]
+            + 4.0 * wp[:, 3:-1] + wp[:, 4:]) / 16.0
+    return w_sm
+
+
 def _compute_vertical_velocity(state, p):
-    """Diagnose w from horizontal continuity. w=0 at bottom. Masked on land."""
+    """Diagnose w from horizontal continuity. w=0 at bottom. Masked on land.
+
+    The diagnosed w is dealiased (_dealias_w_fd) to remove the 2-dx
+    grid-scale noise that central-difference divergence injects — without
+    this, w x dT/dz drives a spurious vertical-advection heat pump at the
+    boundary rows (the G3 day-5 blow-up; the spectral baseline applies the
+    equivalent _dealias_h).
+    """
     div_h = _divergence_h(state.u, state.v, p)
     div_avg = 0.5 * (div_h[..., :-1] + div_h[..., 1:])
     integrand = div_avg * p.dz_3d
     w = jnp.zeros_like(state.u)
     w = w.at[..., :-1].set(-jnp.cumsum(integrand[..., ::-1], axis=-1)[..., ::-1])
+    w = _dealias_w_fd(w, p)
     return w * p.wet_mask_z   # no spurious w over land or below seafloor
 
 
@@ -840,6 +874,20 @@ def make_solver_global(grid, physics, dt, forcing=None, eos_type='linear',
         T_clim_3d = jnp.zeros((nx, ny, nz))
         S_clim_3d = jnp.zeros((nx, ny, nz))
 
+    # ── 2/3-rule dealias mask for the periodic lon axis ──
+    # The FD _compute_vertical_velocity integrates div_h = du/dx + dv/dy
+    # vertically to diagnose w. Central differencing amplifies the 2-dx mode
+    # in u/v, so the diagnosed w carries 2-dx grid-scale noise. The spectral
+    # baseline (jax_solver.py) removes this with _dealias_h (2/3 FFT rule) on
+    # w; the FD solver must do the equivalent. lon is periodic -> a 2/3 FFT
+    # dealias in lon is exact; the closed lat wall can't use FFT, so the lat
+    # 2-dx is killed by a 5-pt binomial low-pass in _dealias_w_fd.
+    _kmax = nx // 2
+    _keep = max(1, int(_kmax * 2 / 3))
+    _kidx = np.fft.fftfreq(nx) * nx            # 0..nx/2, -nx/2..-1
+    _lon_mask_np = (np.abs(_kidx) <= _keep).astype(np.float64).reshape(nx, 1, 1)
+    dealias_lon_mask = jnp.array(np.broadcast_to(_lon_mask_np, (nx, 1, 1)))
+
     params = FDPhysParams(
         dx_2d=base.dx_2d, dy=base.dy, cos_lat=base.cos_lat,
         inv_dx=base.inv_dx, inv_dy=base.inv_dy,
@@ -867,6 +915,7 @@ def make_solver_global(grid, physics, dt, forcing=None, eos_type='linear',
         sponge_rate=sponge_rate, sponge_rate_2d=sponge_rate_2d,
         T_clim_3d=T_clim_3d, S_clim_3d=S_clim_3d,
         polar_cap_rows=int(polar_cap_rows),
+        dealias_lon_mask=dealias_lon_mask,
     )
 
     @jax.jit
