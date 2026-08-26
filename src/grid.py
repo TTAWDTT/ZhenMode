@@ -235,6 +235,29 @@ class GlobalOceanGrid:
     ny: int
 
 
+def _smooth_depth_once(depth):
+    """One Laplacian smoothing pass on the ocean depth field.
+
+    Each ocean cell's depth becomes the mean of itself and its 4 neighbours
+    (lon-periodic, lat-bounded; land neighbours contribute depth 0). Land
+    cells stay 0. This damps steep topographic gradients without moving the
+    coastline (a cell that was ocean stays >= 0; a near-zero cell may later
+    be re-masked as land by make_global_grid's depth>0 test). Operates on
+    (nx, ny) = (lon, lat).
+    """
+    d = np.array(depth, dtype=np.float64)
+    # 4-neighbour mean with lon wrap (axis 0), lat clamp (axis 1).
+    left = np.roll(d, 1, axis=0)
+    right = np.roll(d, -1, axis=0)
+    up = np.empty_like(d); up[:, 1:] = d[:, :-1]; up[:, 0] = d[:, 0]
+    down = np.empty_like(d); down[:, :-1] = d[:, 1:]; down[:, -1] = d[:, -1]
+    nb_mean = 0.25 * (left + right + up + down)
+    # Blend toward neighbour mean only at ocean cells; land stays 0.
+    ocean = d > 0.0
+    out = np.where(ocean, 0.5 * d + 0.5 * nb_mean, 0.0)
+    return np.maximum(out, 0.0)
+
+
 def _read_etopo_global(filepath, resolution=1.0, lat_max=85.0):
     """Read global ETOPO2022 bathymetry, downsampled to target resolution.
 
@@ -281,7 +304,8 @@ def _read_etopo_global(filepath, resolution=1.0, lat_max=85.0):
     return depth, lon_c, lat_c
 
 
-def make_global_grid(grid_config, bathymetry_file):
+def make_global_grid(grid_config, bathymetry_file, smooth_passes=0,
+                     min_depth=None):
     """Generate a global lat-lon OceanGrid from ETOPO bathymetry.
 
     Unlike make_grid (regional plane), this builds a true global grid with:
@@ -292,6 +316,22 @@ def make_global_grid(grid_config, bathymetry_file):
     Polar regions above lat_max are excluded (polar cap); the FD solver
     applies a polar-cap filter on the poleward-most row to handle the
     cos(lat)->0 metric singularity.
+
+    smooth_passes: number of Laplacian smoothing passes applied to the ocean
+      depth field (land stays 0). Smooths steep topographic gradients
+      (continental slopes, trenches) that at 1° resolution drive an
+      under-resolved topographic PGF which destabilizes the FD solver.
+      Standard OGCM practice (MOM6 applies bathymetry filtering by default).
+      0 = raw ETOPO (no smoothing). Each pass replaces an ocean cell's depth
+      with the mean of itself + its valid (ocean or land=0) 4-neighbours,
+      lon-periodic, lat-bounded. Land/sea mask is re-derived AFTER smoothing
+      so a cell that smooths to ~0 becomes land (prevents flooded coast).
+    min_depth: ocean points shallower than this become land (depth=0).
+      Default = |z[1]| (top interior level thickness), so every wet column
+      has at least 2 wet layers (surface + one interior). Ultra-shallow
+      coastal points (<5m at 1°) carry unreliable WOA T and produce extreme
+      horizontal gradients that destabilize the FD solver. Standard OGCM
+      practice (a "minimum depth" / partial-cell floor). 0 = no floor.
     """
     gc = grid_config
     depth, lon, lat = _read_etopo_global(
@@ -300,6 +340,16 @@ def make_global_grid(grid_config, bathymetry_file):
     nx, ny = depth.shape
     assert nx == gc.nx, f"lon dim {nx} != config nx {gc.nx}"
     assert ny == gc.ny, f"lat dim {ny} != config ny {gc.ny}"
+
+    # ── Bathymetry smoothing (option A) ──
+    for _ in range(int(smooth_passes)):
+        depth = _smooth_depth_once(depth)
+
+    # ── Minimum-depth floor (drop ultra-shallow points) ──
+    if min_depth is None:
+        z = np.array(gc.z_levels, dtype=np.float64)
+        min_depth = float(abs(z[1])) if len(z) > 1 else 5.0   # ~5m
+    depth = np.where(depth > 0.0, np.where(depth < min_depth, 0.0, depth), 0.0)
 
     # ── Spherical metric ──
     cos_lat = np.cos(np.radians(lat))            # (ny,)
