@@ -671,6 +671,19 @@ def _compute_momentum_residual(state, p):
     bt_wind_y = p.tau_y_2d / (RHO_0 * p.H_sw)
     dudt = dudt - bt_wind_x[:, :, None]
     dvdt = dvdt - bt_wind_y[:, :, None]
+    # Mask the residual by wet_mask_z for consistency with the full tendency.
+    # _compute_momentum_tendency returns dudt already masked to 0 in ghost
+    # water (layers below the seafloor, wet_mask_z==0), but the barotropic
+    # subtractions above (bt_pgf, bt_rho_pgf, bt_wind) are broadcast uniformly
+    # over ALL depths — so in ghost-water layers the residual was -bt_pgf
+    # (a spurious PGF) instead of 0, mismatching the masked tendency there.
+    # Masking closes the mismatch so the residual equals the (masked) full
+    # tendency minus its linear parts everywhere, including ghost water. This
+    # keeps the N-step residual clean in ghost layers (verified ~1e-21, machine
+    # zero) so no spurious tendency leaks into the wet column via the vertical
+    # operators that couple adjacent layers.
+    dudt = dudt * p.wet_mask_z
+    dvdt = dvdt * p.wet_mask_z
     return dudt, dvdt
 
 
@@ -766,14 +779,14 @@ def make_solver_global(grid, physics, dt, forcing=None, eos_type='linear',
                        T_atm=None, lambda_bulk=0.0,
                        sponge_days=0.0, sponge_cells=0,
                        T_init=None, S_init=None,
-                       polar_cap_rows=2):
+                       polar_cap_rows=2, return_params=False):
     """Create a JIT-compiled global FD ocean solver.
 
     Args mirror the spectral make_solver where applicable. Key differences:
       - No spectral wavenumbers/decay factors (FD operators instead).
       - Forcing is physical-space 2D (tau_x, tau_y, Q_heat); no pre-FFT.
-      - Free surface is EXPLICIT forward-Euler (not semi-implicit) + polar-cap
-        filter; requires dt below the external-gravity-wave CFL.
+      - Free surface is forward-backward (Sielecki) + polar-cap filter;
+        requires dt below the external-gravity-wave CFL.
       - Lateral sponge at the POLAR EDGE rows (not N/S periodic boundaries):
         the global polar edge is the analogue of the regional N/S boundary.
         Wind-driven barotropic energy piles up there (Laplacian can't arrest
@@ -886,6 +899,8 @@ def make_solver_global(grid, physics, dt, forcing=None, eos_type='linear',
         S = S * params.wet_mask_z + (1.0 - params.wet_mask_z) * physics.S_ref
         return JaxStateG(u, v, T, S, eta)
 
+    if return_params:
+        return step, init_state, diagnostics, params
     return step, init_state, diagnostics
 
 
