@@ -216,6 +216,52 @@ def _divergence_conservative(ubt, vbt, p):
     return div_x + div_y
 
 
+def _gradient_conservative(eta, p):
+    """Exact discrete adjoint of _divergence_conservative, under the
+    cell-area-weighted inner product <a,b> = Sum(a*b*A_ij), A_ij = dx_ij*dy.
+
+    This makes the forward-backward free-surface pair ENERGY-NEUTRAL: the
+    PE/KE cross terms cancel via discrete summation by parts
+        <u, grad eta>_A = -<eta, div u>_A
+    so a free gravity wave neither grows nor decays (|lambda|=1) on the masked,
+    non-uniform lat-lon grid. The centered _d_dx/_d_dy gradient is NOT this
+    adjoint (it ignores the open-face gating AND, on the non-uniform grid, the
+    per-cell inv_dx weighting), so pairing it with the conservative divergence
+    injects energy at basin scale (pure free wave: E grows ~22x/40steps).
+
+    Derivation (zonal, axis 0 periodic): the conservative divergence is
+        div_x_i = (Fx_{i+1/2} - Fx_{i-1/2}) / A_i
+    with face flux Fx_{i+1/2} = 0.5*(u_i+u_{i+1})*open_{i+1/2}*dy. Summation by
+    parts gives the adjoint
+        grad_x_i = inv_dx_i * [0.5*open_{i+1/2}*(eta_{i+1}-eta_i)
+                             + 0.5*open_{i-1/2}*(eta_i-eta_{i-1})]
+    (the FACE DIFFERENCE, not the face average — the average was the earlier
+    wrong guess). inv_dx_i = 1/dx_i = dy/A_i lives at the cell, consistent with
+    the divergence's per-cell inv_dx. Meridional axis is analogous with closed
+    walls (boundary faces open=0).
+
+    Args:
+      eta: (nx, ny) 2D sea-surface height, already masked to wet cells.
+    Returns:
+      (grad_x, grad_y) each (nx, ny).
+    """
+    wm = p.wet_mask
+    inv_dx = p.inv_dx[..., 0]                          # (nx, ny)
+    # Zonal (axis 0, periodic): open face iff both neighbors wet.
+    open_xp = wm * jnp.roll(wm, -1, axis=0)            # face (i+1/2,j)
+    open_xm = wm * jnp.roll(wm, 1, axis=0)             # face (i-1/2,j)
+    d_eta_xp = (jnp.roll(eta, -1, axis=0) - eta) * open_xp   # eta_{i+1}-eta_i
+    d_eta_xm = (eta - jnp.roll(eta, 1, axis=0)) * open_xm    # eta_i-eta_{i-1}
+    grad_x = inv_dx * 0.5 * (d_eta_xp + d_eta_xm)
+    # Meridional (axis 1, closed walls): boundary faces have no neighbor => 0.
+    open_yp = wm * jnp.roll(wm, -1, axis=1)
+    open_ym = wm * jnp.roll(wm, 1, axis=1)
+    d_eta_yp = (jnp.roll(eta, -1, axis=1) - eta) * open_yp
+    d_eta_ym = (eta - jnp.roll(eta, 1, axis=1)) * open_ym
+    grad_y = p.inv_dy * 0.5 * (d_eta_yp + d_eta_ym)
+    return grad_x, grad_y
+
+
 def _laplacian_h(u, p):
     """Horizontal Laplacian on the sphere:
 
@@ -611,25 +657,13 @@ def _free_surface_step_fd(eta, u, v, p, F_rho_x=None, F_rho_y=None, dt_half=None
     # so a perturbed eta relaxes to the steady wind-driven setup instead of
     # amplifying. No iterative solve needed (unlike semi-implicit Helmholtz).
     eta_new = eta - dt_half * p.H_sw * div_bt
-    grad_eta_x = _d_dx(eta_new[:, :, None], p)[:, :, 0]
-    grad_eta_y = _d_dy(eta_new[:, :, None], p)[:, :, 0]
-    ubt_new = (ubt + dt_half * (-G_EARTH * grad_eta_x + F_x)) * drag
-    vbt_new = (vbt + dt_half * (-G_EARTH * grad_eta_y + F_y)) * drag
 
     eta_new = eta_new * p.wet_mask
-    ubt_new = ubt_new * p.wet_mask
-    vbt_new = vbt_new * p.wet_mask
-
-    # Lateral sponge on the barotropic mode (2D): exponential decay of
-    # eta/ubt/vbt toward the (flat) rest state in the sponge band. Matches
-    # the 3D velocity sponge in _linear_half_step so depth-integrated
-    # momentum is damped consistently. No-op when sponge_rate_2d == 0.
+    # Lateral sponge on eta (2D). No-op when sponge_rate_2d == 0.
     sw_decay = jnp.exp(-p.sponge_rate_2d * dt_half)
     eta_new = eta_new * sw_decay
-    ubt_new = ubt_new * sw_decay
-    vbt_new = vbt_new * sw_decay
 
-    # Polar-cap filter: zonally average the two poleward-most rows to kill the
+    # Polar-cap filter: zonally average the poleward rows to kill the
     # cos(lat)->0 metric singularity (dx->0 makes the explicit SW CFL
     # unattainable at the edge). Replaces the unresolved polar dynamics with a
     # zonally-uniform cap value — standard for lat-lon FD OGCMs.
@@ -667,7 +701,29 @@ def _free_surface_step_fd(eta, u, v, p, F_rho_x=None, F_rho_y=None, dt_half=None
         south = _band(field2d[:, :nb], p.wet_mask[:, :nb])
         north = _band(field2d[:, -nb:], p.wet_mask[:, -nb:])
         return jnp.concatenate([south, field2d[:, nb:-nb], north], axis=1)
+
+    # CONSISTENT-TRIPLE CAP (god 02-55 #1): cap eta FIRST, then drive the
+    # barotropic momentum update from the CAPPED eta's pressure gradient, then
+    # cap the resulting ubt/vbt. Previously eta/ubt/vbt were capped to THREE
+    # INDEPENDENT zonal means, so in the cap band eta was zonally uniform but
+    # ubt/vbt carried a different zonal structure -> the next step's div(ubt)
+    # and grad(eta) were dynamically inconsistent -> spurious PGF -> free-mode
+    # energy injection (cap-ON NaN step 534 vs cap-OFF 800). Capping eta first
+    # and computing the PGF from the capped eta makes ubt/vbt consistent with
+    # eta by construction; their cap is then a CFL-safety smoothing, not an
+    # independent forcing.
     eta_new = _cap(eta_new)
+    # Energy-consistent PGF: the exact adjoint of the conservative divergence
+    # (area-weighted), so the FB pair is neutral on the masked non-uniform grid.
+    # The centered _d_dx/_d_dy gradient is NOT the adjoint and injects energy.
+    grad_eta_x, grad_eta_y = _gradient_conservative(eta_new, p)
+    ubt_new = (ubt + dt_half * (-G_EARTH * grad_eta_x + F_x)) * drag
+    vbt_new = (vbt + dt_half * (-G_EARTH * grad_eta_y + F_y)) * drag
+
+    ubt_new = ubt_new * p.wet_mask
+    vbt_new = vbt_new * p.wet_mask
+    ubt_new = ubt_new * sw_decay
+    vbt_new = vbt_new * sw_decay
     ubt_new = _cap(ubt_new)
     vbt_new = _cap(vbt_new)
 

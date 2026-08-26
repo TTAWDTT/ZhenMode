@@ -1,9 +1,7 @@
-"""Verify the conservative-divergence fix closes the free-surface mass leak.
+"""Where does the amplifying free-wave energy concentrate: grid-scale or basin-scale?
 
-Pure free-wave test (no wind, no cap, no sponge): 0.1m eta seiche bump.
-Before fix: sum_eta drifted +1996 -> -4607 over 200 steps (mass leak).
-After fix: should stay flat (machine-zero residual).
-Also checks max|eta| stays bounded (free wave should not amplify).
+If grid-scale (2dx), a barotropic Laplacian viscosity can sink it. If basin-scale,
+needs the adjoint-consistent reformulation.
 """
 import os, sys
 os.environ.setdefault('JAX_ENABLE_X64', '1')
@@ -33,21 +31,35 @@ step, init_state_fn, _ = make_solver_global(
 
 wm = np.array(grid.wet_mask) > 0.5
 state = init_state_fn(T_init=jnp.array(T_init), S_init=jnp.array(S_init))
-e0 = np.array(state.eta)
-yy = np.arange(grid.ny); e0[:, yy] += 0.1 * np.sin(np.pi * yy / grid.ny)
+e0 = np.array(state.eta); yy = np.arange(grid.ny)
+e0[:, yy] += 0.1*np.sin(np.pi*yy/grid.ny)
 state = JaxStateG(state.u, state.v, state.T, state.S, jnp.array(e0))
-sum0 = float(np.sum(e0[wm]))
-print(f"initial sum_eta={sum0:.4f}  max|eta|={float(np.max(np.abs(e0))):.4f}")
-print(f"\n{'stp':>4} {'sum_eta':>12} {'dsum':>12} {'max|eta|':>11} {'max|u|':>11}")
-prev = sum0
-for k in range(600):
+
+# Step to where amplitude is large but pre-NaN.
+for k in range(200):
     state = step(state)
-    e = np.array(state.eta); u = np.array(state.u)
-    s = float(np.sum(e[wm]))
-    if (k + 1) % 50 == 0 or k < 3:
-        print(f"{k+1:>4} {s:>12.4f} {s-prev:>12.4e} {float(np.max(np.abs(e))):>11.4e} "
-              f"{float(np.max(np.abs(u))):>11.4e}")
-    prev = s
-    if not np.isfinite(e).all():
-        print("  NaN"); break
-print(f"\nfinal drift = {s - sum0:+.4e}  ({(s-sum0)/sum0*100:+.3f}% of initial)")
+e = np.array(state.eta)
+print(f"step 200: max|eta|={float(np.max(np.abs(e))):.3e}")
+
+# Zonal power spectrum of eta at a wet row (lon-axis FFT) -> is energy at 2dx?
+# pick a row with lots of wet cells
+for j in [30, 60, 90]:
+    row = e[:, j] * wm[:, j]
+    if wm[:,j].sum() < 100: continue
+    # FFT along lon (periodic)
+    fh = np.fft.fft(row)
+    pw = np.abs(fh)**2
+    pw = pw[:len(pw)//2]
+    total = pw.sum()
+    # grid-scale = top 10% of wavenumbers (2dx-4dx)
+    n = len(pw)
+    gs = pw[int(n*0.9):].sum()
+    print(f"  row j={j} (lat {grid.lat[j]:.1f}): grid-scale(2-4dx) frac = {gs/total:.3f}  "
+          f"argmax k={np.argmax(pw[1:])+1}/{n}")
+
+# Meridional profile of |eta| (is it basin-scale seiche or localized?)
+print("\nmeridional max|eta| profile (lon-max at each lat):")
+prof = np.max(np.abs(e) * wm, axis=0)
+for j in range(0, grid.ny, 10):
+    bar = '#' * int(prof[j]/max(prof.max(),1)*50)
+    print(f"  j={j:>3} lat={grid.lat[j]:>6.1f}: {prof[j]:>10.3e} {bar}")
