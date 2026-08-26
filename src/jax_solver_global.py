@@ -270,7 +270,8 @@ FDPhysParams = namedtuple('FDPhysParams', [
     'sponge_rate',       # (nx, ny, 1) damping rate [1/s]; 0 interior
     'sponge_rate_2d',    # (nx, ny) 2D damping for the free-surface step
     'T_clim_3d', 'S_clim_3d',   # (nx, ny, nz) climatology the sponge relaxes to
-    'polar_cap_rows',    # int: poleward rows zonally averaged per step (metric singularity)
+    'polar_cap_rows',    # int: poleward rows fully zonally averaged per step (metric singularity)
+    'polar_cap_taper',   # int: extra rows over which the cap blend cos^2-tapers 1->0 (cap-edge cliff)
     'dealias_lon_mask',  # (nx, 1, 1) 2/3-rule FFT dealias mask for the periodic lon axis
 ])
 
@@ -595,23 +596,31 @@ def _free_surface_step_fd(eta, u, v, p, F_rho_x=None, F_rho_y=None, dt_half=None
     # the G2 wind-forced blow-up nucleation (max|u| diverged at (79.5, 124.5),
     # a wet point flanked by land, sub-inertial, CFL-safe — not a CFL failure).
     def _cap(field2d):
-        """Zonal mean over wet points of the 2 poleward rows; land stays 0."""
+        """Tapered zonal-mean polar cap on a 2D field (eta, ubt, vbt).
+
+        Blends the wet-point zonal mean into the poleward rows with the same
+        cos^2 taper as the 3D cap (_polar_cap_weights) so there is no
+        meridional cliff at the cap edge (the hard-cutoff G3 step-12
+        blow-up). Land stays at its masked value (0).
+        """
         nc = p.polar_cap_rows
         if nc <= 0:
             return field2d
-        s_row = field2d[:, :nc] * p.wet_mask[:, :nc]      # (nx, nc)
-        w_row = p.wet_mask[:, :nc]
-        cap_n = jnp.sum(s_row, axis=0, keepdims=True) / jnp.maximum(
-            jnp.sum(w_row, axis=0, keepdims=True), 1.0)  # (1, nc)
-        field2d = field2d.at[:, :nc].set(
-            jnp.broadcast_to(cap_n, (p.nx, nc)) * p.wet_mask[:, :nc])
-        s_row = field2d[:, -nc:] * p.wet_mask[:, -nc:]
-        w_row = p.wet_mask[:, -nc:]
-        cap_s = jnp.sum(s_row, axis=0, keepdims=True) / jnp.maximum(
-            jnp.sum(w_row, axis=0, keepdims=True), 1.0)
-        field2d = field2d.at[:, -nc:].set(
-            jnp.broadcast_to(cap_s, (p.nx, nc)) * p.wet_mask[:, -nc:])
-        return field2d
+        nt = p.polar_cap_taper
+        wts = _polar_cap_weights(nc, nt)               # (nc+nt,)
+        nb = nc + nt
+        wts_b = wts.reshape(1, nb)
+
+        def _band(field, wm_band):
+            s = field * wm_band                        # (nx, nb)
+            wsum = jnp.maximum(jnp.sum(wm_band, axis=0, keepdims=True), 1.0)  # (1,nb)
+            zmean = jnp.sum(s, axis=0, keepdims=True) / wsum
+            zmean = jnp.broadcast_to(zmean, (p.nx, nb)) * wm_band
+            return wts_b * zmean + (1.0 - wts_b) * (field * wm_band)
+
+        south = _band(field2d[:, :nb], p.wet_mask[:, :nb])
+        north = _band(field2d[:, -nb:], p.wet_mask[:, -nb:])
+        return jnp.concatenate([south, field2d[:, nb:-nb], north], axis=1)
     eta_new = _cap(eta_new)
     ubt_new = _cap(ubt_new)
     vbt_new = _cap(vbt_new)
@@ -763,37 +772,71 @@ def _explicit_full_step(state, p, dt):
     return JaxStateG(u_new, v_new, T_new, S_new, state.eta)
 
 
-def _polar_cap_3d(field3d, p):
-    """Zonally average the poleward-most `polar_cap_rows` rows of a 3D field.
+def _polar_cap_weights(ncap, ntaper):
+    """Blend weights for the tapered polar cap (south end; north is mirrored).
 
-    The cos(lat)->0 metric singularity makes the spherical Laplacian /
-    advection operators blow up at the polar edge (1/cos²φ in ∂²/∂x²,
-    tanφ/R in the metric correction). The free-surface polar-cap filter
-    handles the barotropic mode; this extends the same idea to the FULL 3D
-    field (u, v, T, S) so no meridional gradient survives in the cap rows
-    for the singular operators to amplify. This is the standard lat-lon FD
-    OGCM treatment (e.g. MOM6's polar cap / Arctic fold).
+    Returns a 1D array of length ncap+ntaper: the blend fraction of the
+    zonal mean applied to each row, from the pole inward. Rows [0:ncap] get
+    weight 1.0 (full zonal average — kills the cos(lat)->0 metric
+    singularity); rows [ncap:ncap+ntaper] ramp 1->0 via a cos^2 taper so
+    there is no meridional discontinuity at the cap's inner edge. A hard
+    cutoff (ntaper=0) creates a cliff at j=ncap: the cap forces j<ncap to a
+    zonally-uniform value inconsistent with the free row j=ncap, and _d_dy
+    amplifies that cliff exponentially (the G3 step-12 pole-wall blow-up).
+    """
+    if ncap <= 0:
+        return jnp.zeros(0)
+    full = jnp.ones(ncap)
+    if ntaper <= 0:
+        return full
+    # cos^2 ramp from 1 (at the cap edge) to 0 (into the interior).
+    x = jnp.linspace(0.0, jnp.pi / 2.0, ntaper + 2)[1:-1]   # open interval
+    ramp = jnp.cos(x) ** 2
+    return jnp.concatenate([full, ramp])
 
-    Wet-point-only zonal mean (land excluded); land stays at its masked
-    value. Applied once per full step (in _step_impl), which is sufficient
-    because the cap rows' dynamics are unresolved by construction.
+
+def _apply_polar_cap_3d(field3d, p):
+    """Tapered zonal-average polar cap on a 3D field.
+
+    Zonally averages the poleward rows (wet-point mean) and blends the
+    result into the field with a cos^2 taper across `polar_cap_taper` extra
+    transition rows, so the cap edge is smooth (no meridional cliff). See
+    _polar_cap_weights for the hard-edge failure mode this replaces. The
+    standard lat-lon FD OGCM treatment (MOM6 polar cap / Arctic fold).
     """
     ncap = p.polar_cap_rows
     if ncap <= 0:
         return field3d
-    wm = p.wet_mask                          # (nx, ny)
-    # North cap
-    s = field3d[:, -ncap:] * wm[:, -ncap:, None]
-    w = jnp.maximum(wm[:, -ncap:], 1e-12)
-    cap_n = jnp.sum(s, axis=0, keepdims=True) / jnp.sum(
-        jnp.broadcast_to(w[:, :, None], s.shape), axis=0, keepdims=True)  # (1,ncap,nz)
-    cap_n = jnp.broadcast_to(cap_n, field3d[:, -ncap:].shape) * wm[:, -ncap:, None]
-    # South cap
-    s = field3d[:, :ncap] * wm[:, :ncap, None]
-    cap_s = jnp.sum(s, axis=0, keepdims=True) / jnp.sum(
-        jnp.broadcast_to(w[:, :, None], s.shape), axis=0, keepdims=True)
-    cap_s = jnp.broadcast_to(cap_s, field3d[:, :ncap].shape) * wm[:, :ncap, None]
-    return jnp.concatenate([cap_s, field3d[:, ncap:-ncap], cap_n], axis=1)
+    ntaper = p.polar_cap_taper
+    wm = p.wet_mask                              # (nx, ny)
+    wts = _polar_cap_weights(ncap, ntaper)       # (ncap+ntaper,)
+    nb = ncap + ntaper
+
+    def _cap_band(field, wm_band):
+        # Wet-point zonal mean over the FULL band (one value per (row,z)),
+        # broadcast back; land stays at its masked value.
+        s = field * wm_band[:, :, None]
+        w = jnp.maximum(wm_band, 1e-12)
+        wsum = jnp.sum(jnp.broadcast_to(w[:, :, None], s.shape), axis=0,
+                       keepdims=True)             # (1, nb, nz)
+        zmean = jnp.sum(s, axis=0, keepdims=True) / wsum
+        zmean = jnp.broadcast_to(zmean, field.shape) * wm_band[:, :, None]
+        # Blend: wts[r] * zmean_row + (1-wts[r]) * field_row.
+        wts_b = wts.reshape(1, nb, 1)
+        return wts_b * zmean + (1.0 - wts_b) * (field * wm_band[:, :, None])
+
+    south = _cap_band(field3d[:, :nb], wm[:, :nb])
+    north = _cap_band(field3d[:, -nb:], wm[:, -nb:])
+    return jnp.concatenate([south, field3d[:, nb:-nb], north], axis=1)
+
+
+def _polar_cap_3d(field3d, p):
+    """Tapered zonal-average polar cap on a 3D field (u, v, T, S).
+
+    Thin wrapper around _apply_polar_cap_3d; kept for call-site clarity.
+    See _apply_polar_cap_3d / _polar_cap_weights for the taper rationale.
+    """
+    return _apply_polar_cap_3d(field3d, p)
 
 
 def _step_impl(state, p):
@@ -827,7 +870,7 @@ def make_solver_global(grid, physics, dt, forcing=None, eos_type='linear',
                        T_atm=None, lambda_bulk=0.0,
                        sponge_days=0.0, sponge_cells=0,
                        T_init=None, S_init=None,
-                       polar_cap_rows=2, return_params=False):
+                       polar_cap_rows=2, polar_cap_taper=3, return_params=False):
     """Create a JIT-compiled global FD ocean solver.
 
     Args mirror the spectral make_solver where applicable. Key differences:
@@ -929,6 +972,7 @@ def make_solver_global(grid, physics, dt, forcing=None, eos_type='linear',
         sponge_rate=sponge_rate, sponge_rate_2d=sponge_rate_2d,
         T_clim_3d=T_clim_3d, S_clim_3d=S_clim_3d,
         polar_cap_rows=int(polar_cap_rows),
+        polar_cap_taper=int(polar_cap_taper),
         dealias_lon_mask=dealias_lon_mask,
     )
 

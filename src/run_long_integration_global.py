@@ -74,7 +74,12 @@ MIN_DEPTH_DEFAULT = 100.0     # floor shallow coastal columns (bad WOA extrapola
 NU_H_DEFAULT = 5e6            # m²/s spin-up stabilizer (CFL_edge=0.094, safe;
                               # production OGCMs use ~1e3-1e4; can lower post-spinup)
 NU_BI_DEFAULT = 0.0           # biharmonic OFF at 1° FD (explicit ∇⁴ CFL-violating)
-POLAR_CAP_ROWS_DEFAULT = 0    # OFF (no polar singularity at lat_max=60)
+POLAR_CAP_ROWS_DEFAULT = 2    # ON: zonally average poleward rows to kill the
+                              # cos(lat)->0 metric blow-up at the pole wall
+                              # (the j=0 single-gridpoint divergence, G3).
+POLAR_CAP_TAPER_DEFAULT = 3   # cos^2-taper the cap edge over this many extra
+                              # rows; a hard cutoff creates a meridional cliff
+                              # at the cap inner edge that blows up in ~12 steps.
 LAMBDA_BULK_DEFAULT_G = BULK_LAMBDA_DEFAULT
 SPONGE_DAYS_DEFAULT_G = 0.0   # OFF (no residual instability at lat_max=60; the
                               # no-flux wall + nu_h sufficed. Available if a longer
@@ -152,6 +157,7 @@ def main():
     ap.add_argument("--sponge-days", type=float, default=SPONGE_DAYS_DEFAULT_G)
     ap.add_argument("--sponge-cells", type=int, default=0)
     ap.add_argument("--polar-cap-rows", type=int, default=POLAR_CAP_ROWS_DEFAULT)
+    ap.add_argument("--polar-cap-taper", type=int, default=POLAR_CAP_TAPER_DEFAULT)
     ap.add_argument("--snap-days", type=float, default=10.0)
     ap.add_argument("--seasonal-wind", action="store_true")
     ap.add_argument("--wind-year", type=int, default=2023)
@@ -258,7 +264,8 @@ def main():
         T_atm=T_atm, lambda_bulk=lambda_bulk,
         sponge_days=args.sponge_days, sponge_cells=args.sponge_cells,
         T_init=T_init, S_init=S_init,
-        polar_cap_rows=args.polar_cap_rows)
+        polar_cap_rows=args.polar_cap_rows,
+        polar_cap_taper=args.polar_cap_taper)
 
     state = init_state_global(T_init=jnp.array(T_init), S_init=jnp.array(S_init))
 
@@ -291,6 +298,10 @@ def main():
         header.append(f"sponge: {args.sponge_cells}-cell band, tau={args.sponge_days:g}d")
     else:
         header.append("sponge: NONE")
+    if args.polar_cap_rows > 0:
+        header.append(f"polar cap: {args.polar_cap_rows} rows + {args.polar_cap_taper}-row cos^2 taper")
+    else:
+        header.append("polar cap: NONE")
     header.append(f"init: T_init_max={T_init_max:.2f}C  "
                   f"amplitude_cap={T_init_max + AMPLITUDE_CAP_C:.2f}C")
     header.append(f"criteria: max|u|<{MAX_U_BOUND}  drift_tol={DRIFT_TOL_C}C  "
@@ -398,6 +409,7 @@ def main():
         'lambda_bulk': lambda_bulk, 'seasonal_wind': seasonal,
         'wind_blend_days': args.wind_blend_days, 'sponge_days': args.sponge_days,
         'sponge_cells': args.sponge_cells, 'polar_cap_rows': args.polar_cap_rows,
+        'polar_cap_taper': args.polar_cap_taper,
         'smooth_passes': args.smooth_passes, 'min_depth': args.min_depth,
     }
     np.savez_compressed(out_npz,
