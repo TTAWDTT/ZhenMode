@@ -101,6 +101,7 @@ def load_monthly_wind(month_idx=-1, url_prefix=PSL_BASE, cache_dir=CACHE_DIR,
     """
     if grid is None:
         grid = make_grid(DEFAULT_CONFIG.grid, DEFAULT_CONFIG.bathymetry_file)
+    month_idx = int(month_idx)   # netCDF time-index must be int (float -> IndexError)
     os.makedirs(cache_dir, exist_ok=True)
     cache_file = os.path.join(cache_dir, f"monthly_mean_{month_idx}.npz")
 

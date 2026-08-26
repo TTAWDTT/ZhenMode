@@ -396,7 +396,7 @@ def main():
         'lat_max': args.lat_max, 'ny': args.ny, 'nx': grid.nx, 'nz': grid.nz,
         'dt': args.dt, 'nu_h': physics.nu_h, 'nu_bi': physics.nu_bi,
         'lambda_bulk': lambda_bulk, 'seasonal_wind': seasonal,
-        'wind_blend_days': blend, 'sponge_days': args.sponge_days,
+        'wind_blend_days': args.wind_blend_days, 'sponge_days': args.sponge_days,
         'sponge_cells': args.sponge_cells, 'polar_cap_rows': args.polar_cap_rows,
         'smooth_passes': args.smooth_passes, 'min_depth': args.min_depth,
     }

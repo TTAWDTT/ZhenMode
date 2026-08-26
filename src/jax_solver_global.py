@@ -469,19 +469,21 @@ def _coriolis_rotation_2d(u, v, f, dt):
 
 
 def _free_surface_step_fd(eta, u, v, p, F_rho_x=None, F_rho_y=None, dt_half=None):
-    """Explicit forward-Euler free-surface (shallow water) step on lat-lon FD.
+    """Forward-backward (Sielecki) free-surface (shallow water) step on lat-lon FD.
 
-      eta^{n+1} = eta^n - dt*H_sw*div_h(ubt^n)
-      ubt^{n+1} = (ubt^n + dt*(-g*grad_h(eta^n) + F)) / (1 + r_bt*dt)
+      eta^{n+1} = eta^n - dt*H_sw*div_h(ubt^n)            # eta from OLD velocity
+      ubt^{n+1} = (ubt^n + dt*(-g*grad_h(eta^{n+1}) + F)) / (1 + r_bt*dt)   # u from NEW eta
 
     with implicit linear barotropic bottom drag (unconditionally stable, no CFL).
     The spectral solver solved the linear SW exactly per wavenumber (matrix
-    exponential); the FD explicit step needs dt below the external-gravity-wave
-    CFL (dt < dx/sqrt(g*H) ~ 85-560s; dt=60 is safe). A semi-implicit Helmholtz
-    variant was tried and gave no benefit — the G2 divergence is in the 3D
-    diffusion/advection operators at the polar-edge metric singularity
-    (1/cos^2(lat) -> inf), NOT in the free-surface barotropic mode, so
-    implicit gravity waves do not address it. Explicit + small dt is simplest.
+    exponential, energy-neutral). The FD analogue must NOT use forward-forward
+    coupling (both from old state): that has |λ| = sqrt(1+(dt*c*k)^2) > 1 for
+    ALL k — unconditionally unstable for free gravity waves (a no-wind 1m
+    eta-bump grew to 5.5m/day under it). Forward-backward flips the trace to
+    2 - dt^2*g*H*k^2 => |λ|=1 (neutral) under CFL<1, the standard OGCM
+    discretization; bottom drag then decays the free mode (|λ|~0.97/step).
+    CFL: dt < dx/sqrt(g*H) ~ 85-560s; dt=60 is safe on the global 1° grid
+    (basin+meso modes CFL<1; grid-scale handled by Laplacian + polar cap).
     """
     if dt_half is None:
         dt_half = p.dt / 2.0
@@ -498,10 +500,24 @@ def _free_surface_step_fd(eta, u, v, p, F_rho_x=None, F_rho_y=None, dt_half=None
     r_bt = p.r_bot if p.bottom_friction == 'linear' else 0.0
     drag = 1.0 / (1.0 + r_bt * dt_half)
     div_bt = _d_dx(ubt[:, :, None], p)[:, :, 0] + _d_dy(vbt[:, :, None], p)[:, :, 0]
-    grad_eta_x = _d_dx(eta[:, :, None], p)[:, :, 0]
-    grad_eta_y = _d_dy(eta[:, :, None], p)[:, :, 0]
 
+    # Forward-backward (Sielecki) free-surface coupling: update eta FIRST
+    # (old velocity), then update barotropic momentum using the NEW eta
+    # gradient. The previous forward-forward coupling (both from old state)
+    # has amplification |λ| = sqrt(1 + (dt*c*k)^2) > 1 for ALL k — i.e. it is
+    # UNCONDITIONALLY UNSTABLE for free gravity waves (CFL does not save
+    # forward-Euler; it only saves centered/leapfrog schemes). At dt=60 the
+    # basin-scale seiche grows ~1.0023/step => ~27x/day, which a no-wind
+    # 1m eta-bump test confirmed (1m -> 5.5m in 1 day, mean~0 so mass
+    # conserved but amplitude growing). Forward-backward flips the trace of
+    # the amplification matrix to 2 - dt^2*g*H*k^2, giving |λ| = 1 (neutral)
+    # under CFL < 1 — the standard OGCM discretization (MOM6/ROMS/NEMO).
+    # Bottom drag then actively decays the free mode (|λ| ~ 0.97/step here),
+    # so a perturbed eta relaxes to the steady wind-driven setup instead of
+    # amplifying. No iterative solve needed (unlike semi-implicit Helmholtz).
     eta_new = eta - dt_half * p.H_sw * div_bt
+    grad_eta_x = _d_dx(eta_new[:, :, None], p)[:, :, 0]
+    grad_eta_y = _d_dy(eta_new[:, :, None], p)[:, :, 0]
     ubt_new = (ubt + dt_half * (-G_EARTH * grad_eta_x + F_x)) * drag
     vbt_new = (vbt + dt_half * (-G_EARTH * grad_eta_y + F_y)) * drag
 
