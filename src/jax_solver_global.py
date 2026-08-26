@@ -335,35 +335,39 @@ def _compute_bt_rho_pgf(state, p):
     return bt_rho_pgf_x, bt_rho_pgf_y
 
 
-def _dealias_w_fd(w, p):
-    """Remove 2-dx grid-scale noise from the diagnosed w (FD analogue of the
-    spectral baseline's _dealias_h).
+def _dealias_h_fd(field, p):
+    """FD analogue of the spectral baseline's _dealias_h.
 
-    Central-difference divergence amplifies the 2-dx mode in u/v, so the w
-    diagnosed from div_h carries 2-dx noise. Multiplied by the steep
-    near-surface dT/dz this becomes a spurious vertical-advection heat source
-    that nucleates a boundary heat pump (the G3 day-5 blow-up root cause).
-    The spectral solver removes it with a 2/3 FFT rule; here we do the same
-    in the periodic lon direction (exact) plus a 5-pt binomial low-pass in
-    the closed lat direction (kills 2-dx without injecting high-freq, unlike
-    a box average). lon FFT is exact because lon is periodic; lat cannot use
-    FFT (closed no-flux wall), so a binomial filter substitutes.
+    Nonlinear products in physical space (u*du/dx, T*div_h, ...) and the
+    central-difference divergence that diagnoses w all amplify the 2-dx
+    grid-scale mode. The spectral solver removes it with a 2/3 FFT rule on
+    BOTH horizontal axes (jax_solver.py:450). Here the lon axis is periodic
+    + uniformly spaced, so the 2/3 FFT rule is exact and faithful. The lat
+    axis is NOT periodic (closed no-flux N/S walls) and NOT uniformly spaced
+    on a lat-lon grid, so an FFT there would mangle the field — instead a
+    5-pt binomial low-pass [1,4,6,4,1]/16 substitutes: its transfer function
+    is 0 at the Nyquist (2-dx) wavenumber, ~0.01 near-Nyquist, and ~0.92 at
+    8-dx, so it kills the grid scale while preserving resolvable structure
+    (verified). edge-padding mirrors the wall ghost cell, consistent with
+    _d_dy/_laplacian_h. This is applied to w AND to every nonlinear
+    advection tendency (adv_u, adv_v, adv_T), matching the spectral
+    baseline's call sites (jax_solver.py:490, 515, 757).
     """
-    # 2/3 FFT dealias in lon (axis 0, periodic).
-    w_hat = jnp.fft.fft(w, axis=0)
-    w_hat = w_hat * p.dealias_lon_mask
-    w_lon = jnp.real(jnp.fft.ifft(w_hat, axis=0))
-    # 5-pt binomial low-pass [1,4,6,4,1]/16 in lat (axis 1, edge-padded for the wall).
-    wp = jnp.pad(w_lon, ((0, 0), (2, 2), (0, 0)), mode='edge')
-    w_sm = (wp[:, :-4] + 4.0 * wp[:, 1:-3] + 6.0 * wp[:, 2:-2]
-            + 4.0 * wp[:, 3:-1] + wp[:, 4:]) / 16.0
-    return w_sm
+    # 2/3 FFT dealias in lon (axis 0, periodic + uniform -> exact).
+    f_hat = jnp.fft.fft(field, axis=0)
+    f_hat = f_hat * p.dealias_lon_mask
+    f_lon = jnp.real(jnp.fft.ifft(f_hat, axis=0))
+    # 5-pt binomial low-pass [1,4,6,4,1]/16 in lat (axis 1, edge-padded wall).
+    fp = jnp.pad(f_lon, ((0, 0), (2, 2), (0, 0)), mode='edge')
+    f_sm = (fp[:, :-4] + 4.0 * fp[:, 1:-3] + 6.0 * fp[:, 2:-2]
+            + 4.0 * fp[:, 3:-1] + fp[:, 4:]) / 16.0
+    return f_sm
 
 
 def _compute_vertical_velocity(state, p):
     """Diagnose w from horizontal continuity. w=0 at bottom. Masked on land.
 
-    The diagnosed w is dealiased (_dealias_w_fd) to remove the 2-dx
+    The diagnosed w is dealiased (_dealias_h_fd) to remove the 2-dx
     grid-scale noise that central-difference divergence injects — without
     this, w x dT/dz drives a spurious vertical-advection heat pump at the
     boundary rows (the G3 day-5 blow-up; the spectral baseline applies the
@@ -374,32 +378,42 @@ def _compute_vertical_velocity(state, p):
     integrand = div_avg * p.dz_3d
     w = jnp.zeros_like(state.u)
     w = w.at[..., :-1].set(-jnp.cumsum(integrand[..., ::-1], axis=-1)[..., ::-1])
-    w = _dealias_w_fd(w, p)
+    w = _dealias_h_fd(w, p)
     return w * p.wet_mask_z   # no spurious w over land or below seafloor
 
 
 # ── Tendencies (FD, with land masking) ─────────────────────────────
 
 def _advection_flux_form(u, v, w, p):
-    """3D advective-form momentum advection (FD, land-masked).
+    """3D advective-form momentum advection (FD, land-masked, dealiased).
 
     Advective form (not flux form) avoids the spurious u*div_h source.
-    Land masking: velocities are zeroed over land by the caller before
-    advection, and the tendency is masked so land points don't accumulate
-    advected noise (they're held at rest by the wet_mask projection).
+    Nonlinear products (u*du/dx etc.) are 2/3-rule-dealiased via
+    _dealias_h_fd, matching the spectral baseline (jax_solver.py:490): the
+    summed tendency is dealiased once, then land-masked. Without this the
+    aliasing of the nonlinear products injects 2-dx energy that drives the
+    boundary heat pump (see _dealias_h_fd).
     """
     du_dx = _d_dx(u, p); du_dy = _d_dy(u, p)
     dv_dx = _d_dx(v, p); dv_dy = _d_dy(v, p)
     du_dz = _d_dz(u, p); dv_dz = _d_dz(v, p)
     adv_u = -(u * du_dx + v * du_dy + w * du_dz)
     adv_v = -(u * dv_dx + v * dv_dy + w * dv_dz)
+    adv_u = _dealias_h_fd(adv_u, p)
+    adv_v = _dealias_h_fd(adv_v, p)
     return adv_u * p.wet_mask_z, adv_v * p.wet_mask_z
 
 
 def _advection_scalar(T, u, v, w, p):
-    """3D advective-form scalar advection (FD, land-masked)."""
+    """3D advective-form scalar advection (FD, land-masked, dealiased).
+
+    Nonlinear products (u*dT/dx etc.) are 2/3-rule-dealiased via
+    _dealias_h_fd on the summed tendency, matching the spectral baseline
+    (jax_solver.py:515), then land-masked.
+    """
     dT_dx = _d_dx(T, p); dT_dy = _d_dy(T, p); dT_dz = _d_dz(T, p)
     adv_T = -(u * dT_dx + v * dT_dy + w * dT_dz)
+    adv_T = _dealias_h_fd(adv_T, p)
     return adv_T * p.wet_mask_z
 
 
@@ -875,13 +889,13 @@ def make_solver_global(grid, physics, dt, forcing=None, eos_type='linear',
         S_clim_3d = jnp.zeros((nx, ny, nz))
 
     # ── 2/3-rule dealias mask for the periodic lon axis ──
-    # The FD _compute_vertical_velocity integrates div_h = du/dx + dv/dy
-    # vertically to diagnose w. Central differencing amplifies the 2-dx mode
-    # in u/v, so the diagnosed w carries 2-dx grid-scale noise. The spectral
-    # baseline (jax_solver.py) removes this with _dealias_h (2/3 FFT rule) on
-    # w; the FD solver must do the equivalent. lon is periodic -> a 2/3 FFT
+    # Nonlinear advection products (u*du/dx, T*div_h, ...) and the
+    # div_h-integrated w all amplify the 2-dx grid-scale mode. The spectral
+    # baseline (jax_solver.py) removes it with _dealias_h (2/3 FFT rule) on w
+    # AND on every advection tendency (adv_u, adv_v, adv_T); the FD solver
+    # does the equivalent via _dealias_h_fd. lon is periodic -> a 2/3 FFT
     # dealias in lon is exact; the closed lat wall can't use FFT, so the lat
-    # 2-dx is killed by a 5-pt binomial low-pass in _dealias_w_fd.
+    # 2-dx is killed by a 5-pt binomial low-pass in _dealias_h_fd.
     _kmax = nx // 2
     _keep = max(1, int(_kmax * 2 / 3))
     _kidx = np.fft.fftfreq(nx) * nx            # 0..nx/2, -nx/2..-1
