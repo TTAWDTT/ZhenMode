@@ -48,7 +48,11 @@ FDParams = namedtuple('FDParams', [
     'f',                # (nx, ny) full 2D Coriolis
     # Land
     'wet_mask',         # (nx, ny) 1=ocean, 0=land
-    'wet_mask_3d',      # (nx, ny, 1) for 3D broadcast
+    'wet_mask_3d',      # (nx, ny, 1) for 3D broadcast (column-uniform)
+    'wet_mask_z',       # (nx, ny, nz) TRUE vertical wet mask: 1 where layer is
+                        # above the seafloor, 0 below (ghost water excluded).
+                        # Used in pressure integration to kill the spurious PGF
+                        # at steep topography (ghost-water-column bug fix).
     # Vertical grid (non-uniform z-levels, same as regional)
     'dz_denom_interior', 'dz_bnd_top', 'dz_bnd_bot',
     'd2z_hm', 'd2z_hp', 'd2z_denom', 'd2z_h0_top', 'd2z_h0_bot',
@@ -78,6 +82,12 @@ def make_fd_params(grid):
     f = jnp.array(grid.f)                        # (nx, ny)
     wet_mask = jnp.array(grid.wet_mask)          # (nx, ny)
     wet_mask_3d = wet_mask[:, :, None]           # (nx, ny, 1)
+    # True 3D wet mask (layer-resolved): from grid if available, else fall
+    # back to column-uniform (regional/synthetic grids without bathymetry).
+    if hasattr(grid, 'wet_mask_3d') and grid.wet_mask_3d is not None:
+        wet_mask_z = jnp.array(grid.wet_mask_3d)      # (nx, ny, nz)
+    else:
+        wet_mask_z = jnp.broadcast_to(wet_mask_3d, (nx, ny, nz))
 
     # Vertical grid coefficients (identical math to regional _compute_params)
     z = jnp.array(grid.z)
@@ -104,6 +114,7 @@ def make_fd_params(grid):
         dx_2d=dx_2d, dy=dy, cos_lat=cos_lat,
         inv_dx=inv_dx, inv_dy=inv_dy, inv_dx2=inv_dx2, inv_dy2=inv_dy2,
         f=f, wet_mask=wet_mask, wet_mask_3d=wet_mask_3d,
+        wet_mask_z=wet_mask_z,
         dz_denom_interior=dz_denom_interior,
         dz_bnd_top=dz_bnd_top, dz_bnd_bot=dz_bnd_bot,
         d2z_hm=d2z_hm, d2z_hp=d2z_hp, d2z_denom=d2z_denom,
@@ -207,7 +218,7 @@ def _d2_dz2(u, p):
 FDPhysParams = namedtuple('FDPhysParams', [
     # metric + grid (from FDParams)
     'dx_2d', 'dy', 'cos_lat', 'inv_dx', 'inv_dy', 'inv_dx2', 'inv_dy2',
-    'f', 'wet_mask', 'wet_mask_3d',
+    'f', 'wet_mask', 'wet_mask_3d', 'wet_mask_z',
     'dz_denom_interior', 'dz_bnd_top', 'dz_bnd_bot',
     'd2z_hm', 'd2z_hp', 'd2z_denom', 'd2z_h0_top', 'd2z_h0_bot',
     'dz_3d', 'dz_surface', 'surface_mask', 'bottom_mask',
@@ -236,8 +247,16 @@ def _density_anomaly(T, S, p):
 
 
 def _compute_hydrostatic_pressure(state, p):
-    """Full hydrostatic pressure via cumulative trapezoidal integration."""
+    """Full hydrostatic pressure via cumulative trapezoidal integration.
+
+    Ghost-water fix: the density anomaly is masked by wet_mask_z (zeroed
+    below the seafloor) BEFORE integration. Layers below the seafloor then
+    contribute dp=0, so the cumulative pressure stays constant beneath the
+    bottom (no spurious horizontal gradient from columns of different
+    ghost-water length). This is the fix for the blow-up at steep topography.
+    """
     rho_prime = _density_anomaly(state.T, state.S, p)
+    rho_prime = rho_prime * p.wet_mask_z          # zero out ghost water
     rho_avg = 0.5 * (rho_prime[..., :-1] + rho_prime[..., 1:])
     dp = G_EARTH * rho_avg * p.dz_3d
     p_bc = jnp.zeros_like(state.T)
@@ -266,6 +285,7 @@ def _barotropic_velocity(u, v, p):
 def _compute_bt_rho_pgf(state, p):
     """Barotropic (depth-averaged) PGF from density anomalies (FD)."""
     rho_prime = _density_anomaly(state.T, state.S, p)
+    rho_prime = rho_prime * p.wet_mask_z          # ghost-water fix (see above)
     rho_avg = 0.5 * (rho_prime[..., :-1] + rho_prime[..., 1:])
     dp = G_EARTH * rho_avg * p.dz_3d
     p_bc = jnp.zeros_like(state.T)
@@ -283,7 +303,7 @@ def _compute_vertical_velocity(state, p):
     integrand = div_avg * p.dz_3d
     w = jnp.zeros_like(state.u)
     w = w.at[..., :-1].set(-jnp.cumsum(integrand[..., ::-1], axis=-1)[..., ::-1])
-    return w * p.wet_mask_3d   # no spurious w over land
+    return w * p.wet_mask_z   # no spurious w over land or below seafloor
 
 
 # ── Tendencies (FD, with land masking) ─────────────────────────────
@@ -301,14 +321,14 @@ def _advection_flux_form(u, v, w, p):
     du_dz = _d_dz(u, p); dv_dz = _d_dz(v, p)
     adv_u = -(u * du_dx + v * du_dy + w * du_dz)
     adv_v = -(u * dv_dx + v * dv_dy + w * dv_dz)
-    return adv_u * p.wet_mask_3d, adv_v * p.wet_mask_3d
+    return adv_u * p.wet_mask_z, adv_v * p.wet_mask_z
 
 
 def _advection_scalar(T, u, v, w, p):
     """3D advective-form scalar advection (FD, land-masked)."""
     dT_dx = _d_dx(T, p); dT_dy = _d_dy(T, p); dT_dz = _d_dz(T, p)
     adv_T = -(u * dT_dx + v * dT_dy + w * dT_dz)
-    return adv_T * p.wet_mask_3d
+    return adv_T * p.wet_mask_z
 
 
 def _compute_momentum_tendency(state, p):
@@ -342,8 +362,8 @@ def _compute_momentum_tendency(state, p):
     dudt = adv_u + cor_u + pgf_x + diff_h_u + diff_v_u + wind_u + bot_u
     dvdt = adv_v + cor_v + pgf_y + diff_h_v + diff_v_v + wind_v + bot_v
     # Land: hold velocity at rest (no tendency over land).
-    dudt = dudt * p.wet_mask_3d
-    dvdt = dvdt * p.wet_mask_3d
+    dudt = dudt * p.wet_mask_z
+    dvdt = dvdt * p.wet_mask_z
     return dudt, dvdt
 
 
@@ -376,8 +396,8 @@ def _compute_tracer_tendency(state, p):
     dTdt = adv_T + diff_h_T + diff_v_T + heat_T + bulk_T + conv_T
     dSdt = adv_S + diff_h_S + diff_v_S + conv_S
     # Land: tracers held (no tendency over land).
-    dTdt = dTdt * p.wet_mask_3d
-    dSdt = dSdt * p.wet_mask_3d
+    dTdt = dTdt * p.wet_mask_z
+    dSdt = dSdt * p.wet_mask_z
     return dTdt, dSdt
 
 
@@ -502,9 +522,9 @@ def _linear_half_step(state, p, dt_half):
     v = v + p.nu_v * _d2_dz2(state.v, p) * dt_half
     T = T + p.kappa_v * _d2_dz2(state.T, p) * dt_half
     S = S + p.kappa_v * _d2_dz2(state.S, p) * dt_half
-    # Mask: no diffusion updates over land
-    u = u * p.wet_mask_3d; v = v * p.wet_mask_3d
-    T = T * p.wet_mask_3d; S = S * p.wet_mask_3d
+    # Mask: no diffusion updates over land or below seafloor (ghost water)
+    u = u * p.wet_mask_z; v = v * p.wet_mask_z
+    T = T * p.wet_mask_z; S = S * p.wet_mask_z
 
     # Coriolis rotation (2D f-field, exact)
     u, v = _coriolis_rotation_2d(u, v, p.f, dt_half)
@@ -583,9 +603,9 @@ def _step_impl(state, p):
     state = _linear_half_step(state, p, dt_half)
     state = _explicit_full_step(state, p, p.dt)
     state = _linear_half_step(state, p, dt_half)
-    # Final land mask enforcement (safety: no drift onto land)
-    u = state.u * p.wet_mask_3d
-    v = state.v * p.wet_mask_3d
+    # Final mask enforcement (safety: no drift onto land or ghost water)
+    u = state.u * p.wet_mask_z
+    v = state.v * p.wet_mask_z
     return JaxStateG(u, v, state.T, state.S, state.eta)
 
 
@@ -629,6 +649,7 @@ def make_solver_global(grid, physics, dt, forcing=None, eos_type='linear',
         inv_dx=base.inv_dx, inv_dy=base.inv_dy,
         inv_dx2=base.inv_dx2, inv_dy2=base.inv_dy2,
         f=base.f, wet_mask=base.wet_mask, wet_mask_3d=base.wet_mask_3d,
+        wet_mask_z=base.wet_mask_z,
         dz_denom_interior=base.dz_denom_interior,
         dz_bnd_top=base.dz_bnd_top, dz_bnd_bot=base.dz_bnd_bot,
         d2z_hm=base.d2z_hm, d2z_hp=base.d2z_hp, d2z_denom=base.d2z_denom,
@@ -670,9 +691,12 @@ def make_solver_global(grid, physics, dt, forcing=None, eos_type='linear',
         else:
             T = jnp.full((nx, ny, nz), physics.T_ref)
             S = jnp.full((nx, ny, nz), physics.S_ref)
-        # Mask land: set land T/S to a sentinel (wet_mask will zero tendencies there)
-        T = T * params.wet_mask_3d + (1.0 - params.wet_mask_3d) * physics.T_ref
-        S = S * params.wet_mask_3d + (1.0 - params.wet_mask_3d) * physics.S_ref
+        # Mask land + ghost water (layers below seafloor): set to a sentinel.
+        # wet_mask_z is the TRUE 3D mask (1 where water exists, 0 on land AND
+        # below seafloor). This discards WOA-interpolated T in ghost layers
+        # before it can enter the pressure integral or advection.
+        T = T * params.wet_mask_z + (1.0 - params.wet_mask_z) * physics.T_ref
+        S = S * params.wet_mask_z + (1.0 - params.wet_mask_z) * physics.S_ref
         return JaxStateG(u, v, T, S, eta)
 
     return step, init_state, diagnostics

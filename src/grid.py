@@ -222,6 +222,13 @@ class GlobalOceanGrid:
     wet_mask: np.ndarray  # (nx, ny) float, 1.0 = ocean (wet), 0.0 = land (dry)
     ocean_mask: np.ndarray  # (nx, ny) bool, True = ocean (alias of wet_mask>0)
     land_mask: np.ndarray   # (nx, ny) bool, True = land
+    # Vertical wet mask: True where layer k is above the seafloor AND the
+    # column is ocean. This is the FIX for the ghost-water-column bug —
+    # without it, _compute_hydrostatic_pressure integrates density over
+    # layers below the seafloor (WOA-interpolated T that has no physical
+    # water), producing huge spurious PGF at steep topography.
+    # Convention: layer k (at z[k]) is wet iff |z[k]| <= depth AND ocean.
+    wet_mask_3d: np.ndarray  # (nx, ny, nz) float, 1.0 = wet (water present)
 
     # Dimensions
     nx: int
@@ -314,6 +321,16 @@ def make_global_grid(grid_config, bathymetry_file):
     land_mask = ~ocean_mask
     wet_mask = ocean_mask.astype(np.float64)     # 1.0 ocean, 0.0 land
 
+    # Vertical wet mask: layer k is wet iff |z[k]| <= depth (above seafloor)
+    # and the column is ocean. Layers below the seafloor are dry ("ghost
+    # water" excluded from pressure integration). z is negative downward
+    # so |z[k]| is the depth of level k.
+    abs_z = np.abs(z)                                   # (nz,) depth of each level
+    wet_mask_3d = (
+        (abs_z[None, None, :] <= depth[:, :, None])    # level above seafloor
+        & ocean_mask[:, :, None]                        # column is ocean
+    ).astype(np.float64)                                # (nx, ny, nz)
+
     return GlobalOceanGrid(
         lon=lon, lat=lat,
         dx_2d=dx_2d, dy=float(dy), cos_lat=cos_lat,
@@ -321,6 +338,7 @@ def make_global_grid(grid_config, bathymetry_file):
         z=z, dz=dz, nz=gc.nz,
         depth=depth, wet_mask=wet_mask,
         ocean_mask=ocean_mask, land_mask=land_mask,
+        wet_mask_3d=wet_mask_3d,
         nx=nx, ny=ny,
     )
 
