@@ -518,6 +518,17 @@ def _linear_half_step(state, p, dt_half):
     v = state.v + p.nu_h * _laplacian_h(state.v, p) * dt_half
     T = state.T + p.kappa_h * _laplacian_h(state.T, p) * dt_half
     S = state.S + p.kappa_h * _laplacian_h(state.S, p) * dt_half
+    # Scale-selective biharmonic (∇⁴): damps grid-scale modes far more than
+    # large-scale. Spectral solver applied this via exp(-nu_bi*k⁴*dt); the FD
+    # analogue is an explicit forward-Euler step. CFL: nu_bi*dt/dx⁴ < ~0.05.
+    # nu_bi is re-calibrated for 1° (much larger than the spectral 1e12, which
+    # was tuned for the regional 0.1° grid where dx⁴ is ~1600x smaller).
+    if p.nu_bi > 0.0:
+        u = u - p.nu_bi * _biharmonic_h(state.u, p) * dt_half
+        v = v - p.nu_bi * _biharmonic_h(state.v, p) * dt_half
+    if p.kappa_bi > 0.0:
+        T = T - p.kappa_bi * _biharmonic_h(state.T, p) * dt_half
+        S = S - p.kappa_bi * _biharmonic_h(state.S, p) * dt_half
     u = u + p.nu_v * _d2_dz2(state.u, p) * dt_half
     v = v + p.nu_v * _d2_dz2(state.v, p) * dt_half
     T = T + p.kappa_v * _d2_dz2(state.T, p) * dt_half
@@ -538,10 +549,13 @@ def _linear_half_step(state, p, dt_half):
 # ── Nonlinear explicit step (forward-backward RK2, FD) ─────────────
 
 def _compute_tracer_residual(state, p):
-    """Tracer tendency minus the horizontal diffusion (handled by linear step)."""
+    """Tracer tendency minus the linear diffusion (handled by linear step)."""
     dTdt, dSdt = _compute_tracer_tendency(state, p)
     dTdt = dTdt - p.kappa_h * _laplacian_h(state.T, p)
     dSdt = dSdt - p.kappa_h * _laplacian_h(state.S, p)
+    if p.kappa_bi > 0.0:
+        dTdt = dTdt + p.kappa_bi * _biharmonic_h(state.T, p)
+        dSdt = dSdt + p.kappa_bi * _biharmonic_h(state.S, p)
     return dTdt, dSdt
 
 
@@ -550,6 +564,9 @@ def _compute_momentum_residual(state, p):
     dudt, dvdt = _compute_momentum_tendency(state, p)
     dudt = dudt - p.nu_h * _laplacian_h(state.u, p)
     dvdt = dvdt - p.nu_h * _laplacian_h(state.v, p)
+    if p.nu_bi > 0.0:
+        dudt = dudt + p.nu_bi * _biharmonic_h(state.u, p)
+        dvdt = dvdt + p.nu_bi * _biharmonic_h(state.v, p)
     dudt = dudt - p.f[:, :, None] * state.v
     dvdt = dvdt + p.f[:, :, None] * state.u
     # barotropic PGF from eta
