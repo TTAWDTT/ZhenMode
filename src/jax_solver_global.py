@@ -53,6 +53,11 @@ FDParams = namedtuple('FDParams', [
                         # above the seafloor, 0 below (ghost water excluded).
                         # Used in pressure integration to kill the spurious PGF
                         # at steep topography (ghost-water-column bug fix).
+    'interior_mask',    # (nx, ny) 1 in the interior, 0 on the N/S boundary
+                        # rows (j=0, j=ny-1). Used to enforce the no-flux wall:
+                        # the normal (meridional) velocity v is zeroed here so
+                        # no flow crosses the closed N/S truncation wall.
+    'interior_mask_z',  # (nx, ny, 1) broadcast of interior_mask for 3D fields.
     # Vertical grid (non-uniform z-levels, same as regional)
     'dz_denom_interior', 'dz_bnd_top', 'dz_bnd_bot',
     'd2z_hm', 'd2z_hp', 'd2z_denom', 'd2z_h0_top', 'd2z_h0_bot',
@@ -89,6 +94,14 @@ def make_fd_params(grid):
     else:
         wet_mask_z = jnp.broadcast_to(wet_mask_3d, (nx, ny, nz))
 
+    # No-flux wall mask: 1 interior, 0 on the N/S boundary rows. The closed
+    # truncation wall zero normal velocity here (interior_mask_z applied to v).
+    interior_1d = np.ones(ny)
+    interior_1d[0] = 0.0
+    interior_1d[-1] = 0.0
+    interior_mask = jnp.array(np.broadcast_to(interior_1d[None, :], (nx, ny)))
+    interior_mask_z = interior_mask[:, :, None]
+
     # Vertical grid coefficients (identical math to regional _compute_params)
     z = jnp.array(grid.z)
     dz = jnp.array(grid.dz)
@@ -115,6 +128,7 @@ def make_fd_params(grid):
         inv_dx=inv_dx, inv_dy=inv_dy, inv_dx2=inv_dx2, inv_dy2=inv_dy2,
         f=f, wet_mask=wet_mask, wet_mask_3d=wet_mask_3d,
         wet_mask_z=wet_mask_z,
+        interior_mask=interior_mask, interior_mask_z=interior_mask_z,
         dz_denom_interior=dz_denom_interior,
         dz_bnd_top=dz_bnd_top, dz_bnd_bot=dz_bnd_bot,
         d2z_hm=d2z_hm, d2z_hp=d2z_hp, d2z_denom=d2z_denom,
@@ -139,16 +153,27 @@ def _d_dx(u, p):
 
 
 def _d_dy(u, p):
-    """Meridional derivative du/dy, 2nd-order central FD, lat-bounded.
+    """Meridional derivative du/dy, 2nd-order central FD with NO-FLUX WALLS.
 
-    Axis 1 (lat) does NOT wrap. One-sided 2nd-order stencils at the N/S
-    edges (j=0, j=ny-1) to avoid referencing outside the domain.
+    Axis 1 (lat) does NOT wrap. The N/S domain edges are CLOSED walls: the
+    one-sided extrapolation stencil (-3u0+4u1-u2) it replaced is unbounded
+    for advection and drove the tracer blow-up (T→thousands at the boundary
+    row). The no-flux wall uses a mirror ghost cell (ghost = boundary value,
+    `mode='edge'` reflection about the wall face at the cell edge) so the
+    boundary row gets a STABLE central difference with zero normal flux:
+
+        du/dy|_0 = (u1 - u_ghost)/(2 dy) = (u1 - u0)/(2 dy)
+
+    This enforces ∂u/∂n = 0 at the wall face (no diffusive flux) while the
+    normal-velocity mask (v=0 at boundary rows, enforced in _step_impl +
+    _free_surface_step_fd) kills the advective flux. Together = closed wall.
     """
-    interior = (u[:, 2:] - u[:, :-2]) * (0.5 * p.inv_dy)            # (nx, ny-2, ...)
-    # 2nd-order one-sided at edges: du/dy|_0 = (-3u0 + 4u1 - u2)/(2dy)
-    top = (-3.0 * u[:, 0:1] + 4.0 * u[:, 1:2] - u[:, 2:3]) * (0.5 * p.inv_dy)
-    bot = (3.0 * u[:, -1:] - 4.0 * u[:, -2:-1] + u[:, -3:-2]) * (0.5 * p.inv_dy)
-    return jnp.concatenate([top, interior, bot], axis=1)
+    # Mirror-pad the lat axis by 1 cell each side (ghost = boundary value).
+    # ndim-agnostic: pad only axis 1.
+    pad = [(0, 0)] * u.ndim
+    pad[1] = (1, 1)
+    u_pad = jnp.pad(u, pad, mode='edge')
+    return (u_pad[:, 2:] - u_pad[:, :-2]) * (0.5 * p.inv_dy)
 
 
 def _laplacian_h(u, p):
@@ -163,11 +188,16 @@ def _laplacian_h(u, p):
     """
     # ∂²u/∂x²: central second FD, lon-periodic
     d2u_dx2 = (jnp.roll(u, -1, axis=0) - 2.0 * u + jnp.roll(u, 1, axis=0)) * p.inv_dx2
-    # ∂²u/∂y²: central second FD, with one-sided edges
-    d2u_dy2_int = (u[:, 2:] - 2.0 * u[:, 1:-1] + u[:, :-2]) * p.inv_dy2
-    top = (2.0 * u[:, 0:1] - 5.0 * u[:, 1:2] + 4.0 * u[:, 2:3] - u[:, 3:4]) * p.inv_dy2
-    bot = (2.0 * u[:, -1:] - 5.0 * u[:, -2:-1] + 4.0 * u[:, -3:-2] - u[:, -4:-3]) * p.inv_dy2
-    d2u_dy2 = jnp.concatenate([top, d2u_dy2_int, bot], axis=1)
+    # ∂²u/∂y²: central second FD with NO-FLUX WALL (mirror ghost cell).
+    # Same `mode='edge'` reflection as _d_dy: ghost = boundary value, giving
+    # zero normal gradient at the wall face and a stable central 2nd diff:
+    #   d²u/dy²|_0 = (u1 - 2u0 + u_ghost)/dy² = (u1 - u0)/dy²
+    # The prior one-sided (-2,-5,4,-1) stencil extrapolated and amplified the
+    # grid-scale mode that blew up the tracer at the boundary row.
+    pad = [(0, 0)] * u.ndim
+    pad[1] = (1, 1)
+    u_pad = jnp.pad(u, pad, mode='edge')
+    d2u_dy2 = (u_pad[:, 2:] - 2.0 * u_pad[:, 1:-1] + u_pad[:, :-2]) * p.inv_dy2
     # spherical metric correction: -(tanφ/R) ∂u/∂y
     # tan(lat) = sin(lat)/cos(lat); signed sin(lat) from f = 2*Omega*sin(lat)
     # (constant along longitude, so row 0 of f gives the per-row sin).
@@ -219,6 +249,7 @@ FDPhysParams = namedtuple('FDPhysParams', [
     # metric + grid (from FDParams)
     'dx_2d', 'dy', 'cos_lat', 'inv_dx', 'inv_dy', 'inv_dx2', 'inv_dy2',
     'f', 'wet_mask', 'wet_mask_3d', 'wet_mask_z',
+    'interior_mask', 'interior_mask_z',
     'dz_denom_interior', 'dz_bnd_top', 'dz_bnd_bot',
     'd2z_hm', 'd2z_hp', 'd2z_denom', 'd2z_h0_top', 'd2z_h0_bot',
     'dz_3d', 'dz_surface', 'surface_mask', 'bottom_mask',
@@ -526,6 +557,9 @@ def _free_surface_step_fd(eta, u, v, p, F_rho_x=None, F_rho_y=None, dt_half=None
     delta_vbt = (vbt_new - vbt)[:, :, None]
     u_new = u + delta_ubt
     v_new = v + delta_vbt
+    # No-flux wall: enforce zero normal velocity at the N/S boundary rows on
+    # the projected 3D v too, consistent with _step_impl's final mask.
+    v_new = v_new * p.interior_mask_z
     return eta_new, u_new, v_new
 
 
@@ -702,6 +736,11 @@ def _step_impl(state, p):
     v = v * p.wet_mask_z
     T = T * p.wet_mask_z
     S = S * p.wet_mask_z
+    # No-flux wall: zero the NORMAL (meridional) velocity at the N/S boundary
+    # rows so no flow crosses the closed wall. Combined with the mirror-ghost
+    # stencils in _d_dy/_laplacian_h (zero normal gradient), this is the full
+    # closed-boundary condition that replaces the unstable one-sided stencil.
+    v = v * p.interior_mask_z
     return JaxStateG(u, v, T, S, state.eta)
 
 
@@ -778,6 +817,7 @@ def make_solver_global(grid, physics, dt, forcing=None, eos_type='linear',
         inv_dx2=base.inv_dx2, inv_dy2=base.inv_dy2,
         f=base.f, wet_mask=base.wet_mask, wet_mask_3d=base.wet_mask_3d,
         wet_mask_z=base.wet_mask_z,
+        interior_mask=base.interior_mask, interior_mask_z=base.interior_mask_z,
         dz_denom_interior=base.dz_denom_interior,
         dz_bnd_top=base.dz_bnd_top, dz_bnd_bot=base.dz_bnd_bot,
         d2z_hm=base.d2z_hm, d2z_hp=base.d2z_hp, d2z_denom=base.d2z_denom,
@@ -960,7 +1000,14 @@ def _mms_convergence():
         u3d = np.broadcast_to(u2d[..., None], (nx, ny, nz)).copy()
         du_dy_fd = np.array(_d_dy(jnp.array(u3d), p))[:, :, 0]
         du_dy_an = (-np.sin(2.0 * lon_rad) * n * np.sin(n * lat_rad)) / R_EARTH
-        return np.sqrt(np.mean((du_dy_fd - du_dy_an) ** 2)) / (np.abs(du_dy_an).max() + 1e-30)
+        # Measure on INTERIOR rows only (exclude the 2 boundary rows each side).
+        # The closed-wall no-flux BC (mirror ghost, ∂u/∂n=0) intentionally
+        # deviates from the analytic infinite-domain derivative at the wall —
+        # that is the correct physics of a closed wall, not an accuracy loss.
+        # The interior rows remain true 2nd-order central differences.
+        sl = slice(2, ny - 2)
+        return np.sqrt(np.mean((du_dy_fd[:, sl] - du_dy_an[:, sl]) ** 2)) / (
+            np.abs(du_dy_an[:, sl]).max() + 1e-30)
 
     e_coarse = ddy_error(ny=14)
     e_fine = ddy_error(ny=28)
