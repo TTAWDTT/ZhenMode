@@ -108,15 +108,14 @@ def run_grid(lat_max, ny, smooth, min_depth, nu_h, tag, n_steps=1000,
 
 
 def main():
-    # lat_max=60 truncated domain. The T=5284 divergence at the N/S boundary
-    # row is a tracer-advection instability at the one-sided dy stencil.
-    # Does a STRONG sponge (1 day, 20 cells) + higher nu_h arrest it?
-    run_grid(60.0, 120, 30, 100.0, 5e5, "lat60, sponge 1d/20c, no wind",
-             n_steps=1000, wind=False, r_bot=1e-3, polar_cap_rows=0,
-             sponge_days=1.0, sponge_cells=20)
-    run_grid(60.0, 120, 30, 100.0, 2e6, "lat60, nu_h=2e6, sponge 1d/20c, no wind",
-             n_steps=1000, wind=False, r_bot=1e-3, polar_cap_rows=0,
-             sponge_days=1.0, sponge_cells=20)
+    # G2 Option-A gate: lat_max=60 (no metric singularity) + no-flux N/S wall
+    # + nu_h=5e6 (spin-up stabilizer). god's gate = 1000 steps / 0 NaN /
+    # max|T| bounded. Both no-wind AND wind-forced must hold (wind added per
+    # the ordered attack: A stable no-wind -> THEN add wind).
+    run_grid(60.0, 120, 30, 100.0, 5e6, "lat60 + wall, no wind (gate)",
+             n_steps=1000, wind=False, polar_cap_rows=0)
+    run_grid(60.0, 120, 30, 100.0, 5e6, "lat60 + wall, wind tau0=0.1 (gate)",
+             n_steps=1000, wind=True, polar_cap_rows=0)
 
     print("\n=== Done ===")
 
