@@ -1,76 +1,121 @@
-# 全球 1° 有限差分海洋求解器实现计划
+# Plan: Semi-implicit (Crank-Nicolson) free-surface step for the global FD solver
 
-## 目标
-把现有"区域平面伪谱"求解器改造成"全球 1° lat-lon 有限差分"求解器,跑全球自由运行积分,看大尺度 SST 结构是否有**非循环的 skill**(直击本弧线的诚实 FAIL:区域模式下 A1/A2 的经向梯度由 `T_atm` 受迫,真正预测的纬向结构 corr 仅 0.258 = FAIL)。全球场下,大尺度结构由几何+风驱动+地形决定,不再是受迫循环。
+## Root cause (empirically proven this session)
 
-**分叉已定**:水平离散化 = **有限差分 lat-lon**(用户选择),保留现有 IMEX 时间步进 + 垂直 z-level + 体通量热力学。
+The global FD solver (`src/jax_solver_global.py`) blows up (NaN ~step 1000-1400,
+max|u| 27@1000 → 1361@1200) under real WOA stratification + advection. Decisive
+diagnostics this session established the mechanism:
 
-## 关键发现(探索结论)
+1. **Density PGF is the sole energy source** (zero `_density_anomaly` → ocean at rest).
+2. **No-advection (residual PGF only)**: FD grows baroclinic KE **unbounded**
+   (36x over 1400 steps, still climbing). The depth-varying baroclinic PGF in the
+   explicit RK2 residual injects energy linearly.
+3. **Regional spectral solver** (`jax_solver.py`, same PGF structure, same
+   stratification, same 1400 steps, advection ON): **STABLE** (max|u| 0.5-2.8, E flat).
+   → The FD explosion is a **discretization defect**, not shared physics.
+4. **Regional spectral, no-advection**: KE_bc grows initially (8x by step 400, the
+   physical PE→KE adjustment from the unbalanced rest init) then **settles to a
+   bounded oscillatory equilibrium**. FD no-adv never equilibrates (grows unbounded).
+   → Both start from the same imbalance; spectral **reaches equilibrium**, FD does not.
 
-### 1. 谱方法深度耦合在 IMEX 分裂里,不是换个导数算子的事
-`jax_solver.py` 里谱(FFT)出现在 4 个层面,FD 改造要逐层处理:
-- **水平导数** `_d_dx/_d_dy/_laplacian_h/_biharmonic_h`(:383-411)— 谱 → FD。最直接。
-- **dealias**(:450-459)— 2/3 规则去混叠。FD 用通量形式平流+迎风/限制器天然避免混叠,可移除或保留为低通滤波。
-- **线性半步扩散** `_linear_step_diffusion`(:518-521, `decay_u/decay_T` = `exp(-nu*k²*dt)`,:176-177)— 谱精确衰减。FD 改为**显式或隐式 FD 扩散**。这是最需要小心的一层:谱扩散是无条件稳定的(精确衰减),FD 显式扩散有 CFL 限制(`nu*dt/dx² < 0.25`),1° 网格 dx≈111km、nu_h=100 → nu*dt/dx² 远小于 0.25(dt=600s → ~4.6e-5),**显式 FD 扩散安全**。biharmonic nu_bi=1e12 在 1° 下也要重核(k⁴ 衰减→FD 双调和显式稳定性 `nu_bi*dt/dx⁴ < 某常数`,1° 下 dx⁴≈1.5e13,nu_bi*dt/dx⁴ ≈ 1e12*600/1.5e13 ≈ 40,**超显式极限,需改隐式或降系数**)。
-- **自由表面步** `_free_surface_step`(:787-882)— 谱矩阵指数精确解浅水波。FD 下这步必须改:浅水方程在 lat-lon FD 上用**半隐式**(`(1-θ)*隐式`梯度+连续性,θ≈0.5 Crank-Nicolson)或保留显式但受外部重力波 CFL 限制(`dt < dx/sqrt(gH)` ≈ 111000/sqrt(9.81*4000) ≈ 560s,与当前 dt=600s 接近,**可能要降到 dt~300s 或半隐式**)。这是改造的核心难点。
+**Mechanism**: the FD linear half-step's **explicit forward-backward (Sielecki)
+free-surface step has phase error**. The spectral solver's **exact matrix-exponential**
+free-surface step has correct phase, so the baroclinic adjustment (driven by the
+residual PGF) reaches a bounded oscillatory equilibrium. The FB phase error prevents
+equilibration → the persistent density PGF does net work every step → unbounded
+baroclinic KE growth → advection cascades it to small scale → exponential blowup.
 
-### 2. 球面度量因子必须加(当前没有)
-`config.py:54` `dx = R*cos(lat_center)*dlon` 是**域中心单个常数**。全球场 dx 必须随纬度变:`dx(i,j) = R*cos(lat[j])*dlon`,dy 常数。所有 FD 导数除以 `dx_2d`(2D)而非标量。球面拉普拉斯也要带 `1/cos(lat)` 度量项:`∇² = 1/cosφ ∂/∂φ(cosφ ∂/∂φ) + 1/cos²φ ∂²/∂λ²`。
+The phase error enters via the **barotropic projection**: the SW step evolves
+(eta, ubt, vbt); the baroclinic velocity (from the residual PGF) is depth-averaged
+into ubt, the SW step updates ubt/eta, and the barotropic delta is projected back
+to 3D (`u_new = u + (ubt_new - ubt_old)`). With FB phase error, this projection
+injects energy into the baroclinic mode. The exact matrix-exp projection is
+energy-neutral.
 
-### 3. 陆地处理当前是"掩码存而不用"——全球场必须真正实现干湿单元
-源码里 `land_mask`/`ocean_mask` 存在但时间步进里**几乎没用**(只有 `H_mean=depth[ocean_mask].mean()` 一处)。全球场有大陆,必须:
-- `wet_mask`(2D)→ 陆地 u/v 归零,无平流通量穿过陆地(通量形式 + 陆地通量置零)。
-- 陆地压力梯度置零(否则陆地点算出非物理 PGF)。
-- 陆地点 T/S 保持初值或无通量(不参与平流)。
+## The fix
 
-### 4. 数据全部已支持全球(好消息)
-- **WOA23**:本身就是全球 1°(360×180, -89.5→89.5),`RegularGridInterpolator` 插值到任意网格 → 全球初始场直接可用。
-- **ETOPO2022**:全球 0.1°,`_read_etopo_subset` 给全球 bounds 即可读全球(注意经度 0-360 wrap)。
-- **风场 NCEP**:经度 0-358.125(1.875°),纬度 88.542→-88.542(全球),`_bilinear` 插值 → 全球可用。季节循环风已缓存。
+Replace the explicit FB free-surface step (`_free_surface_step_fd`) with a
+**semi-implicit Crank-Nicolson SW step** — the FD analogue of the spectral
+matrix exponential. The CN scheme has correct phase (2nd-order, symplectic-like)
+and is unconditionally stable, so the baroclinic adjustment equilibrates like the
+spectral solver.
 
-### 5. 极点处理
-lat-lon FD 在极点的经度方向 dx→0(`cos(90°)=0`),数值奇异。标准处理:
-- **极冠滤波**:最高 2 个纬度带做平均(经度方向平均)消除奇异性。
-- 或 **去极点**:域截到 ±85°(留极冠为陆/冰,海洋影响小)。务实选 ±85°+极冠滤波。
+### Discretization (semi-implicit CN shallow-water step)
 
-## 实现策略:新建独立求解器,不动现有谱求解器
+Continuity + momentum, trapezoidal (CN) in time, with the barotropic PGF + wind
+forcing F = F_rho + wind, implicit linear bottom drag:
 
-**关键决策**:不修改 `jax_solver.py`(已过 Tier-1/2 验证的谱求解器,生产代码)。新建 `src/jax_solver_global.py` — 复用 `config.py`/`grid.py`/`forcing.py`/`woa_data.py`/`wind_reanalysis.py`(加全球网格支持),重写水平算子为 FD + 球面度量 + 陆地掩码 + 半隐式自由表面。保留谱求解器作为区域验证基线。
+```
+(eta^{n+1} - eta^n)/dt = -H_sw/2 * (div(U^{n+1}) + div(U^n))          ... (1)
+U^{n+1} = (U^n + dt/2*(-g*grad(eta^n + eta^{n+1}) + F^n + F^{n+1})) / (1 + r_bt*dt/2)   ... (2)
+```
+where U=(ubt,vbt). F is treated explicitly (F^{n+1}=F^n; it depends on T/S which
+don't change within the linear half-step). Substituting (2) into (1) gives the
+**Helmholtz equation for eta^{n+1}**:
 
-理由:FD 全球求解器是**新验证目标**,不该冒险污染已验证的谱代码。两套并存 = 交叉验证。
+```
+[ I - (dt/2)^2 * g*H_sw * L ] eta^{n+1} = rhs
+```
+where L = div(grad(·)) is the **self-adjoint conservative Laplacian** (already
+implemented: `_gradient_conservative` is the exact adjoint of
+`_divergence_conservative` under the area-weighted inner product). The operator
+`A = I - (dt/2)^2 * g*H_sw * L` is SPD on the wet domain (−L is PSD), so **CG
+converges** (already verified: `_diag_helmholtz_test.py` shows CG converges, mass-
+conserving, resid ~1e-10 on the real masked global grid).
 
-### 分阶段(每阶段独立验证,符合本项目的"先稳再气候态"纪律)
+After solving for eta^{n+1}, recover U^{n+1} from (2) (explicit given eta^{n+1}),
+apply sponge decay + polar cap (same as current FB step), project barotropic delta
+back to 3D.
 
-**阶段 G0:网格 + 数据全球化(1-2 commit)**
-- `config.py` 加 `GlobalGridConfig`(nx=360, ny=180, 1°, ±85° 或全极)+ 球面度量属性(`dx_2d`, `dy`, `cos_lat`)。
-- `grid.py` 加 `make_global_grid()`:全球 ETOPO 读取(经度 wrap)+ 真正的 `wet_mask`/`land_mask` + 极冠。
-- WOA/风场全球插值(已支持,小改 path)。
-- 验证:`wet_mask` 陆地百分比合理(~71% 海洋),`dx_2d` 随纬度变化,Coriolis 全球 f 场。
+### Implementation steps (all in `src/jax_solver_global.py`)
 
-**阶段 G1:FD 水平算子(1-2 commit)**
-- `jax_solver_global.py`:`_d_dx/_d_dy/_laplacian_h`(球面度量 2阶 FD,经度 wrap)+ `_biharmonic_h`(FD)+ 陆地掩码。
-- 验证:**移植 Tier-1 的 MMS(制造解)检查到 FD** — 同样的解析导数测试,FD 精度应 2阶收敛(误差 ∝ dx²),不是谱的 1e-17,但对 1° 全球够用。这是新的验证基线。
+1. **Add `_free_surface_step_cn(eta, u, v, p, F_rho_x, F_rho_y, dt_half)`** — a new
+   function alongside `_free_surface_step_fd`. Builds the Helmholtz operator
+   `A(eta) = wet_mask * (eta - (dt_half^2)*g*H_sw*lap_consistent(eta))`, the RHS
+   from the old state + forcing, solves via `jax.scipy.sparse.linalg.cg` (maxiter
+   ~100, tol ~1e-8), then recovers ubt/vbt. Preserves the existing polar-cap
+   filter, sponge decay, conservative mass, and barotropic-delta projection (lift
+   the `_cap` closure + projection logic from `_free_surface_step_fd`).
 
-**阶段 G2:IMEX 时间步进 FD 化(2-3 commit,核心难点)**
-- 线性半步:谱扩散衰减 → 显式 FD 扩散(CFL 安全,见上)+ Coriolis(保留,已是 f-plane 旋转,全球用 2D `f` 场改进)+ **半隐式自由表面**。
-- 自由表面步:谱矩阵指数 → lat-lon FD **半隐式浅水**(Crank-Nicolson),消除外部重力波 CFL。或先用显式 + dt=300s 跑通,再上半隐式提效。
-- 陆地掩码注入所有倾向项。
-- 验证:短期(1-5天)全球烟雾测试,0 NaN,max|u| 合理,陆地速度=0。
+2. **Wire a selector** in `_linear_half_step`: use `_free_surface_step_cn` instead
+   of `_free_surface_step_fd`. Gate behind a new `semi_implicit_fs: bool` flag on
+   `PhysicsConfig` (default **False** to preserve the validated spectral-baseline
+   behavior unchanged) OR a `make_solver_global` kwarg. Set True only in the global
+   FD path. (PhysicsConfig defaults untouched per the integrity mandate — use
+   `dataclasses.replace` in the driver to flip it.)
 
-**阶段 G3:长期积分 + 气候态对比(1-2 commit)**
-- `run_long_integration.py` 加 `--global` 模式调用全球求解器。
-- 90d → 365d 稳定性门控(同区域弧线纪律:0 NaN,无 blowup)。
-- 气候态对比:`bench_climatology_compare.py` 全球版 — **关键**:A1/A2 在全球场下大尺度结构由物理决定,**重新算非循环 skill**(纬向异常 corr),看是否 >0.3。
-- 验证:365d PASS + 非循环 A1/A2 skill 真实评估。
+3. **Validate with diagnostics first** (no source change to the production path
+   until the gate passes):
+   - Re-run `_diag_noadv_decisive` with the CN step: expect baroclinic KE to
+     **settle to bounded oscillation** (like spectral no-adv), not unbounded growth.
+   - Re-run the full-step (advection ON): expect **no NaN through 1400+ steps**.
 
-## 风险与诚实声明
-- **FD 精度 < 谱**:2阶 FD 导数误差 ∝ dx²,1° 下约 1e-3 量级(vs 谱 1e-17)。对大尺度海洋气候态够用(生产 OGCM 都用 FD),但理想化精度测试(Tier-1)数值会下降 — 这是预期的、诚实的代价,不是 bug。
-- **biharmonic nu_bi 在 1° 下需重核**:谱的 k⁴ 衰减在 FD 下等效系数不同,1e12 可能过大(显式不稳定),要重标定或改隐式。
-- **半隐式自由表面是新代码**:最可能出 bug 的地方,需要重点验证(能量守恒、质量守恒)。
-- **极点**:±85° 截断 + 极冠滤波是务实选择,不是真全球(极区海洋处理简化),诚实记录。
-- **工作量**:G0-G3 估计 6-10 commit,2-3 天迭代(含跑验证)。
+4. **If the CN step stabilizes**: run the **pure-free-wave decay gate**
+   (sum_eta ≤ 1e-10 relative AND max|eta|, max|u| decay over 800+ steps), then the
+   **10d production probe** (polar cap ON + real wind + bulk=40), confirm both
+   watchdogs (T + eta) clean, `pytest` (55 tests) green.
 
-## 当前状态:待批准开工
-- 用户已定分叉(有限差分 lat-lon)。
-- 这是 god "stand down" 范围外的新方向 — 需确认是否同步 god(inform)或直接开工。
-- 红线保留:不碰 `Python314/site-packages`;不 push origin(本地 commit);不挪 A1/A2 阈值;T3-1 FAIL 不改;谱求解器(`jax_solver.py`)作为验证基线不动。
+5. **If CN does NOT stabilize**: the phase-error hypothesis is wrong; fall back to
+   the deeper architectural fix — a per-column implicit treatment of the 3D
+   baroclinic PGF itself (tridiagonal vertical Helmholtz), the true FD analogue
+   of integrating the full 3D system exactly.
+
+## Risk / guardrails
+
+- **No change to `jax_solver.py`** (spectral baseline, READ ONLY).
+- **PhysicsConfig defaults unchanged** — flip `semi_implicit_fs` via
+  `dataclasses.replace` in the global driver only.
+- New code isolated in `jax_solver_global.py`; the CN step is a new function, the
+  FB step is retained (selectable), so the change is reversible.
+- CG inside the JIT step: verify it compiles and is fast enough (the Helmholtz
+  diag already showed CG converges in few iterations on this grid). If CG is too
+  slow or unstable under jit, fall back to lon-FFT + lat-tridiagonal (the grid is
+  lon-periodic with per-row-uniform dx).
+- Push HELD until 10d clean on BOTH watchdogs. Commits to main locally, no origin
+  push. git user TTAWDTT.
+
+## What this does NOT change
+
+- The validated spectral `jax_solver.py` is untouched.
+- Pre-registered R1/R4 pass/fail criteria are not moved.
+- A1/A2 thresholds are not relaxed; honest FAIL is fine.
