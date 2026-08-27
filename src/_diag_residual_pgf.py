@@ -84,12 +84,12 @@ step_nopgf = jax.jit(lambda s: _step_impl(s, params))
 def run(label, step_fn, n=1400):
     state = init_state_fn(T_init=jnp.array(T_init), S_init=jnp.array(S_init))
     print(f"\n=== {label} ===")
-    print(f"{'stp':>5} {'E':>12} {'max|eta|':>10} {'max|u|':>10} {'sum_eta':>11}")
+    print(f"{'stp':>5} {'E':>12} {'max|eta|':>10} {'max|u|':>10}")
     for k in range(n):
         state = step_fn(state)
-        if (k+1)%200==0:
+        if (k+1) in (200, 600, 1000, 1400):
             E=float(energy_j(state)); me, mu, se, fin = diag_j(state)
-            print(f"{k+1:>5} {E:>12.4e} {float(me):>10.4e} {float(mu):>10.4e} {float(se):>11.4e}")
+            print(f"{k+1:>5} {E:>12.4e} {float(me):>10.4e} {float(mu):>10.4e}")
             if not bool(fin): print(f"  NaN step {k+1}"); break
 
 run("FULL step, residual has NO PGF (full 3D PGF only in linear step)", step_nopgf)
