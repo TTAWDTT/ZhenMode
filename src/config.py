@@ -180,6 +180,23 @@ class PhysicsConfig:
     # ── Smagorinsky subgrid closure ──
     smag_cs: float = 0.0       # Smagorinsky constant (0 = disabled)
 
+    # ── Gent-McWilliams eddy closure ──
+    # Represents unresolved baroclinic eddies as an advective bolus transport
+    # that flattens isopycnal slopes, releasing baroclinic available potential
+    # energy. Required at coarse (1°) resolution where the baroclinic Rossby
+    # radius (~30-50km) is sub-grid; near-inactive at eddy-resolving resolution.
+    # 0 = disabled (default; the closure is enabled only on coarse global runs).
+    kappa_gm: float = 0.0       # m²/s  GM eddy diffusivity (bolus transport)
+    gm_slope_max: float = 0.01  # dimensionless isopycnal-slope limiter
+    # ── Redi isopycnal mixing (dissipative counterpart to GM) ──
+    # Diffuses tracers ALONG sloped isopycnals. In Griffies skew-flux residual
+    # form only the slope-driven terms are applied (the horizontal-gradient
+    # part is absorbed into the background kappa_h*lap handled by the linear
+    # step). The vertical term -κ_redi|S|²∂zC provides the diapycnal-style
+    # APE sink that pure (advective) GM bolus lacks — it is what arrests the
+    # w* steepening feedback. Typically κ_redi = κ_gm. 0 = disabled (default).
+    kappa_redi: float = 0.0     # m²/s  Redi isopycnal diffusivity; 0 = off
+
     # ── Equation of state ──
     T_ref: float = 15.0        # °C    reference temperature
     S_ref: float = 35.0        # psu   reference salinity
