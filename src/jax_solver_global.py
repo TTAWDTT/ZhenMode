@@ -287,6 +287,40 @@ def _gradient_conservative(eta, p):
     return grad_x, grad_y
 
 
+def _gradient_conservative_3d(field, p):
+    """3D extension of _gradient_conservative: the masked, cos(lat)-weighted
+    adjoint gradient applied per-layer to a (nx, ny, nz) field.
+
+    Same face-gating (open iff BOTH adjacent cells wet, via wet_mask_z) and
+    cos(lat) face weighting as the 2D version, so the horizontal gradient of
+    a 3D pressure field does not reach into land zeros at coastlines (the
+    bare centered _d_dx/_d_dy does, injecting energy there). Used for the 3D
+    hydrostatic pressure-gradient force so it is consistent with the
+    barotropic conservative divergence / gradient pair.
+    """
+    wm = p.wet_mask_z                                 # (nx, ny, nz)
+    cos_lat = p.cos_lat                               # (ny,)
+    inv_dx = p.inv_dx[..., 0:1]                        # (nx, ny, 1)
+    # Zonal (axis 0, periodic): open face iff both neighbors wet.
+    open_xp = wm * jnp.roll(wm, -1, axis=0)
+    open_xm = wm * jnp.roll(wm, 1, axis=0)
+    d_fp = (jnp.roll(field, -1, axis=0) - field) * open_xp
+    d_fm = (field - jnp.roll(field, 1, axis=0)) * open_xm
+    grad_x = inv_dx * 0.5 * (d_fp + d_fm)
+    # Meridional (axis 1, closed walls): adjoint of the spherical divergence.
+    open_yp = wm * jnp.roll(wm, -1, axis=1)
+    open_ym = wm * jnp.roll(wm, 1, axis=1)
+    open_yp = open_yp.at[:, -1, :].set(0.0)           # south wall
+    open_ym = open_ym.at[:, 0, :].set(0.0)            # north wall
+    cos_face_p = 0.5 * (cos_lat + jnp.roll(cos_lat, -1))   # face j+1/2
+    cos_face_m = 0.5 * (cos_lat + jnp.roll(cos_lat, 1))    # face j-1/2
+    shp = [1, p.ny, 1]
+    d_yp = (jnp.roll(field, -1, axis=1) - field) * open_yp * cos_face_p.reshape(shp)
+    d_ym = (field - jnp.roll(field, 1, axis=1)) * open_ym * cos_face_m.reshape(shp)
+    grad_y = (p.inv_dy / cos_lat[None, :, None]) * 0.5 * (d_yp + d_ym)
+    return grad_x, grad_y
+
+
 def _laplacian_h(u, p):
     """Horizontal Laplacian on the sphere:
 
@@ -421,11 +455,19 @@ def _compute_hydrostatic_pressure(state, p):
 
 
 def _compute_pressure_gradient(state, p):
-    """Horizontal pressure gradient force per unit mass (FD)."""
+    """Horizontal pressure gradient force per unit mass (FD).
+
+    Uses _gradient_conservative_3d (masked, cos(lat)-weighted adjoint) — NOT
+    the bare centered _d_dx/_d_dy — so the 3D PGF does not reach into land
+    zeros at coastlines. The bare centered gradient injects baroclinic energy
+    at every coastline point (it sees land p=0 as a huge pressure drop),
+    which advects into the interior and seeds the day-50 equatorial-Atlantic
+    blowup even after the barotropic rho-PGF was fixed (the barotropic fix
+    only delayed it 5 days). This 3D fix closes the remaining injection path.
+    """
     pressure = _compute_hydrostatic_pressure(state, p)
-    pgf_x = -_d_dx(pressure, p) / RHO_0
-    pgf_y = -_d_dy(pressure, p) / RHO_0
-    return pgf_x, pgf_y
+    pgf_x, pgf_y = _gradient_conservative_3d(pressure, p)
+    return -pgf_x / RHO_0, -pgf_y / RHO_0
 
 
 def _barotropic_velocity(u, v, p):
@@ -438,7 +480,25 @@ def _barotropic_velocity(u, v, p):
 
 
 def _compute_bt_rho_pgf(state, p):
-    """Barotropic (depth-averaged) PGF from density anomalies (FD)."""
+    """Barotropic (depth-averaged) PGF from density anomalies (FD).
+
+    Uses _gradient_conservative (the masked, cos(lat)-weighted adjoint of
+    _divergence_conservative) — NOT the bare centered _d_dx/_d_dy. The free-
+    surface FB pair (_free_surface_step_fd) computes the eta PGF with
+    _gradient_conservative so the pair is energy-neutral (<u,grad eta>_A =
+    -<eta,div u>_A). Feeding the SAME step a rho-PGF from a DIFFERENT,
+    non-adjoint gradient breaks that neutrality: the centered _d_dx/_d_dy
+    reaches into land zeros at coastlines (no wet/dry face masking) and
+    ignores the cos(lat) face weighting, injecting barotropic energy exactly
+    at coastlines — most acutely near the equator (f->0, no Coriolis to
+    reroute the spurious PGF into a geostrophic jet). This was the day-45
+    Gulf-of-Guinea eta blowup: an equatorial, coastline-adjacent, deep column
+    (0/4 land neighbors but the bare stencil still crosses nearby land) where
+    eta ran 5->18m in 4 days while T was still DECLINING (barotropic, not
+    thermal). Aligning the rho-PGF gradient with the eta-PGF gradient makes
+    the full barotropic forcing consistent with the conservative divergence
+    and restores energy neutrality.
+    """
     rho_prime = _density_anomaly(state.T, state.S, p)
     rho_prime = rho_prime * p.wet_mask_z          # ghost-water fix (see above)
     rho_avg = 0.5 * (rho_prime[..., :-1] + rho_prime[..., 1:])
@@ -446,9 +506,9 @@ def _compute_bt_rho_pgf(state, p):
     p_bc = jnp.zeros_like(state.T)
     p_bc = p_bc.at[..., 1:].set(jnp.cumsum(dp, axis=-1))
     p_bc_avg = jnp.sum(0.5 * (p_bc[..., :-1] + p_bc[..., 1:]) * p.dz_norm, axis=-1)
-    bt_rho_pgf_x = -_d_dx(p_bc_avg[:, :, None], p)[:, :, 0] / RHO_0
-    bt_rho_pgf_y = -_d_dy(p_bc_avg[:, :, None], p)[:, :, 0] / RHO_0
-    return bt_rho_pgf_x, bt_rho_pgf_y
+    # Adjoint-consistent gradient (matches the eta PGF in _free_surface_step_fd).
+    grad_x, grad_y = _gradient_conservative(p_bc_avg, p)
+    return -grad_x / RHO_0, -grad_y / RHO_0
 
 
 def _dealias_h_fd(field, p):
