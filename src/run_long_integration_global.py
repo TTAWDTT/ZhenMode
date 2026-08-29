@@ -154,6 +154,12 @@ def main():
     ap.add_argument("--nu-bi", type=float, default=NU_BI_DEFAULT)
     ap.add_argument("--lambda-bulk", type=float, default=LAMBDA_BULK_DEFAULT_G)
     ap.add_argument("--no-bulk-flux", action="store_true")
+    ap.add_argument("--kappa-gm", type=float, default=0.0,
+                    help="GM eddy diffusivity [m^2/s] (bolus transport); 0=off")
+    ap.add_argument("--kappa-redi", type=float, default=0.0,
+                    help="Redi isopycnal diffusivity [m^2/s]; 0=off")
+    ap.add_argument("--gm-slope-max", type=float, default=0.01,
+                    help="isopycnal slope limiter (dimensionless)")
     ap.add_argument("--sponge-days", type=float, default=SPONGE_DAYS_DEFAULT_G)
     ap.add_argument("--sponge-cells", type=int, default=0)
     ap.add_argument("--polar-cap-rows", type=int, default=POLAR_CAP_ROWS_DEFAULT)
@@ -196,7 +202,9 @@ def main():
           f"dx_eq={dx_eq:.0f}m, lat[{grid.lat[0]:.1f},{grid.lat[-1]:.1f}]")
 
     physics = replace(PhysicsConfig(),
-                      nu_h=args.nu_h, nu_bi=args.nu_bi, kappa_bi=args.nu_bi)
+                      nu_h=args.nu_h, nu_bi=args.nu_bi, kappa_bi=args.nu_bi,
+                      kappa_gm=args.kappa_gm, kappa_redi=args.kappa_redi,
+                      gm_slope_max=args.gm_slope_max)
     Q_heat = heat_flux_meridional(grid, Q0=50.0)
 
     # ── Initial fields (WOA2023) ──
@@ -286,6 +294,12 @@ def main():
                   f"({args.snap_days:.0f}d)")
     header.append(f"physics: nu_h={physics.nu_h:g}  nu_bi={physics.nu_bi:g}  "
                   f"kappa_conv={physics.kappa_conv}")
+    if physics.kappa_gm > 0 or physics.kappa_redi > 0:
+        header.append(f"sub-grid closure: kappa_gm={physics.kappa_gm:g} m^2/s  "
+                      f"kappa_redi={physics.kappa_redi:g} m^2/s  "
+                      f"gm_slope_max={physics.gm_slope_max:g}")
+    else:
+        header.append("sub-grid closure: NONE (kappa_gm=0, kappa_redi=0)")
     header.append(f"bulk_flux={lambda_bulk:g} W/m^2/K"
                   + (" (T_atm=zonal WOA, non-circular)" if lambda_bulk > 0.0 else " (off)"))
     header.append(f"wall: no-flux N/S (v=0 at boundary rows, mirror-ghost dy)")
@@ -348,7 +362,7 @@ def main():
             n_3d_snaps += 1
         maxT_history.append(maxT)
         print(f"{day:7.1f} {cur_step:8d} {maxu:9.3f} {maxT:8.3f} "
-              f"{maxeta:9.3f} {sshstd:9.4f} {ke:12.4e} {nan:6d}")
+              f"{maxeta:9.3f} {sshstd:9.4f} {ke:12.4e} {nan:6d}", flush=True)
         return maxu, maxT, maxeta, nan
 
     maxu, maxT, maxeta, nan = snapshot(0)

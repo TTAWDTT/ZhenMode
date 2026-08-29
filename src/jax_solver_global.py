@@ -732,18 +732,32 @@ def _gm_tracer_transport(tracer, u_star, v_star, w_star, p):
 # minus the redundant horizontal part). Tendency = -∇·F^skew.
 # Dealiased + land-masked.
 
-def _redi_skew_flux_tendency(tracer, S_x, S_y, p):
-    """Redi isopycnal skew-flux residual tendency for one tracer.
+def _redi_skew_flux_tendency(tracer, S_x, S_y, p, kappa=None):
+    """Isopycnal skew-flux residual tendency for one tracer.
+
+    This is the STANDARD GM/Redi closure form (Griffies 1998): the
+    bolus-transport + isoneutral-diffusion pair is recast as a single
+    skew-flux tensor, whose vertical term is DIFFUSIVE (CFL ~ kappa*|S|^2*
+    dt/dz^2) rather than advective (CFL ~ |w*|*dt/dz). On a non-uniform
+    vertical grid with a thin surface layer (dz=5 m), the advective bolus
+    form has CFL = 0.29*60/5 = 3.49 (unstable); the skew-flux form has
+    CFL = 1000*0.01^2*60/5^2 = 0.48 (stable). Same closure, different
+    discretization — the skew-flux form is what MOM6/MITgcm/NEMO use.
 
     Args:
         tracer: (nx, ny, nz) T or S.
         S_x, S_y: (nx, ny, nz) isopycnal slopes from _isopycnal_slope.
-    Returns: (nx, ny, nz) tendency ∂C/∂t, dealiased and land-masked.
-    Zero when p.kappa_redi <= 0.
+        kappa: diffusivity [m^2/s]; if None, reads p.kappa_redi. Pass
+            p.kappa_gm explicitly to use this same operator for the GM
+            closure (the mathematically equivalent skew-flux form).
+    Returns: (nx, ny, nz) tendency dC/dt, dealiased and land-masked.
+    Zero when the effective kappa <= 0.
     """
-    if p.kappa_redi <= 0.0:
+    if kappa is None:
+        kappa = p.kappa_redi
+    if kappa <= 0.0:
         return jnp.zeros_like(tracer)
-    k = p.kappa_redi
+    k = kappa
     dC_dx = _d_dx(tracer, p)
     dC_dy = _d_dy(tracer, p)
     dC_dz = _d_dz(tracer, p)
@@ -754,6 +768,16 @@ def _redi_skew_flux_tendency(tracer, S_x, S_y, p):
     SdotGradC = S_x * dC_dx + S_y * dC_dy
     S2 = S_x * S_x + S_y * S_y
     Fz = -k * (SdotGradC + S2 * dC_dz)
+    # No-flux boundary: zero the vertical skew flux at the TOP (surface) and
+    # BOTTOM (seafloor) grid points. These are material boundaries — no
+    # isopycnal transport crosses the air-sea interface or the seafloor.
+    # Without this, the thin surface layer (dz=5 m) sees a huge Fz divergence
+    # (Fz[0] ~ -5e-3 but Fz[1] ~ -7e-5) that drives a +0.06 K/step surface
+    # warming, which feeds back (steeper dT/dz -> larger Fz) and diverges
+    # within ~100 steps. Zeroing Fz at the boundary kills the spurious surface
+    # source while preserving the interior along-isopycnal mixing.
+    Fz = Fz.at[..., 0].set(0.0)
+    Fz = Fz.at[..., -1].set(0.0)
     # Tendency = -div(F) = -(dF_x/dx + dF_y/dy + dF_z/dz)
     tend = -(_d_dx(Fx, p) + _d_dy(Fy, p) + _d_dz(Fz, p))
     tend = _dealias_h_fd(tend, p)
@@ -796,15 +820,20 @@ def _compute_tracer_tendency(state, p):
     bulk_T = (p.lambda_bulk * (p.T_atm_3d - state.T[:, :, 0:1])
               * heat_factor * p.surface_mask)
 
-    # Gent-McWilliams sub-grid baroclinic closure: bolus transport that
-    # flattens isopycnal slopes, releasing baroclinic APE. Distinct
-    # advection (not diffusion), so it survives _compute_tracer_residual
-    # (which subtracts only kappa_h*lap) with no double-count. Off by
-    # default (kappa_gm=0); enabled via dataclasses.replace on coarse runs.
+    # Gent-McWilliams sub-grid baroclinic closure. Recast in skew-flux
+    # residual form (Griffies 1998): the bolus-transport + isoneutral-
+    # diffusion pair is a single skew-flux tensor whose vertical term is
+    # DIFFUSIVE (CFL ~ kappa*|S|^2*dt/dz^2), not advective (CFL ~ |w*|*dt/dz).
+    # The advective bolus form was CFL=3.49 in the 5 m surface layer and
+    # blew up at step 12; this form is CFL=0.48 there. Survives
+    # _compute_tracer_residual (skew flux != kappa_h*lap). Off by default
+    # (kappa_gm=0); enabled via dataclasses.replace on coarse runs.
     if p.kappa_gm > 0.0:
-        u_s, v_s, w_s = _gm_bolus_velocity(state, p)
-        gm_T = _gm_tracer_transport(state.T, u_s, v_s, w_s, p)
-        gm_S = _gm_tracer_transport(state.S, u_s, v_s, w_s, p)
+        S_x_gm, S_y_gm = _isopycnal_slope(state, p)
+        gm_T = _redi_skew_flux_tendency(state.T, S_x_gm, S_y_gm, p,
+                                        kappa=p.kappa_gm)
+        gm_S = _redi_skew_flux_tendency(state.S, S_x_gm, S_y_gm, p,
+                                        kappa=p.kappa_gm)
     else:
         gm_T = 0.0
         gm_S = 0.0
