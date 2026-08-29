@@ -321,6 +321,42 @@ def _gradient_conservative_3d(field, p):
     return grad_x, grad_y
 
 
+def _divergence_conservative_3d(Fx, Fy, p):
+    """3D mass-conserving horizontal divergence of a tracer flux, the exact
+    adjoint of _gradient_conservative_3d under the area-weighted inner product.
+
+    Face fluxes are zeroed at every wet/dry interface (open iff BOTH adjacent
+    cells wet, via wet_mask_z) and at the N/S truncation walls, so no flux
+    crosses a coastline or the basin boundary. This is the conservative pair
+    to _gradient_conservative_3d: used for the isopycnal skew-flux divergence
+    so the GM/Redi closure neither creates nor destroys integrated tracer at
+    land boundaries (the bare _d_dx/_d_dy divergence injects a spurious
+    coastal source that drove max|T| from 30 to 47 C in 4 days).
+
+    Args:
+      Fx, Fy: (nx, ny, nz) zonal / meridional flux components, already masked.
+    Returns:
+      (nx, ny, nz) horizontal divergence dFx/dx + dFy/dy.
+    """
+    wm = p.wet_mask_z                                 # (nx, ny, nz)
+    cos_lat = p.cos_lat                               # (ny,)
+    # Zonal (axis 0, periodic): face (i+1/2,j,k) open iff cell i and i+1 wet.
+    uface_open = wm * jnp.roll(wm, -1, axis=0)
+    uface = 0.5 * (Fx + jnp.roll(Fx, -1, axis=0)) * uface_open
+    div_x = (uface - jnp.roll(uface, 1, axis=0)) * p.inv_dx[..., 0:1]
+    # Meridional (axis 1, closed walls): face (i,j+1/2,k) open iff j,j+1 wet.
+    vface_open = wm * jnp.roll(wm, -1, axis=1)
+    vface_open = vface_open.at[:, -1, :].set(0.0)    # south wall closed
+    vface = 0.5 * (Fy + jnp.roll(Fy, -1, axis=1)) * vface_open
+    cos_face = 0.5 * (cos_lat + jnp.roll(cos_lat, -1))   # cos at face j+1/2
+    shp = [1, p.ny, 1]
+    fcos = vface * cos_face.reshape(shp)                  # mass flux v*cos(face)
+    fcos_in = jnp.roll(fcos, 1, axis=1)
+    fcos_in = fcos_in.at[:, 0, :].set(0.0)                 # north wall closed
+    div_y = (fcos - fcos_in) * p.inv_dy / cos_lat[None, :, None]
+    return div_x + div_y
+
+
 def _laplacian_h(u, p):
     """Horizontal Laplacian on the sphere:
 
@@ -655,8 +691,7 @@ def _isopycnal_slope(state, p):
     each (nx, ny, nz), masked to wet points.
     """
     rho_prime = _density_anomaly(state.T, state.S, p) * p.wet_mask_z
-    drho_dx = _d_dx(rho_prime, p)
-    drho_dy = _d_dy(rho_prime, p)
+    drho_dx, drho_dy = _gradient_conservative_3d(rho_prime, p)
     drho_dz = _d_dz(rho_prime, p)
     # Floor the denominator: stable stratification only; unstable columns
     # (drho_dz<0) get the floor magnitude with their sign preserved so the
@@ -758,8 +793,7 @@ def _redi_skew_flux_tendency(tracer, S_x, S_y, p, kappa=None):
     if kappa <= 0.0:
         return jnp.zeros_like(tracer)
     k = kappa
-    dC_dx = _d_dx(tracer, p)
-    dC_dy = _d_dy(tracer, p)
+    dC_dx, dC_dy = _gradient_conservative_3d(tracer * p.wet_mask_z, p)
     dC_dz = _d_dz(tracer, p)
     # Horizontal skew flux F_h = -k * S * dC/dz  (x,y components)
     Fx = -k * S_x * dC_dz
@@ -778,8 +812,12 @@ def _redi_skew_flux_tendency(tracer, S_x, S_y, p, kappa=None):
     # source while preserving the interior along-isopycnal mixing.
     Fz = Fz.at[..., 0].set(0.0)
     Fz = Fz.at[..., -1].set(0.0)
-    # Tendency = -div(F) = -(dF_x/dx + dF_y/dy + dF_z/dz)
-    tend = -(_d_dx(Fx, p) + _d_dy(Fy, p) + _d_dz(Fz, p))
+    # Tendency = -div(F). Use the conservative masked divergence for the
+    # horizontal part (face-gated at coastlines) so the closure conserves
+    # integrated tracer and does not inject a spurious coastal source. The
+    # vertical part uses _d_dz (the vertical column is contiguous within a
+    # water column, no land masking needed in z).
+    tend = -(_divergence_conservative_3d(Fx, Fy, p) + _d_dz(Fz, p))
     tend = _dealias_h_fd(tend, p)
     return tend * p.wet_mask_z
 
@@ -1109,24 +1147,34 @@ def _linear_half_step(state, p, dt_half):
 # ── Nonlinear explicit step (forward-backward RK2, FD) ─────────────
 
 def _compute_tracer_residual(state, p):
-    """Tracer tendency minus the linear diffusion (handled by linear step)."""
+    """Tracer tendency minus the linear diffusion (handled by linear step).
+
+    The Strang split L(dt/2)·N(dt)·L(dt/2) handles ALL linear dissipation
+    (Laplacian + biharmonic) in the L step. The residual (N part) must
+    therefore SUBTRACT the linear dissipation that the full tendency
+    included, so it is not double-applied. For the Laplacian this is
+    dTdt -= kappa_h*lap (the tendency's +kappa_h*lap is removed; L re-adds
+    it). The biharmonic is NOT in _compute_tracer_tendency (it is an L-only
+    term), so it must NOT appear in the residual at all — a +kappa_bi*biharm
+    here would be re-applied by N(dt) and cancel the L-step damping
+    (-dt/2 + dt - dt/2 = 0 net), making biharmonic a silent no-op.
+    """
     dTdt, dSdt = _compute_tracer_tendency(state, p)
     dTdt = dTdt - p.kappa_h * _laplacian_h(state.T, p)
     dSdt = dSdt - p.kappa_h * _laplacian_h(state.S, p)
-    if p.kappa_bi > 0.0:
-        dTdt = dTdt + p.kappa_bi * _biharmonic_h(state.T, p)
-        dSdt = dSdt + p.kappa_bi * _biharmonic_h(state.S, p)
     return dTdt, dSdt
 
 
 def _compute_momentum_residual(state, p):
-    """Momentum tendency minus linear parts (diffusion, Coriolis, bt PGF, bt wind)."""
+    """Momentum tendency minus linear parts (diffusion, Coriolis, bt PGF, bt wind).
+
+    Biharmonic hyperviscosity is an L-only term (not in the full momentum
+    tendency), so it must NOT appear here — see _compute_tracer_residual
+    for the no-op cancellation argument.
+    """
     dudt, dvdt = _compute_momentum_tendency(state, p)
     dudt = dudt - p.nu_h * _laplacian_h(state.u, p)
     dvdt = dvdt - p.nu_h * _laplacian_h(state.v, p)
-    if p.nu_bi > 0.0:
-        dudt = dudt + p.nu_bi * _biharmonic_h(state.u, p)
-        dvdt = dvdt + p.nu_bi * _biharmonic_h(state.v, p)
     dudt = dudt - p.f[:, :, None] * state.v
     dvdt = dvdt + p.f[:, :, None] * state.u
     # barotropic PGF from eta
