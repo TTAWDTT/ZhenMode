@@ -73,16 +73,17 @@ SMOOTH_PASSES_DEFAULT = 30    # bathymetry smoothing (steep topographic PGF)
 MIN_DEPTH_DEFAULT = 100.0     # floor shallow coastal columns (bad WOA extrapolation)
 NU_H_DEFAULT = 5e6            # m²/s spin-up stabilizer (CFL_edge=0.094, safe;
                               # production OGCMs use ~1e3-1e4; can lower post-spinup)
-NU_BI_DEFAULT = 5e13           # biharmonic hyperviscosity (∇⁴), scale-selective
+NU_BI_DEFAULT = 2e14           # biharmonic hyperviscosity (∇⁴), scale-selective
                               # damping of 2-3 cell grid-scale noise. CFL is NOT
-                              # violated: nu_bi*dt/dx⁴ ≈ 0.005 << 0.05 limit at
-                              # 1°/dt=60 (the earlier "CFL-violating" note was
-                              # wrong — the real reason it had no effect was a
-                              # sign-cancellation bug in the Strang residual,
-                              # fixed in jax_solver_global.py). Calibrated to
-                              # match the spectral solver's 1e12 at 0.1° after
-                              # the k⁴ grid-spacing rescaling (1°/0.1°)⁴≈42.
-                              # 10d test: max|T| 35.8->27.9, max|eta| 5.6->2.0.
+                              # violated: nu_bi*dt/dx⁴ ≈ 0.02 at 1°/dt=60 and
+                              # ≈0.04 at dt=120, both below the ~0.05 explicit-Euler
+                              # limit (the earlier "CFL-violating" note was wrong —
+                              # the real reason biharmonic had no effect was a
+                              # sign-cancellation bug in the Strang residual, fixed
+                              # in jax_solver_global.py). Calibrated empirically:
+                              # 5e13 suppresses the 10d hotspot but a stronger
+                              # coastal hotspot re-nucleates by day 60; 2e14 keeps
+                              # 20d max|T|≈30 and is the candidate for 90/365d.
 POLAR_CAP_ROWS_DEFAULT = 2    # ON: zonally average poleward rows to kill the
                               # cos(lat)->0 metric blow-up at the pole wall
                               # (the j=0 single-gridpoint divergence, G3).
