@@ -412,13 +412,27 @@ def _d_dz(u, p):
 
 
 def _d2_dz2(u, p):
-    """Vertical second derivative, non-uniform grid."""
+    """Vertical second derivative, non-uniform grid.
+
+    Boundary nodes use the zero-flux (ghost-point) form 2*(C1 - C0)/h0^2:
+    the ghost value Cg = C1 (mirror reflection through the boundary node)
+    makes the centered curvature (C1 - 2*C0 + Cg)/h0^2 diffusive at the
+    boundary. The previous form (C2 - 2*C1 + C0)/h0^2 is the centered
+    curvature AT node 1 applied as the tendency of node 0 -- i.e.
+    anti-diffusive there: it pushed a boundary anomaly AWAY from the
+    interior value. With kappa_conv=0.05 that feedback amplified initial
+    WOA salty-over-fresh surface profiles into the ITCZ salinity runaway
+    that NaN'd the 365d run at day 135 (conv_S = +84.5 PSU/day at the
+    worst cell; the zero-flux form gives -89.9 PSU/day, clearing the
+    instability). Shared by conv/diff_v/momentum-vdiff, all of which
+    want the same no-flux boundary condition.
+    """
     d2u_interior = (
         u[..., 2:] * p.d2z_hm + u[..., :-2] * p.d2z_hp
         - u[..., 1:-1] * (p.d2z_hm + p.d2z_hp)
     ) / p.d2z_denom
-    d2u_top = (u[..., 2:3] - 2 * u[..., 1:2] + u[..., 0:1]) / (p.d2z_h0_top ** 2)
-    d2u_bot = (u[..., -3:-2] - 2 * u[..., -2:-1] + u[..., -1:]) / (p.d2z_h0_bot ** 2)
+    d2u_top = 2.0 * (u[..., 1:2] - u[..., 0:1]) / (p.d2z_h0_top ** 2)
+    d2u_bot = 2.0 * (u[..., -2:-1] - u[..., -1:]) / (p.d2z_h0_bot ** 2)
     return jnp.concatenate([d2u_top, d2u_interior, d2u_bot], axis=-1)
 
 
