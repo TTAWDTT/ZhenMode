@@ -518,33 +518,54 @@ def _barotropic_velocity(u, v, p):
 def _compute_bt_rho_pgf(state, p):
     """Barotropic (depth-averaged) PGF from density anomalies (FD).
 
-    Uses _gradient_conservative (the masked, cos(lat)-weighted adjoint of
-    _divergence_conservative) — NOT the bare centered _d_dx/_d_dy. The free-
-    surface FB pair (_free_surface_step_fd) computes the eta PGF with
-    _gradient_conservative so the pair is energy-neutral (<u,grad eta>_A =
-    -<eta,div u>_A). Feeding the SAME step a rho-PGF from a DIFFERENT,
-    non-adjoint gradient breaks that neutrality: the centered _d_dx/_d_dy
-    reaches into land zeros at coastlines (no wet/dry face masking) and
-    ignores the cos(lat) face weighting, injecting barotropic energy exactly
-    at coastlines — most acutely near the equator (f->0, no Coriolis to
-    reroute the spurious PGF into a geostrophic jet). This was the day-45
-    Gulf-of-Guinea eta blowup: an equatorial, coastline-adjacent, deep column
-    (0/4 land neighbors but the bare stencil still crosses nearby land) where
-    eta ran 5->18m in 4 days while T was still DECLINING (barotropic, not
-    thermal). Aligning the rho-PGF gradient with the eta-PGF gradient makes
-    the full barotropic forcing consistent with the conservative divergence
-    and restores energy neutrality.
+    Transport-consistent form: the depth average over the WET column of the
+    SAME face-gated 3D baroclinic PGF that the 3D momentum feels
+    (_gradient_conservative_3d — the masked, cos(lat)-weighted adjoint of the
+    3D divergence, same construction as _compute_pressure_gradient), normalized
+    by H_sw to match ubt = transport / H_sw in _barotropic_velocity (u = 0 in
+    ghost water):
+
+        F_rho = (1/H_sw) * SUM_k pgf3d_layer_k * dz_k * wet_iface_k
+
+    Uses _gradient_conservative_3d, NOT the bare centered _d_dx/_d_dy, so the
+    rho-PGF cannot reach into land zeros at coastlines (see the day-45
+    Gulf-of-Guinea note in _compute_pressure_gradient: bare-stencil coastline
+    injection, most acute near the equator where no Coriolis cages it).
+
+    PREVIOUS FORM (replaced — the day-75+ Amazon-fan eta blob): F = -grad(
+    p_bc_avg)/RHO_0 with p_bc_avg the H_sw-normalized trapezoidal average of
+    p_bc over ALL 13 layers including ghost water. Because p_bc is CONSTANT
+    below the seafloor (rho is masked before the cumsum, so dp=0 there), the
+    ghost part contributes ((H_sw-H)/H_sw) * grad(p_bc_bottom) to the
+    forcing — at shelf breaks grad(p_bc_bottom) is O(5e3 Pa / 1e5 m), so the
+    ghost term alone is O(3e-5 m/s2). It displaces the implied equilibrium
+    sea level eta_eq = -p_bc_avg/(g*rho0) by O(1-2 m) between adjacent cells
+    across every isobath step, and the free-surface step piles eta up at each
+    jump; near the equator (f->0) Coriolis cannot geostrophically cage the
+    pile-up -> eta ran 2.5 -> 12.25 m in 15 d at (47.5W, 7.5N) on the 2000 m
+    isobath off the Amazon fan. The transport-weighted form contains no ghost
+    water and no below-bottom constant, so the spurious isobath forcing
+    vanishes; the remaining wet-column form stress is the physical (JEBAR-type)
+    coupling, ~10x smaller at the blob site.
+
+    Measured at the d75 blob state, cell (311,66), H=2000 m, H_sw=4000 m:
+    |F_old| = 4.6e-5 -> |F_new| = 4.9e-6 m/s2; global mean |F| 1.3e-5 ->
+    6.2e-6 m/s2.
     """
     rho_prime = _density_anomaly(state.T, state.S, p)
-    rho_prime = rho_prime * p.wet_mask_z          # ghost-water fix (see above)
+    rho_prime = rho_prime * p.wet_mask_z          # zero out ghost water
     rho_avg = 0.5 * (rho_prime[..., :-1] + rho_prime[..., 1:])
     dp = G_EARTH * rho_avg * p.dz_3d
     p_bc = jnp.zeros_like(state.T)
     p_bc = p_bc.at[..., 1:].set(jnp.cumsum(dp, axis=-1))
-    p_bc_avg = jnp.sum(0.5 * (p_bc[..., :-1] + p_bc[..., 1:]) * p.dz_norm, axis=-1)
-    # Adjoint-consistent gradient (matches the eta PGF in _free_surface_step_fd).
-    grad_x, grad_y = _gradient_conservative(p_bc_avg, p)
-    return -grad_x / RHO_0, -grad_y / RHO_0
+    # Layer-centered, face-gated 3D PGF, transport-weighted over the wet column.
+    gx3, gy3 = _gradient_conservative_3d(p_bc, p)
+    pgf_x_lay = 0.5 * (gx3[..., :-1] + gx3[..., 1:])
+    pgf_y_lay = 0.5 * (gy3[..., :-1] + gy3[..., 1:])
+    wet_iface = p.wet_mask_z[..., :-1] * p.wet_mask_z[..., 1:]
+    fx = -jnp.sum(pgf_x_lay * wet_iface * p.dz_3d, axis=-1) / (RHO_0 * p.H_sw)
+    fy = -jnp.sum(pgf_y_lay * wet_iface * p.dz_3d, axis=-1) / (RHO_0 * p.H_sw)
+    return fx, fy
 
 
 def _dealias_h_fd(field, p):
@@ -986,7 +1007,22 @@ def _free_surface_step_fd(eta, u, v, p, F_rho_x=None, F_rho_y=None, dt_half=None
     eta_new = eta_new * p.wet_mask
     # Lateral sponge on eta (2D). No-op when sponge_rate_2d == 0.
     sw_decay = jnp.exp(-p.sponge_rate_2d * dt_half)
+    #
+    # MASS-CONSERVING SPONGE (defect #1 fix): the bare decay eta*=sw_decay
+    # changes global volume by dV = sum(A*eta*(sw_decay-1)) over the band. The
+    # wind setup makes the band-mean eta NEGATIVE on both hemispheres
+    # (subpolar lows / ACC south-of-westerlies minimum), so the sponge was
+    # ADDING volume every step -> +0.377 m global mean-eta drift over 90d
+    # (steady ~10000 km^3/5d from d5, matches the eta-decay leak budget).
+    # Correct by adding the removed volume back UNIFORMLY over the wet domain:
+    # total volume exactly conserved, local anomaly damping unchanged, and a
+    # uniform eta offset has zero PGF so the dynamics are untouched.
+    eta_pre_sponge = eta_new
     eta_new = eta_new * sw_decay
+    area_cell = p.dx_2d * p.dy                       # (nx, ny) cell area
+    dV_sponge = jnp.sum(area_cell * (eta_new - eta_pre_sponge))
+    area_ocean = jnp.maximum(jnp.sum(area_cell * p.wet_mask), 1.0)
+    eta_new = eta_new + (-dV_sponge / area_ocean) * p.wet_mask
 
     # Polar-cap filter: zonally average the poleward rows to kill the
     # cos(lat)->0 metric singularity (dx->0 makes the explicit SW CFL

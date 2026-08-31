@@ -362,14 +362,24 @@ def main():
         snap_maxeta.append(maxeta); snap_sshstd.append(sshstd); snap_ke.append(ke)
         snap_eta.append(eta.copy()); snap_T_top.append(np.asarray(state.T[:, :, 0]).copy())
         if args.save_3d:
+            # 4-field snapshot: T,u,v,S each (nx,ny,nz). eta is NOT stacked —
+            # it is 2D while these are 3D, and it is already saved per-frame in
+            # the npz `eta` table (snap_eta) which all analyses read.
             snap3d = np.stack([
                 np.asarray(state.T).copy(),
                 np.asarray(state.u).copy(),
                 np.asarray(state.v).copy(),
+                np.asarray(state.S).copy(),
             ], axis=0)
             np.save(os.path.join(three_d_dir, f"snap_{n_3d_snaps:05d}.npy"), snap3d)
             del snap3d
             n_3d_snaps += 1
+            # Give the XLA async dispatch queue a chance to drain and free its
+            # scratch buffers before the next 7200-step block (the 4.3 GB of
+            # live snapshot arrays + ComfyUI sharing 31 GB of RAM pushed a
+            # 380 MB device->host transfer into a transient OOM otherwise).
+            import gc
+            gc.collect()
         maxT_history.append(maxT)
         print(f"{day:7.1f} {cur_step:8d} {maxu:9.3f} {maxT:8.3f} "
               f"{maxeta:9.3f} {sshstd:9.4f} {ke:12.4e} {nan:6d}", flush=True)
