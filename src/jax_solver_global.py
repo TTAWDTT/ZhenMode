@@ -380,18 +380,34 @@ def _laplacian_h(u, p):
     Implemented in physical (meter) space: ∂²/∂x² and ∂²/∂y² via FD, plus
     the spherical correction term -(tanφ/R)·∂u/∂y = -(sinφ/(R cosφ))·∂u/∂y.
     """
-    # ∂²u/∂x²: central second FD, lon-periodic
-    d2u_dx2 = (jnp.roll(u, -1, axis=0) - 2.0 * u + jnp.roll(u, 1, axis=0)) * p.inv_dx2
-    # ∂²u/∂y²: central second FD with NO-FLUX WALL (mirror ghost cell).
-    # Same `mode='edge'` reflection as _d_dy: ghost = boundary value, giving
-    # zero normal gradient at the wall face and a stable central 2nd diff:
+    # ∂²u/∂x²: FACE-GATED conservative form. The bare central stencil reads
+    # the wet/ghost mask step directly: ghost nodes hold the T_ref sentinel
+    # (+15 C vs ~+1 C real deep water), so the inner Laplacian spikes
+    # (+14 K/dx² at every wet/ghost face) and the OUTER Laplacian of that
+    # spike is a huge dipole — at kappa_bi=2e14 (L-step, invisible to
+    # terms_fn) this warms the wet coastal nodes toward +15 at ~+0.3 K/d
+    # (gpu365_fgate d150 k13: T[x=138] already drifted 1.2 -> 12.1 C) while
+    # advection of the resulting zonal gradient cools the interior at up to
+    # -13 K/d at d365 -> FAIL_DRIFT max|T|=220. Gating the face differences
+    # (zero across any wet/ghost or wet/dry face, open iff both cells wet)
+    # makes the Laplacian see a flat profile across closed faces — the
+    # physical no-flux BC — and kills the halo at the source.
+    wm = p.wet_mask_z                                   # (nx, ny, nz)
+    d2u_dx2 = ((jnp.roll(u, -1, axis=0) - u) * wm * jnp.roll(wm, -1, axis=0)
+               - (u - jnp.roll(u, 1, axis=0)) * wm * jnp.roll(wm, 1, axis=0)) * p.inv_dx2
+    # ∂²u/∂y²: central second FD with NO-FLUX WALL (mirror ghost cell),
+    # PLUS the same wet/wet face gate in y. Same `mode='edge'` reflection as
+    # _d_dy: ghost = boundary value, giving zero normal gradient at the wall
+    # face and a stable central 2nd diff:
     #   d²u/dy²|_0 = (u1 - 2u0 + u_ghost)/dy² = (u1 - u0)/dy²
     # The prior one-sided (-2,-5,4,-1) stencil extrapolated and amplified the
     # grid-scale mode that blew up the tracer at the boundary row.
     pad = [(0, 0)] * u.ndim
     pad[1] = (1, 1)
     u_pad = jnp.pad(u, pad, mode='edge')
-    d2u_dy2 = (u_pad[:, 2:] - 2.0 * u_pad[:, 1:-1] + u_pad[:, :-2]) * p.inv_dy2
+    wm_pad = jnp.pad(wm, pad, mode='edge')
+    d2u_dy2 = ((u_pad[:, 2:] - u_pad[:, 1:-1]) * wm_pad[:, 2:] * wm_pad[:, 1:-1]
+               - (u_pad[:, 1:-1] - u_pad[:, :-2]) * wm_pad[:, 1:-1] * wm_pad[:, :-2]) * p.inv_dy2
     # spherical metric correction: -(tanφ/R) ∂u/∂y
     # tan(lat) = sin(lat)/cos(lat); signed sin(lat) from f = 2*Omega*sin(lat)
     # (constant along longitude, so row 0 of f gives the per-row sin).
@@ -405,7 +421,13 @@ def _laplacian_h(u, p):
 
 
 def _biharmonic_h(u, p):
-    """Biharmonic ∇⁴u = ∇²(∇²u). Composed from two Laplacian applications."""
+    """Biharmonic ∇⁴u = ∇²(∇²u). Composed from two Laplacian applications.
+
+    Both applications use the face-gated _laplacian_h, so the mask-step
+    artifacts (ghost sentinel cliff) are excluded from ∇²u itself: no halo
+    at wet/ghost boundaries, and the ghost-side result of the inner Laplacian
+    (irrelevant, masked away downstream) cannot seed the outer one.
+    """
     return _laplacian_h(_laplacian_h(u, p), p)
 
 
