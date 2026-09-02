@@ -70,14 +70,18 @@ def _bilinear(field, fine_lat, fine_lon, coarse_lat, coarse_lon):
     fx = (flon - clon[jl]) / (clon[jl + 1] - clon[jl])
     fy = (flat - clat[il]) / (clat[il + 1] - clat[il])
 
-    f00 = field[il, jl]
-    f01 = field[il, jl + 1]
-    f10 = field[il + 1, jl]
-    f11 = field[il + 1, jl + 1]
-    return ((1 - fy)[:, None] * ((1 - fx)[None, :] * f00[None, :]
-                                 + fx[None, :] * f01[None, :])
-            + fy[:, None] * ((1 - fx)[None, :] * f10[None, :]
-                             + fx[None, :] * f11[None, :]))
+    # np.ix_ for open mesh indexing: il is (nlat_f,), jl is (nlon_f,). field is
+    # (nlat_c, nlon_c). field[np.ix_(il, jl)] -> (nlat_f, nlon_f) via outer
+    # indexing (NOT broadcasting, which fails when nlat_f != nlon_f — the bug
+    # on the global 360x120 grid where the regional 128x128 path hid it).
+    f00 = field[np.ix_(il, jl)]
+    f01 = field[np.ix_(il, jl + 1)]
+    f10 = field[np.ix_(il + 1, jl)]
+    f11 = field[np.ix_(il + 1, jl + 1)]
+    return ((1 - fy)[:, None] * ((1 - fx)[None, :] * f00
+                                 + fx[None, :] * f01)
+            + fy[:, None] * ((1 - fx)[None, :] * f10
+                             + fx[None, :] * f11))
 
 
 def load_monthly_wind(month_idx=-1, url_prefix=PSL_BASE, cache_dir=CACHE_DIR,
@@ -97,6 +101,7 @@ def load_monthly_wind(month_idx=-1, url_prefix=PSL_BASE, cache_dir=CACHE_DIR,
     """
     if grid is None:
         grid = make_grid(DEFAULT_CONFIG.grid, DEFAULT_CONFIG.bathymetry_file)
+    month_idx = int(month_idx)   # netCDF time-index must be int (float -> IndexError)
     os.makedirs(cache_dir, exist_ok=True)
     cache_file = os.path.join(cache_dir, f"monthly_mean_{month_idx}.npz")
 

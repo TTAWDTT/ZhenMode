@@ -196,14 +196,39 @@ def air_temp_profile(grid, sst_clim):
         T_atm: (nx, ny) atmospheric target temperature [degC].
     """
     ny = grid.ny
-    taper_cells = getattr(grid, "forcing_taper_cells", 8)
     sst = np.asarray(sst_clim, dtype=np.float64)
+    if getattr(grid, "is_global", False):
+        # Global grid: y is BOUNDED (no periodic seam) and land cells are real
+        # land. Two bugs this branch fixes (both measured on gpu365_glap):
+        #   1. The plain zonal mean of T_init included the land/below-floor
+        #      fill values (init_state holds +15 C sentinels; WOA interp holds
+        #      its own land fill), dragging the equatorial T_atm down to
+        #      24.1 C vs the true ocean-only 27.4 C — the model SST equilibrated
+        #      exactly onto the polluted target (model 24.09 vs T_atm 24.03),
+        #      producing the measured -3..-5 K tropical cold bias.
+        #   2. The regional _taper_y pulled the edge rows (|lat|~59.5) toward
+        #      the domain mean (17.1 C vs true -0.8 C), injecting +0.89 K/d of
+        #      spurious polar warming — the measured +2..+4 K polar warm bias.
+        # Ocean-only zonal mean, NO y-taper: the bulk flux is continuous at
+        # the polar edge because the domain edge is a real boundary there.
+        wm = np.asarray(grid.wet_mask, dtype=np.float64)   # (nx, ny)
+        profile = np.full(ny, np.nan)
+        for j in range(ny):
+            wet_j = wm[:, j] > 0.5
+            if wet_j.any():
+                profile[j] = sst[wet_j, j].mean()
+        # backfill any all-land row from its nearest ocean-bearing row
+        if np.isnan(profile).any():
+            good = np.where(~np.isnan(profile))[0]
+            profile = np.interp(np.arange(ny), good, profile[good])
+        return np.broadcast_to(profile[None, :], (grid.nx, ny)).copy()
+    # Regional grid: periodic y-seam — taper the deviation from the domain
+    # mean to zero at both edges so the bulk flux doesn't inject a step at
+    # the seam.
+    taper_cells = getattr(grid, "forcing_taper_cells", 8)
     # zonal mean -> (ny,) meridional profile, broadcast back to (nx, ny)
     profile = np.nanmean(sst, axis=0)              # (ny,)
     profile = np.broadcast_to(profile[None, :], (grid.nx, ny)).copy()
-    # taper to zero-anomaly at the periodic y-seam (continuity, not zero
-    # value — we taper the *deviation from the domain mean* so the bulk
-    # flux doesn't inject a step at the seam).
     domain_mean = float(np.nanmean(profile))
     anom = profile - domain_mean
     anom = _taper_y(anom, ny, taper_cells)

@@ -5,6 +5,7 @@ Hydrostatic primitive equations, spectral method, JAX.
 All confirmed design decisions in one place.
 """
 from dataclasses import dataclass, field
+import os
 import numpy as np
 
 
@@ -90,6 +91,72 @@ class GridConfig:
 
 
 @dataclass(frozen=True)
+class GlobalGridConfig:
+    """Global lat-lon grid specification (finite-difference solver).
+
+    Unlike the regional GridConfig (plane f/beta-plane, single dx), this is a
+    true global grid: lon spans 0..360 (periodic), lat spans the globe with
+    spherical metric factors (dx = R*cos(lat)*dlon varies with latitude).
+    Used by the FD global solver (jax_solver_global.py); the spectral regional
+    solver still uses GridConfig.
+    """
+    # ── Horizontal ──
+    nx: int = 360                      # zonal grid points (lon, periodic)
+    ny: int = 170                      # meridional grid points (lat, ±85°)
+    resolution: float = 1.0            # degrees per grid cell
+    lat_max: float = 85.0              # poleward lat limit (polar cap below)
+
+    # ── Vertical (same as regional) ──
+    z_levels: tuple = (
+        0, -5, -15, -30, -50, -75, -100,
+        -150, -200, -300, -500, -1000, -2000, -4000,
+    )
+    nz: int = 14
+
+    @property
+    def dlon(self) -> float:
+        return self.resolution
+
+    @property
+    def dlat(self) -> float:
+        return self.resolution
+
+    @property
+    def lon(self) -> np.ndarray:
+        """Longitude centers [degrees E], 0..360-dlon, periodic."""
+        return self.resolution * (0.5 + np.arange(self.nx))
+
+    @property
+    def lat(self) -> np.ndarray:
+        """Latitude centers [degrees N], symmetric ±, excluding polar cap."""
+        return np.linspace(-self.lat_max, self.lat_max, self.ny)
+
+    @property
+    def lat_2d(self) -> np.ndarray:
+        """2D latitude field (nx, ny) for metric computation."""
+        return np.broadcast_to(self.lat[None, :], (self.nx, self.ny))
+
+    @property
+    def cos_lat(self) -> np.ndarray:
+        """cos(lat) per meridional row (ny,) — spherical metric factor."""
+        return np.cos(np.radians(self.lat))
+
+    @property
+    def dx_2d(self) -> np.ndarray:
+        """Zonal grid spacing [m], varies with latitude: R*cos(lat)*dlon."""
+        return R_EARTH * np.radians(self.dlon) * self.cos_lat  # (ny,)
+
+    @property
+    def dy(self) -> float:
+        """Meridional grid spacing [m] (constant on a lat-lon grid)."""
+        return R_EARTH * np.radians(self.dlat)
+
+    @property
+    def lat_bounds(self) -> tuple:
+        return (-self.lat_max, self.lat_max)
+
+
+@dataclass(frozen=True)
 class PhysicsConfig:
     """Physics parameterization — hydrostatic primitive equations."""
     # ── Turbulence closure ──
@@ -113,6 +180,23 @@ class PhysicsConfig:
 
     # ── Smagorinsky subgrid closure ──
     smag_cs: float = 0.0       # Smagorinsky constant (0 = disabled)
+
+    # ── Gent-McWilliams eddy closure ──
+    # Represents unresolved baroclinic eddies as an advective bolus transport
+    # that flattens isopycnal slopes, releasing baroclinic available potential
+    # energy. Required at coarse (1°) resolution where the baroclinic Rossby
+    # radius (~30-50km) is sub-grid; near-inactive at eddy-resolving resolution.
+    # 0 = disabled (default; the closure is enabled only on coarse global runs).
+    kappa_gm: float = 0.0       # m²/s  GM eddy diffusivity (bolus transport)
+    gm_slope_max: float = 0.01  # dimensionless isopycnal-slope limiter
+    # ── Redi isopycnal mixing (dissipative counterpart to GM) ──
+    # Diffuses tracers ALONG sloped isopycnals. In Griffies skew-flux residual
+    # form only the slope-driven terms are applied (the horizontal-gradient
+    # part is absorbed into the background kappa_h*lap handled by the linear
+    # step). The vertical term -κ_redi|S|²∂zC provides the diapycnal-style
+    # APE sink that pure (advective) GM bolus lacks — it is what arrests the
+    # w* steepening feedback. Typically κ_redi = κ_gm. 0 = disabled (default).
+    kappa_redi: float = 0.0     # m²/s  Redi isopycnal diffusivity; 0 = off
 
     # ── Equation of state ──
     T_ref: float = 15.0        # °C    reference temperature
@@ -149,7 +233,14 @@ class Config:
     time: TimeConfig = field(default_factory=TimeConfig)
 
     # ── Data paths ──
-    bathymetry_file: str = r"C:\Users\zhen.luo\Desktop\ETOPO_2022_v1_r3600x1800_surface.nc"
+    # WSL (/mnt/c) > offline node (/data/tmp/ocean) > Windows
+    bathymetry_file: str = (
+        "/mnt/c/Users/zhen.luo/Desktop/ETOPO_2022_v1_r3600x1800_surface.nc"
+        if os.path.exists("/mnt/c") else
+        "/data/tmp/ocean/data/ETOPO_2022_v1_r3600x1800_surface.nc"
+        if os.path.exists("/data/tmp/ocean") else
+        r"C:\Users\zhen.luo\Desktop\ETOPO_2022_v1_r3600x1800_surface.nc"
+    )
 
     # ── Framework ──
     framework: str = "jax"     # "jax" or "numpy" (for testing)

@@ -16,8 +16,12 @@ Solver grid conventions:
   z: (nz,) negative downward (z=0 at surface)
   T/S output: (nx, ny, nz) with axis 0=lon, axis 1=lat, axis 2=depth
 """
+import os
 import numpy as np
-from netCDF4 import Dataset
+try:
+    from netCDF4 import Dataset
+except ImportError:   # offline nodes: npz twins only (see load_woa_climatology)
+    Dataset = None
 from scipy.interpolate import RegularGridInterpolator
 
 from config import DEFAULT_CONFIG
@@ -25,11 +29,18 @@ from grid import OceanGrid, make_grid
 
 
 # ── WOA file paths ───────────────────────────────────────────────────
-WOA_DIR = r"C:\Users\zhen.luo\ocean_solver\data\woa"
+# WSL (/mnt/c) > offline node (/data/tmp/ocean) > Windows
+WOA_DIR = (
+    "/mnt/c/Users/zhen.luo/ocean_solver/data/woa"
+    if os.path.exists("/mnt/c") else
+    "/data/tmp/ocean/data/woa"
+    if os.path.exists("/data/tmp/ocean") else
+    r"C:\Users\zhen.luo\ocean_solver\data\woa"
+)
 
 WOA_FILES = {
-    'temperature': WOA_DIR + r"\woa23_decav_t00_01.nc",
-    'salinity':    WOA_DIR + r"\woa23_decav_s00_01.nc",
+    'temperature': os.path.join(WOA_DIR, "woa23_decav_t00_01.nc"),
+    'salinity':    os.path.join(WOA_DIR, "woa23_decav_s00_01.nc"),
 }
 
 
@@ -50,6 +61,17 @@ def load_woa_climatology(var_name, filepath=None):
     """
     if filepath is None:
         filepath = WOA_FILES[var_name]
+
+    # npz twin support: offline nodes (no netCDF4/HDF) can read a pre-extracted
+    # "<file>.npz" (lon, lat, depth, data float32 with NaN). Identical to netCDF.
+    if os.path.exists(filepath + ".npz"):
+        d = np.load(filepath + ".npz")
+        return {
+            'lon':   np.asarray(d['lon'], dtype=np.float64),
+            'lat':   np.asarray(d['lat'], dtype=np.float64),
+            'depth': np.asarray(d['depth'], dtype=np.float64),
+            'data':  np.asarray(d['data'], dtype=np.float64),
+        }
 
     ds = Dataset(filepath)
 
@@ -116,12 +138,12 @@ def _fill_nan_vertical(data):
         if nan_mask.any():
             data_flat[k, nan_mask] = data_flat[k + 1, nan_mask]
 
-    # Any remaining NaNs (entire column is NaN) -> fill with column mean
-    col_nan = np.isnan(data_flat).all(axis=0)
-    if col_nan.any():
-        global_mean = np.nanmean(data_flat)
-        data_flat[:, col_nan] = global_mean
-
+    # Any remaining NaNs (entire column is NaN) -> leave as NaN; these are
+    # land columns that will be filled AFTER interpolation by horizontal
+    # nearest-neighbour fill against the solver wet mask (see
+    # _fill_ocean_horizontal in get_initial_fields). Filling here with the
+    # global mean (T~5.5 C) lets land values bleed into adjacent ocean points
+    # during bilinear interpolation, producing spurious cold spikes.
     return data_flat.reshape(ndepth, nlat, nlon)
 
 
@@ -147,6 +169,11 @@ def interpolate_to_grid(woa, grid_lon, grid_lat, grid_z):
     woa_lat = woa['lat']       # (nlat,)
     woa_depth = woa['depth']   # (ndepth,)
     woa_data = woa['data']     # (ndepth, nlat, nlon)
+
+    # Normalize target longitudes to the WOA convention [-180, 180).
+    # The global grid uses 0..360 lon centers; the regional grid used
+    # ~150E (already in range). This makes both work without extrapolation.
+    grid_lon = np.mod(np.asarray(grid_lon, dtype=np.float64) + 180.0, 360.0) - 180.0
 
     # Fill NaN values vertically before interpolation
     woa_data = _fill_nan_vertical(woa_data)
@@ -196,7 +223,79 @@ def get_initial_fields(grid):
     T_init = interpolate_to_grid(woa_temp, grid.lon, grid.lat, grid.z)
     S_init = interpolate_to_grid(woa_salt, grid.lon, grid.lat, grid.z)
 
+    # Coastal artifact cleanup. WOA has NaN over land; bilinear interpolation
+    # propagates NaN into any ocean point touching a land WOA cell. We fill
+    # those ocean NaNs from valid horizontal neighbours (iterative diffusion
+    # fill, ocean-only). This replaces the old approach where land columns
+    # were filled with the GLOBAL MEAN (T~5.5 C) before interpolation, which
+    # bled cold spikes into the warm pool (T=5.5 next to T=29, a 24-C jump
+    # over one cell) and drove the GM closure to spurious warming.
+    wm = np.asarray(grid.wet_mask, dtype=bool)
+    if wm.any():
+        T_init = _fill_ocean_horizontal(T_init, wm)
+        S_init = _fill_ocean_horizontal(S_init, wm)
+        # Land points: fill NaN with a neutral value so no NaN leaks into the
+        # solver (NaN*0 = NaN, not 0). The wet_mask zeros them at use sites,
+        # so the exact value is immaterial; use the ocean mean for cleanliness.
+        ocean_full = np.broadcast_to(wm[:, :, None], T_init.shape)
+        land_nan = ~ocean_full & np.isnan(T_init)
+        if land_nan.any():
+            gm = np.nanmean(T_init[ocean_full])
+            T_init = np.where(land_nan, gm if np.isfinite(gm) else 0.0, T_init)
+        land_nan = ~ocean_full & np.isnan(S_init)
+        if land_nan.any():
+            gm = np.nanmean(S_init[ocean_full])
+            S_init = np.where(land_nan, gm if np.isfinite(gm) else 0.0, S_init)
+
     return T_init, S_init
+
+
+def _fill_ocean_horizontal(field, wet_mask, max_pass=50):
+    """Fill NaN values at ocean points from valid horizontal neighbours.
+
+    Iterative nearest-neighbour diffusion: each pass replaces ocean NaNs that
+    have at least one valid wet neighbour with the mean of those neighbours.
+    Repeated until no ocean NaN remains or max_pass reached. Land points are
+    never read or written (they stay whatever they are, masked later).
+
+    Args:
+      field: (nx, ny, nz) array, NaN at ocean points needing fill.
+      wet_mask: (nx, ny) bool, True = ocean.
+      max_pass: safety cap on iterations.
+    Returns:
+      (nx, ny, nz) with ocean NaNs filled.
+    """
+    f = np.array(field, dtype=np.float64)
+    nx, ny, nz = f.shape
+    ocean = wet_mask[:, :, None]
+    nan_oc = ocean & np.isnan(f)
+    if not nan_oc.any():
+        return f
+    offsets = [(-1,-1),(-1,0),(-1,1),(0,-1),(0,1),(1,-1),(1,0),(1,1)]
+    for _ in range(max_pass):
+        nan_oc = ocean & np.isnan(f)
+        if not nan_oc.any():
+            break
+        nbr_sum = np.zeros_like(f)
+        cnt = np.zeros((nx, ny, nz), dtype=np.int16)
+        for di, dj in offsets:
+            ii = (np.arange(nx) + di) % nx          # lon periodic
+            jj = np.clip(np.arange(ny) + dj, 0, ny - 1)
+            nbr = f[ii][:, jj, :]
+            valid = ocean[ii][:, jj, :] & np.isfinite(nbr)
+            nbr_sum += np.where(valid, nbr, 0.0)
+            cnt += valid.astype(np.int16)
+        fill = nan_oc & (cnt > 0)
+        f = np.where(fill, nbr_sum / np.maximum(cnt, 1), f)
+    # Any ocean point still NaN after max_pass (isolated) -> field mean
+    still_nan = ocean & np.isnan(f)
+    if still_nan.any():
+        # ocean is (nx,ny,1); broadcast to full nz for indexing
+        ocean_full = np.broadcast_to(ocean, f.shape)
+        gm = np.nanmean(f[ocean_full])
+        if np.isfinite(gm):
+            f = np.where(still_nan, gm, f)
+    return f
 
 
 # ── Smoke test ───────────────────────────────────────────────────────

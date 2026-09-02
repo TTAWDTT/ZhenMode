@@ -275,3 +275,132 @@ max_T 轨迹全程在 23.9–25.9 间振荡（季节循环），**无热点**。
 5. 稳定性工程（sponge 50de4cc、风场插值 1655b4c、动态 forcing）依然有效——那些是有效的工程。
 6. 残留局限（诚实）：sponge 是周期边界区域模式的工程补丁（非真开/辐射边界条件）；B2 谱斜率偏陡（强阻尼）；A3 Sverdrup FAIL（无西边界层的物理预期）；`T_atm` 仍由 WOA 派生（纬向均匀缓解经向循环到 99.8%，但纬向异常 skill 仍 FAIL）；CPU-only（无 Windows JAX CUDA wheel）。
 
+
+---
+
+## 附：GM 闭合 365d 攻坚记录（2026-08-29，append-only）
+
+目标：为全局 FD 求解器加 Gent-McWilliams 涡致输送闭合（step 2 of approved plan）。
+预注册门槛不变：365d 稳定（max|eta|<3m 全程等 runner 内建判据），A1/A2 corr>0.3 / RMSE<2.0 °C。
+
+### 已排除的假设（每次都跑满 365d，全部 FAIL_BLOWUP，均见 max_T 加速增长）
+
+| 试验 | 修改 | 结局 |
+|------|------|------|
+| tanh-clip（基线） | 斜率限幅 | FAIL d280，T(240)=92.5 |
+| ghost-fill | 海底 ghost 层填充底湿值（消 0.08 K/day 伪热通量）| FAIL d280，与基线**逐位相同** ⇒ ghost 不是主因 |
+| kappa_gm=300 | 扩散系数减半 | FAIL ~d295（变慢仍炸）⇒ 增长 ∝ κ_GM 线性 |
+| kappa_gm=1000+kappa_redi=200 | 加 Redi 耗散 | FAIL d270（更糟）|
+| DM95 taper | 限幅改平滑衰减（flux→0）| FAIL d290，T(240)=69.8 |
+| gm_slope_max=0.001 | 限幅收紧 4 倍 | FAIL d310，T(240)=52.7 ⇒ 增长 ∝ slope_max **线性**（非二次）|
+
+### 算子谱分析（本地 jax CPU，复现真实代码）
+
+原 node-flux 垂直偏斜项（节点通量 + `_d_dz(Fz)`）是 5 点/2 步格式：偶/奇子格**精确解耦**，
+锯齿-z 模特征值恰为 0（永不衰减），算子不对称（max asym 2.7e-2），对称部分特征值轻微为正
+⇒ 结构性缺陷，与本节所有 FAIL 一致（增长对 κ_GM、slope_max 线性 = 算子范数 ∝ κ·S 线性项）。
+
+### 接口通量格式重写（MOM6/NEMO 式）
+
+改为界面通量 Fz(k+1/2)，单侧胞元值 + 界面平均斜率，顶/底/干湿界面零通量，
+tend_v[k]=(F[k-1/2]−F[k+1/2])/dz_node[k]。用真实代码基向量装配 14×14 柱算子验证：
+max Re eig = 4.2e-22（机器零），amp=|I+dt·A|=1.000，diag≤0，dz-加权列和=5e-19（守恒）。
+此过程中发现并修复两处实现错误：(a) dz_3d 实为 (nz-1) 层厚，节点胞元需 dz_node；
+(b) Fz_i[0]/Fz_i[-1] 是**内部**界面（0↔1、12↔13），置零它们会把表层/底层节点从
+垂直偏斜输送中解耦（零特征向量曾是 e_0——已修）。
+
+### 接口格式 365d 结果：仍然 FAIL（诚实记录）
+
+- gpu365_fv3（GPU5）：FAIL，d290 后 NaN。失稳起点 d260，位置 (lon 337=22.5°E, lat -51.5°S)，
+  z=12/13（-2000/-4000 m）偶极：k12 +0.6 K/day 增温、k13 -0.23 K/day 线性冷却 260 天后加速（e-folding ~18d）。
+- 该列全湿 4000m；T_init 底两层 1.28/−0.0 °C，界面 12 的 drho_dz=1.07e-7（近中性），
+  由 drho_dy=-3.2e-10 得**真实等密度线斜率 |S|≈3.0**（DM95 限幅 0.004 的 750 倍）。
+  S² 垂直项若未限幅 CFL=k·S²·dt/dz²=0.48（贴临界）；但 DM95 后有效斜率≈0，通量≈0——
+  冷却源另有出处，**正在做逐项 dT/dt 分解定位**（terms_fn：[adv,diff_h,diff_v,conv,gm,redi]，
+  每 10d 保存，GPU6 运行 terms290 中）。
+
+诚实结论（截至本条）：接口通量格式修复了真实的算子缺陷（谱证据确凿），但 365d 失稳未除。
+逐项诊断运行结果出来前不猜测、不下结论。
+
+### 逐项诊断结果：adv 主导，GM 无罪（2026-08-29）
+
+terms290（GPU6，kappa_gm=1000，d0–290 每 10d）在 fv3 失稳胞元 (337,8,k13) 的逐项分解：
+adv = -0.078 K/d（d10）→ -1.66（d270）→ -4.74（d280），gm 全程 ≤ -0.115 K/d（良性）。
+**对照实验 ctl290nogm**（同代码同 forcing，kappa_gm=0，GPU4）：更早失稳——d170 即在
+**同一胞元** (155–157°E, 51–52°S, 4000 m) 出现同样的负 T 极值，增长曲线与 GM run 相同
+（d230 max|T|=46.3）。结论：失稳在**基础平流物理**，GM 只是把它推迟了 ~80 天。
+
+### 真正根因：极冠滤波用 2D 湿掩码 → ghost 节点 T_ref=15 污染纬向平均
+
+追踪冷池起点：d10 时 k13 层南冠带即出现**平坦 +15.0 °C 平台**（WOA 4000 m 该处 T≈−0.3）。
++15.0 正是 `config.T_ref=15.0`：init_state 把海底以下 ghost 节点填为 T_ref，而
+`_apply_polar_cap_3d` 用 **2D wet_mask**（列级、含浅海列）做纬向平均——4000 m 层上
+南冠 360 列中 121 列是 ghost（海深 <4000 m），带状纬向平均 = (239·T_wet+121·15)/360，
+经极冠每步重写后几何收敛到 +15.0（实测 d10 带状均值 14.99，= (239·(−0.3)+121·15)/360 ✓）。
++15 平台在冠缘形成经向陡崖 → 近中性层结 → 平流冷池偶极（k12 +7.5 / k13 −22）→ d170 崩。
+GM 与标记板皆无罪：标记板被 2D 掩码 bug 的 +15 平台绑架了。
+
+**修复**：极冠 3D 改用 `wet_mask_z`（逐深度湿点均值）。本地合成网格冒烟验证：湿节点
+k13 冠带 5 步后偏离 2.0 C 仅 2.4e-6（修复前被拉向 15）。已推节点（md5 4fa69e1f）。
+
+**附带事故**：节点 jax 环境 cuDNN 9.1.0 与 jaxlib 0.7.2（编译于 9.8.0）版本失配，
+`FAILED_PRECONDITION: DNN library initialization failed`——之前能跑，环境被动过。
+用 `LD_LIBRARY_PATH=/data/miniconda3/envs/test/lib/python3.11/site-packages/nvidia/cudnn/lib`
+覆盖后恢复。2d 冒烟 PASS（GPU5，0.4 min）。
+
+**验证中**：gpu365_cap3d（修复后完整 365d，GM=1000，GPU5）已启动。
+
+---
+
+## 附:两个叠加根因的最终修复与双 PASS(2026-08-29 续,append-only)
+
+接上节。gpu365_cap3d 之后的两轮根因排查与修复,链条完整:
+
+### 根因 #1:未门控 `_laplacian_h` + κ_bi=2e14 → ghost 哨兵增温晕圈
+
+gpu365_fgate(adv 梯度已门控)365d 仍 FAIL_DRIFT(max|T|=220 @d365,(137,16,13))。
+证据链:terms_fn 显示 adv 是唯一泵 → adv 分解显示 −u·∂T/∂x 作用在物理湿-湿梯度上
+→ d150 T 图显示湿/ghost 边界向 +15 哨兵的增温晕圈(T[138,16,13] 1.2→12.1 °C)
+→ 哨兵扫描证实晕圈生长 → 源头是 **L-step 的 `_laplacian_h`**(裸中心差分跨湿/ghost
+面读取 +14 K 哨兵陡崖 → 内层 Laplacian 尖峰 → 外层 Laplacian 偶极 × κ_bi=2e14 =
+持久边界增温 ~+0.3 K/d;L-step 项对 terms_fn 不可见,解释了 "adv" 误归因)。
+消融矩阵(60d):biharmonic 必需(去掉反而 max|biharm| +74.5 K/d 极行噪声),GM 无罪。
+
+**修复**: `_laplacian_h` 双面差分加开面门控(wm·roll(wm,∓1),同
+_divergence_conservative_3d 模式),x 周期 + y edge-pad。验证 gpu60_glap:
+PASS,max|T|=24.778(ctrl 25.756),max|eta| 单调降;热点区 60d 仅 +0.037 K
+(修复前 +0.08 K/d)。365d(gpu365_glap):**runner PASS**,max|T|=24.767
+全程零漂移,max|u| 0.65–0.71,max|eta|=9.528(<15 但线性 +0.026 m/d)。
+提交 ac62bb9。
+
+### 根因 #2:T_atm 构造污染 → A1/A2 RMSE FAIL(corr 双 PASS 但 3.29/3.46)
+
+gpu365_glap 气候态 bench:A1 corr=0.975/RMSE=3.286,A2 corr=0.964/RMSE=3.456。
+偏差形态:热带 −3~−5 K(赤道对称),极区 +2~+4 K——经向梯度平了 ~30%。
+两个 forcing 构造 bug,均实测:
+1. **陆地填充污染纬向平均**:`air_temp_profile` 对含陆地填充值的 T_init 做裸
+   zonal mean,赤道 T_atm=24.12 vs 海洋-only 真值 27.36;模型 SST 精确平衡到
+   被污染的目标(模型 24.09 ≈ T_atm 24.03)——"冷偏差"就是 forcing 本身。
+2. **区域周期 y 缝 taper 用在有界全球域**:`_taper_y` 把边缘行(|lat|~59.5)
+   拉向域均值 17.85,59.5°S T_atm=17.12 vs 真值 −0.83 → +0.886 K/d 虚假极区加热。
+
+**修复**:`air_temp_profile` 按 `grid.is_global`(GlobalOceanGrid 新字段)分支:
+海洋-only 纬向平均(wet_mask 加权,全陆行邻近回填),**无 y-taper**(域边缘是真实
+边界)。区域分支不动。节点验证:T_atm 1.25..28.14 °C,边缘行 1.25/5.85(修复前
+17.12/16.76)。非循环性保持(仍纬向均匀)。提交 8aa9acc。
+
+### 最终 365d(gpu365_glap2,修复后 forcing):全 PASS ✅
+
+- **runner 判据**(预注册):365d 完成 ✅,max|u|<10 ✅(0.65–0.71),
+  max|T|<41.65 ✅(28.09 稳定),max|eta|<15 ✅(9.584)
+- **A1**(纬向平均 SST vs WOA):corr=1.000,RMSE=0.319 → **PASS**
+- **A2**(大尺度 SST 形态,非循环):corr=0.980,RMSE=1.728 → **PASS**
+- B 类(信息性):B2 谱斜率 −3.13,B3 KE drift 1.06%
+- 遗留(诚实):max|eta| 线性增长 +0.026 m/d,源为地中海 (lon 16.5, lat 37.5)
+  半封闭海盆 Gibraltar 界面水量失衡(domain mean 仅 −0.05 m,单点 SSH 尖峰),
+  经典粗网格半封闭海伪影,非失稳;按 ~500d 会触 15 m 看门狗,年积分内无碍。
+
+### 状态
+
+plan 第 2 步(GM 闭合 → 365d 稳定 + 气候态)完成。进入第 3 步(合并到 main +
+目录重组)。
