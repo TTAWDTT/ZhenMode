@@ -402,5 +402,16 @@ gpu365_glap 气候态 bench:A1 corr=0.975/RMSE=3.286,A2 corr=0.964/RMSE=3.456。
 
 ### 状态
 
-plan 第 2 步(GM 闭合 → 365d 稳定 + 气候态)完成。进入第 3 步(合并到 main +
-目录重组)。
+plan 第 2 步(GM 闭合 → 365d 稳定 + 气候态)完成。**第 3 步也已完成**(2026-08-29):
+
+- 合并:`agent/pam-mt5l9102` → `main`(merge 549d6e1,两处冲突:forcing.py
+  取 global 分支含 regional fallback;报告取分支超集含循环论证分析+攻坚记录)。
+- 目录重组:134 个 `_*.py`/`diag_*.py` 攻坚诊断脚本移入 `src/archive_diag/`
+  (append-only 档案,同 archive_baroclinic/ 模式,README 索引了脚本类 ↔ 历史
+  段落映射;已验证无活代码 import 它们)。src/ 顶层现为干净的生产布局:
+  求解器 ×2、驱动 ×2、bench ×2、core 模块、verify/plot。
+- 测试:本地 CPU 侧 4 套 55/55 PASS(test_grid 17 + test_equations 14 +
+  test_integrator 8 + test_spectral_ops 16);test_gm_closure.py(11 个)
+  需 jax,已在节点侧验证。
+- PLAN/plan 大小写冲突:英文 campaign PLAN 归档为 `docs/plan_gm_closure_en.md`,
+  工作副本 `plan.md` 保留。
