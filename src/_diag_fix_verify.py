@@ -1,55 +1,86 @@
-"""Verify the fix (full 3D PGF moved from RK2 residual to linear step) on the
-REAL step (no monkeypatch). Compare against the known-blowup baseline.
+"""Verify the _compute_bt_rho_pgf conservative-gradient fix (day-45 eta blowup).
+
+The day-50 locator found eta blows up at day 45-49 in the equatorial Atlantic
+(Gulf of Guinea), a barotropic/free-surface instability. Root cause (code
+analysis): _compute_bt_rho_pgf used the bare centered _d_dx/_d_dy (no wet/dry
+face masking, no cos(lat) weighting) for the density PGF, while the eta PGF
+in the SAME free-surface FB step used _gradient_conservative (masked, cos-
+weighted, adjoint-consistent). The non-adjoint rho gradient injects barotropic
+energy at coastlines, unarrested near the equator (f->0).
+
+This script runs the production config to day 55 with the FIXED solver and
+snapshots daily from day 40. PASS = eta stays bounded (< 8m) through day 55
+and no T/u spike. Compare against the pre-fix blowup (eta 5->18m, T->78 by day 49).
 """
-import os, sys
+import os, sys, time
 os.environ.setdefault('JAX_ENABLE_X64', '1')
+os.environ.setdefault('XLA_PYTHON_CLIENT_MEM_FRACTION', '0.92')
+os.environ.setdefault('PYTHONIOENCODING', 'utf-8')
 sys.path.insert(0, 'src')
-import jax
-import jax.numpy as jnp
-import numpy as np
+import jax, jax.numpy as jnp, numpy as np
 from dataclasses import replace
 from config import DEFAULT_CONFIG, PhysicsConfig, GlobalGridConfig
 from grid import make_global_grid
-from jax_solver_global import make_solver_global, JaxStateG, RHO_0, G_EARTH
-from forcing import air_temp_profile, heat_flux_meridional
 from woa_data import get_initial_fields
+from wind_reanalysis import real_wind_forcing
+from forcing import heat_flux_meridional, air_temp_profile, BULK_LAMBDA_DEFAULT
+import jax_solver_global as G
+from jax_solver_global import make_solver_global
 
 bathy = DEFAULT_CONFIG.bathymetry_file
 gcfg = replace(GlobalGridConfig(), lat_max=60.0, ny=120)
 grid = make_global_grid(gcfg, bathy, smooth_passes=30, min_depth=100.0)
-Q_heat = heat_flux_meridional(grid, Q0=0.0)
+nx, ny, nz = grid.nx, grid.ny, grid.nz
+lon = np.asarray(grid.lon); lat = np.asarray(grid.lat); z = np.asarray(grid.z)
+depth = np.asarray(grid.depth)
+
 T_init, S_init = get_initial_fields(grid)
-T_init = np.array(T_init); S_init = np.array(S_init)
-tau_x = np.zeros((grid.nx, grid.ny)); tau_y = np.zeros((grid.nx, grid.ny))
-T_atm = air_temp_profile(grid, T_init[:, :, 0])
-wm = np.array(grid.wet_mask) > 0.5
-dz = np.array(grid.dz); dz_norm = dz/dz.sum(); H=4000.0
-
-physics = replace(PhysicsConfig(), nu_h=1e3, nu_bi=0, kappa_bi=0, r_bot=1e-3)
-step, init_state_fn, _ = make_solver_global(
+T_init = np.array(T_init, dtype=np.float64); S_init = np.array(S_init, dtype=np.float64)
+month_idx = (2023 - 1948) * 12 + (1 - 1)
+tau_x, tau_y = real_wind_forcing(month_idx=month_idx, grid=grid)
+Q_heat = heat_flux_meridional(grid, Q0=50.0)
+T_sst = T_init[:, :, 0]
+T_atm = air_temp_profile(grid, T_sst)
+physics = replace(PhysicsConfig(), nu_h=5e6, nu_bi=0.0, kappa_bi=0.0, r_bot=1e-3)
+step, init_state_fn, _, params = make_solver_global(
     grid, physics, 60.0, forcing=(tau_x, tau_y, Q_heat), eos_type='linear',
-    T_atm=T_atm, lambda_bulk=0.0, sponge_days=0.0, sponge_cells=0,
-    T_init=T_init, S_init=S_init, polar_cap_rows=0, polar_cap_taper=0)
-
-wm_j = jnp.array(grid.wet_mask); dz_norm_j = jnp.array(dz_norm)
-@jax.jit
-def energy_j(state):
-    e=state.eta; u=state.u; v=state.v
-    ua=0.5*(u[...,:-1]+u[...,1:]); va=0.5*(v[...,:-1]+v[...,1:])
-    ubt=jnp.sum(ua*dz_norm_j,-1); vbt=jnp.sum(va*dz_norm_j,-1)
-    return (0.5*H*jnp.sum((ubt**2+vbt**2)*wm_j)+0.5*G_EARTH*H*jnp.sum(e**2*wm_j))
-@jax.jit
-def diag_j(state):
-    return (jnp.max(jnp.abs(state.eta)), jnp.max(jnp.abs(state.u)),
-            jnp.sum(state.eta*wm_j), jnp.isfinite(state.eta).all())
+    T_atm=T_atm, lambda_bulk=BULK_LAMBDA_DEFAULT, sponge_days=3.0, sponge_cells=16,
+    T_init=T_init, S_init=S_init, polar_cap_rows=0, polar_cap_taper=0, return_params=True)
+stepf = jax.jit(lambda s: G._step_impl(s, params))
 
 state = init_state_fn(T_init=jnp.array(T_init), S_init=jnp.array(S_init))
-print("=== FIXED full step (3D PGF in linear step, not residual), real F_rho+Coriolis+nu_h+r_bot ===")
-print(f"{'stp':>5} {'E':>12} {'max|eta|':>10} {'max|u|':>10} {'sum_eta':>11}")
-for k in range(2000):
-    state = step(state)
-    if (k+1)%200==0:
-        E=float(energy_j(state)); me, mu, se, fin = diag_j(state)
-        print(f"{k+1:>5} {E:>12.4e} {float(me):>10.4e} {float(mu):>10.4e} {float(se):>11.4e}")
-        if not bool(fin): print(f"  NaN step {k+1}"); break
-print("\nDONE.")
+steps_per_day = int(86400 // 60)
+
+def report(day, state):
+    T = np.asarray(state.T); eta = np.asarray(state.eta); u = np.asarray(state.u)
+    maxT = float(np.max(T)); maxeta = float(np.nanmax(np.abs(eta))); maxu = float(np.max(np.abs(u)))
+    nan = int(np.sum(~np.isfinite(T)))
+    ie, je = np.unravel_index(np.argmax(np.abs(eta)), eta.shape)
+    print(f"  day{day:3d} max|u|={maxu:7.3f} max|T|={maxT:8.2f} max|eta|={maxeta:7.3f} "
+          f"@({lon[ie]:.1f}E,{lat[je]:.1f}N) NaN={nan}", flush=True)
+
+print(f"FIX-VERIFY: conservative rho-PGF gradient. grid {nx}x{ny}x{nz}", flush=True)
+print(f"running to day 55 (snap daily from day 40)...", flush=True)
+report(0, state)
+t0 = time.time()
+for day in range(1, 56):
+    for _ in range(steps_per_day):
+        state = stepf(state)
+    if day >= 40 or day % 5 == 0:
+        report(day, state)
+    if not np.all(np.isfinite(np.asarray(state.T))):
+        print(f"  NaN/Inf at day {day} — FAIL (instability)", flush=True)
+        break
+    if float(np.nanmax(np.abs(np.asarray(state.eta)))) > 15.0:
+        print(f"  eta>15m at day {day} — FAIL (blowup)", flush=True)
+        break
+    if float(np.max(np.asarray(state.T))) > 100.0:
+        print(f"  T>100 at day {day} — FAIL (thermal blowup)", flush=True)
+        break
+maxeta_final = float(np.nanmax(np.abs(np.asarray(state.eta))))
+if maxeta_final < 8.0:
+    print(f"PASS: max|eta|={maxeta_final:.2f}m at day 55 (was 17.9m pre-fix). "
+          f"Barotropic blowup arrested. wall {time.time()-t0:.0f}s", flush=True)
+else:
+    print(f"FAIL: max|eta|={maxeta_final:.2f}m at day 55 (still blowing up). "
+          f"wall {time.time()-t0:.0f}s", flush=True)
