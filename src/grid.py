@@ -239,6 +239,15 @@ class GlobalOceanGrid:
     nx: int
     ny: int
 
+    # True for make_global_grid products: y is bounded (no periodic seam),
+    # land cells are REAL land (wet_mask=0) rather than sponge/fringe nodes,
+    # so forcing profiles must be built from ocean-only statistics and must
+    # NOT be y-tapered to the domain mean (that is a regional-periodic-seam
+    # artifact — tapering T_atm to ~14 C at 59.5 N/S injects +0.3..0.9 K/d
+    # of spurious polar warming and flattened the model meridional SST
+    # gradient by ~30% vs WOA).
+    is_global: bool = True
+
 
 def _smooth_depth_once(depth):
     """One Laplacian smoothing pass on the ocean depth field.
