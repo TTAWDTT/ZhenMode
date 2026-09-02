@@ -65,7 +65,7 @@ def _make_state_and_params(grid, kappa_gm, T_field, S_field=None, kappa_redi=0.0
                       kappa_gm=kappa_gm, gm_slope_max=0.01,
                       kappa_redi=kappa_redi)
     Q = np.zeros((nx, ny)); tau_x = np.zeros((nx, ny)); tau_y = np.zeros((nx, ny))
-    _, init_fn, _, params = make_solver_global(
+    _, init_fn, _, params, _ = make_solver_global(
         grid, physics, 60.0, forcing=(tau_x, tau_y, Q), eos_type='linear',
         T_atm=None, lambda_bulk=0.0, sponge_days=0.0, sponge_cells=0,
         T_init=np.asarray(T_field), S_init=np.asarray(S_field),
@@ -329,7 +329,7 @@ def test_gm_skew_flux_stable():
     T[:, :, 0] += 5.0; T[:, :, -1] -= 5.0
     physics = replace(PhysicsConfig(), nu_h=100.0, kappa_h=100.0,
                       kappa_gm=2000.0, gm_slope_max=0.01)
-    step_fn, init_fn, _, _ = make_solver_global(
+    step_fn, init_fn, _, _, _ = make_solver_global(
         g, physics, 60.0,
         forcing=(np.zeros((nx, ny)), np.zeros((nx, ny)), np.zeros((nx, ny))),
         T_atm=None, lambda_bulk=0.0, T_init=T,

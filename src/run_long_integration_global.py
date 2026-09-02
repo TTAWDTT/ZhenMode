@@ -184,6 +184,10 @@ def main():
     ap.add_argument("--out-dir", default="results")
     ap.add_argument("--log-dir", default="logs")
     ap.add_argument("--save-3d", action="store_true")
+    ap.add_argument("--save-3d-terms", action="store_true",
+                    help="additionally save the per-term dT/dt decomposition "
+                         "[adv, diff_h, diff_v, conv, gm, redi] at each 3D snap "
+                         "(offline blowup attribution; needs --save-3d)")
     ap.add_argument("--max-steps", type=int, default=0,
                     help="hard cap on steps (0 = no cap); for short probes")
     args = ap.parse_args()
@@ -197,6 +201,11 @@ def main():
     if args.save_3d:
         three_d_dir = os.path.join(args.out_dir, f"global_{tag}_3d")
         os.makedirs(three_d_dir, exist_ok=True)
+    three_d_terms_dir = None
+    if args.save_3d_terms:
+        assert args.save_3d, "--save-3d-terms requires --save-3d"
+        three_d_terms_dir = os.path.join(args.out_dir, f"global_{tag}_terms")
+        os.makedirs(three_d_terms_dir, exist_ok=True)
 
     # ── Build global grid ──
     bathy = DEFAULT_CONFIG.bathymetry_file
@@ -275,7 +284,7 @@ def main():
         seasonal = False
         tau_x, tau_y = wind_months[0]   # use January as the fixed month
         wind_src = f"fixed {args.wind_year}-01 (NCEP R1, from seasonal fetch)"
-    step, init_state_global, _ = make_solver_global(
+    step, init_state_global, _, _params, terms_fn = make_solver_global(
         grid, physics, args.dt,
         forcing=(tau_x, tau_y, Q_heat),
         eos_type='linear',
@@ -283,7 +292,7 @@ def main():
         sponge_days=args.sponge_days, sponge_cells=args.sponge_cells,
         T_init=T_init, S_init=S_init,
         polar_cap_rows=args.polar_cap_rows,
-        polar_cap_taper=args.polar_cap_taper)
+        polar_cap_taper=args.polar_cap_taper, return_params=True)
 
     state = init_state_global(T_init=jnp.array(T_init), S_init=jnp.array(S_init))
 
@@ -373,6 +382,15 @@ def main():
             ], axis=0)
             np.save(os.path.join(three_d_dir, f"snap_{n_3d_snaps:05d}.npy"), snap3d)
             del snap3d
+            if args.save_3d_terms:
+                # Per-term dT/dt decomposition at this snap: [adv, diff_h,
+                # diff_v, conv, gm, redi], each (nx,ny,nz). Term sum equals
+                # the N-step tracer tendency (no bulk/sponge/heat — those are
+                # surface-only; the deep runaway attribution only needs these).
+                tstack = np.asarray(terms_fn(state))
+                np.save(os.path.join(three_d_terms_dir,
+                                     f"terms_{n_3d_snaps:05d}.npy"), tstack)
+                del tstack
             n_3d_snaps += 1
             # Give the XLA async dispatch queue a chance to drain and free its
             # scratch buffers before the next 7200-step block (the 4.3 GB of

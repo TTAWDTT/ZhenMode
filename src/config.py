@@ -5,6 +5,7 @@ Hydrostatic primitive equations, spectral method, JAX.
 All confirmed design decisions in one place.
 """
 from dataclasses import dataclass, field
+import os
 import numpy as np
 
 
@@ -232,7 +233,14 @@ class Config:
     time: TimeConfig = field(default_factory=TimeConfig)
 
     # ── Data paths ──
-    bathymetry_file: str = r"C:\Users\zhen.luo\Desktop\ETOPO_2022_v1_r3600x1800_surface.nc"
+    # WSL (/mnt/c) > offline node (/data/tmp/ocean) > Windows
+    bathymetry_file: str = (
+        "/mnt/c/Users/zhen.luo/Desktop/ETOPO_2022_v1_r3600x1800_surface.nc"
+        if os.path.exists("/mnt/c") else
+        "/data/tmp/ocean/data/ETOPO_2022_v1_r3600x1800_surface.nc"
+        if os.path.exists("/data/tmp/ocean") else
+        r"C:\Users\zhen.luo\Desktop\ETOPO_2022_v1_r3600x1800_surface.nc"
+    )
 
     # ── Framework ──
     framework: str = "jax"     # "jax" or "numpy" (for testing)

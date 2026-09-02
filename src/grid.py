@@ -9,8 +9,13 @@ Grid convention (matches spectral_ops.py):
   - d_dx operates on axis 0, d_dy on axis 1
   - Vertical: z negative downward, z=0 at surface
 """
+import os
+
 import numpy as np
-from netCDF4 import Dataset
+try:
+    from netCDF4 import Dataset
+except ImportError:   # offline nodes: npz twin only (see _read_etopo_global)
+    Dataset = None
 from dataclasses import dataclass
 
 from config import GridConfig, GlobalGridConfig, R_EARTH, OMEGA
@@ -265,16 +270,25 @@ def _read_etopo_global(filepath, resolution=1.0, lat_max=85.0):
     Returns global depth on (nx, ny) with lon=0.05..359.95 (periodic) and
     lat covering ±lat_max. Land = 0 depth.
     """
-    ds = Dataset(filepath)
-    etopo_lon = np.array(ds.variables['lon'][:])   # 0.0..359.9 (3600,)
-    etopo_lat = np.array(ds.variables['lat'][:])   # -89.95..89.95 (1800,)
-    # Full field: z[lat, lon] = (1800, 3600)
-    z_full = ds.variables['z'][:, :]
-    ds.close()
+    # npz twin support: offline nodes (no netCDF4/HDF) can read a pre-extracted
+    # "<file>.npz" (z int16, lon, lat). Identical values to the netCDF path.
+    npz_path = filepath + ".npz"
+    if os.path.exists(npz_path):
+        d = np.load(npz_path)
+        etopo_lon = np.asarray(d['lon'], dtype=np.float64)
+        etopo_lat = np.asarray(d['lat'], dtype=np.float64)
+        z_full = np.asarray(d['z'], dtype=np.float64)
+    else:
+        ds = Dataset(filepath)
+        etopo_lon = np.array(ds.variables['lon'][:])   # 0.0..359.9 (3600,)
+        etopo_lat = np.array(ds.variables['lat'][:])   # -89.95..89.95 (1800,)
+        # Full field: z[lat, lon] = (1800, 3600)
+        z_full = ds.variables['z'][:, :]
+        ds.close()
 
-    if hasattr(z_full, 'filled'):
-        z_full = z_full.filled(-99999.0)
-    z_full = np.asarray(z_full, dtype=np.float64)
+        if hasattr(z_full, 'filled'):
+            z_full = z_full.filled(-99999.0)
+        z_full = np.asarray(z_full, dtype=np.float64)
     z_full[z_full <= -9999.0] = 0.0
 
     # Block-average to target resolution

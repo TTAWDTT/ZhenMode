@@ -61,7 +61,7 @@ FDParams = namedtuple('FDParams', [
     # Vertical grid (non-uniform z-levels, same as regional)
     'dz_denom_interior', 'dz_bnd_top', 'dz_bnd_bot',
     'd2z_hm', 'd2z_hp', 'd2z_denom', 'd2z_h0_top', 'd2z_h0_bot',
-    'dz_3d', 'dz_surface',
+    'dz_3d', 'dz_surface', 'dz_iface', 'dz_node',
     'surface_mask', 'bottom_mask',   # (1,1,nz)
     # Dimensions
     'nx', 'ny', 'nz',
@@ -119,6 +119,19 @@ def make_fd_params(grid):
     d2z_h0_top = float(jnp.abs(z[1] - z[0]))
     d2z_h0_bot = float(jnp.abs(z[-1] - z[-2]))
     dz_surface = float(jnp.abs(z[0] - z[1]))
+    # Interface thicknesses dz_iface[k] = |z[k]-z[k+1]|, length nz-1 (interfaces
+    # k+1/2 between nodes k and k+1); used by the GM/Redi interface flux form.
+    dz_iface = jnp.abs(jnp.diff(z)).reshape(1, 1, -1)
+    # Node-cell thickness: the model is NODE-based (fields live on z-levels),
+    # so the "cell" around node k spans halfway to each neighbor:
+    # dz_node[0] = |z1-z0|, dz_node[k] = 0.5*(|zk-zk-1|+|zk+1-zk|),
+    # dz_node[-1] = |zN-1-zN-2|. Length nz. Used by the interface flux form
+    # for tend_v[k] = (F[k-1/2]-F[k+1/2]) / dz_node[k].
+    dz_node = jnp.concatenate([
+        jnp.array([float(jnp.abs(z[1] - z[0]))]),
+        0.5 * (jnp.abs(jnp.diff(z))[:-1] + jnp.abs(jnp.diff(z))[1:]),
+        jnp.array([float(jnp.abs(z[-1] - z[-2]))]),
+    ]).reshape(1, 1, -1)
 
     surface_mask = jnp.zeros(nz).at[0].set(1.0).reshape(1, 1, -1)
     bottom_mask = jnp.zeros(nz).at[-1].set(1.0).reshape(1, 1, -1)
@@ -133,7 +146,7 @@ def make_fd_params(grid):
         dz_bnd_top=dz_bnd_top, dz_bnd_bot=dz_bnd_bot,
         d2z_hm=d2z_hm, d2z_hp=d2z_hp, d2z_denom=d2z_denom,
         d2z_h0_top=d2z_h0_top, d2z_h0_bot=d2z_h0_bot,
-        dz_3d=dz_3d, dz_surface=dz_surface,
+        dz_3d=dz_3d, dz_surface=dz_surface, dz_iface=dz_iface, dz_node=dz_node,
         surface_mask=surface_mask, bottom_mask=bottom_mask,
         nx=nx, ny=ny, nz=nz,
     )
@@ -403,6 +416,30 @@ def _divergence_h(u, v, p):
 
 # ── Vertical operators (identical to regional solver) ──────────────
 
+def _fill_ghost_bottom(u, p):
+    """Seafloor no-flux fill: extend each column's bottom wet value downward.
+
+    Ghost layers (below the seafloor, wet_mask_z==0) hold T_ref/S_ref from
+    init_state and never evolve. Any vertical stencil that reaches them
+    (centered _d_dz spans k-1..k+1) mixes the 15 C ghost reservoir into the
+    bottom wet layer's derivative — at sills (bottom wet layer k=12) that is
+    a spurious ~0.08 K/day seafloor heat flux in the GM/Redi closure, and a
+    NEGATIVE (inverted) drho_dz that pins the isopycnal slope at its clip.
+    Replicating the bottom wet value into the ghost layers is the standard
+    no-flux seafloor treatment (MOM/NEMO fill ghost cells with the bottom
+    value): stencils then see a zero gradient across the floor and the
+    bottom-wet one-sided derivative gets the correct stable sign.
+    Only the closure operators apply this; the background diffusion/conv
+    BC is left as-is (their ghost pull is ~0.006 K/day, a separate issue).
+    """
+    wet = p.wet_mask_z
+    idx = (wet > 0.5) * jnp.arange(u.shape[-1])
+    kbot = jnp.max(idx, axis=-1)[..., None]        # (nx, ny, 1)
+    kk = jnp.arange(u.shape[-1])[None, None, :]
+    u_bot = jnp.take_along_axis(u, kbot, axis=-1)  # bottom wet value
+    return jnp.where(kk >= kbot, u_bot, u)
+
+
 def _d_dz(u, p):
     """Vertical first derivative, non-uniform grid."""
     du_interior = (u[..., 2:] - u[..., :-2]) / p.dz_denom_interior
@@ -447,7 +484,7 @@ FDPhysParams = namedtuple('FDPhysParams', [
     'interior_mask', 'interior_mask_z',
     'dz_denom_interior', 'dz_bnd_top', 'dz_bnd_bot',
     'd2z_hm', 'd2z_hp', 'd2z_denom', 'd2z_h0_top', 'd2z_h0_bot',
-    'dz_3d', 'dz_surface', 'surface_mask', 'bottom_mask',
+    'dz_3d', 'dz_surface', 'dz_iface', 'dz_node', 'surface_mask', 'bottom_mask',
     'nx', 'ny', 'nz',
     # physics
     'nu_h', 'nu_v', 'kappa_h', 'kappa_v', 'kappa_conv',
@@ -631,19 +668,71 @@ def _compute_vertical_velocity(state, p):
 
 # ── Tendencies (FD, with land masking) ─────────────────────────────
 
+def _gradient_face_gated_3d(field, p):
+    """Face-gated horizontal gradient for advection: d/dx, d/dy with each
+    face difference zeroed at every wet/ghost (or wet/dry) interface.
+
+    The bare centered _d_dx/_d_dy differences across mask boundaries: the
+    ghost nodes hold the T_ref sentinel (+15 C, set in init_state) while
+    real 4000 m water is ~+1 C, so the centered stencil reads dT ~ 14 K
+    across EVERY wet/ghost face. A 6 cm/s deep coastal current then feels
+    v*dT/dy ~ 0.3 K/d of advection from a temperature that does not exist —
+    a linear pump adv ∝ (15 - T_wet) that drove the k12/k13 warm/cold dipole
+    (130,19) from d50 to the d360 max|T| = 1247 C blow-up (adv-form runs
+    gpu365_cap3d, ctl290nogm: FAIL_DRIFT both, only adv pumps; terms_fn
+    showed adv -0.24 K/d at k13 growing linearly with the anomaly, all
+    other terms < 0.03). Zeroing the face difference at mask boundaries is
+    consistent with the ALREADY face-gated mass flux (the divergence in
+    _divergence_conservative zeroes tracer flux across closed faces) and
+    with _gradient_conservative_3d (used for the PGF for the same reason).
+    Where the flow is parallel to the mask boundary (u|face=0, v|face=0),
+    the cross-boundary advective flux is zero anyway — the gated gradient
+    removes only the unphysical part.
+
+    Returns (dF/dx, dF/dy) on wet nodes; ghost nodes keep whatever the
+    caller masks away.
+    """
+    wm = p.wet_mask_z                                   # (nx, ny, nz)
+    # Zonal (axis 0, periodic): face (i+1/2) open iff cells i, i+1 both wet.
+    open_xp = wm * jnp.roll(wm, -1, axis=0)
+    open_xm = wm * jnp.roll(wm, 1, axis=0)
+    d_fp = (jnp.roll(field, -1, axis=0) - field) * open_xp
+    d_fm = (field - jnp.roll(field, 1, axis=0)) * open_xm
+    grad_x = p.inv_dx[..., 0:1] * 0.5 * (d_fp + d_fm)
+    # Meridional (axis 1, closed N/S walls): mirror-ghost edge padding as in
+    # _d_dy (zero normal gradient at the wall) PLUS the wet/wet face gate.
+    pad = [(0, 0), (1, 1), (0, 0)]
+    f_pad = jnp.pad(field, pad, mode='edge')
+    wm_pad = jnp.pad(wm, pad, mode='edge')
+    open_yp = wm_pad[:, 2:] * wm_pad[:, 1:-1]           # face (j+1/2)
+    open_ym = wm_pad[:, 1:-1] * wm_pad[:, :-2]          # face (j-1/2)
+    d_yp = (f_pad[:, 2:] - f_pad[:, 1:-1]) * open_yp
+    d_ym = (f_pad[:, 1:-1] - f_pad[:, :-2]) * open_ym
+    grad_y = p.inv_dy * 0.5 * (d_yp + d_ym)
+    return grad_x, grad_y
+
+
 def _advection_flux_form(u, v, w, p):
     """3D advective-form momentum advection (FD, land-masked, dealiased).
 
     Advective form (not flux form) avoids the spurious u*div_h source.
-    Nonlinear products (u*du/dx etc.) are 2/3-rule-dealiased via
-    _dealias_h_fd, matching the spectral baseline (jax_solver.py:490): the
-    summed tendency is dealiased once, then land-masked. Without this the
-    aliasing of the nonlinear products injects 2-dx energy that drives the
-    boundary heat pump (see _dealias_h_fd).
+    Horizontal gradients use _gradient_face_gated_3d (zero face difference
+    at wet/ghost mask boundaries — the ghost sentinel cliff otherwise acts
+    as a spurious advective pump; see there for the d360 blow-up trail).
+    Vertical gradient stays the bare _d_dz: w is already masked to zero in
+    ghost layers and the tracer terms multiply by wet_mask_z, so a wet/ghost
+    vertical face carries no advective flux regardless of the dT/dz it reads.
+    Nonlinear products (u*du/dx etc.) are
+    2/3-rule-dealiased via _dealias_h_fd, matching the spectral baseline
+    (jax_solver.py:490): the summed tendency is dealiased once, then
+    land-masked. Without this the aliasing of the nonlinear products
+    injects 2-dx energy that drives the boundary heat pump (see
+    _dealias_h_fd).
     """
-    du_dx = _d_dx(u, p); du_dy = _d_dy(u, p)
-    dv_dx = _d_dx(v, p); dv_dy = _d_dy(v, p)
-    du_dz = _d_dz(u, p); dv_dz = _d_dz(v, p)
+    du_dx, du_dy = _gradient_face_gated_3d(u, p)
+    dv_dx, dv_dy = _gradient_face_gated_3d(v, p)
+    du_dz = _d_dz(_fill_ghost_bottom(u, p), p)
+    dv_dz = _d_dz(_fill_ghost_bottom(v, p), p)
     adv_u = -(u * du_dx + v * du_dy + w * du_dz)
     adv_v = -(u * dv_dx + v * dv_dy + w * dv_dz)
     adv_u = _dealias_h_fd(adv_u, p)
@@ -654,11 +743,23 @@ def _advection_flux_form(u, v, w, p):
 def _advection_scalar(T, u, v, w, p):
     """3D advective-form scalar advection (FD, land-masked, dealiased).
 
+    Horizontal gradients are face-gated (see _gradient_face_gated_3d): the
+    ghost sentinel T=15 C at mask boundaries otherwise reads as a 14 K
+    step-gradient that the deep coastal circulation advects into the wet
+    interior (the d50-d360 k12/k13 dipole -> max|T| 1247 blow-up).
     Nonlinear products (u*dT/dx etc.) are 2/3-rule-dealiased via
     _dealias_h_fd on the summed tendency, matching the spectral baseline
     (jax_solver.py:515), then land-masked.
     """
-    dT_dx = _d_dx(T, p); dT_dy = _d_dy(T, p); dT_dz = _d_dz(T, p)
+    dT_dx, dT_dy = _gradient_face_gated_3d(T, p)
+    # Fill below-seafloor ghosts with the bottom wet value before the
+    # vertical derivative (no-flux BC, same treatment as the GM/Redi
+    # closures): the centered _d_dz at a sill's bottom wet layer otherwise
+    # reads the +15 C sentinel in the ghost layer beneath (~0.08 K/d pump;
+    # _fill_ghost_bottom docstring). w is masked to 0 in ghost layers so the
+    # reverse direction carries no flux; only the bottom-wet derivative
+    # needed the fill.
+    dT_dz = _d_dz(_fill_ghost_bottom(T, p), p)
     adv_T = -(u * dT_dx + v * dT_dy + w * dT_dz)
     adv_T = _dealias_h_fd(adv_T, p)
     return adv_T * p.wet_mask_z
@@ -726,8 +827,16 @@ def _isopycnal_slope(state, p):
     each (nx, ny, nz), masked to wet points.
     """
     rho_prime = _density_anomaly(state.T, state.S, p) * p.wet_mask_z
+    # Seafloor no-flux fill for the VERTICAL density gradient: the raw
+    # masked field is 0 in ghost layers, so the bottom wet layer's _d_dz
+    # sees (0 - rho_bottom) < 0 — an INVERTED column that floored-but-
+    # sign-preserved makes the closure read "convective" at every sill
+    # (~11.7k columns) and pin |S| at the clip there. Filling the ghost
+    # with the bottom wet value makes drho_dz at kbot read ~0 (one-sided,
+    # zero gradient across the floor) — the physical no-flux seafloor BC.
+    rho_fill = _fill_ghost_bottom(rho_prime, p)
     drho_dx, drho_dy = _gradient_conservative_3d(rho_prime, p)
-    drho_dz = _d_dz(rho_prime, p)
+    drho_dz = _d_dz(rho_fill, p)
     # Floor the denominator: stable stratification only; unstable columns
     # (drho_dz<0) get the floor magnitude with their sign preserved so the
     # bolus does not reverse in convective patches.
@@ -735,11 +844,24 @@ def _isopycnal_slope(state, p):
                       jnp.sign(drho_dz) * _GM_RHOZ_FLOOR + 1e-30, drho_dz)
     S_x = -drho_dx / denom
     S_y = -drho_dy / denom
-    # Slope limiter: tanh-clip to ±gm_slope_max, preserving sign/magnitude
-    # for small slopes (tanh(x/s)/s ~ x for |x| << s).
+    # Danabasoglu-McWilliams (1995) slope taper: sigma = 1/(1+(|S|/S_lim)^4).
+    # The closure flux is multiplied by sigma, which -> 1 for |S| << S_lim
+    # (stratified interior: full GM) and -> 0 for |S| >> S_lim (weakly
+    # stratified deep ocean / steep fronts: closure suppressed).
+    # A tanh CLIP is the wrong treatment: it SATURATES the slope at S_lim,
+    # holding the flux at full kappa*S_lim^2 (an effective 0.1 m^2/s vertical
+    # diffusivity at kappa_gm=1000) throughout the weakly-stratified deep
+    # ocean — a spurious diapycnal pump that erodes deep stratification,
+    # drives the Southern-Ocean deep-T runaway, and drains the subtropical
+    # gyres (-6 m/yr eta trend, linear in kappa_gm; 365d FAIL at all
+    # kappa_gm in {300,1000}, with/without kappa_redi). The DM95 taper is
+    # the standard OGCM treatment (also Large et al. 1997).
     s_max = p.gm_slope_max
-    S_x = s_max * jnp.tanh(S_x / (s_max + 1e-30))
-    S_y = s_max * jnp.tanh(S_y / (s_max + 1e-30))
+    S2 = S_x * S_x + S_y * S_y
+    s4 = (s_max * s_max) ** 2
+    sigma = 1.0 / (1.0 + (S2 * S2) / s4)
+    S_x = sigma * S_x
+    S_y = sigma * S_y
     return S_x * p.wet_mask_z, S_y * p.wet_mask_z
 
 
@@ -774,11 +896,13 @@ def _gm_tracer_transport(tracer, u_star, v_star, w_star, p):
     """Bolus advection tendency -(u*·∂T/∂x + v*·∂T/∂y + w*·∂T/∂z).
 
     Structurally identical to _advection_scalar but driven by the bolus
-    velocity. Dealiased and land-masked. Returns (nx, ny, nz) tendency.
+    velocity: face-gated horizontal gradients (the ghost sentinel cliff is
+    unphysical for the bolus too — u* is nonzero at mask boundaries and
+    dT ~ 14 K across a wet/ghost face would pump the same way), bare _d_dz
+    vertically. Dealiased and land-masked. Returns (nx, ny, nz) tendency.
     """
-    dT_dx = _d_dx(tracer, p)
-    dT_dy = _d_dy(tracer, p)
-    dT_dz = _d_dz(tracer, p)
+    dT_dx, dT_dy = _gradient_face_gated_3d(tracer, p)
+    dT_dz = _d_dz(_fill_ghost_bottom(tracer, p), p)
     gm_T = -(u_star * dT_dx + v_star * dT_dy + w_star * dT_dz)
     gm_T = _dealias_h_fd(gm_T, p)
     return gm_T * p.wet_mask_z
@@ -828,33 +952,101 @@ def _redi_skew_flux_tendency(tracer, S_x, S_y, p, kappa=None):
     if kappa <= 0.0:
         return jnp.zeros_like(tracer)
     k = kappa
+    # Seafloor no-flux fill for the vertical derivatives: _d_dz's centered
+    # stencil at the bottom wet layer reaches into the ghost layer, which
+    # holds T_ref = 15 C forever — a spurious ~0.08 K/day seafloor heat
+    # flux at sill columns that fed the Southern-Ocean deep runaway. Fill
+    # ghosts with the bottom wet value (no-flux BC) before differentiating.
+    tracer = _fill_ghost_bottom(tracer, p)
     dC_dx, dC_dy = _gradient_conservative_3d(tracer * p.wet_mask_z, p)
     dC_dz = _d_dz(tracer, p)
     # Horizontal skew flux F_h = -k * S * dC/dz  (x,y components)
     Fx = -k * S_x * dC_dz
     Fy = -k * S_y * dC_dz
-    # Vertical skew flux F_z = -k * (S·∇_h C + |S|^2 dC/dz)
-    SdotGradC = S_x * dC_dx + S_y * dC_dy
-    S2 = S_x * S_x + S_y * S_y
-    Fz = -k * (SdotGradC + S2 * dC_dz)
-    # No-flux boundary: zero the vertical skew flux at the TOP (surface) and
-    # BOTTOM (seafloor) grid points. These are material boundaries — no
-    # isopycnal transport crosses the air-sea interface or the seafloor.
-    # Without this, the thin surface layer (dz=5 m) sees a huge Fz divergence
-    # (Fz[0] ~ -5e-3 but Fz[1] ~ -7e-5) that drives a +0.06 K/step surface
-    # warming, which feeds back (steeper dT/dz -> larger Fz) and diverges
-    # within ~100 steps. Zeroing Fz at the boundary kills the spurious surface
-    # source while preserving the interior along-isopycnal mixing.
-    Fz = Fz.at[..., 0].set(0.0)
-    Fz = Fz.at[..., -1].set(0.0)
-    # Tendency = -div(F). Use the conservative masked divergence for the
-    # horizontal part (face-gated at coastlines) so the closure conserves
-    # integrated tracer and does not inject a spurious coastal source. The
-    # vertical part uses _d_dz (the vertical column is contiguous within a
-    # water column, no land masking needed in z).
-    tend = -(_divergence_conservative_3d(Fx, Fy, p) + _d_dz(Fz, p))
+    tend_h = -_divergence_conservative_3d(Fx, Fy, p)
+    # Vertical skew flux, INTERFACE flux form (MOM6/NEMO discretization):
+    # the flux lives on interfaces k+1/2 (between nodes k and k+1); each
+    # interface uses the ONE-SIDED cell values and the interface slope
+    # S(k+1/2) = 0.5*(S[k] + S[k+1]). The tendency of cell k is
+    # (F[k-1/2] - F[k+1/2]) / dz[k] — a compact 3-point stencil, exactly
+    # diffusive (negative-semidefinite for the S2 term), with the flux
+    # zero at the top/bottom material boundaries.
+    # The previous NODE-flux form (Fz at nodes from centered dC/dz, then
+    # _d_dz of Fz) is a 5-point/2-step stencil on which the even/odd
+    # sublattices DECOUPLE: the sawtooth-in-z mode has eigenvalue exactly 0
+    # (never damped) and the operator is asymmetric (max asym 2.7e-2) with
+    # mildly positive symmetric-part eigenvalues on the stretched deep grid
+    # — it pumped a deep-T runaway linear in kappa_gm and gm_slope_max
+    # (365d FAIL at d270-310 for tanh-clip / DM95-taper / slope-max 0.001).
+    Cm = tracer[..., :-1]                        # upper cell value
+    Cp = tracer[..., 1:]                         # lower cell value
+    dC_dz_iface = (Cp - Cm) / p.dz_iface         # (nx, ny, nz-1)
+    S_x_i = 0.5 * (S_x[..., :-1] + S_x[..., 1:])
+    S_y_i = 0.5 * (S_y[..., :-1] + S_y[..., 1:])
+    dC_dx_i = 0.5 * (dC_dx[..., :-1] + dC_dx[..., 1:])
+    dC_dy_i = 0.5 * (dC_dy[..., :-1] + dC_dy[..., 1:])
+    S2_i = S_x_i * S_x_i + S_y_i * S_y_i
+    Fz_i = -k * (S_x_i * dC_dx_i + S_y_i * dC_dy_i + S2_i * dC_dz_iface)
+    # Material boundaries: no isopycnal transport crosses the surface, the
+    # seafloor, or a land/rock wall — zero the flux on any interface where
+    # either adjacent node is dry (wet_iface covers seafloor + coastal sills;
+    # the ghost fill above already removed the T_ref=15 reservoir from the
+    # one-sided differences, so flux into ghost columns is harmless: those
+    # cells are re-masked to 0 by the final wet_mask_z multiply anyway).
+    wet_iface_f = (p.wet_mask_z[..., :-1] > 0.5) & (p.wet_mask_z[..., 1:] > 0.5)
+    Fz_i = jnp.where(wet_iface_f, Fz_i, 0.0)
+    # NOTE: the material top/bottom boundaries are NOT Fz_i[0]/Fz_i[-1] —
+    # those are INTERIOR interfaces (node 0↔1, node 12↔13). Zeroing them
+    # decouples the surface/bottom nodes from vertical skew transport
+    # entirely (found by eigenvector test: null vector was e_0). The
+    # padded flux array below already carries the zero-flux BC.
+    # Tendency of cell k: (F[k-1/2] - F[k+1/2]) / dz[k], z-up convention
+    # (positive Fz_i = upward transport). Interface array Fz_i has indices
+    # 0..nz-2 = interfaces (1/2 .. nz-3/2); cell k sits between interfaces
+    # k and k+1 of the padded array F[0..nz] with F[0]=F[nz]=0:
+    #   F[k]   = Fz_i[k-1]  (k>=1)        F[k+1] = Fz_i[k]  (k<=nz-2)
+    # so tend_v[k] = (Fz_i[k-1] - Fz_i[k]) / dz[k] with edge zeros.
+    up = jnp.concatenate([jnp.zeros_like(Fz_i[..., :1]), Fz_i], axis=-1)   # Fz_i[k-1]
+    dn = jnp.concatenate([Fz_i, jnp.zeros_like(Fz_i[..., :1])], axis=-1)   # Fz_i[k]
+    tend_v = (up - dn) / p.dz_node
+    tend = tend_h + tend_v
     tend = _dealias_h_fd(tend, p)
     return tend * p.wet_mask_z
+
+
+def _tracer_terms(state, p):
+    """Diagnostic decomposition of dT/dt into physical terms.
+
+    Mirrors _compute_tracer_tendency exactly (same expressions), returning
+    each term separately: [adv, diff_h, diff_v, conv, gm, redi]. For offline
+    blowup attribution (which closure pumps the deep-T runaway). NOT used in
+    the time integration — read-only diagnosis.
+    """
+    w = _compute_vertical_velocity(state, p)
+    adv_T = _advection_scalar(state.T, state.u, state.v, w, p)
+    diff_h_T = p.kappa_h * _laplacian_h(state.T, p)
+    diff_v_T = p.kappa_v * _d2_dz2(state.T, p)
+
+    rho_prime = _density_anomaly(state.T, state.S, p) * p.wet_mask_z
+    wet_iface = (p.wet_mask_z[..., :-1] > 0.5) & (p.wet_mask_z[..., 1:] > 0.5)
+    unstable_iface = (rho_prime[..., :-1] > rho_prime[..., 1:]) & wet_iface
+    conv_mask_3d = jnp.any(unstable_iface, axis=-1, keepdims=True)
+    conv_T = p.kappa_conv * conv_mask_3d * _d2_dz2(state.T, p) * p.wet_mask_z
+
+    if p.kappa_gm > 0.0:
+        S_x_gm, S_y_gm = _isopycnal_slope(state, p)
+        gm_T = _redi_skew_flux_tendency(state.T, S_x_gm, S_y_gm, p,
+                                        kappa=p.kappa_gm)
+    else:
+        gm_T = jnp.zeros_like(state.T)
+    if p.kappa_redi > 0.0:
+        S_x, S_y = _isopycnal_slope(state, p)
+        redi_T = _redi_skew_flux_tendency(state.T, S_x, S_y, p)
+    else:
+        redi_T = jnp.zeros_like(state.T)
+
+    terms = [adv_T, diff_h_T, diff_v_T, conv_T, gm_T, redi_T]
+    return jnp.stack([t * p.wet_mask_z for t in terms], axis=0)
 
 
 def _compute_tracer_tendency(state, p):
@@ -1321,25 +1513,31 @@ def _apply_polar_cap_3d(field3d, p):
     if ncap <= 0:
         return field3d
     ntaper = p.polar_cap_taper
-    wm = p.wet_mask                              # (nx, ny)
+    # 3D wet mask (1 = water at THIS depth, 0 = land OR below seafloor).
+    # The 2D wet_mask is column-wide: using it here let the ghost nodes'
+    # T_ref fill (15.0 C, config.T_ref) below shallow-seafloor columns
+    # enter the zonal mean at deep levels. With polar_cap_rows=2 at 4000 m
+    # ~1/3 of the band columns are ghost there, dragging the cap T to
+    # ~+15 C — a meridional cliff against the -0.3 C WOA deep T that
+    # seeded the Southern-Ocean cold-pole blow-up (d170 collapse).
     wts = _polar_cap_weights(ncap, ntaper)       # (ncap+ntaper,)
     nb = ncap + ntaper
+    wmz = p.wet_mask_z                           # (nx, ny, nz), 3D mask
 
     def _cap_band(field, wm_band):
         # Wet-point zonal mean over the FULL band (one value per (row,z)),
-        # broadcast back; land stays at its masked value.
-        s = field * wm_band[:, :, None]
+        # broadcast back; land/ghost stays at its masked value.
+        s = field * wm_band
         w = jnp.maximum(wm_band, 1e-12)
-        wsum = jnp.sum(jnp.broadcast_to(w[:, :, None], s.shape), axis=0,
-                       keepdims=True)             # (1, nb, nz)
+        wsum = jnp.sum(w, axis=0, keepdims=True)   # (1, nb, nz)
         zmean = jnp.sum(s, axis=0, keepdims=True) / wsum
-        zmean = jnp.broadcast_to(zmean, field.shape) * wm_band[:, :, None]
+        zmean = jnp.broadcast_to(zmean, field.shape) * wm_band
         # Blend: wts[r] * zmean_row + (1-wts[r]) * field_row.
         wts_b = wts.reshape(1, nb, 1)
-        return wts_b * zmean + (1.0 - wts_b) * (field * wm_band[:, :, None])
+        return wts_b * zmean + (1.0 - wts_b) * (field * wm_band)
 
-    south = _cap_band(field3d[:, :nb], wm[:, :nb])
-    north = _cap_band(field3d[:, -nb:], wm[:, -nb:])
+    south = _cap_band(field3d[:, :nb], wmz[:, :nb])
+    north = _cap_band(field3d[:, -nb:], wmz[:, -nb:])
     return jnp.concatenate([south, field3d[:, nb:-nb], north], axis=1)
 
 
@@ -1476,7 +1674,8 @@ def make_solver_global(grid, physics, dt, forcing=None, eos_type='linear',
         dz_bnd_top=base.dz_bnd_top, dz_bnd_bot=base.dz_bnd_bot,
         d2z_hm=base.d2z_hm, d2z_hp=base.d2z_hp, d2z_denom=base.d2z_denom,
         d2z_h0_top=base.d2z_h0_top, d2z_h0_bot=base.d2z_h0_bot,
-        dz_3d=base.dz_3d, dz_surface=base.dz_surface,
+        dz_3d=base.dz_3d, dz_surface=base.dz_surface, dz_iface=base.dz_iface,
+        dz_node=base.dz_node,
         surface_mask=base.surface_mask, bottom_mask=base.bottom_mask,
         nx=nx, ny=ny, nz=nz,
         nu_h=physics.nu_h, nu_v=physics.nu_v,
@@ -1511,6 +1710,10 @@ def make_solver_global(grid, physics, dt, forcing=None, eos_type='linear',
         w = _compute_vertical_velocity(state, params)
         return rho, pressure, w
 
+    @jax.jit
+    def terms_fn(state):
+        return _tracer_terms(state, params)
+
     def init_state(T_init=None, S_init=None):
         u = jnp.zeros((nx, ny, nz))
         v = jnp.zeros((nx, ny, nz))
@@ -1530,7 +1733,7 @@ def make_solver_global(grid, physics, dt, forcing=None, eos_type='linear',
         return JaxStateG(u, v, T, S, eta)
 
     if return_params:
-        return step, init_state, diagnostics, params
+        return step, init_state, diagnostics, params, terms_fn
     return step, init_state, diagnostics
 
 

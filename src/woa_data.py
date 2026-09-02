@@ -16,8 +16,12 @@ Solver grid conventions:
   z: (nz,) negative downward (z=0 at surface)
   T/S output: (nx, ny, nz) with axis 0=lon, axis 1=lat, axis 2=depth
 """
+import os
 import numpy as np
-from netCDF4 import Dataset
+try:
+    from netCDF4 import Dataset
+except ImportError:   # offline nodes: npz twins only (see load_woa_climatology)
+    Dataset = None
 from scipy.interpolate import RegularGridInterpolator
 
 from config import DEFAULT_CONFIG
@@ -25,11 +29,18 @@ from grid import OceanGrid, make_grid
 
 
 # ── WOA file paths ───────────────────────────────────────────────────
-WOA_DIR = r"C:\Users\zhen.luo\ocean_solver\data\woa"
+# WSL (/mnt/c) > offline node (/data/tmp/ocean) > Windows
+WOA_DIR = (
+    "/mnt/c/Users/zhen.luo/ocean_solver/data/woa"
+    if os.path.exists("/mnt/c") else
+    "/data/tmp/ocean/data/woa"
+    if os.path.exists("/data/tmp/ocean") else
+    r"C:\Users\zhen.luo\ocean_solver\data\woa"
+)
 
 WOA_FILES = {
-    'temperature': WOA_DIR + r"\woa23_decav_t00_01.nc",
-    'salinity':    WOA_DIR + r"\woa23_decav_s00_01.nc",
+    'temperature': os.path.join(WOA_DIR, "woa23_decav_t00_01.nc"),
+    'salinity':    os.path.join(WOA_DIR, "woa23_decav_s00_01.nc"),
 }
 
 
@@ -50,6 +61,17 @@ def load_woa_climatology(var_name, filepath=None):
     """
     if filepath is None:
         filepath = WOA_FILES[var_name]
+
+    # npz twin support: offline nodes (no netCDF4/HDF) can read a pre-extracted
+    # "<file>.npz" (lon, lat, depth, data float32 with NaN). Identical to netCDF.
+    if os.path.exists(filepath + ".npz"):
+        d = np.load(filepath + ".npz")
+        return {
+            'lon':   np.asarray(d['lon'], dtype=np.float64),
+            'lat':   np.asarray(d['lat'], dtype=np.float64),
+            'depth': np.asarray(d['depth'], dtype=np.float64),
+            'data':  np.asarray(d['data'], dtype=np.float64),
+        }
 
     ds = Dataset(filepath)
 
