@@ -194,6 +194,7 @@ def main():
     ap.add_argument("--init-from", default=None,
                     help="npz with T_init/S_init (precomputed WOA on this "
                          "grid); skips woa_data (offline nodes)")
+    ap.add_argument("--save-3d", action="store_true")
     ap.add_argument("--save-3d-terms", action="store_true",
                     help="additionally save the per-term dT/dt decomposition "
                          "[adv, diff_h, diff_v, conv, gm, redi] at each 3D snap "
