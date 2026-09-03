@@ -174,6 +174,14 @@ def main():
     ap.add_argument("--sponge-cells", type=int, default=0)
     ap.add_argument("--polar-cap-rows", type=int, default=POLAR_CAP_ROWS_DEFAULT)
     ap.add_argument("--polar-cap-taper", type=int, default=POLAR_CAP_TAPER_DEFAULT)
+    ap.add_argument("--eta-relax-days", type=float, default=0.0,
+                    help="semi-enclosed-sea SSH relaxation timescale [days]; "
+                         "0 = off (Mediterranean strait artifact)")
+    ap.add_argument("--eta-relax-box", type=float, nargs=4, default=None,
+                    metavar=("LON0", "LON1", "LAT0", "LAT1"),
+                    help="relaxation box in degrees E/N (core mask = 1 inside)")
+    ap.add_argument("--eta-relax-buffer", type=float, default=1.0,
+                    help="cos-taper buffer width [degrees] around the box")
     ap.add_argument("--snap-days", type=float, default=10.0)
     ap.add_argument("--seasonal-wind", action="store_true")
     ap.add_argument("--wind-year", type=int, default=2023)
@@ -292,7 +300,9 @@ def main():
         sponge_days=args.sponge_days, sponge_cells=args.sponge_cells,
         T_init=T_init, S_init=S_init,
         polar_cap_rows=args.polar_cap_rows,
-        polar_cap_taper=args.polar_cap_taper, return_params=True)
+        polar_cap_taper=args.polar_cap_taper, return_params=True,
+        eta_relax_days=args.eta_relax_days, eta_relax_box=args.eta_relax_box,
+        eta_relax_buffer=args.eta_relax_buffer)
 
     state = init_state_global(T_init=jnp.array(T_init), S_init=jnp.array(S_init))
 
@@ -335,6 +345,13 @@ def main():
         header.append(f"polar cap: {args.polar_cap_rows} rows + {args.polar_cap_taper}-row cos^2 taper")
     else:
         header.append("polar cap: NONE")
+    if args.eta_relax_days > 0 and args.eta_relax_box is not None:
+        b = args.eta_relax_box
+        header.append(f"eta_relax: tau={args.eta_relax_days:g}d  "
+                      f"box=[{b[0]:.1f},{b[1]:.1f}]E x [{b[2]:.1f},{b[3]:.1f}]N  "
+                      f"buffer={args.eta_relax_buffer:g}deg (mass-conserving)")
+    else:
+        header.append("eta_relax: NONE")
     header.append(f"init: T_init_max={T_init_max:.2f}C  "
                   f"amplitude_cap={T_init_max + AMPLITUDE_CAP_C:.2f}C")
     header.append(f"criteria: max|u|<{MAX_U_BOUND}  drift_tol={DRIFT_TOL_C}C  "
@@ -462,6 +479,8 @@ def main():
         'wind_blend_days': args.wind_blend_days, 'sponge_days': args.sponge_days,
         'sponge_cells': args.sponge_cells, 'polar_cap_rows': args.polar_cap_rows,
         'polar_cap_taper': args.polar_cap_taper,
+        'eta_relax_days': args.eta_relax_days, 'eta_relax_box': args.eta_relax_box,
+        'eta_relax_buffer': args.eta_relax_buffer,
         'smooth_passes': args.smooth_passes, 'min_depth': args.min_depth,
     }
     np.savez_compressed(out_npz,

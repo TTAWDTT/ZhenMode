@@ -531,6 +531,9 @@ FDPhysParams = namedtuple('FDPhysParams', [
     'kappa_gm',          # m²/s GM eddy diffusivity (bolus transport); 0 = off
     'gm_slope_max',      # dimensionless isopycnal-slope limiter
     'kappa_redi',        # m²/s Redi isopycnal diffusivity (skew-flux); 0 = off
+    # Semi-enclosed-sea SSH (eta) relaxation (Mediterranean artifact fix)
+    'eta_relax_mask',    # (nx, ny) 1 inside the semi-enclosed sea, 0 elsewhere
+    'eta_relax_rate',    # 1/s Rayleigh relaxation rate; 0 = off
 ])
 
 
@@ -1252,6 +1255,29 @@ def _free_surface_step_fd(eta, u, v, p, F_rho_x=None, F_rho_y=None, dt_half=None
     area_ocean = jnp.maximum(jnp.sum(area_cell * p.wet_mask), 1.0)
     eta_new = eta_new + (-dV_sponge / area_ocean) * p.wet_mask
 
+    # ── Semi-enclosed-sea eta relaxation (Mediterranean artifact fix) ──
+    # Gibraltar (14 km wide) is sub-grid on a 1° mesh: the one-cell strait
+    # cannot support the observed two-layer exchange, and the residual
+    # pressure mismatch drives a spurious NET outflow that drains the basin
+    # linearly (~+0.026 m/d, max|eta| 9.5 m at d365 in gpu365_glap —
+    # would trip the 15 m watchdog at ~d500). Not an instability: a
+    # coarse-grid semi-enclosed-sea artifact that must be BOUNDED for
+    # multi-year integrations. Standard OGCM remedy (MOM-family): Rayleigh
+    # relax eta toward the basin equilibrium INSIDE the sea only:
+    #     eta *= exp(-eta_relax_rate * dt_half)   where eta_relax_mask = 1
+    # (eta==0 is the correct equilibrium: the basin-mean PGF at Gibraltar
+    # then matches the Atlantic open boundary at the same latitude).
+    # MASS-CONSERVING COMPENSATION: the relaxation removes volume
+    # dV = sum(A*eta*(decay-1)) over the mask; the SAME uniform-refill trick
+    # as the sponge returns it over the global wet domain. A uniform eta
+    # offset has zero PGF, so the dynamics are untouched — the relaxation
+    # damps the basin anomaly, not the basin water mass.
+    eta_relax_decay = jnp.exp(-p.eta_relax_rate * dt_half * p.eta_relax_mask)
+    eta_pre_relax = eta_new
+    eta_new = eta_new * eta_relax_decay
+    dV_relax = jnp.sum(area_cell * (eta_new - eta_pre_relax))
+    eta_new = eta_new + (-dV_relax / area_ocean) * p.wet_mask
+
     # Polar-cap filter: zonally average the poleward rows to kill the
     # cos(lat)->0 metric singularity (dx->0 makes the explicit SW CFL
     # unattainable at the edge). Replaces the unresolved polar dynamics with a
@@ -1610,7 +1636,9 @@ def make_solver_global(grid, physics, dt, forcing=None, eos_type='linear',
                        T_atm=None, lambda_bulk=0.0,
                        sponge_days=0.0, sponge_cells=0,
                        T_init=None, S_init=None,
-                       polar_cap_rows=2, polar_cap_taper=3, return_params=False):
+                       polar_cap_rows=2, polar_cap_taper=3, return_params=False,
+                       eta_relax_days=0.0, eta_relax_box=None,
+                       eta_relax_buffer=1.0):
     """Create a JIT-compiled global FD ocean solver.
 
     Args mirror the spectral make_solver where applicable. Key differences:
@@ -1623,6 +1651,9 @@ def make_solver_global(grid, physics, dt, forcing=None, eos_type='linear',
         Wind-driven barotropic energy piles up there (Laplacian can't arrest
         it within its CFL cap); the sponge absorbs it. cosine-tapered.
       - No SST restore (bulk flux only).
+      - Optional eta_relax: Rayleigh SSH relaxation inside a semi-enclosed
+        sea (mass-conserving; bounds the sub-grid-strait drainage artifact
+        for multi-year runs).
     """
     base = make_fd_params(grid)
     nx, ny, nz = base.nx, base.ny, base.nz
@@ -1671,6 +1702,36 @@ def make_solver_global(grid, physics, dt, forcing=None, eos_type='linear',
         T_clim_3d = jnp.zeros((nx, ny, nz))
         S_clim_3d = jnp.zeros((nx, ny, nz))
 
+    # ── Semi-enclosed-sea eta relaxation mask (Mediterranean artifact fix) ──
+    # A parameterized lat/lon box; 0 rate = off (bit-exact to the old runs).
+    # The buffer band (mask tapers 1 -> 0 over `eta_relax_buffer` degrees
+    # around the box edge) keeps the PGF smooth at the mask boundary so the
+    # relaxation itself cannot seed a new PGF cliff at Gibraltar.
+    if eta_relax_days > 0.0 and eta_relax_box is not None:
+        lon0, lon1, lat0, lat1 = eta_relax_box
+        rate = 1.0 / (eta_relax_days * 86400.0)
+        # The global grid lon is in [-180, 180) (WOA convention); a
+        # Mediterranean box does not straddle the seam, so plain comparisons
+        # suffice (a straddling box would need lon wrap handling — not used).
+        lon2d, lat2d = np.meshgrid(np.asarray(grid.lon), np.asarray(grid.lat),
+                                   indexing='ij')
+        core = ((lon2d >= lon0) & (lon2d <= lon1)
+                & (lat2d >= lat0) & (lat2d <= lat1))
+        # Box-coordinate distance (degrees) outside the box, for the taper.
+        dlon = np.maximum(np.maximum(lon0 - lon2d, lon2d - lon1), 0.0)
+        dlat = np.maximum(np.maximum(lat0 - lat2d, lat2d - lat1), 0.0)
+        d_out = np.maximum(dlon, dlat)
+        buf = float(eta_relax_buffer)
+        mask_np = np.where(core, 1.0,
+                           np.where(d_out < buf, 0.5 * (1.0 + np.cos(
+                               np.pi * d_out / buf)), 0.0))
+        mask_np = mask_np * np.asarray(base.wet_mask)   # ocean points only
+        eta_relax_mask = jnp.array(mask_np)
+        eta_relax_rate = rate
+    else:
+        eta_relax_mask = jnp.zeros((nx, ny))
+        eta_relax_rate = 0.0
+
     # ── 2/3-rule dealias mask for the periodic lon axis ──
     # Nonlinear advection products (u*du/dx, T*div_h, ...) and the
     # div_h-integrated w all amplify the 2-dx grid-scale mode. The spectral
@@ -1718,6 +1779,8 @@ def make_solver_global(grid, physics, dt, forcing=None, eos_type='linear',
         kappa_gm=physics.kappa_gm,
         gm_slope_max=physics.gm_slope_max,
         kappa_redi=physics.kappa_redi,
+        eta_relax_mask=eta_relax_mask,
+        eta_relax_rate=eta_relax_rate,
     )
 
     @jax.jit
