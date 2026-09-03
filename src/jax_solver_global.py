@@ -1638,7 +1638,7 @@ def make_solver_global(grid, physics, dt, forcing=None, eos_type='linear',
                        T_init=None, S_init=None,
                        polar_cap_rows=2, polar_cap_taper=3, return_params=False,
                        eta_relax_days=0.0, eta_relax_box=None,
-                       eta_relax_buffer=1.0):
+                       eta_relax_buffer=1.0, dynamic_forcing=False):
     """Create a JIT-compiled global FD ocean solver.
 
     Args mirror the spectral make_solver where applicable. Key differences:
@@ -1787,6 +1787,21 @@ def make_solver_global(grid, physics, dt, forcing=None, eos_type='linear',
     def step(state):
         return _step_impl(state, params)
 
+    # ── Dynamic forcing path ──
+    # Same compiled graph as step() except the 2D forcing (tau_x, tau_y,
+    # Q_heat) is passed as RUNTIME arguments instead of baked constants.
+    # params._replace on the namedtuple swaps the three fields for traced
+    # placeholders; XLA compiles ONE graph shared by all 12 monthly
+    # snapshots (no 12× memory — the exact failure that crashed the
+    # regional 365d seasonal design). With dynamic_forcing=False nothing
+    # is built (bit-exact to the pre-dynamic path).
+    step_dyn = None
+    if dynamic_forcing:
+        @jax.jit
+        def step_dyn(state, tau_x, tau_y, q_heat):
+            return _step_impl(state, params._replace(
+                tau_x_2d=tau_x, tau_y_2d=tau_y, Q_heat_2d=q_heat))
+
     @jax.jit
     def diagnostics(state):
         rho_prime = _density_anomaly(state.T, state.S, params)
@@ -1817,6 +1832,13 @@ def make_solver_global(grid, physics, dt, forcing=None, eos_type='linear',
         S = S * params.wet_mask_z + (1.0 - params.wet_mask_z) * physics.S_ref
         return JaxStateG(u, v, T, S, eta)
 
+    # Return arity unchanged when dynamic_forcing=False (all existing
+    # callers unpack 3-/5-tuples); with dynamic_forcing=True step_dyn is
+    # appended as the last element.
+    if dynamic_forcing:
+        if return_params:
+            return step, init_state, diagnostics, params, terms_fn, step_dyn
+        return step, init_state, diagnostics, step_dyn
     if return_params:
         return step, init_state, diagnostics, params, terms_fn
     return step, init_state, diagnostics

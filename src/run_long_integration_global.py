@@ -275,26 +275,20 @@ def main():
               f"T_atm=zonal WOA SST profile "
               f"({float(np.nanmin(T_atm)):.2f}..{float(np.nanmax(T_atm)):.2f} C)")
 
-    # ── Build solver (single compiled graph) ──
-    # The global FD solver bakes the 2D forcing (tau_x, tau_y, Q_heat) into
-    # the JIT-closed params. The regional solver solved the seasonal-cycle
-    # memory problem by passing forcing as runtime data (step(state, jf));
-    # the FD solver doesn't yet have that path, so a 12-closure seasonal
-    # design would 12× the XLA memory (the exact failure that crashed the
-    # regional 365d run). For now we use a FIXED-MONTH real NCEP wind —
-    # architecturally clean (one graph), and sufficient for the non-circular
-    # climatology skill test (which compares time-mean SST, not a seasonal
-    # cycle). The G2 gate passed with fixed wind; seasonal cycling is a
-    # future refinement that needs the FD dynamic-forcing modification.
-    if seasonal:
-        print("  NOTE: seasonal wind on the FD solver needs the dynamic-forcing")
-        print("        path (not yet implemented); using fixed-month wind instead.")
-        seasonal = False
-        tau_x, tau_y = wind_months[0]   # use January as the fixed month
-        wind_src = f"fixed {args.wind_year}-01 (NCEP R1, from seasonal fetch)"
-    step, init_state_global, _, _params, terms_fn = make_solver_global(
+    # ── Build solver ──
+    # Seasonal wind uses the DYNAMIC-FORCING path: step_dyn(state, tau_x,
+    # tau_y, Q_heat) traces the 2D forcing as runtime arguments (single XLA
+    # graph shared by all 12 monthly snapshots — no 12× memory). With
+    # --seasonal-wind off, the baked-forcing step() is used, bit-exact to
+    # all previous runs. (In seasonal mode the baked forcing is unused —
+    # pass zeros as a placeholder since tau_x/tau_y are not loaded.)
+    if not seasonal:
+        forcing_baked = (tau_x, tau_y, Q_heat)
+    else:
+        forcing_baked = (np.zeros_like(Q_heat), np.zeros_like(Q_heat), Q_heat)
+    step, init_state_global, _, _params, terms_fn, step_dyn = make_solver_global(
         grid, physics, args.dt,
-        forcing=(tau_x, tau_y, Q_heat),
+        forcing=forcing_baked,
         eos_type='linear',
         T_atm=T_atm, lambda_bulk=lambda_bulk,
         sponge_days=args.sponge_days, sponge_cells=args.sponge_cells,
@@ -302,7 +296,17 @@ def main():
         polar_cap_rows=args.polar_cap_rows,
         polar_cap_taper=args.polar_cap_taper, return_params=True,
         eta_relax_days=args.eta_relax_days, eta_relax_box=args.eta_relax_box,
-        eta_relax_buffer=args.eta_relax_buffer)
+        eta_relax_buffer=args.eta_relax_buffer,
+        dynamic_forcing=seasonal)
+    if seasonal:
+        Q_heat_2d = jnp.array(Q_heat)
+        def do_step(state, month_day):
+            tx, ty = interp_seasonal_wind(wind_months, month_day,
+                                          blend_days=args.wind_blend_days)
+            return step_dyn(state, jnp.array(tx), jnp.array(ty), Q_heat_2d)
+    else:
+        def do_step(state, month_day):
+            return step(state)
 
     state = init_state_global(T_init=jnp.array(T_init), S_init=jnp.array(S_init))
 
@@ -425,7 +429,7 @@ def main():
     while cur < n_total:
         take = min(n_snap, n_total - cur)
         for _ in range(take):
-            state = step(state)
+            state = do_step(state, cur * args.dt / 86400.0)
             cur += 1
         maxu, maxT, maxeta, nan = snapshot(cur)
         max_u_peak = max(max_u_peak, maxu)
