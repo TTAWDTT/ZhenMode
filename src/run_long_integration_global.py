@@ -191,7 +191,9 @@ def main():
     ap.add_argument("--tag", default=None)
     ap.add_argument("--out-dir", default="results")
     ap.add_argument("--log-dir", default="logs")
-    ap.add_argument("--save-3d", action="store_true")
+    ap.add_argument("--init-from", default=None,
+                    help="npz with T_init/S_init (precomputed WOA on this "
+                         "grid); skips woa_data (offline nodes)")
     ap.add_argument("--save-3d-terms", action="store_true",
                     help="additionally save the per-term dT/dt decomposition "
                          "[adv, diff_h, diff_v, conv, gm, redi] at each 3D snap "
@@ -234,9 +236,15 @@ def main():
                       gm_slope_max=args.gm_slope_max)
     Q_heat = heat_flux_meridional(grid, Q0=50.0)
 
-    # ── Initial fields (WOA2023) ──
-    print("Loading WOA2023 climatology for initial T/S...")
-    T_init, S_init = get_initial_fields(grid)
+    # ── Initial fields (WOA2023, or precomputed npz via --init-from) ──
+    if args.init_from:
+        print(f"Loading precomputed init fields from {args.init_from}...")
+        zf = np.load(args.init_from)
+        T_init = np.array(zf["T_init"], dtype=np.float64)
+        S_init = np.array(zf["S_init"], dtype=np.float64)
+    else:
+        print("Loading WOA2023 climatology for initial T/S...")
+        T_init, S_init = get_initial_fields(grid)
     T_init = np.array(T_init); S_init = np.array(S_init)
     T_init_max = float(np.max(T_init))
     nan_init = int(np.isnan(T_init).sum() + np.isnan(S_init).sum())
