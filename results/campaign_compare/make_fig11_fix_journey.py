@@ -53,16 +53,20 @@ RUNS = [
 # fgate ← (global era opens: polar cap, rho-PGF+sponge earlier); glap ←
 # face gating; glap2 ← ocean-only T_atm; 012 ← seasonal wind + Med relax.
 GAPS = {
-    0: (["biharmonic viscosity"], 0.0),
-    1: (["NCEP real wind"], 0.0),
-    3: (["bulk heat flux", "(no-restore finding)"], 0.0),
-    6: (["global era opens:", "polar cap taper,", "rho-PGF + mass sponge"], 0.0),
+    0: (["seasonal NCEP", "wind (smoke)"], 0.0),
+    1: (["dynamic forcing", "runtime arg + ψ gate"], 0.0),
+    2: (["wind-blend", "transition", "(no sponge)"], 0.0),
+    3: (["sponge 8c", "(tau=5d)"], 0.0),
+    4: (["sponge 8c → 16c"], 0.0),
+    5: (["bulk heat flux", "(restore OFF)"], 0.0),
+    6: (["global era opens:", "polar cap, adjoint", "+ rho PGF, GM closure"], 0.0),
     7: (["adv + Laplacian", "face gating"], 0.0),
     8: (["ocean-only T_atm"], 0.0),
     9: (["seasonal wind", "+ Med relax"], 0.0),
 }
-GAP_Y = {   # y position (days axis) and vertical anchor per gap
-    0: 45, 1: 90, 3: 235, 6: 75, 7: 115, 8: 120, 9: 60,
+GAP_Y = {   # y position (days axis) of the arrow center per gap
+    0: 45, 1: 95, 2: 55, 3: 225, 4: 330, 5: 75, 6: 75, 7: 115, 8: 120,
+    9: 60,
 }
 
 fig, ax = plt.subplots(figsize=(15.5, 7.6), constrained_layout=True)
@@ -93,6 +97,11 @@ for i, (labs, dxo) in GAPS.items():
                 fontsize=8.3, color="#1f5fa8", fontweight="bold")
     ax.annotate("↓", (xg, yg - 26), ha="center", va="top", fontsize=9,
                 color="#1f5fa8", alpha=0.8)
+
+ax.annotate("pre-campaign foundations: spectral solver, JAX 12×, "
+            "3D advection, biharmonic, semi-implicit PGF, NCEP loader",
+            (-0.45, 8), fontsize=8.2, color="0.35", style="italic",
+            va="bottom")
 
 # runs as markers + labels (hand-set offsets, no collisions by construction)
 for x, r in zip(xs, RUNS):
