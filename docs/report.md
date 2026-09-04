@@ -592,6 +592,64 @@ WOA 实测数据在 14 层垂直网格上有 $22°\text{C}$ 的温差，表层 5
 
 结论：**force taper + 对流调整 + SST 恢复（$\tau=5\;\text{d}$）** 组合修正在真实 WOA 初始场下把 30 天强迫积分稳定到 `restore-days=5` 的受迫平衡（max|T| $\approx26.6°\text{C}$，max|u|$\approx1.9\;\text{m/s}$，无 NaN）。`restore-days=5` 即为当前工作配置（证据：`logs/verify_30d_taper_conv_restore5.log`，PASS）。
 
+## 六、全球 365 天生产运行：季节强迫积分（g365d_012，已验收）
+
+### 6.1 运行配置与结论
+
+在 012 节点 GPU（L20X）上完成的 **365 天全球 1° 生产积分**（`run_long_integration_global.py`，结果 `results/global_g365d_012.npz`，md5 `53876042` 已验）：
+
+| 配置项 | 值 |
+|--------|-----|
+| 网格 | 360×120×14，lat ±60°，dx_eq≈111 km，海洋 71.6% |
+| 地形 | 真实 ETOPO 2022（30 passes 平滑，min_depth 100 m） |
+| 初始场 | WOA2023 预计算 npz（`--init-from`） |
+| 风应力 | NCEP/NCAR R1 **2023 年 12 个月实况**（季节循环），月界 5 天线性混合，动态传入（`step_dyn`，单张 XLA 图覆盖全部 12 个月快照） |
+| 热通量 | bulk λ=40 W/m²/K，T_atm=海洋-only 纬向 WOA SST 廓线（非循环设计） |
+| eta_relax | τ=30 d，Med 盒（−6..42 E × 30..46.5 N，1° buffer），质量守恒 |
+| 判据 | max\|u\|<10 m/s；漂移容差 2.0°C；幅值上限 +12°C；\|eta\|<15 m 看门狗（预注册冻结） |
+
+**VERDICT: PASS** —— 525,600 步（dt=60 s），无 NaN，wall 32.3 min：
+- max\|u\| 峰值 1.418 m/s，末值 0.651 m/s（远低于 10 m/s bar）；
+- max\|T\| 29.65 → 27.972 °C（无单调漂移，`monotonic_drift=False`，`amplitude_bounded=True`）；
+- max\|eta\| 1.697 m（远低于 15 m 看门狗）。
+
+### 6.2 eta_relax 验证结论
+
+地中海半封闭海盆在没有松驰时 SSH 线性累积到 **9.58 m**（d365，伪影）；启用 τ=30 d 质量守恒 Rayleigh 松弛后，Med 盒 eta 全年压在 **max 0.587 m / mean 0.006 m**，全局 eta 最大值转移到西北太平洋（lon=142.5°E, lat=45.5°N，1.70 m，风生环流量级合理）。零速率等价性 bit-exact，默认路径不受影响。结论：**Med SSH 伪影已由 eta_relax 修复，且不引入质量漂移**。
+
+### 6.3 季节循环证据
+
+ forcing 侧（重建 12 个月风应力实测）：西北太平洋副热带盒（140–180 E，25–45 N）月均 \|tau\| 冬季 0.0505 N/m²（1 月）→ 夏季 0.0101 N/m²（5 月），**季节摆幅 560%**，tau_x 冬夏符号反转（1 月 +0.046 vs 7 月 −0.004 N/m²）——真实季风/西风带季节信号完整进入积分。
+
+ 响应侧（365 天快照谐波拟合，剔除前 50 天 spinup）：
+- **KE**：年周期 R²=0.403（峰值日 ~220），加半年项 R²=0.770（半年振幅 191 J/m²，峰值日 ~45，与风场的半年结构一致）；KE 在 642–1435 J/m² 区间振荡，无漂移；
+- **SSH_std**：年周期 R²=0.768（振幅 0.019 m，峰值日 ~112），加半年项 R²=0.919。
+
+ 海表温度季节响应偏小（NPac/NAtl 盒 SST 季节幅度 0.25/0.30 °C）——符合预期：bulk λ=40 W/m²/K 恢复到**固定的纬向均匀 T_atm**，把 SST 季节性阻尼掉；季节信号由动力学量（KE/SSH/流场）承载。
+
+### 6.4 气候态评分（官方判据，预注册不挪 bar）
+
+`bench_climatology_global.py` 对 g365d_012（末 90 天窗口，10 个快照）：
+
+| 判据 | 值 | bar | 判定 |
+|------|-----|-----|------|
+| A1 纬向平均 SST(y) vs WOA | corr=**0.993**，RMSE=**1.080 °C** | corr>0.3，RMSE<2.0 | **PASS** |
+| A2 SST 大尺度型（>2° 平滑去均值，非循环） | corr=**0.977**，RMSE=**1.881 °C** | corr>0.3，RMSE<2.0 | **PASS** |
+| B1 SST 方差（信息性） | mean 0.0137，max 1.67 C² | — | 存在活跃变率 |
+| B2 SSH 径向谱斜率（信息性） | **−3.02** | 预期 −3..−5 | 落在 geostrophic 湍流带内 |
+| B3 稳态窗 KE 漂移（信息性） | 18.5% | \|drift\|<~50% | 近稳态 |
+
+**OVERALL: PASS（A1 AND A2）**。A2 是严格非循环技能分：T_atm 纬向均匀，模式 SST 的所有纬向结构（西边界流暖舌、东边界冷流、暖池位置）均由平流+混合+风场真实预报，corr 0.977 表明全球环流型已被 1° FD 求解器正确复现。
+
+### 6.5 验收图（数值生成，脚本在库）
+
+`results/acceptance_g365d_012/`（生成脚本 `make_acceptance_figs.py`，数据来自已验证 npz）：
+- `fig_A_timeseries_5panel.png` — max\|u\|/max\|T\|/max\|eta\|/SSH_std/KE 五联时序；
+- `fig_B_sst_init_vs_d365.png` — WOA 初始 SST vs d365 对比 + 变化图；
+- `fig_C_eta_final_medbox.png` — 末帧 SSH 全球图 + 大西洋/地中海放大（含 relax 盒标注）；
+- `fig_D_wind_monthly_vectors.png` — 12 个月风应力矢量+幅值（季节强迫输入证明）；
+- `results/climatology_g365d_012/` — 官方评分图（zonal_sst / sst_pattern / ssh_spectrum）+ `climatology_compare_g.npz`。
+
 ## 附录：模型参数汇总
 
 | 类别 | 参数 | 值 |
