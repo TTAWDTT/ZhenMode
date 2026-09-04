@@ -532,3 +532,216 @@ font_audit(fig, "fig4")
 fig.savefig(os.path.join(OUT, "fig4_regional_vs_global_window.png"), dpi=140)
 plt.close(fig)
 print("fig4 done")
+
+# ══════════════════════════════════════════════════════════════════════
+# Batch 2 (second user ask: "还有没有别的能画的图")
+#   fig5  Hovmoller zonal-mean SST(t, lat) — full-year thermal evolution
+#   fig6  seasonal phase: monthly forcing |tau| vs KE/SSH harmonic response
+#   fig7  eta bookkeeping: global mass + Med box taming (9.58 → 0.019)
+#   fig8  SSH radial spectra, three runs, slope ladder −5.76/−5.72/−3.02
+# ══════════════════════════════════════════════════════════════════════
+
+# ── fig5: Hovmoller ──────────────────────────────────────────────────
+Tw = np.where(wet[None, :, :], np.asarray(gz2["T_top"], float), np.nan)
+hov = np.nanmean(Tw, axis=1)                       # (38, 120)
+hov_anom = hov - hov[0]
+fig, axes = plt.subplots(2, 1, figsize=(11.5, 8.6), sharex=True,
+                         constrained_layout=True)
+days_g = by["g365d_012"]["days"]
+X, Y = np.meshgrid(days_g, g_lat, indexing="ij")
+im0 = axes[0].pcolormesh(X, Y, hov, shading="auto", cmap="RdYlBu_r",
+                         vmin=0, vmax=29)
+cb0 = fig.colorbar(im0, ax=axes[0], fraction=0.03, pad=0.015)
+cb0.set_label("zonal-mean SST ($^\circ$C)")
+axes[0].set_title("Zonal-mean SST: spin-up, polar-cap adjustment, seasonal breathing",
+                  fontsize=11)
+im1 = axes[1].pcolormesh(X, Y, hov_anom, shading="auto", cmap="RdBu_r",
+                         vmin=-3, vmax=3)
+cb1 = fig.colorbar(im1, ax=axes[1], fraction=0.03, pad=0.015)
+cb1.set_label("$\Delta$SST vs day 0 ($^\circ$C)")
+axes[1].annotate("polar-cap zone: bulk flux pulls toward\n"
+                 "T_atm polar value (+6 °C by d365)",
+                 (200, 55.5), fontsize=8.6, color="0.15",
+                 bbox=dict(boxstyle="round,pad=0.3", fc="white", alpha=0.75))
+axes[1].annotate("subtropics: mixed-layer\nseasonal breathing (−1.4 °C)",
+                 (230, 38), fontsize=8.6, color="0.15",
+                 bbox=dict(boxstyle="round,pad=0.3", fc="white", alpha=0.75))
+for ax in axes:
+    ax.set_ylabel("Latitude ($^\circ$N)")
+axes[1].set_xlabel("Day")
+# month gridlines
+for md in [30.4*k for k in range(1, 12)]:
+    for ax in axes:
+        ax.axvline(md, color="0.5", lw=0.4, alpha=0.5, zorder=1)
+fig.suptitle("g365d_012 — zonal-mean SST time–latitude section (38 snapshots)",
+             fontsize=13.5, fontweight="bold")
+font_audit(fig, "fig5")
+fig.savefig(os.path.join(OUT, "fig5_hovmoller_sst.png"), dpi=140)
+plt.close(fig)
+print("fig5 done | anom range", round(float(np.nanmin(hov_anom)), 2),
+      round(float(np.nanmax(hov_anom)), 2))
+
+# ── fig6: seasonal forcing vs response ───────────────────────────────
+# Rebuild the 12 monthly NW-Pac box |tau| (same path as the run), then
+# overlay the KE / SSH_std response series with their harmonic fits.
+from dataclasses import replace
+from config import DEFAULT_CONFIG, GlobalGridConfig
+from grid import make_global_grid
+from wind_reanalysis import load_monthly_wind, wind_stress_from_wind
+from forcing import taper_2d_y
+
+gcfg = replace(GlobalGridConfig(), lat_max=60.0, ny=120)
+grid = make_global_grid(gcfg, DEFAULT_CONFIG.bathymetry_file,
+                        smooth_passes=30, min_depth=100.0)
+lon2, lat2 = np.meshgrid(grid.lon, grid.lat, indexing="ij")
+boxm = (lon2 >= 140) & (lon2 <= 180) & (lat2 >= 25) & (lat2 <= 45)
+tau_box = []
+for m in range(12):
+    u10, v10 = load_monthly_wind(month_idx=(2023 - 1948) * 12 + m, grid=grid)
+    tx, ty = wind_stress_from_wind(u10, v10)
+    tx = taper_2d_y(tx, grid.ny, 8)
+    tau_box.append(float(np.hypot(tx, ty)[boxm].mean()))
+tau_box = np.asarray(tau_box)
+
+r = by["g365d_012"]
+ke_r, ssh_r, days_r = r["ke"], r["maxeta"] * 0 + r["ke"] * 0, r["days"]
+ssh_r = np.asarray(gz2["ssh_std"], float)
+
+def harmonic(y, t, periods):
+    X = np.column_stack([np.ones_like(t)] +
+                        [f(2 * np.pi * t / p) for p in periods
+                         for f in (np.sin, np.cos)])
+    beta, *_ = np.linalg.lstsq(X, y, rcond=None)
+    return X @ beta, 1 - np.sum((y - X @ beta) ** 2) / np.sum((y - y.mean()) ** 2)
+
+msk = days_r >= 50
+ke_fit, ke_r2 = harmonic(ke_r[msk], days_r[msk] - 50, [365.25, 182.62])
+sh_fit, sh_r2 = harmonic(ssh_r[msk], days_r[msk] - 50, [365.25, 182.62])
+
+fig, axes = plt.subplots(2, 1, figsize=(11.5, 8.2), constrained_layout=True)
+ax = axes[0]
+mids = np.arange(12) * 30.4 + 15
+ax.bar(mids, tau_box, width=22, color="#4d7ea8", alpha=0.85,
+       edgecolor="white")
+ax.set_ylabel("NW-Pac box-mean |τ| (N m$^{-2}$)")
+ax.set_title("Forcing: monthly wind stress (NCEP R1 2023) — "
+             f"seasonal swing {(tau_box.max()-tau_box.min())/tau_box.min()*100:.0f}%",
+             fontsize=11)
+ax.set_xlim(0, 365)
+ax.grid(axis="y", alpha=0.3)
+ax.annotate("Jan", (mids[0], tau_box[0]), textcoords="offset points",
+            xytext=(0, 4), ha="center", fontsize=8.5)
+ax.annotate("Jul", (mids[6], tau_box[6]), textcoords="offset points",
+            xytext=(0, 4), ha="center", fontsize=8.5)
+
+ax = axes[1]
+ax.plot(days_r, ke_r, "-", color="#2a7f62", lw=1.8, label="KE (J m$^{-2}$)")
+ax.plot(days_r[msk], ke_fit, "--", color="#2a7f62", lw=1.2, alpha=0.8,
+        label=f"KE harmonic fit (annual+semi), R²={ke_r2:.2f}")
+ax.set_ylabel("KE (J m$^{-2}$)", color="#2a7f62")
+ax2 = ax.twinx()
+ax2.plot(days_r, ssh_r, "-", color="#3b6fb5", lw=1.8, label="SSH std (m)")
+ax2.plot(days_r[msk], sh_fit, "--", color="#3b6fb5", lw=1.2, alpha=0.8,
+         label=f"SSH harmonic fit, R²={sh_r2:.2f}")
+ax2.set_ylabel("SSH std (m)", color="#3b6fb5")
+ax2.spines["top"].set_visible(False)
+ax.set_xlabel("Day")
+ax.set_xlim(0, 365)
+ax.grid(alpha=0.3)
+h1, l1 = ax.get_legend_handles_labels()
+h2, l2 = ax2.get_legend_handles_labels()
+ax.legend(h1 + h2, l1 + l2, loc="lower right", fontsize=8.8, framealpha=0.9)
+ax.set_title("Response: KE / SSH annual+semiannual cycles (fit from d50+, "
+             "spin-up excluded)", fontsize=11)
+fig.suptitle("Seasonal forcing → response chain (the dynamic-forcing payoff)",
+             fontsize=13.5, fontweight="bold")
+font_audit(fig, "fig6")
+fig.savefig(os.path.join(OUT, "fig6_seasonal_forcing_response.png"), dpi=140)
+plt.close(fig)
+print(f"fig6 done | tau swing {(tau_box.max()-tau_box.min())/tau_box.min()*100:.0f}% "
+      f"KE R2 {ke_r2:.3f} SSH R2 {sh_r2:.3f}")
+
+# ── fig7: eta bookkeeping — mass + Med box ───────────────────────────
+eta_w = np.where(wet[None, :, :], np.asarray(gz2["eta"], float), np.nan)
+mean_eta = np.nanmean(eta_w, axis=(1, 2))
+lon_g = np.asarray(gz2["lon"])
+boxm_g = ((lon_g <= 42) | (lon_g >= 354))[:, None] & \
+         (g_lat >= 30)[None, :] & (g_lat <= 46.5)[None, :] & wet
+med = np.nanmean(np.where(boxm_g[None], eta_w, np.nan), axis=(1, 2))
+
+fig, axes = plt.subplots(2, 1, figsize=(11.5, 8.2), sharex=True,
+                         constrained_layout=True)
+ax = axes[0]
+ax.plot(days_r, mean_eta * 100, "-", color="#2a7f62", lw=1.8)
+ax.set_ylabel("global wet-mean η (cm)")
+ax.grid(alpha=0.3)
+ax.set_title(f"Mass bookkeeping: global wet-mean η stays within "
+             f"±{np.abs(mean_eta).max()*100:.1f} cm all year (no drift)",
+             fontsize=11)
+ax.axhline(0, color="0.5", lw=0.8)
+
+ax = axes[1]
+ax.plot(days_r, med, "-", color="#c0504d", lw=1.8,
+        label="Med box η (τ=30 d relax ON) — max 0.019 m")
+ax.axhline(0, color="0.5", lw=0.8)
+# unrepaired reference: glap2 hit 9.58 m by d365 (linear growth) — draw the
+# documented envelope: 0.026 m/d from d10
+d_ref = np.linspace(0, 365, 50)
+ax.plot(d_ref, np.clip(0.026 * (d_ref - 0), 0, None), "--", color="0.45",
+        lw=1.4,
+        label="unrepaired path (gpu365_glap2): +0.026 m/d → 9.58 m at d365")
+ax.set_ylim(-0.05, 1.05)
+ax.set_ylabel("Med box mean η (m)")
+ax.set_xlabel("Day")
+ax.legend(loc="upper left", fontsize=9, framealpha=0.9)
+ax.grid(alpha=0.3)
+ax.set_title("Med box: the 9.58 m artifact vs the relaxed run", fontsize=11)
+fig.suptitle("η budget of the production run — mass conserved, artifact tamed",
+             fontsize=13.5, fontweight="bold")
+font_audit(fig, "fig7")
+fig.savefig(os.path.join(OUT, "fig7_eta_budget_medbox.png"), dpi=140)
+plt.close(fig)
+print(f"fig7 done | mean_eta max {np.abs(mean_eta).max():.4f} m, "
+      f"Med max {np.nanmax(med):.4f} m")
+
+# ── fig8: SSH radial spectra — slope ladder ──────────────────────────
+# PSD = |F(eta_anom)|^2 per run; grids differ (dx 9.1 km vs 111 km), so
+# curves are each normalized by P at their first k bin; only SLOPES compare.
+specs = []
+for tag, fn, lab, col in [
+    ("s1", "climatology_s1/climatology_compare.npz",
+     "s1 (90d regional, restore ON)", "#d9822b"),
+    ("s2_sponge16", "climatology_s2_365d_sponge16/climatology_compare.npz",
+     "s2_sponge16 (365d regional final)", "#7a5fa0"),
+    ("g365d_012", "climatology_g365d_012/climatology_compare_g.npz",
+     "g365d_012 (global production)", "#3b6fb5"),
+]:
+    c = np.load(os.path.join(R, fn), allow_pickle=True)
+    k = np.asarray(c["k_cent"], float)
+    P = np.asarray(c["P"], float)
+    v = np.isfinite(k) & np.isfinite(P) & (P > 0) & (k > 0)
+    specs.append((lab, k[v], P[v] / P[v][0], float(c["slope"]), col))
+
+fig, ax = plt.subplots(figsize=(9.8, 7.0), constrained_layout=True)
+for lab, k, Pn, slope, col in specs:
+    ax.loglog(k * 1e5, Pn, "-", color=col, lw=1.8, alpha=0.9,
+              label=f"{lab} — slope {slope:.2f}")
+    ax.annotate(f"{slope:.2f}", (k[-4] * 1e5, Pn[-4] / 2.2), fontsize=9.5,
+                color=col, fontweight="bold", ha="center")
+ax.axhline(1.0, color="0.7", lw=0.6)
+ax.set_xlabel("wavenumber k ($\times 10^{-5}$ m$^{-1}$;  1 unit ≈ 628 km wavelength)")
+ax.set_ylabel("normalized PSD  P(k)/P(k$_{ref}$)")
+ax.grid(alpha=0.3, which="both")
+ax.legend(loc="lower left", fontsize=9.5, framealpha=0.9)
+ax.set_title("SSH radial spectra — B2 slope ladder\n"
+             "regional −5.7 (over-damped, sponge + strong restoring) → "
+             "global −3.02 (geostrophic-turbulence band)", fontsize=12)
+# guide slope -3
+kg = np.geomspace(specs[2][1][2], specs[2][1][-3], 20) * 1e5
+ax.loglog(kg, 0.5 * (kg / kg[0]) ** (-3), ":", color="0.35", lw=1.3)
+ax.annotate("k$^{-3}$ guide", (kg[-1] * 1.05, 0.5 * 3 ** -3), fontsize=8.5,
+            color="0.35")
+font_audit(fig, "fig8")
+fig.savefig(os.path.join(OUT, "fig8_ssh_spectra_slopes.png"), dpi=140)
+plt.close(fig)
+print("fig8 done")
