@@ -282,8 +282,11 @@ for j, (ylab, key, _) in enumerate(PANELS):
     ax = axes[0, j]
     for name in SURV:
         r = by[name]
-        ax.plot(r["days"], r[key], "-", color=SURV_C[name], lw=1.7,
-                alpha=0.9,
+        # console-derived runs kept only sparse samples (5-12 pts) — draw
+        # them as markers, not lines, so gaps never read as data
+        st = "-" if len(r["days"]) > 20 else "o"
+        ax.plot(r["days"], r[key], st, color=SURV_C[name], lw=1.7,
+                ms=4.5, alpha=0.9,
                 label=(f"{name}" + ("  (prod)" if name == "g365d_012" else "")))
     ax.set_ylabel(ylab)
     ax.grid(alpha=0.3)
@@ -304,8 +307,9 @@ for j, (ylab, key, _) in enumerate(PANELS):
         r = by[name]
         c = DIED_C[name]
         v = np.isfinite(r[key])
-        ax.plot(r["days"][v], np.abs(r[key][v]), "-", color=c, lw=1.5,
-                alpha=0.9, label=name)
+        st = "-" if v.sum() > 20 else "o"
+        ax.plot(r["days"][v], np.abs(r[key][v]), st, color=c, lw=1.5,
+                ms=4.5, alpha=0.9, label=name)
         # death marker at last finite point
         if v.any():
             ax.plot(r["days"][v][-1], np.abs(np.asarray(r[key])[v][-1]),
