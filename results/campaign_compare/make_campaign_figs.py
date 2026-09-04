@@ -264,12 +264,12 @@ print("fig1 done")
 # to see laid out.
 # ══════════════════════════════════════════════════════════════════════
 SURV = ["s2_365d_sponge16", "gpu365_glap", "gpu365_glap2", "g365d_012"]
-SURV_C = {"s2_365d_sponge16": C_REG, "gpu365_glap": "#d9822b",
-          "gpu365_glap2": "#4d8f4d", "g365d_012": C_GLOBAL}
+SURV_C = {"s2_365d_sponge16": "#7a5fa0", "gpu365_glap": "#e08214",
+          "gpu365_glap2": "#1b7837", "g365d_012": "#1f5fa8"}
 DIED = ["s2_windblend200", "s2_365d_norestore", "s2_365d_sponge",
         "gpu365_fgate"]
-DIED_C = {"s2_windblend200": "#9467bd", "s2_365d_norestore": "#c44e52",
-          "s2_365d_sponge": "#dd8452", "gpu365_fgate": "#8c564b"}
+DIED_C = {"s2_windblend200": "#8073ac", "s2_365d_norestore": "#b2182b",
+          "s2_365d_sponge": "#e69f00", "gpu365_fgate": "#666666"}
 
 PANELS = [("max $|u|$ (m/s)", "maxu", None),
           ("max $|T|$ ($^\circ$C)", "maxT", None),
@@ -284,10 +284,16 @@ for j, (ylab, key, _) in enumerate(PANELS):
         r = by[name]
         # console-derived runs kept only sparse samples (5-12 pts) — draw
         # them as markers, not lines, so gaps never read as data
-        st = "-" if len(r["days"]) > 20 else "o"
-        ax.plot(r["days"], r[key], st, color=SURV_C[name], lw=1.7,
-                ms=4.5, alpha=0.9,
-                label=(f"{name}" + ("  (prod)" if name == "g365d_012" else "")))
+        sparse = len(r["days"]) <= 20
+        st = "-" if not sparse else "o"
+        ax.plot(r["days"], r[key], st, color=SURV_C[name],
+                lw=0 if sparse else 1.7,
+                ms=7 if sparse else None,
+                markeredgecolor="white" if sparse else "none",
+                markeredgewidth=1.1 if sparse else None,
+                alpha=0.95,
+                label=(f"{name}" + ("  (prod)" if name == "g365d_012" else "")
+                       + ("  [sparse pts]" if sparse else "")))
     ax.set_ylabel(ylab)
     ax.grid(alpha=0.3)
     ax.set_title(["Velocity", "Temperature", "Sea surface height",
@@ -307,9 +313,15 @@ for j, (ylab, key, _) in enumerate(PANELS):
         r = by[name]
         c = DIED_C[name]
         v = np.isfinite(r[key])
-        st = "-" if v.sum() > 20 else "o"
-        ax.plot(r["days"][v], np.abs(r[key][v]), st, color=c, lw=1.5,
-                ms=4.5, alpha=0.9, label=name)
+        sparse = v.sum() <= 20
+        st = "-" if not sparse else "o"
+        ax.plot(r["days"][v], np.abs(r[key][v]), st, color=c,
+                lw=0 if sparse else 1.5,
+                ms=7 if sparse else None,
+                markeredgecolor="white" if sparse else "none",
+                markeredgewidth=1.1 if sparse else None,
+                alpha=0.95,
+                label=name + ("  [sparse pts]" if sparse else ""))
         # death marker at last finite point
         if v.any():
             ax.plot(r["days"][v][-1], np.abs(np.asarray(r[key])[v][-1]),
