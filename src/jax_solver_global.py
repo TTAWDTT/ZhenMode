@@ -495,6 +495,53 @@ def _d2_dz2(u, p):
     return jnp.concatenate([d2u_top, d2u_interior, d2u_bot], axis=-1)
 
 
+def _conv_flux_tendency(tracer, conv_mask_3d, kappa, p):
+    """Convective mixing in INTERFACE-flux form (exactly column-conservative).
+
+    The node-form implementation it replaces (kappa_conv * mask * _d2_dz2)
+    is NOT heat-conservative on the non-uniform grid: the node-form 3-point
+    stencil integrated with dz_node weights does not telescope (quadratic-T
+    unit test: column integral -6.0e-3 != 0; linear T conserves only by
+    accident). Gated by the time-varying full-column conv mask, every
+    convective episode therefore created net heat: +0.00025 K/day global
+    mean, polar-concentrated (+0.09 C/yr volume mean), which homogenized
+    and warmed the polar water columns +1.13 C over the 10-yr run (cap
+    2000 m +7.4 C) with an impossible implied +200 W/m2 surface flux.
+
+    This form reuses the GM/Redi vertical discretization (interface fluxes
+    F[k+1/2] between nodes k and k+1, tendency (F[k-1/2]-F[k+1/2])/dz_node,
+    zero flux at the material top/bottom): the column sum
+    sum_k(tend*dz_node) = F[bot]-F[top] = 0 EXACTLY for ANY mask, so
+    convection can only redistribute tracer within a column, never create
+    it. Also negative-semidefinite (one-sided interface differences), so
+    no sawtooth/anti-diffusive modes. The top/bottom-node effective rate is
+    half the old mirror form's 2(C1-C0)/h0^2 — same no-flux BC, standard
+    FV discretization; the convective adjustment timescale changes only at
+    the surface/bottom nodes.
+
+    Args:
+        tracer: (nx, ny, nz) T or S.
+        conv_mask_3d: (nx, ny, 1) column gate (True where the column convects).
+        kappa: [m^2/s] convective diffusivity (p.kappa_conv).
+    """
+    if kappa <= 0.0:
+        return jnp.zeros_like(tracer)
+    # Seafloor no-flux fill (same T_ref=15 ghost guard as the Redi closure).
+    tracer = _fill_ghost_bottom(tracer, p)
+    Cm = tracer[..., :-1]                        # upper node value
+    Cp = tracer[..., 1:]                         # lower node value
+    Fz_i = -kappa * (Cp - Cm) / p.dz_iface       # (nx, ny, nz-1)
+    # Flux only across wet interfaces AND only in convecting columns.
+    wet_iface_f = (p.wet_mask_z[..., :-1] > 0.5) & (p.wet_mask_z[..., 1:] > 0.5)
+    gate = (jnp.asarray(conv_mask_3d)[..., :1] > 0.5)   # force (nx, ny, 1)
+    Fz_i = jnp.where(gate & wet_iface_f, Fz_i, 0.0)
+    # Padded flux array carries the zero-flux BC at surface/seafloor;
+    # tend[k] = (F[k-1/2] - F[k+1/2]) / dz_node[k] (see _redi_skew_flux_tendency).
+    up = jnp.concatenate([jnp.zeros_like(Fz_i[..., :1]), Fz_i], axis=-1)
+    dn = jnp.concatenate([Fz_i, jnp.zeros_like(Fz_i[..., :1])], axis=-1)
+    return (up - dn) / p.dz_node * p.wet_mask_z
+
+
 # ── FD solver parameters (full, with physics + forcing) ───────────
 # Extends FDParams (metric+grid) with the physics constants and forcing
 # fields needed for the time integration (G2). Built by make_solver_global.
@@ -1056,7 +1103,7 @@ def _tracer_terms(state, p):
     wet_iface = (p.wet_mask_z[..., :-1] > 0.5) & (p.wet_mask_z[..., 1:] > 0.5)
     unstable_iface = (rho_prime[..., :-1] > rho_prime[..., 1:]) & wet_iface
     conv_mask_3d = jnp.any(unstable_iface, axis=-1, keepdims=True)
-    conv_T = p.kappa_conv * conv_mask_3d * _d2_dz2(state.T, p) * p.wet_mask_z
+    conv_T = _conv_flux_tendency(state.T, conv_mask_3d, p.kappa_conv, p)
 
     if p.kappa_gm > 0.0:
         S_x_gm, S_y_gm = _isopycnal_slope(state, p)
@@ -1100,8 +1147,8 @@ def _compute_tracer_tendency(state, p):
     wet_iface = (p.wet_mask_z[..., :-1] > 0.5) & (p.wet_mask_z[..., 1:] > 0.5)
     unstable_iface = (rho_prime[..., :-1] > rho_prime[..., 1:]) & wet_iface
     conv_mask_3d = jnp.any(unstable_iface, axis=-1, keepdims=True)
-    conv_T = p.kappa_conv * conv_mask_3d * _d2_dz2(state.T, p) * p.wet_mask_z
-    conv_S = p.kappa_conv * conv_mask_3d * _d2_dz2(state.S, p) * p.wet_mask_z
+    conv_T = _conv_flux_tendency(state.T, conv_mask_3d, p.kappa_conv, p)
+    conv_S = _conv_flux_tendency(state.S, conv_mask_3d, p.kappa_conv, p)
 
     heat_factor = 1.0 / (RHO_0 * C_P * p.dz_surface)
     heat_T = p.Q_heat_2d[:, :, None] * heat_factor * p.surface_mask
