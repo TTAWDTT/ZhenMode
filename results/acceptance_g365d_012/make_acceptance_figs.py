@@ -234,8 +234,14 @@ print(f"fig_D done (tau_abs_max={tau_abs_max:.3f})")
 # ══════════════════════════════════════════════════════════════════════
 # fig_GIF: integration process — SST + SSH side by side + KE trace,
 # one frame per snapshot (38 frames, day counter, fixed color scales).
+# Encoding note: frames are rendered to RGB and re-encoded with ONE
+# shared palette + no dither. PillowWriter's per-frame adaptive palette
+# remaps identical pixels to different palette entries each frame, which
+# makes the smooth colorbar gradient flicker (scales themselves are
+# fixed: SST 0–30 °C, SSH ±1.7 m).
 # ══════════════════════════════════════════════════════════════════════
 from matplotlib.animation import FuncAnimation, PillowWriter
+from PIL import Image
 
 fig = plt.figure(figsize=(12.5, 6.2), constrained_layout=True)
 gs = fig.add_gridspec(2, 2, height_ratios=[3.2, 1.0])
@@ -283,8 +289,29 @@ def update(i):
 anim = FuncAnimation(fig, update, frames=len(days), blit=False,
                      interval=280)
 gif_path = os.path.join(OUT, "fig_GIF_integration.gif")
-anim.save(gif_path, writer=PillowWriter(fps=4), dpi=90)
+
+# Render each frame straight from the canvas, then quantize all frames
+# against a single shared palette so identical pixels keep identical
+# palette indices across frames (kills the colorbar flicker).
+# A warm-up draw first (twice): constrained_layout settles and text
+# glyph caches fill on the initial draws; frame 0 would otherwise be
+# 1 px shifted / antialiased differently from the rest.
+update(0)
+fig.canvas.draw()
+fig.canvas.draw()
+frames_rgb = []
+for i in range(len(days)):
+    update(i)
+    fig.canvas.draw()
+    buf = np.asarray(fig.canvas.buffer_rgba())
+    frames_rgb.append(Image.fromarray(buf[..., :3].copy(), "RGB"))
 plt.close(fig)
-print(f"fig_GIF done -> {gif_path} ({os.path.getsize(gif_path)/1e6:.1f} MB)")
+pal = frames_rgb[0].quantize(colors=255, dither=Image.Dither.NONE)
+frames_p = [im.quantize(palette=pal, dither=Image.Dither.NONE)
+            for im in frames_rgb]
+frames_p[0].save(gif_path, save_all=True, append_images=frames_p[1:],
+                 duration=250, loop=0, disposal=2, optimize=False)
+print(f"fig_GIF done -> {gif_path} ({os.path.getsize(gif_path)/1e6:.1f} MB, "
+      f"{len(frames_p)} frames, shared palette)")
 
 print("ALL FIGURES WRITTEN to", OUT)
