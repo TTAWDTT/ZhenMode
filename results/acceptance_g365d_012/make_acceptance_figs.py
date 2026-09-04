@@ -232,38 +232,51 @@ plt.close(fig)
 print(f"fig_D done (tau_abs_max={tau_abs_max:.3f})")
 
 # ══════════════════════════════════════════════════════════════════════
-# fig_GIF: integration process — SST + SSH side by side + KE trace,
+# fig_GIF: integration process — SST + ΔSST + SSH + KE trace,
 # one frame per snapshot (38 frames, day counter, fixed color scales).
+# ΔSST panel: absolute SST barely moves after day ~10 because the bulk
+# heat flux (lambda=40 W/m2/K, ~6 d equilibration) anchors the surface
+# layer to T_atm; the drift/seasonal signal (~0.1-6 C, zonal-mean NH
+# midlat swing only ~0.5 C) is invisible on a 0-30 C band. The anomaly
+# view T(t) - T(0) on a fixed ±5 C band makes the evolution visible
+# (98.9% of all |dT| falls within ±5).
 # Encoding note: frames are rendered to RGB and re-encoded with ONE
 # shared palette + no dither. PillowWriter's per-frame adaptive palette
 # remaps identical pixels to different palette entries each frame, which
 # makes the smooth colorbar gradient flicker (scales themselves are
-# fixed: SST 0–30 °C, SSH ±1.7 m).
+# fixed: SST 0–30 °C, ΔSST ±5 °C, SSH ±1.7 m).
 # ══════════════════════════════════════════════════════════════════════
 from matplotlib.animation import FuncAnimation, PillowWriter
 from PIL import Image
 
-fig = plt.figure(figsize=(12.5, 6.2), constrained_layout=True)
-gs = fig.add_gridspec(2, 2, height_ratios=[3.2, 1.0])
+dT_all = T_top - T_top[0]
+
+fig = plt.figure(figsize=(14.5, 8.6), constrained_layout=True)
+gs = fig.add_gridspec(2, 3, height_ratios=[3.2, 1.0])
 axT = fig.add_subplot(gs[0, 0])
-axE = fig.add_subplot(gs[0, 1])
+axD = fig.add_subplot(gs[0, 1])
+axE = fig.add_subplot(gs[0, 2])
 axK = fig.add_subplot(gs[1, :])
 
-land = np.where(~wet, 1.0, np.nan)
 T_land = np.ma.masked_invalid(np.where(wet, np.nan, 1.0))
 imT = axT.pcolormesh(lon, lat, T_top[0].T, shading="auto", cmap="RdYlBu_r",
                      vmin=0, vmax=30)
 axT.pcolormesh(lon, lat, T_land.T, shading="auto", cmap="Greys", vmin=0, vmax=2)
 axT.set_title("SST ($^\\circ$C)")
+imD = axD.pcolormesh(lon, lat, dT_all[0].T, shading="auto", cmap="RdBu_r",
+                     vmin=-5, vmax=5)
+axD.pcolormesh(lon, lat, T_land.T, shading="auto", cmap="Greys", vmin=0, vmax=2)
+axD.set_title("$\\Delta$SST vs day 0 ($^\\circ$C)")
 imE = axE.pcolormesh(lon, lat, eta[0].T, shading="auto", cmap="RdBu_r",
                      vmin=-1.7, vmax=1.7)
 axE.pcolormesh(lon, lat, T_land.T, shading="auto", cmap="Greys", vmin=0, vmax=2)
 axE.set_title("SSH (m)")
-for ax in (axT, axE):
+for ax in (axT, axD, axE):
     ax.set_ylim(-60, 60)
     ax.set_ylabel("Lat ($^\\circ$N)")
     ax.set_xlabel("Lon ($^\\circ$E)")
 cbT = fig.colorbar(imT, ax=axT, fraction=0.03, pad=0.02)
+cbD = fig.colorbar(imD, ax=axD, fraction=0.03, pad=0.02)
 cbE = fig.colorbar(imE, ax=axE, fraction=0.03, pad=0.02)
 
 axK.plot(days, z["ke"], "-", color="tab:purple", lw=1.2, label="KE")
@@ -279,12 +292,13 @@ title = fig.suptitle("g365d_012 — 365-day seasonal integration  |  day 0",
 
 def update(i):
     imT.set_array(T_top[i].T.ravel())
+    imD.set_array(dT_all[i].T.ravel())
     imE.set_array(eta[i].T.ravel())
     pointK.set_data([days[i]], [z["ke"][i]])
     pointU.set_data([days[i]], [z["max_u"][i] * 400])
     title.set_text(f"g365d_012 — 365-day seasonal integration  |  "
                    f"day {days[i]:.0f}")
-    return imT, imE, pointK, pointU, title
+    return imT, imD, imE, pointK, pointU, title
 
 anim = FuncAnimation(fig, update, frames=len(days), blit=False,
                      interval=280)
@@ -312,6 +326,6 @@ frames_p = [im.quantize(palette=pal, dither=Image.Dither.NONE)
 frames_p[0].save(gif_path, save_all=True, append_images=frames_p[1:],
                  duration=250, loop=0, disposal=2, optimize=False)
 print(f"fig_GIF done -> {gif_path} ({os.path.getsize(gif_path)/1e6:.1f} MB, "
-      f"{len(frames_p)} frames, shared palette)")
+      f"{len(frames_p)} frames, shared palette, {frames_rgb[0].size[0]}x{frames_rgb[0].size[1]}px)")
 
 print("ALL FIGURES WRITTEN to", OUT)
