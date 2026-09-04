@@ -215,11 +215,18 @@ python run_long_integration_global.py \
 
 ## 9. 运行完成后的验收清单（预注册）
 
+> **状态（2026-09-04）：全部完成，记录如下。**
+
 1. **读 VERDICT**（PASS / FAIL_BLOWUP / FAIL_DRIFT），诚实记录，不挪 bar；
+   → **VERDICT: PASS**（525600 步，0 NaN，max_u_peak 1.418，末帧 max|u|=0.651 / max|T|=27.972 / max|eta|=1.697，wall 32.3 min）。
 2. **画图**（用户明确要求的交付物）：max|u|/max|T|/max|eta|/SSH_std/KE 五联时序；T_top 初始化 vs 365 天对比；eta 末帧平面图（重点 Med 盒）；月均风应力矢量图（证明季节循环进去了）；
+   → `results/acceptance_g365d_012/`（fig_A~fig_D，生成脚本 `make_acceptance_figs.py` 已入库）。
 3. **季节性检查**：KE/SSH_std 时序的 12 个月周期信号；
+   → KE 年周期 R²=0.403（+半年项 0.770），SSH_std 年周期 R²=0.768（+半年项 0.919）；强迫侧 NW Pac 盒 |tau| 季节摆幅 560%。
 4. 结果 npz 拉回本地（base64 慢信道，压缩后 ~5-15MB）或 012 上画图取回 PNG；
+   → `global_g365d_012.npz`（20.2MB，gzip 后 20.16MB）已按 base64-over-PTY 分块拉回本地，gz 与 npz 两级 md5（`6743233c` / `53876042`）均与 012 端一致。
 5. 验收通过后把 eta_relax 验证结论与季节性运行写进 `docs/report.md` 主线。
+   → `docs/report.md` §6（commit `fd77f4b`），含官方 A1/A2 评分：**OVERALL PASS**（A1 corr 0.993 / RMSE 1.080，A2 corr 0.977 / RMSE 1.881，B2 谱斜率 −3.02）。
 
 ---
 
