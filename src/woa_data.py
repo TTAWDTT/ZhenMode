@@ -105,13 +105,23 @@ def load_woa_climatology(var_name, filepath=None):
     }
 
 
-def _fill_nan_vertical(data):
-    """Replace NaN values by propagating nearest non-NaN vertically.
+def _fill_nan_horizontal_per_level(data, max_pass=200):
+    """Fill NaNs at each depth level horizontally from same-level neighbours.
 
-    WOA data has NaN where ocean is shallower than the depth level
-    (e.g., near coastlines or at deep levels over continental shelves).
-    This fills NaNs by carrying the last valid value downward (or the
-    first valid value upward for NaNs above the first valid level).
+    WOA marks a cell NaN where the seafloor is shallower than the level
+    (below-terrain) or data is missing. The old `_fill_nan_vertical`
+    forward-filled such NaNs downward, so a column whose WOA seafloor sits
+    at ~300 m carried its ~28 C surface water to all 4000-m levels; after
+    interpolation this gave constant-T columns and ~4 kg/m3 horizontal
+    density jumps at depth (12,965 columns in the production init npz),
+    which drive 0.9 m/s bottom-layer shear and tracer blow-up within a few
+    steps. Standard practice (MOM, NEMO) is to never carry surface water
+    below the seafloor: fill each level only from SAME-LEVEL valid ocean
+    neighbours, so missing deep cells receive neighbouring deep water.
+
+    Longitudes are periodic; latitude edges clamp. Remaining NaNs after
+    max_pass (isolated cells with no same-level ocean data nearby at all)
+    fall back to vertical carry as a last resort.
 
     Args:
         data: (ndepth, nlat, nlon) array with NaN for missing values.
@@ -122,28 +132,35 @@ def _fill_nan_vertical(data):
     data = data.copy()
     ndepth, nlat, nlon = data.shape
 
-    # Flatten spatial dims for vectorized processing
-    data_flat = data.reshape(ndepth, -1)  # (ndepth, nlat*nlon)
+    offsets = [(-1,-1),(-1,0),(-1,1),(0,-1),(0,1),(1,-1),(1,0),(1,1)]
+    for _ in range(max_pass):
+        nan_mask = np.isnan(data)
+        if not nan_mask.any():
+            return data
+        nbr_sum = np.zeros_like(data)
+        cnt = np.zeros(data.shape, dtype=np.int16)
+        for di, dj in offsets:
+            ii = (np.arange(nlon) + di) % nlon          # lon periodic
+            jj = np.clip(np.arange(nlat) + dj, 0, nlat - 1)
+            nbr = data[:, jj, :][:, :, ii]
+            valid = np.isfinite(nbr)
+            nbr_sum += np.where(valid, nbr, 0.0)
+            cnt += valid.astype(np.int16)
+        fill = nan_mask & (cnt > 0)
+        data = np.where(fill, nbr_sum / np.maximum(cnt, 1), data)
 
-    # Forward fill (top -> bottom): carry last valid value downward
+    # Isolated NaNs left after max_pass (no same-level ocean data anywhere
+    # near, e.g. a tiny isolated sea in an otherwise-NaN level): vertical
+    # carry as a last resort.
+    data_flat = data.reshape(ndepth, -1)
     for k in range(1, ndepth):
-        nan_mask = np.isnan(data_flat[k])
-        if nan_mask.any():
-            data_flat[k, nan_mask] = data_flat[k - 1, nan_mask]
-
-    # Backward fill (bottom -> top): carry first valid value upward
-    # (for levels above the shallowest valid data, rare but possible)
+        m = np.isnan(data_flat[k])
+        if m.any():
+            data_flat[k, m] = data_flat[k - 1, m]
     for k in range(ndepth - 2, -1, -1):
-        nan_mask = np.isnan(data_flat[k])
-        if nan_mask.any():
-            data_flat[k, nan_mask] = data_flat[k + 1, nan_mask]
-
-    # Any remaining NaNs (entire column is NaN) -> leave as NaN; these are
-    # land columns that will be filled AFTER interpolation by horizontal
-    # nearest-neighbour fill against the solver wet mask (see
-    # _fill_ocean_horizontal in get_initial_fields). Filling here with the
-    # global mean (T~5.5 C) lets land values bleed into adjacent ocean points
-    # during bilinear interpolation, producing spurious cold spikes.
+        m = np.isnan(data_flat[k])
+        if m.any():
+            data_flat[k, m] = data_flat[k + 1, m]
     return data_flat.reshape(ndepth, nlat, nlon)
 
 
@@ -153,8 +170,9 @@ def interpolate_to_grid(woa, grid_lon, grid_lat, grid_z):
     Horizontal: linear interpolation in lon/lat (periodic in lon).
     Vertical: linear interpolation in depth.
 
-    NaN values in the WOA data (missing ocean points) are filled
-    vertically before interpolation to prevent NaN propagation.
+    NaN values in the WOA data (missing ocean points, i.e. below-terrain
+    levels) are filled horizontally per level before interpolation to
+    prevent NaN propagation (see _fill_nan_horizontal_per_level).
 
     Args:
         woa: dict from load_woa_climatology.
@@ -175,8 +193,10 @@ def interpolate_to_grid(woa, grid_lon, grid_lat, grid_z):
     # ~150E (already in range). This makes both work without extrapolation.
     grid_lon = np.mod(np.asarray(grid_lon, dtype=np.float64) + 180.0, 360.0) - 180.0
 
-    # Fill NaN values vertically before interpolation
-    woa_data = _fill_nan_vertical(woa_data)
+    # Fill NaN values horizontally per level before interpolation (never
+    # carry surface water below the seafloor — see the function docstring
+    # for the constant-T-column blow-up this previously caused).
+    woa_data = _fill_nan_horizontal_per_level(woa_data)
 
     # Extend longitude for periodic interpolation
     # WOA lon: [-179.5, ..., 179.5]. Add wrap-around point at 180.5.

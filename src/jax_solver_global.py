@@ -431,9 +431,126 @@ def _biharmonic_h(u, p):
     return _laplacian_h(_laplacian_h(u, p), p)
 
 
+def _laplacian_h_2d(u, v, p):
+    """Horizontal Laplacian on a pair of 2D fields (mode-split utilities).
+
+    Currently UNUSED: an earlier design ran nu_h dissipation inside the
+    barotropic subcycle on the depth-mean velocity, but the baroclinic SHEAR
+    (the main thing nu_h must damp) is invisible to the depth mean — the
+    real-grid split run then grew +0.65 m/s/step at a trench node and blew up
+    via tracer advection. nu_h now runs subcycled in the L half-steps on the
+    full 3D field (see _linear_half_step). Kept as a small utility; delete if
+    it finds no other user.
+
+    Same face-gated construction as _laplacian_h (wet/wet face differences in
+    x; mirror-ghost + gate in y; spherical -(tanφ/R)∂/∂y correction), applied
+    to the 2D (nx, ny) fields. Returns (lap_u, lap_v).
+    """
+    wm = p.wet_mask                                     # (nx, ny)
+    inv_dx2 = p.inv_dx2[:, :, 0] if p.inv_dx2.ndim == 3 else p.inv_dx2
+    d2u_dx2 = ((jnp.roll(u, -1, axis=0) - u) * wm * jnp.roll(wm, -1, axis=0)
+               - (u - jnp.roll(u, 1, axis=0)) * wm * jnp.roll(wm, 1, axis=0)) * inv_dx2
+    pad = [(0, 0), (1, 1)]
+    u_pad = jnp.pad(u, pad, mode='edge')
+    wm_pad = jnp.pad(wm, pad, mode='edge')
+    d2u_dy2 = ((u_pad[:, 2:] - u_pad[:, 1:-1]) * wm_pad[:, 2:] * wm_pad[:, 1:-1]
+               - (u_pad[:, 1:-1] - u_pad[:, :-2]) * wm_pad[:, 1:-1] * wm_pad[:, :-2]) * p.inv_dy2
+    du_dy = _d_dy(u[:, :, None], p)[:, :, 0]
+    sin_lat_row = p.f[0, :] / (2.0 * OMEGA)
+    tan_over_R = (sin_lat_row / p.cos_lat) / R_EARTH
+    corr = -du_dy * tan_over_R[None, :]
+    lap_u = d2u_dx2 + d2u_dy2 + corr
+
+    d2v_dx2 = ((jnp.roll(v, -1, axis=0) - v) * wm * jnp.roll(wm, -1, axis=0)
+               - (v - jnp.roll(v, 1, axis=0)) * wm * jnp.roll(wm, 1, axis=0)) * inv_dx2
+    v_pad = jnp.pad(v, pad, mode='edge')
+    d2v_dy2 = ((v_pad[:, 2:] - v_pad[:, 1:-1]) * wm_pad[:, 2:] * wm_pad[:, 1:-1]
+               - (v_pad[:, 1:-1] - v_pad[:, :-2]) * wm_pad[:, 1:-1] * wm_pad[:, :-2]) * p.inv_dy2
+    dv_dy = _d_dy(v[:, :, None], p)[:, :, 0]
+    corr_v = -dv_dy * tan_over_R[None, :]
+    lap_v = d2v_dx2 + d2v_dy2 + corr_v
+    return lap_u, lap_v
+
+
 def _divergence_h(u, v, p):
-    """Horizontal divergence du/dx + dv/dy."""
-    return _d_dx(u, p) + _d_dy(v, p)
+    """Horizontal divergence du/dx + dv/dy from FACE-FLUX differences.
+
+    div_x = (Fx[i] - Fx[i-1])*inv_dx with the SAME face velocity
+    Fx = 0.5*(u + u[i+1]) * wet/wet gate that _advection_scalar's flux-form
+    budget uses. On fully-wet nodes this is algebraically identical to the
+    2nd-order central difference 0.5*(u[i+1]-u[i-1])*inv_dx (the face
+    averages telescope), but at coastal-wall nodes the two disagree
+    radically: the central difference measures the node's SHEAR
+    (0.5*(u_east - 0) with the land neighbor's u=0), while the face-flux
+    form measures the node's real INFLOW (0.5*(u_node + u_east), the actual
+    flux through its open face). With the central form the w diagnosis and
+    the tracer budget saw different velocity fields at every wall: at the
+    Peru-corner node (313.5E, 0.5S, k=11) a ~0.28 m/s depth-uniform inflow
+    entered the tracer budget through the open east face while the
+    diagnosed w saw ~zero local divergence -> no vertical branch was
+    diagnosed to close the budget, and S piled +0.7 PSU/step (38.6 -> 41.3
+    by step 8, 68 by step 30). The face-flux form makes w integrate exactly
+    the convergence the advection sees: column convergence -> w grows
+    upward through the column to w[0] = -∫div dz = the rigid-lid leak =
+    the eta tendency the barotropic subcycle is simultaneously absorbing,
+    and the Edit-2 Fz_top closure passes it through the surface node.
+
+    Meridional: lat is NOT periodic — mirror-pad the axis (same edge-pad
+    wall form as _d_dy / _laplacian_h) so the N/S truncation walls are
+    closed (ghost = boundary value, v masked to 0 there anyway), with the
+    same cos(face_lat) factor on the flux and 1/cos(cell lat) on the
+    divergence as _advection_scalar / _divergence_conservative.
+    """
+    wm = p.wet_mask_z
+    # Zonal (axis 0, periodic): face (i+1/2) velocity, open iff both wet.
+    Fx = 0.5 * (u + jnp.roll(u, -1, axis=0)) * wm * jnp.roll(wm, -1, axis=0)
+    div_x = (Fx - jnp.roll(Fx, 1, axis=0)) * p.inv_dx[..., 0:1]
+    # Meridional (axis 1, closed N/S walls): edge-pad, face (j+1/2).
+    pad = [(0, 0)] * v.ndim
+    pad[1] = (1, 1)
+    v_pad = jnp.pad(v, pad, mode='edge')
+    wm_pad = jnp.pad(wm, pad, mode='edge')
+    Fy = (0.5 * (v_pad[:, 1:-1] + v_pad[:, 2:])
+          * wm_pad[:, 1:-1] * wm_pad[:, 2:]
+          * 0.5 * (p.cos_lat + jnp.roll(p.cos_lat, -1))[None, :, None])
+    Fy = Fy.at[:, -1].set(0.0)                       # north truncation wall
+    div_y = (Fy - jnp.roll(Fy, 1, axis=1)) * p.inv_dy / p.cos_lat[None, :, None]
+    return div_x + div_y
+
+
+def _vertical_transport_iface(u, v, p):
+    """Interface volume transports Fz (nx, ny, nz+1), DOWNWARD-positive.
+
+    Built by the EXACT discrete inverse of _divergence_h (the same face
+    fluxes _advection_scalar's budget uses): Fz[nz] = 0 (seafloor) and
+
+        (Fz[k+1] - Fz[k]) / dz_node[k] = -div_h[k]   for every layer k,
+
+    so Fz[k] = sum_{m>=k} div_h[m] * dz[m]. Feeding Fz to the donor-cell
+    vertical flux makes div_x + div_y + div_z cancel POINTWISE for a uniform
+    tracer — the flux-form operator is then exactly (not approximately)
+    conservative and neutrally transportive. The previous node-w path
+    (trapezoid div_avg + cumsum + _dealias_h_fd) could not invert the
+    discrete divergence: the leftover residual reached 1.2e-5/s, and
+    resid * T is a T-PROPORTIONAL source — a 4%/step exponential pump
+    (measured resid*S = 4.4e-4 PSU/s, max|T| 29.6 -> 52.6 over 30 steps at
+    the North Brazil Current node) that no CFL limit can remove because it
+    is not a transport term at all.
+
+    Fz[..., 0] is the column-integrated horizontal divergence — the
+    rigid-lid leak the barotropic subcycle simultaneously absorbs as the
+    eta tendency; the scalar advection passes it through the surface node
+    as Fz_top = Fz[0] * T[0] (MOM-style rigid-lid closure).
+    """
+    div_h = _divergence_h(u, v, p)
+    # div_h is per-LAYER (nz entries) — weight by the per-node cell
+    # thickness dz_node (1,1,nz), NOT dz_3d: dz_3d is the interface-centered
+    # (1,1,nz-1) spacing array (z[k]-z[k+1] between nodes) and cannot
+    # multiply the per-layer divergence.
+    integrand = div_h * p.dz_node                    # (nx, ny, nz)
+    # cumsum from the bottom upward: Fz_int[k] = sum_{m=k..nz-1} integrand[m]
+    Fz_int = jnp.cumsum(integrand[..., ::-1], axis=-1)[..., ::-1]
+    return jnp.concatenate([Fz_int, jnp.zeros_like(Fz_int[..., :1])], axis=-1)
 
 
 # ── Vertical operators (identical to regional solver) ──────────────
@@ -581,6 +698,19 @@ FDPhysParams = namedtuple('FDPhysParams', [
     # Semi-enclosed-sea SSH (eta) relaxation (Mediterranean artifact fix)
     'eta_relax_mask',    # (nx, ny) 1 inside the semi-enclosed sea, 0 elsewhere
     'eta_relax_rate',    # 1/s Rayleigh relaxation rate; 0 = off
+    # Mode split (baroclinic/barotropic). With mode_split=True the free
+    # surface no longer runs inside the Strang linear half-step at the
+    # baroclinic dt; instead _step_impl ends with n_subcyc barotropic
+    # forward-backward subcycles of dt_bt each (exact fill of dt), with the
+    # density-PGF coupling held fixed over the baroclinic step (MOM-style
+    # forcing lag). This lifts the external-gravity-wave CFL from the
+    # baroclinic dt (dt=3600 s at 1 deg is then safe) and gives ~10x
+    # wall-clock.
+    'mode_split',        # bool: barotropic-subcycle free surface
+    'dt_bt',             # s: ACTUAL subcycle dt (= dt / n_subcyc, exact fill)
+    'n_subcyc',          # int: barotropic subcycles per baroclinic step
+    'conv_nsub',         # int: convective-adjustment subcycles per bc step
+    'adv_nsub',          # int: vertical-advection subcycles per bc step
 ])
 
 
@@ -723,19 +853,19 @@ def _dealias_h_fd(field, p):
 def _compute_vertical_velocity(state, p):
     """Diagnose w from horizontal continuity. w=0 at bottom. Masked on land.
 
-    The diagnosed w is dealiased (_dealias_h_fd) to remove the 2-dx
-    grid-scale noise that central-difference divergence injects — without
-    this, w x dT/dz drives a spurious vertical-advection heat pump at the
-    boundary rows (the G3 day-5 blow-up; the spectral baseline applies the
-    equivalent _dealias_h).
+    w = -Fz (the exact interface transports of _vertical_transport_iface,
+    sign-flipped to the w>0 = DOWNWARD convention): the trapezoid node-w
+    built from div_avg + cumsum + dealias could not invert the advection's
+    discrete face-flux divergence pointwise (residual up to 1.2e-5/s; a
+    T-proportional source, i.e. a 4%/step exponential pump — max|T| 29.6 ->
+    52.6 in 30 steps at the North Brazil Current node). The exact inverse
+    closes div_x + div_y + div_z to machine precision for a uniform tracer.
+    No dealiasing: dealiasing w would re-open the discrete non-closure the
+    exact inverse just fixed.
     """
-    div_h = _divergence_h(state.u, state.v, p)
-    div_avg = 0.5 * (div_h[..., :-1] + div_h[..., 1:])
-    integrand = div_avg * p.dz_3d
-    w = jnp.zeros_like(state.u)
-    w = w.at[..., :-1].set(-jnp.cumsum(integrand[..., ::-1], axis=-1)[..., ::-1])
-    w = _dealias_h_fd(w, p)
-    return w * p.wet_mask_z   # no spurious w over land or below seafloor
+    Fz = _vertical_transport_iface(state.u, state.v, p)
+    w = -Fz[..., :-1] * p.wet_mask_z
+    return w
 
 
 # ── Tendencies (FD, with land masking) ─────────────────────────────
@@ -812,28 +942,122 @@ def _advection_flux_form(u, v, w, p):
     return adv_u * p.wet_mask_z, adv_v * p.wet_mask_z
 
 
-def _advection_scalar(T, u, v, w, p):
-    """3D advective-form scalar advection (FD, land-masked, dealiased).
+def _advection_scalar(T, u, v, Fz_in, p):
+    """3D FLUX-FORM scalar advection (FD, land-masked). Linear -> no dealias.
 
-    Horizontal gradients are face-gated (see _gradient_face_gated_3d): the
-    ghost sentinel T=15 C at mask boundaries otherwise reads as a 14 K
-    step-gradient that the deep coastal circulation advects into the wet
-    interior (the d50-d360 k12/k13 dipole -> max|T| 1247 blow-up).
-    Nonlinear products (u*dT/dx etc.) are 2/3-rule-dealiased via
-    _dealias_h_fd on the summed tendency, matching the spectral baseline
-    (jax_solver.py:515), then land-masked.
+    Switched from advective form (−u·∇T) to flux form (−∇·(uT)) after the
+    real-grid dt=3600 split run: the advective form equals flux form minus
+    T·∇·u, and the +T·∂u/∂x part is a REAL anti-diffusion — at any discrete
+    divergence (equatorial upwelling, ∂w/∂z>0 in the 5 m layer) the operator
+    carries a genuine positive eigenvalue dt·δ per step that grows the field
+    exponentially. Subcycling (adv_nsub) slows the per-step growth but the
+    eigenvalue scales with dt·δ and survives any n: the (310.5E, 6.5N)
+    surface T runaway (+3.4e-3 K/s growing 20x in 2 steps, NaN by step 23)
+    persisted through adv_nsub=6. Flux form has no anti-diffusive term — the
+    centered-flux operator is neutrally transportive — and is exactly
+    conservative, matching the continuity-consistent tracer equation the
+    free-surface subcycle already solves. The advective form remains in
+    _advection_flux_form for MOMENTUM (vector-invariant scheme needs it).
+    Horizontal fluxes are face-gated (see _gradient_face_gated_3d): the ghost
+    sentinel T=15 C at mask boundaries otherwise reads as a 14 K step-gradient
+    advected into the wet interior. The vertical flux uses the interface
+    transports Fz_in (nx, ny, nz+1) from _vertical_transport_iface — the
+    EXACT discrete inverse of the horizontal divergence — with donor-cell
+    (upwind) T face values: the bottom face reads _fill_ghost_bottom(T) so
+    the bottom-wet layer reads the no-flux bottom BC; Fz_in is 0 below the
+    seafloor (masked u,v) anyway.
     """
-    dT_dx, dT_dy = _gradient_face_gated_3d(T, p)
-    # Fill below-seafloor ghosts with the bottom wet value before the
-    # vertical derivative (no-flux BC, same treatment as the GM/Redi
-    # closures): the centered _d_dz at a sill's bottom wet layer otherwise
-    # reads the +15 C sentinel in the ghost layer beneath (~0.08 K/d pump;
-    # _fill_ghost_bottom docstring). w is masked to 0 in ghost layers so the
-    # reverse direction carries no flux; only the bottom-wet derivative
-    # needed the fill.
-    dT_dz = _d_dz(_fill_ghost_bottom(T, p), p)
-    adv_T = -(u * dT_dx + v * dT_dy + w * dT_dz)
-    adv_T = _dealias_h_fd(adv_T, p)
+    wm = p.wet_mask_z
+    # ── Zonal flux at face (i+1/2), periodic in x ──
+    # Fx = u_face * T_face, face-gated (both cells wet). Centered face values.
+    # Sign: Fx is the +x-directed flux (u>0 carries T eastward).
+    Tx_face = 0.5 * (T + jnp.roll(T, -1, axis=0))
+    ux_face = 0.5 * (u + jnp.roll(u, -1, axis=0))
+    gate_x = wm * jnp.roll(wm, -1, axis=0)
+    Fx = ux_face * Tx_face * gate_x                    # (nx, ny, nz)
+    # ── Meridional flux at face (j+1/2), closed N/S walls ──
+    # Spherical conservation: the face MASS flux carries cos(face_lat), and
+    # the cell divergence divides by cos(cell lat) (see
+    # _divergence_conservative for the telescoping argument). T flux = v*T
+    # gets the same cos_face factor.
+    pad = [(0, 0), (1, 1), (0, 0)]
+    T_pad = jnp.pad(T, pad, mode='edge')
+    v_pad = jnp.pad(v, pad, mode='edge')
+    wm_pad = jnp.pad(wm, pad, mode='edge')
+    Ty_face = 0.5 * (T_pad[:, 1:-1] + T_pad[:, 2:])
+    vy_face = 0.5 * (v_pad[:, 1:-1] + v_pad[:, 2:])
+    gate_y = wm_pad[:, 1:-1] * wm_pad[:, 2:]
+    cos_face = 0.5 * (p.cos_lat + jnp.roll(p.cos_lat, -1))
+    Fy = vy_face * Ty_face * gate_y * cos_face[None, :, None]   # (nx, ny, nz)
+    # Close the truncation-wall faces: the edge pad replicates wm at j=ny-1,
+    # so gate_y there is wm^2 = 1 and Fy[:, -1] would carry a flux through the
+    # closed wall (v is masked to 0 at boundary rows, but vy_face reads the
+    # INTERIOR neighbor 0.5*v[ny-2]). Explicit closure, matching
+    # _divergence_conservative's vface_open/fcos_in wall sets.
+    Fy = Fy.at[:, -1].set(0.0)
+    # ── Vertical flux at interface (k+1/2): DONOR-CELL (upwind) ──
+    # Sign convention (from _vertical_transport_iface): Fz is the
+    # DOWNWARD-positive interface volume transport (nx, ny, nz+1),
+    # Fz[..., nz] = 0 at the seafloor, built by the EXACT discrete inverse
+    # of the horizontal divergence (div_x + div_y + div_z = 0 to machine
+    # precision for a uniform tracer). The donor for an interface flux is
+    # the SHALLOWER node when Fz>0 (water arrives from above) and the
+    # DEEPER node when Fz<0 (physical upwelling carries the deep value up).
+    # Two reasons the T face value must not be centered:
+    #   1. RK2/forward-Euler time integration of a CENTERED vertical
+    #      transport is unconditionally unstable (|lam|^2 = 1+theta^2 > 1 for
+    #      any theta) — at dt=3600 the 5 m layer's theta_v = dt*w/dz = 1.3-1.8
+    #      grew ~2x/step (the step-21 equatorial T runaway that survived
+    #      adv_nsub=6 as a still-growing 1.08x/step). Donor-cell adds a
+    #      monotone scheme: stable for theta <= 1 per substep, with added
+    #      vertical diffusivity 0.5*|w|*dz <= 6e-3 m^2/s (below kappa_v=1e-5).
+    #   2. The centered T face value multiplies the FULL tracer content into
+    #      the surface node's flux (w*T/dz ~ O(10 K/step) wherever the
+    #      column-divergence leak gives w[0] != 0) — the old advective form
+    #      was protected by the small dT/dz factor; donor-cell keeps the
+    #      flux one-sided (physical upwelling carries the DEEP value up,
+    #      surface convergence carries the SURFACE value down).
+    # Bottom face: _fill_ghost_bottom(T) makes the bottom-wet layer read the
+    # no-flux seafloor BC; Fz is 0 below the seafloor (masked u,v) anyway.
+    T_deep = _fill_ghost_bottom(T, p)[..., 1:]        # node k (below iface k)
+    T_shallow = T[..., :-1]                           # node k-1 (above iface k)
+    wet_iface = wm[..., :-1] * wm[..., 1:]
+    # Internal interfaces are Fz_in[..., 1:-1] (indices 1..nz-1, count nz-1):
+    # index 0 is the surface (rigid-lid leak, handled below) and index nz is
+    # the seafloor (zero transport).
+    Fz_int = Fz_in[..., 1:-1] * jnp.where(Fz_in[..., 1:-1] > 0.0, T_shallow, T_deep) * wet_iface
+    # Padded flux array: Fz_top = 0 (rigid lid, w=0), Fz_bot = 0 (seafloor).
+    # tend[k] = -(dF/dx + dF/dy + dF/dz) with the vertical term
+    # (Fz[k+1/2] - Fz[k-1/2]) / dz_node[k]: k increases DOWNWARD, so the
+    # out-face of cell k is its BOTTOM face (dn, at k+1/2) and the in-face is
+    # the top (up, at k-1/2) — the same out-minus-in form as div_x
+    # (Fx[i+1/2] - Fx[i-1/2]). Writing this (up - dn) instead silently makes
+    # the donor-cell scheme ANTI-upwind: T_new = (1+theta)*T - theta*T_donor,
+    # a +theta eigenvalue per substep (measured: T_w grew 29.6 -> 2350 over
+    # 6 substeps, factor 2.45 = 1+theta_v with theta_v=1.453 in the 5 m
+    # layer). Fz[...] is a DOWNWARD-positive flux (w>0 = down, donor above).
+    Fx_up = jnp.roll(Fx, 1, axis=0)                   # flux at face (i-1/2)
+    Fy_up = jnp.roll(Fy, 1, axis=1)
+    Fy_up = Fy_up.at[:, 0].set(0.0)                   # north wall closed
+    # Top face: Fz[..., 0] is the column-integrated horizontal divergence —
+    # the rigid-lid leak the barotropic subcycle simultaneously absorbs as
+    # the eta tendency. Left out of the budget it
+    # is a T-INDEPENDENT inflow of T_deep into the surface node wherever
+    # Fz[0] != 0 (measured: +16.47 K per 600 s substep, linear forever). The
+    # MOM-style rigid-lid closure is a top-face flux carrying the surface
+    # cell's own value: Fz_top = Fz[0]*T[0]. Under upwelling (Fz[0]<0) the
+    # surface node then equilibrates at the deep value (physical upwelling
+    # replacement) instead of growing without bound; under surface
+    # convergence (Fz[0]>0) the donor from "above" is the edge-extended
+    # surface value, so the node sees pure through-flow (no change).
+    Fz_top = Fz_in[:, :, :1] * T[..., :1]
+    up = jnp.concatenate([Fz_top, Fz_int], axis=-1)
+    dn = jnp.concatenate([Fz_int, jnp.zeros_like(Fz_int[..., :1])], axis=-1)
+    div_x = (Fx - Fx_up) * p.inv_dx[..., 0:1]
+    # Meridional: divide by cos(cell lat) like _divergence_conservative.
+    div_y = (Fy - Fy_up) * p.inv_dy / p.cos_lat[None, :, None]
+    div_z = (dn - up) / p.dz_node
+    adv_T = -(div_x + div_y + div_z)
     return adv_T * p.wet_mask_z
 
 
@@ -1094,8 +1318,8 @@ def _tracer_terms(state, p):
     blowup attribution (which closure pumps the deep-T runaway). NOT used in
     the time integration — read-only diagnosis.
     """
-    w = _compute_vertical_velocity(state, p)
-    adv_T = _advection_scalar(state.T, state.u, state.v, w, p)
+    Fz = _vertical_transport_iface(state.u, state.v, p)
+    adv_T = _advection_scalar(state.T, state.u, state.v, Fz, p)
     diff_h_T = p.kappa_h * _laplacian_h(state.T, p)
     diff_v_T = p.kappa_v * _d2_dz2(state.T, p)
 
@@ -1122,10 +1346,48 @@ def _tracer_terms(state, p):
 
 
 def _compute_tracer_tendency(state, p):
-    """dT/dt, dS/dt (FD, land-masked). Includes bulk air-sea heat flux."""
-    w = _compute_vertical_velocity(state, p)
-    adv_T = _advection_scalar(state.T, state.u, state.v, w, p)
-    adv_S = _advection_scalar(state.S, state.u, state.v, w, p)
+    """dT/dt, dS/dt (FD, land-masked). Includes bulk air-sea heat flux.
+
+    Vertical advection is SUBCYCLED adv_nsub times (frozen velocity, frozen
+    horizontal terms) when adv_nsub > 1: the explicit advection CFL is
+    dt*(|u|/dx + |v|/dy + w/dz) < ~1, and at dt=3600 s the 5 m surface layer
+    with equatorial upwelling w~2e-3 m/s gives dt*w/dz = 1.3-1.8 > 1 (the
+    real-grid split run ran away +0.3 K/step at (310.5E, 6.5N) from step 21
+    and NaN'd by step 29). At the historical dt=60-300 the CFL was 0.02-0.18
+    and a single application was fine (adv_nsub=1 keeps that path untouched).
+    Only the ADVECTIVE term is subcycled: diffusion (kappa_h dt/dz² << 0.5),
+    surface heat/salt fluxes (dt-weighted, non-CFL), GM/Redi skew flux
+    (CFL 0.58 at dt=3600), and convective adjustment (own conv_nsub) are all
+    inside their explicit bounds at dt=3600 and stay evaluated ONCE —
+    subcycling them too would cost wall-clock for nothing. The velocity and
+    the horizontal structure are frozen over the substeps (fixed-operator
+    subcycling, same pattern as conv_nsub); only the advected FIELD evolves,
+    which is what the CFL constrains.
+    """
+    Fz = _vertical_transport_iface(state.u, state.v, p)
+    n_a = int(p.adv_nsub)
+    if n_a > 1:
+        # Subcycled advection: evolve a working copy of (T, S) with the
+        # frozen u,v,Fz advection operator dt/adv_nsub at a time, and report
+        # the AVERAGE rate so the Strang residual (which subtracts it from
+        # the full tendency and re-applies it over the full dt in the N-step
+        # RK2) integrates the same subcycled operator over dt.
+        dts = p.dt / n_a
+        T_w, S_w = state.T, state.S
+        adv_T_sum = jnp.zeros_like(T_w)
+        adv_S_sum = jnp.zeros_like(S_w)
+        for _ in range(n_a):
+            aT = _advection_scalar(T_w, state.u, state.v, Fz, p)
+            aS = _advection_scalar(S_w, state.u, state.v, Fz, p)
+            adv_T_sum = adv_T_sum + aT
+            adv_S_sum = adv_S_sum + aS
+            T_w = T_w + aT * dts
+            S_w = S_w + aS * dts
+        adv_T = adv_T_sum / n_a
+        adv_S = adv_S_sum / n_a
+    else:
+        adv_T = _advection_scalar(state.T, state.u, state.v, Fz, p)
+        adv_S = _advection_scalar(state.S, state.u, state.v, Fz, p)
 
     diff_h_T = p.kappa_h * _laplacian_h(state.T, p)
     diff_h_S = p.kappa_h * _laplacian_h(state.S, p)
@@ -1147,8 +1409,41 @@ def _compute_tracer_tendency(state, p):
     wet_iface = (p.wet_mask_z[..., :-1] > 0.5) & (p.wet_mask_z[..., 1:] > 0.5)
     unstable_iface = (rho_prime[..., :-1] > rho_prime[..., 1:]) & wet_iface
     conv_mask_3d = jnp.any(unstable_iface, axis=-1, keepdims=True)
-    conv_T = _conv_flux_tendency(state.T, conv_mask_3d, p.kappa_conv, p)
-    conv_S = _conv_flux_tendency(state.S, conv_mask_3d, p.kappa_conv, p)
+    # kappa_conv CFL: kappa_conv*dt/dz_top² at dt=3600 s on the 10 m surface
+    # layer = 1.8 >> 0.5 (explicit diffusion limit). Subcycling the LINEAR
+    # convective operator conv_nsub times with kappa_conv/conv_nsub each is
+    # mathematically identical to one kappa_conv application (fixed mask,
+    # linear operator) but restores the explicit stability bound per substep.
+    # The mask stays frozen over the baroclinic step — the adjustment still
+    # removes the same instability energy; only the trajectory differs O(dt).
+    n_c = int(p.conv_nsub)
+    if n_c > 1:
+        kappa_c = p.kappa_conv / n_c
+        h_c = p.dt / n_c
+        conv_T = jnp.zeros_like(state.T)
+        conv_S = jnp.zeros_like(state.S)
+        T_c, S_c = state.T, state.S
+        for _ in range(n_c):
+            # Advance by the CURRENT term only (correct forward-Euler
+            # subcycle, same pattern as the adv_nsub loop above). Advancing
+            # by the accumulated sum makes the operator NEUTRAL per
+            # eigenmode (|1 - hd/2 ± i.sqrt(hd)| = 1 for hd < 4) instead of
+            # dissipative: inversions never homogenize, and the reported
+            # average rate (sum of accumulated terms)/n_c takes a
+            # phase-random sign that pumps ~0.2x the mode amplitude per
+            # step (measured conv-max growth 9.5e-4 -> 5.4e-3 -> 0.14 ->
+            # 2.6 K/s over 3 steps at the warm pool, ~5x/step).
+            tT = _conv_flux_tendency(T_c, conv_mask_3d, kappa_c, p)
+            tS = _conv_flux_tendency(S_c, conv_mask_3d, kappa_c, p)
+            conv_T = conv_T + tT
+            conv_S = conv_S + tS
+            T_c = T_c + tT * h_c
+            S_c = S_c + tS * h_c
+        conv_T = conv_T / n_c   # average rate over the baroclinic step
+        conv_S = conv_S / n_c
+    else:
+        conv_T = _conv_flux_tendency(state.T, conv_mask_3d, p.kappa_conv, p)
+        conv_S = _conv_flux_tendency(state.S, conv_mask_3d, p.kappa_conv, p)
 
     heat_factor = 1.0 / (RHO_0 * C_P * p.dz_surface)
     heat_T = p.Q_heat_2d[:, :, None] * heat_factor * p.surface_mask
@@ -1243,10 +1538,28 @@ def _free_surface_step_fd(eta, u, v, p, F_rho_x=None, F_rho_y=None, dt_half=None
     discretization; bottom drag then decays the free mode (|λ|~0.97/step).
     CFL: dt < dx/sqrt(g*H) ~ 85-560s; dt=60 is safe on the global 1° grid
     (basin+meso modes CFL<1; grid-scale handled by Laplacian + polar cap).
+
+    mode_split=True: called n_subcyc times per baroclinic step with dt_bt
+    (one forward-backward pair per call = dt_bt of evolution; caller passes
+    dt_half=dt_bt). The 3D<->barotropic projection stays in the CALLER: inside
+    the subcycle we work on (eta, ubt, vbt) 2D state only, seeded from one
+    _barotropic_velocity call at subcycle start.
+
+    NOTE (nu_h placement): the subcycle carries NO nu_h dissipation. The
+    baroclinic shear (which nu_h is really there to damp) is invisible to the
+    depth-averaged BT state; putting nu_h here damped only the depth-mean
+    while the 3D shear grew unchecked (real-grid +0.65 m/s per step at a
+    trench node -> tracer-advection blow-up by step 15). nu_h instead runs in
+    the L half-steps on the FULL 3D field with an internal subcycle
+    (nu_sub_cyc substeps of dt/nu_sub_cyc each), which satisfies the explicit
+    diffusion CFL while acting on the shear.
     """
     if dt_half is None:
         dt_half = p.dt / 2.0
-    ubt, vbt = _barotropic_velocity(u, v, p)
+    if p.mode_split:
+        ubt, vbt = u, v   # subcycle mode: caller passes BT velocity directly
+    else:
+        ubt, vbt = _barotropic_velocity(u, v, p)
 
     F_x = jnp.zeros_like(ubt)
     F_y = jnp.zeros_like(vbt)
@@ -1407,6 +1720,12 @@ def _free_surface_step_fd(eta, u, v, p, F_rho_x=None, F_rho_y=None, dt_half=None
     ubt_new = _cap(ubt_new)
     vbt_new = _cap(vbt_new)
 
+    if p.mode_split:
+        # Subcycle mode: caller works on the 2D barotropic state directly
+        # (eta, ubt, vbt); the single 3D<->BT projection happens ONCE per
+        # baroclinic step in _step_impl, not per subcycle.
+        return eta_new, ubt_new, vbt_new
+
     # Project barotropic delta back to 3D velocity (uniform over depth)
     delta_ubt = (ubt_new - ubt)[:, :, None]
     delta_vbt = (vbt_new - vbt)[:, :, None]
@@ -1428,9 +1747,29 @@ def _linear_half_step(state, p, dt_half):
       - EXPLICIT forward-Euler free surface (CFL: dt < dx/sqrt(gH) ~ 85-560s;
         dt=60 is safe across the global grid).
     """
-    # Explicit diffusion (horizontal Laplacian + vertical d2/dz2)
-    u = state.u + p.nu_h * _laplacian_h(state.u, p) * dt_half
-    v = state.v + p.nu_h * _laplacian_h(state.v, p) * dt_half
+    # Explicit diffusion (horizontal Laplacian + vertical d2/dz2).
+    # nu_h (momentum Laplacian) CANNOT be applied at dt_half=1800 s in one
+    # explicit shot (nu_h*dt_half/dy² = 0.73 > 0.25), but it MUST act on the
+    # full 3D baroclinic velocity: the N-step residual subtracts nu_h*lap from
+    # the full tendency, so if the L step re-adds nothing the baroclinic SHEAR
+    # (invisible to the barotropic subcycle's depth-mean) loses all its
+    # damping — the real-grid split run grew +0.65 m/s/step at a trench node
+    # (154.5E, 11.5S, k=12) and blew up via tracer advection by step 15.
+    # Fix: apply nu_h here subcycled (nu_sub_cyc steps of dt_half/nu_sub_cyc
+    # each, CFL 0.06 per substep) — same fixed-operator subcycling pattern as
+    # conv_nsub. Monolithic dt=60-300 keeps the single-shot form (CFL-safe).
+    if p.mode_split and p.n_subcyc > 0:
+        # subcycle count sized by the same 0.2*LHS criterion as conv_nsub:
+        # nu_h*dt/(subcyc*dy^2) <= 0.2; dt_half at 3600 => 24 substeps at 150 s.
+        u, v = state.u, state.v
+        n_nu = max(1, int(p.n_subcyc))
+        dts = dt_half / n_nu
+        for _ in range(n_nu):
+            u = u + p.nu_h * _laplacian_h(u, p) * dts
+            v = v + p.nu_h * _laplacian_h(v, p) * dts
+    else:
+        u = state.u + p.nu_h * _laplacian_h(state.u, p) * dt_half
+        v = state.v + p.nu_h * _laplacian_h(state.v, p) * dt_half
     T = state.T + p.kappa_h * _laplacian_h(state.T, p) * dt_half
     S = state.S + p.kappa_h * _laplacian_h(state.S, p) * dt_half
     # Scale-selective biharmonic (∇⁴): damps grid-scale modes far more than
@@ -1475,7 +1814,13 @@ def _linear_half_step(state, p, dt_half):
     # Coriolis rotation (2D f-field, exact)
     u, v = _coriolis_rotation_2d(u, v, p.f, dt_half)
 
-    # Semi-implicit free surface (with density barotropic PGF)
+    # Semi-implicit free surface (with density barotropic PGF).
+    # mode_split: the free surface runs ONCE per baroclinic step in
+    # _step_impl's barotropic subcycle (dt_bt), not here — the external-wave
+    # CFL forbids dt_half=1800 s here. The linear step keeps diffusion
+    # (nu_h subcycled above) + sponge + Coriolis only.
+    if p.mode_split:
+        return JaxStateG(u, v, T, S, state.eta)
     F_rho_x, F_rho_y = _compute_bt_rho_pgf(state, p)
     eta, u, v = _free_surface_step_fd(state.eta, u, v, p, F_rho_x, F_rho_y, dt_half)
     return JaxStateG(u, v, T, S, eta)
@@ -1510,15 +1855,35 @@ def _compute_momentum_residual(state, p):
     for the no-op cancellation argument.
     """
     dudt, dvdt = _compute_momentum_tendency(state, p)
+    # nu_h subtraction is unconditional: the full tendency ALWAYS includes
+    # diff_h, so the residual must ALWAYS remove it — the L step re-adds it
+    # (monolithic single-shot, split subcycled over n_subcyc substeps).
+    # Skipping the subtraction in split mode (an earlier draft's
+    # `if not p.mode_split` guard) applied nu_h inside the N-step at dt=3600,
+    # where nu_h*dt/dy^2 = 1.46 >> 0.25 exceeds the explicit-diffusion CFL.
     dudt = dudt - p.nu_h * _laplacian_h(state.u, p)
     dvdt = dvdt - p.nu_h * _laplacian_h(state.v, p)
     dudt = dudt - p.f[:, :, None] * state.v
     dvdt = dvdt + p.f[:, :, None] * state.u
-    # barotropic PGF from eta
-    bt_pgf_x = -G_EARTH * _d_dx(state.eta[:, :, None], p)[:, :, 0]
-    bt_pgf_y = -G_EARTH * _d_dy(state.eta[:, :, None], p)[:, :, 0]
-    dudt = dudt - bt_pgf_x[:, :, None]
-    dvdt = dvdt - bt_pgf_y[:, :, None]
+    # barotropic PGF from eta. The full tendency's 3D PGF contains the eta
+    # part via p_bt = RHO_0*G_EARTH*eta (top-node pressure,
+    # _compute_hydrostatic_pressure) differentiated by
+    # _gradient_conservative_3d with PER-LAYER wet/ghost face gating.
+    # mode_split: cancel it with the SAME operator on the SAME field, so the
+    # subtraction is EXACT and the external mode acts on 3D momentum solely
+    # through the subcycle projection (a bare or column-gated 2D gradient
+    # leaves a spurious eta-PGF at every face where the layer gate differs
+    # from the column gate, scaling with dt).
+    # Monolithic: keep the historical bare _d_dx/_d_dy subtraction bit-exact
+    # to the pre-split solver (all production baselines, dt=60-300 runs) —
+    # its operator mismatch is O(coastline metric) and was stable there.
+    if p.mode_split:
+        eta_pgf_x, eta_pgf_y = _gradient_conservative_3d(state.eta[:, :, None], p)
+        dudt = dudt + G_EARTH * eta_pgf_x
+        dvdt = dvdt + G_EARTH * eta_pgf_y
+    else:
+        dudt = dudt + G_EARTH * _d_dx(state.eta[:, :, None], p)
+        dvdt = dvdt + G_EARTH * _d_dy(state.eta[:, :, None], p)
     # barotropic PGF from density anomaly
     bt_rho_x, bt_rho_y = _compute_bt_rho_pgf(state, p)
     dudt = dudt - bt_rho_x[:, :, None]
@@ -1557,6 +1922,27 @@ def _explicit_full_step(state, p, dt):
     state_T = JaxStateG(state.u, state.v, T_pred, S_pred, state.eta)
 
     du1, dv1 = _compute_momentum_residual(state_T, p)
+    # ── Semi-implicit linear bottom drag (split mode only) ──
+    # The residual's -r_bot*u is forward-Euler here: pure-drag amplitude
+    # 1 - r*dt flips past the stability bound |1-r*dt|<=1 (r*dt > 2) and the
+    # RK2 form 1 - rdt + (rdt)^2/2 past r*dt = 2. At the historical dt=60-300
+    # (r*dt = 0.06-0.3) explicit was fine; the mode-split dt=3600 gives
+    # r*dt = 3.6 -> the bottom layer amplifies ~2.6x per step with sign
+    # alternation (smoke-test growth 3x/step at the bottom-layer node
+    # (8,30,7), the dominant injector after the FS/nu_h/eta-PGF fixes).
+    # Both RK2 stages evaluate the residual at the OLD velocity
+    # (state_T / state_T_new carry state.u, state.v), so the drag part is
+    # identical in du1/du2: strip it from both stages and apply the EXACT
+    # linear-drag decay exp(-r_bot*dt) after the RK2 update — unconditionally
+    # stable, exact for the pure-drag sub-operator, and the FD analogue of
+    # the spectral solver's exponential linear dissipation. Monolithic path
+    # is untouched (bit-exact to the pre-split solver; its dt range keeps
+    # the explicit form stable).
+    implicit_drag = p.mode_split and p.bottom_friction == 'linear'
+    if implicit_drag:
+        bm = p.bottom_mask * p.wet_mask_z
+        du1 = du1 + p.r_bot * state.u * bm
+        dv1 = dv1 + p.r_bot * state.v * bm
     u_pred = state.u + du1 * dt
     v_pred = state.v + dv1 * dt
     state_pred = JaxStateG(u_pred, v_pred, T_pred, S_pred, state.eta)
@@ -1567,8 +1953,15 @@ def _explicit_full_step(state, p, dt):
     state_T_new = JaxStateG(state.u, state.v, T_new, S_new, state.eta)
 
     du2, dv2 = _compute_momentum_residual(state_T_new, p)
+    if implicit_drag:
+        du2 = du2 + p.r_bot * state.u * bm
+        dv2 = dv2 + p.r_bot * state.v * bm
     u_new = state.u + 0.5 * (du1 + du2) * dt
     v_new = state.v + 0.5 * (dv1 + dv2) * dt
+    if implicit_drag:
+        decay = jnp.exp(-p.r_bot * dt * bm)     # 1 away from the bottom
+        u_new = u_new * decay
+        v_new = v_new * decay
     return JaxStateG(u_new, v_new, T_new, S_new, state.eta)
 
 
@@ -1646,7 +2039,19 @@ def _polar_cap_3d(field3d, p):
 
 
 def _step_impl(state, p):
-    """Strang splitting: L(dt/2) -> N(dt) -> L(dt/2)."""
+    """Strang splitting: L(dt/2) -> N(dt) -> L(dt/2).
+
+    mode_split=True: identical L/N/L baroclinic core, but the linear half-
+    steps carry only diffusion/sponge/Coriolis (no free surface, no nu_h).
+    After the second L half-step, n_subcyc barotropic forward-backward
+    subcycles of dt_bt each (exact fill of p.dt) evolve (eta, ubt, vbt),
+    driven by the rho-PGF + wind forcing computed from the baroclinic state
+    at step start (MOM-style coupling lag), with nu_h dissipation inside
+    each subcycle (nu_h CFL is satisfied at dt_bt, not at dt). The final
+    (ubt, vbt) is projected back onto the 3D velocity as a uniform-in-depth
+    delta — same projection the monolithic path applies every step, just
+    once per baroclinic step instead of twice.
+    """
     dt_half = p.dt / 2.0
     # Capture land/ghost values BEFORE the step. Final masking holds these
     # (not zero): masking land T to 0 builds a coastline cliff that the
@@ -1657,6 +2062,31 @@ def _step_impl(state, p):
     state = _linear_half_step(state, p, dt_half)
     state = _explicit_full_step(state, p, p.dt)
     state = _linear_half_step(state, p, dt_half)
+
+    # ── mode split: barotropic subcycle (free surface + nu_h) ──
+    # Runs AFTER the L/N/L core on the un-masked final 3D state (before the
+    # polar cap / land hold below, so the subcycle sees the same masked,
+    # capped input the monolithic path fed _free_surface_step_fd).
+    if p.mode_split:
+        # Coupling forcing from the baroclinic state, held fixed over the
+        # subcycle (MOM-style forcing lag at dt=3600 s is standard).
+        F_rho_x, F_rho_y = _compute_bt_rho_pgf(state, p)
+        ubt0, vbt0 = _barotropic_velocity(state.u, state.v, p)
+        ubt, vbt = ubt0, vbt0
+        eta = state.eta
+        for _ in range(int(p.n_subcyc)):
+            # One FB pair per call = dt_bt of evolution (caller passes
+            # dt_half=dt_bt). ubt/vbt seeded once; each subcycle feeds the
+            # 2D (eta, ubt, vbt) triple forward.
+            eta, ubt, vbt = _free_surface_step_fd(
+                eta, ubt, vbt, p, F_rho_x, F_rho_y, dt_half=p.dt_bt)
+        # Project the subcycle's net barotropic delta onto the 3D velocity
+        # (uniform over depth) — same projection as the monolithic path.
+        delta_ubt = (ubt - ubt0)[:, :, None]
+        delta_vbt = (vbt - vbt0)[:, :, None]
+        state = JaxStateG(state.u + delta_ubt, state.v + delta_vbt,
+                          state.T, state.S, eta)
+
     # 3D polar-cap filter: zonally average the cap rows of u,v,T,S to kill
     # the cos(lat)->0 metric singularity in the diffusion/advection operators.
     u = _polar_cap_3d(state.u, p)
@@ -1685,7 +2115,8 @@ def make_solver_global(grid, physics, dt, forcing=None, eos_type='linear',
                        T_init=None, S_init=None,
                        polar_cap_rows=2, polar_cap_taper=3, return_params=False,
                        eta_relax_days=0.0, eta_relax_box=None,
-                       eta_relax_buffer=1.0, dynamic_forcing=False):
+                       eta_relax_buffer=1.0, dynamic_forcing=False,
+                       mode_split=False, dt_bt=150.0):
     """Create a JIT-compiled global FD ocean solver.
 
     Args mirror the spectral make_solver where applicable. Key differences:
@@ -1701,6 +2132,10 @@ def make_solver_global(grid, physics, dt, forcing=None, eos_type='linear',
       - Optional eta_relax: Rayleigh SSH relaxation inside a semi-enclosed
         sea (mass-conserving; bounds the sub-grid-strait drainage artifact
         for multi-year runs).
+      - mode_split=True: barotropic subcycling of the free surface (dt_bt)
+        so the baroclinic dt can exceed the external-gravity-wave CFL
+        (3600 s at 1 deg). Off by default — off is bit-exact to the
+        pre-split solver.
     """
     base = make_fd_params(grid)
     nx, ny, nz = base.nx, base.ny, base.nz
@@ -1793,6 +2228,18 @@ def make_solver_global(grid, physics, dt, forcing=None, eos_type='linear',
     _lon_mask_np = (np.abs(_kidx) <= _keep).astype(np.float64).reshape(nx, 1, 1)
     dealias_lon_mask = jnp.array(np.broadcast_to(_lon_mask_np, (nx, 1, 1)))
 
+    # ── Mode split (baroclinic/barotropic) ──
+    # n_subcyc = exact number of barotropic subcycles filling dt: dt_bt_eff
+    # = dt/n_subcyc (rounded so each subcycle is a uniform dt_bt). With
+    # mode_split=False all fields are inert (n_subcyc=0) and _step_impl
+    # takes the bit-exact monolithic path.
+    if mode_split:
+        n_subcyc = max(1, int(round(dt / dt_bt)))
+        dt_bt_eff = dt / n_subcyc
+    else:
+        n_subcyc = 0
+        dt_bt_eff = 0.0
+
     params = FDPhysParams(
         dx_2d=base.dx_2d, dy=base.dy, cos_lat=base.cos_lat,
         inv_dx=base.inv_dx, inv_dy=base.inv_dy,
@@ -1828,6 +2275,20 @@ def make_solver_global(grid, physics, dt, forcing=None, eos_type='linear',
         kappa_redi=physics.kappa_redi,
         eta_relax_mask=eta_relax_mask,
         eta_relax_rate=eta_relax_rate,
+        mode_split=bool(mode_split),
+        dt_bt=dt_bt_eff,
+        n_subcyc=n_subcyc,
+        conv_nsub=max(1, int(np.ceil(
+            physics.kappa_conv * dt / (0.4 * float(jnp.min(jnp.array(grid.dz))) ** 2)))),
+        # Vertical-advection subcycles: keep dt*(|u|/dx + |v|/dy + w/dz) below
+        # ~0.5 per substep. The dominant constraint is w/dz in the 5 m surface
+        # layer (equatorial upwelling w~3e-3 m/s -> dt*w/dz ~ 2.2 at dt=3600);
+        # horizontal terms (~1e-6/s at |u|~1 m/s) are negligible. Sized from
+        # a nominal w_max=4e-3 m/s (upwelling + western-boundary downwelling
+        # overshoot), 0.5 target CFL per substep. Monolithic dt=60-300:
+        # dt*w/dz <= 0.18 -> adv_nsub=1, path untouched.
+        adv_nsub=max(1, int(np.ceil(dt * 4.0e-3 / (0.5 * float(jnp.min(
+            jnp.array(grid.dz))))))),
     )
 
     @jax.jit

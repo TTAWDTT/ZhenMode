@@ -45,7 +45,7 @@ import numpy as np
 
 from config import DEFAULT_CONFIG, PhysicsConfig, GlobalGridConfig
 from grid import make_global_grid
-from jax_solver_global import make_solver_global
+from jax_solver_global import make_solver_global, JaxStateG
 from forcing import heat_flux_meridional, air_temp_profile, BULK_LAMBDA_DEFAULT
 from wind_reanalysis import real_wind_forcing
 from woa_data import get_initial_fields
@@ -156,12 +156,35 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--days", type=float, default=365.0)
     ap.add_argument("--dt", type=float, default=DT_DEFAULT)
+    ap.add_argument("--mode-split", action="store_true",
+                    help="baroclinic/barotropic mode split: free surface runs in "
+                         "n_subcyc barotropic subcycles of --dt-bt each per "
+                         "baroclinic step, lifting the external-gravity-wave CFL; "
+                         "nu_h moves into the subcycle, kappa_conv is subcycled")
+    ap.add_argument("--dt-bt", type=float, default=150.0,
+                    help="barotropic subcycle dt [s] (mode split); rounded so "
+                         "n_subcyc*dt_bt exactly fills the baroclinic dt")
     ap.add_argument("--lat-max", type=float, default=LAT_MAX_DEFAULT)
     ap.add_argument("--ny", type=int, default=NY_DEFAULT)
+    ap.add_argument("--z-levels", default=None,
+                    help="vertical grid override: comma-separated node depths "
+                         "[m, negative down] e.g. '0,-5,-15,...' — replaces the "
+                         "default 14-level grid (used by the E2 AMOC experiment)")
     ap.add_argument("--smooth-passes", type=int, default=SMOOTH_PASSES_DEFAULT)
     ap.add_argument("--min-depth", type=float, default=MIN_DEPTH_DEFAULT)
     ap.add_argument("--nu-h", type=float, default=NU_H_DEFAULT)
     ap.add_argument("--nu-bi", type=float, default=NU_BI_DEFAULT)
+    ap.add_argument("--kappa-v", type=float, default=None,
+                    help="vertical diffusivity override [m^2/s]; default keeps "
+                         "PhysicsConfig (1e-5). Accelerated-spinup phase A uses "
+                         "2e-4 (x20) to speed deep-ocean tracer adjustment")
+    ap.add_argument("--kappa-conv", type=float, default=0.05,
+                    help="convective vertical diffusivity override [m^2/s] "
+                         "(default 0.05; CFL at the 5 m top layer caps "
+                         "dt <= 0.5*dz^2/kappa_conv = 250 s at 0.05)")
+    ap.add_argument("--bulk-lambda-mult", type=float, default=1.0,
+                    help="multiplier on the bulk heat-flux transfer coefficient "
+                         "(stronger surface restoring; phase-A distortion)")
     ap.add_argument("--lambda-bulk", type=float, default=LAMBDA_BULK_DEFAULT_G)
     ap.add_argument("--no-bulk-flux", action="store_true")
     ap.add_argument("--kappa-gm", type=float, default=0.0,
@@ -201,6 +224,13 @@ def main():
                          "(offline blowup attribution; needs --save-3d)")
     ap.add_argument("--max-steps", type=int, default=0,
                     help="hard cap on steps (0 = no cap); for short probes")
+    ap.add_argument("--checkpoint-days", type=float, default=0.0,
+                    help="save full state checkpoint every N days (0 = off); "
+                         "enables --restart-from resume after container kill")
+    ap.add_argument("--restart-from", default=None,
+                    help="checkpoint npz to resume from (produced by "
+                         "--checkpoint-days); integration continues from the "
+                         "saved step, prior snapshots stay valid")
     args = ap.parse_args()
 
     tag = args.tag or f"g{int(args.days)}d"
@@ -220,7 +250,15 @@ def main():
 
     # ── Build global grid ──
     bathy = DEFAULT_CONFIG.bathymetry_file
-    gcfg = replace(GlobalGridConfig(), lat_max=args.lat_max, ny=args.ny)
+    gcfg_kwargs = {"lat_max": args.lat_max, "ny": args.ny}
+    if args.z_levels:
+        zl = tuple(float(v) for v in args.z_levels.split(","))
+        assert len(zl) >= 3 and zl[0] == 0.0 and all(
+            zl[i] > zl[i + 1] for i in range(len(zl) - 1)), "bad --z-levels"
+        gcfg_kwargs["z_levels"] = zl
+        gcfg_kwargs["nz"] = len(zl)
+        print(f"  vertical override: {len(zl)} levels, z={zl}")
+    gcfg = replace(GlobalGridConfig(), **gcfg_kwargs)
     print(f"Building global FD grid (lat_max={args.lat_max}, ny={args.ny}, "
           f"smooth={args.smooth_passes}, min_depth={args.min_depth})...")
     grid = make_global_grid(gcfg, bathy,
@@ -234,6 +272,9 @@ def main():
     physics = replace(PhysicsConfig(),
                       nu_h=args.nu_h, nu_bi=args.nu_bi, kappa_bi=args.nu_bi,
                       kappa_gm=args.kappa_gm, kappa_redi=args.kappa_redi,
+                      kappa_v=(args.kappa_v if args.kappa_v is not None
+                               else 1.0e-5),
+                      kappa_conv=args.kappa_conv,
                       gm_slope_max=args.gm_slope_max)
     Q_heat = heat_flux_meridional(grid, Q0=50.0)
 
@@ -277,7 +318,7 @@ def main():
     # keeps the A1/A2 climatology comparison NON-CIRCULAR — the whole point
     # of the global non-periodic domain.
     T_sst = T_init[:, :, 0]
-    lambda_bulk = 0.0 if args.no_bulk_flux else args.lambda_bulk
+    lambda_bulk = 0.0 if args.no_bulk_flux else args.lambda_bulk * args.bulk_lambda_mult
     T_atm = air_temp_profile(grid, T_sst) if lambda_bulk > 0.0 else None
     if lambda_bulk > 0.0:
         print(f"  bulk air-sea flux: lambda={lambda_bulk:.1f} W/m^2/K, "
@@ -295,7 +336,7 @@ def main():
         forcing_baked = (tau_x, tau_y, Q_heat)
     else:
         forcing_baked = (np.zeros_like(Q_heat), np.zeros_like(Q_heat), Q_heat)
-    step, init_state_global, _, _params, terms_fn, step_dyn = make_solver_global(
+    _ret = make_solver_global(
         grid, physics, args.dt,
         forcing=forcing_baked,
         eos_type='linear',
@@ -306,7 +347,12 @@ def main():
         polar_cap_taper=args.polar_cap_taper, return_params=True,
         eta_relax_days=args.eta_relax_days, eta_relax_box=args.eta_relax_box,
         eta_relax_buffer=args.eta_relax_buffer,
-        dynamic_forcing=seasonal)
+        dynamic_forcing=seasonal,
+        mode_split=args.mode_split, dt_bt=args.dt_bt)
+    if seasonal:
+        step, init_state_global, _, _params, terms_fn, step_dyn = _ret
+    else:
+        step, init_state_global, _, _params, terms_fn = _ret
     if seasonal:
         Q_heat_2d = jnp.array(Q_heat)
         def do_step(state, month_day):
@@ -324,6 +370,36 @@ def main():
         n_total = min(n_total, args.max_steps)
     n_snap = max(1, int(round(args.snap_days * 86400.0 / args.dt)))
 
+    # ── Checkpoint resume: restore u,v,T,S,eta and fast-forward the snapshot
+    # counters so existing snap_*.npy files and npz table rows stay aligned.
+    # Seasonal-wind phase is a pure function of the step index, so restoring
+    # (u,v,T,S,eta) at a snap boundary is bit-consistent with an unbroken run.
+    ckpt_path = os.path.join(args.out_dir, f"ckpt_{tag}.npz")
+    start_step = 0
+    n_3d_snaps = 0
+    if args.restart_from:
+        ck = np.load(args.restart_from, allow_pickle=True)
+        assert int(ck["grid_nx"]) == grid.nx and int(ck["grid_ny"]) == grid.ny \
+            and int(ck["grid_nz"]) == grid.nz, "grid size mismatch with checkpoint"
+        state = JaxStateG(
+            u=jnp.array(ck["u"]), v=jnp.array(ck["v"]),
+            T=jnp.array(ck["T"]), S=jnp.array(ck["S"]),
+            eta=jnp.array(ck["eta"]))
+        start_step = int(ck["cur_step"])
+        assert start_step % n_snap == 0, "checkpoint must land on a snap boundary"
+        # Re-align snapshot bookkeeping with what already exists on disk.
+        n_prev_snaps = start_step // n_snap
+        n_3d_snaps = n_prev_snaps
+        print(f"RESUME from {args.restart_from}: step {start_step} "
+              f"(day {start_step * args.dt / 86400.0:.1f}), "
+              f"{n_prev_snaps} prior snapshots kept")
+    n_ckpt_snaps = n_3d_snaps  # checkpoint writes offset 3D snap indices too
+    if args.checkpoint_days > 0:
+        n_ckpt = max(1, int(round(args.checkpoint_days * 86400.0 / args.dt)))
+        if args.restart_from:
+            assert n_ckpt % n_snap == 0 or args.checkpoint_days <= args.snap_days, \
+                "checkpoint cadence must align with snap cadence on resume"
+
     # ── Header ──
     header = []
     header.append("=" * 70)
@@ -334,8 +410,16 @@ def main():
                   f"lat[{grid.lat[0]:.1f},{grid.lat[-1]:.1f}]N")
     header.append(f"dt={args.dt:.0f}s  steps={n_total}  snap every {n_snap} steps "
                   f"({args.snap_days:.0f}d)")
+    if args.mode_split:
+        ns = _params.n_subcyc
+        header.append(f"MODE SPLIT: baroclinic dt={args.dt:.0f}s, barotropic "
+                      f"subcycle {ns} x {args.dt / ns:.1f}s "
+                      f"(--dt-bt {args.dt_bt:.0f}s), conv_nsub={_params.conv_nsub}")
     header.append(f"physics: nu_h={physics.nu_h:g}  nu_bi={physics.nu_bi:g}  "
-                  f"kappa_conv={physics.kappa_conv}")
+                  f"kappa_conv={physics.kappa_conv}  kappa_v={physics.kappa_v:g}")
+    if args.bulk_lambda_mult != 1.0:
+        header.append(f"distorted physics: bulk-lambda x{args.bulk_lambda_mult:g} "
+                      f"(accelerated-spinup phase A)")
     if physics.kappa_gm > 0 or physics.kappa_redi > 0:
         header.append(f"sub-grid closure: kappa_gm={physics.kappa_gm:g} m^2/s  "
                       f"kappa_redi={physics.kappa_redi:g} m^2/s  "
@@ -379,7 +463,6 @@ def main():
     # ── Integration loop ──
     snap_days = []; snap_maxu = []; snap_maxT = []; snap_maxeta = []
     snap_sshstd = []; snap_ke = []; snap_eta = []; snap_T_top = []
-    n_3d_snaps = 0
     maxT_history = []
     max_u_peak = 0.0
     diverged_at = None
@@ -433,7 +516,12 @@ def main():
               f"{maxeta:9.3f} {sshstd:9.4f} {ke:12.4e} {nan:6d}", flush=True)
         return maxu, maxT, maxeta, nan
 
-    maxu, maxT, maxeta, nan = snapshot(0)
+    # Resume path: record the boundary row too, so the table has the day-0-of-
+    # this-era state and the 3D snap index stays aligned with day (i*snap_days).
+    maxu, maxT, maxeta, nan = snapshot(0) if not args.restart_from \
+        else snapshot(start_step)
+
+    cur = start_step
 
     while cur < n_total:
         take = min(n_snap, n_total - cur)
@@ -442,6 +530,16 @@ def main():
             cur += 1
         maxu, maxT, maxeta, nan = snapshot(cur)
         max_u_peak = max(max_u_peak, maxu)
+        if (args.checkpoint_days > 0 and cur % n_ckpt == 0
+                and cur < n_total and cur > start_step):
+            np.savez_compressed(
+                ckpt_path,
+                u=np.asarray(state.u), v=np.asarray(state.v),
+                T=np.asarray(state.T), S=np.asarray(state.S),
+                eta=np.asarray(state.eta), cur_step=cur,
+                grid_nx=grid.nx, grid_ny=grid.ny, grid_nz=grid.nz,
+                n_3d_snaps=n_3d_snaps)
+            print(f"  [ckpt] saved {ckpt_path} at step {cur}", flush=True)
         if not state_is_finite(state):
             diverged_at = cur * args.dt / 86400.0
             diverge_reason = "non-finite field (NaN/Inf)"
@@ -495,6 +593,7 @@ def main():
         'eta_relax_days': args.eta_relax_days, 'eta_relax_box': args.eta_relax_box,
         'eta_relax_buffer': args.eta_relax_buffer,
         'smooth_passes': args.smooth_passes, 'min_depth': args.min_depth,
+        'kappa_v': physics.kappa_v, 'bulk_lambda_mult': args.bulk_lambda_mult,
     }
     np.savez_compressed(out_npz,
                         days=np.array(snap_days),
