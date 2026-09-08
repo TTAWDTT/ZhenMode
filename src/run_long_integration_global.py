@@ -152,6 +152,27 @@ def interp_seasonal_wind(wind_months, day, blend_days=5.0):
             (1.0 - w) * cur[1] + w * nxt[1])
 
 
+class _Tee:
+    """Duplicate writes to the original stdout and a log file.
+
+    Long runs are typically launched detached (nohup / taskset), where the
+    console scrollback is lost; out_log preserves the progress table and the
+    VERDICT block for later inspection.
+    """
+
+    def __init__(self, path):
+        self.file = open(path, "a", buffering=1)
+        self.stdout = sys.stdout
+
+    def write(self, s):
+        self.stdout.write(s)
+        self.file.write(s)
+
+    def flush(self):
+        self.stdout.flush()
+        self.file.flush()
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--days", type=float, default=365.0)
@@ -238,6 +259,9 @@ def main():
     os.makedirs(args.log_dir, exist_ok=True)
     out_npz = os.path.join(args.out_dir, f"global_{tag}.npz")
     out_log = os.path.join(args.log_dir, f"global_{tag}.log")
+    sys.stdout = _Tee(out_log)
+    print(f"# {time.strftime('%Y-%m-%d %H:%M:%S')}  {sys.executable}")
+    print(f"# {' '.join(sys.argv)}")
     three_d_dir = None
     if args.save_3d:
         three_d_dir = os.path.join(args.out_dir, f"global_{tag}_3d")
