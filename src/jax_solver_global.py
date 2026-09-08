@@ -1109,6 +1109,11 @@ def _compute_momentum_tendency(state, p):
 # blow-up in weakly-stratified / convective columns ( rho' ~ well-mixed ).
 _GM_RHOZ_FLOOR = 1.0e-5
 
+# Target value of dt*D_v*(1/h_k + 1/h_k1)/dz_iface (explicit-vertical-diffusion
+# CFL number) for the Redi S^2 vertical skew term, per interface. See the
+# comment at the cap site in _redi_skew_flux_tendency.
+_REDI_CFL_TARGET = 0.4
+
 
 def _isopycnal_slope(state, p):
     """Isopycnal slope S = (S_x, S_y) = -∇_h(rho') / ∂rho'/∂z.
@@ -1282,7 +1287,23 @@ def _redi_skew_flux_tendency(tracer, S_x, S_y, p, kappa=None):
     dC_dx_i = 0.5 * (dC_dx[..., :-1] + dC_dx[..., 1:])
     dC_dy_i = 0.5 * (dC_dy[..., :-1] + dC_dy[..., 1:])
     S2_i = S_x_i * S_x_i + S_y_i * S_y_i
-    Fz_i = -k * (S_x_i * dC_dx_i + S_y_i * dC_dy_i + S2_i * dC_dz_iface)
+    # Explicit-CFL cap on the vertical skew diffusivity. The S^2 term is an
+    # explicit interface diffusion with D_v = k*|S|^2; its two-cell
+    # stability bound (Gershgorin on the k/k+1 pair) is
+    #   dt * D_v * (1/dz_k + 1/dz_k1) / dz_iface  <=  ~2  (RK2)
+    # On a stretched grid with a 5 m surface layer, k=1000 and slopes at
+    # the DM95 taper cap, dt*D_v/dz^2 reaches 14 at the default
+    # gm_slope_max=0.01 and dt=3600 s — the Gulf Stream front blew up at
+    # step ~857 of the mode-split run (stable for 1000+ steps at slope cap
+    # 0.001, i.e. exactly when this CFL drops below ~0.9). The stratified
+    # interior (D_v << bound) is untouched; only thin-layer steep-front
+    # corners are clipped. This is the MOM6-style dt-dependent limiting of
+    # the vertical Redi diffusivity.
+    dzu = p.dz_node[..., :-1]                    # upper cell thickness h_k
+    dzl = p.dz_node[..., 1:]                     # lower cell thickness h_k1
+    D_v_max = _REDI_CFL_TARGET * p.dz_iface / (p.dt * (1.0 / dzu + 1.0 / dzl))
+    S2_eff = jnp.minimum(S2_i, D_v_max / k)
+    Fz_i = -k * (S_x_i * dC_dx_i + S_y_i * dC_dy_i + S2_eff * dC_dz_iface)
     # Material boundaries: no isopycnal transport crosses the surface, the
     # seafloor, or a land/rock wall — zero the flux on any interface where
     # either adjacent node is dry (wet_iface covers seafloor + coastal sills;
