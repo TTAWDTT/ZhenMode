@@ -273,3 +273,49 @@ python run_long_integration_global.py \
 - **不碰 Python314/site-packages**（仅 PYTHONPATH 方式运行）；区域谱求解器（main 上的 jax_solver.py）不动，保留为验证基线；
 - **默认路径不变性**：动态 forcing 等价性 1-ulp、eta_relax 零速率 bit-exact、`is_global` 分支不动区域 forcing——每次改动都有等价性验证；
 - 根因脚本全部 append-only 入库（`src/archive_diag/` 135 个），可复现审计。
+
+---
+
+## 10. 模式分裂 + GM/Redi 的首个 10 年生产积分（09-08，本地 GPU）
+
+> 承接 §7.3：012 节点代码/初值过期且饱和，改在本地 RTX 5060 Ti（WSL `/root/jax-gpu`）跑 10 年。
+
+### 10.1 前置修复：Redi/GM 垂直偏斜通量 CFL 限制器（commit `0fa9abd`）
+
+- **问题**：湾流锋面（κ=1000、|S|≈1.9e-3、DM95 taper 上限 0.004）下，S² 项是显式界面扩散，
+  D_v = κ|S|²，两层 Gershgorin 稳定界 dt·D_v·(1/h_k+1/h_k1)/dz_iface ≤ ~2（RK2）。
+  5 m 表层、dt=3600 s 时 dt·D_v/dz² 达 14 ≫ 0.5 → 模式分裂运行在 step ~857 爆炸
+  （max|T| 29 → 3.6e8；斜率上限 0.001 的对照组 1000+ 步稳定，锁定根因）。
+- **修复**：每界面按 MOM6 式 dt 依赖限制 `D_v_max = 0.4·dz_iface/(dt·(1/dzu+1/dzl))`，
+  只削薄层陡锋 corner，层化内部不动；无硬编码斜率上限。GM 测试 11/11、smoke 4/4、5d runner PASS。
+
+### 10.2 运行配置与结果
+
+- **配置**：360×120×14（ETOP022+WOA+月均 NCEP 风应力季节循环），dt=3600 s，
+  n_subcyc=24 × dt_bt=150 s，conv_nsub=18，--kappa-gm=--kappa-redi=1000，--gm-slope-max=0.01，
+  --init-from init_fields_g360x120.npz（2f689ae 修复后的 10.0 MB 新初值）。
+- **结果**：**VERDICT: PASS**（87,600 步，wall 54.0 min，max_u_peak 1.256 m/s，
+  max|T| 29.647→27.636 单调衰减，max|eta| 1.153，无漂移旗标）。
+  输出 `results/global_tenyr_ms_gm.npz` + 123 帧 3D snap（T,u,v,S）。
+
+### 10.3 AMOC / 深层温度分析（`results/_moc_ms.py` → moc_tenyr_ms_gm.npz/png）
+
+- **AMOC**：0 → 1.10 Sv（第 30 天 40.9 Sv 为 spinup 瞬态）；yr2-10 时均 2.93 Sv，
+  yr8-10 稳定在 ~1.0-1.1 Sv。真实值 ~17 Sv——量级偏小（无对流混合闭包、风应力为月均值、
+  分辨率粗），但形成、方向、纬度带（40N）与深度带（~1 km）正确。
+- **全球上层环流**：~56-59 Sv（风驱+南极绕极 cell，量级合理）。
+- **深层温度漂移（z≤1000 m，3D 湿掩码）**：global +0.467、Atlantic +0.578 °C/10yr，
+  分段速率平稳（yr2-6 +0.451 → yr6-10 +0.450，无加速）；同段 0-2 km 为 −0.24（冷却收敛），
+  整体是暖极帽表层水下沉的再分布，非失稳。
+- **度量修正（重要）**：初版分析用 2D 列掩码，把保存在 snap 里的海底以下 ghost 填充
+  （T_ref=15 / no-flux 延拓）计入深层均值，k=13 处虚高 +6.6 °C。已改用从 ETOPO 重建的
+  3D 层级湿掩码（`results/_wet3_g360x120.npy`，与 grid.py 同管线：30 次平滑 + 100 m 最小深度）。
+  **与 g3650d_016 的绝对温度不可比**：016 用的是 2f689ae 之前的旧 3.2 MB 初值
+  （其 N-cap -4000 m = 14.91 ≈ T_ref=15 即 ghost 污染证据，day0 deepT 8.351 vs 本运行 2.955）；
+  只可比漂移形态。016 的 +0.02 °C/10yr 是 GM OFF 的旧初值结果，不可直接引用。
+
+### 10.4 遗留
+
+- AMOC 强度偏小的物理闭环（对流混合、日强迫、分辨率）是下一步主线；
+- 012 节点仍需重推 post-2f689ae+0fa9abd 代码与新 10.0 MB 初值（§7.3）；
+- `_gm_bolus_velocity` 仍为 test-only 休眠路径。
