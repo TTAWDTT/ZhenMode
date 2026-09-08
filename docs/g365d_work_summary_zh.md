@@ -175,6 +175,8 @@ def step_dyn(state, tau_x, tau_y, q_heat):
 
 012 无外网，WOA2023 npz twin（19.9MB）按慢信道要 ~4.5h。观察 `get_initial_fields(grid)` 是**纯确定性 scipy 插值**，本地有同一 WOA npz + 同一 ETOPO（md5 已核对），于是在本地对生产网格精确参数（lat_max=60, ny=120, smooth=30, min_depth=100）预计算 `init_fields_g360x120.npz`（3.2MB，T [−1.90, 29.65]°C，S [5.98, 40.59] PSU，高值在红海/波斯湾 1° 格点，物理合理）。4.5h → ~40min，012 不再需要 WOA 依赖。风场不需要此步骤（12 月快照 cache npz 本来就独立，3.5MB）。
 
+**⚠️ 2026-09-08 作废更正**：该 npz 含有系统性 init bug——`_fill_nan_vertical` 把浅柱（WOA 海底 ~300 m）的暖表层水**向下前向填充**到所有深层，产生 12,965 根恒定 T 柱（海底 ~28 °C），横向 ~4 kg/m³ 密度差驱动底层剪切直接爆掉。已修复为 `_fill_nan_horizontal_per_level`（每层只从**同层**邻居水平填充，MOM/NEMO 惯例），重新生成的 npz（现 10.0MB，float64）T [−1.90, 30.29]°C / S [5.05, 40.79] PSU，湿柱底部 >10 °C below 1000 m 计数 **0**。**10-yr 生产实验必须用新 npz**（commit `2f689ae`）；012 上的旧副本需重新推送。
+
 ### 7.4 GPU 栈修复（8× L20X 全部可见）
 
 容器内 jax/jaxlib 名义均 0.4.35，实际 **jaxlib 0.4.34（CPU wheel）+ jax-cuda12-plugin 0.4.35** 错配（早前 pip 解析残留）。修复链：卸 jax 全家 → `jax[cuda12]==0.4.35`（拉全 nvidia-cu12 依赖栈）→ `--no-deps jaxlib==0.4.35` 补齐。仍失败：`nvidia/cuda_nvcc/` 目录在但**无 `__init__.py`** → namespace 包 `__file__=None` → jax 0.4.35 的 `_try_cuda_nvcc_import` 捕获 ImportError 不捕获 TypeError。一行修复 `touch __init__.py` → `jax.devices()` 返回 8× CudaDevice。
