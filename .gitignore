@@ -45,3 +45,8 @@ nul
 # Misc
 *.log
 .env
+
+# Dashboard (secrets must never be committed)
+dashboard/secret.json
+dashboard/node_modules/
+dashboard/curve_cache/

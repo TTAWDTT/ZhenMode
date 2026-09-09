@@ -1,0 +1,13 @@
+{
+  "runs": [
+    {
+      "tag": "spinA30probe",
+      "node": "014",
+      "gpu": 0,
+      "log": "/data/tmp/ocean/logs/spinA30probe.log",
+      "total_days": 10950,
+      "started": "2026-09-09 13:02",
+      "note": "Phase A kappa_v=2e-4 探针 (已完成 PASS, 判据b未过)"
+    }
+  ]
+}

@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ocean-solver 集群看板</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg: #0e1117; --panel: #161b22; --border: #2a3038;
+    --fg: #d6dde6; --dim: #7d8590; --ok: #3fb950; --bad: #f85149;
+    --warn: #d29922; --accent: #58a6ff;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--fg);
+    font: 14px/1.5 "Segoe UI", system-ui, sans-serif;
+  }
+  header {
+    padding: 14px 22px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: baseline; gap: 16px;
+    background: var(--panel);
+  }
+  header h1 { font-size: 17px; margin: 0; }
+  header .meta { color: var(--dim); font-size: 12px; }
+  main { padding: 18px 22px; display: grid; gap: 18px;
+         grid-template-columns: 1fr 1fr; }
+  .card {
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: 8px; padding: 14px 16px;
+  }
+  .card h2 {
+    margin: 0 0 10px; font-size: 13px; text-transform: uppercase;
+    letter-spacing: .06em; color: var(--dim);
+  }
+  .card.wide { grid-column: 1 / -1; }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--border); }
+  th { color: var(--dim); font-weight: 500; font-size: 12px; }
+  .pill {
+    display: inline-block; padding: 1px 9px; border-radius: 10px;
+    font-size: 12px; font-weight: 600;
+  }
+  .pill.run  { background: #12351f; color: var(--ok); }
+  .pill.pass { background: #12351f; color: var(--ok); }
+  .pill.fail { background: #3d1418; color: var(--bad); }
+  .pill.err  { background: #3d2e00; color: var(--warn); }
+  .prog { background: #21262d; border-radius: 4px; height: 8px; width: 160px;
+          overflow: hidden; display: inline-block; vertical-align: middle; }
+  .prog > i { display: block; height: 100%; background: var(--accent, #58a6ff); }
+  .warn { color: var(--warn); font-size: 12px; }
+  .dim { color: var(--dim); }
+  canvas { max-height: 260px; }
+  pre#log {
+    background: #0a0d12; border: 1px solid var(--border); border-radius: 6px;
+    padding: 10px 12px; max-height: 300px; overflow: auto;
+    font: 12px/1.45 Consolas, monospace; margin: 0; white-space: pre;
+  }
+  select {
+    background: var(--bg); color: var(--fg); border: 1px solid var(--border);
+    border-radius: 5px; padding: 3px 8px; margin-left: 8px;
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>🌊 ocean-solver 集群看板</h1>
+  <span class="meta" id="lastpoll">—</span>
+  <span class="meta">gateway → node 014 (8× L20X)</span>
+</header>
+<main>
+  <section class="card wide">
+    <h2>运行状态</h2>
+    <table id="runs">
+      <thead><tr>
+        <th>tag</th><th>节点/GPU</th><th>进度</th><th>day</th>
+        <th>max&#124;u&#124;</th><th>max&#124;eta&#124;</th><th>NaN</th>
+        <th>状态</th><th>备注</th>
+      </tr></thead>
+      <tbody></tbody>
+    </table>
+  </section>
+  <section class="card">
+    <h2>深层温度（z≤1000 m, °C）<select id="tagSel"></select></h2>
+    <canvas id="deepTChart"></canvas>
+  </section>
+  <section class="card">
+    <h2>AMOC（Sv）</h2>
+    <canvas id="amocChart"></canvas>
+  </section>
+  <section class="card wide">
+    <h2>日志 tail <span class="dim" id="logTag"></span></h2>
+    <pre id="log">…</pre>
+  </section>
+</main>
+<script>
+const $ = (s) => document.querySelector(s);
+let charts = { deepT: null, amoc: null };
+
+function fmt(n, d = 2) { return n == null ? "—" : Number(n).toFixed(d); }
+
+function esc(s) {
+  return String(s).replace(/[&<>]/g, (c) =>
+    ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]));
+}
+
+async function refreshRuns() {
+  try {
+    const j = await (await fetch("/api/overview")).json();
+    $("#lastpoll").textContent =
+      "数据时间 " + new Date(j.lastPoll).toLocaleTimeString("zh-CN") +
+      " · 每 30s 刷新";
+    const tb = $("#runs tbody");
+    tb.innerHTML = "";
+    for (const r of j.runs) {
+      const tr = document.createElement("tr");
+      let status, cls;
+      if (r.error)          { status = "查询失败: " + esc(r.error.slice(0, 40)); cls = "err"; }
+      else if (r.verdict)   { status = r.verdict; cls = r.verdict === "PASS" ? "pass" : "fail"; }
+      else if (r.alive)     { status = "运行中"; cls = "run"; }
+      else                  { status = "未运行"; cls = "err"; }
+      const warn = (r.warn || []).length
+        ? `<div class="warn">⚠ ${r.warn.map(esc).join("; ")}</div>` : "";
+      const pct = (r.day != null && r.total_days)
+        ? Math.min(100, (r.day / r.total_days) * 100) : 0;
+      tr.innerHTML = `
+        <td><b>${esc(r.tag)}</b></td>
+        <td>${esc(r.node || "—")}/${r.gpu ?? "—"}</td>
+        <td><span class="prog"><i style="width:${pct}%"></i></span>
+            <span class="dim"> ${fmt(pct, 0)}%</span></td>
+        <td>${r.day != null ? fmt(r.day, 0) : "—"}</td>
+        <td>${fmt(r.max_u, 3)}</td>
+        <td>${fmt(r.max_eta, 2)}</td>
+        <td>${r.nan ?? "—"}</td>
+        <td><span class="pill ${cls}">${status}</span>${warn}</td>
+        <td class="dim">${esc(r.note || "")}</td>`;
+      tb.appendChild(tr);
+    }
+    // tag selector for charts/log
+    const sel = $("#tagSel");
+    const tags = j.runs.map((r) => r.tag);
+    if (sel.dataset.cur !== tags.join(",")) {
+      sel.dataset.cur = tags.join(",");
+      sel.innerHTML = tags.map((t) => `<option>${esc(t)}</option>`).join("");
+      sel.onchange = () => { refreshCurves(); refreshLog(); };
+      if (tags.length) { refreshCurves(); refreshLog(); }
+    } else if (tags.length && !charts.deepT) {
+      refreshCurves(); refreshLog();
+    }
+  } catch (e) {
+    $("#lastpoll").textContent = "fetch failed: " + e;
+  }
+}
+
+async function refreshCurves() {
+  const tag = $("#tagSel").value;
+  if (!tag) return;
+  try {
+    const d = await (await fetch("/api/curves/" + tag)).json();
+    const yrs = d.yrs || d.days?.map((x) => x / 365);
+    if (!yrs) return;
+    const mk = (key, label, color) => ({
+      labels: yrs,
+      datasets: [{ label, data: d[key], borderColor: color,
+                   pointRadius: 2, tension: 0.15 }],
+    });
+    const opt = (y) => ({
+      animation: false, parsing: false,
+      scales: { x: { title: { display: true, text: "模式年" } }, y },
+      plugins: { legend: { display: false } },
+    });
+    for (const [id, key, label, color] of [
+      ["deepT", "deepT", "deepT global", "#f0a35e"],
+    ]) {
+      const cfg = mk(key, label, color);
+      if (charts[id]) {
+        charts[id].data = cfg; charts[id].update("none");
+      } else {
+        charts[id] = new Chart($( "#deepTChart"), { type: "line",
+          data: cfg, options: opt({ title: { display: true, text: "°C" } }) });
+      }
+    }
+    const am = mk("amoc", "AMOC", "#58a6ff");
+    if (charts.amoc) { charts.amoc.data = am; charts.amoc.update("none"); }
+    else charts.amoc = new Chart($("#amocChart"),
+      { type: "line", data: am, options: opt({ title: { display: true, text: "Sv" } }) });
+  } catch (e) { /* curves unavailable mid-run */ }
+}
+
+async function refreshLog() {
+  const tag = $("#tagSel").value;
+  if (!tag) return;
+  $("#logTag").textContent = tag;
+  try {
+    $("#log").textContent = await (await fetch("/api/log/" + tag)).text();
+    $("#log").scrollTop = $("#log").scrollHeight;
+  } catch (e) { $("#log").textContent = "log fetch failed"; }
+}
+
+refreshRuns();
+setInterval(refreshRuns, 5000);
+setInterval(refreshCurves, 60_000);
+setInterval(refreshLog, 5000);
+</script>
+</body>
+</html>
