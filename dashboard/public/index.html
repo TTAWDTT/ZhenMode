@@ -3,51 +3,36 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="color-scheme" content="dark">
+<meta name="color-scheme" content="light">
 <title>ocean-solver · 集群看板</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 <style>
   :root {
-    --bg: #0a0e14; --panel: #10161f; --panel2: #141c27;
-    --border: #1e2836; --border-hi: #2c3c52;
-    --fg: #dbe4ee; --dim: #8b98a9; --faint: #64707f;
-    --ok: #3fb950; --bad: #f85149; --warn: #d29922; --accent: #58a6ff;
+    --bg: #f6f8fa; --panel: #ffffff;
+    --border: #e4e9ee; --border-hi: #cdd7e1;
+    --fg: #24292f; --dim: #57606a; --faint: #8c959f;
+    --ok: #1a7f37; --bad: #cf222e; --warn: #9a6700; --accent: #0969da;
   }
-  html { color-scheme: dark; }
+  html { color-scheme: light; }
   * { box-sizing: border-box; }
   body {
-    margin: 0; background: linear-gradient(180deg, #0b1017, #0a0e14 320px);
-    color: var(--fg);
+    margin: 0; background: var(--bg); color: var(--fg);
     font: 14px/1.55 "Segoe UI", -apple-system, "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif;
   }
-  /* ambient corner glows */
-  body::before, body::after {
-    content: ""; position: fixed; border-radius: 50%;
-    pointer-events: none; z-index: -1;
-  }
-  body::before { width: 640px; height: 640px; top: -260px; left: -160px;
-    background: radial-gradient(circle, rgba(88,166,255,.09), transparent 65%); }
-  body::after { width: 560px; height: 560px; bottom: -240px; right: -140px;
-    background: radial-gradient(circle, rgba(46,160,67,.07), transparent 65%); }
 
   header {
     position: sticky; top: 0; z-index: 20;
-    padding: 12px 24px; border-bottom: 1px solid var(--border);
+    padding: 11px 24px; border-bottom: 1px solid var(--border);
     display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
-    background: rgba(10,14,20,.82); backdrop-filter: blur(10px);
+    background: rgba(255,255,255,.92); backdrop-filter: blur(6px);
   }
   .brand { display: flex; align-items: center; gap: 10px; }
   .logo {
-    width: 32px; height: 32px; border-radius: 9px; display: inline-flex;
-    align-items: center; justify-content: center; font-size: 17px;
-    background: linear-gradient(135deg, #1c4a7d, #14503f);
-    border: 1px solid #2c4a66;
+    width: 30px; height: 30px; border-radius: 8px; display: inline-flex;
+    align-items: center; justify-content: center; font-size: 16px;
+    background: #eaf3fc; border: 1px solid #d5e4f2;
   }
-  header h1 {
-    font-size: 16px; margin: 0; font-weight: 700;
-    background: linear-gradient(90deg, #79c0ff, #7ee787);
-    -webkit-background-clip: text; background-clip: text; color: transparent;
-  }
+  header h1 { font-size: 15px; margin: 0; font-weight: 650; }
   header .meta { color: var(--dim); font-size: 12px; }
   #modeBadge {
     border: 1px solid var(--border); border-radius: 999px;
@@ -56,50 +41,39 @@
   header .meta.right { margin-left: auto; }
 
   main {
-    padding: 20px 24px; display: flex; flex-direction: column; gap: 16px;
+    padding: 20px 24px; display: flex; flex-direction: column; gap: 14px;
     max-width: 1560px; margin: 0 auto;
   }
-  main > section, main > div { animation: rise .5s ease both; }
-  main > :nth-child(2) { animation-delay: .04s; }
-  main > :nth-child(3) { animation-delay: .08s; }
-  main > :nth-child(4) { animation-delay: .12s; }
-  main > :nth-child(5) { animation-delay: .16s; }
-  main > :nth-child(6) { animation-delay: .20s; }
-  @keyframes rise { from { opacity: 0; transform: translateY(8px); } }
 
-  .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+  .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
   .kpi {
-    background: linear-gradient(180deg, var(--panel2), var(--panel));
-    border: 1px solid var(--border); border-radius: 14px;
+    background: var(--panel); border: 1px solid var(--border); border-radius: 12px;
     padding: 13px 16px 10px; position: relative; overflow: hidden;
   }
   .kpi::before { content: ""; position: absolute; top: 0; left: 0; right: 0;
-    height: 2px; background: var(--ac); opacity: .85; }
-  .kpi .k { color: var(--faint); font-size: 11px; letter-spacing: .07em;
+    height: 2px; background: var(--ac); opacity: .9; }
+  .kpi .k { color: var(--dim); font-size: 11px; letter-spacing: .06em;
     text-transform: uppercase; }
   .kpi .v { margin-top: 2px; }
   .kpi .v b { font-size: 25px; font-weight: 700; font-variant-numeric: tabular-nums;
-    color: #eaf2fb; }
+    color: var(--fg); }
   .kpi .u { color: var(--dim); font-size: 12px; margin-left: 5px; }
   .spark { position: relative; height: 34px; margin-top: 4px; }
 
   .card {
     background: var(--panel); border: 1px solid var(--border);
-    border-radius: 14px; padding: 16px 18px; min-width: 0;
-    transition: border-color .25s ease, box-shadow .25s ease;
+    border-radius: 12px; padding: 15px 18px; min-width: 0;
   }
-  .card:hover { border-color: var(--border-hi);
-    box-shadow: 0 0 0 1px rgba(88,166,255,.05), 0 8px 24px rgba(0,0,0,.25); }
   .card h2 {
     margin: 0 0 12px; font-size: 12px; text-transform: uppercase;
-    letter-spacing: .08em; color: var(--dim); font-weight: 600;
+    letter-spacing: .07em; color: var(--dim); font-weight: 600;
     display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
   }
   .card h2::before { content: ""; width: 3px; height: 12px; border-radius: 2px;
-    background: var(--accent); opacity: .7; }
+    background: var(--accent); opacity: .8; }
   .card.wide { grid-column: 1 / -1; }
-  .row2 { display: grid; gap: 16px; grid-template-columns: 1fr 1fr; }
-  .row3 { display: grid; gap: 16px; grid-template-columns: repeat(3, 1fr); }
+  .row2 { display: grid; gap: 14px; grid-template-columns: 1fr 1fr; }
+  .row3 { display: grid; gap: 14px; grid-template-columns: repeat(3, 1fr); }
   @media (max-width: 1100px) { .row2, .row3 { grid-template-columns: 1fr; } }
   @media (max-width: 900px)  { .kpis { grid-template-columns: 1fr 1fr; } }
   @media (max-width: 520px)  { .kpis { grid-template-columns: 1fr; } }
@@ -111,46 +85,38 @@
   th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border); font-size: 13px; }
   th { color: var(--faint); font-weight: 500; font-size: 11px;
     text-transform: uppercase; letter-spacing: .05em; }
-  tbody tr { transition: background .15s; }
-  tbody tr:hover { background: rgba(88,166,255,.05); }
   tbody tr:last-child td { border-bottom: none; }
-  td b { color: #e6edf3; }
+  td b { color: var(--fg); }
 
   .pill {
     display: inline-flex; align-items: center; gap: 6px;
     padding: 2px 10px; border-radius: 999px; font-size: 12px; font-weight: 600;
   }
-  .pill.run  { background: rgba(63,185,80,.12);  color: #56d364; }
-  .pill.pass { background: rgba(63,185,80,.12);  color: #56d364; }
-  .pill.fail { background: rgba(248,81,73,.12);  color: #ff7b72; }
-  .pill.err  { background: rgba(210,153,34,.14); color: #e3b341; }
-  .pill.na   { background: #21262d; color: var(--dim); }
+  .pill.run  { background: #dafbe1; color: #1a7f37; }
+  .pill.pass { background: #dafbe1; color: #1a7f37; }
+  .pill.fail { background: #ffebe9; color: #cf222e; }
+  .pill.err  { background: #fff8c5; color: #9a6700; }
+  .pill.na   { background: #eff2f5; color: var(--dim); }
   .dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor;
     animation: pulse 1.5s ease-out infinite; }
   @keyframes pulse {
-    0%   { box-shadow: 0 0 0 0 rgba(86,211,100,.45); }
-    70%  { box-shadow: 0 0 0 6px rgba(86,211,100,0); }
-    100% { box-shadow: 0 0 0 0 rgba(86,211,100,0); }
+    0%   { box-shadow: 0 0 0 0 rgba(26,127,55,.35); }
+    70%  { box-shadow: 0 0 0 6px rgba(26,127,55,0); }
+    100% { box-shadow: 0 0 0 0 rgba(26,127,55,0); }
   }
-  .prog { position: relative; background: #1a2230; border-radius: 999px; height: 8px;
+  .prog { position: relative; background: #eaeef2; border-radius: 999px; height: 8px;
     width: 150px; overflow: hidden; display: inline-block; vertical-align: middle; }
-  .prog > i { display: block; height: 100%; border-radius: 999px; position: relative;
-    overflow: hidden; background: linear-gradient(90deg, #1f6feb, #58a6ff);
-    transition: width .5s ease; }
-  .prog.live > i::after { content: ""; position: absolute; inset: 0;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,.35), transparent);
-    animation: shimmer 1.8s linear infinite; }
-  @keyframes shimmer { from { transform: translateX(-100%); } to { transform: translateX(100%); } }
+  .prog > i { display: block; height: 100%; border-radius: 999px;
+    background: #0969da; transition: width .5s ease; }
   .warn { color: var(--warn); font-size: 12px; }
   .dim { color: var(--dim); }
 
   .crit { display: flex; gap: 12px; flex-wrap: wrap; }
   .crit .item {
     display: flex; gap: 12px; align-items: flex-start;
-    background: var(--panel2); border: 1px solid var(--border);
+    background: #fafbfc; border: 1px solid var(--border);
     border-left-width: 3px; border-radius: 10px;
     padding: 11px 14px; min-width: 220px; flex: 1;
-    transition: border-color .25s ease;
   }
   .crit .item .ic { font-size: 15px; line-height: 1.5; color: var(--faint); }
   .crit .item.pend { border-left-color: var(--warn); }
@@ -161,24 +127,19 @@
   .crit .item.bad .ic { color: var(--bad); }
   .crit .item b { font-size: 13px; display: block; }
   .crit .item .v { color: var(--dim); font-size: 12px; margin-top: 3px; }
-  .crit .item .v.pass { color: #56d364; }
-  .crit .item .v.fail { color: #ff7b72; }
+  .crit .item .v.pass { color: var(--ok); }
+  .crit .item .v.fail { color: var(--bad); }
 
-  .term-dots { display: inline-flex; gap: 5px; margin-right: 2px; }
-  .term-dots i { width: 9px; height: 9px; border-radius: 50%; }
-  .term-dots i:nth-child(1) { background: #ff5f57; }
-  .term-dots i:nth-child(2) { background: #febc2e; }
-  .term-dots i:nth-child(3) { background: #28c840; }
   pre#log {
-    background: #070b10; border: 1px solid var(--border); border-radius: 10px;
+    background: #f6f8fa; border: 1px solid var(--border); border-radius: 10px;
     padding: 12px 14px; max-height: 280px; overflow: auto;
     font: 12px/1.5 ui-monospace, Consolas, monospace; margin: 0;
-    white-space: pre; color: #a8b6c5;
+    white-space: pre; color: #3d4652;
   }
   select {
     appearance: none; -webkit-appearance: none; cursor: pointer;
-    background: var(--panel2)
-      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%238b98a9' fill='none' stroke-width='1.5'/%3E%3C/svg%3E")
+    background: var(--panel)
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%2357606a' fill='none' stroke-width='1.5'/%3E%3C/svg%3E")
       no-repeat right 9px center;
     color: var(--fg); border: 1px solid var(--border-hi); border-radius: 7px;
     padding: 4px 26px 4px 10px; margin-left: 10px; font-size: 12px;
@@ -186,7 +147,7 @@
   footer { text-align: center; color: var(--faint); font-size: 12px; padding: 6px 0 30px; }
   footer a { color: var(--dim); }
   ::-webkit-scrollbar { width: 10px; height: 10px; }
-  ::-webkit-scrollbar-thumb { background: #223041; border-radius: 6px; }
+  ::-webkit-scrollbar-thumb { background: #d3dbe3; border-radius: 6px; }
   ::-webkit-scrollbar-track { background: transparent; }
 </style>
 </head>
@@ -199,22 +160,22 @@
 </header>
 <main>
   <section class="kpis">
-    <div class="kpi" style="--ac:#58a6ff">
+    <div class="kpi" style="--ac:#0969da">
       <div class="k">AMOC 30–60N</div>
       <div class="v"><b id="kpi_amoc">—</b><span class="u">Sv</span></div>
       <div class="spark"><canvas id="sp_amoc"></canvas></div>
     </div>
-    <div class="kpi" style="--ac:#f0a35e">
+    <div class="kpi" style="--ac:#b45309">
       <div class="k">深层温度 z≤1000 m</div>
       <div class="v"><b id="kpi_deepT">—</b><span class="u">°C</span></div>
       <div class="spark"><canvas id="sp_deepT"></canvas></div>
     </div>
-    <div class="kpi" style="--ac:#ff9bce">
+    <div class="kpi" style="--ac:#db2777">
       <div class="k">海洋热含量 OHC</div>
       <div class="v"><b id="kpi_ohc">—</b><span class="u">ZJ</span></div>
       <div class="spark"><canvas id="sp_ohc"></canvas></div>
     </div>
-    <div class="kpi" style="--ac:#ff7b72">
+    <div class="kpi" style="--ac:#cf222e">
       <div class="k">max&#124;u&#124; 稳定性</div>
       <div class="v"><b id="kpi_maxu">—</b><span class="u">m/s</span></div>
       <div class="spark"><canvas id="sp_maxu"></canvas></div>
@@ -245,7 +206,7 @@
   <div class="row2" id="wideCharts"></div>
   <div class="row3" id="smallCharts"></div>
   <section class="card wide" id="logCard">
-    <h2><span class="term-dots"><i></i><i></i><i></i></span>日志 tail <span class="dim" id="logTag"></span></h2>
+    <h2>日志 tail <span class="dim" id="logTag"></span></h2>
     <pre id="log">…</pre>
   </section>
 </main>
@@ -261,23 +222,23 @@ let STATIC = null;                    // parsed data.json in static mode
 // ── chart registry: {id, title, sets:[[npzKey, label, color], …]} ──
 const WIDE = [
   { id: "deepT", title: "深层温度（z≤1000 m, °C）", sets: [
-    ["deepT", "global", "#f0a35e"], ["deepT_atl", "Atlantic", "#e3b341"]] },
+    ["deepT", "global", "#b45309"], ["deepT_atl", "Atlantic", "#d97706"]] },
   { id: "amoc", title: "经向翻转环流（Sv）", sets: [
-    ["amoc", "AMOC 30–60N", "#58a6ff"], ["amoc_26n", "@26N", "#79c0ff"],
-    ["pmoc", "Pacific", "#d2a8ff"], ["aabw", "AABW cell", "#ff7b72"]] },
+    ["amoc", "AMOC 30–60N", "#0969da"], ["amoc_26n", "@26N", "#218bff"],
+    ["pmoc", "Pacific", "#8250df"], ["aabw", "AABW cell", "#cf222e"]] },
 ];
 const SMALL = [
-  { id: "drake", title: "Drake 通过输运（Sv）", sets: [["drake", "Drake", "#7ee787"]] },
-  { id: "ke", title: "总动能（EJ）", sets: [["ke", "KE", "#ffa657"]] },
-  { id: "ohc", title: "海洋热含量 OHC（ZJ）", sets: [["ohc", "OHC", "#ff9bce"]] },
+  { id: "drake", title: "Drake 通过输运（Sv）", sets: [["drake", "Drake", "#1a7f37"]] },
+  { id: "ke", title: "总动能（EJ）", sets: [["ke", "KE", "#bc4c00"]] },
+  { id: "ohc", title: "海洋热含量 OHC（ZJ）", sets: [["ohc", "OHC", "#db2777"]] },
   { id: "sst", title: "SST（°C）", sets: [
-    ["sst", "global", "#f0a35e"], ["sst_natl", "N Atlantic", "#e3b341"]] },
-  { id: "t2k", title: "0–2000 m 平均 T（°C）", sets: [["t2k", "T<2km", "#f0a35e"]] },
+    ["sst", "global", "#b45309"], ["sst_natl", "N Atlantic", "#9a6700"]] },
+  { id: "t2k", title: "0–2000 m 平均 T（°C）", sets: [["t2k", "T<2km", "#b45309"]] },
   { id: "sss", title: "盐度（psu）", sets: [
-    ["sss", "SSS surface", "#79c0ff"], ["deepS", "deep S", "#a5d6ff"]] },
-  { id: "strat", title: "上层层结 dT/dz（°C/100m）", sets: [["strat", "strat", "#d2a8ff"]] },
-  { id: "maxu", title: "max&#124;u&#124;（m/s）", sets: [["maxu", "max|u|", "#ff7b72"]] },
-  { id: "maxeta", title: "max&#124;eta&#124;（m, 全程）", sets: [["maxeta", "max|eta|", "#ffa657"]] },
+    ["sss", "SSS surface", "#0550ae"], ["deepS", "deep S", "#54aeff"]] },
+  { id: "strat", title: "上层层结 dT/dz（°C/100m）", sets: [["strat", "strat", "#8250df"]] },
+  { id: "maxu", title: "max&#124;u&#124;（m/s）", sets: [["maxu", "max|u|", "#cf222e"]] },
+  { id: "maxeta", title: "max&#124;eta&#124;（m, 全程）", sets: [["maxeta", "max|eta|", "#bc4c00"]] },
 ];
 
 // KPI strip: last value + sparkline per key
@@ -285,7 +246,7 @@ const KPI = [
   { k: "amoc", dec: 1 }, { k: "deepT", dec: 2 },
   { k: "ohc", dec: 2 }, { k: "maxu", dec: 3 },
 ];
-const KPI_COLORS = { amoc: "#58a6ff", deepT: "#f0a35e", ohc: "#ff9bce", maxu: "#ff7b72" };
+const KPI_COLORS = { amoc: "#0969da", deepT: "#b45309", ohc: "#db2777", maxu: "#cf222e" };
 
 function hexA(hex, a) {
   const n = parseInt(hex.slice(1), 16);
@@ -294,7 +255,7 @@ function hexA(hex, a) {
 function gradientFor(cv, color) {   // vertical fade fill under a line
   const h = (cv.parentElement && cv.parentElement.clientHeight) || 240;
   const g = cv.getContext("2d").createLinearGradient(0, 0, 0, h);
-  g.addColorStop(0, hexA(color, 0.22));
+  g.addColorStop(0, hexA(color, 0.13));
   g.addColorStop(1, hexA(color, 0));
   return g;
 }
@@ -307,23 +268,24 @@ function lineOpts() {
     interaction: { mode: "index", intersect: false },
     scales: {
       x: {
-        grid: { color: "rgba(139,152,169,.07)" },
-        border: { color: "rgba(139,152,169,.18)" },
-        ticks: { color: "#64707f", maxTicksLimit: 8, font: { size: 10 } },
-        title: { display: true, text: "模式年", color: "#64707f", font: { size: 10 } },
+        grid: { color: "rgba(36,41,47,.06)" },
+        border: { color: "rgba(36,41,47,.14)" },
+        ticks: { color: "#8c959f", maxTicksLimit: 8, font: { size: 10 } },
+        title: { display: true, text: "模式年", color: "#8c959f", font: { size: 10 } },
       },
       y: {
-        grid: { color: "rgba(139,152,169,.07)" }, border: { display: false },
-        ticks: { color: "#64707f", font: { size: 10 } },
+        grid: { color: "rgba(36,41,47,.06)" }, border: { display: false },
+        ticks: { color: "#8c959f", font: { size: 10 } },
       },
     },
     plugins: {
       legend: { labels: { usePointStyle: true, pointStyle: "circle",
-        boxWidth: 6, boxHeight: 6, color: "#8b98a9", font: { size: 10 } } },
+        boxWidth: 6, boxHeight: 6, color: "#57606a", font: { size: 10 } } },
       tooltip: {
-        backgroundColor: "rgba(10,14,20,.96)", borderColor: "#243044",
-        borderWidth: 1, titleColor: "#dbe4ee", bodyColor: "#9aa7b4",
+        backgroundColor: "rgba(255,255,255,.97)", borderColor: "#d0d7de",
+        borderWidth: 1, titleColor: "#24292f", bodyColor: "#57606a",
         padding: 10, cornerRadius: 8, usePointStyle: true, boxPadding: 4,
+        boxShadow: "0 4px 12px rgba(0,0,0,.08)",
       },
     },
   };
@@ -401,7 +363,7 @@ function renderRuns(j) {
     tr.innerHTML = `
       <td><b>${esc(r.tag)}</b></td>
       <td>${esc(r.node || "—")}/${r.gpu ?? "—"}</td>
-      <td><span class="prog${running ? " live" : ""}"><i style="width:${pct}%"></i></span>
+      <td><span class="prog"><i style="width:${pct}%"></i></span>
           <span class="dim"> ${fmt(pct, 0)}%</span></td>
       <td>${r.day != null ? fmt(r.day, 0) : "—"}</td>
       <td>${fmt(r.max_u, 3)}</td>
