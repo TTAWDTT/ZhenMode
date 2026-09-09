@@ -225,11 +225,29 @@ def build_snapshot(sh, entries):
     return runs, curves, logs
 
 
+def _denan(obj):
+    """Map NaN/Inf floats to None so data.json stays strict JSON.
+
+    Python's json module happily emits bare NaN — one blown-up run (e.g.
+    max_u=NaN on a FAILED spinB) then makes the whole frontend unparseable.
+    allow_nan=False below trips instead of ever publishing bare NaN again.
+    """
+    if isinstance(obj, float):
+        return None if (obj != obj or obj in (float("inf"), float("-inf"))) \
+            else obj
+    if isinstance(obj, dict):
+        return {k: _denan(v) for k, v in obj.items()}
+    if isinstance(obj, list):
+        return [_denan(v) for v in obj]
+    return obj
+
+
 def publish(snap):
     os.makedirs(PUB_DIR, exist_ok=True)
     with io.open(os.path.join(PUB_DIR, "data.json"), "w",
                  encoding="utf-8") as f:
-        json.dump(snap, f, ensure_ascii=False, separators=(",", ":"))
+        json.dump(_denan(snap), f, ensure_ascii=False, separators=(",", ":"),
+                  allow_nan=False)
     # index.html comes from the ocean_solver repo (single source of truth)
     src = os.path.join(ROOT, "dashboard", "public", "index.html")
     dst = os.path.join(PUB_DIR, "index.html")
