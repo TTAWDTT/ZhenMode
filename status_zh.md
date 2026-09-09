@@ -3,13 +3,15 @@
 > 本文件由 `scripts/status_board.py` 自动生成，是所有正在进行的长期运行的唯一观测入口。
 > 人工只改 `scripts/status_board.py` 顶部的 RUNS 注册表；本文件每次刷新会整体重写。
 
-**生成时间**: 2026-09-09 15:56 (本地) · 刷新命令: `python scripts/status_board.py`
+**生成时间**: 2026-09-09 16:59 (本地) · 刷新命令: `python scripts/status_board.py`
 
 ---
 
 ## 当前活动运行
 
-（无活动运行）
+| 运行 | 节点/GPU | day | max\|u\| | max\|eta\| | 状态 |
+|---|---|---|---|---|---|
+| spinA100 | 014/0 | ? | ? | ? | 正常 |
 
 ## 非活动/最近运行
 

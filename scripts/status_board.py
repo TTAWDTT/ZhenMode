@@ -28,10 +28,10 @@ STATUS_MD = os.path.join(REPO, "status_zh.md")
 # ── Run registry: edit this table only ─────────────────────────────────
 # (tag, node, gpu, logfile, started_local)
 RUNS = [
+    ("spinA100", "014", 0, "/data/tmp/ocean/logs/spinA100.log",
+     "2026-09-09 16:15"),
     ("spinA30probe", "014", 0, "/data/tmp/ocean/logs/spinA30probe.log",
      "2026-09-09 13:02"),
-    # ("spinA30probe", "014", 0, "/data/tmp/ocean/logs/spinA30probe.log",
-    #  "2026-09-09 13:02"),
 ]
 
 HEALTH = {"max_u_warn": 5.0, "eta_warn": 10.0}   # red-flag thresholds
