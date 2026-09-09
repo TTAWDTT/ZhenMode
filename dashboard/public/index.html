@@ -444,15 +444,18 @@ function renderCrit(j) {
   const aOk = r ? (r.verdict ? r.verdict === "PASS" : null) : null;
   el("#critA", aOk, aOk == null ? "运行中（无爆掉迹象）" : (aOk ? "PASS" : "FAIL · " + (r.verdict || "")));
   fetchCurvesCached().then((d) => {
-    if (!d || d.crit_slope_g == null) { el("#critB", null, "数据不足"); return; }
-    const sg = d.crit_slope_g[0], sa = d.crit_slope_a[0];
-    const bp = d.crit_b_pass ? d.crit_b_pass[0] > 0.5 : null;
+    // static data.json nests per-tag: curves[tag][metric]; live /api/curves
+    // returns the metric dict directly — normalize to the flat dict here
+    const c = d && (d.curves ? d.curves[r ? r.tag : $("#tagSel").value] : d);
+    if (!c || c.crit_slope_g == null) { el("#critB", null, "数据不足"); return; }
+    const sg = c.crit_slope_g[0], sa = c.crit_slope_a[0];
+    const bp = c.crit_b_pass ? c.crit_b_pass[0] > 0.5 : null;
     el("#critB", bp,
       `global ${sg.toFixed(4)} °C/yr · Atl ${sa.toFixed(4)} · ` +
       `基线 0.045 → ${bp ? "PASS" : "FAIL"}`);
-    const me = d.crit_max_eta ? d.crit_max_eta[0] : null;
+    const me = c.crit_max_eta ? c.crit_max_eta[0] : null;
     // no measured value yet → pending, regardless of the (0.0) pass flag
-    const cp = (me != null && d.crit_c_pass) ? d.crit_c_pass[0] > 0.5 : null;
+    const cp = (me != null && c.crit_c_pass) ? c.crit_c_pass[0] > 0.5 : null;
     el("#critC", cp, me == null ? "跑完才有（表格在完成时写盘）"
       : `max ${me.toFixed(2)} m · 看门狗 15 m → ${cp ? "PASS" : "FAIL"}`);
   }).catch(() => el("#critB", null, "分析不可用"));
