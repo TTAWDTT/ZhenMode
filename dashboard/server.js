@@ -16,7 +16,8 @@ const path = require("path");
 const HERE = __dirname;
 const PORT = 8399;
 const POLL_MS = 30_000;        // run-status poll
-const CURVE_TTL_MS = 10 * 60_000; // analysis npz re-fetch
+const CURVE_TTL_MS = 3 * 60_000;   // analysis npz re-fetch
+const ANALYSIS_MIN_INTERVAL_MS = 5 * 60_000; // cluster-side recompute cadence
 const LOG_TTL_MS = 10_000;     // log tail cache
 
 // ── registry ──
@@ -149,11 +150,38 @@ async function pollAll() {
 }
 
 // ── curves: fetch analysis npz from node, decode via python one-shot ──
+// The npz is produced by results/_spinup_probe_analysis.py on the cluster.
+// For a live run we trigger a detached recompute (mtime-gated on the newest
+// 3D snap) whenever the cache is stale — curves then advance on their own.
 const curveCache = new Map(); // tag → {data, ts}
+const lastAnalysisKick = new Map(); // tag → ts
+
+function clusterHasRun(tag) {
+  const st = state.get(tag);
+  return st && st.alive && !st.verdict;
+}
+
+async function kickAnalysis(tag) {
+  const last = lastAnalysisKick.get(tag) || 0;
+  if (Date.now() - last < ANALYSIS_MIN_INTERVAL_MS) return; // rate-limit
+  lastAnalysisKick.set(tag, Date.now());
+  // nohup + mtime gate: skip if no snap newer than the existing analysis npz
+  const cmd =
+    `d=/data/tmp/ocean/results/global_${tag}_3d; a=/data/tmp/ocean/results/${tag}_analysis.npz; ` +
+    `n=$(ls -t $d/snap_*.npy 2>/dev/null | head -1); ` +
+    `if [ -n "$n" ] && { [ ! -f $a ] || [ $n -nt $a ]; }; then ` +
+    `nohup docker exec -e PARENT_NPZ=/data/tmp/ocean/results/global_spinA30probe.npz ` +
+    `-w /data/tmp/ocean jaxtest2 /opt/conda/envs/py/bin/python ` +
+    `results/_spinup_probe_analysis.py ${tag} > /data/tmp/ocean/logs/analysis_${tag}.log 2>&1 & fi; echo kicked`;
+  try { await clusterCmd(cmd, 8); } catch { /* retry next TTL */ }
+}
 
 async function getCurves(tag) {
   const hit = curveCache.get(tag);
-  if (hit && Date.now() - hit.ts < CURVE_TTL_MS) return hit.data;
+  if (hit) {
+    if (Date.now() - hit.ts < CURVE_TTL_MS) return hit.data;
+    if (clusterHasRun(tag)) kickAnalysis(tag); // refresh source, don't block
+  }
   const b64raw = await clusterCmd(
     `base64 -w0 /data/tmp/ocean/results/${tag}_analysis.npz`, 30);
   // PTY output can carry the command echo + trailing shell prompt around the
@@ -179,6 +207,7 @@ print(json.dumps(out))`], {
     py.stdin.write(b64);
     py.stdin.end();
   });
+  data.ts = Date.now();           // client-side "updated at" display
   curveCache.set(tag, { data, ts: Date.now() });
   return data;
 }

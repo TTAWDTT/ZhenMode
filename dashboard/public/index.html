@@ -81,11 +81,11 @@
     </table>
   </section>
   <section class="card">
-    <h2>深层温度（z≤1000 m, °C）<select id="tagSel"></select></h2>
+    <h2>深层温度（z≤1000 m, °C）<span class="dim" id="curveTs"></span><select id="tagSel"></select></h2>
     <canvas id="deepTChart"></canvas>
   </section>
   <section class="card">
-    <h2>AMOC（Sv）</h2>
+    <h2>AMOC（Sv）<span class="dim" id="amocErr"></span></h2>
     <canvas id="amocChart"></canvas>
   </section>
   <section class="card wide">
@@ -136,12 +136,15 @@ async function refreshRuns() {
         <td class="dim">${esc(r.note || "")}</td>`;
       tb.appendChild(tr);
     }
-    // tag selector for charts/log
+    // tag selector for charts/log — default to a live (running, no verdict)
+    // run so opening the board lands on the active curves
     const sel = $("#tagSel");
     const tags = j.runs.map((r) => r.tag);
     if (sel.dataset.cur !== tags.join(",")) {
+      const live = j.runs.find((r) => r.alive && !r.verdict);
       sel.dataset.cur = tags.join(",");
       sel.innerHTML = tags.map((t) => `<option>${esc(t)}</option>`).join("");
+      if (live) sel.value = live.tag;
       sel.onchange = () => { refreshCurves(); refreshLog(); };
       if (tags.length) { refreshCurves(); refreshLog(); }
     } else if (tags.length && !charts.deepT) {
@@ -157,8 +160,12 @@ async function refreshCurves() {
   if (!tag) return;
   try {
     const d = await (await fetch("/api/curves/" + tag)).json();
+    if (d.error) throw new Error(d.error);
     const yrs = d.yrs || d.days?.map((x) => x / 365);
-    if (!yrs) return;
+    if (!yrs || !yrs.length) throw new Error("no points yet");
+    $("#curveTs").textContent =
+      " · 更新于 " + new Date(d.ts || Date.now()).toLocaleTimeString("zh-CN", { hour12: false });
+    $("#amocErr").textContent = "";
     const mk = (key, label, color) => ({
       labels: yrs,
       datasets: [{ label, data: d[key], borderColor: color,
@@ -184,7 +191,11 @@ async function refreshCurves() {
     if (charts.amoc) { charts.amoc.data = am; charts.amoc.update("none"); }
     else charts.amoc = new Chart($("#amocChart"),
       { type: "line", data: am, options: opt({ title: { display: true, text: "Sv" } }) });
-  } catch (e) { /* curves unavailable mid-run */ }
+  } catch (e) {
+    // visible, not silent: first analysis may not exist yet for a fresh run
+    $("#curveTs").textContent = " · 曲线暂不可用";
+    $("#amocErr").textContent = "（" + String(e.message || e).slice(0, 60) + "）";
+  }
 }
 
 async function refreshLog() {
@@ -200,7 +211,6 @@ async function refreshLog() {
 refreshRuns();
 setInterval(refreshRuns, 5000);
 setInterval(refreshCurves, 60_000);
-setInterval(refreshLog, 5000);
-</script>
+setInterval(refreshLog, 5000);</script>
 </body>
 </html>
