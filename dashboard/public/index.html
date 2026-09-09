@@ -171,8 +171,10 @@ async function refreshCurves() {
       datasets: [{ label, data: d[key], borderColor: color,
                    pointRadius: 2, tension: 0.15 }],
     });
+    // NOTE: no `parsing: false` — data are plain number arrays (labels + y),
+    // and with parsing disabled Chart.js expects {x,y} objects and draws nothing.
     const opt = (y) => ({
-      animation: false, parsing: false,
+      animation: false,
       scales: { x: { title: { display: true, text: "模式年" } }, y },
       plugins: { legend: { display: false } },
     });
