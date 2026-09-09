@@ -156,8 +156,9 @@ def curves_for(tag, sh):
             continue
         vals = d[k].tolist()
         # drop placeholder series (all-zero: sshstd/maxeta before the run
-        # completes) and NaN (illegal in strict JSON)
-        if vals and all(v == 0 for v in vals):
+        # completes) but never crit_* flags — a FAIL flag is exactly 0.0 —
+        # and map NaN to null (illegal in strict JSON)
+        if not k.startswith("crit_") and vals and all(v == 0 for v in vals):
             continue
         out[k] = [None if (isinstance(v, float) and v != v) else round(v, 6)
                   for v in vals]

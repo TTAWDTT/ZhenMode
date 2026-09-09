@@ -100,8 +100,10 @@ wet3_2k = wet3 & (z >= -2000.0)[None, None, :]
 wet3_deep_pac = wet3_deep & pac_i[:, None, None]
 wet3_col = wet3[:, :, 0:1]                      # column mask for MOC
 
-dy = 2.0 * np.pi * R_EARTH / nlat
-dx = 2.0 * np.pi * R_EARTH * np.cos(np.deg2rad(lat)) / nlon
+dlat = float(np.median(np.abs(np.diff(lat))))    # actual grid spacing (deg)
+dlon = float(np.median(np.abs(np.diff(lon))))
+dy = R_EARTH * np.radians(dlat)                  # 1 deg → 111.2 km
+dx = R_EARTH * np.radians(dlon) * np.cos(np.deg2rad(lat))
 dz = np.empty(z.size)
 dz[0] = z[0] - z[1]
 dz[-1] = z[-2] - z[-1]
