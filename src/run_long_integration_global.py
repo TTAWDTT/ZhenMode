@@ -208,6 +208,15 @@ def main():
                          "(stronger surface restoring; phase-A distortion)")
     ap.add_argument("--lambda-bulk", type=float, default=LAMBDA_BULK_DEFAULT_G)
     ap.add_argument("--no-bulk-flux", action="store_true")
+    ap.add_argument("--sss-restore-days", type=float, default=0.0,
+                    help="surface salinity restoring timescale [days]; "
+                         "0 = off. Haney relaxation of SSS to the WOA "
+                         "surface climatology (v0.1 had NO surface salt "
+                         "flux — SSS drifted ~-0.9 psu/kyr non-converging)")
+    ap.add_argument("--sss-restore-zonal", action="store_true",
+                    help="relax to the ZONAL MEAN of WOA SSS instead of the "
+                         "full 2D field (keeps zonal SSS structure predicted; "
+                         "analogous to the T_atm non-circularity rule)")
     ap.add_argument("--kappa-gm", type=float, default=0.0,
                     help="GM eddy diffusivity [m^2/s] (bolus transport); 0=off")
     ap.add_argument("--kappa-redi", type=float, default=0.0,
@@ -349,6 +358,33 @@ def main():
               f"T_atm=zonal WOA SST profile "
               f"({float(np.nanmin(T_atm)):.2f}..{float(np.nanmax(T_atm)):.2f} C)")
 
+    # ── Surface salinity restoring target ──
+    # Default: full 2D WOA SSS (real ocean SSS has strong zonal structure —
+    # Atlantic 36.5 vs Pacific 34.5 — that a zonal-mean target would erase).
+    # --sss-restore-zonal: relax to the ocean-only zonal mean, leaving zonal
+    # SSS contrast for the model to predict (non-circular, like T_atm).
+    S_sss = S_init[:, :, 0]
+    S_ref_surf = None
+    if args.sss_restore_days > 0.0:
+        if args.sss_restore_zonal:
+            wm = np.asarray(grid.wet_mask, dtype=np.float64)
+            prof = np.full(grid.ny, np.nan)
+            for j in range(grid.ny):
+                wet_j = wm[:, j] > 0.5
+                if wet_j.any():
+                    prof[j] = S_sst[wet_j, j].mean()
+            good = np.where(~np.isnan(prof))[0]
+            prof = np.interp(np.arange(grid.ny), good, prof[good])
+            S_ref_surf = np.broadcast_to(prof[None, :], (grid.nx, grid.ny)).copy()
+            print(f"  SSS restoring: tau={args.sss_restore_days:g}d, "
+                  f"target=ZONAL WOA SSS "
+                  f"({float(np.nanmin(prof)):.2f}..{float(np.nanmax(prof)):.2f} psu)")
+        else:
+            S_ref_surf = S_sst
+            print(f"  SSS restoring: tau={args.sss_restore_days:g}d, "
+                  f"target=full 2D WOA SSS "
+                  f"({float(np.nanmin(S_sst)):.2f}..{float(np.nanmax(S_sst)):.2f} psu)")
+
     # ── Build solver ──
     # Seasonal wind uses the DYNAMIC-FORCING path: step_dyn(state, tau_x,
     # tau_y, Q_heat) traces the 2D forcing as runtime arguments (single XLA
@@ -365,6 +401,7 @@ def main():
         forcing=forcing_baked,
         eos_type='linear',
         T_atm=T_atm, lambda_bulk=lambda_bulk,
+        S_ref_surf=S_ref_surf, sss_restore_days=args.sss_restore_days,
         sponge_days=args.sponge_days, sponge_cells=args.sponge_cells,
         T_init=T_init, S_init=S_init,
         polar_cap_rows=args.polar_cap_rows,
@@ -452,6 +489,11 @@ def main():
         header.append("sub-grid closure: NONE (kappa_gm=0, kappa_redi=0)")
     header.append(f"bulk_flux={lambda_bulk:g} W/m^2/K"
                   + (" (T_atm=zonal WOA, non-circular)" if lambda_bulk > 0.0 else " (off)"))
+    if args.sss_restore_days > 0.0:
+        header.append(f"sss_restore: tau={args.sss_restore_days:g}d  "
+                      f"target={'zonal WOA SSS' if args.sss_restore_zonal else 'full 2D WOA SSS'}")
+    else:
+        header.append("sss_restore: NONE (no surface salt flux)")
     header.append(f"wall: no-flux N/S (v=0 at boundary rows, mirror-ghost dy)")
     header.append(f"wind: {wind_src}")
     if seasonal and args.wind_blend_days > 0:
@@ -618,6 +660,8 @@ def main():
         'eta_relax_buffer': args.eta_relax_buffer,
         'smooth_passes': args.smooth_passes, 'min_depth': args.min_depth,
         'kappa_v': physics.kappa_v, 'bulk_lambda_mult': args.bulk_lambda_mult,
+        'sss_restore_days': args.sss_restore_days,
+        'sss_restore_zonal': bool(args.sss_restore_zonal),
     }
     np.savez_compressed(out_npz,
                         days=np.array(snap_days),

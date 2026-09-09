@@ -682,6 +682,13 @@ FDPhysParams = namedtuple('FDPhysParams', [
     'H_sw', 'dz_norm', 'dt',
     # bulk air-sea heat flux
     'T_atm_3d', 'lambda_bulk',
+    # surface salinity restoring (Haney): relax SSS toward S_clim_surf with
+    # an equivalent salt flux. Mirrors the T_atm/lambda_bulk plumbing:
+    # dSdt += -restore_coef_S * (S_surf - S_ref_2d) * surface_mask.
+    # Physically: an "atmosphere" that supplies/absorbs whatever freshwater
+    # flux keeps SSS at climatology (E-P bias correction), replacing the
+    # v0.1 solver's missing surface salinity BC (SSS drifted -0.9 psu/kyr).
+    'S_ref_2d', 'restore_coef_S',
     # lateral sponge (polar-edge Rayleigh damping; global analogue of the
     # regional N/S-boundary sponge — absorbs wind-driven barotropic energy
     # that Laplacian dissipation can't within its CFL cap)
@@ -1473,6 +1480,12 @@ def _compute_tracer_tendency(state, p):
     bulk_T = (p.lambda_bulk * (p.T_atm_3d - state.T[:, :, 0:1])
               * heat_factor * p.surface_mask)
 
+    # Surface salinity restoring (Haney): equivalent salt flux relaxing SSS
+    # to climatology with timescale tau = 1/restore_coef_S. Same form as the
+    # bulk heat flux — a surface tracer BC, not a body source (surface_mask).
+    rest_S = (p.restore_coef_S * (p.S_ref_2d[:, :, None] - state.S[:, :, 0:1])
+              * p.surface_mask)
+
     # Gent-McWilliams sub-grid baroclinic closure. Recast in skew-flux
     # residual form (Griffies 1998): the bolus-transport + isoneutral-
     # diffusion pair is a single skew-flux tensor whose vertical term is
@@ -1507,7 +1520,7 @@ def _compute_tracer_tendency(state, p):
         redi_S = 0.0
 
     dTdt = adv_T + diff_h_T + diff_v_T + heat_T + bulk_T + conv_T + gm_T + redi_T
-    dSdt = adv_S + diff_h_S + diff_v_S + conv_S + gm_S + redi_S
+    dSdt = adv_S + diff_h_S + diff_v_S + conv_S + gm_S + redi_S + rest_S
     # Land: tracers held (no tendency over land).
     dTdt = dTdt * p.wet_mask_z
     dSdt = dSdt * p.wet_mask_z
@@ -2132,6 +2145,7 @@ def _step_impl(state, p):
 
 def make_solver_global(grid, physics, dt, forcing=None, eos_type='linear',
                        T_atm=None, lambda_bulk=0.0,
+                       S_ref_surf=None, sss_restore_days=0.0,
                        sponge_days=0.0, sponge_cells=0,
                        T_init=None, S_init=None,
                        polar_cap_rows=2, polar_cap_taper=3, return_params=False,
@@ -2149,7 +2163,9 @@ def make_solver_global(grid, physics, dt, forcing=None, eos_type='linear',
         the global polar edge is the analogue of the regional N/S boundary.
         Wind-driven barotropic energy piles up there (Laplacian can't arrest
         it within its CFL cap); the sponge absorbs it. cosine-tapered.
-      - No SST restore (bulk flux only).
+      - No SST restore (bulk flux only). Surface SALINITY restoring
+        (S_ref_surf + sss_restore_days>0) is available — Haney relaxation
+        of SSS to climatology, mirroring the bulk-heat-flux form.
       - Optional eta_relax: Rayleigh SSH relaxation inside a semi-enclosed
         sea (mass-conserving; bounds the sub-grid-strait drainage artifact
         for multi-year runs).
@@ -2177,6 +2193,18 @@ def make_solver_global(grid, physics, dt, forcing=None, eos_type='linear',
     else:
         T_atm_3d = jnp.zeros((nx, ny, 1))
         lambda_bulk = 0.0
+
+    # ── Surface salinity restoring (Haney) ──
+    # dSdt += -(SSS - S_ref)/tau at wet surface cells. tau=0 → off
+    # (bit-exact to the pre-restoring solver). S_ref_surf is a (nx, ny)
+    # climatological SSS field (e.g. WOA surface salinity); the restoring
+    # is a TRUE salt flux (psu/s, no heat_factor — salinity has no rho*cp).
+    if S_ref_surf is not None and sss_restore_days > 0.0:
+        S_ref_2d = jnp.array(S_ref_surf)
+        restore_coef_S = 1.0 / (sss_restore_days * 86400.0)
+    else:
+        S_ref_2d = jnp.zeros((nx, ny))
+        restore_coef_S = 0.0
 
     # ── Lateral sponge (polar-edge Rayleigh damping) ──
     # Same construction as the regional spectral solver's N/S sponge, but
@@ -2286,6 +2314,7 @@ def make_solver_global(grid, physics, dt, forcing=None, eos_type='linear',
         tau_x_2d=tau_x_2d, tau_y_2d=tau_y_2d, Q_heat_2d=Q_heat_2d,
         H_sw=H_sw, dz_norm=dz_norm, dt=dt,
         T_atm_3d=T_atm_3d, lambda_bulk=lambda_bulk,
+        S_ref_2d=S_ref_2d, restore_coef_S=restore_coef_S,
         sponge_rate=sponge_rate, sponge_rate_2d=sponge_rate_2d,
         T_clim_3d=T_clim_3d, S_clim_3d=S_clim_3d,
         polar_cap_rows=int(polar_cap_rows),
