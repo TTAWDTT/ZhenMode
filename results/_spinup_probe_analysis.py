@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Spinup dashboard analysis (cluster-side, self-contained) — v2.
+"""Spinup dashboard analysis (cluster-side, self-contained) — v3.
 
 Reads results/global_<TAG>.npz (2D tables, written at completion) and the
 yearly 3D snaps in results/global_<TAG>_3d/, and computes ~18 per-snapshot
@@ -11,6 +11,17 @@ tracers     : SST global / NAtlantic, SSS global, deep S (z<=1000),
               T mean 0-2000 m, deepT global / Atlantic, OHC (ZJ),
               upper-ocean stratification (dT/dz, 0-100 m)
 stability   : max|u|, max|eta| (npz table, completion only), SSH std
+profiles    : Atlantic T(z)/S(z) + global T(z)/S(z) (last snap, 1-D), and
+              AMOC ψ(y,z) section (last snap, flattened 2-D, row-major
+              lat-major for the frontend)
+
+Criteria (v3 adds d/e/f and sanity warnings):
+  a no-blowup / b deepT trend / c Med eta     (unchanged)
+  d OHC trend        |ZJ/yr| over yr2..end, |slope| < 5 PASS (target <2)
+  e SSS drift        psu/yr over yr2..end, |slope| < 0.003 PASS
+  f AMOC sanity      flags absolute-value problems:
+                     amoc_sane (>25 Sv warning) + amoc26_ratio (26N/30-60N
+                     collapsed <0.4 warning) — information badges, not pass/fail
 
 Deep-T uses the 3-D layer-resolved wet mask (wet3_push.npz, rebuilt from
 ETOPO via the grid.py pipeline) so below-floor ghost fill is excluded.
@@ -34,6 +45,11 @@ OUT_NPZ = os.path.join(ROOT, "results", f"{TAG}_analysis.npz")
 R_EARTH = 6.371e6
 RHO_CP = 1025.0 * 3990.0
 BASELINE_DEEPT_C_PER_YR = 0.045   # kappa_v=1e-5 10-yr run (moc_tenyr_ms_gm)
+OHC_TREND_WARN_ZJ_YR = 5.0        # criteria d: |ZJ/yr| budget closure
+OHC_TREND_PASS_ZJ_YR = 2.0
+SSS_TREND_PASS_PSU_YR = 0.003     # criteria e: drift target ~3x SSS flux
+AMOC_WARN_SV = 25.0               # criteria f: absolute-value sanity
+AMOC26_RATIO_WARN = 0.4
 
 snap_files = sorted(glob.glob(os.path.join(D3, "snap_*.npy")))
 n = len(snap_files)
@@ -141,6 +157,9 @@ for i, f in enumerate(snap_files):
     s = np.load(f)                    # (4, nx, ny, nz) = T,u,v,S
     T, u, v, Sfld = s[0], s[1], s[2], s[3]
 
+    if i == n - 1:                    # keep last snap for profiles/section
+        T_last, S_last, v_last = T, Sfld, v
+
     psi_a = moc_psi(v, lons=atl2)
     S["amoc"][i] = psi_a[np.ix_(jband, kbnd)].max()
     S["amoc_26n"][i] = psi_a[np.ix_(j26, kbnd)].max()
@@ -177,13 +196,45 @@ m = yrs >= 2.0
 if m.sum() >= 3:
     slope_g = float(np.polyfit(yrs[m], S["deepT"][m], 1)[0])
     slope_a = float(np.polyfit(yrs[m], S["deepT_atl"][m], 1)[0])
+    # v3: budget-closure criteria — OHC trend (ZJ/yr) and SSS drift (psu/yr)
+    slope_ohc = float(np.polyfit(yrs[m], S["ohc"][m], 1)[0])
+    slope_sss = float(np.polyfit(yrs[m], S["sss"][m], 1)[0])
 else:
-    slope_g = slope_a = float("nan")
+    slope_g = slope_a = slope_ohc = slope_sss = float("nan")
+
+# ── profiles (last snap): Atlantic & global T(z)/S(z), wet-points only ──
+prof_t_atl = [float(np.mean(T_last[:, :, k][wet3[:, :, k] & atl2]))
+              for k in range(z.size)]
+prof_s_atl = [float(np.mean(S_last[:, :, k][wet3[:, :, k] & atl2]))
+              for k in range(z.size)]
+prof_t_glb = [float(np.mean(T_last[:, :, k][wet3[:, :, k]]))
+              for k in range(z.size)]
+prof_s_glb = [float(np.mean(S_last[:, :, k][wet3[:, :, k]]))
+              for k in range(z.size)]
+
+# ── AMOC ψ(y,z) section (last snap, Atlantic basin), row-major lat-major:
+#    psi[i*nz + k] = psi(lat[i], z[k]) — frontend reshapes to (nlat, nz)
+psi_last = moc_psi(v_last, lons=atl2)          # (nlat, nz) Sv
+psi_flat = psi_last.astype(float).ravel().tolist()
+psi_shape = [int(psi_last.shape[0]), int(psi_last.shape[1])]
 
 m2 = yrs >= 2.0
 amoc_mean = float(S["amoc"][m2].mean()) if m2.sum() else float("nan")
 amoc_last5 = (float(S["amoc"][yrs >= yrs[-1] - 5.0].mean())
               if n >= 2 else float("nan"))
+
+# v3 sanity: real-ocean AMOC ~14-20 Sv; ψ>25 Sv suggests the basin/units
+# diagnostic (not the physics) is off; AMOC@26N collapsing to <40% of the
+# 30-60N max is the shutdown signature seen in kv1e5.
+amoc26_ratio = (float(S["amoc_26n"][-1] / S["amoc"][-1])
+                if S["amoc"][-1] != 0 else float("nan"))
+warnings = []
+if np.isfinite(S["amoc"][-1]) and abs(S["amoc"][-1]) > AMOC_WARN_SV:
+    warnings.append(f"AMOC 30-60N {S['amoc'][-1]:.1f} Sv > {AMOC_WARN_SV:.0f} "
+                    "(absolute value suspect)")
+if np.isfinite(amoc26_ratio) and amoc26_ratio < AMOC26_RATIO_WARN:
+    warnings.append(f"AMOC@26N / 30-60N = {amoc26_ratio:.2f} < "
+                    f"{AMOC26_RATIO_WARN:.1f} (collapse signature)")
 
 crit = {
     "a_no_blowup": verdict == "PASS" if npz_ok else None,
@@ -199,6 +250,23 @@ crit = {
         "max_eta_m": max_eta_all,
         "watchdog_m": 15.0,
         "pass": bool(max_eta_all < 15.0) if npz_ok else None,
+    },
+    "d_ohc_trend": {
+        "ZJ_per_yr": slope_ohc,
+        "warn_abs": OHC_TREND_WARN_ZJ_YR,
+        "pass": bool(abs(slope_ohc) < OHC_TREND_PASS_ZJ_YR)
+        if np.isfinite(slope_ohc) else None,
+    },
+    "e_sss_drift": {
+        "psu_per_yr": slope_sss,
+        "pass_abs": SSS_TREND_PASS_PSU_YR,
+        "pass": bool(abs(slope_sss) < SSS_TREND_PASS_PSU_YR)
+        if np.isfinite(slope_sss) else None,
+    },
+    "f_amoc_sanity": {
+        "amoc_final_sv": float(S["amoc"][-1]),
+        "amoc26_ratio": amoc26_ratio,
+        "warn": warnings,
     },
 }
 
@@ -217,6 +285,15 @@ out = {
         "atl_final": float(S["deepT_atl"][-1]),
         "T2k_final": float(S["t2k"][-1]),
     },
+    "warnings": warnings,
+    "profiles": {
+        "z": [float(v) for v in z],
+        "T_atl": prof_t_atl, "S_atl": prof_s_atl,
+        "T_glb": prof_t_glb, "S_glb": prof_s_glb,
+    },
+    "amoc_psi": {"shape": psi_shape, "psi": psi_flat,
+                 "lat": [float(v) for v in lat],
+                 "z": [float(v) for v in z]},
 }
 with open(OUT_JSON, "w") as f:
     json.dump(out, f, indent=2)
@@ -229,12 +306,27 @@ npz_out.update(days=days, yrs=yrs, sshstd=np.full(n, sshstd_last)
                maxeta=np.full(n, max_eta_all) if npz_ok else np.zeros(n),
                crit_slope_g=np.array([slope_g]),
                crit_slope_a=np.array([slope_a]),
+               crit_slope_ohc=np.array([slope_ohc]),
+               crit_slope_sss=np.array([slope_sss]),
                crit_max_eta=np.array([max_eta_all]),
                crit_b_pass=np.array([1.0 if crit["b_deept_trend"]["pass"]
                                      else 0.0]),
                crit_c_pass=np.array([1.0 if crit["c_med_eta"]["pass"]
-                                     else 0.0]))
-np.savez(OUT_NPZ, **npz_out)
+                                     else 0.0]),
+               crit_d_pass=np.array([1.0 if crit["d_ohc_trend"]["pass"]
+                                     else 0.0]),
+               crit_e_pass=np.array([1.0 if crit["e_sss_drift"]["pass"]
+                                     else 0.0]),
+               amoc26_ratio=np.array([amoc26_ratio]),
+               prof_z=np.array([float(v) for v in z]),
+               prof_lat=np.array([float(v) for v in lat]),
+               prof_T_atl=np.array(prof_t_atl),
+               prof_S_atl=np.array(prof_s_atl),
+               prof_T_glb=np.array(prof_t_glb),
+               prof_S_glb=np.array(prof_s_glb))
+# ψ section is 2-D — flatten lat-major; frontend reshapes by shape=[nlat,nz]
+np.savez(OUT_NPZ, **npz_out,
+         psi_flat=np.array(psi_flat), psi_shape=np.array(psi_shape))
 
 print(json.dumps(out, indent=2))
 print(f"saved {OUT_JSON}")

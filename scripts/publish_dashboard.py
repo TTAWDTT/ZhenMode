@@ -191,7 +191,9 @@ def curves_for(tag, sh):
     d = np.load(io.BytesIO(base64.b64decode(m[0])))
     out = {}
     for k in d.files:
-        if d[k].ndim != 1 or d[k].size > 5000:
+        # 20000 cap: psi_flat (nlat*nz = 120*45 = 5400) must survive the
+        # filter for the frontend AMOC ψ(y,z) heatmap
+        if d[k].ndim != 1 or d[k].size > 20000:
             continue
         vals = d[k].tolist()
         # drop placeholder series (all-zero: sshstd/maxeta before the run
