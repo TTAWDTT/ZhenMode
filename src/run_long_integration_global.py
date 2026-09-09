@@ -372,7 +372,7 @@ def main():
             for j in range(grid.ny):
                 wet_j = wm[:, j] > 0.5
                 if wet_j.any():
-                    prof[j] = S_sst[wet_j, j].mean()
+                    prof[j] = S_sss[wet_j, j].mean()
             good = np.where(~np.isnan(prof))[0]
             prof = np.interp(np.arange(grid.ny), good, prof[good])
             S_ref_surf = np.broadcast_to(prof[None, :], (grid.nx, grid.ny)).copy()
@@ -380,10 +380,10 @@ def main():
                   f"target=ZONAL WOA SSS "
                   f"({float(np.nanmin(prof)):.2f}..{float(np.nanmax(prof)):.2f} psu)")
         else:
-            S_ref_surf = S_sst
+            S_ref_surf = S_sss
             print(f"  SSS restoring: tau={args.sss_restore_days:g}d, "
                   f"target=full 2D WOA SSS "
-                  f"({float(np.nanmin(S_sst)):.2f}..{float(np.nanmax(S_sst)):.2f} psu)")
+                  f"({float(np.nanmin(S_sss)):.2f}..{float(np.nanmax(S_sss)):.2f} psu)")
 
     # ── Build solver ──
     # Seasonal wind uses the DYNAMIC-FORCING path: step_dyn(state, tau_x,
