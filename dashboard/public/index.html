@@ -18,20 +18,23 @@
   }
   header {
     padding: 14px 22px; border-bottom: 1px solid var(--border);
-    display: flex; align-items: baseline; gap: 16px;
+    display: flex; align-items: baseline; gap: 16px; flex-wrap: wrap;
     background: var(--panel);
   }
   header h1 { font-size: 17px; margin: 0; }
   header .meta { color: var(--dim); font-size: 12px; }
-  main { padding: 18px 22px; display: grid; gap: 18px;
-         grid-template-columns: 1fr 1fr; }
+  main { padding: 18px 22px; display: flex; flex-direction: column; gap: 18px; }
+  .row2 { display: grid; gap: 18px; grid-template-columns: 1fr 1fr; }
+  .row3 { display: grid; gap: 18px; grid-template-columns: repeat(3, 1fr); }
+  @media (max-width: 1100px) { .row2, .row3 { grid-template-columns: 1fr; } }
   .card {
     background: var(--panel); border: 1px solid var(--border);
-    border-radius: 8px; padding: 14px 16px;
+    border-radius: 8px; padding: 14px 16px; min-width: 0;
   }
   .card h2 {
     margin: 0 0 10px; font-size: 13px; text-transform: uppercase;
-    letter-spacing: .06em; color: var(--dim);
+    letter-spacing: .06em; color: var(--dim); display: flex;
+    align-items: baseline; gap: 8px; flex-wrap: wrap;
   }
   .card.wide { grid-column: 1 / -1; }
   table { width: 100%; border-collapse: collapse; }
@@ -45,12 +48,21 @@
   .pill.pass { background: #12351f; color: var(--ok); }
   .pill.fail { background: #3d1418; color: var(--bad); }
   .pill.err  { background: #3d2e00; color: var(--warn); }
+  .pill.na   { background: #21262d; color: var(--dim); }
   .prog { background: #21262d; border-radius: 4px; height: 8px; width: 160px;
           overflow: hidden; display: inline-block; vertical-align: middle; }
   .prog > i { display: block; height: 100%; background: var(--accent, #58a6ff); }
   .warn { color: var(--warn); font-size: 12px; }
   .dim { color: var(--dim); }
+  .crit { display: flex; gap: 12px; flex-wrap: wrap; }
+  .crit .item {
+    border: 1px solid var(--border); border-radius: 6px;
+    padding: 8px 14px; min-width: 200px; flex: 1;
+  }
+  .crit .item b { font-size: 13px; }
+  .crit .item .v { color: var(--dim); font-size: 12px; margin-top: 2px; }
   canvas { max-height: 260px; }
+  .row3 canvas { max-height: 190px; }
   pre#log {
     background: #0a0d12; border: 1px solid var(--border); border-radius: 6px;
     padding: 10px 12px; max-height: 300px; overflow: auto;
@@ -58,19 +70,20 @@
   }
   select {
     background: var(--bg); color: var(--fg); border: 1px solid var(--border);
-    border-radius: 5px; padding: 3px 8px; margin-left: 8px;
+    border-radius: 5px; padding: 3px 8px; margin-left: 8px; font-size: 12px;
   }
 </style>
 </head>
 <body>
 <header>
   <h1>🌊 ocean-solver 集群看板</h1>
+  <span class="meta" id="modeBadge">—</span>
   <span class="meta" id="lastpoll">—</span>
   <span class="meta">gateway → node 014 (8× L20X)</span>
 </header>
 <main>
   <section class="card wide">
-    <h2>运行状态</h2>
+    <h2>运行状态 <select id="tagSel"></select></h2>
     <table id="runs">
       <thead><tr>
         <th>tag</th><th>节点/GPU</th><th>进度</th><th>day</th>
@@ -80,22 +93,71 @@
       <tbody></tbody>
     </table>
   </section>
-  <section class="card">
-    <h2>深层温度（z≤1000 m, °C）<span class="dim" id="curveTs"></span><select id="tagSel"></select></h2>
-    <canvas id="deepTChart"></canvas>
-  </section>
-  <section class="card">
-    <h2>AMOC（Sv）<span class="dim" id="amocErr"></span></h2>
-    <canvas id="amocChart"></canvas>
-  </section>
   <section class="card wide">
+    <h2>Phase A 判据 <span class="dim" id="critErr"></span></h2>
+    <div class="crit" id="critBox">
+      <div class="item"><b>判据 a · 无爆掉</b><div class="v" id="critA">—</div></div>
+      <div class="item"><b>判据 b · deepT 趋势 &lt; 0.0225 °C/yr</b><div class="v" id="critB">—</div></div>
+      <div class="item"><b>判据 c · Med max&#124;eta&#124; &lt; 15 m</b><div class="v" id="critC">—</div></div>
+    </div>
+  </section>
+  <div class="row2" id="wideCharts"></div>
+  <div class="row3" id="smallCharts"></div>
+  <section class="card wide" id="logCard">
     <h2>日志 tail <span class="dim" id="logTag"></span></h2>
     <pre id="log">…</pre>
   </section>
 </main>
 <script>
 const $ = (s) => document.querySelector(s);
-let charts = { deepT: null, amoc: null };
+const charts = {};                    // chartId → Chart instance
+let MODE = "live";                    // "live" (api/*) | "static" (data.json)
+let STATIC = null;                    // parsed data.json in static mode
+
+// ── chart registry: {id, title, wide, sets:[[npzKey, label, color], …]} ──
+const WIDE = [
+  { id: "deepT", title: "深层温度（z≤1000 m, °C）", sets: [
+    ["deepT", "global", "#f0a35e"], ["deepT_atl", "Atlantic", "#e3b341"]] },
+  { id: "amoc", title: "经向翻转环流（Sv）", sets: [
+    ["amoc", "AMOC 30–60N", "#58a6ff"], ["amoc_26n", "@26N", "#79c0ff"],
+    ["pmoc", "Pacific", "#d2a8ff"], ["aabw", "AABW cell", "#ff7b72"]] },
+];
+const SMALL = [
+  { id: "drake", title: "Drake 通过输运（Sv）", sets: [["drake", "Drake", "#7ee787"]] },
+  { id: "ke", title: "总动能（EJ）", sets: [["ke", "KE", "#ffa657"]] },
+  { id: "ohc", title: "海洋热含量 OHC（ZJ）", sets: [["ohc", "OHC", "#ff9bce"]] },
+  { id: "sst", title: "SST（°C）", sets: [
+    ["sst", "global", "#f0a35e"], ["sst_natl", "N Atlantic", "#e3b341"]] },
+  { id: "t2k", title: "0–2000 m 平均 T（°C）", sets: [["t2k", "T<2km", "#f0a35e"]] },
+  { id: "sss", title: "盐度（psu）", sets: [
+    ["sss", "SSS surface", "#79c0ff"], ["deepS", "deep S", "#a5d6ff"]] },
+  { id: "strat", title: "上层层结 dT/dz（°C/100m）", sets: [["strat", "strat", "#d2a8ff"]] },
+  { id: "maxu", title: "max&#124;u&#124;（m/s）", sets: [["maxu", "max|u|", "#ff7b72"]] },
+  { id: "maxeta", title: "max&#124;eta&#124;（m, 全程）", sets: [["maxeta", "max|eta|", "#ffa657"]] },
+];
+
+// NOTE: no `parsing: false` — data are plain number arrays (labels + y),
+// and with parsing disabled Chart.js expects {x,y} objects and draws nothing.
+const opt = (y) => ({
+  animation: false,
+  scales: { x: { title: { display: true, text: "模式年" } }, y },
+  plugins: { legend: { display: true, labels: { boxWidth: 12, font: { size: 10 } } } },
+});
+
+function buildCards() {
+  for (const c of WIDE) {
+    const sec = document.createElement("section");
+    sec.className = "card";
+    sec.innerHTML = `<h2>${c.title}<span class="dim" id="ts_${c.id}"></span></h2><canvas id="cv_${c.id}"></canvas>`;
+    $("#wideCharts").appendChild(sec);
+  }
+  for (const c of SMALL) {
+    const sec = document.createElement("section");
+    sec.className = "card";
+    sec.innerHTML = `<h2>${c.title}</h2><canvas id="cv_${c.id}"></canvas>`;
+    $("#smallCharts").appendChild(sec);
+  }
+}
 
 function fmt(n, d = 2) { return n == null ? "—" : Number(n).toFixed(d); }
 
@@ -104,114 +166,191 @@ function esc(s) {
     ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]));
 }
 
-async function refreshRuns() {
-  try {
-    const j = await (await fetch("/api/overview")).json();
-    $("#lastpoll").textContent =
-      "数据时间 " + new Date(j.lastPoll).toLocaleTimeString("zh-CN") +
-      " · 每 30s 刷新";
-    const tb = $("#runs tbody");
-    tb.innerHTML = "";
-    for (const r of j.runs) {
-      const tr = document.createElement("tr");
-      let status, cls;
-      if (r.error)          { status = "查询失败: " + esc(r.error.slice(0, 40)); cls = "err"; }
-      else if (r.verdict)   { status = r.verdict; cls = r.verdict === "PASS" ? "pass" : "fail"; }
-      else if (r.alive)     { status = "运行中"; cls = "run"; }
-      else                  { status = "未运行"; cls = "err"; }
-      const warn = (r.warn || []).length
-        ? `<div class="warn">⚠ ${r.warn.map(esc).join("; ")}</div>` : "";
-      const pct = (r.day != null && r.total_days)
-        ? Math.min(100, (r.day / r.total_days) * 100) : 0;
-      tr.innerHTML = `
-        <td><b>${esc(r.tag)}</b></td>
-        <td>${esc(r.node || "—")}/${r.gpu ?? "—"}</td>
-        <td><span class="prog"><i style="width:${pct}%"></i></span>
-            <span class="dim"> ${fmt(pct, 0)}%</span></td>
-        <td>${r.day != null ? fmt(r.day, 0) : "—"}</td>
-        <td>${fmt(r.max_u, 3)}</td>
-        <td>${fmt(r.max_eta, 2)}</td>
-        <td>${r.nan ?? "—"}</td>
-        <td><span class="pill ${cls}">${status}</span>${warn}</td>
-        <td class="dim">${esc(r.note || "")}</td>`;
-      tb.appendChild(tr);
+// ── data access: live api vs static data.json ──
+async function apiOrStatic(path) {
+  if (MODE === "static") {
+    if (!STATIC) throw new Error("static data not loaded");
+    const key = path.replace("/api/", "");
+    if (key === "overview") return STATIC;
+    const m = key.match(/^curves\/(.+)$/);
+    if (m) {
+      const c = STATIC.curves?.[m[1]];
+      if (!c) throw new Error("no curves in snapshot");
+      return c;
     }
-    // tag selector for charts/log — default to a live (running, no verdict)
-    // run so opening the board lands on the active curves
-    const sel = $("#tagSel");
-    const tags = j.runs.map((r) => r.tag);
-    if (sel.dataset.cur !== tags.join(",")) {
-      const live = j.runs.find((r) => r.alive && !r.verdict);
-      sel.dataset.cur = tags.join(",");
-      sel.innerHTML = tags.map((t) => `<option>${esc(t)}</option>`).join("");
-      if (live) sel.value = live.tag;
-      sel.onchange = () => { refreshCurves(); refreshLog(); };
-      if (tags.length) { refreshCurves(); refreshLog(); }
-    } else if (tags.length && !charts.deepT) {
-      refreshCurves(); refreshLog();
-    }
-  } catch (e) {
-    $("#lastpoll").textContent = "fetch failed: " + e;
+    throw new Error("not available in static mode");
+  }
+  const res = await fetch(path);
+  if (path.startsWith("/api/log")) return res.text();
+  return res.json();
+}
+
+function renderRuns(j) {
+  if (j.lastPoll) {
+    $("#lastpoll").textContent = "数据时间 " +
+      new Date(j.generated || j.lastPoll).toLocaleString("zh-CN", { hour12: false });
+  }
+  const tb = $("#runs tbody");
+  tb.innerHTML = "";
+  for (const r of j.runs) {
+    const tr = document.createElement("tr");
+    let status, cls;
+    if (r.error)          { status = "查询失败: " + esc(r.error.slice(0, 40)); cls = "err"; }
+    else if (r.verdict)   { status = r.verdict; cls = r.verdict === "PASS" ? "pass" : "fail"; }
+    else if (r.alive)     { status = "运行中"; cls = "run"; }
+    else                  { status = "未运行"; cls = "err"; }
+    const warn = (r.warn || []).length
+      ? `<div class="warn">⚠ ${r.warn.map(esc).join("; ")}</div>` : "";
+    const pct = (r.day != null && r.total_days)
+      ? Math.min(100, (r.day / r.total_days) * 100) : 0;
+    tr.innerHTML = `
+      <td><b>${esc(r.tag)}</b></td>
+      <td>${esc(r.node || "—")}/${r.gpu ?? "—"}</td>
+      <td><span class="prog"><i style="width:${pct}%"></i></span>
+          <span class="dim"> ${fmt(pct, 0)}%</span></td>
+      <td>${r.day != null ? fmt(r.day, 0) : "—"}</td>
+      <td>${fmt(r.max_u, 3)}</td>
+      <td>${fmt(r.max_eta, 2)}</td>
+      <td>${r.nan ?? "—"}</td>
+      <td><span class="pill ${cls}">${status}</span>${warn}</td>
+      <td class="dim">${esc(r.note || "")}</td>`;
+    tb.appendChild(tr);
+  }
+  // tag selector — default to a live (running, no verdict) run
+  const sel = $("#tagSel");
+  const tags = j.runs.map((r) => r.tag);
+  if (sel.dataset.cur !== tags.join(",")) {
+    const live = j.runs.find((r) => r.alive && !r.verdict);
+    sel.dataset.cur = tags.join(",");
+    sel.innerHTML = tags.map((t) => `<option>${esc(t)}</option>`).join("");
+    if (live) sel.value = live.tag;
+    sel.onchange = () => { refreshCurves(); refreshLog(); };
+    if (tags.length) { _curvesCache = null; refreshCurves(); refreshLog(); }
+  }
+  renderCrit(j);
+}
+
+function renderCrit(j) {
+  // criterion a from run state; b/c from the selected run's analysis npz
+  const r = j.runs.find((x) => x.tag === $("#tagSel").value) || j.runs[0];
+  const el = (id, ok, txt) => {
+    const n = $(id);
+    n.textContent = txt;
+    n.className = "v " + (ok === true ? "pill pass" : ok === false ? "pill fail" : "dim");
+  };
+  const aOk = r ? (r.verdict ? r.verdict === "PASS" : null) : null;
+  el("#critA", aOk, aOk == null ? "运行中（无爆掉迹象）" : (aOk ? "PASS" : "FAIL · " + (r.verdict || "")));
+  fetchCurvesCached().then((d) => {
+    if (!d || d.crit_slope_g == null) { el("#critB", null, "数据不足"); return; }
+    const sg = d.crit_slope_g[0], sa = d.crit_slope_a[0];
+    const bp = d.crit_b_pass ? d.crit_b_pass[0] > 0.5 : null;
+    el("#critB", bp,
+      `global ${sg.toFixed(4)} °C/yr · Atl ${sa.toFixed(4)} · ` +
+      `基线 0.045 → ${bp ? "PASS" : "FAIL"}`);
+    const me = d.crit_max_eta ? d.crit_max_eta[0] : null;
+    const cp = d.crit_c_pass ? d.crit_c_pass[0] > 0.5 : null;
+    el("#critC", cp, me == null ? "跑完才有（表格在完成时写盘）"
+      : `max ${me.toFixed(2)} m · 看门狗 15 m → ${cp ? "PASS" : "FAIL"}`);
+  }).catch(() => el("#critB", null, "分析不可用"));
+}
+
+let _curvesCache = null, _curvesTag = null;
+async function fetchCurvesCached() {
+  const tag = $("#tagSel").value;
+  if (!tag) return null;
+  if (_curvesTag === tag && _curvesCache) return _curvesCache;
+  _curvesCache = await apiOrStatic("/api/curves/" + tag);
+  _curvesTag = tag;
+  return _curvesCache;
+}
+
+function renderCurves() {
+  const d = _curvesCache;
+  if (!d) return;
+  const yrs = d.yrs || d.days?.map((x) => x / 365);
+  if (!yrs || !yrs.length) throw new Error("no points yet");
+  const ts = d.ts || (STATIC && STATIC.generated) || Date.now();
+  $("#ts_deepT").textContent = $("#ts_amoc").textContent =
+    " · 更新于 " + new Date(ts).toLocaleTimeString("zh-CN", { hour12: false });
+  for (const c of [...WIDE, ...SMALL]) {
+    const cv = $("#cv_" + c.id);
+    if (!cv) continue;
+    const sets = c.sets
+      .filter(([k]) => Array.isArray(d[k]) && d[k].length)
+      .map(([k, label, color]) => ({
+        label, data: d[k], borderColor: color, pointRadius: 2, tension: 0.15,
+      }));
+    if (!sets.length) continue;
+    const cfg = { labels: yrs, datasets: sets };
+    if (charts[c.id]) { charts[c.id].data = cfg; charts[c.id].update("none"); }
+    else charts[c.id] = new Chart(cv, { type: "line", data: cfg, options: opt() });
   }
 }
 
 async function refreshCurves() {
-  const tag = $("#tagSel").value;
-  if (!tag) return;
   try {
-    const d = await (await fetch("/api/curves/" + tag)).json();
-    if (d.error) throw new Error(d.error);
-    const yrs = d.yrs || d.days?.map((x) => x / 365);
-    if (!yrs || !yrs.length) throw new Error("no points yet");
-    $("#curveTs").textContent =
-      " · 更新于 " + new Date(d.ts || Date.now()).toLocaleTimeString("zh-CN", { hour12: false });
-    $("#amocErr").textContent = "";
-    const mk = (key, label, color) => ({
-      labels: yrs,
-      datasets: [{ label, data: d[key], borderColor: color,
-                   pointRadius: 2, tension: 0.15 }],
-    });
-    // NOTE: no `parsing: false` — data are plain number arrays (labels + y),
-    // and with parsing disabled Chart.js expects {x,y} objects and draws nothing.
-    const opt = (y) => ({
-      animation: false,
-      scales: { x: { title: { display: true, text: "模式年" } }, y },
-      plugins: { legend: { display: false } },
-    });
-    for (const [id, key, label, color] of [
-      ["deepT", "deepT", "deepT global", "#f0a35e"],
-    ]) {
-      const cfg = mk(key, label, color);
-      if (charts[id]) {
-        charts[id].data = cfg; charts[id].update("none");
-      } else {
-        charts[id] = new Chart($( "#deepTChart"), { type: "line",
-          data: cfg, options: opt({ title: { display: true, text: "°C" } }) });
-      }
-    }
-    const am = mk("amoc", "AMOC", "#58a6ff");
-    if (charts.amoc) { charts.amoc.data = am; charts.amoc.update("none"); }
-    else charts.amoc = new Chart($("#amocChart"),
-      { type: "line", data: am, options: opt({ title: { display: true, text: "Sv" } }) });
+    $("#critErr").textContent = "";
+    await fetchCurvesCached();       // cached; refetch forces below
+    _curvesCache = null;
+    await fetchCurvesCached();
+    renderCurves();
   } catch (e) {
     // visible, not silent: first analysis may not exist yet for a fresh run
-    $("#curveTs").textContent = " · 曲线暂不可用";
-    $("#amocErr").textContent = "（" + String(e.message || e).slice(0, 60) + "）";
+    $("#ts_deepT").textContent = " · 曲线暂不可用";
+    $("#critErr").textContent = "（" + String(e.message || e).slice(0, 60) + "）";
   }
 }
 
 async function refreshLog() {
+  if (MODE === "static") { $("#logCard").style.display = "none"; return; }
   const tag = $("#tagSel").value;
   if (!tag) return;
   $("#logTag").textContent = tag;
   try {
-    $("#log").textContent = await (await fetch("/api/log/" + tag)).text();
+    $("#log").textContent = await apiOrStatic("/api/log/" + tag);
     $("#log").scrollTop = $("#log").scrollHeight;
   } catch (e) { $("#log").textContent = "log fetch failed"; }
 }
 
+async function refreshStatic() {
+  try {
+    STATIC = await (await fetch("data.json")).json();
+    $("#modeBadge").textContent =
+      "静态快照模式 · " + STATIC.generated;
+    renderRuns(STATIC);
+    _curvesCache = null;
+    await fetchCurvesCached();       // pulls from STATIC.curves in static mode
+    renderCurves();
+  } catch (e) {
+    $("#lastpoll").textContent = "静态数据加载失败: " + e;
+  }
+}
+
+async function refreshRuns() {
+  if (MODE === "static") { refreshStatic(); return; }
+  try {
+    renderRuns(await apiOrStatic("/api/overview"));
+  } catch (e) {
+    // live API unreachable (e.g. served from github.io) → static snapshot
+    if (MODE === "live") {
+      MODE = "static";
+      $("#modeBadge").textContent = "静态快照模式（github.io）";
+      await refreshStatic();
+      $("#logCard").style.display = "none";
+      setRunsCadence(120_000);         // static snapshot: re-fetch every 2 min
+      return;
+    }
+    $("#lastpoll").textContent = "fetch failed: " + e;
+  }
+}
+
+buildCards();
 refreshRuns();
-setInterval(refreshRuns, 5000);
+let runsTimer = setInterval(refreshRuns, 5000);
+function setRunsCadence(ms) {          // static mode: slow the poll cadence
+  clearInterval(runsTimer);
+  runsTimer = setInterval(refreshRuns, ms);
+}
 setInterval(refreshCurves, 60_000);
 setInterval(refreshLog, 5000);</script>
 </body>

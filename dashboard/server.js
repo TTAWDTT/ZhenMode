@@ -165,12 +165,15 @@ async function kickAnalysis(tag) {
   const last = lastAnalysisKick.get(tag) || 0;
   if (Date.now() - last < ANALYSIS_MIN_INTERVAL_MS) return; // rate-limit
   lastAnalysisKick.set(tag, Date.now());
+  const run = runsJson().runs.find((r) => r.tag === tag);
+  const parent = run && run.parent_npz
+    ? `-e PARENT_NPZ=${run.parent_npz} ` : "";
   // nohup + mtime gate: skip if no snap newer than the existing analysis npz
   const cmd =
     `d=/data/tmp/ocean/results/global_${tag}_3d; a=/data/tmp/ocean/results/${tag}_analysis.npz; ` +
     `n=$(ls -t $d/snap_*.npy 2>/dev/null | head -1); ` +
     `if [ -n "$n" ] && { [ ! -f $a ] || [ $n -nt $a ]; }; then ` +
-    `nohup docker exec -e PARENT_NPZ=/data/tmp/ocean/results/global_spinA30probe.npz ` +
+    `nohup docker exec ${parent}` +
     `-w /data/tmp/ocean jaxtest2 /opt/conda/envs/py/bin/python ` +
     `results/_spinup_probe_analysis.py ${tag} > /data/tmp/ocean/logs/analysis_${tag}.log 2>&1 & fi; echo kicked`;
   try { await clusterCmd(cmd, 8); } catch { /* retry next TTL */ }
@@ -201,8 +204,10 @@ print(json.dumps(out))`], {
     let buf = "";
     py.stdout.on("data", (c) => (buf += c));
     py.on("exit", (code) =>
+      // Python json.dumps emits bare NaN for float('nan'); Node JSON.parse
+      // rejects it — normalize to null before parsing.
       code === 0
-        ? resolve(JSON.parse(buf))
+        ? resolve(JSON.parse(buf.replace(/\bNaN\b/g, "null")))
         : reject(new Error(`npz decode failed code=${code}`)));
     py.stdin.write(b64);
     py.stdin.end();

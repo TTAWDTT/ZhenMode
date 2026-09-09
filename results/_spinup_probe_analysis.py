@@ -1,18 +1,20 @@
 # -*- coding: utf-8 -*-
-"""Phase A spinup probe analysis (cluster-side, self-contained).
+"""Spinup dashboard analysis (cluster-side, self-contained) — v2.
 
-Reads results/global_spinA30probe.npz (2D tables) and the yearly 3D snaps in
-results/global_spinA30probe_3d/, computes the three probe criteria from
-docs/spinup_plan_zh.md:
-  (a) no blowup          -> VERDICT == PASS in the runner npz
-  (b) deepT trend drop   -> mean T over wet-at-depth cells (z<=1000 m) per
-                            yearly snap, linear trend vs the +0.045 C/yr
-                            baseline (kappa_v=1e-5 10-yr run)
-  (c) Med eta no-watchdog-> max|eta| over the run well below the 15 m limit
+Reads results/global_<TAG>.npz (2D tables, written at completion) and the
+yearly 3D snaps in results/global_<TAG>_3d/, and computes ~18 per-snapshot
+series for the dashboard plus the three spinup_plan_zh.md probe criteria:
+
+circulation : AMOC(30-60N), AMOC@26N, AABW cell, Pacific overturning,
+              Drake-passing transport (partial section), total KE
+tracers     : SST global / NAtlantic, SSS global, deep S (z<=1000),
+              T mean 0-2000 m, deepT global / Atlantic, OHC (ZJ),
+              upper-ocean stratification (dT/dz, 0-100 m)
+stability   : max|u|, max|eta| (npz table, completion only), SSH std
 
 Deep-T uses the 3-D layer-resolved wet mask (wet3_push.npz, rebuilt from
 ETOPO via the grid.py pipeline) so below-floor ghost fill is excluded.
-Writes results/spinA30probe_analysis.json (+ .npz) and prints a verdict.
+Writes results/<TAG>_analysis.json (+ .npz) and prints a verdict.
 """
 import glob
 import json
@@ -30,9 +32,16 @@ OUT_JSON = os.path.join(ROOT, "results", f"{TAG}_analysis.json")
 OUT_NPZ = os.path.join(ROOT, "results", f"{TAG}_analysis.npz")
 
 R_EARTH = 6.371e6
+RHO_CP = 1025.0 * 3990.0
 BASELINE_DEEPT_C_PER_YR = 0.045   # kappa_v=1e-5 10-yr run (moc_tenyr_ms_gm)
 
 snap_files = sorted(glob.glob(os.path.join(D3, "snap_*.npy")))
+n = len(snap_files)
+days = np.array([int(os.path.basename(f)[5:10]) * 365.0
+                 for f in snap_files])
+if n == 0:
+    print("no 3D snaps yet; nothing to do")
+    sys.exit(0)
 
 d = None
 if os.path.exists(NPZ):
@@ -42,18 +51,11 @@ else:
     print(f"NOTE: {NPZ} not found (run still in progress); "
           "verdict/max-eta from tables unavailable")
 
-lat = d["lat"] if (d and npz_ok) else np.linspace(-59.5, 59.5, 120)
-lon = d["lon"] if (d and npz_ok) else (np.arange(360) + 0.5)
-z = d["z"] if (d and npz_ok) else np.array(
-    [0, -5, -15, -30, -50, -75, -100, -150, -200, -300, -500, -1000, -2000,
-     -4000], dtype=float)
 # Day axis from the snap FILENAME index (snap_00029 -> day 29*365), which is
 # correct for both fresh runs (index 0..N) and --restart-from resumes (index
 # starts at n_prev_snaps). The runner npz `days` table is NOT usable mid-run:
 # it only exists at completion, and a stale same-tag npz from an earlier era
 # would silently mismatch the snap count.
-days = np.array([int(os.path.basename(f)[5:10]) * 365.0
-                 for f in snap_files])
 # npz verdict/max-eta are only valid when the table was written by THIS run
 # (final npz) — gate on last-day agreement to reject stale same-tag npz from
 # an earlier era (table row count can legitimately differ from snap-file count
@@ -62,6 +64,8 @@ npz_ok = (d is not None and len(d["days"]) > 0
           and abs(float(d["days"][-1]) - days[-1]) < 1.0)
 verdict = str(d["verdict"]) if npz_ok else "RUNNING"
 max_eta_all = float(np.max(np.abs(d["max_eta"]))) if npz_ok else float("nan")
+sshstd_last = (float(d["ssh_std"][-1]) if npz_ok and "ssh_std" in d.files
+               else float("nan"))
 # Parent-era max|eta| (same integration, pre-resume segment): the era-2 table
 # starts at the resume day, so set PARENT_NPZ to merge it in.
 PARENT_NPZ = os.environ.get("PARENT_NPZ", "")
@@ -71,31 +75,39 @@ if npz_ok and PARENT_NPZ and os.path.exists(PARENT_NPZ):
         max_eta_all = max(max_eta_all,
                           float(np.max(np.abs(dp["max_eta"]))))
 max_u_peak = float(d["max_u_peak"]) if d else float("nan")
-ke = d["ke"] if d else None
 
-# ── Atlantic sector mask ──
+lat = d["lat"] if (d and npz_ok) else np.linspace(-59.5, 59.5, 120)
+lon = d["lon"] if (d and npz_ok) else (np.arange(360) + 0.5)
+z = d["z"] if (d and npz_ok) else np.array(
+    [0, -5, -15, -30, -50, -75, -100, -150, -200, -300, -500, -1000, -2000,
+     -4000], dtype=float)
+
+# ── masks & geometry ──
 nlon, nlat = lon.size, lat.size
 atl_i = np.zeros(nlon, dtype=bool)
 atl_i[(lon >= 280.0)] = True
 atl_i[(lon < 25.0)] = True
 atl2 = np.broadcast_to(atl_i[:, None], (nlon, nlat)).copy()
+pac_i = (lon >= 130.0) & (lon < 280.0)
+pac2 = np.broadcast_to(pac_i[:, None], (nlon, nlat)).copy()
+i_drake = int(np.argmin(np.abs(lon - 291.5)))   # ~68.5 W, Drake Passage
 
-# ── 3-D layer-resolved wet mask (exclude below-floor ghost fill) ──
 w = np.load(W3)
-wet3_3d = (w["wet3"] if "wet3" in w.files
-           else w[w.files[0]]) > 0.5        # (360,120,nz)
-wet3_deep = wet3_3d & (z <= -1000.0)[None, None, :]
+wet3 = (w["wet3"] if "wet3" in w.files else w[w.files[0]]) > 0.5
+wet3_deep = wet3 & (z <= -1000.0)[None, None, :]
 wet3_deep_atl = wet3_deep & atl_i[:, None, None]
-wet3_2k = wet3_3d & (z >= -2000.0)[None, None, :]
+wet3_2k = wet3 & (z >= -2000.0)[None, None, :]
+wet3_deep_pac = wet3_deep & pac_i[:, None, None]
+wet3_col = wet3[:, :, 0:1]                      # column mask for MOC
 
-# ── MOC streamfunction from v ──
+dy = 2.0 * np.pi * R_EARTH / nlat
+dx = 2.0 * np.pi * R_EARTH * np.cos(np.deg2rad(lat)) / nlon
 dz = np.empty(z.size)
 dz[0] = z[0] - z[1]
 dz[-1] = z[-2] - z[-1]
 for k in range(1, z.size - 1):
     dz[k] = 0.5 * (z[k - 1] - z[k + 1])
-dx = 2.0 * np.pi * R_EARTH * np.cos(np.deg2rad(lat)) / nlon
-wet3_col = (wet3_3d[:, :, 0:1])   # column mask for MOC (v ghost is zeroed)
+V3 = dx[None, :, None] * dy * dz[None, None, :]   # cell volumes (1,ny,nz)
 
 
 def moc_psi(v, lons=None):
@@ -104,39 +116,71 @@ def moc_psi(v, lons=None):
     else:
         vI = np.where(lons[:, :, None] & wet3_col, v, 0.0)
     V = vI.sum(axis=0) * dx[:, None] * dz[None, :]
-    return np.cumsum(V, axis=1) / 1.0e6
+    return np.cumsum(V, axis=1) / 1.0e6          # Sv
 
 
-n = len(snap_files)
+jband = (lat >= 30.0) & (lat <= 60.0)
+j26 = (lat >= 25.0) & (lat <= 28.0)
+jabw = (lat >= -60.0) & (lat <= -30.0)
+kbnd = (z <= -300.0) & (z >= -3000.0)
+kabw = z <= -2000.0
+kpac = (z <= -300.0) & (z >= -3000.0)
+jpac = (lat >= 0.0) & (lat <= 60.0)
+surf2d = wet3[:, :, 0]
+natl2d = surf2d & atl2 & ((lat >= 10.0) & (lat <= 60.0))[None, :]
+
 print(f"{n} 3D snaps, days {days[0]:.0f}..{days[-1]:.0f}, verdict={verdict}")
 
-amoc = np.zeros(n)
-deepT = np.zeros(n)
-deepT_atl = np.zeros(n)
-T2k = np.zeros(n)
+S = dict((k, np.zeros(n)) for k in
+         ["amoc", "amoc_26n", "aabw", "pmoc", "drake", "ke",
+          "sst", "sst_natl", "sss", "deepS", "t2k", "deepT", "deepT_atl",
+          "ohc", "strat", "maxu"])
 for i, f in enumerate(snap_files):
-    s = np.load(f)                       # (4, nx, ny, nz) = T,u,v,S
-    psi_a = moc_psi(s[2], lons=atl2)
-    jband = (lat >= 30.0) & (lat <= 60.0)
-    kband = (z <= -300.0) & (z >= -3000.0)
-    amoc[i] = psi_a[np.ix_(jband, kband)].max()
-    T = s[0]
-    deepT[i] = np.nanmean(np.where(wet3_deep, T, np.nan))
-    deepT_atl[i] = np.nanmean(np.where(wet3_deep_atl, T, np.nan))
-    T2k[i] = np.nanmean(np.where(wet3_2k, T, np.nan))
+    s = np.load(f)                    # (4, nx, ny, nz) = T,u,v,S
+    T, u, v, Sfld = s[0], s[1], s[2], s[3]
+
+    psi_a = moc_psi(v, lons=atl2)
+    S["amoc"][i] = psi_a[np.ix_(jband, kbnd)].max()
+    S["amoc_26n"][i] = psi_a[np.ix_(j26, kbnd)].max()
+    S["aabw"][i] = psi_a[np.ix_(jabw, kabw)].min()
+
+    psi_p = moc_psi(v, lons=pac2)
+    S["pmoc"][i] = psi_p[np.ix_(jpac, kpac)].max()
+
+    # Drake Passage section: fixed lon (axis 0), integrate meridionally
+    uI = np.where(wet3[i_drake], u[i_drake], 0.0)
+    S["drake"][i] = (uI.sum(axis=0) * dy * dz).sum() / 1.0e6
+
+    ke_cell = np.broadcast_to(V3, wet3.shape)      # (nx,ny,nz) cell volumes
+    S["ke"][i] = 0.5 * 1025.0 * float(
+        np.sum((u * u + v * v)[wet3] * ke_cell[wet3])) / 1.0e18  # EJ
+    S["ohc"][i] = RHO_CP * float(
+        np.sum(T[wet3] * ke_cell[wet3])) / 1.0e21  # ZJ
+
+    S["maxu"][i] = float(np.max(np.abs(u)))
+    S["sst"][i] = float(np.mean(T[:, :, 0][surf2d]))
+    S["sst_natl"][i] = float(np.mean(T[:, :, 0][natl2d]))
+    S["sss"][i] = float(np.mean(Sfld[:, :, 0][surf2d]))
+    S["deepS"][i] = float(np.mean(Sfld[wet3_deep]))
+    S["t2k"][i] = float(np.mean(T[wet3_2k]))
+    S["deepT"][i] = float(np.mean(T[wet3_deep]))
+    S["deepT_atl"][i] = float(np.mean(T[wet3_deep_atl]))
+    dTdz = (T[:, :, 0] - T[:, :, 6]) / 100.0        # 0 -> -100 m
+    S["strat"][i] = float(np.mean(dTdz[surf2d]))
+    del s, T, u, v, Sfld
 
 yrs = days / 365.0
 # linear trend over yr2..end (skip yr0-1 spinup transient)
 m = yrs >= 2.0
 if m.sum() >= 3:
-    slope_g = float(np.polyfit(yrs[m], deepT[m], 1)[0])
-    slope_a = float(np.polyfit(yrs[m], deepT_atl[m], 1)[0])
+    slope_g = float(np.polyfit(yrs[m], S["deepT"][m], 1)[0])
+    slope_a = float(np.polyfit(yrs[m], S["deepT_atl"][m], 1)[0])
 else:
     slope_g = slope_a = float("nan")
 
 m2 = yrs >= 2.0
-amoc_mean = float(amoc[m2].mean()) if m2.sum() else float("nan")
-amoc_last5 = (float(amoc[yrs >= yrs[-1] - 5.0].mean())
+amoc_mean = float(S["amoc"][m2].mean()) if m2.sum() else float("nan")
+amoc_last5 = (float(S["amoc"][yrs >= yrs[-1] - 5.0].mean())
               if n >= 2 else float("nan"))
 
 crit = {
@@ -163,18 +207,32 @@ out = {
     "n_snaps": n,
     "criteria": crit,
     "amoc": {
-        "day0": float(amoc[0]), "final": float(amoc[-1]),
+        "day0": float(S["amoc"][0]), "final": float(S["amoc"][-1]),
         "mean_yr2_end": amoc_mean, "last5yr_mean": amoc_last5,
     },
     "deepT": {
-        "day0": float(deepT[0]), "final": float(deepT[-1]),
-        "atl_final": float(deepT_atl[-1]), "T2k_final": float(T2k[-1]),
+        "day0": float(S["deepT"][0]), "final": float(S["deepT"][-1]),
+        "atl_final": float(S["deepT_atl"][-1]),
+        "T2k_final": float(S["t2k"][-1]),
     },
 }
 with open(OUT_JSON, "w") as f:
     json.dump(out, f, indent=2)
-np.savez(OUT_NPZ, days=days, amoc=amoc, deepT=deepT, deepT_atl=deepT_atl,
-         T2k=T2k, yrs=yrs)
+
+# npz payload: all 1-D series (dashboard decoder keeps ndim==1 keys), plus the
+# criteria flattened as 1-element arrays so the UI can badge them live.
+npz_out = {k: v for k, v in S.items()}
+npz_out.update(days=days, yrs=yrs, sshstd=np.full(n, sshstd_last)
+               if np.isfinite(sshstd_last) else np.zeros(n),
+               maxeta=np.full(n, max_eta_all) if npz_ok else np.zeros(n),
+               crit_slope_g=np.array([slope_g]),
+               crit_slope_a=np.array([slope_a]),
+               crit_max_eta=np.array([max_eta_all]),
+               crit_b_pass=np.array([1.0 if crit["b_deept_trend"]["pass"]
+                                     else 0.0]),
+               crit_c_pass=np.array([1.0 if crit["c_med_eta"]["pass"]
+                                     else 0.0]))
+np.savez(OUT_NPZ, **npz_out)
 
 print(json.dumps(out, indent=2))
 print(f"saved {OUT_JSON}")

@@ -16,7 +16,8 @@
       "log": "/data/tmp/ocean/logs/spinA100.log",
       "total_days": 36500,
       "started": "2026-09-09 16:15",
-      "note": "Phase A 100yr 正式跑: 从 spinA30probe day-29 ckpt 续跑至 day 36500, kappa_v=2e-4"
+      "note": "Phase A 100yr 正式跑: 从 spinA30probe day-29 ckpt 续跑至 day 36500, kappa_v=2e-4",
+      "parent_npz": "/data/tmp/ocean/results/global_spinA30probe.npz"
     }
   ]
 }
