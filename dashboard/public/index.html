@@ -120,6 +120,19 @@
   .crit .item .v.pass { color: var(--ok); }
   .crit .item .v.fail { color: var(--bad); }
 
+  /* ── multi-run compare: chip toggles + overlay charts ── */
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip {
+    cursor: pointer; user-select: none;
+    border: 1px solid var(--border-soft); border-radius: 2px;
+    padding: 1px 9px; font-size: 12px; color: var(--dim); background: #fff;
+    transition: background .15s ease, color .15s ease;
+  }
+  .chip.on { color: #fff; border-color: transparent; }
+  .cmp2 { display: grid; gap: 24px; grid-template-columns: 1fr 1fr; margin-top: 12px; }
+  .cmp2 h3 { margin: 0 0 8px; font-size: 13px; font-weight: 600; color: var(--dim); }
+  @media (max-width: 1100px) { .cmp2 { grid-template-columns: 1fr; } }
+
   pre#log {
     background: #f8f9fa; border: 1px solid var(--border-soft); border-radius: 2px;
     padding: 12px 14px; max-height: 280px; overflow: auto;
@@ -195,6 +208,29 @@
   </section>
   <div class="row2" id="wideCharts"></div>
   <div class="row3" id="smallCharts"></div>
+  <section class="card wide">
+    <h2>多跑对比 <span class="dim">点击标签切换 · deepT 越平越好，AMOC 越稳越好 · 曲线在跑完的 tag 后附最后趋势</span></h2>
+    <div class="chips" id="cmpChips"></div>
+    <div class="cmp2">
+      <div>
+        <h3>深层温度 z≤1000 m（°C）</h3>
+        <div class="chartbox"><canvas id="cv_cmp_deepT"></canvas></div>
+      </div>
+      <div>
+        <h3>AMOC 30–60N（Sv）</h3>
+        <div class="chartbox"><canvas id="cv_cmp_amoc"></canvas></div>
+      </div>
+    </div>
+    <div style="height:14px"></div>
+    <table id="lb">
+      <thead><tr>
+        <th>#</th><th>tag</th><th>day</th><th>进度</th>
+        <th>deepT 趋势 °C/yr</th><th>AMOC 30–60N Sv</th><th>max&#124;u&#124;</th>
+        <th>max&#124;eta&#124;</th><th>NaN</th><th>状态</th>
+      </tr></thead>
+      <tbody></tbody>
+    </table>
+  </section>
   <section class="card wide" id="logCard">
     <h2>日志 tail <span class="dim" id="logTag"></span></h2>
     <pre id="log">…</pre>
@@ -208,6 +244,7 @@ const charts = {};                    // chartId → Chart instance
 const sparks = {};                    // kpiKey  → Chart instance
 let MODE = "live";                    // "live" (api/*) | "static" (data.json)
 let STATIC = null;                    // parsed data.json in static mode
+let lastRuns = null;                  // most recent overview payload (live/static)
 
 // ── chart registry: {id, title, sets:[[npzKey, label, color], …]} ──
 const WIDE = [
@@ -330,6 +367,7 @@ async function apiOrStatic(path) {
 }
 
 function renderRuns(j) {
+  lastRuns = j;
   const t = j.generated || j.lastPoll;
   if (t) {
     $("#lastpoll").textContent = "数据时间 " +
@@ -373,6 +411,7 @@ function renderRuns(j) {
     sel.onchange = () => { refreshCurves(); refreshLog(); };
     if (tags.length) { _curvesCache = null; refreshCurves(); refreshLog(); }
   }
+  cmpRefresh(j);                       // chips + overlay + leaderboard
   renderCrit(j);
 }
 
@@ -525,6 +564,152 @@ async function refreshRuns() {
   }
 }
 
+// ── multi-run compare: chips + overlay charts + leaderboard ──
+const CMP_COLORS = [
+  "#0969da", "#cf222e", "#1a7f37", "#b45309", "#8250df", "#db2777",
+  "#0550ae", "#9a6700", "#116329", "#57606a", "#bc4c00", "#218bff",
+  "#d97706", "#8a63d2", "#e16f77", "#0e7a6f",
+];
+const cmp = { tags: [], charts: {}, cache: {} };
+
+async function fetchTagCurves(tag) {
+  // static mode → from data.json snapshot; live → /api/curves/<tag>
+  if (MODE === "static") {
+    const c = STATIC && STATIC.curves && STATIC.curves[tag];
+    if (!c) throw new Error("no curves");
+    return c;
+  }
+  const res = await fetch("/api/curves/" + tag);
+  if (!res.ok) throw new Error("no curves");
+  return res.json();
+}
+
+function cmpRenderChips(j) {
+  const all = (j && j.runs ? j.runs.map((r) => r.tag) : []);
+  if (!all.length) return;
+  const el = $("#cmpChips");
+  // first paint: preselect live runs + any tag with a verdict (they have
+  // curves); user toggles take over from there
+  if (!el.dataset.init) {
+    el.dataset.init = "1";
+    for (const r of j.runs)
+      if ((r.alive && !r.verdict) || r.verdict) cmp.tags.push(r.tag);
+    if (cmp.tags.length > 6) cmp.tags = cmp.tags.slice(-6);
+  }
+  const cur = new Set(cmp.tags);
+  el.innerHTML = all.map((t) =>
+    `<span class="chip" data-tag="${esc(t)}">${esc(t)}</span>`).join("");
+  for (const c of el.children) {
+    const t = c.dataset.tag;
+    if (cur.has(t)) c.classList.add("on");
+    c.style.background = c.classList.contains("on")
+      ? CMP_COLORS[all.indexOf(t) % CMP_COLORS.length] : "";
+    c.onclick = () => cmpToggle(t);
+  }
+  cmp.tags = all.filter((t) => cur.has(t));
+}
+
+async function cmpRefresh(j) {
+  if (!j) return;
+  cmpRenderChips(j);
+  await cmpUpdate();
+}
+
+function cmpToggle(tag) {
+  const i = cmp.tags.indexOf(tag);
+  if (i >= 0) cmp.tags.splice(i, 1);
+  else cmp.tags.push(tag);
+  cmpRenderChips();
+  cmpUpdate();
+}
+
+function cmpTrend(c) {
+  // last-half least-squares slope of deepT, in °C/yr — same stat the
+  // criteria panel uses (per-year, like the analysis script)
+  try {
+    const yrs = c.yrs || c.days?.map((x) => x / 365);
+    const a = c.deepT;
+    if (!yrs || !a || a.length < 8) return null;
+    const h = Math.floor(a.length / 2);
+    const xs = yrs.slice(h), ys = a.slice(h);
+    const n = xs.length;
+    const mx = xs.reduce((s, v) => s + v, 0) / n;
+    const my = ys.reduce((s, v) => s + v, 0) / n;
+    let num = 0, den = 0;
+    for (let i = 0; i < n; i++) { num += (xs[i] - mx) * (ys[i] - my); den += (xs[i] - mx) ** 2; }
+    return den > 0 ? num / den : null;
+  } catch { return null; }
+}
+
+async function cmpUpdate() {
+  const results = await Promise.allSettled(
+    cmp.tags.map(async (t) => [t, cmp.cache[t] || await fetchTagCurves(t)]));
+  for (const r of results) {
+    if (r.status === "fulfilled") cmp.cache[r.value[0]] = r.value[1];
+  }
+  const ok = results.filter((r) => r.status === "fulfilled").map((r) => r.value);
+
+  // overlay charts: each run keeps its own 模式年 axis ({x,y} points + linear
+  // x scale — runs start at different days so shared labels would misalign)
+  for (const [id, key] of [["cv_cmp_deepT", "deepT"], ["cv_cmp_amoc", "amoc"]]) {
+    const cv = $(id);
+    const datasets = ok.map(([t, c]) => {
+      const yrs = c.yrs || c.days?.map((x) => x / 365);
+      const a = c[key];
+      if (!yrs || !a || !a.length) return null;
+      const color = CMP_COLORS[cmp.tags.indexOf(t) % CMP_COLORS.length];
+      const pts = yrs.map((yr, i) => ({ x: yr, y: a[i] }))
+        .filter((p) => p.y != null);
+      return { label: t, data: pts, borderColor: color,
+        pointRadius: 0, borderWidth: 1.6, tension: 0.3, fill: false };
+    }).filter(Boolean);
+    if (!datasets.length) continue;
+    const opts = lineOpts();
+    opts.scales.x.type = "linear";
+    opts.interaction = { mode: "nearest", intersect: false };
+    const cfg = { datasets };
+    if (cmp.charts[id]) { cmp.charts[id].data = cfg; cmp.charts[id].update("none"); }
+    else cmp.charts[id] = new Chart(cv, { type: "line", data: cfg, options: opts });
+  }
+
+  // leaderboard rows: trend + current state, sorted by |trend| ascending
+  const runsIdx = {};
+  for (const r of (lastRuns ? lastRuns.runs : [])) runsIdx[r.tag] = r;
+  const rows = ok.map(([t, c]) => {
+    const r = runsIdx[t] || {};
+    const tr = cmpTrend(c);
+    const amoc = Array.isArray(c.amoc) && c.amoc.length
+      ? c.amoc[c.amoc.length - 1] : null;
+    return { tag: t, trend: tr, amoc,
+      day: r.day, pct: r.day && r.total_days ? r.day / r.total_days * 100 : null,
+      maxu: r.max_u, eta: r.max_eta, nan: r.nan,
+      verdict: r.verdict, alive: r.alive,
+      slopeG: c.crit_slope_g?.[0] };
+  });
+  rows.sort((a, b) => (a.trend == null ? 1 : b.trend == null ? -1 : 0) ||
+    Math.abs(a.trend ?? 9) - Math.abs(b.trend ?? 9));
+  const tb = $("#lb tbody");
+  tb.innerHTML = rows.map((r, i) => {
+    let status, cls;
+    if (r.verdict)      { status = r.verdict; cls = r.verdict === "PASS" ? "pass" : "fail"; }
+    else if (r.alive)   { status = "运行中"; cls = "run"; }
+    else                { status = "—"; cls = "na"; }
+    const tcol = r.trend == null ? "—" : r.trend.toFixed(4);
+    return `<tr>
+      <td>${i + 1}</td>
+      <td><b>${esc(r.tag)}</b></td>
+      <td>${r.day != null ? fmt(r.day, 0) : "—"}</td>
+      <td>${r.pct != null ? fmt(r.pct, 0) + "%" : "—"}</td>
+      <td>${tcol}</td>
+      <td>${fmt(r.amoc, 1)}</td>
+      <td>${fmt(r.maxu, 3)}</td>
+      <td>${fmt(r.eta, 2)}</td>
+      <td>${r.nan ?? "—"}</td>
+      <td><span class="pill ${cls}">${cls === "run" ? '<i class="dot"></i>' : ""}${status}</span></td>
+    </tr>`;
+  }).join("");
+}
+
 buildCards();
 refreshRuns();
 let runsTimer = setInterval(refreshRuns, 5000);
@@ -534,6 +719,10 @@ function setRunsCadence(ms) {          // static mode: slow the poll cadence
 }
 setInterval(refreshCurves, 60_000);
 setInterval(refreshLog, 5000);
+setInterval(() => {                    // compare cache: re-pull every 10 min
+  cmp.cache = {};
+  cmpUpdate();
+}, 600_000);
 </script>
 </body>
 </html>

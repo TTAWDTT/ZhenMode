@@ -98,6 +98,66 @@
       "started": "2026-09-09 22:45",
       "note": "Phase B 无 Med eta-relax 对照 (relax 是否必需)",
       "parent_npz": "/data/tmp/ocean/results/global_spinA30probe.npz"
+    },
+    {
+      "tag": "spinC_relax15",
+      "node": "014",
+      "gpu": 0,
+      "log": "/data/tmp/ocean/logs/global_spinC_relax15.log",
+      "total_days": 70080,
+      "started": "2026-09-10 01:55",
+      "note": "relax 强度扫参: eta-relax tau=15d（强拐杖对照, 标准 30d）",
+      "parent_npz": "/data/tmp/ocean/results/global_spinA100.npz"
+    },
+    {
+      "tag": "spinC_relax60",
+      "node": "014",
+      "gpu": 1,
+      "log": "/data/tmp/ocean/logs/global_spinC_relax60.log",
+      "total_days": 70080,
+      "started": "2026-09-10 01:55",
+      "note": "relax 强度扫参: eta-relax tau=60d（弱拐杖）",
+      "parent_npz": "/data/tmp/ocean/results/global_spinA100.npz"
+    },
+    {
+      "tag": "spinC_relax90",
+      "node": "014",
+      "gpu": 2,
+      "log": "/data/tmp/ocean/logs/global_spinC_relax90.log",
+      "total_days": 70080,
+      "started": "2026-09-10 01:55",
+      "note": "relax 强度扫参: eta-relax tau=90d（近关断）",
+      "parent_npz": "/data/tmp/ocean/results/global_spinA100.npz"
+    },
+    {
+      "tag": "spinC_from30",
+      "node": "014",
+      "gpu": 3,
+      "log": "/data/tmp/ocean/logs/global_spinC_from30.log",
+      "total_days": 70080,
+      "started": "2026-09-10 01:55",
+      "note": "Phase A 时长敏感性: 从 spinA30probe ckpt (day 10585) 起跑, 检验 Phase A 100 年是否必要",
+      "parent_npz": "/data/tmp/ocean/results/global_spinA30probe.npz"
+    },
+    {
+      "tag": "spinC_slope005",
+      "node": "014",
+      "gpu": 4,
+      "log": "/data/tmp/ocean/logs/global_spinC_slope005.log",
+      "total_days": 70080,
+      "started": "2026-09-10 01:55",
+      "note": "slope 轴补空档: gm_slope_max=0.005（0.003 已爆, 0.01 稳定）",
+      "parent_npz": "/data/tmp/ocean/results/global_spinA100.npz"
+    },
+    {
+      "tag": "spinC_slope007",
+      "node": "014",
+      "gpu": 5,
+      "log": "/data/tmp/ocean/logs/global_spinC_slope007.log",
+      "total_days": 70080,
+      "started": "2026-09-10 01:55",
+      "note": "slope 轴补空档: gm_slope_max=0.007",
+      "parent_npz": "/data/tmp/ocean/results/global_spinA100.npz"
     }
   ]
 }
