@@ -183,10 +183,7 @@ def build_snapshot(sh, entries):
             logs[tag] = run(sh, f"tail -c 3000 {entry.get('log','')}", 10)
         except Exception as e:
             _log(f"log {tag}: {e}")
-    return {
-        "generated": time.strftime("%Y-%m-%dT%H:%M:%S+08:00"),
-        "runs": runs, "curves": curves, "logs": logs,
-    }
+    return runs, curves, logs
 
 
 def publish(snap):
@@ -235,11 +232,36 @@ def main():
     args = ap.parse_args()
     while True:
         try:
-            cli, sh = connect_node(SECRET["node"])
             entries = json.load(io.open(
                 os.path.join(ROOT, "dashboard", "runs.json"),
                 encoding="utf-8"))["runs"]
-            snap = build_snapshot(sh, entries)
+            # group entries by node and open one gateway PTY per node that
+            # has at least one run (014, 012, ...)
+            by_node = {}
+            for ent in entries:
+                by_node.setdefault(ent.get("node") or SECRET["node"],
+                                   []).append(ent)
+            runs, curves, logs = [], {}, {}
+            for node, ents in by_node.items():
+                try:
+                    cli, sh = connect_node(node)
+                except Exception as e:
+                    _log(f"connect {node}: {e!r}")
+                    for ent in ents:
+                        runs.append({"tag": ent["tag"], "node": node,
+                                     "error": f"connect: {e!r}"[:80]})
+                    continue
+                try:
+                    r, c, l = build_snapshot(sh, ents)
+                    runs.extend(r)
+                    curves.update(c)
+                    logs.update(l)
+                finally:
+                    cli.close()
+            snap = {
+                "generated": time.strftime("%Y-%m-%dT%H:%M:%S+08:00"),
+                "runs": runs, "curves": curves, "logs": logs,
+            }
             cli.close()
             status_out = publish(snap)
             if args.no_push:
