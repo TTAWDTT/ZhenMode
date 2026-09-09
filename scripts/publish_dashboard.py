@@ -51,7 +51,46 @@ def to_ascii(s):
     return re.sub(r"[^\x20-\x7e\r\n]", ".", s.decode("utf-8", errors="replace"))
 
 
+def _expected_host(idx):
+    # gateway menu index N maps to host k8s-sh-azn-gpu-{N-2:03d}
+    # (012→gpu-010, 014→gpu-012, 015→gpu-013)
+    return "k8s-sh-azn-gpu-%03d" % (int(idx) - 2)
+
+
 def connect_node(idx):
+    """Open the gateway PTY on node idx, verifying the landed hostname.
+
+    The gateway menu can race and swallow the selection, in which case the
+    shell silently lands on a different (default) node — that once published
+    a snapshot with every run on the wrong host shown as 未运行.  Retry the
+    whole handshake until the hostname matches.
+    """
+    last = None
+    for attempt in range(3):
+        cli = None
+        try:
+            cli, sh = _connect_node_once(idx)
+            # verify through the PTY — exec_command would run on the gateway,
+            # not on the node the menu dropped us into
+            host = run(sh, "hostname", 8)
+            if _expected_host(idx) in host:
+                return cli, sh
+            last = RuntimeError(
+                f"landed on {host.strip()!r}, expected {_expected_host(idx)!r}")
+            _log(f"connect {idx}: {last}; retry {attempt + 1}")
+        except Exception as exc:
+            last = exc
+            _log(f"connect {idx}: {exc!r}; retry {attempt + 1}")
+        if cli is not None:
+            try:
+                cli.close()
+            except Exception:
+                pass
+        time.sleep(5)
+    raise RuntimeError(f"connect {idx} failed after 3 attempts: {last!r}")
+
+
+def _connect_node_once(idx):
     cli = paramiko.SSHClient()
     cli.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     cli.connect(SECRET["host"], port=SECRET["port"], username=SECRET["user"],
