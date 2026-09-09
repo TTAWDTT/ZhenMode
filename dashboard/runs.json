@@ -18,6 +18,86 @@
       "started": "2026-09-09 16:15",
       "note": "Phase A 100yr 正式跑: 从 spinA30probe day-29 ckpt 续跑至 day 36500, kappa_v=2e-4",
       "parent_npz": "/data/tmp/ocean/results/global_spinA30probe.npz"
+    },
+    {
+      "tag": "spinB_kv1e5",
+      "node": "012",
+      "gpu": 0,
+      "log": "/data/tmp/ocean/logs/global_spinB_kv1e5.log",
+      "total_days": 70080,
+      "started": "2026-09-09 22:45",
+      "note": "Phase B 标准主候选: kappa_v=1e-5, GM/Redi=1000, slope 0.01, Med eta-relax",
+      "parent_npz": "/data/tmp/ocean/results/global_spinA30probe.npz"
+    },
+    {
+      "tag": "spinB_gm600",
+      "node": "012",
+      "gpu": 1,
+      "log": "/data/tmp/ocean/logs/global_spinB_gm600.log",
+      "total_days": 70080,
+      "started": "2026-09-09 22:45",
+      "note": "Phase B 弱 GM 对照: kappa_gm=600",
+      "parent_npz": "/data/tmp/ocean/results/global_spinA30probe.npz"
+    },
+    {
+      "tag": "spinB_gm1200",
+      "node": "012",
+      "gpu": 2,
+      "log": "/data/tmp/ocean/logs/global_spinB_gm1200.log",
+      "total_days": 70080,
+      "started": "2026-09-09 22:45",
+      "note": "Phase B 强 GM 对照: kappa_gm=1200",
+      "parent_npz": "/data/tmp/ocean/results/global_spinA30probe.npz"
+    },
+    {
+      "tag": "spinB_gm1800",
+      "node": "012",
+      "gpu": 3,
+      "log": "/data/tmp/ocean/logs/global_spinB_gm1800.log",
+      "total_days": 70080,
+      "started": "2026-09-09 22:45",
+      "note": "Phase B 超强 GM 对照: kappa_gm=1800",
+      "parent_npz": "/data/tmp/ocean/results/global_spinA30probe.npz"
+    },
+    {
+      "tag": "spinB_kv5e5",
+      "node": "012",
+      "gpu": 4,
+      "log": "/data/tmp/ocean/logs/global_spinB_kv5e5.log",
+      "total_days": 70080,
+      "started": "2026-09-09 22:45",
+      "note": "Phase B kappa_v 折中 5e-5 (x5 加速, 层化重建测试)",
+      "parent_npz": "/data/tmp/ocean/results/global_spinA30probe.npz"
+    },
+    {
+      "tag": "spinB_kv2e4",
+      "node": "012",
+      "gpu": 5,
+      "log": "/data/tmp/ocean/logs/global_spinB_kv2e4.log",
+      "total_days": 70080,
+      "started": "2026-09-09 22:45",
+      "note": "Phase B 纯 Phase A 延长对照: kappa_v=2e-4 (过混合假说)",
+      "parent_npz": "/data/tmp/ocean/results/global_spinA30probe.npz"
+    },
+    {
+      "tag": "spinB_slope003",
+      "node": "012",
+      "gpu": 6,
+      "log": "/data/tmp/ocean/logs/global_spinB_slope003.log",
+      "total_days": 70080,
+      "started": "2026-09-09 22:45",
+      "note": "Phase B GM 坡度截断敏感性: gm_slope_max=0.003",
+      "parent_npz": "/data/tmp/ocean/results/global_spinA30probe.npz"
+    },
+    {
+      "tag": "spinB_norelax",
+      "node": "012",
+      "gpu": 7,
+      "log": "/data/tmp/ocean/logs/global_spinB_norelax.log",
+      "total_days": 70080,
+      "started": "2026-09-09 22:45",
+      "note": "Phase B 无 Med eta-relax 对照 (relax 是否必需)",
+      "parent_npz": "/data/tmp/ocean/results/global_spinA30probe.npz"
     }
   ]
 }
