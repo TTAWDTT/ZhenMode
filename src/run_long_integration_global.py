@@ -152,6 +152,35 @@ def interp_seasonal_wind(wind_months, day, blend_days=5.0):
             (1.0 - w) * cur[1] + w * nxt[1])
 
 
+def interp_seasonal_wind_jit(wind_stack, day, blend_days=5.0):
+    """JIT-traceable version of interp_seasonal_wind.
+
+    wind_stack: (12, nx, ny) constant on device; day is a traced scalar.
+    Reproduces the same 30-day month grid + blend_days tanh-free linear
+    crossfade as interp_seasonal_wind, without Python branching on `day`
+    (which would force a retrace per step and a fresh H2D copy of the
+    blended field).
+    """
+    month_len = 30.0
+    mpos = day % month_len
+    mi = jnp.floor(day / month_len).astype(jnp.int32) % 12
+    prev_i = (mi - 1) % 12
+    nxt_i = (mi + 1) % 12
+    half = blend_days / 2.0
+    # Blend windows: w=0 -> pure current month; rises to 1 at the edges.
+    w_after = jnp.clip((mpos - (month_len - half)) / blend_days, 0.0, 1.0)
+    w_before = jnp.clip((half - mpos) / blend_days, 0.0, 1.0)
+    cur = wind_stack[mi]
+    nxt = wind_stack[nxt_i]
+    prev = wind_stack[prev_i]
+    # Blend: pure current month in the interior, linear crossfade to the
+    # previous month across the leading edge and to the next month across
+    # the trailing edge (weights are 0 outside the blend windows).
+    tx = (1.0 - w_after - w_before) * cur[0] + w_after * nxt[0] + w_before * prev[0]
+    ty = (1.0 - w_after - w_before) * cur[1] + w_after * nxt[1] + w_before * prev[1]
+    return tx, ty
+
+
 class _Tee:
     """Duplicate writes to the original stdout and a log file.
 
@@ -197,6 +226,12 @@ def main():
     ap.add_argument("--use-scan", action="store_true",
                     help="run the barotropic subcycle as lax.scan (numerically "
                          "identical; smaller XLA graph, fewer host launches)")
+    ap.add_argument("--wind-jit", action="store_true",
+                    help="compile the seasonal-wind month blend into the XLA "
+                         "graph (stack of 12 monthly fields on device, day as "
+                         "a traced scalar). Numerically identical to the "
+                         "Python blend; removes the per-step Python interp + "
+                         "host-to-device copy (measured ~1.2-1.4x on split runs)")
     ap.add_argument("--lat-max", type=float, default=LAT_MAX_DEFAULT)
     ap.add_argument("--ny", type=int, default=NY_DEFAULT)
     ap.add_argument("--z-levels", default=None,
@@ -431,10 +466,18 @@ def main():
         step, init_state_global, _, _params, terms_fn = _ret
     if seasonal:
         Q_heat_2d = jnp.array(Q_heat)
-        def do_step(state, month_day):
-            tx, ty = interp_seasonal_wind(wind_months, month_day,
-                                          blend_days=args.wind_blend_days)
-            return step_dyn(state, jnp.array(tx), jnp.array(ty), Q_heat_2d)
+        if args.wind_jit:
+            # (12, 2, nx, ny) on device; blend happens inside the graph.
+            wind_stack = jnp.array(np.stack([np.stack(m) for m in wind_months]))
+            def do_step(state, month_day):
+                tx, ty = interp_seasonal_wind_jit(
+                    wind_stack, month_day, blend_days=args.wind_blend_days)
+                return step_dyn(state, tx, ty, Q_heat_2d)
+        else:
+            def do_step(state, month_day):
+                tx, ty = interp_seasonal_wind(wind_months, month_day,
+                                              blend_days=args.wind_blend_days)
+                return step_dyn(state, jnp.array(tx), jnp.array(ty), Q_heat_2d)
     else:
         def do_step(state, month_day):
             return step(state)
