@@ -185,6 +185,18 @@ def main():
     ap.add_argument("--dt-bt", type=float, default=150.0,
                     help="barotropic subcycle dt [s] (mode split); rounded so "
                          "n_subcyc*dt_bt exactly fills the baroclinic dt")
+    ap.add_argument("--nu-nsub", default=None,
+                    help="nu_h subcycle count in split L half-steps: default "
+                         "= legacy (n_subcyc=24); 'cfl' right-sizes from the "
+                         "explicit-diffusion CFL (~10, 2.4x fewer laplacians); "
+                         "int = verbatim")
+    ap.add_argument("--dtype", default="float64", choices=["float64", "float32"],
+                    help="compute dtype (default float64 = legacy bit-exact; "
+                         "float32 is ~2-3x faster on Ada GPUs, needs revalidation "
+                         "of drift criteria)")
+    ap.add_argument("--use-scan", action="store_true",
+                    help="run the barotropic subcycle as lax.scan (numerically "
+                         "identical; smaller XLA graph, fewer host launches)")
     ap.add_argument("--lat-max", type=float, default=LAT_MAX_DEFAULT)
     ap.add_argument("--ny", type=int, default=NY_DEFAULT)
     ap.add_argument("--z-levels", default=None,
@@ -409,7 +421,10 @@ def main():
         eta_relax_days=args.eta_relax_days, eta_relax_box=args.eta_relax_box,
         eta_relax_buffer=args.eta_relax_buffer,
         dynamic_forcing=seasonal,
-        mode_split=args.mode_split, dt_bt=args.dt_bt)
+        mode_split=args.mode_split, dt_bt=args.dt_bt,
+        nu_nsub=(None if args.nu_nsub is None
+                 else ('cfl' if args.nu_nsub == 'cfl' else int(args.nu_nsub))),
+        dtype=args.dtype, use_scan=args.use_scan)
     if seasonal:
         step, init_state_global, _, _params, terms_fn, step_dyn = _ret
     else:
@@ -425,6 +440,11 @@ def main():
             return step(state)
 
     state = init_state_global(T_init=jnp.array(T_init), S_init=jnp.array(S_init))
+
+    # Compute dtype for checkpoint round-trips: fp32 runs keep the device
+    # state in fp32 (I/O casts to float64 at the npz boundary, so checkpoint
+    # files stay grid-version-agnostic and readable by float64 runs).
+    state_dtype = jnp.float32 if args.dtype == "float32" else jnp.float64
 
     n_total = int(round(args.days * 86400.0 / args.dt))
     if args.max_steps > 0:
@@ -443,9 +463,11 @@ def main():
         assert int(ck["grid_nx"]) == grid.nx and int(ck["grid_ny"]) == grid.ny \
             and int(ck["grid_nz"]) == grid.nz, "grid size mismatch with checkpoint"
         state = JaxStateG(
-            u=jnp.array(ck["u"]), v=jnp.array(ck["v"]),
-            T=jnp.array(ck["T"]), S=jnp.array(ck["S"]),
-            eta=jnp.array(ck["eta"]))
+            u=jnp.array(ck["u"], dtype=state_dtype),
+            v=jnp.array(ck["v"], dtype=state_dtype),
+            T=jnp.array(ck["T"], dtype=state_dtype),
+            S=jnp.array(ck["S"], dtype=state_dtype),
+            eta=jnp.array(ck["eta"], dtype=state_dtype))
         start_step = int(ck["cur_step"])
         assert start_step % n_snap == 0, "checkpoint must land on a snap boundary"
         # Re-align snapshot bookkeeping with what already exists on disk.
@@ -473,11 +495,15 @@ def main():
                   f"({args.snap_days:.0f}d)")
     if args.mode_split:
         ns = _params.n_subcyc
+        _nnu = _params.nu_nsub if _params.nu_nsub is not None else ns
         header.append(f"MODE SPLIT: baroclinic dt={args.dt:.0f}s, barotropic "
                       f"subcycle {ns} x {args.dt / ns:.1f}s "
-                      f"(--dt-bt {args.dt_bt:.0f}s), conv_nsub={_params.conv_nsub}")
+                      f"(--dt-bt {args.dt_bt:.0f}s), conv_nsub={_params.conv_nsub}, "
+                      f"nu_nsub={_nnu}, scan={'ON' if _params.use_scan else 'py'}")
     header.append(f"physics: nu_h={physics.nu_h:g}  nu_bi={physics.nu_bi:g}  "
                   f"kappa_conv={physics.kappa_conv}  kappa_v={physics.kappa_v:g}")
+    if args.dtype != "float64":
+        header.append(f"DTYPE: {args.dtype} (compute; I/O stays float64)")
     if args.bulk_lambda_mult != 1.0:
         header.append(f"distorted physics: bulk-lambda x{args.bulk_lambda_mult:g} "
                       f"(accelerated-spinup phase A)")
@@ -539,25 +565,29 @@ def main():
     def snapshot(cur_step):
         nonlocal n_3d_snaps
         day = cur_step * args.dt / 86400.0
-        eta = np.asarray(state.eta)
-        maxu = float(np.max(np.abs(np.asarray(state.u))))
-        maxT = float(np.max(np.abs(np.asarray(state.T))))
+        # fp32 runs: cast every snapshot to float64 so the npz/npy artifact
+        # layout is identical to legacy runs (all analyses read float64).
+        f64 = (lambda a: np.asarray(a, dtype=np.float64)) \
+            if args.dtype == "float32" else np.asarray
+        eta = f64(state.eta)
+        maxu = float(np.max(np.abs(f64(state.u))))
+        maxT = float(np.max(np.abs(f64(state.T))))
         maxeta = float(np.nanmax(np.abs(eta))) if np.isfinite(eta).any() else float('nan')
         sshstd = float(np.std(eta[ocean])) if ocean.any() else float('nan')
         ke = total_kinetic_energy(state, ocean)
-        nan = int(np.sum(~np.isfinite(np.asarray(state.u))))
+        nan = int(np.sum(~np.isfinite(f64(state.u))))
         snap_days.append(day); snap_maxu.append(maxu); snap_maxT.append(maxT)
         snap_maxeta.append(maxeta); snap_sshstd.append(sshstd); snap_ke.append(ke)
-        snap_eta.append(eta.copy()); snap_T_top.append(np.asarray(state.T[:, :, 0]).copy())
+        snap_eta.append(eta.copy()); snap_T_top.append(f64(state.T[:, :, 0]).copy())
         if args.save_3d:
             # 4-field snapshot: T,u,v,S each (nx,ny,nz). eta is NOT stacked —
             # it is 2D while these are 3D, and it is already saved per-frame in
             # the npz `eta` table (snap_eta) which all analyses read.
             snap3d = np.stack([
-                np.asarray(state.T).copy(),
-                np.asarray(state.u).copy(),
-                np.asarray(state.v).copy(),
-                np.asarray(state.S).copy(),
+                f64(state.T).copy(),
+                f64(state.u).copy(),
+                f64(state.v).copy(),
+                f64(state.S).copy(),
             ], axis=0)
             np.save(os.path.join(three_d_dir, f"snap_{n_3d_snaps:05d}.npy"), snap3d)
             del snap3d
@@ -566,7 +596,8 @@ def main():
                 # diff_v, conv, gm, redi], each (nx,ny,nz). Term sum equals
                 # the N-step tracer tendency (no bulk/sponge/heat — those are
                 # surface-only; the deep runaway attribution only needs these).
-                tstack = np.asarray(terms_fn(state))
+                tstack = np.asarray(terms_fn(state), dtype=np.float64) \
+                    if args.dtype == "float32" else np.asarray(terms_fn(state))
                 np.save(os.path.join(three_d_terms_dir,
                                      f"terms_{n_3d_snaps:05d}.npy"), tstack)
                 del tstack
@@ -600,9 +631,11 @@ def main():
                 and cur < n_total and cur > start_step):
             np.savez_compressed(
                 ckpt_path,
-                u=np.asarray(state.u), v=np.asarray(state.v),
-                T=np.asarray(state.T), S=np.asarray(state.S),
-                eta=np.asarray(state.eta), cur_step=cur,
+                u=np.asarray(state.u, dtype=np.float64),
+                v=np.asarray(state.v, dtype=np.float64),
+                T=np.asarray(state.T, dtype=np.float64),
+                S=np.asarray(state.S, dtype=np.float64),
+                eta=np.asarray(state.eta, dtype=np.float64), cur_step=cur,
                 grid_nx=grid.nx, grid_ny=grid.ny, grid_nz=grid.nz,
                 n_3d_snaps=n_3d_snaps)
             print(f"  [ckpt] saved {ckpt_path} at step {cur}", flush=True)

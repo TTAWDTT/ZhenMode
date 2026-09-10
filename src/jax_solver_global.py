@@ -718,7 +718,21 @@ FDPhysParams = namedtuple('FDPhysParams', [
     'n_subcyc',          # int: barotropic subcycles per baroclinic step
     'conv_nsub',         # int: convective-adjustment subcycles per bc step
     'adv_nsub',          # int: vertical-advection subcycles per bc step
+    # nu_h subcycle count in the split L half-steps. None (default) = legacy
+    # behavior (n_nu = n_subcyc, 24 substeps at dt=3600/dt_bt=150 — CFL LHS
+    # 0.136, a 3.7x margin under the 0.5 FTCS bound). An int right-sizes it
+    # from the actual metric (see make_solver_global nu_nsub arg): ~6
+    # substeps at the same margin — 4x fewer laplacian pairs per half-step.
+    'nu_nsub',
+    # True: run the barotropic subcycle as a jax.lax.scan (fused device loop,
+    # body compiled once) instead of an unrolled Python loop. Numerically
+    # identical; cuts XLA graph size and host launch overhead.
+    'use_scan',
 ])
+
+# Keyword-constructed callers that predate nu_nsub/use_scan (archive_diag
+# probes) get the legacy behavior instead of a TypeError.
+FDPhysParams.__new__.__defaults__ = (None, False)
 
 
 # ── EOS (shared with spectral solver; copied to avoid import cycle) ─
@@ -1394,7 +1408,20 @@ def _compute_tracer_tendency(state, p):
     """
     Fz = _vertical_transport_iface(state.u, state.v, p)
     n_a = int(p.adv_nsub)
-    if n_a > 1:
+    if n_a > 1 and p.use_scan:
+        # Fused adv subcycle (numerically identical to the unrolled loop).
+        dts = p.dt / n_a
+
+        def _adv_sub(carry, _):
+            tT, tS = carry
+            aT = _advection_scalar(tT, state.u, state.v, Fz, p)
+            aS = _advection_scalar(tS, state.u, state.v, Fz, p)
+            return (tT + aT * dts, tS + aS * dts), (aT, aS)
+
+        (T_w, S_w), (sT, sS) = jax.lax.scan(
+            _adv_sub, (state.T, state.S), None, length=n_a)
+        adv_T, adv_S = sT.mean(axis=0), sS.mean(axis=0)
+    elif n_a > 1:
         # Subcycled advection: evolve a working copy of (T, S) with the
         # frozen u,v,Fz advection operator dt/adv_nsub at a time, and report
         # the AVERAGE rate so the Strang residual (which subtracts it from
@@ -1451,24 +1478,36 @@ def _compute_tracer_tendency(state, p):
         conv_T = jnp.zeros_like(state.T)
         conv_S = jnp.zeros_like(state.S)
         T_c, S_c = state.T, state.S
-        for _ in range(n_c):
-            # Advance by the CURRENT term only (correct forward-Euler
-            # subcycle, same pattern as the adv_nsub loop above). Advancing
-            # by the accumulated sum makes the operator NEUTRAL per
-            # eigenmode (|1 - hd/2 ± i.sqrt(hd)| = 1 for hd < 4) instead of
-            # dissipative: inversions never homogenize, and the reported
-            # average rate (sum of accumulated terms)/n_c takes a
-            # phase-random sign that pumps ~0.2x the mode amplitude per
-            # step (measured conv-max growth 9.5e-4 -> 5.4e-3 -> 0.14 ->
-            # 2.6 K/s over 3 steps at the warm pool, ~5x/step).
-            tT = _conv_flux_tendency(T_c, conv_mask_3d, kappa_c, p)
-            tS = _conv_flux_tendency(S_c, conv_mask_3d, kappa_c, p)
-            conv_T = conv_T + tT
-            conv_S = conv_S + tS
-            T_c = T_c + tT * h_c
-            S_c = S_c + tS * h_c
-        conv_T = conv_T / n_c   # average rate over the baroclinic step
-        conv_S = conv_S / n_c
+        if p.use_scan:
+            # Fused conv subcycle (numerically identical forward-Euler chain).
+            def _conv_sub(carry, _):
+                tT, tS = carry
+                ttT = _conv_flux_tendency(tT, conv_mask_3d, kappa_c, p)
+                ttS = _conv_flux_tendency(tS, conv_mask_3d, kappa_c, p)
+                return (tT + ttT * h_c, tS + ttS * h_c), (ttT, ttS)
+
+            (T_c, S_c), (sT, sS) = jax.lax.scan(
+                _conv_sub, (state.T, state.S), None, length=n_c)
+            conv_T, conv_S = sT.mean(axis=0), sS.mean(axis=0)
+        else:
+            for _ in range(n_c):
+                # Advance by the CURRENT term only (correct forward-Euler
+                # subcycle, same pattern as the adv_nsub loop above). Advancing
+                # by the accumulated sum makes the operator NEUTRAL per
+                # eigenmode (|1 - hd/2 ± i.sqrt(hd)| = 1 for hd < 4) instead of
+                # dissipative: inversions never homogenize, and the reported
+                # average rate (sum of accumulated terms)/n_c takes a
+                # phase-random sign that pumps ~0.2x the mode amplitude per
+                # step (measured conv-max growth 9.5e-4 -> 5.4e-3 -> 0.14 ->
+                # 2.6 K/s over 3 steps at the warm pool, ~5x/step).
+                tT = _conv_flux_tendency(T_c, conv_mask_3d, kappa_c, p)
+                tS = _conv_flux_tendency(S_c, conv_mask_3d, kappa_c, p)
+                conv_T = conv_T + tT
+                conv_S = conv_S + tS
+                T_c = T_c + tT * h_c
+                S_c = S_c + tS * h_c
+            conv_T = conv_T / n_c   # average rate over the baroclinic step
+            conv_S = conv_S / n_c
     else:
         conv_T = _conv_flux_tendency(state.T, conv_mask_3d, p.kappa_conv, p)
         conv_S = _conv_flux_tendency(state.S, conv_mask_3d, p.kappa_conv, p)
@@ -1697,6 +1736,10 @@ def _free_surface_step_fd(eta, u, v, p, F_rho_x=None, F_rho_y=None, dt_half=None
             return field2d
         nt = p.polar_cap_taper
         wts = _polar_cap_weights(nc, nt)               # (nc+nt,)
+        # _polar_cap_weights builds jnp.ones/linspace at runtime, which are
+        # float64 under jax_enable_x64 — cast to the field's dtype so the
+        # blend does not silently promote eta/ubt/vbt to f64.
+        wts = wts.astype(field2d.dtype)
         nb = nc + nt
         wts_b = wts.reshape(1, nb)
 
@@ -1793,14 +1836,27 @@ def _linear_half_step(state, p, dt_half):
     # each, CFL 0.06 per substep) — same fixed-operator subcycling pattern as
     # conv_nsub. Monolithic dt=60-300 keeps the single-shot form (CFL-safe).
     if p.mode_split and p.n_subcyc > 0:
-        # subcycle count sized by the same 0.2*LHS criterion as conv_nsub:
-        # nu_h*dt/(subcyc*dy^2) <= 0.2; dt_half at 3600 => 24 substeps at 150 s.
+        # subcycle count sized by the 0.5*LHS FTCS criterion. Legacy sizing
+        # (nu_nsub=None) reuses n_subcyc (24 substeps at dt=3600/dt_bt=150,
+        # LHS 0.136 — a 3.7x stability margin). nu_nsub right-sizes it from
+        # the actual metric worst-case: nu_h*dt/(n*dy_min^2) <= 0.5 (see
+        # make_solver_global) — ~10 substeps at the same margin, 2.4x fewer
+        # laplacian pairs per L half-step.
         u, v = state.u, state.v
-        n_nu = max(1, int(p.n_subcyc))
+        n_nu = max(1, int(p.n_subcyc if p.nu_nsub is None else p.nu_nsub))
         dts = dt_half / n_nu
-        for _ in range(n_nu):
-            u = u + p.nu_h * _laplacian_h(u, p) * dts
-            v = v + p.nu_h * _laplacian_h(v, p) * dts
+        if p.use_scan:
+            # Fused nu_h subcycle: n_nu laplacian-pair applications.
+            def _nu_sub(carry, _):
+                cu, cv = carry
+                return (cu + p.nu_h * _laplacian_h(cu, p) * dts,
+                        cv + p.nu_h * _laplacian_h(cv, p) * dts), None
+
+            (u, v), _ = jax.lax.scan(_nu_sub, (u, v), None, length=n_nu)
+        else:
+            for _ in range(n_nu):
+                u = u + p.nu_h * _laplacian_h(u, p) * dts
+                v = v + p.nu_h * _laplacian_h(v, p) * dts
     else:
         u = state.u + p.nu_h * _laplacian_h(state.u, p) * dt_half
         v = state.v + p.nu_h * _laplacian_h(state.v, p) * dt_half
@@ -2043,6 +2099,10 @@ def _apply_polar_cap_3d(field3d, p):
     # ~+15 C — a meridional cliff against the -0.3 C WOA deep T that
     # seeded the Southern-Ocean cold-pole blow-up (d170 collapse).
     wts = _polar_cap_weights(ncap, ntaper)       # (ncap+ntaper,)
+    # Runtime-built jnp.ones/linspace are float64 under jax_enable_x64; cast
+    # to the field's dtype or the blend promotes the whole field to f64
+    # (silently defeats the fp32 state/params cast downstream).
+    wts = wts.astype(field3d.dtype)
     nb = ncap + ntaper
     wmz = p.wet_mask_z                           # (nx, ny, nz), 3D mask
 
@@ -2108,12 +2168,29 @@ def _step_impl(state, p):
         ubt0, vbt0 = _barotropic_velocity(state.u, state.v, p)
         ubt, vbt = ubt0, vbt0
         eta = state.eta
-        for _ in range(int(p.n_subcyc)):
-            # One FB pair per call = dt_bt of evolution (caller passes
-            # dt_half=dt_bt). ubt/vbt seeded once; each subcycle feeds the
-            # 2D (eta, ubt, vbt) triple forward.
-            eta, ubt, vbt = _free_surface_step_fd(
-                eta, ubt, vbt, p, F_rho_x, F_rho_y, dt_half=p.dt_bt)
+
+        # lax.scan barotropic subcycle (when use_scan): one fused device-side
+        # loop of n_subcyc forward-backward pairs instead of n_subcyc unrolled
+        # copies of the same 5-kernel block. Numerically IDENTICAL (same
+        # _free_surface_step_fd called n_subcyc times) — scan just compiles
+        # the body once, cutting XLA graph size and host launch overhead.
+        # Python-loop path stays default (None) = bit-exact legacy trace.
+        if p.use_scan:
+            def _fb(carry, _):
+                eta_i, ubt_i, vbt_i = carry
+                eta_i, ubt_i, vbt_i = _free_surface_step_fd(
+                    eta_i, ubt_i, vbt_i, p, F_rho_x, F_rho_y, dt_half=p.dt_bt)
+                return (eta_i, ubt_i, vbt_i), None
+
+            (eta, ubt, vbt), _ = jax.lax.scan(
+                _fb, (eta, ubt, vbt), None, length=int(p.n_subcyc))
+        else:
+            for _ in range(int(p.n_subcyc)):
+                # One FB pair per call = dt_bt of evolution (caller passes
+                # dt_half=dt_bt). ubt/vbt seeded once; each subcycle feeds the
+                # 2D (eta, ubt, vbt) triple forward.
+                eta, ubt, vbt = _free_surface_step_fd(
+                    eta, ubt, vbt, p, F_rho_x, F_rho_y, dt_half=p.dt_bt)
         # Project the subcycle's net barotropic delta onto the 3D velocity
         # (uniform over depth) — same projection as the monolithic path.
         delta_ubt = (ubt - ubt0)[:, :, None]
@@ -2151,7 +2228,8 @@ def make_solver_global(grid, physics, dt, forcing=None, eos_type='linear',
                        polar_cap_rows=2, polar_cap_taper=3, return_params=False,
                        eta_relax_days=0.0, eta_relax_box=None,
                        eta_relax_buffer=1.0, dynamic_forcing=False,
-                       mode_split=False, dt_bt=150.0):
+                       mode_split=False, dt_bt=150.0, nu_nsub=None,
+                       dtype='float64', use_scan=False):
     """Create a JIT-compiled global FD ocean solver.
 
     Args mirror the spectral make_solver where applicable. Key differences:
@@ -2173,6 +2251,12 @@ def make_solver_global(grid, physics, dt, forcing=None, eos_type='linear',
         so the baroclinic dt can exceed the external-gravity-wave CFL
         (3600 s at 1 deg). Off by default — off is bit-exact to the
         pre-split solver.
+      - nu_nsub: None = legacy nu_h subcycle count (n_subcyc); 'cfl' =
+        right-sized from the explicit-diffusion CFL; int = verbatim.
+      - dtype='float32' casts params/state to fp32 (1:64 FP64:FP32 on Ada
+        GPUs — biggest kernel-time lever). Default 'float64' = bit-exact.
+      - use_scan=True runs the barotropic subcycle as lax.scan (numerically
+        identical, smaller XLA graph / fewer host launches).
     """
     base = make_fd_params(grid)
     nx, ny, nz = base.nx, base.ny, base.nz
@@ -2289,6 +2373,29 @@ def make_solver_global(grid, physics, dt, forcing=None, eos_type='linear',
         n_subcyc = 0
         dt_bt_eff = 0.0
 
+    # ── Compute dtype ──
+    # 'float64' (default) = legacy bit-exact path. 'float32' casts every
+    # params array and zeros template to fp32 — on Ada-class GPUs (L20X:
+    # FP64:FP32 = 1:64) this is the single biggest kernel-time lever. The
+    # runner still reads/writes float64 npz (I/O casts at the boundary).
+    # NOTE: params is built further below; the fp32 cast of params happens
+    # right after construction (see "fp32 cast" after FDPhysParams(...)).
+    state_dtype = jnp.float32 if dtype == 'float32' else jnp.float64
+
+    # ── nu_h subcycle right-sizing (split L half-steps) ──
+    # Legacy (None): n_nu = n_subcyc (24 at dt=3600/dt_bt=150), explicit
+    # diffusion CFL LHS = nu_h*dt/(2*n_subcyc*dy^2) ~ 0.136 at nu_h=5e6,
+    # dy=111 km — a 3.7x margin under the 0.5 bound. nu_nsub='cfl' sizes
+    # from the actual metric worst case with the same 2x safety margin:
+    #     n = ceil(nu_h * dt / (0.25 * dy^2))
+    # (~10 substeps here — 2.4x fewer laplacian pairs per L half-step). An
+    # int is honored verbatim (probe/benchmark override).
+    if nu_nsub == 'cfl':
+        dy_min = float(np.min(np.asarray(grid.dy)))
+        nu_nsub = max(1, int(np.ceil(physics.nu_h * dt / (0.25 * dy_min ** 2))))
+    elif nu_nsub is not None:
+        nu_nsub = max(1, int(nu_nsub))
+
     params = FDPhysParams(
         dx_2d=base.dx_2d, dy=base.dy, cos_lat=base.cos_lat,
         inv_dx=base.inv_dx, inv_dy=base.inv_dy,
@@ -2330,6 +2437,8 @@ def make_solver_global(grid, physics, dt, forcing=None, eos_type='linear',
         n_subcyc=n_subcyc,
         conv_nsub=max(1, int(np.ceil(
             physics.kappa_conv * dt / (0.4 * float(jnp.min(jnp.array(grid.dz))) ** 2)))),
+        nu_nsub=nu_nsub,
+        use_scan=bool(use_scan),
         # Vertical-advection subcycles: keep dt*(|u|/dx + |v|/dy + w/dz) below
         # ~0.5 per substep. The dominant constraint is w/dz in the 5 m surface
         # layer (equatorial upwelling w~3e-3 m/s -> dt*w/dz ~ 2.2 at dt=3600);
@@ -2340,6 +2449,17 @@ def make_solver_global(grid, physics, dt, forcing=None, eos_type='linear',
         adv_nsub=max(1, int(np.ceil(dt * 4.0e-3 / (0.5 * float(jnp.min(
             jnp.array(grid.dz))))))),
     )
+
+    # fp32 cast: params was just built in float64 (numpy defaults); when
+    # computing in float32 every array field must be cast too, or XLA inserts
+    # implicit f64 promotion kernels that silently kill the fp32 speedup.
+    # Scalars (int/float/str/None) are passed through unchanged.
+    if dtype == 'float32':
+        params = params._replace(**{
+            f: (v.astype(state_dtype)
+                if isinstance(v, jnp.ndarray) and v.dtype == jnp.float64
+                else v)
+            for f in params._fields for v in [getattr(params, f)]})
 
     @jax.jit
     def step(state):
@@ -2373,15 +2493,16 @@ def make_solver_global(grid, physics, dt, forcing=None, eos_type='linear',
         return _tracer_terms(state, params)
 
     def init_state(T_init=None, S_init=None):
-        u = jnp.zeros((nx, ny, nz))
-        v = jnp.zeros((nx, ny, nz))
-        eta = jnp.zeros((nx, ny))
+        u = jnp.zeros((nx, ny, nz), dtype=state_dtype)
+        v = jnp.zeros((nx, ny, nz), dtype=state_dtype)
+        eta = jnp.zeros((nx, ny), dtype=state_dtype)
         if T_init is not None:
-            T = jnp.array(T_init)
-            S = jnp.array(S_init) if S_init is not None else jnp.full_like(T, physics.S_ref)
+            T = jnp.array(T_init, dtype=state_dtype)
+            S = jnp.array(S_init, dtype=state_dtype) if S_init is not None \
+                else jnp.full_like(T, physics.S_ref)
         else:
-            T = jnp.full((nx, ny, nz), physics.T_ref)
-            S = jnp.full((nx, ny, nz), physics.S_ref)
+            T = jnp.full((nx, ny, nz), physics.T_ref, dtype=state_dtype)
+            S = jnp.full((nx, ny, nz), physics.S_ref, dtype=state_dtype)
         # Mask land + ghost water (layers below seafloor): set to a sentinel.
         # wet_mask_z is the TRUE 3D mask (1 where water exists, 0 on land AND
         # below seafloor). This discards WOA-interpolated T in ghost layers
