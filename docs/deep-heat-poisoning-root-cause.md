@@ -345,3 +345,29 @@ Reading:
 - No single flag fixes this. The interior leak (−603) and the pinned-T_atm
   surface source (+714) are **independent defects that happen to cancel**;
   each must be fixed on its own terms.
+
+### Term attribution of the stage-2 leak (corrected scaling)
+
+Integrating the residual operators as RATES (avoiding a spurious /dt in the
+diagnostic) resolves the structure exactly:
+
+| quantity | rate (ZJ/yr) |
+|---|---|
+| `dT1` residual @ true state | **−72** (small) |
+| `dT2` residual @ predicted state | **−1188** (huge) |
+| N = 0.5·(dT1+dT2) | **−630** (matches measured −618.6) |
+
+and `_tracer_terms` at the predicted state gives `adv_T = −1188 ZJ/yr` — i.e.
+**the entire leak is advection at the RK2 stage-2 predicted velocity**, with
+every other term (diff_h/diff_v/conv/gm/redi) ~0. The column-integrated
+horizontal divergence `Fz[0]` rms **doubles** from true u (1.99e-5) to the
+predictor (3.69e-5). This is exactly the flux-form column leak
+`−Σ AREA·Fz[0]·T[0]` of Defect 3, now attributed to the stage-2 velocity.
+
+So the single root mechanism is: **`u_pred = u + du1*dt` (full forward-Euler
+momentum predictor) is far more divergent than the true state, and flux-form
+advection is not conservative for a divergent velocity.** Every candidate fix
+(freeze the stage-2 velocity, use the RK2 midpoint `u+0.5du1*dt`, or make the
+advection column-consistent) attacks this one mechanism; none completely
+removes it, and all are entangled with the independent pinned-T_atm surface
+source.
