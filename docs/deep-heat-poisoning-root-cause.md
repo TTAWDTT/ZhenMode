@@ -249,3 +249,30 @@ k-sum), which is a larger change than the projection itself.
 - The 25.1% grid discrepancy: `p.H_sw = sum(grid.dz) = 4000.0` (13 interface
   spacings) but `sum(p.dz_node) = 5002.5` (14 node thicknesses). `H_sw` drives
   the barotropic mass/wind scaling; `dz_node` drives every tracer operator.
+
+## A/B verification of the RK2 double-diffusion fix (2026-09-13)
+
+Commit `fbdeaee` was written but **never exercised in a launched run** — the
+cluster's `src/` was the 2026-09-10 copy, so every spinC/spinD run up to then
+used the defect code. The current solver + runner (with `--freeze-adv-vel` /
+`--conservative-kv` exposed, commit `2375166`) were staged to the cluster and
+three runs were compared on an identical window (`ckpt_spinC_slope005x`, day
+99645 → 118625, 52 yr, fp32, solo GPU, ~82 min each):
+
+| tag | change | OHC start→end (ZJ) | drift | first-5yr slope | deepT drift |
+|---|---|---|---|---|---|
+| `spinD_f32` | defect code (baseline) | 33602 → 33903 | +5.79 ZJ/yr | +7.30 | +0.0015 C/yr |
+| `spinE_fix_f32` | kv fix only | 33602 → 33348 | **−4.89 ZJ/yr** | **−11.87** | −0.0008 |
+| `spinF_fix_frz` | kv fix + `freeze_adv_vel` | 33602 → 53454 | **+381.8 ZJ/yr** | +626 | +0.0857 |
+
+**Result:** the fix removes a spurious ~+10.7 ZJ/yr heat source and flips the
+ocean from warming to cooling. The separation is smooth and monotonic from yr 4
+(E−D: −79 → −152 → −223 → … → −555 ZJ), i.e. a systematic source difference,
+not multi-decadal chaotic branch divergence.
+
+**`freeze_adv_vel` is catastrophic in production physics** (+382 ZJ/yr, deepT
++0.086 C/yr). Its earlier "partial win" had been measured with the bulk flux
+off; there is no production case for it. Both flags stay DEFAULT OFF.
+
+The fix is necessary but not sufficient: `spinE` still drifts −4.89 ZJ/yr. The
+structural column-continuity leak (above) remains open.
