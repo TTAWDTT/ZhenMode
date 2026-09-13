@@ -321,3 +321,27 @@ net *warming* worse (+8 → +382 ZJ/yr) — hence DEFAULT OFF.
 **Suspect fix (untested):** use the RK2 *midpoint* velocity `u + 0.5*du1*dt`
 instead of the full predictor `u + du1*dt` in the tracer stage-2. A proper
 midpoint stage is far less divergent. Tested next.
+
+### The production "equilibrium" is a cancellation of two errors
+
+Four configurations measured on the same state (K=200 steps, spinE final state):
+
+| config | surface (ZJ/yr) | interior (ZJ/yr) | **net dOHC/dt** |
+|---|---|---|---|
+| (a) current production (pinned T_atm, freeze off) | +714 | −603 | **+8.2** |
+| (b) freeze_adv_vel only | +714 | −68 | **+542** |
+| (c) T_atm recentred to ocean mean, freeze off | 0 | **−456** | **−456** |
+| (d) T_atm recentred + freeze_adv_vel | 0 | +79 | **+79** |
+
+Reading:
+- Current production's tiny +8 ZJ/yr is **not equilibrium** — it is a
+  +714 surface source (Defect 2, pinned T_atm) almost exactly cancelling a
+  −603 numerical sink (Defect 4). Remove either artifact and the run is far
+  from settled: −456 (interior-only) or +542 (surface-only).
+- `freeze_adv_vel` collapses the interior leak from −603 to −68 (a 9x
+  reduction) — the leak scales with how far the stage-2 velocity departs from
+  the true state velocity. But it leaves a +79 residual (the structural
+  column-continuity leak) and, on its own, un-masks the surface source.
+- No single flag fixes this. The interior leak (−603) and the pinned-T_atm
+  surface source (+714) are **independent defects that happen to cancel**;
+  each must be fixed on its own terms.
