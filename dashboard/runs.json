@@ -1,8 +1,6 @@
 {
   "runs": [
-    {"tag":"spinD_f32","node":"014","gpu":0,"log":"/data/tmp/ocean/logs/global_spinD_f32.log","total_days":118625,"started":"2026-09-10 23:31","note":"spinD 精度对照 f32: 从 slope005x day-99645 ckpt 续跑, float32 (验证 f32 生产可用性) — 旧代码(修复前), 退役"},
-    {"tag":"spinD_f64","node":"014","gpu":1,"log":"/data/tmp/ocean/logs/global_spinD_f64.log","total_days":118625,"started":"2026-09-10 23:31","note":"spinD 精度对照 f64: 同上 float64, 作为 f32 的基准 — 旧代码(修复前), 退役"},
-    {"tag":"spinE_fix_f32","node":"014","gpu":0,"log":"/data/tmp/ocean/logs/global_spinE_fix_f32.log","total_days":118625,"started":"2026-09-13 09:55","note":"spinE 修复验证: 同起点(ckpt_spinC_slope005x)同窗口对照 spinD_f32, 但跑修复版代码 (去掉 RK2 双重垂直扩散)"},
-    {"tag":"spinF_fix_frz","node":"014","gpu":1,"log":"/data/tmp/ocean/logs/global_spinF_fix_frz.log","total_days":118625,"started":"2026-09-13 18:08","note":"spinF 叠加验证: 同上, 修复 + freeze_adv_vel=True (测两 flag 叠加是否进一步降漏热)"}
+    {"tag":"spinG_prod200","node":"014","gpu":0,"log":"/data/tmp/ocean/logs/global_spinG_prod200.log","total_days":73000,"started":"2026-09-13 18:05","note":"200yr 清洁起点 A/B: 生产配置 (T_atm 钉死, freeze OFF) from WOA — 基准平衡态"},
+    {"tag":"spinH_frz200","node":"014","gpu":1,"log":"/data/tmp/ocean/logs/global_spinH_frz200.log","total_days":73000,"started":"2026-09-13 18:05","note":"200yr 清洁起点 A/B: freeze_adv_vel=ON (内部漏热 -603→-68) — 看 SST 能否逼近 T_atm 达物理平衡"}
   ]
 }
