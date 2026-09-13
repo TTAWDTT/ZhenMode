@@ -612,6 +612,33 @@ def _d2_dz2(u, p):
     return jnp.concatenate([d2u_top, d2u_interior, d2u_bot], axis=-1)
 
 
+def _d2_dz2_flux(tracer, kappa, p):
+    """Vertical diffusion in INTERFACE-flux form (exactly column-conservative).
+
+    Same construction and motivation as _conv_flux_tendency: the node-form
+    _d2_dz2 integrated with dz_node weights does NOT telescope on the
+    non-uniform grid (its raw volume integral is ~-4.4e13 on the production
+    field; pure kappa_v*_d2_dz2 repeated 30x leaked -54 ZJ/yr). Vertical
+    diffusion must conserve total tracer content exactly — it can only
+    redistribute within a column — so the node form is a genuine defect.
+
+    Interface flux F[k+1/2] = -kappa*(C[k+1]-C[k])/dz_iface[k], zero at the
+    material top/bottom, tendency (F[k-1/2]-F[k+1/2])/dz_node[k]: the column
+    sum telescopes to F[bot]-F[top] = 0 for ANY kappa and ANY field.
+    """
+    if kappa == 0.0:
+        return jnp.zeros_like(tracer)
+    tracer = _fill_ghost_bottom(tracer, p)
+    Cm = tracer[..., :-1]
+    Cp = tracer[..., 1:]
+    Fz_i = -kappa * (Cp - Cm) / p.dz_iface                # (nx, ny, nz-1)
+    wet_iface_f = (p.wet_mask_z[..., :-1] > 0.5) & (p.wet_mask_z[..., 1:] > 0.5)
+    Fz_i = jnp.where(wet_iface_f, Fz_i, 0.0)
+    up = jnp.concatenate([jnp.zeros_like(Fz_i[..., :1]), Fz_i], axis=-1)
+    dn = jnp.concatenate([Fz_i, jnp.zeros_like(Fz_i[..., :1])], axis=-1)
+    return (up - dn) / p.dz_node * p.wet_mask_z
+
+
 def _conv_flux_tendency(tracer, conv_mask_3d, kappa, p):
     """Convective mixing in INTERFACE-flux form (exactly column-conservative).
 
@@ -728,11 +755,24 @@ FDPhysParams = namedtuple('FDPhysParams', [
     # body compiled once) instead of an unrolled Python loop. Numerically
     # identical; cuts XLA graph size and host launch overhead.
     'use_scan',
+    # True: freeze the tracer stage-2 advection velocity at the old (u, v)
+    # instead of the raw forward-Euler momentum predictor u_pred. Makes the
+    # tracer RK2 consistent with the momentum RK2 (both stages old-velocity,
+    # matching the drag note in _explicit_full_step) and removes the
+    # -Σ AREA·Fz[0]·T[0] heat leak. See _explicit_full_step.
+    'freeze_adv_vel',
+    # True: use the exactly-column-conservative INTERFACE-flux form of
+    # vertical diffusion (_d2_dz2_flux) instead of kappa_v*_d2_dz2 in both the
+    # L half-step and the N residual. Removes the node-form non-telescoping
+    # leak (pure kappa_v*_d2_dz2 repeated 30x = -54 ZJ/yr). Default False =
+    # historical behavior (bit-exact legacy traces).
+    'conservative_kv',
 ])
 
-# Keyword-constructed callers that predate nu_nsub/use_scan (archive_diag
-# probes) get the legacy behavior instead of a TypeError.
-FDPhysParams.__new__.__defaults__ = (None, False)
+# Keyword-constructed callers that predate nu_nsub/use_scan/freeze_adv_vel/
+# conservative_kv (archive_diag probes) get the legacy behavior instead of a
+# TypeError.
+FDPhysParams.__new__.__defaults__ = (None, False, False, False)
 
 
 # ── EOS (shared with spectral solver; copied to avoid import cycle) ─
@@ -1363,7 +1403,8 @@ def _tracer_terms(state, p):
     Fz = _vertical_transport_iface(state.u, state.v, p)
     adv_T = _advection_scalar(state.T, state.u, state.v, Fz, p)
     diff_h_T = p.kappa_h * _laplacian_h(state.T, p)
-    diff_v_T = p.kappa_v * _d2_dz2(state.T, p)
+    diff_v_T = (_d2_dz2_flux(state.T, p.kappa_v, p) if p.conservative_kv
+                else p.kappa_v * _d2_dz2(state.T, p))
 
     rho_prime = _density_anomaly(state.T, state.S, p) * p.wet_mask_z
     wet_iface = (p.wet_mask_z[..., :-1] > 0.5) & (p.wet_mask_z[..., 1:] > 0.5)
@@ -1875,8 +1916,12 @@ def _linear_half_step(state, p, dt_half):
         S = S - p.kappa_bi * _biharmonic_h(state.S, p) * dt_half
     u = u + p.nu_v * _d2_dz2(state.u, p) * dt_half
     v = v + p.nu_v * _d2_dz2(state.v, p) * dt_half
-    T = T + p.kappa_v * _d2_dz2(state.T, p) * dt_half
-    S = S + p.kappa_v * _d2_dz2(state.S, p) * dt_half
+    if p.conservative_kv:
+        T = T + _d2_dz2_flux(state.T, p.kappa_v, p) * dt_half
+        S = S + _d2_dz2_flux(state.S, p.kappa_v, p) * dt_half
+    else:
+        T = T + p.kappa_v * _d2_dz2(state.T, p) * dt_half
+        S = S + p.kappa_v * _d2_dz2(state.S, p) * dt_half
     # Mask: no diffusion updates over land or below seafloor (ghost water).
     # Hold land/ghost values at their ORIGINAL state (not zero): masking to
     # zero creates a T=0 cliff at every coastline that the (unmasked)
@@ -1930,10 +1975,21 @@ def _compute_tracer_residual(state, p):
     term), so it must NOT appear in the residual at all — a +kappa_bi*biharm
     here would be re-applied by N(dt) and cancel the L-step damping
     (-dt/2 + dt - dt/2 = 0 net), making biharmonic a silent no-op.
+
+    kappa_v is subtracted for the same reason as kappa_h: _linear_half_step
+    applies kappa_v*_d2_dz2 over dt/2 TWICE (once per half-step), so leaving
+    it in the N residual ran vertical diffusion at 2*kappa_v. Measured
+    coefficient of kappa_v*_d2_dz2 per step before the fix: 1.88-2.02.
     """
     dTdt, dSdt = _compute_tracer_tendency(state, p)
     dTdt = dTdt - p.kappa_h * _laplacian_h(state.T, p)
     dSdt = dSdt - p.kappa_h * _laplacian_h(state.S, p)
+    if p.conservative_kv:
+        dTdt = dTdt - _d2_dz2_flux(state.T, p.kappa_v, p)
+        dSdt = dSdt - _d2_dz2_flux(state.S, p.kappa_v, p)
+    else:
+        dTdt = dTdt - p.kappa_v * _d2_dz2(state.T, p)
+        dSdt = dSdt - p.kappa_v * _d2_dz2(state.S, p)
     return dTdt, dSdt
 
 
@@ -1953,6 +2009,11 @@ def _compute_momentum_residual(state, p):
     # where nu_h*dt/dy^2 = 1.46 >> 0.25 exceeds the explicit-diffusion CFL.
     dudt = dudt - p.nu_h * _laplacian_h(state.u, p)
     dvdt = dvdt - p.nu_h * _laplacian_h(state.v, p)
+    # nu_v likewise: _linear_half_step applies nu_v*_d2_dz2 over dt/2 twice,
+    # so omitting it here applied vertical momentum diffusion at 2*nu_v
+    # (measured coefficient 2.12 per step).
+    dudt = dudt - p.nu_v * _d2_dz2(state.u, p)
+    dvdt = dvdt - p.nu_v * _d2_dz2(state.v, p)
     dudt = dudt - p.f[:, :, None] * state.v
     dvdt = dvdt + p.f[:, :, None] * state.u
     # barotropic PGF from eta. The full tendency's 3D PGF contains the eta
@@ -2035,7 +2096,23 @@ def _explicit_full_step(state, p, dt):
         dv1 = dv1 + p.r_bot * state.v * bm
     u_pred = state.u + du1 * dt
     v_pred = state.v + dv1 * dt
-    state_pred = JaxStateG(u_pred, v_pred, T_pred, S_pred, state.eta)
+    # ── Tracer stage-2 advection velocity ──
+    # RK2 evaluates the momentum residual at the OLD velocity in BOTH stages
+    # (state_T / state_T_new carry state.u, state.v — see the drag note below).
+    # The tracer stage-2 advection was the lone exception: it used the raw
+    # forward-Euler momentum predictor u_pred = u + du1*dt, a velocity the
+    # momentum scheme itself never reaches. That velocity is strongly
+    # divergent (baroclinic PGF undamped over dt at the predictor), and the
+    # flux-form advection of it leaks heat at rate -Σ AREA·Fz[0]·T[0]:
+    # measured -686 ZJ/yr at the RK2 stage-2 residual vs +63 ZJ/yr with the
+    # velocity frozen (production physics, bulk off, 2026-09-12). Freezing it
+    # makes the tracer RK2 consistent with the momentum RK2 (both stages at
+    # the old velocity) and changes the final T field by only 0.037 K rms.
+    # Default False = historical behavior (bit-exact legacy traces).
+    if p.freeze_adv_vel:
+        state_pred = JaxStateG(state.u, state.v, T_pred, S_pred, state.eta)
+    else:
+        state_pred = JaxStateG(u_pred, v_pred, T_pred, S_pred, state.eta)
 
     dT2, dS2 = _compute_tracer_residual(state_pred, p)
     T_new = state.T + 0.5 * (dT1 + dT2) * dt
@@ -2229,7 +2306,8 @@ def make_solver_global(grid, physics, dt, forcing=None, eos_type='linear',
                        eta_relax_days=0.0, eta_relax_box=None,
                        eta_relax_buffer=1.0, dynamic_forcing=False,
                        mode_split=False, dt_bt=150.0, nu_nsub=None,
-                       dtype='float64', use_scan=False):
+                       dtype='float64', use_scan=False, freeze_adv_vel=False,
+                       conservative_kv=False):
     """Create a JIT-compiled global FD ocean solver.
 
     Args mirror the spectral make_solver where applicable. Key differences:
@@ -2448,6 +2526,8 @@ def make_solver_global(grid, physics, dt, forcing=None, eos_type='linear',
         # dt*w/dz <= 0.18 -> adv_nsub=1, path untouched.
         adv_nsub=max(1, int(np.ceil(dt * 4.0e-3 / (0.5 * float(jnp.min(
             jnp.array(grid.dz))))))),
+        freeze_adv_vel=bool(freeze_adv_vel),
+        conservative_kv=bool(conservative_kv),
     )
 
     # fp32 cast: params was just built in float64 (numpy defaults); when
