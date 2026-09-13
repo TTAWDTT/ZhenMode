@@ -33,6 +33,9 @@ checkpoints/
 papers/
 *.pdf
 
+# Downloaded reference material (journal HTML/TXT; mostly anti-bot 404 pages)
+refs/
+
 # OS artifacts
 .DS_Store
 Thumbs.db
@@ -50,3 +53,19 @@ nul
 dashboard/secret.json
 dashboard/node_modules/
 dashboard/curve_cache/
+
+# Deep-heat campaign scratch artifacts (2026-09 ~ 09-13). Scripts were archived
+# to src/archive_deepheat/; these are their outputs / intermediate data.
+_*.out
+_*.err
+_*.tgz
+_*.xlsx
+_*.txt
+_*.png
+_*.b64
+_ana_tmp/
+runs_gm5d/
+_publish_loop.*
+init_fields_*.npz
+_blowup_snapshot.npz
+.plans/
