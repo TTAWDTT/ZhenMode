@@ -371,3 +371,29 @@ advection is not conservative for a divergent velocity.** Every candidate fix
 advection column-consistent) attacks this one mechanism; none completely
 removes it, and all are entangled with the independent pinned-T_atm surface
 source.
+
+### Trajectory test — is `freeze_adv_vel`'s warming a transient or a runaway?
+
+3000 steps (0.34 yr) each, from the spinE final state, production physics:
+
+| step | freeze=False dOHC / SST | freeze=True dOHC / SST |
+|---|---|---|
+| 500  | +11.7 / 17.158 | +535.6 / 17.297 |
+| 1000 | +18.7 / 17.177 | +537.8 / 17.326 |
+| 1500 | +17.1 / 17.180 | +539.6 / 17.345 |
+| 2000 | +17.1 / 17.172 | +542.8 / 17.346 |
+| 2500 | +15.4 / 17.180 | +549.2 / 17.342 |
+| 3000 | +14.3 / 17.178 | +555.8 / 17.339 |
+
+- **Production (freeze off) sits at a STABLE but WRONG state**: dOHC ~+15 ZJ/yr,
+  SST barely moving — the two-error cancellation holds over 0.34 yr.
+- **freeze=True does not blow up, but does not settle either**: +540 ZJ/yr and
+  *rising* over 3000 steps. SST rose only 0.21 K. This is the linear part of a
+  long approach: OHC ~33600 ZJ needs ~3000 ZJ to lift SST 1.5 K to the pinned
+  T_atm, i.e. ~5.5 yr / ~43000 steps at +540 ZJ/yr.
+- So freeze's "+382/542 ZJ/yr" is neither a clean win nor a runaway — it is the
+  surface source (Defect 2) marching the model toward the too-warm pinned T_atm.
+
+**Complete fix needs BOTH defects addressed:** (1) the stage-2 interior leak
+AND (2) the pinned T_atm. Fixing only the interior exposes the +540 surface
+source; fixing only the surface leaves the −603 interior pump.
