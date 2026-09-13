@@ -276,3 +276,48 @@ off; there is no production case for it. Both flags stay DEFAULT OFF.
 
 The fix is necessary but not sufficient: `spinE` still drifts −4.89 ZJ/yr. The
 structural column-continuity leak (above) remains open.
+
+## Defect 4 — the "equilibrium" is two ~700 ZJ/yr terms cancelling (2026-09-13)
+
+Direct measurement at the `spinE_fix_f32` final state (bulk off, K=200 steps,
+production physics) gives the **pure internal leak = −602.8 ZJ/yr**, with a
+sharp vertical dipole:
+
+| level | k0 | k1 | k2 | k3 | k4 | k5 | k6 | k7 | k8 | k9 | k10 | k11 | k12 | k13 |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| ZJ/yr | −359 | −200 | −150 | −123 | −85 | −45 | −2 | +16 | +88 | +117 | +91 | +35 | +10 | +3 |
+
+The discretisation pumps heat from the surface layers INTO the abyss. This IS
+the warm-deep/cold-upper dipole. The surface term (pinned `T_atm`) contributes
+**+713.7 ZJ/yr**, so the two nearly cancel and the run only *looks* settled
+(net +8 ZJ/yr). The earlier "−180 ZJ/yr" figure (Defect 3) came from short
+windows on a less-drifted state; the leak grows as the deep stratification
+poisons.
+
+### Stage budget (1 step, bulk off, ZJ/yr)
+
+| L1 (dt/2) | **N (dt)** | L2 (dt/2) | SUM = REAL step |
+|---|---|---|---|
+| −43.7 | **−618.6** | −43.4 | −705.7 |
+
+The N step (`_explicit_full_step`) carries essentially all the leak. Its own
+residual operator is conservative on the true state (`dT1` integral = −0.02),
+so the leak is entirely in **stage 2**:
+
+```
+dT1 = resid(state)            # conservative
+T_pred = T + dT1*dt
+u_pred = u + du1*dt           # <-- FULL forward-Euler momentum predictor
+dT2 = resid(u_pred, T_pred)   # <-- THIS leaks ~-619 ZJ/yr
+```
+
+`u_pred` is strongly divergent (the baroclinic PGF is undamped over a full dt
+at the predictor), and flux-form advection is only conservative for a
+divergence-free velocity, so `dT2`'s integral is large and negative. Freezing
+the tracer stage-2 velocity at `u` (`freeze_adv_vel`) removes part of it
+(−603 → ~−333) but not all, and by un-cancelling the surface term it makes the
+net *warming* worse (+8 → +382 ZJ/yr) — hence DEFAULT OFF.
+
+**Suspect fix (untested):** use the RK2 *midpoint* velocity `u + 0.5*du1*dt`
+instead of the full predictor `u + du1*dt` in the tracer stage-2. A proper
+midpoint stage is far less divergent. Tested next.
