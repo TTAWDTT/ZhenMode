@@ -139,7 +139,22 @@ def heat_flux_meridional(grid, Q0=50.0):
 
     q_profile = -Q0 * (2.0 * y_frac - 1.0)  # (ny,)
     q_profile = _taper_y(q_profile, ny, taper_cells)
-    return np.broadcast_to(q_profile[None, :], (grid.nx, ny)).copy()
+    Q = np.broadcast_to(q_profile[None, :], (grid.nx, ny)).astype(np.float64).copy()
+    if getattr(grid, "is_global", False):
+        # The surface heat term is land-masked, so a pattern whose GLOBAL
+        # mean is zero still carries a large OCEAN mean. The 1-deg
+        # bathymetry is hemispherically asymmetric in the +/-60 band: the
+        # Southern Ocean (oceanfrac ~1.0 at -50) collects the full southern
+        # warm lobe while the northern cool lobe falls largely on land
+        # (oceanfrac 0.39-0.53 at +40..+50). Raw pattern measured +4.68
+        # W/m^2 over ocean = +1511 TW = +47.7 ZJ/yr of spurious heat . a
+        # ~48-yr time constant that would dominate any real equilibration.
+        # Recentre on the ocean-area-weighted mean so the flux applied
+        # actually conserves heat over the region it is applied to.
+        wm = np.asarray(grid.wet_mask, dtype=np.float64)
+        w = wm * (np.asarray(grid.dx_2d, dtype=np.float64) * float(grid.dy))
+        Q = (Q - float((Q * w).sum() / w.sum())) * wm
+    return Q
 
 
 # ── Bulk air-sea heat flux (Haney/Barnier formulation) ───────────────
