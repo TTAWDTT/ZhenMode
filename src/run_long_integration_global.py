@@ -275,6 +275,10 @@ def main():
                          "instead of the freshly advected predictor (default off)")
     ap.add_argument("--conservative-kv", action="store_true",
                     help="use interface-flux vertical diffusion (default off)")
+    ap.add_argument("--project-adv-vel", action="store_true",
+                    help="project the RK2 stage-2 tracer velocity onto the "
+                         "column-divergence-free space (removes the O(dt) "
+                         "interior heat leak; default off)")
     ap.add_argument("--sponge-days", type=float, default=SPONGE_DAYS_DEFAULT_G)
     ap.add_argument("--sponge-cells", type=int, default=0)
     ap.add_argument("--polar-cap-rows", type=int, default=POLAR_CAP_ROWS_DEFAULT)
@@ -466,7 +470,8 @@ def main():
                  else ('cfl' if args.nu_nsub == 'cfl' else int(args.nu_nsub))),
         dtype=args.dtype, use_scan=args.use_scan,
         freeze_adv_vel=args.freeze_adv_vel,
-        conservative_kv=args.conservative_kv)
+        conservative_kv=args.conservative_kv,
+        project_adv_vel=args.project_adv_vel)
     if seasonal:
         step, init_state_global, _, _params, terms_fn, step_dyn = _ret
     else:
@@ -552,9 +557,10 @@ def main():
                       f"nu_nsub={_nnu}, scan={'ON' if _params.use_scan else 'py'}")
     header.append(f"physics: nu_h={physics.nu_h:g}  nu_bi={physics.nu_bi:g}  "
                   f"kappa_conv={physics.kappa_conv}  kappa_v={physics.kappa_v:g}")
-    if args.freeze_adv_vel or args.conservative_kv:
+    if args.freeze_adv_vel or args.conservative_kv or args.project_adv_vel:
         header.append(f"RK2 flags: freeze_adv_vel={args.freeze_adv_vel}  "
-                      f"conservative_kv={args.conservative_kv}")
+                      f"conservative_kv={args.conservative_kv}  "
+                      f"project_adv_vel={args.project_adv_vel}")
     if args.dtype != "float64":
         header.append(f"DTYPE: {args.dtype} (compute; I/O stays float64)")
     if args.bulk_lambda_mult != 1.0:
@@ -748,6 +754,7 @@ def main():
         'kappa_v': physics.kappa_v, 'bulk_lambda_mult': args.bulk_lambda_mult,
         'freeze_adv_vel': args.freeze_adv_vel,
         'conservative_kv': args.conservative_kv,
+        'project_adv_vel': args.project_adv_vel,
         'sss_restore_days': args.sss_restore_days,
         'sss_restore_zonal': bool(args.sss_restore_zonal),
     }

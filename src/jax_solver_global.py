@@ -23,6 +23,7 @@ Convention (matches regional solver + grid.py):
 import jax
 jax.config.update('jax_enable_x64', True)
 import jax.numpy as jnp
+import jax.scipy.sparse.linalg
 import numpy as np
 from collections import namedtuple
 
@@ -298,6 +299,67 @@ def _gradient_conservative(eta, p):
     d_eta_ym = (eta - jnp.roll(eta, 1, axis=1)) * open_ym * cos_face_m[None, :]
     grad_y = (p.inv_dy / cos_lat[None, :]) * 0.5 * (d_eta_yp + d_eta_ym)
     return grad_x, grad_y
+
+
+def _column_divergence(u, v, p):
+    """Column-integrated horizontal divergence (nx, ny): SUM_k div_h[k]*dz_node[k].
+
+    This is exactly -Fz[..., 0] (the rig-lid surface interface transport that
+    _advection_scalar's Fz_top = Fz[0]*T[0] closure carries), i.e. the scalar
+    whose area-weighted sum drives the column heat leak -Σ AREA*Fz[0]*T[0].
+    Built from _divergence_conservative per layer (the same face-flux operator
+    the advection budget uses), so a zero here is exactly the discretely
+    divergence-free condition the tracer flux operator needs.
+    """
+    wm = p.wet_mask_z
+    integrand = jnp.stack(
+        [_divergence_conservative(u[..., k] * wm[..., k],
+                                  v[..., k] * wm[..., k], p)
+         for k in range(p.nz)], axis=-1)
+    return jnp.sum(integrand * p.dz_node, axis=-1) * p.wet_mask
+
+
+def _project_column_divergence(u, v, p, dt, n_iter=150):
+    """Return (u, v) with column-integrated horizontal divergence removed.
+
+    Solves the area-weighted Poisson problem
+        Div_col( Grad_conservative(psi) ) = col_div_h(u, v) / (dt*g)
+    for a surface-pressure potential psi on the wet domain, then applies the
+    Euler velocity correction (u, v) -= dt * g * grad(psi). Note the operator
+    is the EXACT column divergence (the per-layer masked _divergence_conservative
+    summed with dz_node) — using a constant-H 2D divergence instead leaves a
+    ~40% residual at coastlines, where the layer masking makes the column
+    divergence differ from the depth-integrated one. The corrected field has
+    column divergence driven to the CG residual (~1e-11 with n_iter=400).
+
+    Why this is the right closure: the rigid-lid surface term of the flux-form
+    tracer advection is Fz_top = Fz[0]*T[0] with Fz[0] = -col_div_h. Its column
+    heat budget telescopes to -Σ AREA*col_div_h*T[0]; the homogeneous part
+    (Σ AREA*col_div_h = 0) vanishes but the T-weighting leaves the leak
+    -Σ AREA*col_div_h*(T[0] - const). Driving col_div_h to zero kills it.
+
+    Fixed CG iteration count (not a tol loop): predictable cost per step. 150
+    is past the knee — the stage-2 leak saturates at -40 ZJ/yr (from -2238) for
+    n_iter >= 120, so more iterations only adds cost.
+    """
+    g = G_EARTH
+    wm = p.wet_mask
+    area = p.dx_2d * p.dy * wm
+    col_div = _column_divergence(u, v, p)
+    rhs = (col_div / (dt * g)) * area
+
+    def _matvec(psi):
+        gx, gy = _gradient_conservative(psi, p)
+        u3 = gx[:, :, None] * p.wet_mask_z
+        v3 = gy[:, :, None] * p.wet_mask_z
+        return _column_divergence(u3, v3, p) * area
+
+    psi, _ = jax.scipy.sparse.linalg.cg(_matvec, rhs, tol=0.0,
+                                        maxiter=n_iter)
+    gx, gy = _gradient_conservative(psi, p)
+    u_corr = u - (dt * g) * gx[:, :, None] * p.wet_mask_z
+    v_corr = v - (dt * g) * gy[:, :, None] * p.wet_mask_z
+    return u_corr, v_corr
 
 
 def _gradient_conservative_3d(field, p):
@@ -767,12 +829,25 @@ FDPhysParams = namedtuple('FDPhysParams', [
     # leak (pure kappa_v*_d2_dz2 repeated 30x = -54 ZJ/yr). Default False =
     # historical behavior (bit-exact legacy traces).
     'conservative_kv',
+    # True: project the RK2 stage-2 tracer advection velocity so its COLUMN-
+    # INTEGRATED horizontal divergence matches the final (barotropic-subcycle-
+    # projected) u's, i.e. the column continuity the rigid-lid surface closure
+    # Fz_top = Fz[0]*T[0] requires to conserve column heat. The raw stage-2
+    # predictor u_pred = u + du1*dt has col_div(u_pred) = O(dt) (the subcycle
+    # projects only the FINAL u, after the tracer stage), so the flux-form
+    # column leak -Σ AREA*Fz[0]*T[0] is exactly O(dt) and monotonic
+    # (+63 ZJ/yr over 200 yr, surface->abyss dipole). The correction is the 2D
+    # Euler velocity increment -dt*g*grad(eta_proj) with eta_proj solving the
+    # area-weighted Poisson Div(H*Grad eta_proj) = col_div_h(u_pred); residual
+    # is O(dt^2). Removes ~93-99% of the one-step interior heat change
+    # (-1123 ZJ/yr -> ~0). Default False = historical behavior.
+    'project_adv_vel',
 ])
 
 # Keyword-constructed callers that predate nu_nsub/use_scan/freeze_adv_vel/
-# conservative_kv (archive_diag probes) get the legacy behavior instead of a
-# TypeError.
-FDPhysParams.__new__.__defaults__ = (None, False, False, False)
+# conservative_kv/project_adv_vel (archive_diag probes) get the legacy
+# behavior instead of a TypeError.
+FDPhysParams.__new__.__defaults__ = (None, False, False, False, False)
 
 
 # ── EOS (shared with spectral solver; copied to avoid import cycle) ─
@@ -2112,7 +2187,16 @@ def _explicit_full_step(state, p, dt):
     if p.freeze_adv_vel:
         state_pred = JaxStateG(state.u, state.v, T_pred, S_pred, state.eta)
     else:
-        state_pred = JaxStateG(u_pred, v_pred, T_pred, S_pred, state.eta)
+        # Column-divergence-consistent stage-2 velocity (project_adv_vel): the
+        # raw predictor's column divergence is O(dt) and drives the flux-form
+        # column heat leak; project it onto the divergence-free column space
+        # (the same space the barotropic subcycle later enforces on the FINAL
+        # u) so Fz_top = Fz[0]*T[0] conserves column heat. No-op when off.
+        if p.project_adv_vel:
+            u_adv, v_adv = _project_column_divergence(u_pred, v_pred, p, dt)
+        else:
+            u_adv, v_adv = u_pred, v_pred
+        state_pred = JaxStateG(u_adv, v_adv, T_pred, S_pred, state.eta)
 
     dT2, dS2 = _compute_tracer_residual(state_pred, p)
     T_new = state.T + 0.5 * (dT1 + dT2) * dt
@@ -2307,7 +2391,7 @@ def make_solver_global(grid, physics, dt, forcing=None, eos_type='linear',
                        eta_relax_buffer=1.0, dynamic_forcing=False,
                        mode_split=False, dt_bt=150.0, nu_nsub=None,
                        dtype='float64', use_scan=False, freeze_adv_vel=False,
-                       conservative_kv=False):
+                       conservative_kv=False, project_adv_vel=False):
     """Create a JIT-compiled global FD ocean solver.
 
     Args mirror the spectral make_solver where applicable. Key differences:
@@ -2528,6 +2612,7 @@ def make_solver_global(grid, physics, dt, forcing=None, eos_type='linear',
             jnp.array(grid.dz))))))),
         freeze_adv_vel=bool(freeze_adv_vel),
         conservative_kv=bool(conservative_kv),
+        project_adv_vel=bool(project_adv_vel),
     )
 
     # fp32 cast: params was just built in float64 (numpy defaults); when
