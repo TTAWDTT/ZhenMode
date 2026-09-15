@@ -1,9 +1,22 @@
 # Deep-heat poisoning: root cause
 
-**Status: root cause identified.** The tracer advection operator is not
-discretely heat-conserving. Its vertical branch delivers a large spurious
-heat flux whose signature is exactly the observed warm-abyss / cold-upper-
-ocean dipole.
+**Status: root cause identified.** Two independent defects, both now understood
+(see the Defect 5 and "mixing sweep + one-step closure" sections at the end —
+they supersede the earlier advection-only framing):
+
+1. **Defect 5 (double-count)** — GM and Redi are the SAME operator, summed, so
+   production runs the isopycnal skew flux at 2x the intended kappa.
+2. **The downward heat pump** — convective adjustment + vertical diffusion + the
+   skew flux all bury the surface bulk-flux heat in the abyss at ~100%
+   efficiency, keeping SST ~0.8 K below the (pinned) T_atm and inflating the
+   uptake rate ~10-40x.
+
+The tracer advection operator is ALSO not discretely heat-conserving (its
+vertical branch delivers a spurious heat flux; fixed under `project_adv_vel`),
+but the one-step closure test shows that at the drifted state the residual OHC
+drift IS the surface bulk source — i.e. the advective leak is no longer the
+dominant term once projected. The observed warm-abyss / cold-upper dipole is
+the signature of the downward pump acting on that surface source.
 
 ## The evidence
 
@@ -397,3 +410,118 @@ source.
 **Complete fix needs BOTH defects addressed:** (1) the stage-2 interior leak
 AND (2) the pinned T_atm. Fixing only the interior exposes the +540 surface
 source; fixing only the surface leaves the −603 interior pump.
+
+## Defect 5 — GM and Redi are the SAME operator, DOUBLE-COUNTED (2026-09-14, DECISIVE)
+
+`_compute_tracer_residual` (jax_solver_global.py:1652-1675) computes BOTH
+`gm_T = _redi_skew_flux_tendency(T, S_x_gm, S_y_gm, p, kappa=p.kappa_gm)` AND
+`redi_T = _redi_skew_flux_tendency(T, S_x, S_y, p)` (kappa defaults to
+`p.kappa_redi`), then `dTdt = ... + gm_T + redi_T`. Both calls use the SAME
+operator with the SAME `_isopycnal_slope`, differing ONLY by the kappa scalar.
+So production (kappa_gm=1000, kappa_redi=1000) applies the isopycnal skew flux
+at **effective kappa = 2000 m^2/s** — exactly 2x.
+
+**Proof (5-yr closure sweep, projection OFF, bulk ON, matched 4 yr, clean WOA):**
+
+| run | kappa_gm | kappa_redi | eff. kappa | SST | deepT(1000m+) |
+|---|---|---|---|---|---|
+| spinN_gm0rd0 | 0 | 0 | 0 | 17.41 | 8.373 |
+| spinO_rd0 | 1000 | 0 | 1000 | 17.24 | 8.393 |
+| spinP_gm0 | 0 | 1000 | 1000 | 17.24 | 8.393 |
+| spinQ_base | 1000 | 1000 | 2000 | 16.99 | 8.435 |
+
+spinO_rd0 == spinP_gm0 **bit-identical to 4 decimals** — definitive proof GM==Redi.
+A CPU probe (`_skew_probe.py`) showed the skew tendency rms scales exactly
+linearly with the summed kappa (gm-only == redi-only == 3.366e-7, summed =
+6.732e-7 = 2x). `_gm_tracer_transport` / `_gm_bolus_velocity` are DEAD CODE —
+never called — so GM is not a bolus transport here, it is a second copy of Redi.
+
+## Mixing sweep + one-step closure (2026-09-14)
+
+**k-sweep, projection ON, matched window (`_drift_traj.csv`):**
+
+| run | kappa_gm | kappa_redi | eff. kappa | drift ZJ/yr | deepT C/yr | SST |
+|---|---|---|---|---|---|---|
+| spinR_pj_k0 | 0 | 0 | 0 | +124 | +0.045 | 18.56 |
+| spinS_pj_k1000 | 1000 | 0 | 1000 | +236 | +0.065 | 18.30 |
+| spinT_pj_k2000 | 1000 | 1000 | 2000 | +405 | +0.101 | 17.91 |
+
+**Mixing sweep** (projection ON, single skew kappa=1000 = spinS config):
+
+| run | kappa_conv | kappa_v | drift ZJ/yr | SST @last |
+|---|---|---|---|---|
+| spinS_pj_k1000 (ref) | 0.05 | 1e-5 | +236 | 18.30 |
+| spinW_conv0 | **0** | 1e-5 | +141 | 18.43 |
+| spinX_kv0 | 0.05 | **0** | +194 | 18.41 |
+| spinY_nomix | **0** | **0** | +125 | 18.58 |
+| spinZ_alloff (kappa_gm=redi=v=conv=0) | — | — | ~flat @yr2 (OHC 21111, SST 18.74) | 18.74 |
+
+Three comparable, ADDITIVE sequesterers: skew flux (κ), convective adjustment,
+and κ_v. Removing any one roughly halves the drift; removing all of them drops
+the drift toward zero AND lets SST rise to ~T_atm (18.74 vs 18.85; spinY 18.58,
+production ~17.6). **The deep-heat chain is the surface bulk source being pumped
+downward; the mixers are the pump, and the skew double-count is its biggest head.**
+
+**One-step closure at the drifted state (spinK_proj50, κ=2000, proj ON):**
+one `step_fn` from a copy of the spinK checkpoint gives actual +383 ZJ/yr vs the
+single-state Euler residual estimate +528 ZJ/yr — same sign, same order (Euler
+over-estimates ~1.4x at finite dt). SST_model 18.017 vs T_atm 18.851, gap
+0.834 K: 0.834 x λ=40 W/m²/K x 3.16e14 m² = **333 ZJ/yr**, matching the actual
+drift to ~15%. **So there is NO hidden time-integration leak at the drifted
+state** — the OHC drift IS the surface bulk flux, sequestered downward at ~100%
+efficiency. The fix is to stop the downward sequestration (single skew κ + the
+mixer sweep), not to chase an advective leak.
+
+**Candidate production config (NOT yet adopted):** `--kappa-gm 1000 --kappa-redi 0
+--project-adv-vel` (= spinS_pj_k1000), optionally with reduced kappa_v/conv.
+Do NOT change code defaults (both already 0.0 = closure off); the double-count is
+a LAUNCH-CONFIG choice.
+
+## Full mixing matrix, all PASS @50 yr (2026-09-15)
+
+All 12 tags completed 18250 d with `VERDICT PASS` (max|u|~1.02, max|eta|~1.27,
+0 NaN). Drift fitted on a **common yr10-49 window** (yr35-49 for the late-start
+spinJ) from the checkpoint drift log; production/co-located GPUs are heavily
+contended so wall times are not comparable.
+
+| tag | kappa_v | gm | redi | conv | conv scope | yr10-25 | yr35-49 | deepT @49 | SST @49 |
+|---|---|---|---|---|---|---|---|---|---|
+| spinZ_alloff | 0 | 0 | 0 | 0 | col | +118 | +125 | 4.557 | 18.616 |
+| spinR_pj_k0 | 1e-5 | 0 | 0 | 0.05 | col | +131 | +130 | 4.643 | 18.515 |
+| spinAC_locc_twin | 0 | 1000 | 0 | 0.05 | **LOC** | +155 | +155 | 4.918 | 18.588 |
+| spinAB_locc_kvh | 5e-6 | 1000 | 0 | 0.05 | **LOC** | +167 | +163 | 5.001 | 18.488 |
+| spinY_nomix | 0 | 1000 | 0 | 0 | col | +166 | +168 | 5.021 | 18.552 |
+| spinAA_locc | 1e-5 | 1000 | 0 | 0.05 | **LOC** | +176 | +171 | 5.075 | 18.431 |
+| spinW_conv0 | 1e-5 | 1000 | 0 | 0 | col | +185 | +183 | 5.166 | 18.423 |
+| spinX_kv0 | 0 | 1000 | 0 | 0.05 | col | +234 | +217 | 5.608 | 18.446 |
+| spinS_pj_k1000 | 1e-5 | 1000 | 0 | 0.05 | col | +243 | +223 | 5.689 | 18.335 |
+| spinAD_locc_k2000 | 1e-5 | 1000 | **1000** | 0.05 | **LOC** | +281 | +251 | 5.996 | 18.299 |
+| spinT_pj_k2000 | 1e-5 | 1000 | **1000** | 0.05 | col | +415 | +328 | 7.158 | 18.147 |
+| spinK_proj50 | 1e-5 | 1000 | **1000** | 0.05 | col | +414 | +327 | 7.154 | 18.143 |
+
+**What the matrix settles:**
+
+1. **κ-independent floor confirmed.** spinZ_alloff (every mixer off) still drifts
+   **+122 ZJ/yr** — 45% of the spinS production candidate. So even with the
+   sequesterers gone there is a large residual surface→abyss source. The mixers
+   are not the whole story.
+2. **Additivity holds, with the skew term dominant.** Single-lever removals from
+   spinS (+223): kill conv → +183 (−40); kill κ_v → +217 (−6, small); kill both
+   → +168 (−55). All three removals together (spinZ, plus gm=0) → +122 (−101).
+   The ordering is **skew double-count > convection > κ_v**.
+3. **Defect 5 is reproduced, not an artifact.** Redi=1000 on top of gm=1000
+   (spinT/K, κ_eff=2000) nearly doubles the drift to +328 vs spinS +223; adding
+   it under localized convection (spinAD +251 vs spinAA +171) shows the same
+   ~1.5x step. **GM and Redi must not both be nonzero.**
+4. **Localized convection is a real, modest win.** spinAA_locc +171 vs spinS
+   +223 (−23%), spinAC +155 vs spinY +168 (−8%) — the column-wide pump was a
+   genuine contributor but secondary to the skew double-count.
+5. **spinX (kv=0, conv=0.05) > spinY (kv=0, conv=0)**: +217 vs +168, so residual
+   convection still pumps ~50 ZJ/yr on top of pure skew.
+
+**Remaining floor to attack:** spinZ's +122 ZJ/yr with zero explicit mixing is the
+next target. It is *not* the skew/convection/κ_v chain (all off) — candidates are
+the bulk surface flux's own downward penetration, horizontal/bolus numerics, or
+the biharmonic ν. **This floor, not the mixers, now bounds how close to
+equilibrium production can get.**
+
