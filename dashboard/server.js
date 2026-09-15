@@ -172,10 +172,19 @@ async function kickAnalysis(tag) {
   const cmd =
     `d=/data/tmp/ocean/results/global_${tag}_3d; a=/data/tmp/ocean/results/${tag}_analysis.npz; ` +
     `n=$(ls -t $d/snap_*.npy 2>/dev/null | head -1); ` +
-    `if [ -n "$n" ] && { [ ! -f $a ] || [ $n -nt $a ]; }; then ` +
-    `nohup docker exec ${parent}` +
-    `-w /data/tmp/ocean jaxtest2 /opt/conda/envs/py/bin/python ` +
-    `results/_spinup_probe_analysis.py ${tag} > /data/tmp/ocean/logs/analysis_${tag}.log 2>&1 & fi; echo kicked`;
+    `if [ -n "$n" ]; then ` +
+    `  if [ ! -f $a ] || [ $n -nt $a ]; then ` +
+    `    nohup docker exec ${parent}` +
+    `    -w /data/tmp/ocean jaxtest2 /opt/conda/envs/py/bin/python ` +
+    `    results/_spinup_probe_analysis.py ${tag} > /data/tmp/ocean/logs/analysis_${tag}.log 2>&1 & ` +
+    `  fi; ` +
+    `elif [ -f /data/tmp/ocean/results/_curves_from_drift.py ]; then ` +
+    // no 3-D snaps (run launched without --save-3d): rebuild the 1-D payload
+    // from the checkpoint drift log so the charts are not permanently blank
+    `  nohup docker exec -w /data/tmp/ocean jaxtest2 ` +
+    `    /opt/conda/envs/py/bin/python results/_curves_from_drift.py ${tag} ` +
+    `    > /data/tmp/ocean/logs/driftcurves_${tag}.log 2>&1 & ` +
+    `fi; echo kicked`;
   try { await clusterCmd(cmd, 8); } catch { /* retry next TTL */ }
 }
 

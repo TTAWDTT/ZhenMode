@@ -207,8 +207,34 @@ def curves_for(tag, sh):
     return out
 
 
+def refresh_drift_curves(sh, tags):
+    """Rebuild <tag>_analysis.npz from the drift CSV for every tag.
+
+    Runs launched without --save-3d never produce 3-D snaps, so the full
+    analysis (which needs them) is impossible and their charts would stay
+    blank forever. results/_curves_from_drift.py rebuilds the 1-D payload
+    from the checkpoint drift log instead; re-running it each cycle is what
+    keeps the in-flight runs' curves advancing. Cheap (~2 s for 12 tags) and
+    harmless for --save-3d runs, which keep their own richer npz when the
+    analysis has already written one newer than the CSV.
+    """
+    gen = ("/data/tmp/ocean/results/_curves_from_drift.py")
+    cmd = ("test -f %s && docker exec -w /data/tmp/ocean jaxtest2 "
+           "/opt/conda/envs/py/bin/python %s %s || true"
+           % (gen, gen, " ".join(tags)))
+    try:
+        out = strip_ansi(run(sh, cmd, 90))
+        for line in out.split("\n"):
+            if ":" in line and ("pts ->" in line or "no data" in line
+                                or "FAILED" in line):
+                _log("drift " + line.strip()[:110])
+    except Exception as e:
+        _log(f"drift curves: {e}")
+
+
 def build_snapshot(sh, entries):
     runs, curves, logs = [], {}, {}
+    refresh_drift_curves(sh, [e["tag"] for e in entries])
     for entry in entries:
         tag = entry["tag"]
         try:
@@ -271,7 +297,12 @@ def git_commit_push(snap, status_out):
     subprocess.run(["git", "add", "public/ocean_solver"], cwd=IO_REPO,
                    check=True)
     subprocess.run(["git", "commit", "-m", msg], cwd=IO_REPO, check=True)
-    r = subprocess.run(["git", "push", "origin", "main"], cwd=IO_REPO,
+    # the repo has a stale http.proxy configured (127.0.0.1:9910, usually not
+    # running) which silently turns every push into a connection failure and
+    # lets the published snapshot fall hours behind. GitHub is reachable
+    # directly here, so push with the proxy disabled.
+    r = subprocess.run(["git", "-c", "http.proxy=", "-c", "https.proxy=",
+                        "push", "origin", "main"], cwd=IO_REPO,
                        capture_output=True, text=True)
     if r.returncode != 0:
         _log("push failed: " + (r.stderr or r.stdout)[-300:])

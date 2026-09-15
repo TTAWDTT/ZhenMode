@@ -1,6 +1,112 @@
 {
-  "runs": [
-    {"tag":"spinG_prod200","node":"014","gpu":0,"log":"/data/tmp/ocean/logs/global_spinG_prod200.log","total_days":73000,"started":"2026-09-13 18:05","note":"200yr 清洁起点 A/B: 生产配置 (T_atm 钉死, freeze OFF) from WOA — 基准平衡态"},
-    {"tag":"spinH_frz200","node":"014","gpu":1,"log":"/data/tmp/ocean/logs/global_spinH_frz200.log","total_days":73000,"started":"2026-09-13 18:05","note":"200yr 清洁起点 A/B: freeze_adv_vel=ON (内部漏热 -603→-68) — 看 SST 能否逼近 T_atm 达物理平衡"}
-  ]
+ "runs": [
+  {
+   "tag": "spinAA_locc",
+   "node": "014",
+   "gpu": 0,
+   "log": "/data/tmp/ocean/logs/global_spinAA_locc.log",
+   "total_days": 18250,
+   "started": "2026-09-14 06:35",
+   "note": "【局部对流主实验】--localize-conv — +171 ZJ/yr, 比整列 spinS +236 降 27%"
+  },
+  {
+   "tag": "spinX_kv0",
+   "node": "014",
+   "gpu": 5,
+   "log": "/data/tmp/ocean/logs/global_spinX_kv0.log",
+   "total_days": 18250,
+   "started": "2026-09-14 04:30",
+   "note": "κ_v=0 但 conv 保留 0.05 — +225 ZJ/yr"
+  },
+  {
+   "tag": "spinZ_alloff",
+   "node": "014",
+   "gpu": 7,
+   "log": "/data/tmp/ocean/logs/global_spinZ_alloff.log",
+   "total_days": 18250,
+   "started": "2026-09-14 05:00",
+   "note": "【对照下限】全部混合关闭 (kv0 gm0 redi0 conv0) — κ 无关的深层增暖地板: +122 ZJ/yr"
+  },
+  {
+   "tag": "spinS_pj_k1000",
+   "node": "014",
+   "gpu": 2,
+   "log": "/data/tmp/ocean/logs/global_spinS_pj_k1000.log",
+   "total_days": 18250,
+   "started": "2026-09-14 04:30",
+   "note": "【当前生产候选】kv1e-5 gm1000 redi0 整列对流 proj — +235 ZJ/yr"
+  },
+  {
+   "tag": "spinT_pj_k2000",
+   "node": "014",
+   "gpu": 3,
+   "log": "/data/tmp/ocean/logs/global_spinT_pj_k2000.log",
+   "total_days": 18250,
+   "started": "2026-09-14 04:30",
+   "note": "GM+Redi 双计 (κ_eff=2000) — +383 ZJ/yr (Defect 5 复现)"
+  },
+  {
+   "tag": "spinK_proj50",
+   "node": "014",
+   "gpu": 1,
+   "log": "/data/tmp/ocean/logs/global_spinK_proj50.log",
+   "total_days": 18250,
+   "started": "2026-09-14 04:30",
+   "note": "GM+Redi 双计, 从 spinK 恢复 — +383 ZJ/yr"
+  },
+  {
+   "tag": "spinR_pj_k0",
+   "node": "014",
+   "gpu": 1,
+   "log": "/data/tmp/ocean/logs/global_spinR_pj_k0.log",
+   "total_days": 18250,
+   "started": "2026-09-14 04:30",
+   "note": "κ 全场归零 (gm0 redi0) 但保留 kv=1e-5 — +130 ZJ/yr; 与 alloff 差 8 ZJ/yr = kv 的贡献"
+  },
+  {
+   "tag": "spinW_conv0",
+   "node": "014",
+   "gpu": 4,
+   "log": "/data/tmp/ocean/logs/global_spinW_conv0.log",
+   "total_days": 18250,
+   "started": "2026-09-14 04:30",
+   "note": "conv=0 (整列对流关闭) — +183 ZJ/yr"
+  },
+  {
+   "tag": "spinY_nomix",
+   "node": "014",
+   "gpu": 6,
+   "log": "/data/tmp/ocean/logs/global_spinY_nomix.log",
+   "total_days": 18250,
+   "started": "2026-09-14 04:30",
+   "note": "κ_v=0 + conv0 (整列) — +166 ZJ/yr"
+  },
+  {
+   "tag": "spinAB_locc_kvh",
+   "node": "014",
+   "gpu": 1,
+   "log": "/data/tmp/ocean/logs/global_spinAB_locc_kvh.log",
+   "total_days": 18250,
+   "started": "2026-09-14 13:10",
+   "note": "局部对流 + kv=5e-6 — +165 ZJ/yr (半垂直扩散)"
+  },
+  {
+   "tag": "spinAC_locc_twin",
+   "node": "014",
+   "gpu": 2,
+   "log": "/data/tmp/ocean/logs/global_spinAC_locc_twin.log",
+   "total_days": 18250,
+   "started": "2026-09-14 13:10",
+   "note": "局部对流 + kv=0 — +158 ZJ/yr (与 spinY 同配置但 LOC conv, 对比 +168)"
+  },
+  {
+   "tag": "spinAD_locc_k2000",
+   "node": "014",
+   "gpu": 3,
+   "log": "/data/tmp/ocean/logs/global_spinAD_locc_k2000.log",
+   "total_days": 18250,
+   "started": "2026-09-14 13:10",
+   "note": "局部对流 + Redi=1000 (GM+Redi 双计) — +265 ZJ/yr, 确认 Defect 5 副作用仍在"
+  }
+ ]
 }
