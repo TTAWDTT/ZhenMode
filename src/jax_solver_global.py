@@ -701,7 +701,7 @@ def _d2_dz2_flux(tracer, kappa, p):
     return (up - dn) / p.dz_node * p.wet_mask_z
 
 
-def _conv_flux_tendency(tracer, conv_mask_3d, kappa, p):
+def _conv_flux_tendency(tracer, conv_mask_3d, kappa, p, iface_gate=None):
     """Convective mixing in INTERFACE-flux form (exactly column-conservative).
 
     The node-form implementation it replaces (kappa_conv * mask * _d2_dz2)
@@ -729,6 +729,10 @@ def _conv_flux_tendency(tracer, conv_mask_3d, kappa, p):
         tracer: (nx, ny, nz) T or S.
         conv_mask_3d: (nx, ny, 1) column gate (True where the column convects).
         kappa: [m^2/s] convective diffusivity (p.kappa_conv).
+        iface_gate: optional (nx, ny, nz-1) PER-INTERFACE gate. When given,
+            mixing is allowed only across interfaces where BOTH this gate is
+            True AND the column gate is True (localized convection). When
+            None, the column gate alone decides (historical column-wide form).
     """
     if kappa <= 0.0:
         return jnp.zeros_like(tracer)
@@ -740,7 +744,10 @@ def _conv_flux_tendency(tracer, conv_mask_3d, kappa, p):
     # Flux only across wet interfaces AND only in convecting columns.
     wet_iface_f = (p.wet_mask_z[..., :-1] > 0.5) & (p.wet_mask_z[..., 1:] > 0.5)
     gate = (jnp.asarray(conv_mask_3d)[..., :1] > 0.5)   # force (nx, ny, 1)
-    Fz_i = jnp.where(gate & wet_iface_f, Fz_i, 0.0)
+    allow = gate & wet_iface_f
+    if iface_gate is not None:
+        allow = allow & (jnp.asarray(iface_gate) > 0.5)
+    Fz_i = jnp.where(allow, Fz_i, 0.0)
     # Padded flux array carries the zero-flux BC at surface/seafloor;
     # tend[k] = (F[k-1/2] - F[k+1/2]) / dz_node[k] (see _redi_skew_flux_tendency).
     up = jnp.concatenate([jnp.zeros_like(Fz_i[..., :1]), Fz_i], axis=-1)
@@ -842,12 +849,24 @@ FDPhysParams = namedtuple('FDPhysParams', [
     # is O(dt^2). Removes ~93-99% of the one-step interior heat change
     # (-1123 ZJ/yr -> ~0). Default False = historical behavior.
     'project_adv_vel',
+    # True: gate the convective adjustment PER-INTERFACE (mix only across
+    # interfaces that are actually unstable) instead of the historical
+    # COLUMN-WIDE mask (any unstable interface -> mix the entire 4000 m
+    # column at kappa_conv). The column-wide form is a downward heat pump:
+    # one unstable near-surface interface forces abyssal mixing at kappa_conv
+    # (0.05 m²/s = 5000x kappa_v), which the per-term decomposition shows
+    # pushes +300 ZJ/yr into each of the three deepest layers while cooling
+    # the surface. Per-interface gating confines the adjustment to where the
+    # instability actually is (near the surface for a stably stratified deep),
+    # so it can redistribute but not ventilate the abyss. Default False =
+    # historical behavior (bit-exact legacy traces).
+    'localize_conv',
 ])
 
 # Keyword-constructed callers that predate nu_nsub/use_scan/freeze_adv_vel/
 # conservative_kv/project_adv_vel (archive_diag probes) get the legacy
 # behavior instead of a TypeError.
-FDPhysParams.__new__.__defaults__ = (None, False, False, False, False)
+FDPhysParams.__new__.__defaults__ = (None, False, False, False, False, False)
 
 
 # ── EOS (shared with spectral solver; copied to avoid import cycle) ─
@@ -1485,7 +1504,8 @@ def _tracer_terms(state, p):
     wet_iface = (p.wet_mask_z[..., :-1] > 0.5) & (p.wet_mask_z[..., 1:] > 0.5)
     unstable_iface = (rho_prime[..., :-1] > rho_prime[..., 1:]) & wet_iface
     conv_mask_3d = jnp.any(unstable_iface, axis=-1, keepdims=True)
-    conv_T = _conv_flux_tendency(state.T, conv_mask_3d, p.kappa_conv, p)
+    conv_T = _conv_flux_tendency(state.T, conv_mask_3d, p.kappa_conv, p,
+                                 unstable_iface if p.localize_conv else None)
 
     if p.kappa_gm > 0.0:
         S_x_gm, S_y_gm = _isopycnal_slope(state, p)
@@ -1580,6 +1600,11 @@ def _compute_tracer_tendency(state, p):
     wet_iface = (p.wet_mask_z[..., :-1] > 0.5) & (p.wet_mask_z[..., 1:] > 0.5)
     unstable_iface = (rho_prime[..., :-1] > rho_prime[..., 1:]) & wet_iface
     conv_mask_3d = jnp.any(unstable_iface, axis=-1, keepdims=True)
+    # Localized convection (p.localize_conv): mix ONLY across interfaces that
+    # are actually unstable, instead of the historical column-wide mask that
+    # mixes the entire column at kappa_conv whenever ANY interface is unstable.
+    # Confines the downward pump to where the instability is.
+    iface_gate = unstable_iface if p.localize_conv else None
     # kappa_conv CFL: kappa_conv*dt/dz_top² at dt=3600 s on the 10 m surface
     # layer = 1.8 >> 0.5 (explicit diffusion limit). Subcycling the LINEAR
     # convective operator conv_nsub times with kappa_conv/conv_nsub each is
@@ -1598,8 +1623,8 @@ def _compute_tracer_tendency(state, p):
             # Fused conv subcycle (numerically identical forward-Euler chain).
             def _conv_sub(carry, _):
                 tT, tS = carry
-                ttT = _conv_flux_tendency(tT, conv_mask_3d, kappa_c, p)
-                ttS = _conv_flux_tendency(tS, conv_mask_3d, kappa_c, p)
+                ttT = _conv_flux_tendency(tT, conv_mask_3d, kappa_c, p, iface_gate)
+                ttS = _conv_flux_tendency(tS, conv_mask_3d, kappa_c, p, iface_gate)
                 return (tT + ttT * h_c, tS + ttS * h_c), (ttT, ttS)
 
             (T_c, S_c), (sT, sS) = jax.lax.scan(
@@ -1616,8 +1641,8 @@ def _compute_tracer_tendency(state, p):
                 # phase-random sign that pumps ~0.2x the mode amplitude per
                 # step (measured conv-max growth 9.5e-4 -> 5.4e-3 -> 0.14 ->
                 # 2.6 K/s over 3 steps at the warm pool, ~5x/step).
-                tT = _conv_flux_tendency(T_c, conv_mask_3d, kappa_c, p)
-                tS = _conv_flux_tendency(S_c, conv_mask_3d, kappa_c, p)
+                tT = _conv_flux_tendency(T_c, conv_mask_3d, kappa_c, p, iface_gate)
+                tS = _conv_flux_tendency(S_c, conv_mask_3d, kappa_c, p, iface_gate)
                 conv_T = conv_T + tT
                 conv_S = conv_S + tS
                 T_c = T_c + tT * h_c
@@ -1625,8 +1650,8 @@ def _compute_tracer_tendency(state, p):
             conv_T = conv_T / n_c   # average rate over the baroclinic step
             conv_S = conv_S / n_c
     else:
-        conv_T = _conv_flux_tendency(state.T, conv_mask_3d, p.kappa_conv, p)
-        conv_S = _conv_flux_tendency(state.S, conv_mask_3d, p.kappa_conv, p)
+        conv_T = _conv_flux_tendency(state.T, conv_mask_3d, p.kappa_conv, p, iface_gate)
+        conv_S = _conv_flux_tendency(state.S, conv_mask_3d, p.kappa_conv, p, iface_gate)
 
     heat_factor = 1.0 / (RHO_0 * C_P * p.dz_surface)
     heat_T = p.Q_heat_2d[:, :, None] * heat_factor * p.surface_mask
@@ -2391,7 +2416,8 @@ def make_solver_global(grid, physics, dt, forcing=None, eos_type='linear',
                        eta_relax_buffer=1.0, dynamic_forcing=False,
                        mode_split=False, dt_bt=150.0, nu_nsub=None,
                        dtype='float64', use_scan=False, freeze_adv_vel=False,
-                       conservative_kv=False, project_adv_vel=False):
+                       conservative_kv=False, project_adv_vel=False,
+                       localize_conv=False):
     """Create a JIT-compiled global FD ocean solver.
 
     Args mirror the spectral make_solver where applicable. Key differences:
@@ -2613,6 +2639,7 @@ def make_solver_global(grid, physics, dt, forcing=None, eos_type='linear',
         freeze_adv_vel=bool(freeze_adv_vel),
         conservative_kv=bool(conservative_kv),
         project_adv_vel=bool(project_adv_vel),
+        localize_conv=bool(localize_conv),
     )
 
     # fp32 cast: params was just built in float64 (numpy defaults); when
