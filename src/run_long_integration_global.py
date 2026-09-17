@@ -44,7 +44,7 @@ import jax.numpy as jnp
 import numpy as np
 
 from config import DEFAULT_CONFIG, PhysicsConfig, GlobalGridConfig
-from grid import make_global_grid
+from grid import make_global_grid, global_grid_dims
 from jax_solver_global import make_solver_global, JaxStateG
 from forcing import heat_flux_meridional, air_temp_profile, BULK_LAMBDA_DEFAULT
 from wind_reanalysis import real_wind_forcing
@@ -233,7 +233,19 @@ def main():
                          "Python blend; removes the per-step Python interp + "
                          "host-to-device copy (measured ~1.2-1.4x on split runs)")
     ap.add_argument("--lat-max", type=float, default=LAT_MAX_DEFAULT)
-    ap.add_argument("--ny", type=int, default=NY_DEFAULT)
+    ap.add_argument("--resolution", type=float, default=None,
+                    help="horizontal grid spacing in degrees (ETOPO source is "
+                         "0.1°, so this must be a positive multiple of 0.1). "
+                         "When given, nx and ny are DERIVED from it and --ny "
+                         "is ignored. Default: None = legacy 1° grid (--ny "
+                         "decides). NOTE: the external-gravity-wave CFL shrinks "
+                         "~linearly with resolution — dt=60 s is safe down to "
+                         "0.5° (CFL 71 s) but NOT at 0.4° (56 s); halve dt "
+                         "below 0.5°.")
+    ap.add_argument("--ny", type=int, default=None,
+                    help=f"meridional grid points at the default 1° resolution "
+                         f"(default {NY_DEFAULT}); ignored when --resolution "
+                         f"is given")
     ap.add_argument("--z-levels", default=None,
                     help="vertical grid override: comma-separated node depths "
                          "[m, negative down] e.g. '0,-5,-15,...' — replaces the "
@@ -344,7 +356,30 @@ def main():
 
     # ── Build global grid ──
     bathy = DEFAULT_CONFIG.bathymetry_file
-    gcfg_kwargs = {"lat_max": args.lat_max, "ny": args.ny}
+    # Horizontal resolution: --resolution derives nx/ny from the ETOPO 0.1°
+    # source; otherwise the legacy 1° grid with --ny meridional rows. The three
+    # must stay mutually consistent (grid.py asserts the ETOPO read produces
+    # exactly gc.nx x gc.ny), so never let the user set them independently.
+    if args.resolution is not None:
+        res = float(args.resolution)
+        if res <= 0.0:
+            ap.error(f"--resolution must be positive (got {res})")
+        step = res / 0.1
+        if abs(step - round(step)) > 1e-9:
+            ap.error(f"--resolution must be a multiple of the 0.1° ETOPO source "
+                     f"grid (got {res})")
+        nx, ny = global_grid_dims(res, args.lat_max)
+        if nx < 4 or ny < 4:
+            ap.error(f"--resolution {res} at lat_max={args.lat_max} gives a "
+                     f"{nx}x{ny} grid; too coarse")
+        gcfg_kwargs = {"lat_max": args.lat_max, "ny": ny, "nx": nx,
+                       "resolution": res}
+        if args.ny is not None:
+            print(f"  NOTE: --ny {args.ny} ignored (--resolution {res} derives "
+                  f"ny={ny})")
+    else:
+        ny = NY_DEFAULT if args.ny is None else args.ny
+        gcfg_kwargs = {"lat_max": args.lat_max, "ny": ny}
     if args.z_levels:
         zl = tuple(float(v) for v in args.z_levels.split(","))
         assert len(zl) >= 3 and zl[0] == 0.0 and all(
@@ -353,7 +388,8 @@ def main():
         gcfg_kwargs["nz"] = len(zl)
         print(f"  vertical override: {len(zl)} levels, z={zl}")
     gcfg = replace(GlobalGridConfig(), **gcfg_kwargs)
-    print(f"Building global FD grid (lat_max={args.lat_max}, ny={args.ny}, "
+    print(f"Building global FD grid (lat_max={args.lat_max}, "
+          f"resolution={gcfg.resolution}°, ny={gcfg.ny}, "
           f"smooth={args.smooth_passes}, min_depth={args.min_depth})...")
     grid = make_global_grid(gcfg, bathy,
                             smooth_passes=args.smooth_passes,
@@ -549,7 +585,8 @@ def main():
     header.append("=" * 70)
     header.append(f"GLOBAL FD LONG INTEGRATION ({args.days:.0f} days)")
     header.append("=" * 70)
-    header.append(f"grid: {grid.nx}x{grid.ny}x{grid.nz}  dx_eq={dx_eq:.0f}m  "
+    header.append(f"grid: {grid.nx}x{grid.ny}x{grid.nz}  "
+                  f"res={gcfg.resolution:g}°  dx_eq={dx_eq:.0f}m  "
                   f"lon[{grid.lon[0]:.1f},{grid.lon[-1]:.1f}]E "
                   f"lat[{grid.lat[0]:.1f},{grid.lat[-1]:.1f}]N")
     header.append(f"dt={args.dt:.0f}s  steps={n_total}  snap every {n_snap} steps "
@@ -750,7 +787,8 @@ def main():
 
     # ── Save ──
     config_dict = {
-        'lat_max': args.lat_max, 'ny': args.ny, 'nx': grid.nx, 'nz': grid.nz,
+        'lat_max': args.lat_max, 'ny': grid.ny, 'nx': grid.nx, 'nz': grid.nz,
+        'resolution': float(gcfg.resolution),
         'dt': args.dt, 'nu_h': physics.nu_h, 'nu_bi': physics.nu_bi,
         'lambda_bulk': lambda_bulk, 'seasonal_wind': seasonal,
         'wind_blend_days': args.wind_blend_days, 'sponge_days': args.sponge_days,

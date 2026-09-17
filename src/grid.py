@@ -272,6 +272,31 @@ def _smooth_depth_once(depth):
     return np.maximum(out, 0.0)
 
 
+def global_grid_dims(resolution, lat_max, etopo_nlon=3600, etopo_nlat=1800,
+                     etopo_res=0.1):
+    """Horizontal dimensions the ETOPO reader will produce at this resolution.
+
+    Single source of truth for the (nx, ny) that `_read_etopo_global` returns,
+    so callers (the runner's --resolution derivation, validation) can predict
+    the grid without reading the bathymetry file. Mirrors that function's
+    INTEGER-floor block division exactly: `n = len(source) // step`, NOT
+    `round(len(source)/step)`. The two differ whenever step does not divide the
+    source length (e.g. 1.3° -> step=13 -> 3600//13 = 276, but 360/1.3 = 277),
+    and since make_global_grid asserts the read matches gc.nx/gc.ny, using the
+    round() form here would reject perfectly valid resolutions.
+    """
+    step = int(round(resolution / etopo_res))
+    if step < 1:
+        raise ValueError(f"resolution {resolution} below the {etopo_res}° "
+                         f"source grid")
+    nx = etopo_nlon // step
+    nlat_full = etopo_nlat // step
+    # Lat centers sit at -90 + step*etopo_res*(k + 0.5); keep |lat| <= lat_max.
+    lat_c = -90.0 + step * etopo_res * (0.5 + np.arange(nlat_full))
+    ny = int(np.sum(np.abs(lat_c) <= lat_max))
+    return int(nx), int(ny)
+
+
 def _read_etopo_global(filepath, resolution=1.0, lat_max=85.0):
     """Read global ETOPO2022 bathymetry, downsampled to target resolution.
 
