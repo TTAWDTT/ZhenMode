@@ -238,10 +238,13 @@ def main():
                          "0.1°, so this must be a positive multiple of 0.1). "
                          "When given, nx and ny are DERIVED from it and --ny "
                          "is ignored. Default: None = legacy 1° grid (--ny "
-                         "decides). NOTE: the external-gravity-wave CFL shrinks "
-                         "~linearly with resolution — dt=60 s is safe down to "
-                         "0.5° (CFL 71 s) but NOT at 0.4° (56 s); halve dt "
-                         "below 0.5°.")
+                         "decides). WARNING (measured, see "
+                         "docs/resolution_cfl_limits.md): finer grids need a "
+                         "much smaller --dt than linear CFL scaling suggests. "
+                         "1.0° is safe at the production --dt 3600; 0.5° "
+                         "DIVERGES at dt=600 and requires --dt 300, i.e. ~10x "
+                         "more steps per simulated year. The limit is not the "
+                         "biharmonic, the Laplacian, nor --project-adv-vel.")
     ap.add_argument("--ny", type=int, default=None,
                     help=f"meridional grid points at the default 1° resolution "
                          f"(default {NY_DEFAULT}); ignored when --resolution "

@@ -169,15 +169,22 @@ def test_legacy_ny_path_still_rejects_inconsistent_ny():
 
 
 # ── 6. CFL guidance: dt must shrink with resolution ──────────────────
+#
+# NOTE: this section covers the BAROTROPIC external-gravity-wave CFL, which
+# constrains --dt-bt. It does NOT cover the (larger, measured) constraint on
+# the full baroclinic step: 0.5-deg diverges at dt=600 and needs dt<=300,
+# ~3x steeper than the linear scaling pinned below. See
+# docs/resolution_cfl_limits.md for the measured table.
 
 @pytest.mark.parametrize("res", [2.0, 1.0, 0.5, 0.2])
 @requires_bathy
 def test_external_wave_cfl_scales_with_resolution(res):
-    """Documented guidance: dt=60 s is safe at 1 deg but NOT at 0.5 deg.
+    """dt_bt must shrink linearly with resolution (barotropic mode).
     External gravity-wave CFL for the FD free surface is
     0.5*min(dx,dy)/sqrt(g*H). The limiting dx is the poleward-most column
     (cos(lat) smallest), so dt_cfl is NOT the equatorial value -- but it must
-    still scale linearly with resolution, since every dx scales with it."""
+    still scale linearly with resolution, since every dx scales with it.
+    This bounds --dt-bt only; the full-step limit is separate and steeper."""
     from dataclasses import replace
 
     def dt_cfl_at(res_, lat_max=60.0):
@@ -194,8 +201,9 @@ def test_external_wave_cfl_scales_with_resolution(res):
         f"res={res}: dt_cfl={got:.0f}s should be {ref * res:.0f}s "
         f"from the 1 deg reference {ref:.0f}s")
 
-    # The production dt=60 s stays safe down to 0.5 deg (dt_cfl 70.7 s) but
-    # NOT at 0.4 deg (56.5 s) -- that is the crossover.
+    # Barotropic dt_bt=150 s (production) stays safe down to 0.5 deg
+    # (dt_cfl 70.7 s is below 150 -- so 0.5 deg needs dt_bt <= 60 s); the
+    # 0.4-deg value (56.5 s) makes that crossover explicit.
     if res >= 0.5:
         assert got > 60.0, f"res={res}: expected dt_cfl > 60 (dt=60 safe)"
     else:
@@ -203,7 +211,9 @@ def test_external_wave_cfl_scales_with_resolution(res):
 
 
 def test_dt60_crossover_between_0p5_and_0p4():
-    """Pin the documented crossover: dt=60 is safe at 0.5 deg, not at 0.4."""
+    """Pin the barotropic crossover: the external-wave dt_cfl crosses 60 s
+    between 0.5 and 0.4 deg. (The full baroclinic step has a *different*,
+    steeper limit -- see docs/resolution_cfl_limits.md.)"""
     from dataclasses import replace
 
     def dt_cfl_at(res_):
