@@ -74,4 +74,30 @@ production physics:
   `NU_BI_REF_1DEG=2e14`. At `--resolution 1.0` the scaling is a no-op, so the
   legacy defaults are preserved bit-for-bit.
 - `--init-from` npz files are hard-bound to 360x120 and cannot be used at
-  other resolutions.
+  other resolutions. Omitting `--init-from` is resolution-agnostic: the WOA
+  interpolation in `get_initial_fields(grid)` follows `grid.lon/lat/z`.
+
+## Cluster validation (2026-09-18)
+
+Three 30-day runs on the L20X cluster, production physics
+(`--dt 3600 --mode-split --use-scan --dtype float32`, kappa_gm=1000,
+kappa_v=1e-5, kappa_conv=0.05), each with `--resolution` auto-scaling:
+
+| res | grid | 30-day result | max\|u\| | wall |
+|---|---|---|---|---|
+| 1.0° | 360x120x14 | **PASS** | 0.91 | 0.9 min |
+| 0.5° | 720x240x14 | **PASS** | 1.25 | 3.7 min |
+| 0.4° | 900x360x14 | FAIL_DRIFT | 1.39 | 4.9 min |
+
+1.0° and 0.5° integrate cleanly: max|u| and max|eta| both settle, max|T|
+*falls* (29.7 -> 28.0 / 28.5) as the seasonal cycle spins up.
+
+0.4° is **numerically stable but drifts in one spot**: max|T| climbs
+29.7 -> 32.6 while max|u| and eta converge, and the excess is a single
+isolated point (122.6°E 10.2°N, the Sulu Sea). The same point starts at the
+same 28.4 C at all three resolutions and *cools* at 1.0°/0.5° (to 26.5 /
+27.7) but *warms* 2.6 C at 0.4°. That is a broken-coastline artifact — at
+0.4° the archipelago resolves into one-cell straits and isolated shallow
+columns — not a CFL violation. The auto-scaling fix does its job at 0.4°
+(the run no longer blows up); the remaining drift is a separate grid-quality
+issue at the fine end.
