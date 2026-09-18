@@ -87,7 +87,7 @@ kappa_v=1e-5, kappa_conv=0.05), each with `--resolution` auto-scaling:
 |---|---|---|---|---|
 | 1.0° | 360x120x14 | **PASS** | 0.91 | 0.9 min |
 | 0.5° | 720x240x14 | **PASS** | 1.25 | 3.7 min |
-| 0.4° | 900x360x14 | FAIL_DRIFT | 1.39 | 4.9 min |
+| 0.4° | 900x300x14 | FAIL_DRIFT | 1.39 | 4.9 min |
 
 1.0° and 0.5° integrate cleanly: max|u| and max|eta| both settle, max|T|
 *falls* (29.7 -> 28.0 / 28.5) as the seasonal cycle spins up.
@@ -101,3 +101,45 @@ same 28.4 C at all three resolutions and *cools* at 1.0°/0.5° (to 26.5 /
 columns — not a CFL violation. The auto-scaling fix does its job at 0.4°
 (the run no longer blows up); the remaining drift is a separate grid-quality
 issue at the fine end.
+
+## Resolution sweep: 1.5° -> 0.3°, one run per resolution (2026-09-18)
+
+Same production config, 30 days each, eight resolutions fanned across the
+cluster's eight GPUs. 0.1° is the ETOPO source spacing, so the legal ladder
+is its integer multiples (0.25° floors to the same step as 0.2°).
+
+| res | nx x ny | dt_bt | nu_h | nu_bi | max\|u\| | max\|T\| | verdict |
+|---|---|---|---|---|---|---|---|
+| 1.5° | 240 x 80 | 225 s | 1.125e7 | 1.012e15 | 0.752 | 27.94 | PASS |
+| 1.2° | 300 x 100 | 180 s | 7.2e6 | 4.147e14 | 0.836 | 28.08 | PASS |
+| 1.0° | 360 x 120 | 150 s | 5e6 | 2e14 | 0.912 | 28.02 | PASS |
+| 0.8° | 450 x 151 | 120 s | 3.2e6 | 8.192e13 | 1.007 | 28.06 | PASS |
+| 0.6° | 600 x 200 | 90 s | 1.8e6 | 2.592e13 | 1.147 | **32.24** | FAIL_DRIFT |
+| 0.5° | 720 x 240 | 75 s | 1.25e6 | 1.25e13 | 1.248 | 28.48 | PASS |
+| 0.4° | 900 x 300 | 60 s | 8e5 | 5.12e12 | 1.394 | **32.65** | FAIL_DRIFT |
+| 0.3° | 1200 x 400 | 45 s | 4.5e5 | 1.62e12 | 1.920 | **52.61** | FAIL_BLOWUP (d20) |
+
+max|u| rises monotonically with resolution (0.75 -> 1.92) exactly as the
+auto-scaled dt_bt shrinks — the CFL fix holds at every rung, and no run
+diverges on the momentum/eta side. (0.3° NaN'd only by day 20, after its
+tracer field had already run away; max|u| was still 1.9 and eta 1.8.)
+
+The FAIL_DRIFT/FAIL_BLOWUP rows are **all the same Sulu Sea point**
+(122-123°E, 8-11°N), and the verdict is not monotone in resolution. The
+coastline pattern there decides it:
+
+| res | pattern at the hotspot | SST d0 -> d30 |
+|---|---|---|
+| 0.8° | connected shallow sea | 28.4 -> 27.1 (cools) |
+| 0.5° | peninsula / bay | 28.4 -> 27.7 (cools) |
+| 0.6° | one-cell strait against land | 28.4 -> **32.2** |
+| 0.4° | narrow bay, 3 sides land | 28.4 -> **32.7** |
+| 0.3° | as 0.4°, finer | 28.4 -> **52.6** by d10 |
+
+Where the archipelago resolves into an isolated or near-enclosed shallow
+column, horizontal exchange with the open sea collapses and the surface heat
+flux piles up in place. 0.5° happens to keep that water connected, so it
+passes; 0.6° and 0.4° cut it off, so they don't. This is a coastline
+discretization artifact, independent of the CFL scaling — it would need a
+minimum-connectivity / min-depth floor on the wet mask (or a partial-cell
+coastline scheme) to fix, not a smaller dt.
