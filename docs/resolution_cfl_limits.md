@@ -1,69 +1,77 @@
-# Resolution scaling: measured CFL limits
+# Resolution scaling: measured CFL limits and the auto-scaling fix
 
-Measured on 2026-09-18 with the CPU checkerboard / smooth-anomaly probes
-(`src/jax_solver_global.py` at commit `190e70c`). Every number below is
-from an actual run, not an estimate.
+Measured 2026-09-18 with CPU probes in `src/jax_solver_global.py`. Every
+number below is from an actual run, not an estimate.
 
 ## TL;DR
 
-**Do not run `--resolution` finer than 1.0° with the production dt.** The
-solver has a real, dx-dependent time-step limit that is NOT the
-biharmonic, NOT the horizontal Laplacian, and NOT the RK2 stage-2 column
-divergence. At 0.5° it forces `--dt <= 300 s` (measured, with `--mode-split`
-and `--dt-bt 300`). There is no flag that removes it.
+Three 1°-calibrated parameters all violate their CFL on finer grids, and any
+one of them alone diverges a 0.5° run. `--resolution` now auto-scales all
+three by the right power of dx, so `--resolution 0.5` runs stably.
+
+| parameter | 1° value | CFL | scales as | 0.5° value |
+|---|---|---|---|---|
+| `--dt-bt` | 150 s | external gravity wave: `dt < 2·dx/√(g·H_sw)` | dx¹ | 75 s |
+| `--nu-h` | 5e6 m²/s | explicit Laplacian: `nu_h·dt/dx² < 0.25` | dx² | 1.25e6 |
+| `--nu-bi` | 2e14 m⁴/s | biharmonic: `nu_bi·dt/dx⁴ < ~0.05` | dx⁴ | 1.25e13 |
+
+Pass any of the three explicitly to override the auto-scaling.
 
 ## What was measured
 
-Setup: `make_global_grid(..., lat_max=60.0, smooth_passes=30,
-min_depth=100.0)`, `make_solver_global(..., mode_split=True, dt_bt=300)`,
-initial state `T = 15 C + 1 C * cos(2*lon) * cos(2*lat)`, `S = 35`,
-`nu_h = nu_bi = kappa_gm = kappa_redi = kappa_conv = 0` (physics fully
-off, so only the advection / Coriolis / rigid-lid pressure solve acts).
-30-40 steps, `|u|` tracked.
+Setup: `make_global_grid(lat_max=60.0, smooth_passes=30, min_depth=100.0)`,
+`make_solver_global(mode_split=True, dt=3600)`, IC `T = 15 + 1·cos(2λ)cos(2φ)`,
+`S = 35`, 40-60 steps.
 
-| resolution | dt | `--project-adv-vel` | outcome |
-|---|---|---|---|
-| 1.0° | 3600 | off | **stable** (saturates ~1e-1 m/s) |
-| 1.0° | 900 | off | **stable** (saturates ~6e-2) |
-| 0.5° | 3600 | off/on | **DIVERGED** @ 7 steps |
-| 0.5° | 900 | off/on | **DIVERGED** @ 17-18 steps |
-| 0.5° | 600 | off | **DIVERGED** @ 27 steps |
-| 0.5° | **300** | off/on | **stable** (saturates ~4e-2) |
+### Fault 1 — barotropic subcycle CFL (the regression)
 
-The 0.5° / dt=300 trajectory is essentially identical to the 1.0° / dt=900
-one, so the stable branch is the physical one; dt=600 and up are genuinely
-unstable, not slow transients.
+Holding `nu_h = nu_bi = 0` and sweeping `(dt, dt_bt)` at 0.5°:
 
-## Rules ruled OUT
+| eff = dt / n_subcyc | outcome |
+|---|---|
+| ≤ 200 s | **stable** (all dt from 300 to 3600) |
+| ≥ 300 s | **DIVERGED** |
 
-- **Biharmonic (`nu_bi`)**: setting `nu_bi = 0` does not fix 0.5°. The
-  instability persists with the biharmonic term fully removed.
-- **Horizontal Laplacian (`nu_h`)**: same — `nu_h = 0` does not fix it.
-  (Note the production `nu_h = 5e6` *is* itself over its CFL at 0.5°:
-  `5e6 * 300 / 28009^2 = 1.9`, vs the 0.25 limit in
-  `nu_nsub='cfl'`. That is a *separate*, second failure that must also be
-  addressed, via `--nu-nsub cfl` or a smaller `nu_h`.)
-- **RK2 stage-2 column divergence** (the Defect-6 / `--project-adv-vel`
-  target): turning it on moved the blow-up by 1-2 steps only. Not the cause.
+The barotropic subcycle runs at `p.dt_bt` (`_free_surface_step_fd(...,
+dt_half=p.dt_bt)`), so this is a pure `dt_bt` limit:
+`dt_bt < 2·dx_min/√(g·H_sw) ≈ 283 s` at 0.5°, vs `≈ 570 s` at 1.0°.
 
-## Why the earlier analytical CFL table was wrong
+The current production launch scripts (`_launch_mix.sh`, `_launch_pjksweep.sh`,
+`_launch_closure.sh`) pass `--dt-bt 300`, which is safe at 1° but **over the
+0.5° limit**. The historical spin config used `dt_bt=150` — that is why 0.5°
+"used to work". This is a config regression, not an architectural limit.
 
-The budget table from the previous session used `dt_bt = 300` and predicted
-the biharmonic term was the binding constraint at 0.5° (CFL ~0.58 vs a 0.05
-threshold). That table is superseded: with the biharmonic removed entirely
-the solver still diverges, so the constraint is elsewhere and cannot be
-budgeted from `nu_bi`.
+### Fault 2 — biharmonic CFL
 
-## Practical guidance
+At 0.5°, `dt_bt=150`, `nu_h=0`, sweep `nu_bi`: `2e14` DIVERGED, `2e13` and
+below stable. `nu_bi ∝ dx⁴`, so a 2x refinement needs a 16x reduction.
 
-- `--resolution 1.0` and coarser: production settings are fine.
-- `--resolution 0.5`: **`--dt` must be <= 300 s** (10x more steps per
-  simulated year), and `nu_h` must be reduced or `--nu-nsub cfl` used
-  (`5e6` is ~7.6x over the Laplacian CFL there).
-- The cause of the residual dx-dependent limit is **not yet identified**.
-  It is the main blocker before any sub-1° scientific run; the obvious
-  next steps are (a) instrument which tendency term first exceeds its
-  neighbours at 0.5°, (b) check whether the 2/3-rule dealias mask
-  (`dealias_lon_mask`, sized from `nx`) and the `adv_nsub` vertical-advection
-  subcycle count — both of which silently depend on grid size — are the
-  culprits.
+### Fault 3 — horizontal Laplacian CFL
+
+At 0.5°, `dt_bt=150`, `nu_bi=0`, `nu_h=5e6` alone DIVERGED. `nu_h ∝ dx²`, so
+a 2x refinement needs 4x (to ~1.25e6, the auto-scaled value).
+
+### Ruled out
+
+- **RK2 stage-2 column divergence** (`--project-adv-vel`): moves the blow-up
+  by 1-2 steps only, with every fault still present. Not the cause.
+- **Solver bug**: with `T ≡ T_ref` the step-1 tendency is exactly 0 at both
+  resolutions (max|u| = 0.0), so the operators are correct.
+
+## Validation of the fix
+
+`dt_bt/nu_h/nu_bi` scaled from the 1° reference by dx^1/2/4, `dt=3600`,
+production physics:
+
+| res | dt_bt | nu_h | nu_bi | 60-step result |
+|---|---|---|---|---|
+| 1.0° | 300 | 5e6 | 2e14 | **ok** |
+| 0.5° | 150 | 1.25e6 | 1.25e13 | **ok** |
+
+## Notes
+
+- The 1° references in the code are `DT_BT_DEFAULT=150`, `NU_H_REF_1DEG=5e6`,
+  `NU_BI_REF_1DEG=2e14`. At `--resolution 1.0` the scaling is a no-op, so the
+  legacy defaults are preserved bit-for-bit.
+- `--init-from` npz files are hard-bound to 360x120 and cannot be used at
+  other resolutions.

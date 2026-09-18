@@ -56,6 +56,31 @@ from woa_data import get_initial_fields
 # tolerances are kept identical — the gate is about stability + bounded
 # drift, not matching regional magnitudes.
 DT_DEFAULT = 60.0              # s — explicit free-surface + FD CFL-safe at 1°
+# 1°-grid reference values for --resolution auto-scaling. When --resolution is
+# given, dt_bt/nu_h/nu_bi default to these scaled by (res/1°)^p, p = 1/2/4
+# respectively (external-gravity-wave CFL, Laplacian CFL, biharmonic CFL).
+# Measurements at 0.5° (docs/resolution_cfl_limits.md): dt_bt=300 diverges
+# (barotropic CFL ~283 s), nu_h=5e6 diverges, nu_bi=2e14 diverges — all three
+# are 1°-calibrated and must shrink. At res=1.0 the scaling is a no-op, so the
+# legacy defaults are preserved exactly.
+DT_BT_DEFAULT = 150.0          # s — barotropic subcycle dt at 1°
+NU_H_REF_1DEG = 5e6            # m²/s — nu_h at 1° (see NU_H_DEFAULT)
+NU_BI_REF_1DEG = 2e14          # m⁴/s — nu_bi at 1° (see NU_BI_DEFAULT)
+
+
+def scaled_physics_for_resolution(res, dt_bt, nu_h, nu_bi):
+    """Scale dt_bt/nu_h/nu_bi from their 1° values by the CFL power of dx.
+
+    Each parameter that is None (not user-overridden) is replaced by its 1°
+    reference scaled by (res/1°)^p. Explicit values pass through untouched.
+    """
+    f = float(res) / 1.0
+    return (
+        DT_BT_DEFAULT * f if dt_bt is None else dt_bt,
+        NU_H_REF_1DEG * f ** 2 if nu_h is None else nu_h,
+        NU_BI_REF_1DEG * f ** 4 if nu_bi is None else nu_bi,
+    )
+
 MAX_U_BOUND = 10.0            # m/s
 DRIFT_TOL_C = 2.0             # C, second-half climb tolerance (monotonic drift)
 AMPLITUDE_CAP_C = 12.0        # C, absolute ceiling above init max
@@ -211,9 +236,11 @@ def main():
                          "n_subcyc barotropic subcycles of --dt-bt each per "
                          "baroclinic step, lifting the external-gravity-wave CFL; "
                          "nu_h moves into the subcycle, kappa_conv is subcycled")
-    ap.add_argument("--dt-bt", type=float, default=150.0,
+    ap.add_argument("--dt-bt", type=float, default=None,
                     help="barotropic subcycle dt [s] (mode split); rounded so "
-                         "n_subcyc*dt_bt exactly fills the baroclinic dt")
+                         "n_subcyc*dt_bt exactly fills the baroclinic dt. "
+                         f"Default {DT_BT_DEFAULT:g} at 1°; with --resolution it "
+                         "auto-scales as dx (external-gravity-wave CFL).")
     ap.add_argument("--nu-nsub", default=None,
                     help="nu_h subcycle count in split L half-steps: default "
                          "= legacy (n_subcyc=24); 'cfl' right-sizes from the "
@@ -238,13 +265,13 @@ def main():
                          "0.1°, so this must be a positive multiple of 0.1). "
                          "When given, nx and ny are DERIVED from it and --ny "
                          "is ignored. Default: None = legacy 1° grid (--ny "
-                         "decides). WARNING (measured, see "
-                         "docs/resolution_cfl_limits.md): finer grids need a "
-                         "much smaller --dt than linear CFL scaling suggests. "
-                         "1.0° is safe at the production --dt 3600; 0.5° "
-                         "DIVERGES at dt=600 and requires --dt 300, i.e. ~10x "
-                         "more steps per simulated year. The limit is not the "
-                         "biharmonic, the Laplacian, nor --project-adv-vel.")
+                         "decides). KEY: on finer grids the 1°-calibrated "
+                         "--dt-bt/--nu-h/--nu-bi all violate their CFL and the "
+                         "run diverges; this flag auto-scales them by dx^1/2/4 "
+                         "respectively (see scaled_physics_for_resolution). "
+                         "Pass any of those explicitly to override. At 1.0° "
+                         "the scaling is a no-op. See "
+                         "docs/resolution_cfl_limits.md.")
     ap.add_argument("--ny", type=int, default=None,
                     help=f"meridional grid points at the default 1° resolution "
                          f"(default {NY_DEFAULT}); ignored when --resolution "
@@ -255,8 +282,14 @@ def main():
                          "default 14-level grid (used by the E2 AMOC experiment)")
     ap.add_argument("--smooth-passes", type=int, default=SMOOTH_PASSES_DEFAULT)
     ap.add_argument("--min-depth", type=float, default=MIN_DEPTH_DEFAULT)
-    ap.add_argument("--nu-h", type=float, default=NU_H_DEFAULT)
-    ap.add_argument("--nu-bi", type=float, default=NU_BI_DEFAULT)
+    ap.add_argument("--nu-h", type=float, default=None,
+                    help=f"horizontal Laplacian viscosity [m²/s]. Default "
+                         f"{NU_H_DEFAULT:g} at 1°; with --resolution it "
+                         f"auto-scales as dx² (explicit-diffusion CFL).")
+    ap.add_argument("--nu-bi", type=float, default=None,
+                    help=f"biharmonic hyperviscosity [m⁴/s]. Default "
+                         f"{NU_BI_DEFAULT:g} at 1°; with --resolution it "
+                         f"auto-scales as dx⁴ (biharmonic CFL).")
     ap.add_argument("--kappa-v", type=float, default=None,
                     help="vertical diffusivity override [m^2/s]; default keeps "
                          "PhysicsConfig (1e-5). Accelerated-spinup phase A uses "
@@ -383,6 +416,30 @@ def main():
     else:
         ny = NY_DEFAULT if args.ny is None else args.ny
         gcfg_kwargs = {"lat_max": args.lat_max, "ny": ny}
+
+    # ── Resolution-dependent physics auto-scaling ──
+    # The 1°-calibrated dt_bt/nu_h/nu_bi all violate their CFL at finer grids
+    # (measured: 0.5° diverges with any of them at production values). Scale
+    # each by the power of dx its CFL demands, unless the user overrode it.
+    # At --resolution 1.0 (or no --resolution) this is a no-op, preserving the
+    # legacy defaults bit-for-bit.
+    if args.resolution is not None:
+        dt_bt, nu_h, nu_bi = scaled_physics_for_resolution(
+            args.resolution, args.dt_bt, args.nu_h, args.nu_bi)
+        overrides = []
+        if args.dt_bt is None:
+            overrides.append(f"dt_bt={dt_bt:.0f}s")
+        if args.nu_h is None:
+            overrides.append(f"nu_h={nu_h:.3g}")
+        if args.nu_bi is None:
+            overrides.append(f"nu_bi={nu_bi:.3g}")
+        if overrides:
+            print(f"  resolution {args.resolution:g}° auto-scales "
+                  f"{', '.join(overrides)} (1° CFL values x dx^p)")
+    else:
+        dt_bt = DT_BT_DEFAULT if args.dt_bt is None else args.dt_bt
+        nu_h = NU_H_DEFAULT if args.nu_h is None else args.nu_h
+        nu_bi = NU_BI_DEFAULT if args.nu_bi is None else args.nu_bi
     if args.z_levels:
         zl = tuple(float(v) for v in args.z_levels.split(","))
         assert len(zl) >= 3 and zl[0] == 0.0 and all(
@@ -403,7 +460,7 @@ def main():
           f"dx_eq={dx_eq:.0f}m, lat[{grid.lat[0]:.1f},{grid.lat[-1]:.1f}]")
 
     physics = replace(PhysicsConfig(),
-                      nu_h=args.nu_h, nu_bi=args.nu_bi, kappa_bi=args.nu_bi,
+                      nu_h=nu_h, nu_bi=nu_bi, kappa_bi=nu_bi,
                       kappa_gm=args.kappa_gm, kappa_redi=args.kappa_redi,
                       kappa_v=(args.kappa_v if args.kappa_v is not None
                                else 1.0e-5),
@@ -509,7 +566,7 @@ def main():
         eta_relax_days=args.eta_relax_days, eta_relax_box=args.eta_relax_box,
         eta_relax_buffer=args.eta_relax_buffer,
         dynamic_forcing=seasonal,
-        mode_split=args.mode_split, dt_bt=args.dt_bt,
+        mode_split=args.mode_split, dt_bt=dt_bt,
         nu_nsub=(None if args.nu_nsub is None
                  else ('cfl' if args.nu_nsub == 'cfl' else int(args.nu_nsub))),
         dtype=args.dtype, use_scan=args.use_scan,
@@ -599,7 +656,7 @@ def main():
         _nnu = _params.nu_nsub if _params.nu_nsub is not None else ns
         header.append(f"MODE SPLIT: baroclinic dt={args.dt:.0f}s, barotropic "
                       f"subcycle {ns} x {args.dt / ns:.1f}s "
-                      f"(--dt-bt {args.dt_bt:.0f}s), conv_nsub={_params.conv_nsub}, "
+                      f"(--dt-bt {dt_bt:.0f}s), conv_nsub={_params.conv_nsub}, "
                       f"nu_nsub={_nnu}, scan={'ON' if _params.use_scan else 'py'}")
     header.append(f"physics: nu_h={physics.nu_h:g}  nu_bi={physics.nu_bi:g}  "
                   f"kappa_conv={physics.kappa_conv}  kappa_v={physics.kappa_v:g}")

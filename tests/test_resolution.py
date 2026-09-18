@@ -170,11 +170,50 @@ def test_legacy_ny_path_still_rejects_inconsistent_ny():
 
 # ── 6. CFL guidance: dt must shrink with resolution ──────────────────
 #
-# NOTE: this section covers the BAROTROPIC external-gravity-wave CFL, which
-# constrains --dt-bt. It does NOT cover the (larger, measured) constraint on
-# the full baroclinic step: 0.5-deg diverges at dt=600 and needs dt<=300,
-# ~3x steeper than the linear scaling pinned below. See
-# docs/resolution_cfl_limits.md for the measured table.
+# Three 1-deg-calibrated params violate their CFL on finer grids; the runner
+# auto-scales them by dx^1/2/4. See docs/resolution_cfl_limits.md for the
+# measured divergence table.
+
+def test_physics_autoscale_matches_dx_powers():
+    """scaled_physics_for_resolution maps 1 deg -> (dt_bt, nu_h, nu_bi)
+    with exponents 1, 2, 4 and is a no-op at 1.0 deg."""
+    from run_long_integration_global import (
+        scaled_physics_for_resolution, DT_BT_DEFAULT,
+        NU_H_REF_1DEG, NU_BI_REF_1DEG)
+
+    # None = not overridden -> scaled from the 1 deg reference
+    dt_bt, nu_h, nu_bi = scaled_physics_for_resolution(2.0, None, None, None)
+    assert dt_bt == pytest.approx(DT_BT_DEFAULT * 2.0)
+    assert nu_h == pytest.approx(NU_H_REF_1DEG * 4.0)
+    assert nu_bi == pytest.approx(NU_BI_REF_1DEG * 16.0)
+
+    dt_bt, nu_h, nu_bi = scaled_physics_for_resolution(0.5, None, None, None)
+    assert dt_bt == pytest.approx(DT_BT_DEFAULT * 0.5)
+    assert nu_h == pytest.approx(NU_H_REF_1DEG * 0.25)
+    assert nu_bi == pytest.approx(NU_BI_REF_1DEG * (0.5 ** 4))
+
+    # 1.0 deg is a no-op -> legacy defaults preserved exactly
+    dt_bt, nu_h, nu_bi = scaled_physics_for_resolution(1.0, None, None, None)
+    assert dt_bt == DT_BT_DEFAULT
+    assert nu_h == NU_H_REF_1DEG
+    assert nu_bi == NU_BI_REF_1DEG
+
+
+def test_physics_autoscale_respects_explicit_override():
+    """An explicitly-passed value is never overwritten by the scaling."""
+    from run_long_integration_global import scaled_physics_for_resolution
+
+    dt_bt, nu_h, nu_bi = scaled_physics_for_resolution(
+        0.25, 999.0, 123.0, 456.0)
+    assert dt_bt == 999.0
+    assert nu_h == 123.0
+    assert nu_bi == 456.0
+
+    # partial override: only the given one is kept
+    dt_bt, nu_h, nu_bi = scaled_physics_for_resolution(0.5, 111.0, None, None)
+    assert dt_bt == 111.0
+    assert nu_h != 111.0
+
 
 @pytest.mark.parametrize("res", [2.0, 1.0, 0.5, 0.2])
 @requires_bathy
