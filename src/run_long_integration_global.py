@@ -578,11 +578,19 @@ def main():
         step, init_state_global, _, _params, terms_fn, step_dyn = _ret
     else:
         step, init_state_global, _, _params, terms_fn = _ret
+    # Runtime forcing must be cast to the compute dtype up front. Left in
+    # float64 they promote every downstream tensor (a f32 state + f64 flux ->
+    # f64), which under lax.scan is a hard carry-dtype error and under the
+    # python loop is a silent mixed-precision run that forfeits the fp32
+    # speedup. state_dtype is defined below for the checkpoint logic; hoisted
+    # here so the forcing path can use it.
+    _fdtype = jnp.float32 if args.dtype == "float32" else jnp.float64
     if seasonal:
-        Q_heat_2d = jnp.array(Q_heat)
+        Q_heat_2d = jnp.array(Q_heat, dtype=_fdtype)
         if args.wind_jit:
             # (12, 2, nx, ny) on device; blend happens inside the graph.
-            wind_stack = jnp.array(np.stack([np.stack(m) for m in wind_months]))
+            wind_stack = jnp.array(np.stack([np.stack(m) for m in wind_months]),
+                                   dtype=_fdtype)
             def do_step(state, month_day):
                 tx, ty = interp_seasonal_wind_jit(
                     wind_stack, month_day, blend_days=args.wind_blend_days)
@@ -591,7 +599,8 @@ def main():
             def do_step(state, month_day):
                 tx, ty = interp_seasonal_wind(wind_months, month_day,
                                               blend_days=args.wind_blend_days)
-                return step_dyn(state, jnp.array(tx), jnp.array(ty), Q_heat_2d)
+                return step_dyn(state, jnp.array(tx, dtype=_fdtype),
+                                jnp.array(ty, dtype=_fdtype), Q_heat_2d)
     else:
         def do_step(state, month_day):
             return step(state)
@@ -601,7 +610,7 @@ def main():
     # Compute dtype for checkpoint round-trips: fp32 runs keep the device
     # state in fp32 (I/O casts to float64 at the npz boundary, so checkpoint
     # files stay grid-version-agnostic and readable by float64 runs).
-    state_dtype = jnp.float32 if args.dtype == "float32" else jnp.float64
+    state_dtype = _fdtype
 
     n_total = int(round(args.days * 86400.0 / args.dt))
     if args.max_steps > 0:
