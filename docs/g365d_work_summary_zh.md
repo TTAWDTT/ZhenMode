@@ -44,7 +44,7 @@
 
 ### 2.2 G2/G3 稳定性攻坚（~20 个 diag + fix 提交）
 
-切换真实 ETOPO + WOA 初值后接连暴露六个结构性缺陷，每个都有独立诊断链（根因脚本均入 `src/archive_diag/` 档案）：
+切换真实 ETOPO + WOA 初值后接连暴露六个结构性缺陷，每个都有独立诊断链（根因脚本原入 `src/archive_diag/` 档案，该目录已于 2026-09-19 仓库整理时清理）：
 
 1. **幽灵水柱伪 PGF**（08-26）：海底以下节点被填 T_ref=15，密度 PGF 平均含 ghost 贡献，陆架断裂处过强迫 O(3e-5 m/s²)。修复：3D 湿掩码 + 传输一致 barotropic rho-PGF（wet 列平均）+ min_depth 地板 + 地形平滑（`431e126`/`88fe72b`/`b84fc34`，后者 `a636c5b` 终版）。
 2. **N/S 边界单侧差分爆炸**（08-26）：截断纬度 ±60°（消 1/cos² 度量奇异）+ 镜像 ghost 胞无通量墙（∂u/∂n=0）+ 边界行法向速度归零（`eb54d82`）。
@@ -96,7 +96,7 @@
 
 双 PASS 之前还有一次**forcing 侧的诚实 FAIL**：gpu365_glap 的 A1/A2 corr PASS 但 RMSE 3.29/3.46 FAIL，偏差形态（热带 −3~−5K 对称、极区 +2~+4K）指向两个 forcing 构造 bug，均实测坐实：① `air_temp_profile` 对含陆地填充的 T_init 做裸纬向平均（赤道 T_atm 24.12 vs 海洋-only 27.36——"冷偏差"就是 forcing 本身，模型 SST 精确平衡到污染目标 24.09）；② 区域周期 y 缝 taper 被误用在有界全球域（59.5°S T_atm 17.12 vs 真值 −0.83 → +0.886 K/d 虚假极区加热）。修复：`grid.is_global` 分支 + 海洋-only 加权纬向平均 + 无 y-taper（`8aa9acc`）。**非循环性保持**：T_atm 仍纬向均匀，只规定经向梯度，纬向结构留给模式预测——这正是 A2 能 PASS 的前提。
 
-**merge 与重组**：`agent/pam-mt5l9102` → main（`549d6e1`，136 文件 +12144 行）；134 个 `_*.py`/`diag_*.py` 攻坚脚本移入 `src/archive_diag/`（append-only，README 索引脚本类↔历史段落映射）；测试 4 套 55/55 本地 PASS + test_gm_closure 11 个节点验证；英文 PLAN 归档 `docs/plan_gm_closure_en.md`。
+**merge 与重组**：`agent/pam-mt5l9102` → main（`549d6e1`，136 文件 +12144 行）；134 个 `_*.py`/`diag_*.py` 攻坚脚本曾移入 `src/archive_diag/` 档案（该目录已于 2026-09-19 仓库整理时清理）；测试 4 套 55/55 本地 PASS + test_gm_closure 11 个节点验证；英文 PLAN 归档 `docs/plan_gm_closure_en.md`。
 
 **遗留（诚实）**：max|eta| 线性 +0.026 m/d，源为地中海（16.5°E, 37.5°N）半封闭海盆——Gibraltar 14km 在 1° 网格是次网格，一格直布罗陀无法支撑双层交换，残余 PGF 失配驱动伪净流出。年积分内无碍，~500d 会触 15m 看门狗。
 
@@ -272,7 +272,7 @@ python run_long_integration_global.py \
 - **诚实 FAIL 驱动下一步**：区域循环性 FAIL → 全球重写；GM 六轮 FAIL → 谱分析 → 真根因；RMSE FAIL → forcing 构造 bug 实测；
 - **不碰 Python314/site-packages**（仅 PYTHONPATH 方式运行）；区域谱求解器（main 上的 jax_solver.py）不动，保留为验证基线；
 - **默认路径不变性**：动态 forcing 等价性 1-ulp、eta_relax 零速率 bit-exact、`is_global` 分支不动区域 forcing——每次改动都有等价性验证；
-- 根因脚本全部 append-only 入库（`src/archive_diag/` 135 个），可复现审计。
+- 根因脚本曾全部 append-only 入库（`src/archive_diag/` 135 个；该目录已于 2026-09-19 整理时清理），可复现审计
 
 ---
 

@@ -1,8 +1,7 @@
 """
 Long-integration driver for the GLOBAL finite-difference solver (jax_solver_global).
 
-Companion to run_long_integration.py (regional pseudo-spectral). This driver
-runs the global 1° FD solver — built on the stable G2 config (lat_max=60,
+This driver runs the global FD solver — built on the stable G2 config (lat_max=60,
 no-flux N/S wall, nu_h=5e6 spin-up stabilizer, dt=60) — with the bulk air-sea
 heat flux thermodynamics from the closed arc. The whole point of the global
 domain is the non-circular A1/A2 zonal SST skill test: a global non-periodic

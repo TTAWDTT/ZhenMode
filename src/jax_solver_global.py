@@ -1,14 +1,15 @@
 """
 Global Finite-Difference Ocean Solver — hydrostatic primitive equations, JAX.
 
-Companion to jax_solver.py (regional pseudo-spectral). This solver uses:
-  - 2nd-order finite differences on a global 1° lat-lon grid (lon-periodic),
+This solver uses:
+  - 2nd-order finite differences on a global lat-lon grid (lon-periodic),
   - spherical metric factors (dx = R*cos(lat)*dlon, varies with latitude),
   - a real wet_mask for no-flux land boundaries,
   - full 2D Coriolis f = 2*Omega*sin(lat).
 
-The spectral regional solver (jax_solver.py) is UNTOUCHED and retained as a
-cross-validation baseline. This file is the new FD verification target.
+The former regional pseudo-spectral solver is retired and archived at
+src/archive_regional/jax_solver.py; references to it below are historical
+line-number pointers into that file.
 
 G1 (this file, initial): FD horizontal operators + vertical operators +
 MMS (manufactured-solution) verification. The FD operators are pure functions
@@ -867,8 +868,7 @@ FDPhysParams = namedtuple('FDPhysParams', [
 ])
 
 # Keyword-constructed callers that predate nu_nsub/use_scan/freeze_adv_vel/
-# conservative_kv/project_adv_vel (archive_diag probes) get the legacy
-# behavior instead of a TypeError.
+# conservative_kv/project_adv_vel get the legacy behavior instead of a TypeError.
 FDPhysParams.__new__.__defaults__ = (None, False, False, False, False, False)
 
 
