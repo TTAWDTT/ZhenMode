@@ -20,6 +20,7 @@ Convention (matches regional solver + grid.py):
   - 2D fields: (nx, ny)
   - z negative downward, z=0 at surface
 """
+import os
 import jax
 jax.config.update('jax_enable_x64', True)
 import jax.numpy as jnp
@@ -319,7 +320,7 @@ def _column_divergence(u, v, p):
     return jnp.sum(integrand * p.dz_node, axis=-1) * p.wet_mask
 
 
-def _project_column_divergence(u, v, p, dt, n_iter=150):
+def _project_column_divergence(u, v, p, dt, n_iter=None):
     """Return (u, v) with column-integrated horizontal divergence removed.
 
     Solves the area-weighted Poisson problem
@@ -342,6 +343,8 @@ def _project_column_divergence(u, v, p, dt, n_iter=150):
     is past the knee — the stage-2 leak saturates at -40 ZJ/yr (from -2238) for
     n_iter >= 120, so more iterations only adds cost.
     """
+    if n_iter is None:
+        n_iter = int(os.environ.get("OCEAN_PAV_NITER", "150"))
     g = G_EARTH
     wm = p.wet_mask
     area = p.dx_2d * p.dy * wm
