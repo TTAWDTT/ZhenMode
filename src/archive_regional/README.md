@@ -47,10 +47,11 @@
 ### 测试（`tests/`）
 - `tests/test_grid.py`、`test_integrator.py`、`test_spectral_ops.py`、`test_equations.py`
 
-这些测试已移出 `tests/`，因此不再被 `pytest tests/` 收集。如需运行：
+这些测试已移出 `tests/`，因此不再被 `pytest tests/` 收集。如需运行（需同时把
+`src/` 加进路径，因为 `config.py`/`grid.py` 仍留在那里）：
 
 ```bash
-python -m pytest src/archive_regional/tests/
+python -m pytest src/archive_regional/tests/ -o "pythonpath=src src/archive_regional"
 ```
 
 ## 注意
