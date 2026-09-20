@@ -11,7 +11,8 @@ equations on a lat–lon grid, written in JAX.
 - **Time stepping**: RK2 with a JIT-compiled, `lax.scan`-based inner loop
 - **Advection**: flux-form tracer advection on the rigid-lid surface term;
   `--project-adv-vel` projects the stage-2 velocity column-divergence-free
-  to close the column heat budget
+  to close the column heat budget; `--monotone-adv` switches horizontal
+  tracer fluxes to donor-cell (the default remains centered for legacy runs)
 - **Vertical mixing**: GM/Redi skew-flux (κ_gm), eddy viscosity (`nu_h`),
   biharmonic (`nu_bi`), convective adjustment (`kappa_conv`)
 - **Forcing**: NCEP/NCAR R1 reanalysis wind (`wind_reanalysis.py`), bulk
@@ -67,7 +68,10 @@ python src/run_long_integration_global.py --days 365 --dt 60 \
 
 ## Resolution
 
-`--resolution` sets the horizontal grid spacing in degrees. The three
+By default `--resolution` accepts integer multiples of the 0.1° ETOPO source
+grid, preserving historical block-averaged grids. Add
+`--resolution-remap area` to build a conservative spherical-area remapped grid
+at arbitrary positive spacings (for example 0.37° or 0.85°). The
 time-step-sensitive physics parameters (`dt_bt`, `nu_h`, `nu_bi`) are
 auto-scaled by the appropriate power of `dx` (`dx^1`, `dx^2`, `dx^4`), so a
 smaller grid stays stable without hand-tuning. At `--resolution 1.0` the

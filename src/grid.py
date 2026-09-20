@@ -273,36 +273,127 @@ def _smooth_depth_once(depth):
 
 
 def global_grid_dims(resolution, lat_max, etopo_nlon=3600, etopo_nlat=1800,
-                     etopo_res=0.1):
+                     etopo_res=0.1, remap="legacy"):
     """Horizontal dimensions the ETOPO reader will produce at this resolution.
 
-    Single source of truth for the (nx, ny) that `_read_etopo_global` returns,
-    so callers (the runner's --resolution derivation, validation) can predict
-    the grid without reading the bathymetry file. Mirrors that function's
-    INTEGER-floor block division exactly: `n = len(source) // step`, NOT
-    `round(len(source)/step)`. The two differ whenever step does not divide the
-    source length (e.g. 1.3° -> step=13 -> 3600//13 = 276, but 360/1.3 = 277),
-    and since make_global_grid asserts the read matches gc.nx/gc.ny, using the
-    round() form here would reject perfectly valid resolutions.
+    ``legacy`` mirrors the historical INTEGER-floor block division exactly:
+    ``n = len(source) // step``, NOT ``round(len(source)/step)``. The two differ
+    whenever step does not divide the source length (e.g. 1.3° -> step=13 ->
+    3600//13 = 276, but 360/1.3 = 277), and since make_global_grid asserts the
+    read matches gc.nx/gc.ny, using round() there would reject valid grids.
+
+    ``area`` is the continuous-resolution mode.  It closes the longitude band
+    exactly by using ``nx = round(360/res)`` and ``dlon_eff = 360/nx``; latitude
+    likewise uses ``dlat_eff = 180/nlat_full``.  This lets --resolution accept
+    0.37°, 0.85°, etc., while preserving a physically consistent periodic
+    domain.  The returned nx/ny are therefore exactly the reader's output.
     """
-    step = int(round(resolution / etopo_res))
-    if step < 1:
-        raise ValueError(f"resolution {resolution} below the {etopo_res}° "
-                         f"source grid")
-    nx = etopo_nlon // step
-    nlat_full = etopo_nlat // step
-    # Lat centers sit at -90 + step*etopo_res*(k + 0.5); keep |lat| <= lat_max.
-    lat_c = -90.0 + step * etopo_res * (0.5 + np.arange(nlat_full))
-    ny = int(np.sum(np.abs(lat_c) <= lat_max))
-    return int(nx), int(ny)
+    if remap == "legacy":
+        step = int(round(resolution / etopo_res))
+        if step < 1:
+            raise ValueError(f"resolution {resolution} below the {etopo_res}° "
+                             f"source grid")
+        nx = etopo_nlon // step
+        nlat_full = etopo_nlat // step
+        # Lat centers sit at -90 + step*etopo_res*(k + 0.5); keep |lat| <= lat_max.
+        lat_c = -90.0 + step * etopo_res * (0.5 + np.arange(nlat_full))
+        ny = int(np.sum(np.abs(lat_c) <= lat_max))
+        return int(nx), int(ny)
+    if remap == "area":
+        if resolution <= 0.0:
+            raise ValueError(f"resolution must be positive (got {resolution})")
+        nx = int(round(360.0 / resolution))
+        nlat_full = int(round(180.0 / resolution))
+        if nx < 1 or nlat_full < 1:
+            raise ValueError(f"resolution {resolution} too coarse")
+        dlat_eff = 180.0 / nlat_full
+        lat_c = -90.0 + dlat_eff * (0.5 + np.arange(nlat_full))
+        ny = int(np.sum(np.abs(lat_c) <= lat_max))
+        return int(nx), int(ny)
+    raise ValueError(f"unknown remap mode {remap!r}; use 'legacy' or 'area'")
 
 
-def _read_etopo_global(filepath, resolution=1.0, lat_max=85.0):
+def _overlap_matrix(src_edges, dst_edges, sine_weight=False):
+    """Sparse-ish dense overlap matrix mapping source cells to target cells.
+
+    For longitude the cells have equal angular width, so the overlap fraction
+    is sufficient.  For latitude on a sphere, area ∝ sin(lat); the optional
+    sine weighting uses that analytic primitive to build an exact conservative
+    spherical-area remap.
+    """
+    n_src = len(src_edges) - 1
+    n_dst = len(dst_edges) - 1
+    W = np.zeros((n_dst, n_src), dtype=np.float64)
+    for m in range(n_dst):
+        a, b = dst_edges[m], dst_edges[m + 1]
+        k0 = max(0, int(np.searchsorted(src_edges, a, side='right') - 1))
+        k1 = min(n_src, int(np.searchsorted(src_edges, b, side='left')))
+        for k in range(k0, k1):
+            lo = max(a, src_edges[k])
+            hi = min(b, src_edges[k + 1])
+            if hi <= lo:
+                continue
+            if sine_weight:
+                ov = np.sin(np.radians(hi)) - np.sin(np.radians(lo))
+                norm = np.sin(np.radians(b)) - np.sin(np.radians(a))
+            else:
+                ov = hi - lo
+                norm = b - a
+            if norm > 0.0:
+                W[m, k] = ov / norm
+    return W
+
+
+def _remap_etopo_area(z_full_ll, src_lon, src_lat, resolution, lat_max):
+    """Conservative spherical-area remap to an arbitrary uniform target grid.
+
+    Longitude uses plain overlap (all longitude cells at the same latitude have
+    the same physical area).  Latitude uses sin-weighted overlap, matching the
+    area element cos(lat)*dlat*dlon.  This replaces integer block extraction
+    without changing the physical meaning of target resolution.
+    """
+    nlon_src = len(src_lon)
+    nlat_src = len(src_lat)
+    # The ETOPO reader/npz twin stores lon as the left edge of each 0.1° cell.
+    src_lon_edges = np.arange(nlon_src + 1, dtype=np.float64) * 0.1
+    src_lat_edges = -90.0 + np.arange(nlat_src + 1, dtype=np.float64) * 0.1
+
+    nx = int(round(360.0 / resolution))
+    nlat_full = int(round(180.0 / resolution))
+    if nx < 1 or nlat_full < 1:
+        raise ValueError(f"resolution {resolution} too coarse")
+    dlon_eff = 360.0 / nx
+    dlat_eff = 180.0 / nlat_full
+
+    dst_lon_edges = np.arange(nx + 1, dtype=np.float64) * dlon_eff
+    nlat_all = int(round(180.0 / resolution))
+    dst_lat_edges_full = -90.0 + np.arange(nlat_full + 1, dtype=np.float64) * dlat_eff
+    lat_c_all = -90.0 + dlat_eff * (0.5 + np.arange(nlat_full))
+    keep = np.abs(lat_c_all) <= lat_max
+    j0 = int(np.argmax(keep))
+    j1 = len(keep) - int(np.argmax(keep[::-1]))
+    dst_lat_edges = dst_lat_edges_full[j0:j1 + 1]
+    lat_c = lat_c_all[j0:j1]
+
+    W_lon = _overlap_matrix(src_lon_edges, dst_lon_edges)
+    W_lat = _overlap_matrix(src_lat_edges, dst_lat_edges, sine_weight=True)
+    # z_full_ll @ W_lon.T gives (nlat_src, nx); W_lat @ that gives (ny, nx).
+    mapped = W_lat @ (z_full_ll @ W_lon.T)
+    depth = np.where(mapped < 0.0, -mapped, 0.0)
+    lon_c = dlon_eff * (0.5 + np.arange(nx))
+    return depth.T, lon_c, lat_c
+
+
+def _read_etopo_global(filepath, resolution=1.0, lat_max=85.0,
+                       remap="legacy"):
     """Read global ETOPO2022 bathymetry, downsampled to target resolution.
 
-    ETOPO is 0.1° (3600×1800); for a 1° grid we average 10×10 blocks.
-    Returns global depth on (nx, ny) with lon=0.05..359.95 (periodic) and
-    lat covering ±lat_max. Land = 0 depth.
+    ETOPO is 0.1° (3600×1800).  ``legacy`` averages integer 0.1° blocks and
+    is retained for bit-for-bit compatibility with all historical runs.
+    ``area`` performs a conservative spherical-area remap and therefore also
+    supports arbitrary target spacings such as 0.37°.
+    Returns global depth on (nx, ny) with lon centers, periodic, and lat
+    covering ±lat_max. Land = 0 depth.
     """
     # npz twin support: offline nodes (no netCDF4/HDF) can read a pre-extracted
     # "<file>.npz" (z int16, lon, lat). Identical values to the netCDF path.
@@ -324,6 +415,12 @@ def _read_etopo_global(filepath, resolution=1.0, lat_max=85.0):
             z_full = z_full.filled(-99999.0)
         z_full = np.asarray(z_full, dtype=np.float64)
     z_full[z_full <= -9999.0] = 0.0
+
+    if remap == "area":
+        return _remap_etopo_area(z_full, etopo_lon, etopo_lat,
+                                 resolution, lat_max)
+    if remap != "legacy":
+        raise ValueError(f"unknown remap mode {remap!r}; use 'legacy' or 'area'")
 
     # Block-average to target resolution
     step = int(round(resolution / 0.1))   # 10 for 1°
@@ -353,7 +450,7 @@ def _read_etopo_global(filepath, resolution=1.0, lat_max=85.0):
 
 
 def make_global_grid(grid_config, bathymetry_file, smooth_passes=0,
-                     min_depth=None):
+                     min_depth=None, remap="legacy"):
     """Generate a global lat-lon OceanGrid from ETOPO bathymetry.
 
     Unlike make_grid (regional plane), this builds a true global grid with:
@@ -384,6 +481,7 @@ def make_global_grid(grid_config, bathymetry_file, smooth_passes=0,
     gc = grid_config
     depth, lon, lat = _read_etopo_global(
         bathymetry_file, resolution=gc.resolution, lat_max=gc.lat_max,
+        remap=remap,
     )
     nx, ny = depth.shape
     assert nx == gc.nx, f"lon dim {nx} != config nx {gc.nx}"
@@ -400,11 +498,17 @@ def make_global_grid(grid_config, bathymetry_file, smooth_passes=0,
     depth = np.where(depth > 0.0, np.where(depth < min_depth, 0.0, depth), 0.0)
 
     # ── Spherical metric ──
+    # Continuous area remap closes 360° with nx cells, so dlon_eff may differ
+    # from the requested value by the usual rounding residual. Legacy keeps the
+    # requested spacing exactly for bit-for-bit backwards compatibility.
+    dlon = 360.0 / nx if remap == "area" else gc.dlon
+    dlat = (float(np.median(np.diff(lat))) if ny > 1 and remap == "area"
+            else gc.dlat)
     cos_lat = np.cos(np.radians(lat))            # (ny,)
     dx_2d = np.broadcast_to(
-        R_EARTH * np.radians(gc.dlon) * cos_lat, (nx, ny)
+        R_EARTH * np.radians(dlon) * cos_lat, (nx, ny)
     ).copy()                                      # (nx, ny) varies with lat
-    dy = R_EARTH * np.radians(gc.dlat)
+    dy = R_EARTH * np.radians(dlat)
 
     # ── Coriolis: f = 2*Omega*sin(lat), full 2D field ──
     lon_2d, lat_2d = np.meshgrid(lon, lat, indexing='ij')   # (nx, ny)

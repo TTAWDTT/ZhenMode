@@ -260,8 +260,10 @@ def main():
                          "host-to-device copy (measured ~1.2-1.4x on split runs)")
     ap.add_argument("--lat-max", type=float, default=LAT_MAX_DEFAULT)
     ap.add_argument("--resolution", type=float, default=None,
-                    help="horizontal grid spacing in degrees (ETOPO source is "
-                         "0.1°, so this must be a positive multiple of 0.1). "
+                    help="horizontal grid spacing in degrees. With the default "
+                         "--resolution-remap legacy this must be a multiple of "
+                         "the 0.1° ETOPO source grid; with 'area' it may be "
+                         "any positive value and is conservatively remapped. "
                          "When given, nx and ny are DERIVED from it and --ny "
                          "is ignored. Default: None = legacy 1° grid (--ny "
                          "decides). KEY: on finer grids the 1°-calibrated "
@@ -271,6 +273,11 @@ def main():
                          "Pass any of those explicitly to override. At 1.0° "
                          "the scaling is a no-op. See "
                          "docs/resolution_cfl_limits.md.")
+    ap.add_argument("--resolution-remap", choices=("legacy", "area"),
+                    default="legacy",
+                    help="'legacy' preserves integer 0.1° block averaging; "
+                         "'area' uses conservative spherical-area overlap and "
+                         "supports arbitrary positive resolutions")
     ap.add_argument("--ny", type=int, default=None,
                     help=f"meridional grid points at the default 1° resolution "
                          f"(default {NY_DEFAULT}); ignored when --resolution "
@@ -405,11 +412,14 @@ def main():
         res = float(args.resolution)
         if res <= 0.0:
             ap.error(f"--resolution must be positive (got {res})")
-        step = res / 0.1
-        if abs(step - round(step)) > 1e-9:
-            ap.error(f"--resolution must be a multiple of the 0.1° ETOPO source "
-                     f"grid (got {res})")
-        nx, ny = global_grid_dims(res, args.lat_max)
+        if args.resolution_remap == "legacy":
+            step = res / 0.1
+            if abs(step - round(step)) > 1e-9:
+                ap.error(f"--resolution must be a multiple of the 0.1° ETOPO "
+                         f"source grid when --resolution-remap=legacy "
+                         f"(got {res}; use --resolution-remap=area)")
+        nx, ny = global_grid_dims(res, args.lat_max,
+                                  remap=args.resolution_remap)
         if nx < 4 or ny < 4:
             ap.error(f"--resolution {res} at lat_max={args.lat_max} gives a "
                      f"{nx}x{ny} grid; too coarse")
@@ -458,7 +468,8 @@ def main():
           f"smooth={args.smooth_passes}, min_depth={args.min_depth})...")
     grid = make_global_grid(gcfg, bathy,
                             smooth_passes=args.smooth_passes,
-                            min_depth=args.min_depth)
+                            min_depth=args.min_depth,
+                            remap=args.resolution_remap)
     ocean = np.asarray(grid.ocean_mask, dtype=bool)
     dx_eq = float(grid.dx_2d[0, grid.ny // 2])
     print(f"  grid {grid.nx}x{grid.ny}x{grid.nz}, ocean {float(grid.wet_mask.mean()):.1%}, "
