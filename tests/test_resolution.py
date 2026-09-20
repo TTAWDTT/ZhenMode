@@ -63,6 +63,25 @@ def test_dims_match_reader(step, lat_max):
         f"!= reader {depth.shape}")
 
 
+@requires_bathy
+def test_bathymetry_reads_as_ocean():
+    """The relief must be read with ETOPO's sign convention: ocean is NEGATIVE.
+
+    Every dimension test above passes on an all-land grid, so a stand-in
+    written with positive depths (elevation = depth) silently yields a world
+    with no ocean at all: the grid builds, the shapes match, and every metric
+    assertion still holds. Pin the sign, and the presence of both land and
+    ocean, here.
+    """
+    depth, _, _ = _read_etopo_global(BATHY, resolution=1.0, lat_max=60.0)
+    ocean = depth > 0.0
+    assert 0.3 < ocean.mean() < 0.95, (
+        f"ocean fraction {ocean.mean():.1%} is not a plausible world -- the "
+        f"relief was probably written with the wrong sign convention")
+    assert ocean.any() and (~ocean).any(), "expected both land and ocean"
+    assert depth.max() > 1000.0, f"deepest point is only {depth.max():.0f} m"
+
+
 def test_dims_use_integer_floor_not_round():
     """The regression that motivated the helper: round() gives the wrong nx
     whenever step does not divide the 3600-point source."""

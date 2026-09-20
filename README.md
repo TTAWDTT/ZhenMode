@@ -75,7 +75,7 @@ only for the test suite):
 
 ```bash
 python scripts/make_synthetic_bathymetry.py   # -> data/ETOPO_..._surface.nc.npz
-python -m pytest tests/ -q                    # 133 tests, none skipped
+python -m pytest tests/ -q                    # 134 tests, none skipped
 ```
 
 ## Resolution

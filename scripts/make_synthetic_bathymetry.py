@@ -44,7 +44,13 @@ def synthetic_relief():
     continents = (np.cos(np.radians(lon_2d) * 3.0)
                   * np.cos(np.radians(lat_2d) * 2.0)) > 0.62
     land = continents | (np.abs(lat_2d) > 78.0)
-    return lon, lat, np.where(land, 0.0, np.clip(depth, 120.0, 6000.0)).astype(np.int16)
+    # ETOPO sign convention: z is ELEVATION (positive up), so ocean is NEGATIVE
+    # and land sits at or above 0. Writing positive depths here makes
+    # _read_etopo_global see an all-land world -- the grid still builds and
+    # every dimension assertion still passes, so only an ocean-fraction check
+    # catches it (tests/test_resolution.py::test_bathymetry_reads_as_ocean).
+    relief = np.where(land, 0.0, -np.clip(depth, 120.0, 6000.0))
+    return lon, lat, relief.astype(np.int16)
 
 
 def main():
@@ -60,7 +66,7 @@ def main():
     np.savez(path, z=z, lon=lon, lat=lat)
     print(f"wrote SYNTHETIC bathymetry -> {path}")
     print(f"  {z.shape[1]} x {z.shape[0]} cells at {RES} deg, "
-          f"ocean fraction {float((z > 0).mean()):.1%}")
+          f"ocean fraction {float((z < 0).mean()):.1%}")
     print("  NOT ETOPO: use it only to un-skip the grid tests, never for a "
           "science run.")
 
