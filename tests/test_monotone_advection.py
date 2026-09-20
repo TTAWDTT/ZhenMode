@@ -14,9 +14,10 @@ import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
 
+from dataclasses import replace
+
 import jax.numpy as jnp
 import numpy as np
-from dataclasses import replace
 
 from config import PhysicsConfig
 from grid import GlobalOceanGrid
@@ -53,7 +54,7 @@ def _synth_grid():
 
 
 def _make_params(grid, monotone):
-    nx, ny, nz = grid.nx, grid.ny, grid.nz
+    nx, ny = grid.nx, grid.ny
     physics = replace(PhysicsConfig(), nu_h=100.0, nu_bi=0.0,
                       kappa_h=100.0, kappa_v=1e-5, kappa_conv=0.0)
     forcing = (np.zeros((nx, ny)), np.zeros((nx, ny)), np.zeros((nx, ny)))

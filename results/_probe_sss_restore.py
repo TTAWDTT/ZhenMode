@@ -39,7 +39,7 @@ S_ref = np.where(np.asarray(grid.wet_mask) > 0.5, 36.0, 0.0)
 
 def build(tau_days):
     step, init_state, diag, params, _tf = make_solver_global(
-        grid, physics, 600.0, forcing=None, eos_type="linear",
+        grid, physics, 600.0, forcing=None,
         S_ref_surf=S_ref, sss_restore_days=tau_days, return_params=True,
         polar_cap_rows=0, polar_cap_taper=0)  # cap filter would zonal-average
         # polar rows toward the ocean+land mean, polluting the analytic SSS

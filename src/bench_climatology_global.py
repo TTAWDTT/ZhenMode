@@ -1,7 +1,7 @@
 """
 Stage-3 climatology comparison — GLOBAL FD solver edition.
 
-Sister to bench_climatology_compare.py (regional). Reads a global run npz
+Reads a global run npz
 from run_long_integration_global.py and scores the model climatology against
 WOA2023, using the SAME pre-registered A1/A2 criteria (do NOT move the bar):
 
@@ -31,30 +31,25 @@ Usage:
   python src/bench_climatology_global.py --npz results/global_g365d_prod.npz \
       [--steady-days 90] [--out-dir results/climatology_g]
 """
-import sys
-import os
 import argparse
+import os
+import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
+from dataclasses import replace
+
 import numpy as np
 
-from dataclasses import replace
 from config import DEFAULT_CONFIG, GlobalGridConfig
 from grid import make_global_grid
 from woa_data import get_initial_fields
-
 
 EXCLUDED = [
     "pointwise SLA/SSH spatial correlation (T3-1 structural mismatch)",
     "mesoscale eddy-by-eddy matching (phase unpredictable)",
     "mesoscale SLA variance absolute value (resolution-limited, H1-H4 falsified)",
 ]
-
-
-def zonal_mean(field):
-    """Mean over x (axis 0, periodic lon) -> (ny,) for 2D (nx,ny) or (ny,nz) for 3D."""
-    return np.mean(field, axis=0)
 
 
 def smooth_2d_global(field, lat, deg=2.0):
@@ -97,7 +92,8 @@ def radial_spectrum(field, dx_m):
     f = np.nan_to_num(field, nan=0.0).astype(np.float64)
     f = f - f.mean()
     nx, ny = f.shape
-    wx = np.hanning(nx); wy = np.hanning(ny)
+    wx = np.hanning(nx)
+    wy = np.hanning(ny)
     ft = f * wx[:, None] * wy[None, :]
     F = np.fft.fftshift(np.fft.fft2(ft))
     PSD = np.abs(F) ** 2
@@ -138,7 +134,6 @@ def main():
     days = z['days']
     eta_snaps = z['eta']          # (n_snap, nx, ny)
     T_top_snaps = z['T_top']      # (n_snap, nx, ny)
-    max_u = z['max_u']
     ke = z['ke']
     max_eta = z['max_eta']
     verdict = str(z['verdict'])
@@ -201,7 +196,7 @@ def main():
     good = np.isfinite(sst_zonal_model) & np.isfinite(sst_zonal_woa)
     corr_zonal = float(np.corrcoef(sst_zonal_model[good], sst_zonal_woa[good])[0, 1])
     rmse_zonal = float(np.sqrt(np.mean((sst_zonal_model[good] - sst_zonal_woa[good]) ** 2)))
-    print(f"  [A1] zonal-mean SST(y) model vs WOA (ocean-mean at each lat):")
+    print("  [A1] zonal-mean SST(y) model vs WOA (ocean-mean at each lat):")
     print(f"       pattern corr = {corr_zonal:.3f}  (target > 0.3)")
     print(f"       RMSE         = {rmse_zonal:.3f} C  (target < 2.0)")
     a1_pass = corr_zonal > 0.3 and rmse_zonal < 2.0
@@ -216,11 +211,11 @@ def main():
     corr_pat = (float(np.corrcoef(a_model, a_woa)[0, 1])
                 if a_model.std() > 0 else float('nan'))
     rmse_pat = float(np.sqrt(np.mean((sst_model_sm[m] - sst_woa_sm[m]) ** 2)))
-    print(f"  [A2] SST large-scale pattern (>2deg smoothed, demeaned) vs WOA:")
+    print("  [A2] SST large-scale pattern (>2deg smoothed, demeaned) vs WOA:")
     print(f"       pattern corr = {corr_pat:.3f}  (target > 0.3)")
     print(f"       RMSE         = {rmse_pat:.3f} C  (target < 2.0)")
-    print(f"       (non-circular: T_atm is zonally uniform; zonal SST structure")
-    print(f"        is genuinely predicted by advection/mixing/wind)")
+    print("       (non-circular: T_atm is zonally uniform; zonal SST structure")
+    print("        is genuinely predicted by advection/mixing/wind)")
     a2_pass = ((not np.isnan(corr_pat)) and corr_pat > 0.3 and rmse_pat < 2.0)
 
     # ============================================================
@@ -229,23 +224,24 @@ def main():
     print("\n--- B-CLASS (dynamical plausibility, informational) ---")
 
     # B1: SST variance spatial distribution
-    print(f"  [B1] SST variance (steady window):")
+    print("  [B1] SST variance (steady window):")
     print(f"       mean var = {np.mean(sst_var[ocean]):.4f} C^2")
     print(f"       max var  = {np.max(sst_var[ocean]):.4f} C^2")
-    print(f"       (informational: non-zero variance = active variability)")
+    print("       (informational: non-zero variance = active variability)")
 
     # B2: SSH spectrum vs k^-3
     eta_anom = eta_clim - eta_clim[ocean].mean()
     k_cent, P = radial_spectrum(eta_anom, dx_eq)
     valid = (k_cent > 0) & (P > 0) & (k_cent < k_cent.max() * 0.8)
     if valid.sum() > 4:
-        lk = np.log10(k_cent[valid]); lP = np.log10(P[valid])
+        lk = np.log10(k_cent[valid])
+        lP = np.log10(P[valid])
         slope = float(np.polyfit(lk, lP, 1)[0])
         print(f"  [B2] SSH radial spectrum log-log slope = {slope:.2f} "
               f"(geostrophic turbulence expects ~-3 to -5)")
     else:
         slope = float('nan')
-        print(f"  [B2] SSH spectrum: insufficient resolved band for slope fit")
+        print("  [B2] SSH spectrum: insufficient resolved band for slope fit")
 
     # B3: KE trend + max|eta| trend over steady window
     ke_steady = ke[mask]
@@ -255,7 +251,7 @@ def main():
               f"(target |drift| < ~50% over the window = roughly steady)")
     else:
         ke_drift = float('nan')
-        print(f"  [B3] KE drift: too few points")
+        print("  [B3] KE drift: too few points")
     eta_steady = max_eta[mask]
     print(f"       max|eta| over steady window: {eta_steady.min():.3f}..{eta_steady.max():.3f} m")
 
@@ -291,10 +287,13 @@ def main():
         fig, ax = plt.subplots(1, 1, figsize=(6, 5))
         ax.plot(sst_zonal_model, lat, 'b-', label='model climatology')
         ax.plot(sst_zonal_woa, lat, 'r--', label='WOA2023')
-        ax.set_xlabel('zonal-mean SST (degC)'); ax.set_ylabel('latitude (N)')
+        ax.set_xlabel('zonal-mean SST (degC)')
+        ax.set_ylabel('latitude (N)')
         ax.set_title(f'Zonal-mean SST  (corr={corr_zonal:.3f}, RMSE={rmse_zonal:.2f})')
-        ax.legend(); ax.grid(True)
-        fig.tight_layout(); fig.savefig(os.path.join(args.out_dir, 'zonal_sst.png'), dpi=120)
+        ax.legend()
+        ax.grid(True)
+        fig.tight_layout()
+        fig.savefig(os.path.join(args.out_dir, 'zonal_sst.png'), dpi=120)
         plt.close(fig)
 
         # Fig 2: SST pattern (smoothed)
@@ -303,22 +302,32 @@ def main():
                                   [sst_model_sm, sst_woa_sm, sst_model_sm - sst_woa_sm],
                                   ['model (smoothed)', 'WOA (smoothed)', 'model - WOA']):
             im = ax.pcolormesh(lon, lat, fld.T, shading='auto')
-            ax.set_title(title); ax.set_xlabel('lon E'); ax.set_ylabel('lat N')
+            ax.set_title(title)
+            ax.set_xlabel('lon E')
+            ax.set_ylabel('lat N')
             fig.colorbar(im, ax=ax)
         fig.suptitle(f'SST large-scale pattern (corr={corr_pat:.3f}, RMSE={rmse_pat:.2f})')
-        fig.tight_layout(); fig.savefig(os.path.join(args.out_dir, 'sst_pattern.png'), dpi=120)
+        fig.tight_layout()
+        fig.savefig(os.path.join(args.out_dir, 'sst_pattern.png'), dpi=120)
         plt.close(fig)
 
         # Fig 3: SSH climatology + spectrum
         fig, axes = plt.subplots(1, 2, figsize=(12, 4))
         im = axes[0].pcolormesh(lon, lat, eta_clim.T, shading='auto')
-        axes[0].set_title('model SSH climatology (m)'); axes[0].set_xlabel('lon E')
-        axes[0].set_ylabel('lat N'); fig.colorbar(im, ax=axes[0])
+        axes[0].set_title('model SSH climatology (m)')
+        axes[0].set_xlabel('lon E')
+        axes[0].set_ylabel('lat N')
+        fig.colorbar(im, ax=axes[0])
         axes[1].loglog(k_cent[valid], P[valid], 'b-')
-        k_ref = k_cent[valid]; axes[1].loglog(k_ref, P[valid][0]*(k_ref/k_ref[0])**-3, 'r--', label='k^-3')
+        k_ref = k_cent[valid]
+        axes[1].loglog(k_ref, P[valid][0]*(k_ref/k_ref[0])**-3, 'r--', label='k^-3')
         axes[1].set_title(f'SSH radial spectrum (slope={slope:.2f})')
-        axes[1].set_xlabel('k (1/m)'); axes[1].set_ylabel('PSD'); axes[1].legend(); axes[1].grid(True)
-        fig.tight_layout(); fig.savefig(os.path.join(args.out_dir, 'ssh_spectrum.png'), dpi=120)
+        axes[1].set_xlabel('k (1/m)')
+        axes[1].set_ylabel('PSD')
+        axes[1].legend()
+        axes[1].grid(True)
+        fig.tight_layout()
+        fig.savefig(os.path.join(args.out_dir, 'ssh_spectrum.png'), dpi=120)
         plt.close(fig)
         print(f"\nfigures saved to {args.out_dir}/")
     except Exception as e:

@@ -1,44 +1,32 @@
 """
-Surface Forcing Module — wind stress and heat flux fields.
+Surface Forcing Module — heat flux and meridional taper helpers.
 
-Generates 2D forcing fields for the subtropical gyre domain:
-  - Wind stress: meridional profile with easterlies (south) and
-    westerlies (north), matching the Stommel/Munk gyre paradigm.
-  - Heat flux: meridional gradient (warming south, cooling north).
+The global run takes its wind from NCEP/NCAR R1 reanalysis
+(wind_reanalysis.py); this module supplies the remaining surface forcing:
 
-Supports both idealized analytic profiles and user-provided arrays.
+  - Q_heat          : idealized meridional heat-flux pattern, ocean-mean
+                      centred (heat_flux_meridional)
+  - T_atm           : zonally-uniform atmospheric target for the bulk
+                      air-sea flux (air_temp_profile)
+  - meridional taper: raised-cosine edge ramp (taper_weight_1d, taper_2d_y)
 
 All fields are (nx, ny) shaped, matching the solver axis convention
 (axis 0 = zonal/lon, axis 1 = meridional/lat).
 """
 import numpy as np
 
-from config import RHO_0
-from dataclasses import dataclass
-from typing import Optional
-
-
-@dataclass
-class Forcing:
-    """Spatially-varying surface forcing fields.
-
-    Holds 2D (nx, ny) arrays for wind stress and heat flux. When passed to
-    compute_momentum_tendency / compute_tracer_tendency, these override the
-    scalar defaults on PhysicsConfig. All fields default to None; any field
-    left None falls back to the corresponding physics scalar.
-    """
-    tau_x: Optional[np.ndarray] = None   # (nx, ny) zonal wind stress [N/m^2]
-    tau_y: Optional[np.ndarray] = None   # (nx, ny) meridional wind stress [N/m^2]
-    Q_heat: Optional[np.ndarray] = None  # (nx, ny) surface heat flux [W/m^2]
-
+# Edge-taper width [grid cells] for the idealized forcing fields
+# (meridional heat flux, wind stress). Ramping them to zero over the
+# outermost rows stops them fighting the polar-edge sponge / cap band.
+FORCING_TAPER_CELLS = 8
 
 
 def taper_weight_1d(ny, taper_cells):
     """Raised-cosine y-edge taper weight (multiplicative mask).
 
     Returns a ``(ny,)`` weight that is 1 in the interior and ramps smoothly
-    to 0 over ``taper_cells`` cells at each meridional edge.  Used to zero
-    forcing at the periodic FFT seam in both 1D profiles and 2D fields.
+    to 0 over ``taper_cells`` cells at each meridional edge. Used to zero
+    idealized forcing in the polar-edge sponge / cap band (see _taper_y).
     """
     taper_cells = int(taper_cells)
     weight = np.ones(int(ny), dtype=np.float64)
@@ -52,16 +40,15 @@ def taper_weight_1d(ny, taper_cells):
 
 
 def _taper_y(profile, ny, taper_cells):
-    """Force a 1D y-profile to zero smoothly at both meridional edges.
+    """Ramp a 1D y-profile smoothly to zero at both meridional edges.
 
-    The solver differentiates horizontally with periodic (FFT) spectral
-    derivatives in both x and y.  A wind/heat profile that is non-zero at
-    the southern (y=0) or northern (y=ny-1) edge creates a step
-    discontinuity at the periodic meridional seam, which injects spurious
-    grid-scale forcing energy at those boundaries (observed as a persistent
-    NW-corner heat pump).  This applies a raised-cosine taper over
-    ``taper_cells`` grid cells at each edge so the profile reaches zero at
-    both ends and is continuous across the periodic seam.
+    Legacy helper. On a y-periodic grid a non-zero edge value puts a step
+    discontinuity at the FFT seam and pumps grid-scale energy there. The
+    global grid has CLOSED no-flux N/S walls instead, so there is no seam
+    to close. The taper survives because the polar edge rows are the
+    sponge / polar-cap band, and ramping the idealized forcing to zero
+    there stops it fighting them. It is a raised cosine over
+    ``taper_cells`` cells at each edge.
 
     Args:
         profile: (ny,) 1D meridional profile before tapering.
@@ -78,42 +65,11 @@ def _taper_y(profile, ny, taper_cells):
 def taper_2d_y(field, ny, taper_cells):
     """Apply the meridional y-edge taper to a 2D ``(nx, ny)`` forcing field.
 
-    The 1D taper weight is broadcast along axis 1 so the whole field reaches
-    zero at both y-edges, keeping it continuous across the periodic seam.
+    Broadcasts the 1D taper weight along axis 1 so the whole field reaches
+    zero at both y-edges (see _taper_y for why the global grid still uses it).
     """
     field = np.asarray(field, dtype=np.float64)
     return field * taper_weight_1d(ny, taper_cells)[None, :]
-
-def wind_stress_gyre(grid, tau0=0.1):
-    """Subtropical gyre wind stress (classic Stommel profile).
-
-    tau_x(y) = -tau0 * cos(pi * y' / Ly)
-
-    where y' is distance from southern boundary. This gives:
-      - Easterlies (tau_x < 0) in the southern half (trade winds)
-      - Westerlies (tau_x > 0) in the northern half
-      - Zero stress at the center
-
-    Args:
-        grid: OceanGrid
-        tau0: peak wind stress magnitude [N/m^2], default 0.1
-
-    Returns:
-        tau_x, tau_y: (nx, ny) wind stress fields [N/m^2]
-    """
-    ny = grid.ny
-    taper_cells = getattr(grid, "forcing_taper_cells", 8)
-    # Normalized meridional coordinate: 0 at south, 1 at north
-    y_frac = np.arange(ny, dtype=np.float64) / (ny - 1)
-
-    tau_x_profile = -tau0 * np.cos(np.pi * y_frac)  # (ny,)
-    # Taper to zero at both y-edges so the profile is continuous across the
-    # periodic meridional seam (avoids a spectral step-discontinuity artifact).
-    tau_x_profile = _taper_y(tau_x_profile, ny, taper_cells)
-    tau_x = np.broadcast_to(tau_x_profile[None, :], (grid.nx, ny)).copy()
-    tau_y = np.zeros((grid.nx, ny))
-    return tau_x, tau_y
-
 
 def heat_flux_meridional(grid, Q0=50.0):
     """Meridional heat flux gradient.
@@ -127,33 +83,32 @@ def heat_flux_meridional(grid, Q0=50.0):
       - Zero at the center
 
     Args:
-        grid: OceanGrid
+        grid: GlobalOceanGrid (uses nx, ny, wet_mask, dx_2d, dy)
         Q0: peak heat flux magnitude [W/m^2], default 50
 
     Returns:
         Q_heat: (nx, ny) heat flux field [W/m^2]
     """
     ny = grid.ny
-    taper_cells = getattr(grid, "forcing_taper_cells", 8)
+    taper_cells = FORCING_TAPER_CELLS
     y_frac = np.arange(ny, dtype=np.float64) / (ny - 1)
 
     q_profile = -Q0 * (2.0 * y_frac - 1.0)  # (ny,)
     q_profile = _taper_y(q_profile, ny, taper_cells)
     Q = np.broadcast_to(q_profile[None, :], (grid.nx, ny)).astype(np.float64).copy()
-    if getattr(grid, "is_global", False):
-        # The surface heat term is land-masked, so a pattern whose GLOBAL
-        # mean is zero still carries a large OCEAN mean. The 1-deg
-        # bathymetry is hemispherically asymmetric in the +/-60 band: the
-        # Southern Ocean (oceanfrac ~1.0 at -50) collects the full southern
-        # warm lobe while the northern cool lobe falls largely on land
-        # (oceanfrac 0.39-0.53 at +40..+50). Raw pattern measured +4.68
-        # W/m^2 over ocean = +1511 TW = +47.7 ZJ/yr of spurious heat . a
-        # ~48-yr time constant that would dominate any real equilibration.
-        # Recentre on the ocean-area-weighted mean so the flux applied
-        # actually conserves heat over the region it is applied to.
-        wm = np.asarray(grid.wet_mask, dtype=np.float64)
-        w = wm * (np.asarray(grid.dx_2d, dtype=np.float64) * float(grid.dy))
-        Q = (Q - float((Q * w).sum() / w.sum())) * wm
+    # The surface heat term is land-masked, so a pattern whose GLOBAL mean is
+    # zero still carries a large OCEAN mean. The 1-deg bathymetry is
+    # hemispherically asymmetric in the +/-60 band: the Southern Ocean
+    # (oceanfrac ~1.0 at -50) collects the full southern warm lobe while the
+    # northern cool lobe falls largely on land (oceanfrac 0.39-0.53 at
+    # +40..+50). The raw pattern measured +4.68 W/m^2 over ocean = +1511 TW =
+    # +47.7 ZJ/yr of spurious heat -- a ~48-yr time constant that would
+    # dominate any real equilibration. Recentre on the ocean-area-weighted
+    # mean so the flux applied actually conserves heat over the region it is
+    # applied to.
+    wm = np.asarray(grid.wet_mask, dtype=np.float64)
+    w = wm * (np.asarray(grid.dx_2d, dtype=np.float64) * float(grid.dy))
+    Q = (Q - float((Q * w).sum() / w.sum())) * wm
     return Q
 
 
@@ -198,13 +153,12 @@ def air_temp_profile(grid, sst_clim):
     """Zonally-uniform meridional atmospheric target temperature.
 
     Builds the bulk-flux atmospheric equilibrium temperature T_atm as the
-    zonal mean of a climatological SST field, smoothed and tapered to the
-    periodic y-seam. Zonally uniform by construction → only the meridional
-    gradient is prescribed; zonal SST structure is left for the model to
-    predict (keeps A1/A2 non-circular).
+    OCEAN-ONLY zonal mean of a climatological SST field. Zonally uniform by
+    construction, so only the meridional gradient is prescribed and any zonal
+    SST structure is left for the model to predict (keeps A1/A2 non-circular).
 
     Args:
-        grid: OceanGrid
+        grid: GlobalOceanGrid (uses nx, ny, wet_mask)
         sst_clim: (nx, ny) climatological surface T [degC] (e.g. WOA SST).
 
     Returns:
@@ -212,131 +166,27 @@ def air_temp_profile(grid, sst_clim):
     """
     ny = grid.ny
     sst = np.asarray(sst_clim, dtype=np.float64)
-    if getattr(grid, "is_global", False):
-        # Global grid: y is BOUNDED (no periodic seam) and land cells are real
-        # land. Two bugs this branch fixes (both measured on gpu365_glap):
-        #   1. The plain zonal mean of T_init included the land/below-floor
-        #      fill values (init_state holds +15 C sentinels; WOA interp holds
-        #      its own land fill), dragging the equatorial T_atm down to
-        #      24.1 C vs the true ocean-only 27.4 C — the model SST equilibrated
-        #      exactly onto the polluted target (model 24.09 vs T_atm 24.03),
-        #      producing the measured -3..-5 K tropical cold bias.
-        #   2. The regional _taper_y pulled the edge rows (|lat|~59.5) toward
-        #      the domain mean (17.1 C vs true -0.8 C), injecting +0.89 K/d of
-        #      spurious polar warming — the measured +2..+4 K polar warm bias.
-        # Ocean-only zonal mean, NO y-taper: the bulk flux is continuous at
-        # the polar edge because the domain edge is a real boundary there.
-        wm = np.asarray(grid.wet_mask, dtype=np.float64)   # (nx, ny)
-        profile = np.full(ny, np.nan)
-        for j in range(ny):
-            wet_j = wm[:, j] > 0.5
-            if wet_j.any():
-                profile[j] = sst[wet_j, j].mean()
-        # backfill any all-land row from its nearest ocean-bearing row
-        if np.isnan(profile).any():
-            good = np.where(~np.isnan(profile))[0]
-            profile = np.interp(np.arange(ny), good, profile[good])
-        return np.broadcast_to(profile[None, :], (grid.nx, ny)).copy()
-    # Regional grid: periodic y-seam — taper the deviation from the domain
-    # mean to zero at both edges so the bulk flux doesn't inject a step at
-    # the seam.
-    taper_cells = getattr(grid, "forcing_taper_cells", 8)
-    # zonal mean -> (ny,) meridional profile, broadcast back to (nx, ny)
-    profile = np.nanmean(sst, axis=0)              # (ny,)
-    profile = np.broadcast_to(profile[None, :], (grid.nx, ny)).copy()
-    domain_mean = float(np.nanmean(profile))
-    anom = profile - domain_mean
-    anom = _taper_y(anom, ny, taper_cells)
-    return anom + domain_mean
-
-
-def wind_stress_seasonal(grid, tau0=0.1, season_frac=0.0):
-    """Seasonally modulated gyre wind stress.
-
-    Adds a sinusoidal seasonal modulation to the gyre pattern:
-    tau_x(y, t) = -tau0 * cos(pi*y') * (1 + amp * cos(2*pi*season_frac))
-
-    Args:
-        grid: OceanGrid
-        tau0: peak wind stress [N/m^2]
-        season_frac: seasonal phase (0=winter solstice, 0.5=summer)
-
-    Returns:
-        tau_x, tau_y: (nx, ny) wind stress fields [N/m^2]
-    """
-    ny = grid.ny
-    taper_cells = getattr(grid, "forcing_taper_cells", 8)
-    y_frac = np.arange(ny, dtype=np.float64) / (ny - 1)
-
-    # Seasonal amplitude: stronger winds in winter (season_frac=0)
-    seasonal_amp = 0.3 * np.cos(2.0 * np.pi * season_frac)
-    tau_x_profile = -tau0 * np.cos(np.pi * y_frac) * (1.0 + seasonal_amp)
-    tau_x_profile = _taper_y(tau_x_profile, ny, taper_cells)
-    tau_x = np.broadcast_to(tau_x_profile[None, :], (grid.nx, ny)).copy()
-    tau_y = np.zeros((grid.nx, ny))
-    return tau_x, tau_y
-
-
-def ekman_pumping(grid, tau_x, tau_y):
-    """Compute Ekman pumping velocity from wind stress curl.
-
-    w_ek = curl(tau) / (rho_0 * f)
-
-    where curl(tau) = d(tau_y)/dx - d(tau_x)/dy
-
-    This drives the interior Sverdrup transport in a stratified ocean.
-
-    Args:
-        grid: OceanGrid
-        tau_x, tau_y: (nx, ny) wind stress fields [N/m^2]
-
-    Returns:
-        w_ek: (nx, ny) Ekman pumping velocity [m/s]
-    """
-    # Central finite differences (wind stress profiles are non-periodic;
-    # spectral derivatives would introduce Gibbs-like boundary artifacts)
-    # Axis 0 = x (zonal), Axis 1 = y (meridional)
-    dtau_y_dx = np.zeros_like(tau_y)
-    dtau_x_dy = np.zeros_like(tau_x)
-    dtau_y_dx[1:-1, :] = (tau_y[2:, :] - tau_y[:-2, :]) / (2.0 * grid.dx)
-    dtau_x_dy[:, 1:-1] = (tau_x[:, 2:] - tau_x[:, :-2]) / (2.0 * grid.dy)
-    curl_tau = dtau_y_dx - dtau_x_dy
-
-    # Avoid division by zero at equator (f=0), though our domain is mid-lat
-    f = grid.f
-    f_safe = np.where(np.abs(f) > 1e-10, f, 1e-10)
-    w_ek = curl_tau / (RHO_0 * f_safe)
-    return w_ek
-
-
-if __name__ == "__main__":
-    import sys, os
-    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-    from config import DEFAULT_CONFIG
-    from grid import make_grid
-
-    grid = make_grid(DEFAULT_CONFIG.grid, DEFAULT_CONFIG.bathymetry_file)
-
-    tau_x, tau_y = wind_stress_gyre(grid, tau0=0.1)
-    Q_heat = heat_flux_meridional(grid, Q0=50.0)
-    w_ek = ekman_pumping(grid, tau_x, tau_y)
-
-    print("=== Surface Forcing ===")
-    print(f"Grid: {grid.nx}x{grid.ny}")
-    print(f"Lat range: {grid.lat[0]:.1f} - {grid.lat[-1]:.1f} N")
-    print()
-    print(f"Wind stress tau_x:")
-    print(f"  range: {tau_x.min():.4f} to {tau_x.max():.4f} N/m^2")
-    print(f"  south (trade): {tau_x[:, 0].mean():.4f} N/m^2 (easterly)")
-    print(f"  center:         {tau_x[:, grid.ny//2].mean():.4f} N/m^2")
-    print(f"  north (wester): {tau_x[:, -1].mean():.4f} N/m^2 (westerly)")
-    print()
-    print(f"Heat flux Q:")
-    print(f"  range: {Q_heat.min():.1f} to {Q_heat.max():.1f} W/m^2")
-    print(f"  south: {Q_heat[:, 0].mean():.1f} W/m^2 (warming)")
-    print(f"  north: {Q_heat[:, -1].mean():.1f} W/m^2 (cooling)")
-    print()
-    print(f"Ekman pumping w_ek:")
-    print(f"  range: {w_ek.min():.2e} to {w_ek.max():.2e} m/s")
-    print(f"  max |w_ek|: {np.abs(w_ek).max():.2e} m/s")
-    print(f"  (typical OGCM values: 10-50 m/year = 3e-7 to 1.5e-6 m/s)")
+    # Ocean-only zonal mean, NO y-taper. Two measured bugs this avoids (both
+    # on gpu365_glap):
+    #   1. A plain zonal mean of T_init includes the land / below-seafloor
+    #      fill values (init_state holds +15 C sentinels; the WOA interp holds
+    #      its own land fill), which dragged the equatorial T_atm down to
+    #      24.1 C vs the true ocean-only 27.4 C. The model SST then
+    #      equilibrated exactly onto the polluted target (model 24.09 vs
+    #      T_atm 24.03) -- the measured -3..-5 K tropical cold bias.
+    #   2. Tapering the edge rows toward the domain mean pulled |lat|~59.5 to
+    #      17.1 C vs the true -0.8 C, injecting +0.89 K/d of spurious polar
+    #      warming -- the measured +2..+4 K polar warm bias.
+    # The global grid's y axis is a real closed boundary, not a periodic seam,
+    # so the bulk flux is already continuous there and needs no taper.
+    wm = np.asarray(grid.wet_mask, dtype=np.float64)   # (nx, ny)
+    profile = np.full(ny, np.nan)
+    for j in range(ny):
+        wet_j = wm[:, j] > 0.5
+        if wet_j.any():
+            profile[j] = sst[wet_j, j].mean()
+    # backfill any all-land row from its nearest ocean-bearing row
+    if np.isnan(profile).any():
+        good = np.where(~np.isnan(profile))[0]
+        profile = np.interp(np.arange(ny), good, profile[good])
+    return np.broadcast_to(profile[None, :], (grid.nx, ny)).copy()

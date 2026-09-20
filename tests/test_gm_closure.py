@@ -1,7 +1,7 @@
 """
-Unit tests for the Gent-McWilliams sub-grid baroclinic closure in
-jax_solver_global.py: _isopycnal_slope, _gm_bolus_velocity,
-_gm_tracer_transport.
+Unit tests for the Gent-McWilliams / Redi isopycnal closure in
+jax_solver_global.py: _isopycnal_slope, _isopycnal_closure,
+_redi_skew_flux_tendency.
 
 Uses a small synthetic all-wet GlobalOceanGrid (no real data / bathymetry)
 so the tests are fast and self-contained.
@@ -9,26 +9,31 @@ so the tests are fast and self-contained.
 Run:  python -m pytest tests/test_gm_closure.py -v
   or: python tests/test_gm_closure.py
 """
-import sys
 import os
+import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
 
 os.environ.setdefault('JAX_ENABLE_X64', '1')
 os.environ.setdefault('XLA_PYTHON_CLIENT_MEM_FRACTION', '0.30')
 
-import numpy as np
 import jax
-jax.config.update('jax_enable_x64', True)
-import jax.numpy as jnp
-from dataclasses import replace
-from config import PhysicsConfig, RHO_0, ALPHA_T, G_EARTH
-from grid import GlobalOceanGrid
-import jax_solver_global as G
-from jax_solver_global import (make_solver_global, JaxStateG,
-                               _isopycnal_slope, _gm_bolus_velocity,
-                               _gm_tracer_transport, _redi_skew_flux_tendency)
+import numpy as np
 
+jax.config.update('jax_enable_x64', True)
+from dataclasses import replace
+
+import jax.numpy as jnp
+
+import jax_solver_global as G
+from config import PhysicsConfig
+from grid import GlobalOceanGrid
+from jax_solver_global import (
+    _isopycnal_closure,
+    _isopycnal_slope,
+    _redi_skew_flux_tendency,
+    make_solver_global,
+)
 
 # ── synthetic grid ─────────────────────────────────────────────────
 
@@ -64,9 +69,11 @@ def _make_state_and_params(grid, kappa_gm, T_field, S_field=None, kappa_redi=0.0
     physics = replace(PhysicsConfig(), nu_h=100.0, kappa_h=100.0,
                       kappa_gm=kappa_gm, gm_slope_max=0.01,
                       kappa_redi=kappa_redi)
-    Q = np.zeros((nx, ny)); tau_x = np.zeros((nx, ny)); tau_y = np.zeros((nx, ny))
+    Q = np.zeros((nx, ny))
+    tau_x = np.zeros((nx, ny))
+    tau_y = np.zeros((nx, ny))
     _, init_fn, _, params, _ = make_solver_global(
-        grid, physics, 60.0, forcing=(tau_x, tau_y, Q), eos_type='linear',
+        grid, physics, 60.0, forcing=(tau_x, tau_y, Q),
         T_atm=None, lambda_bulk=0.0, sponge_days=0.0, sponge_cells=0,
         T_init=np.asarray(T_field), S_init=np.asarray(S_field),
         polar_cap_rows=0, polar_cap_taper=0, return_params=True)
@@ -76,19 +83,18 @@ def _make_state_and_params(grid, kappa_gm, T_field, S_field=None, kappa_redi=0.0
 
 # ── tests ──────────────────────────────────────────────────────────
 
-def test_bolus_zero_when_kappa_gm_zero():
-    """Closure OFF by default: bolus velocity must be identically zero."""
+def test_closure_off_when_kappas_zero():
+    """Closure OFF by default: kappa_gm = kappa_redi = 0 -> no term at all."""
     g = _synth_grid()
     nx, ny, nz = g.nx, g.ny, g.nz
     T = np.full((nx, ny, nz), 20.0)
     T[:, :, 0] = 22.0  # warm surface
     T[:, :, -1] = 5.0  # cold bottom
     state, p = _make_state_and_params(g, kappa_gm=0.0, T_field=T)
-    us, vs, ws = _gm_bolus_velocity(state, p)
-    assert float(jnp.max(jnp.abs(us))) == 0.0, "u* nonzero when kappa_gm=0"
-    assert float(jnp.max(jnp.abs(vs))) == 0.0, "v* nonzero when kappa_gm=0"
-    assert float(jnp.max(jnp.abs(ws))) == 0.0, "w* nonzero when kappa_gm=0"
-    print("  [PASS] bolus zero when kappa_gm=0")
+    gm_T, gm_S, redi_T, redi_S = _isopycnal_closure(state, p)
+    assert gm_T == 0.0 and gm_S == 0.0 and redi_T == 0.0 and redi_S == 0.0, \
+        "closure nonzero with kappa_gm = kappa_redi = 0"
+    print("  [PASS] closure identically 0 with kappa_gm = kappa_redi = 0")
 
 
 def test_slope_finite_and_limited():
@@ -115,109 +121,95 @@ def test_slope_finite_and_limited():
 
 
 def test_slope_sign_down_gradient():
-    """With warmer water to the east (rho' lighter east), isopycnal slopes
-    up toward the west. The bolus u* = -kappa*S_x must advect tracers
-    DOWN the horizontal density gradient (eastward, flattening it).
-
-    For warm-east (rho' increases westward => drho_dx < 0 at mid), with
-    stable strat (drho_dz>0): S_x = -drho_dx/drho_dz > 0, so u* = -kappa*S_x < 0
-    (westward). We assert the sign is consistent and nonzero.
+    """The slope must be S = -grad_h(rho') / (drho'/dz), i.e. it points DOWN
+    the horizontal density gradient (toward denser water) in the stably
+    stratified interior. A sign error here reverses the eddy transport.
     """
     g = _synth_grid()
     nx, ny, nz = g.nx, g.ny, g.nz
     T = np.zeros((nx, ny, nz))
     for i in range(nx):
-        T[i, :, :] = 5.0 + 15.0 * (i / nx)   # warm east
-    T[:, :, 0] += 3.0; T[:, :, -1] -= 3.0
+        T[i, :, :] = 5.0 + 15.0 * (i / nx)   # warm east => drho_dx < 0
+    T[:, :, 0] += 3.0
+    T[:, :, -1] -= 3.0
     state, p = _make_state_and_params(g, kappa_gm=2000.0, T_field=T)
-    Sx, _ = _isopycnal_slope(state, p)
-    # In the stable interior, slope is nonzero somewhere.
+    Sx, Sy = _isopycnal_slope(state, p)
     assert float(jnp.max(jnp.abs(Sx))) > 0.0, "slope is zero everywhere"
-    print(f"  [PASS] slope nonzero (max|S_x|={float(jnp.max(jnp.abs(Sx))):.3e})")
+
+    # Rebuild the numerator/denominator exactly as _isopycnal_slope does.
+    rho = G._density_anomaly(state.T, state.S, p) * p.wet_mask_z
+    drho_dx, _ = G._gradient_conservative_3d(rho, p)
+    drho_dz = G._d_dz(G._fill_ghost_bottom(rho, p), p)
+    expected = -drho_dx / drho_dz
+    mask = (jnp.abs(Sx) > 0.0) & (jnp.abs(drho_dz) > 0.0)
+    assert bool(jnp.all(jnp.sign(Sx[mask]) == jnp.sign(expected[mask]))), \
+        "slope sign does not match -d(rho')/dx / d(rho')/dz"
+    # The test state varies zonally only: no meridional slope.
+    assert float(jnp.max(jnp.abs(Sy))) < 1e-12, "spurious meridional slope"
+    print(f"  [PASS] slope sign = -d(rho')/dx / d(rho')/dz "
+          f"(max|S_x|={float(jnp.max(jnp.abs(Sx))):.3e})")
 
 
-def test_transport_zero_for_uniform_tracer():
-    """GM transport of a uniform tracer must be zero (no gradient to flatten)."""
+def test_closure_zero_for_horizontally_uniform_state():
+    """A horizontally uniform density field has zero slopes, so the closure
+    tendency vanishes identically: isopycnal redistribution creates no
+    transport where there is nothing to flatten."""
     g = _synth_grid()
     nx, ny, nz = g.nx, g.ny, g.nz
     T = np.full((nx, ny, nz), 20.0)
-    T[:, :, 0] = 22.0; T[:, :, -1] = 5.0  # stratified but horizontally uniform
-    state, p = _make_state_and_params(g, kappa_gm=2000.0, T_field=T)
-    us, vs, ws = _gm_bolus_velocity(state, p)
-    gm_T = _gm_tracer_transport(state.T, us, vs, ws, p)
-    # Horizontally uniform T => dT/dx = dT/dy = 0 => transport ~ 0 (only w*dT/dz,
-    # but w* from continuity of a near-zero bolus is also ~0).
-    assert float(jnp.max(jnp.abs(gm_T))) < 1e-8, \
-        f"GM transport of uniform tracer nonzero: {float(jnp.max(jnp.abs(gm_T)))}"
-    print(f"  [PASS] GM transport ~0 for horizontally-uniform tracer "
-          f"(max={float(jnp.max(jnp.abs(gm_T))):.2e})")
+    T[:, :, 0] = 22.0
+    T[:, :, -1] = 5.0  # stratified but horizontally uniform
+    state, p = _make_state_and_params(g, kappa_gm=2000.0, T_field=T,
+                                      kappa_redi=2000.0)
+    gm_T, gm_S, redi_T, redi_S = _isopycnal_closure(state, p)
+    for name, term in (("gm_T", gm_T), ("gm_S", gm_S),
+                       ("redi_T", redi_T), ("redi_S", redi_S)):
+        assert float(jnp.max(jnp.abs(term))) == 0.0, \
+            f"{name} nonzero on a horizontally uniform state"
+    print("  [PASS] GM and Redi identically 0 on a horizontally uniform state")
 
 
-def test_bolus_continuity_and_bottom_bc():
-    """The diagnosed w* closes the bolus continuity to within the 2/3-rule
-    dealias tolerance (the same dealias applied to the resolved w in
-    _compute_vertical_velocity, which trades exact non-divergence for 2-dx
-    noise suppression — the documented solver behavior). Also verify the
-    bottom boundary condition w*(z=bottom) = 0.
+def test_gm_and_redi_are_the_same_operator():
+    """kappa_gm and kappa_redi drive the SAME skew-flux operator, so the
+    closure tendency for (kappa_gm=k, kappa_redi=0) is identical to the one
+    for (kappa_gm=0, kappa_redi=k). That is why enabling BOTH doubles the
+    closure strength ("Defect 5", docs/deep-heat-poisoning-root-cause.md).
     """
     g = _synth_grid()
     nx, ny, nz = g.nx, g.ny, g.nz
     T = np.zeros((nx, ny, nz))
     for i in range(nx):
         T[i, :, :] = 5.0 + 15.0 * (i / nx)
-    T[:, :, 0] += 3.0; T[:, :, -1] -= 3.0
-    state, p = _make_state_and_params(g, kappa_gm=2000.0, T_field=T)
-    us, vs, ws = _gm_bolus_velocity(state, p)
-    # Bottom BC: w* = 0 at the deepest level (no flux through the seafloor).
-    assert float(jnp.max(jnp.abs(ws[..., -1]))) < 1e-12, \
-        f"bottom w* nonzero: {float(jnp.max(jnp.abs(ws[..., -1])))}"
-    # Continuity BEFORE dealias: w* is built from -cumsum(div_avg*dz), so the
-    # pre-dealias w* satisfies div_avg exactly. The dealias perturbs it by a
-    # 2-dx (unresolved) component; the resolved (smooth) part must still close.
-    # Check the large-scale (dealiased) part: correlate -dw*/dz with div_h.
-    div_h = G._divergence_h(us, vs, p)
-    dwz = G._d_dz(ws, p)
-    # Interior layers only; the resolved part of -dw/dz should track div_h.
-    resid = div_h[..., 2:-2] + dwz[..., 2:-2]
-    scale = float(jnp.max(jnp.abs(div_h[..., 2:-2])) + 1e-30)
-    rel = float(jnp.max(jnp.abs(resid))) / scale
-    # Dealias allows O(1) perturbation at the 2-dx scale, but the sign of the
-    # correlation must be correct (not anti-correlated). Verify the means agree
-    # in sign — i.e. w* was built with the right continuity sign.
-    sign_agree = float(jnp.sum(div_h * (-dwz))) > 0.0
-    assert sign_agree, "w* anti-correlated with -div_h (wrong continuity sign)"
-    print(f"  [PASS] bottom BC w*=0; continuity sign correct (rel resid "
-          f"{rel:.2e}, dealias-tolerant)")
+    T[:, :, 0] += 3.0
+    T[:, :, -1] -= 3.0
+    state, p_gm = _make_state_and_params(g, kappa_gm=2000.0, T_field=T)
+    _, p_redi = _make_state_and_params(g, kappa_gm=0.0, T_field=T,
+                                       kappa_redi=2000.0)
+    gm_T, gm_S, _, _ = _isopycnal_closure(state, p_gm)
+    _, _, redi_T, redi_S = _isopycnal_closure(state, p_redi)
+    assert float(jnp.max(jnp.abs(gm_T - redi_T))) == 0.0, "GM != Redi on T"
+    assert float(jnp.max(jnp.abs(gm_S - redi_S))) == 0.0, "GM != Redi on S"
+    print(f"  [PASS] kappa_gm and kappa_redi are the same operator "
+          f"(max|gm_T|={float(jnp.max(jnp.abs(gm_T))):.3e})")
 
 
-def test_bolus_continuity_construction():
-    """Stronger check: reconstruct w* from the bolus divergence with the SAME
-    cumsum (no dealias) and confirm it matches the dealiased w* to within the
-    dealias tolerance — i.e. the bolus is built from the correct continuity,
-    not a sign-flipped or wrong-axis integration.
-    """
+def test_closure_wired_into_tracer_tendency():
+    """kappa_gm > 0 must change dT/dt: the closure has to be APPLIED by
+    _compute_tracer_tendency, not merely available as a helper."""
     g = _synth_grid()
     nx, ny, nz = g.nx, g.ny, g.nz
     T = np.zeros((nx, ny, nz))
     for i in range(nx):
         T[i, :, :] = 5.0 + 15.0 * (i / nx)
-    T[:, :, 0] += 3.0; T[:, :, -1] -= 3.0
-    state, p = _make_state_and_params(g, kappa_gm=2000.0, T_field=T)
-    us, vs, ws = _gm_bolus_velocity(state, p)
-    # Rebuild w* WITHOUT dealias (the raw construction).
-    div_h = G._divergence_h(us, vs, p)
-    div_avg = 0.5 * (div_h[..., :-1] + div_h[..., 1:])
-    integrand = div_avg * p.dz_3d
-    w_raw = jnp.zeros_like(us)
-    w_raw = w_raw.at[..., :-1].set(
-        -jnp.cumsum(integrand[..., ::-1], axis=-1)[..., ::-1])
-    # The dealiased w* should match the raw w* on the resolved (large) scales;
-    # the difference is purely 2-dx (dealias) noise.
-    diff = ws - w_raw
-    rel = float(jnp.max(jnp.abs(diff))) / (float(jnp.max(jnp.abs(w_raw))) + 1e-30)
-    assert rel < 1.0, f"dealiased w* differs from raw by {rel:.2e} (>100%)"
-    print(f"  [PASS] w* matches raw cumsum construction within dealias tol "
-          f"(rel diff {rel:.2e})")
+    T[:, :, 0] += 3.0
+    T[:, :, -1] -= 3.0
+    st_off, p_off = _make_state_and_params(g, kappa_gm=0.0, T_field=T)
+    st_on, p_on = _make_state_and_params(g, kappa_gm=2000.0, T_field=T)
+    dT_off, _ = G._compute_tracer_tendency(st_off, p_off)
+    dT_on, _ = G._compute_tracer_tendency(st_on, p_on)
+    delta = float(jnp.max(jnp.abs(dT_on - dT_off)))
+    assert delta > 0.0, "kappa_gm > 0 did not change dT/dt (closure not wired in)"
+    print(f"  [PASS] GM closure is applied to dT/dt (max delta {delta:.3e})")
 
 
 def test_tendency_finite_with_gm():
@@ -227,7 +219,8 @@ def test_tendency_finite_with_gm():
     T = np.zeros((nx, ny, nz))
     for i in range(nx):
         T[i, :, :] = 5.0 + 15.0 * (i / nx)
-    T[:, :, 0] += 3.0; T[:, :, -1] -= 3.0
+    T[:, :, 0] += 3.0
+    T[:, :, -1] -= 3.0
     state, p = _make_state_and_params(g, kappa_gm=2000.0, T_field=T)
     dTdt, dSdt = G._compute_tracer_tendency(state, p)
     assert bool(jnp.all(jnp.isfinite(dTdt))), "dTdt not finite with GM"
@@ -244,7 +237,8 @@ def test_redi_zero_when_kappa_redi_zero():
     T = np.zeros((nx, ny, nz))
     for i in range(nx):
         T[i, :, :] = 5.0 + 15.0 * (i / nx)
-    T[:, :, 0] += 3.0; T[:, :, -1] -= 3.0
+    T[:, :, 0] += 3.0
+    T[:, :, -1] -= 3.0
     state, p = _make_state_and_params(g, kappa_gm=2000.0, T_field=T, kappa_redi=0.0)
     S_x, S_y = _isopycnal_slope(state, p)
     redi_T = _redi_skew_flux_tendency(state.T, S_x, S_y, p)
@@ -259,7 +253,8 @@ def test_redi_tendency_finite():
     T = np.zeros((nx, ny, nz))
     for i in range(nx):
         T[i, :, :] = 5.0 + 15.0 * (i / nx)        # horizontal gradient -> slope
-    T[:, :, 0] += 5.0; T[:, :, -1] -= 5.0          # vertical stratification
+    T[:, :, 0] += 5.0
+    T[:, :, -1] -= 5.0          # vertical stratification
     state, p = _make_state_and_params(g, kappa_gm=2000.0, T_field=T, kappa_redi=2000.0)
     S_x, S_y = _isopycnal_slope(state, p)
     redi_T = _redi_skew_flux_tendency(state.T, S_x, S_y, p)
@@ -295,7 +290,8 @@ def test_redi_is_dissipative_on_perturbation():
     dC_dz = G._d_dz(rho, p)
     Fx = -k * S_x * dC_dz          # horizontal skew flux of density
     Fy = -k * S_y * dC_dz
-    dC_dx = G._d_dx(rho, p); dC_dy = G._d_dy(rho, p)
+    dC_dx = G._d_dx(rho, p)
+    dC_dy = G._d_dy(rho, p)
     SdotGradC = S_x * dC_dx + S_y * dC_dy
     S2 = S_x * S_x + S_y * S_y
     Fz = -k * (SdotGradC + S2 * dC_dz)   # vertical skew flux of density
@@ -316,9 +312,8 @@ def test_gm_skew_flux_stable():
     has CFL > 1 and blows up within ~12 steps; the skew-flux form is stable.
 
     We step the full solver 30 steps and assert max|T| stays bounded (no
-    exponential blow-up). This catches a regression where someone re-wires
-    _compute_tracer_tendency to call _gm_tracer_transport (advective) instead
-    of _redi_skew_flux_tendency (skew-flux).
+    exponential blow-up). This catches a regression that swaps the skew-flux
+    operator for the retired advective bolus form.
     """
     g = _synth_grid(nx=32, ny=32, nz=8)
     nx, ny, nz = g.nx, g.ny, g.nz
@@ -326,7 +321,8 @@ def test_gm_skew_flux_stable():
     T = np.zeros((nx, ny, nz))
     for i in range(nx):
         T[i, :, :] = 5.0 + 15.0 * (i / nx)
-    T[:, :, 0] += 5.0; T[:, :, -1] -= 5.0
+    T[:, :, 0] += 5.0
+    T[:, :, -1] -= 5.0
     physics = replace(PhysicsConfig(), nu_h=100.0, kappa_h=100.0,
                       kappa_gm=2000.0, gm_slope_max=0.01)
     step_fn, init_fn, _, _, _ = make_solver_global(
@@ -350,12 +346,12 @@ def test_gm_skew_flux_stable():
 
 
 TESTS = [
-    test_bolus_zero_when_kappa_gm_zero,
+    test_closure_off_when_kappas_zero,
     test_slope_finite_and_limited,
     test_slope_sign_down_gradient,
-    test_transport_zero_for_uniform_tracer,
-    test_bolus_continuity_and_bottom_bc,
-    test_bolus_continuity_construction,
+    test_closure_zero_for_horizontally_uniform_state,
+    test_gm_and_redi_are_the_same_operator,
+    test_closure_wired_into_tracer_tendency,
     test_tendency_finite_with_gm,
     test_redi_zero_when_kappa_redi_zero,
     test_redi_tendency_finite,
@@ -368,11 +364,14 @@ if __name__ == '__main__':
     passed = failed = 0
     for t in TESTS:
         try:
-            t(); passed += 1
+            t()
+            passed += 1
         except AssertionError as e:
-            print(f"  [FAIL] {t.__name__}: {e}"); failed += 1
+            print(f"  [FAIL] {t.__name__}: {e}")
+            failed += 1
         except Exception as e:
-            print(f"  [ERROR] {t.__name__}: {type(e).__name__}: {e}"); failed += 1
+            print(f"  [ERROR] {t.__name__}: {type(e).__name__}: {e}")
+            failed += 1
     print()
     print("=" * 60)
     print(f"GM closure tests: {passed} passed, {failed} failed, "

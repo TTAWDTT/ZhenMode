@@ -17,15 +17,18 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
 os.environ.setdefault('JAX_ENABLE_X64', '1')
 os.environ.setdefault('XLA_PYTHON_CLIENT_MEM_FRACTION', '0.30')
 
-import numpy as np
 import jax
+import numpy as np
+
 jax.config.update('jax_enable_x64', True)
-import jax.numpy as jnp
 from dataclasses import replace
+
+import jax.numpy as jnp
+
+import jax_solver_global as G
 from config import PhysicsConfig
 from grid import GlobalOceanGrid
-import jax_solver_global as G
-from jax_solver_global import make_solver_global, JaxStateG
+from jax_solver_global import make_solver_global
 
 
 def _synth_grid(nx=32, ny=32, nz=8):
@@ -103,7 +106,6 @@ def main():
     st = init_on(T_init=jnp.array(T0), S_init=jnp.array(S0))
     st = st._replace(eta=jnp.array(eta0))
     area = np.asarray(grid.dx_2d) * grid.dy
-    A_ocean = float(np.sum(area))
 
     e0 = float(jnp.sum(jnp.array(eta0) * area))
     max_amp = 0.0

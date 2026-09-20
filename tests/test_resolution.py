@@ -178,8 +178,11 @@ def test_physics_autoscale_matches_dx_powers():
     """scaled_physics_for_resolution maps 1 deg -> (dt_bt, nu_h, nu_bi)
     with exponents 1, 2, 4 and is a no-op at 1.0 deg."""
     from run_long_integration_global import (
-        scaled_physics_for_resolution, DT_BT_DEFAULT,
-        NU_H_REF_1DEG, NU_BI_REF_1DEG)
+        DT_BT_DEFAULT,
+        NU_BI_REF_1DEG,
+        NU_H_REF_1DEG,
+        scaled_physics_for_resolution,
+    )
 
     # None = not overridden -> scaled from the 1 deg reference
     dt_bt, nu_h, nu_bi = scaled_physics_for_resolution(2.0, None, None, None)
@@ -249,6 +252,7 @@ def test_external_wave_cfl_scales_with_resolution(res):
         assert got < 60.0, "0.4 deg and finer must NOT use dt=60"
 
 
+@requires_bathy
 def test_dt60_crossover_between_0p5_and_0p4():
     """Pin the barotropic crossover: the external-wave dt_cfl crosses 60 s
     between 0.5 and 0.4 deg. (The full baroclinic step has a *different*,

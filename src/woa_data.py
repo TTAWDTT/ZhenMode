@@ -12,31 +12,27 @@ WOA grid conventions:
   t_an/s_an: (time, depth, lat, lon) = (1, 102, 180, 360)
 
 Solver grid conventions:
-  lon/lat: (nx,) / (ny,) from OceanGrid
+  lon/lat: (nx,) / (ny,) from the solver grid (GlobalOceanGrid)
   z: (nz,) negative downward (z=0 at surface)
   T/S output: (nx, ny, nz) with axis 0=lon, axis 1=lat, axis 2=depth
 """
 import os
+
 import numpy as np
+
 try:
     from netCDF4 import Dataset
 except ImportError:   # offline nodes: npz twins only (see load_woa_climatology)
     Dataset = None
 from scipy.interpolate import RegularGridInterpolator
 
-from config import DEFAULT_CONFIG
-from grid import OceanGrid, make_grid
-
-
 # ── WOA file paths ───────────────────────────────────────────────────
-# WSL (/mnt/c) > offline node (/data/tmp/ocean) > Windows
-WOA_DIR = (
-    "/mnt/c/Users/zhen.luo/ocean_solver/data/woa"
-    if os.path.exists("/mnt/c") else
-    "/data/tmp/ocean/data/woa"
-    if os.path.exists("/data/tmp/ocean") else
-    r"C:\Users\zhen.luo\ocean_solver\data\woa"
-)
+# Resolution order: $OCEAN_SOLVER_WOA_DIR, then <repo>/data/woa. Never
+# hard-code a machine-specific absolute path here.
+_REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+WOA_DIR_ENV_VAR = "OCEAN_SOLVER_WOA_DIR"
+WOA_DIR = (os.environ.get(WOA_DIR_ENV_VAR)
+           or os.path.join(_REPO_ROOT, "data", "woa"))
 
 WOA_FILES = {
     'temperature': os.path.join(WOA_DIR, "woa23_decav_t00_01.nc"),
@@ -64,6 +60,13 @@ def load_woa_climatology(var_name, filepath=None):
 
     # npz twin support: offline nodes (no netCDF4/HDF) can read a pre-extracted
     # "<file>.npz" (lon, lat, depth, data float32 with NaN). Identical to netCDF.
+    if not os.path.exists(filepath + ".npz") and not os.path.exists(filepath):
+        raise FileNotFoundError(
+            f"WOA2023 file not found: neither {filepath!r} nor its .npz twin "
+            f"exists. Set ${WOA_DIR_ENV_VAR} to the directory holding "
+            f"woa23_decav_t00_01.nc / woa23_decav_s00_01.nc, or place them in "
+            f"<repo>/data/woa/, or pass --init-from with a precomputed npz."
+        )
     if os.path.exists(filepath + ".npz"):
         d = np.load(filepath + ".npz")
         return {
@@ -189,8 +192,8 @@ def interpolate_to_grid(woa, grid_lon, grid_lat, grid_z):
     woa_data = woa['data']     # (ndepth, nlat, nlon)
 
     # Normalize target longitudes to the WOA convention [-180, 180).
-    # The global grid uses 0..360 lon centers; the regional grid used
-    # ~150E (already in range). This makes both work without extrapolation.
+    # The grid uses 0..360 lon centers, so a searchsorted against the WOA
+    # axis without this shift lands at the far end and extrapolates.
     grid_lon = np.mod(np.asarray(grid_lon, dtype=np.float64) + 180.0, 360.0) - 180.0
 
     # Fill NaN values horizontally per level before interpolation (never
@@ -231,7 +234,7 @@ def get_initial_fields(grid):
     """Get initial T and S fields from WOA climatology for the solver grid.
 
     Args:
-        grid: OceanGrid with lon, lat, z attributes.
+        grid: GlobalOceanGrid; needs lon, lat, z and wet_mask.
 
     Returns:
         T_init: (nx, ny, nz) temperature [degC]
@@ -321,7 +324,10 @@ def _fill_ocean_horizontal(field, wet_mask, max_pass=50):
 # ── Smoke test ───────────────────────────────────────────────────────
 
 if __name__ == "__main__":
-    grid = make_grid(DEFAULT_CONFIG.grid, DEFAULT_CONFIG.bathymetry_file)
+    from config import DEFAULT_CONFIG, GlobalGridConfig
+    from grid import make_global_grid
+
+    grid = make_global_grid(GlobalGridConfig(), DEFAULT_CONFIG.bathymetry_file)
 
     print("=== WOA2023 Initial Fields ===")
     print(f"Solver grid: {grid.nx} x {grid.ny} x {grid.nz}")
@@ -340,7 +346,6 @@ if __name__ == "__main__":
     print(f"S_init NaN count: {np.isnan(S_init).sum()}")
     print()
 
-    # Vertical profile at domain center
     ic = grid.nx // 2
     jc = grid.ny // 2
     print(f"Profile at center ({grid.lon[ic]:.1f}E, {grid.lat[jc]:.1f}N):")

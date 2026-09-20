@@ -1,19 +1,18 @@
 """
-Long-integration driver for the GLOBAL finite-difference solver (jax_solver_global).
+Long-integration driver for the global finite-difference solver (jax_solver_global).
 
-This driver runs the global FD solver — built on the stable G2 config (lat_max=60,
-no-flux N/S wall, nu_h=5e6 spin-up stabilizer, dt=60) — with the bulk air-sea
-heat flux thermodynamics from the closed arc. The whole point of the global
-domain is the non-circular A1/A2 zonal SST skill test: a global non-periodic
-domain removes the regional periodic-BC crutch and lets large-scale SST
-structure emerge from geometry + wind + bathymetry rather than from a
-prescribed meridional T_atm clamp.
+Runs the global FD solver -- closed no-flux N/S walls at lat_max=60, nu_h=5e6
+spin-up stabilizer, dt=60 -- with real seasonal NCEP wind and a bulk air-sea
+heat flux. The point of the global domain is the non-circular A1/A2 zonal SST
+skill test: a global non-periodic domain removes the periodic-BC crutch, so
+large-scale SST structure has to emerge from
+geometry + wind + bathymetry rather than from a prescribed meridional T_atm
+clamp.
 
-Stability (G2, commit eb54d82): the no-flux wall + nu_h=5e6 holds both
-no-wind and wind-forced (tau0=0.1) to 1000 steps / 0 NaN / max|T| bounded.
-This driver extends that to a full annual integration with real seasonal
-NCEP wind + bulk flux, same pre-registered pass/fail criteria as the regional
-driver (do NOT move the bar after running).
+Stability: the no-flux wall + nu_h=5e6 hold both no-wind and wind-forced
+(tau0=0.1) runs to 1000 steps with 0 NaN and max|T| bounded. This driver
+extends that to a full annual integration. The pass/fail criteria below are
+pre-registered -- do NOT move the bar after running.
 
 Output:
   - results/global_<tag>.npz   (snapshots: eta/T/u maxima, KE, SSH_std, T_top)
@@ -24,10 +23,10 @@ Usage:
   python src/run_long_integration_global.py --days 365 --seasonal-wind --tag g365d
   python src/run_long_integration_global.py --days 200 --tag g200d_smoke   # shorter probe
 """
-import sys
-import os
-import time
 import argparse
+import os
+import sys
+import time
 from dataclasses import replace
 
 try:
@@ -38,22 +37,22 @@ except Exception:
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 import jax
+
 jax.config.update('jax_enable_x64', True)
 import jax.numpy as jnp
 import numpy as np
 
-from config import DEFAULT_CONFIG, PhysicsConfig, GlobalGridConfig
-from grid import make_global_grid, global_grid_dims
-from jax_solver_global import make_solver_global, JaxStateG
-from forcing import heat_flux_meridional, air_temp_profile, BULK_LAMBDA_DEFAULT
+from config import DEFAULT_CONFIG, GlobalGridConfig, PhysicsConfig
+from forcing import BULK_LAMBDA_DEFAULT, air_temp_profile, heat_flux_meridional
+from grid import global_grid_dims, make_global_grid
+from jax_solver_global import JaxStateG, make_solver_global
 from wind_reanalysis import real_wind_forcing
 from woa_data import get_initial_fields
 
 # ── Pre-registered criteria (frozen; do not tune to a result) ──────────
-# Same framework as the regional driver. The global FD grid is coarser
-# (1° vs 0.1°) and dt is smaller (60 vs 150), so MAX_U_BOUND and the drift
-# tolerances are kept identical — the gate is about stability + bounded
-# drift, not matching regional magnitudes.
+# The gate is about stability + bounded drift, not about matching any
+# particular magnitude, so MAX_U_BOUND and the drift tolerances are the same
+# at every resolution.
 DT_DEFAULT = 60.0              # s — explicit free-surface + FD CFL-safe at 1°
 # 1°-grid reference values for --resolution auto-scaling. When --resolution is
 # given, dt_bt/nu_h/nu_bi default to these scaled by (res/1°)^p, p = 1/2/4
@@ -83,14 +82,13 @@ def scaled_physics_for_resolution(res, dt_bt, nu_h, nu_bi):
 MAX_U_BOUND = 10.0            # m/s
 DRIFT_TOL_C = 2.0             # C, second-half climb tolerance (monotonic drift)
 AMPLITUDE_CAP_C = 12.0        # C, absolute ceiling above init max
-ETA_BLOWUP_M = 15.0           # m, divergence watchdog. Looser than the
-                              # regional solver's 3m — the global grid under
-                              # real NCEP wind builds a larger wind-driven
-                              # barotropic setup (tropical pile-up reaches
-                              # ~5m, mean stays ~0 = mass-conserved). 15m
-                              # still catches true divergence while allowing
-                              # the physical spin-up barotropic mode.
-# ── Global FD stable config (G2 gate-passed, commit eb54d82) ──
+ETA_BLOWUP_M = 15.0           # m, divergence watchdog. The grid under
+                              # real NCEP wind builds a wind-driven barotropic
+                              # setup whose tropical pile-up reaches ~5m while
+                              # the mean stays ~0 (mass-conserved). 15m still
+                              # catches true divergence while allowing the
+                              # physical spin-up barotropic mode.
+    # ── Global FD stable config ──────────────────────────────────────
 LAT_MAX_DEFAULT = 60.0        # truncate poleward (cos=0.5, no metric singularity)
 NY_DEFAULT = 120              # 1° resolution at lat_max=60 -> 120 rows
 SMOOTH_PASSES_DEFAULT = 30    # bathymetry smoothing (steep topographic PGF)
@@ -110,7 +108,7 @@ NU_BI_DEFAULT = 2e14           # biharmonic hyperviscosity (∇⁴), scale-selec
                               # 20d max|T|≈30 and is the candidate for 90/365d.
 POLAR_CAP_ROWS_DEFAULT = 2    # ON: zonally average poleward rows to kill the
                               # cos(lat)->0 metric blow-up at the pole wall
-                              # (the j=0 single-gridpoint divergence, G3).
+                              # (the j=0 single-gridpoint divergence).
 POLAR_CAP_TAPER_DEFAULT = 3   # cos^2-taper the cap edge over this many extra
                               # rows; a hard cutoff creates a meridional cliff
                               # at the cap inner edge that blows up in ~12 steps.
@@ -154,7 +152,7 @@ def build_seasonal_wind_global(grid, year=2023):
 def interp_seasonal_wind(wind_months, day, blend_days=5.0):
     """Linearly blend monthly wind snapshots near 30-day month boundaries.
 
-    Same as the regional driver's interp_seasonal_wind: removes the artificial
+    Removes the artificial
     step discontinuity at month transitions that excited boundary instabilities.
     """
     month_len = 30.0
@@ -289,13 +287,13 @@ def main():
     ap.add_argument("--smooth-passes", type=int, default=SMOOTH_PASSES_DEFAULT)
     ap.add_argument("--min-depth", type=float, default=MIN_DEPTH_DEFAULT)
     ap.add_argument("--nu-h", type=float, default=None,
-                    help=f"horizontal Laplacian viscosity [m²/s]. Default "
+                    help=f"horizontal Laplacian viscosity [m^2/s]. Default "
                          f"{NU_H_DEFAULT:g} at 1°; with --resolution it "
-                         f"auto-scales as dx² (explicit-diffusion CFL).")
+                         f"auto-scales as dx^2 (explicit-diffusion CFL).")
     ap.add_argument("--nu-bi", type=float, default=None,
-                    help=f"biharmonic hyperviscosity [m⁴/s]. Default "
+                    help=f"biharmonic hyperviscosity [m^4/s]. Default "
                          f"{NU_BI_DEFAULT:g} at 1°; with --resolution it "
-                         f"auto-scales as dx⁴ (biharmonic CFL).")
+                         f"auto-scales as dx^4 (biharmonic CFL).")
     ap.add_argument("--kappa-v", type=float, default=None,
                     help="vertical diffusivity override [m^2/s]; default keeps "
                          "PhysicsConfig (1e-5). Accelerated-spinup phase A uses "
@@ -493,7 +491,8 @@ def main():
     else:
         print("Loading WOA2023 climatology for initial T/S...")
         T_init, S_init = get_initial_fields(grid)
-    T_init = np.array(T_init); S_init = np.array(S_init)
+    T_init = np.array(T_init)
+    S_init = np.array(S_init)
     T_init_max = float(np.max(T_init))
     nan_init = int(np.isnan(T_init).sum() + np.isnan(S_init).sum())
     if nan_init > 0:
@@ -572,7 +571,6 @@ def main():
     _ret = make_solver_global(
         grid, physics, args.dt,
         forcing=forcing_baked,
-        eos_type='linear',
         T_atm=T_atm, lambda_bulk=lambda_bulk,
         S_ref_surf=S_ref_surf, sss_restore_days=args.sss_restore_days,
         sponge_days=args.sponge_days, sponge_cells=args.sponge_cells,
@@ -659,7 +657,6 @@ def main():
         print(f"RESUME from {args.restart_from}: step {start_step} "
               f"(day {start_step * args.dt / 86400.0:.1f}), "
               f"{n_prev_snaps} prior snapshots kept")
-    n_ckpt_snaps = n_3d_snaps  # checkpoint writes offset 3D snap indices too
     if args.checkpoint_days > 0:
         n_ckpt = max(1, int(round(args.checkpoint_days * 86400.0 / args.dt)))
         if args.restart_from:
@@ -711,7 +708,7 @@ def main():
                       f"target={'zonal WOA SSS' if args.sss_restore_zonal else 'full 2D WOA SSS'}")
     else:
         header.append("sss_restore: NONE (no surface salt flux)")
-    header.append(f"wall: no-flux N/S (v=0 at boundary rows, mirror-ghost dy)")
+    header.append("wall: no-flux N/S (v=0 at boundary rows, mirror-ghost dy)")
     header.append(f"wind: {wind_src}")
     if seasonal and args.wind_blend_days > 0:
         header.append(f"wind blend: {args.wind_blend_days:g}d linear window at month boundaries")
@@ -744,8 +741,14 @@ def main():
         print(line)
 
     # ── Integration loop ──
-    snap_days = []; snap_maxu = []; snap_maxT = []; snap_maxeta = []
-    snap_sshstd = []; snap_ke = []; snap_eta = []; snap_T_top = []
+    snap_days = []
+    snap_maxu = []
+    snap_maxT = []
+    snap_maxeta = []
+    snap_sshstd = []
+    snap_ke = []
+    snap_eta = []
+    snap_T_top = []
     maxT_history = []
     max_u_peak = 0.0
     diverged_at = None
@@ -767,9 +770,14 @@ def main():
         sshstd = float(np.std(eta[ocean])) if ocean.any() else float('nan')
         ke = total_kinetic_energy(state, ocean)
         nan = int(np.sum(~np.isfinite(f64(state.u))))
-        snap_days.append(day); snap_maxu.append(maxu); snap_maxT.append(maxT)
-        snap_maxeta.append(maxeta); snap_sshstd.append(sshstd); snap_ke.append(ke)
-        snap_eta.append(eta.copy()); snap_T_top.append(f64(state.T[:, :, 0]).copy())
+        snap_days.append(day)
+        snap_maxu.append(maxu)
+        snap_maxT.append(maxT)
+        snap_maxeta.append(maxeta)
+        snap_sshstd.append(sshstd)
+        snap_ke.append(ke)
+        snap_eta.append(eta.copy())
+        snap_T_top.append(f64(state.T[:, :, 0]).copy())
         if args.save_3d:
             # 4-field snapshot: T,u,v,S each (nx,ny,nz). eta is NOT stacked —
             # it is 2D while these are 3D, and it is already saved per-frame in

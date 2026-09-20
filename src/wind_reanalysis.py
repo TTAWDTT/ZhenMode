@@ -1,11 +1,11 @@
 """
-Reanalysis wind stress loader — NOAA PSL NCEP/NCAR R1 10m wind (no-auth).
+Reanalysis wind stress loader -- NOAA PSL NCEP/NCAR R1 10m wind (no-auth).
 
 Loads monthly-mean 10m wind from the NOAA Physical Sciences Laboratory
-THREDDS OPeNDAP server (auth-free, no .cdsapirc / Earthdata login), subsets
-it to the solver's NW Pacific domain, bilinear-interpolates the coarse
-~1.9 deg (T62, 192x94 Gaussian) grid to the 128x128 solver grid, and
-converts to surface wind stress via the bulk formula:
+THREDDS OPeNDAP server (auth-free, no .cdsapirc / Earthdata login),
+bilinear-interpolates the coarse ~1.9 deg (T62, 192x94 Gaussian) grid onto
+the solver's lat-lon grid, and converts to surface wind stress via the bulk
+formula:
 
     tau = rho_air * Cd * |U_10| * (u_10, v_10)
 
@@ -32,11 +32,11 @@ NetCDF layout (verified 2026-08-22):
   lon: 0 .. 358.125 (1.875 deg)
 """
 import os
-import numpy as np
-import netCDF4
 
-from config import DEFAULT_CONFIG
-from grid import make_grid
+import netCDF4
+import numpy as np
+
+from forcing import FORCING_TAPER_CELLS, taper_2d_y
 
 # ── Bulk-formula constants ──────────────────────────────────────────
 RHO_AIR = 1.225      # kg/m^3
@@ -72,8 +72,8 @@ def _bilinear(field, fine_lat, fine_lon, coarse_lat, coarse_lon):
 
     # np.ix_ for open mesh indexing: il is (nlat_f,), jl is (nlon_f,). field is
     # (nlat_c, nlon_c). field[np.ix_(il, jl)] -> (nlat_f, nlon_f) via outer
-    # indexing (NOT broadcasting, which fails when nlat_f != nlon_f — the bug
-    # on the global 360x120 grid where the regional 128x128 path hid it).
+    # indexing, NOT broadcasting -- broadcasting silently produces the wrong
+    # shape whenever nlat_f != nlon_f, which is the case on every global grid.
     f00 = field[np.ix_(il, jl)]
     f01 = field[np.ix_(il, jl + 1)]
     f10 = field[np.ix_(il + 1, jl)]
@@ -84,8 +84,8 @@ def _bilinear(field, fine_lat, fine_lon, coarse_lat, coarse_lon):
                              + fx[None, :] * f11))
 
 
-def load_monthly_wind(month_idx=-1, url_prefix=PSL_BASE, cache_dir=CACHE_DIR,
-                      grid=None):
+def load_monthly_wind(grid, month_idx=-1, url_prefix=PSL_BASE,
+                      cache_dir=CACHE_DIR):
     """Load monthly-mean 10m u/v over the solver domain.
 
     Args:
@@ -93,14 +93,12 @@ def load_monthly_wind(month_idx=-1, url_prefix=PSL_BASE, cache_dir=CACHE_DIR,
         url_prefix: NOAA PSL OPeNDAP base for the *.*.10m.mon.mean.nc files.
         cache_dir: local cache for the raw monthly fields. Cached as .npz so
             repeat runs (and the solver) need no network.
-        grid: OceanGrid (defaults to DEFAULT_CONFIG grid).
+        grid: GlobalOceanGrid defining lon/lat (needed for the interpolation).
 
     Returns:
-        (u10, v10): (nx, ny) arrays of 10m wind components [m/s], on the
-        solver grid, +1.0-relative nothing; orientation S->N, lon ascending.
+        (u10, v10): (nx, ny) arrays of 10m wind components [m/s] on the
+        solver grid; orientation S->N, lon ascending.
     """
-    if grid is None:
-        grid = make_grid(DEFAULT_CONFIG.grid, DEFAULT_CONFIG.bathymetry_file)
     month_idx = int(month_idx)   # netCDF time-index must be int (float -> IndexError)
     os.makedirs(cache_dir, exist_ok=True)
     cache_file = os.path.join(cache_dir, f"monthly_mean_{month_idx}.npz")
@@ -116,7 +114,8 @@ def load_monthly_wind(month_idx=-1, url_prefix=PSL_BASE, cache_dir=CACHE_DIR,
         lat = u_ds.variables["lat"][:]
         u10 = u_ds.variables["uwnd"][month_idx, :, :]   # (nlat, nlon)
         v10 = v_ds.variables["vwnd"][month_idx, :, :]
-        u_ds.close(); v_ds.close()
+        u_ds.close()
+        v_ds.close()
         u10 = np.asarray(u10, dtype=np.float64)
         v10 = np.asarray(v10, dtype=np.float64)
         np.savez(cache_file, u10=u10, v10=v10, lon=lon, lat=lat)
@@ -126,79 +125,6 @@ def load_monthly_wind(month_idx=-1, url_prefix=PSL_BASE, cache_dir=CACHE_DIR,
     v_fine = _bilinear(v10, grid.lat, grid.lon, lat, lon)
     # Transpose (ny, nx) -> (nx, ny) to match solver axis convention
     return u_fine.T, v_fine.T
-
-def load_daily_wind_climatology(month=1, url_prefix=PSL_BASE, cache_dir=CACHE_DIR,
-                                grid=None):
-    """Load daily-climatology 10m u/v for a calendar month.
-
-    Uses NOAA PSL NCEP/NCAR R1 `uwnd.10m.day.ltm.nc` / `vwnd.10m.day.ltm.nc`
-    (365-day long-term mean). Returns interpolated wind components for each
-    day of the requested month, shaped (ndays, nx, ny).
-
-    Args:
-        month: calendar month 1-12 (default 1 = January).
-        url_prefix: NOAA PSL OPeNDAP base for the *.10m.day.ltm.nc files.
-        cache_dir: local cache directory.
-        grid: OceanGrid (defaults to DEFAULT_CONFIG grid).
-
-    Returns:
-        (u10, v10): each (ndays, nx, ny) arrays of 10m wind [m/s].
-    """
-    if grid is None:
-        grid = make_grid(DEFAULT_CONFIG.grid, DEFAULT_CONFIG.bathymetry_file)
-    os.makedirs(cache_dir, exist_ok=True)
-    cache_file = os.path.join(cache_dir, f"daily_climatology_m{month:02d}.npz")
-
-    if os.path.exists(cache_file):
-        z = np.load(cache_file)
-        u_all, v_all = z["u10"], z["v10"]
-        return u_all, v_all
-
-    u_ds = netCDF4.Dataset(url_prefix + "uwnd.10m.day.ltm.nc")
-    v_ds = netCDF4.Dataset(url_prefix + "vwnd.10m.day.ltm.nc")
-    lon = u_ds.variables["lon"][:]
-    lat = u_ds.variables["lat"][:]
-
-    # Build day-of-year indices for the requested month (leap-year agnostic).
-    import calendar
-    ndays = calendar.monthrange(2001, month)[1]   # 2001 is a non-leap common year
-    doy_start = sum(calendar.monthrange(2001, m)[1] for m in range(1, month))
-    doy_indices = list(range(doy_start, doy_start + ndays))
-
-    u_all = np.empty((ndays, grid.nx, grid.ny), dtype=np.float64)
-    v_all = np.empty((ndays, grid.nx, grid.ny), dtype=np.float64)
-    for i, doy in enumerate(doy_indices):
-        u10 = u_ds.variables["uwnd"][doy, :, :]
-        v10 = v_ds.variables["vwnd"][doy, :, :]
-        u_fine = _bilinear(np.asarray(u10, float), grid.lat, grid.lon, lat, lon)
-        v_fine = _bilinear(np.asarray(v10, float), grid.lat, grid.lon, lat, lon)
-        u_all[i] = u_fine.T
-        v_all[i] = v_fine.T
-    u_ds.close(); v_ds.close()
-    np.savez(cache_file, u10=u_all, v10=v_all)
-    return u_all, v_all
-
-
-def daily_wind_forcing(month=1, grid=None, taper_cells=None):
-    """End-to-end daily-climatology wind stress for a month.
-
-    Returns (tau_x, tau_y) each shaped (ndays, nx, ny).
-    """
-    u_all, v_all = load_daily_wind_climatology(month=month, grid=grid)
-    tau_x = np.empty_like(u_all)
-    tau_y = np.empty_like(v_all)
-    for i in range(u_all.shape[0]):
-        tau_x[i], tau_y[i] = wind_stress_from_wind(u_all[i], v_all[i])
-    if taper_cells is None:
-        taper_cells = getattr(grid, "forcing_taper_cells", 8)
-    ny = grid.ny if grid is not None else tau_x.shape[2]
-    from forcing import taper_2d_y
-    for i in range(tau_x.shape[0]):
-        tau_x[i] = taper_2d_y(tau_x[i], ny, taper_cells)
-        tau_y[i] = taper_2d_y(tau_y[i], ny, taper_cells)
-    return tau_x, tau_y
-
-
 
 def wind_stress_from_wind(u10, v10):
     """Bulk wind stress from 10m wind: tau = rho_a * Cd * |U| * U.
@@ -214,34 +140,36 @@ def wind_stress_from_wind(u10, v10):
     return tau_x, tau_y
 
 
-def real_wind_forcing(month_idx=-1, grid=None, taper_cells=None):
+def real_wind_forcing(grid, month_idx=-1, taper_cells=None):
     """End-to-end: load real 10m wind and return (tau_x, tau_y) on solver grid.
 
-    Convenience wrapper for make_solver(grid, physics, dt, forcing=(tau_x, tau_y, Q)).
+    Convenience wrapper for make_solver_global(grid, physics, dt,
+    forcing=(tau_x, tau_y, Q)); this is the wind path the global runner uses.
 
-    The reanalysis wind is non-periodic in the meridional direction, so it
-    gets the same y-edge taper as the idealized gyre fields per the confirmed
-    root cause (periodic FFT seam step-discontinuity -> boundary heat pump).
-    ``taper_cells`` defaults to ``grid.forcing_taper_cells`` (8).
+    ``taper_cells`` defaults to ``forcing.FORCING_TAPER_CELLS`` (8), which
+    ramps the stress to zero over the outermost rows at each lat edge (see
+    forcing._taper_y).
     """
-    u10, v10 = load_monthly_wind(month_idx=month_idx, grid=grid)
+    u10, v10 = load_monthly_wind(grid, month_idx=month_idx)
     tau_x, tau_y = wind_stress_from_wind(u10, v10)
     if taper_cells is None:
-        taper_cells = getattr(grid, "forcing_taper_cells", 8)
-    ny = grid.ny if grid is not None else tau_x.shape[1]
-    from forcing import taper_2d_y
+        taper_cells = FORCING_TAPER_CELLS
+    ny = grid.ny
     tau_x = taper_2d_y(tau_x, ny, taper_cells)
     tau_y = taper_2d_y(tau_y, ny, taper_cells)
     return tau_x, tau_y
 
 
 if __name__ == "__main__":
-    grid = make_grid(DEFAULT_CONFIG.grid, DEFAULT_CONFIG.bathymetry_file)
-    tau_x, tau_y = real_wind_forcing(grid=grid)
+    from config import DEFAULT_CONFIG, GlobalGridConfig
+    from grid import make_global_grid
+
+    grid = make_global_grid(GlobalGridConfig(), DEFAULT_CONFIG.bathymetry_file)
+    tau_x, tau_y = real_wind_forcing(grid, month_idx=-1)
     spd = np.sqrt(tau_x ** 2 + tau_y ** 2)
     print("=== Real wind stress (NCEP/NCAR R1 10m, latest month) ===")
+    print(f"grid: {grid.nx} x {grid.ny}")
     print("tau_x range: %.4f .. %.4f N/m^2" % (tau_x.min(), tau_x.max()))
     print("tau_y range: %.4f .. %.4f N/m^2" % (tau_y.min(), tau_y.max()))
     print("|tau| max:   %.4f N/m^2" % spd.max())
     print("|tau| mean:  %.4f N/m^2" % spd.mean())
-    print("(Stommel gyre reference tau0 = 0.10 N/m^2)")

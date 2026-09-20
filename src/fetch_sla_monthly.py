@@ -13,18 +13,15 @@ import urllib.request
 import netCDF4
 import numpy as np
 
-BASE = ("https://coastwatch.pfeg.noaa.gov/erddap/griddap/nesdisSSH1day.nc"
-        "?sla[({ys}-01-01):({ye}-12-31)][(15):(55)][(120):(180)]")
 CACHE_DIR = "data/sla_npac"
 
 
 def fetch_month(month: int, retries: int = 6) -> str:
-    ys, ye = 2023, 2023
-    url = BASE.format(ys=ys, ye=ye)
     fn = os.path.join(CACHE_DIR, f"sla_2023-{month:02d}.nc")
     if os.path.exists(fn) and os.path.getsize(fn) > 100_000:
         return fn
     # ERDDAP constraint syntax: restrict the time axis with a month window
+    # (days 1-28 exist in every month, so one request covers all of them).
     url = (f"https://coastwatch.pfeg.noaa.gov/erddap/griddap/nesdisSSH1day.nc"
            f"?sla[(2023-{month:02d}-01):(2023-{month:02d}-28)][(15):(55)][(120):(180)]")
     for k in range(retries):
