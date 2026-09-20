@@ -54,8 +54,9 @@ pip install -e ".[dev]"          # installs the `ocean-solver` console script
 
 python scripts/run_tests.py      # pytest suite (data-dependent tests skip)
 
-# Global production run
-ocean-solver --days 365 --dt 60 \
+# Global production run: mode split at dt=3600 -- 24 barotropic subcycles of
+# 150 s. Without --mode-split the explicit free surface caps dt at 60 s.
+ocean-solver --days 365 --dt 3600 \
   --mode-split --use-scan --seasonal-wind --wind-year 2023 \
   --resolution 1.0 --dtype float32 \
   --tag g365d --out-dir results --log-dir logs
