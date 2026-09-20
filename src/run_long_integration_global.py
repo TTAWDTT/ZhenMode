@@ -331,6 +331,12 @@ def main():
                          "across unstable interfaces) instead of the historical "
                          "column-wide mask that mixes the whole column whenever "
                          "any interface is unstable; default off")
+    ap.add_argument("--monotone-adv", action="store_true",
+                    help="use first-order donor-cell horizontal tracer fluxes "
+                         "(vertical flux is already donor-cell). More diffusive "
+                         "than centered flux, but conservative and monotone "
+                         "under the combined tracer CFL; default off keeps the "
+                         "historical centered path bit-exact")
     ap.add_argument("--sponge-days", type=float, default=SPONGE_DAYS_DEFAULT_G)
     ap.add_argument("--sponge-cells", type=int, default=0)
     ap.add_argument("--polar-cap-rows", type=int, default=POLAR_CAP_ROWS_DEFAULT)
@@ -572,7 +578,8 @@ def main():
         freeze_adv_vel=args.freeze_adv_vel,
         conservative_kv=args.conservative_kv,
         project_adv_vel=args.project_adv_vel,
-        localize_conv=args.localize_conv)
+        localize_conv=args.localize_conv,
+        monotone_adv=args.monotone_adv)
     if seasonal:
         step, init_state_global, _, _params, terms_fn, step_dyn = _ret
     else:
@@ -669,11 +676,12 @@ def main():
     header.append(f"physics: nu_h={physics.nu_h:g}  nu_bi={physics.nu_bi:g}  "
                   f"kappa_conv={physics.kappa_conv}  kappa_v={physics.kappa_v:g}")
     if args.freeze_adv_vel or args.conservative_kv or args.project_adv_vel \
-            or args.localize_conv:
+            or args.localize_conv or args.monotone_adv:
         header.append(f"RK2 flags: freeze_adv_vel={args.freeze_adv_vel}  "
                       f"conservative_kv={args.conservative_kv}  "
                       f"project_adv_vel={args.project_adv_vel}  "
-                      f"localize_conv={args.localize_conv}")
+                      f"localize_conv={args.localize_conv}  "
+                      f"monotone_adv={args.monotone_adv}")
     if args.dtype != "float64":
         header.append(f"DTYPE: {args.dtype} (compute; I/O stays float64)")
     if args.bulk_lambda_mult != 1.0:
