@@ -24,34 +24,11 @@ jax.config.update('jax_enable_x64', True)
 from dataclasses import replace
 
 import jax.numpy as jnp
+from _helpers import all_wet_grid as _synth_grid
 
 import jax_solver_global as G
 from config import PhysicsConfig
-from grid import GlobalOceanGrid
 from jax_solver_global import make_solver_global
-
-
-def _synth_grid(nx=32, ny=32, nz=8):
-    lat = np.linspace(-30.0, 30.0, ny)
-    lon = np.linspace(0.5, 359.5, nx)
-    R = 6.371e6
-    dlon = 360.0 / nx
-    cos_lat = np.cos(np.radians(lat))
-    dx_2d = np.broadcast_to(R * np.cos(np.radians(lat)) * np.radians(dlon),
-                            (nx, ny)).copy()
-    dy = R * np.radians(abs(lat[1] - lat[0]))
-    f = np.broadcast_to(2 * 7.2921e-5 * np.sin(np.radians(lat)),
-                        (nx, ny)).copy()
-    z = -np.linspace(50.0, 4000.0, nz)
-    dz = -np.diff(z)
-    return GlobalOceanGrid(
-        lon=lon, lat=lat, dx_2d=dx_2d, dy=float(dy), cos_lat=cos_lat, f=f,
-        z=z, dz=dz, nz=nz, depth=np.full((nx, ny), 4000.0),
-        wet_mask=np.ones((nx, ny)),
-        ocean_mask=np.ones((nx, ny), dtype=bool),
-        land_mask=np.zeros((nx, ny)),
-        wet_mask_3d=np.ones((nx, ny, nz)),
-        nx=nx, ny=ny)
 
 
 def main():

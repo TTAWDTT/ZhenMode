@@ -18,6 +18,8 @@ import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
 
+from dataclasses import replace
+
 import numpy as np
 import pytest
 
@@ -29,6 +31,20 @@ HAVE_BATHY = os.path.exists(BATHY) or os.path.exists(BATHY + ".npz")
 
 requires_bathy = pytest.mark.skipif(
     not HAVE_BATHY, reason=f"bathymetry not found at {BATHY}")
+
+
+def _dt_cfl_at(res_, lat_max=60.0):
+    """External-gravity-wave CFL limit [s] for the FD free surface.
+
+    ``0.5*min(dx, dy)/sqrt(g*H)``; the limiting dx is the poleward-most
+    column (cos(lat) smallest), so this is NOT the equatorial value -- but
+    every dx scales with the resolution, so the limit does too.
+    """
+    nx, ny = global_grid_dims(res_, lat_max)
+    gc = replace(GlobalGridConfig(), lat_max=lat_max, ny=ny, nx=nx,
+                 resolution=res_)
+    g = make_global_grid(gc, BATHY, smooth_passes=30, min_depth=100.0)
+    return 0.5 * min(float(np.min(g.dx_2d)), g.dy) / np.sqrt(9.81 * 4000.0)
 
 
 # ── 1. Dimension derivation matches the ETOPO reader exactly ─────────
@@ -227,18 +243,8 @@ def test_external_wave_cfl_scales_with_resolution(res):
     (cos(lat) smallest), so dt_cfl is NOT the equatorial value -- but it must
     still scale linearly with resolution, since every dx scales with it.
     This bounds --dt-bt only; the full-step limit is separate and steeper."""
-    from dataclasses import replace
-
-    def dt_cfl_at(res_, lat_max=60.0):
-        nx, ny = global_grid_dims(res_, lat_max)
-        gc = replace(GlobalGridConfig(), lat_max=lat_max, ny=ny, nx=nx,
-                     resolution=res_)
-        g = make_global_grid(gc, BATHY, smooth_passes=30, min_depth=100.0)
-        c = np.sqrt(9.81 * 4000.0)
-        return 0.5 * min(float(np.min(g.dx_2d)), g.dy) / c
-
-    ref = dt_cfl_at(1.0)            # 1 deg reference (same lat_max)
-    got = dt_cfl_at(res)
+    ref = _dt_cfl_at(1.0)           # 1 deg reference (same lat_max)
+    got = _dt_cfl_at(res)
     assert np.isclose(got, ref * res, rtol=0.02), (
         f"res={res}: dt_cfl={got:.0f}s should be {ref * res:.0f}s "
         f"from the 1 deg reference {ref:.0f}s")
@@ -257,18 +263,8 @@ def test_dt60_crossover_between_0p5_and_0p4():
     """Pin the barotropic crossover: the external-wave dt_cfl crosses 60 s
     between 0.5 and 0.4 deg. (The full baroclinic step has a *different*,
     steeper limit -- see docs/resolution_cfl_limits.md.)"""
-    from dataclasses import replace
-
-    def dt_cfl_at(res_):
-        nx, ny = global_grid_dims(res_, 60.0)
-        gc = replace(GlobalGridConfig(), lat_max=60.0, ny=ny, nx=nx,
-                     resolution=res_)
-        g = make_global_grid(gc, BATHY, smooth_passes=30, min_depth=100.0)
-        c = np.sqrt(9.81 * 4000.0)
-        return 0.5 * min(float(np.min(g.dx_2d)), g.dy) / c
-
-    assert dt_cfl_at(0.5) > 60.0
-    assert dt_cfl_at(0.4) < 60.0
+    assert _dt_cfl_at(0.5) > 60.0
+    assert _dt_cfl_at(0.4) < 60.0
 
 
 if __name__ == "__main__":
