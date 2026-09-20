@@ -12,7 +12,7 @@
 
 | 文档 | 作用 |
 | --- | --- |
-| [`decisions.md`](decisions.md) | **决策日志（D1–D19）**。为什么求解器长这样：诊断出的失效、定案的测量、被否掉的方案。代码里只留一两行不变量，按 D 编号指回这里。 |
+| [`decisions.md`](decisions.md) | **决策日志（D1–D26）**。为什么求解器长这样：诊断出的失效、定案的测量、被否掉的方案。代码里只留一两行不变量，按 D 编号指回这里。 |
 | [`solver_technical_report_zh.md`](solver_technical_report_zh.md) | 求解器技术报告：方程、离散、时间积分、模块结构。 |
 | [`deep-heat-poisoning-root-cause.md`](deep-heat-poisoning-root-cause.md) | 深海增温（deep-heat poisoning）根因：列热收支泄漏的两个独立缺陷（含 Defect 5：GM 与 Redi 是同一算子的双计）。 |
 | [`resolution_cfl_limits.md`](resolution_cfl_limits.md) | 分辨率标度：实测 CFL 上限与 `dt_bt`/`nu_h`/`nu_bi` 的 `dx^1/2/4` 自动缩放。 |
