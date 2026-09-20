@@ -549,19 +549,18 @@ def _d_dz(u, p):
 def _d2_dz2(u, p):
     """Vertical second derivative, non-uniform grid.
 
-    Boundary nodes use the zero-flux (ghost-point) form 2*(C1 - C0)/h0^2:
-    the ghost value Cg = C1 (mirror reflection through the boundary node)
-    makes the centered curvature (C1 - 2*C0 + Cg)/h0^2 diffusive at the
-    boundary. The previous form (C2 - 2*C1 + C0)/h0^2 is the centered
-    curvature AT node 1 applied as the tendency of node 0 -- i.e.
-    anti-diffusive there: it pushed a boundary anomaly AWAY from the
-    interior value. With kappa_conv=0.05 that feedback amplified initial
-    WOA salty-over-fresh surface profiles into the ITCZ salinity runaway
-    that NaN'd the 365d run at day 135 (conv_S = +84.5 PSU/day at the
-    worst cell; the zero-flux form gives -89.9 PSU/day, clearing the
-    instability). Shared by conv/diff_v/momentum-vdiff, all of which
-    want the same no-flux boundary condition.
+    The top and bottom nodes use the zero-flux (ghost-point) form
+    2*(C1 - C0)/h0^2: the mirror ghost Cg = C1 makes the centered curvature
+    (C1 - 2*C0 + Cg)/h0^2 diffusive at the boundary. The centered-curvature
+    form it replaced was anti-diffusive there and drove the ITCZ salinity
+    runaway (D20).
+
+    The field is ghost-filled first, so a seafloor that is not at the last
+    grid level is a no-flux boundary as well: without the fill the bottom
+    wet node's centered stencil reads the T_ref/S_ref sentinel below the
+    floor, a spurious seafloor flux of up to 0.05 K/day (D20).
     """
+    u = _fill_ghost_bottom(u, p)
     d2u_interior = (
         u[..., 2:] * p.d2z_hm + u[..., :-2] * p.d2z_hp
         - u[..., 1:-1] * (p.d2z_hm + p.d2z_hp)

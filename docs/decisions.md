@@ -326,3 +326,47 @@ state is already at the target, which is what makes `sponge_days=0` (the
 production default) bit-exact and keeps the land invariant intact when it is
 switched on. Regression: `tests/test_sponge.py` (dry + ghost sentinel, band
 relaxation, interior bit-identical, no-init-field case).
+
+## D20 — The node-form vertical diffusion: zero-flux boundary and seafloor fill
+
+`_d2_dz2` is the legacy (default `conservative_kv=False`) vertical diffusion, and
+the operator the momentum vertical diffusion always uses.
+
+**Boundary nodes** use the zero-flux (ghost-point) form `2*(C1 - C0)/h0^2`: the
+mirror ghost `Cg = C1` makes the centered curvature `(C1 - 2*C0 + Cg)/h0^2`
+diffusive at the boundary. The centered-curvature form `(C2 - 2*C1 + C0)/h0^2`
+it replaced is the curvature AT node 1 applied as the tendency of node 0 —
+anti-diffusive there, it pushed a boundary anomaly AWAY from the interior value.
+With `kappa_conv = 0.05` that feedback amplified the initial WOA salty-over-fresh
+surface profiles into the ITCZ salinity runaway that NaN'd the 365 d run at day
+135 (`conv_S = +84.5 PSU/day` at the worst cell; the zero-flux form gives -89.9
+PSU/day, clearing the instability). Shared by convection, `kappa_v` and momentum
+vertical diffusion, all of which want the same no-flux BC.
+
+**Seafloor fill.** The centered stencil spans k-1..k+1, so at a column whose
+seafloor is NOT the last grid level the bottom WET node read the ghost layers
+— which hold the `T_ref`/`S_ref` sentinel from `init_state`, not the bottom
+value. D8 fixed exactly this for the closure operators and left this one ("the
+background diffusion/convective BC is left as-is; its ghost pull is ~0.006
+K/day"). Measured on a 15 m shelf column at the production `kappa_v = 1e-5`,
+the pull is an order of magnitude larger than that note:
+
+| bottom wet T | ghost | legacy `kappa_v*d2T/dz2` | with the fill |
+| --- | --- | --- | --- |
+| +25.97 C | +15 C | **-0.0504 K/day** | +0.0001 K/day |
+| +1.97 C | +15 C | **+0.0602 K/day** | +0.0001 K/day |
+| +5.60 C (200 m) | +15 C | +0.0011 K/day | +0.0000 K/day |
+
+It always pulls the seafloor toward `T_ref`, so it cools warm shelves and warms
+cold ones — +-22 K/yr of spurious surface heat flux, concentrated on the
+shallowest topography. Same defect class as D8.
+
+Fix: `_d2_dz2` ghost-fills its input first, like every other vertical stencil in
+the file (`_d_dz` call sites, `_d2_dz2_flux`, `_conv_flux_tendency`,
+`_redi_skew_flux_tendency`). A column wet to the last grid level has no ghost
+layer, so its stencil is unchanged bit-for-bit; a shallower one gets the
+one-sided no-flux form. Regression: `tests/test_vertical_bc.py`.
+
+This is the one intentional break of the `conservative_kv=False` "bit-exact
+legacy trace" property: any run with `kappa_v > 0` or `nu_v > 0` changes in the
+bottom wet layer of every column shallower than the deepest level.
