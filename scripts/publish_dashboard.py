@@ -1,6 +1,15 @@
 # -*- coding: utf-8 -*-
 """Publish a static dashboard snapshot to TTAWDTT.github.io/ocean_solver/.
 
+!! MACHINE-SPECIFIC / NOT PORTABLE !!
+Needs three things that exist only on the author's machine:
+  - ``paramiko`` (not a project dependency; install it yourself),
+  - ``dashboard/secret.json`` (gitignored) holding the gateway host/user/
+    password for the private GPU cluster,
+  - a local clone of the TTAWDTT.github.io repo, at $OCEAN_SOLVER_IO_REPO
+    (defaults to the historical path).
+Without them this script cannot run. The model does not depend on it.
+
 Pulls live status + analysis series + log tail from the cluster (same gateway
 PTY approach as dashboard/cluster.py), assembles one self-contained
 data.json, and commits+pushes it into the github.io repo under public/
@@ -25,14 +34,35 @@ ROOT = os.path.dirname(HERE)
 sys.path.insert(0, os.path.join(ROOT, "dashboard"))
 
 import numpy as np  # noqa: E402
-import paramiko  # noqa: E402  (same env as the dashboard bridge)
 
-IO_REPO = r"C:\Users\zhen.luo\.research\oio.io"   # TTAWDTT.github.io clone
+try:
+    import paramiko  # noqa: E402  (private-gateway dependency, not a project dep)
+except ImportError as _e:  # pragma: no cover - machine-specific
+    raise SystemExit(
+        "publish_dashboard.py needs paramiko (private-gateway bridge): "
+        "pip install paramiko  [%s]" % _e)
+
+# Local clone of the TTAWDTT.github.io repo. Override with
+# OCEAN_SOLVER_IO_REPO; the default is the historical author-machine path.
+IO_REPO = os.environ.get("OCEAN_SOLVER_IO_REPO",
+                         r"C:\Users\zhen.luo\.research\oio.io")
 PUB_DIR = os.path.join(IO_REPO, "public", "ocean_solver")
-SECRET = json.load(io.open(os.path.join(ROOT, "dashboard", "secret.json"),
-                           encoding="utf-8"))
 
-_log = lambda m: print(time.strftime("[%H:%M:%S] ") + m, flush=True)
+SECRET_PATH = os.path.join(ROOT, "dashboard", "secret.json")
+
+
+def _load_secret():
+    """Private gateway credentials. Empty dict when the (gitignored) file is
+    absent, so the module still imports on a machine that has none."""
+    if not os.path.exists(SECRET_PATH):
+        return {}
+    return json.load(io.open(SECRET_PATH, encoding="utf-8"))
+
+
+SECRET = _load_secret()
+
+def _log(m):
+    print(time.strftime("[%H:%M:%S] ") + m, flush=True)
 
 
 def drain(sh, timeout=4.0):
@@ -151,16 +181,16 @@ def status_for(entry, sh):
          f"grep -E '^\\s*[0-9]+\\.[0-9]' {log} | tail -1; "
          f"pgrep -fc 'tag {entry['tag']}' || echo 0")
     out = strip_ansi(run(sh, q, 12))
-    lines = [l.strip() for l in out.split("\n")
-             if l.strip() and not l.endswith("~]") and "root@" not in l]
+    lines = [ln.strip() for ln in out.split("\n")
+             if ln.strip() and not ln.endswith("~]") and "root@" not in ln]
     verdict, row, alive = None, "", False
-    for l in lines:
-        if "VERDICT" in l:
-            verdict = "PASS" if "PASS" in l else "FAIL"
-        elif re.match(r"^\d+(\.\d+)?\s+\d+\s", l):
-            row = l
-        elif re.match(r"^\d+$", l):
-            alive = int(l) > 0
+    for ln in lines:
+        if "VERDICT" in ln:
+            verdict = "PASS" if "PASS" in ln else "FAIL"
+        elif re.match(r"^\d+(\.\d+)?\s+\d+\s", ln):
+            row = ln
+        elif re.match(r"^\d+$", ln):
+            alive = int(ln) > 0
     f = row.split()
     warn = []
     if f and len(f) > 2 and f[2] and float(f[2]) > 5:
@@ -320,6 +350,15 @@ def main():
     ap.add_argument("--no-push", action="store_true",
                     help="build data.json locally but skip git push")
     args = ap.parse_args()
+    if not SECRET:
+        raise SystemExit(
+            "dashboard/secret.json is missing -- it holds the private gateway "
+            "credentials this publisher needs (see the module docstring). "
+            "Nothing to publish without it.")
+    if not os.path.isdir(IO_REPO):
+        raise SystemExit(
+            "github.io clone not found at %r; set OCEAN_SOLVER_IO_REPO"
+            % IO_REPO)
     while True:
         try:
             entries = json.load(io.open(
@@ -342,10 +381,10 @@ def main():
                                      "error": f"connect: {e!r}"[:80]})
                     continue
                 try:
-                    r, c, l = build_snapshot(sh, ents)
+                    r, c, lg = build_snapshot(sh, ents)
                     runs.extend(r)
                     curves.update(c)
-                    logs.update(l)
+                    logs.update(lg)
                 finally:
                     cli.close()
             snap = {

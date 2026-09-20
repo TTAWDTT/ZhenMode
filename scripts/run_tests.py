@@ -1,7 +1,7 @@
 """Unified test runner — runs the pytest suite under tests/ and reports results."""
+import os
 import subprocess
 import sys
-import os
 
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 

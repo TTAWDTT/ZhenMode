@@ -1,0 +1,33 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install ruff
+      - run: ruff check .
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      # JAX's PyPI wheel is CPU-only on Linux, which is all the suite needs.
+      # No bathymetry / WOA / wind data is present, so the data-dependent
+      # tests skip themselves (see tests/test_resolution.py:requires_bathy).
+      - run: pip install -e ".[dev]"
+      - run: python -m pytest tests/ -q
+      # Self-contained manufactured-solution check on the FD operators; no
+      # data required. Fails the build if the operators lose 2nd order.
+      - run: python src/jax_solver_global.py

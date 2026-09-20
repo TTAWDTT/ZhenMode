@@ -1,60 +1,62 @@
 # -*- coding: utf-8 -*-
-"""Cluster run status board — one command to see every long-running job.
+"""Cluster run status board -- one command to see every long-running job.
 
-Reads the RUNS registry below, queries each node via the research gateway
-helper (_gs_yd_session), and regenerates status_zh.md in the repo root.
+!! MACHINE-SPECIFIC / NOT PORTABLE !!
+This script queries a private GPU cluster through a private gateway helper
+(``_gs_yd_session``). It is NOT part of the model and cannot run on a machine
+without that helper: every cluster query fails there. ``--offline`` renders the
+board from the registry alone and does work anywhere.
+
+The registry is ``dashboard/runs.json`` -- the SAME file the web dashboard
+(dashboard/server.js) reads, so the two views can never disagree. Add a run
+there, not here.
 
 Usage:
-    python scripts/status_board.py            # refresh status_zh.md
-    python scripts/status_board.py --stdout   # print to terminal only
-
-Adding a run: append an entry to RUNS (tag, node, gpu, log path, started).
-The board handles the rest (progress parse, verdict check, liveness).
+    python scripts/status_board.py             # query the cluster, rewrite status_zh.md
+    python scripts/status_board.py --stdout    # print instead of writing
+    python scripts/status_board.py --offline   # skip cluster queries (registry only)
 """
 import io
+import json
 import os
-import re
 import sys
 import time
 
-sys.path.insert(0, r"C:\Users\zhen.luo\.research")
-import _gs_yd_session as gs  # noqa: E402
-
-sys.stdout.reconfigure(encoding="utf-8")
-
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 STATUS_MD = os.path.join(REPO, "status_zh.md")
-
-# ── Run registry: edit this table only ─────────────────────────────────
-# (tag, node, gpu, logfile, started_local)
-RUNS = [
-    ("spinA100", "014", 0, "/data/tmp/ocean/logs/spinA100.log",
-     "2026-09-09 16:15"),
-    ("spinA30probe", "014", 0, "/data/tmp/ocean/logs/spinA30probe.log",
-     "2026-09-09 13:02"),
-]
+REGISTRY = os.path.join(REPO, "dashboard", "runs.json")
 
 HEALTH = {"max_u_warn": 5.0, "eta_warn": 10.0}   # red-flag thresholds
 
-
-def sh_quote(s):
-    return s
-
-
-def query_node(node, cmds):
-    """Run a list of shell commands on `node`; return list of outputs."""
-    cli, sh = gs.connect_node(node)
-    outs = []
-    for c in cmds:
-        out = gs.run(sh, c, wait=12)
-        out += gs.to_ascii(gs.drain(sh, 4))
-        outs.append(out)
-    cli.close()
-    return outs
+# Location of the private cluster gateway helper. Override with
+# RESEARCH_HELPER_DIR if it lives elsewhere.
+HELPER_DIR = os.environ.get(
+    "RESEARCH_HELPER_DIR",
+    os.path.join(os.path.expanduser("~"), ".research"))
 
 
-def parse_run(tag, node, gpu, log, started):
-    """Return dict(tag, alive, verdict, last_row, warn) for one run."""
+def load_registry():
+    """Read dashboard/runs.json and return its list of run dicts."""
+    with io.open(REGISTRY, encoding="utf-8") as fh:
+        return json.load(fh)["runs"]
+
+
+def _gateway():
+    """Import the private cluster helper, with a readable failure."""
+    sys.path.insert(0, HELPER_DIR)
+    try:
+        import _gs_yd_session as gs
+    except ImportError as e:
+        raise RuntimeError(
+            "cluster helper _gs_yd_session not importable from %r (%s); "
+            "re-run with --offline to render the registry without querying"
+            % (HELPER_DIR, e))
+    return gs
+
+
+def parse_run(run, gs):
+    """Return dict(tag, alive, verdict, last_row, warn, day) for one run."""
+    tag, node, log = run["tag"], run["node"], run["log"]
     cli, sh = gs.connect_node(node)
     q = (f"grep VERDICT {log} 2>/dev/null | tail -1 | sed 's/\\x1b\\[[0-9;]*m//g'; "
          f"grep -E '^\\s*[0-9]+\\.[0-9]' {log} | tail -1; "
@@ -62,20 +64,21 @@ def parse_run(tag, node, gpu, log, started):
     out = gs.run(sh, q, wait=12)
     out += gs.to_ascii(gs.drain(sh, 4))
     cli.close()
-    lines = [l for l in out.splitlines()
-             if l.strip() and "Quit" not in l and not l.endswith("~]")]
+    lines = [ln for ln in out.splitlines()
+             if ln.strip() and "Quit" not in ln and not ln.endswith("~]")]
     verdict_line, last_row, n_proc = None, "", "0"
     if lines:
         verdict_line = lines[0].strip()
-        for l in lines[1:]:
-            t = l.strip()
+        for ln in lines[1:]:
+            t = ln.strip()
             if t and t[0].isdigit() and "." in t.split()[0]:
                 last_row = t
             elif t.isdigit():
                 n_proc = t
                 break
-    d = {"tag": tag, "node": node, "gpu": gpu, "started": started,
-         "verdict": None, "last_row": last_row, "alive": n_proc not in (0, "0")}
+    d = dict(run)
+    d.update({"verdict": None, "last_row": last_row,
+              "alive": n_proc not in (0, "0"), "warn": []})
     if verdict_line and "VERDICT" in verdict_line:
         d["verdict"] = "PASS" if "PASS" in verdict_line else "FAIL"
     # health flags
@@ -96,23 +99,30 @@ def parse_run(tag, node, gpu, log, started):
     return d
 
 
-def main():
-    runs = []
-    for r in RUNS:
-        tag, node, gpu, log, started = r
+def collect(offline):
+    """Query every registered run; --offline skips the cluster entirely."""
+    runs = load_registry()
+    if offline:
+        return [dict(r, alive=None, verdict=None, last_row="", warn=[],
+                     error="offline") for r in runs]
+    gs = _gateway()
+    out = []
+    for r in runs:
         try:
-            runs.append(parse_run(tag, node, gpu, log, started))
+            out.append(parse_run(r, gs))
         except Exception as e:
-            runs.append({"tag": tag, "node": node, "gpu": gpu, "error": str(e),
-                         "alive": None, "verdict": None, "last_row": "",
-                         "warn": [f"query failed: {e}"]})
+            out.append(dict(r, alive=None, verdict=None, last_row="",
+                            warn=[f"query failed: {e}"], error=str(e)))
+    return out
 
+
+def render(runs):
     now = time.strftime("%Y-%m-%d %H:%M") + " (本地)"
     lines = [
         "# ocean-solver 运行看板（status_zh.md）",
         "",
-        "> 本文件由 `scripts/status_board.py` 自动生成，是所有正在进行的长期运行的唯一观测入口。",
-        "> 人工只改 `scripts/status_board.py` 顶部的 RUNS 注册表；本文件每次刷新会整体重写。",
+        "> 由 `scripts/status_board.py` 从 `dashboard/runs.json` 生成。",
+        "> 人工只改 `dashboard/runs.json`；本文件每次刷新整体重写。",
         "",
         f"**生成时间**: {now} · 刷新命令: `python scripts/status_board.py`",
         "",
@@ -121,9 +131,9 @@ def main():
         "## 当前活动运行",
         "",
     ]
-    active = [r for r in runs if r["alive"]]
+    active = [r for r in runs if r.get("alive")]
     if not active:
-        lines.append("（无活动运行）")
+        lines.append("（无活动运行 / 未查询集群）")
     else:
         lines.append("| 运行 | 节点/GPU | day | max\\|u\\| | max\\|eta\\| | 状态 |")
         lines.append("|---|---|---|---|---|---|")
@@ -135,26 +145,31 @@ def main():
             st = "⚠ " + "; ".join(r["warn"]) if r["warn"] else "正常"
             lines.append(f"| {r['tag']} | {r['node']}/{r['gpu']} | {day} | "
                          f"{maxu} | {eta} | {st} |")
-    lines += ["", "## 非活动/最近运行", ""]
-    done = [r for r in runs if not r["alive"]]
-    if done:
-        for r in done:
-            v = r.get("verdict") or "无VERDICT"
-            lines.append(f"- **{r['tag']}**（{r['node']}/{r['gpu']}）— "
-                         f"{v}，最后行: `{r['last_row']}`")
-    else:
-        lines.append("（无）")
-    lines += ["", "---", "", "*人工备注区（刷新保留手写内容需加入 status_board.py 模板）*"]
-    text = "\n".join(lines) + "\n"
+    lines += ["", "## 注册表中的全部运行", ""]
+    for r in runs:
+        total = r.get("total_days")
+        prog = f"{r.get('day', '?')}/{total}" if total else str(r.get("day", "?"))
+        v = r.get("verdict") or "无VERDICT"
+        note = r.get("note", "")
+        lines.append(f"- **{r['tag']}**（{r['node']}/{r['gpu']}）day {prog} — {v}"
+                     + (f" — {note}" if note else ""))
+    lines += ["", "---", ""]
+    return "\n".join(lines) + "\n"
+
+
+def main():
+    offline = "--offline" in sys.argv
+    runs = collect(offline)
+    text = render(runs)
     if "--stdout" in sys.argv:
         print(text)
     else:
-        with io.open(STATUS_MD, "w", encoding="utf-8") as fh:
+        with io.open(STATUS_MD, "w", encoding="utf-8", newline="\n") as fh:
             fh.write(text)
         print(f"written {STATUS_MD}")
     for r in runs:
-        flag = " ⚠" if r["warn"] else ""
-        print(f"  {r['tag']}: alive={r['alive']} verdict={r['verdict']}{flag}")
+        flag = " WARN" if r["warn"] else ""
+        print(f"  {r['tag']}: alive={r.get('alive')} verdict={r.get('verdict')}{flag}")
 
 
 if __name__ == "__main__":

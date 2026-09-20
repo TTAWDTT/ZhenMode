@@ -1,6 +1,6 @@
 [build-system]
 requires = ["setuptools>=68.0"]
-build-backend = "setuptools.backends._legacy:_Backend"
+build-backend = "setuptools.build_meta"
 
 [project]
 name = "ocean-solver"
@@ -17,12 +17,60 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
     "pytest>=8.0",
+    "ruff>=0.6",
 ]
 
-[tool.setuptools.packages.find]
-where = ["."]
-include = ["src*"]
+[project.scripts]
+ocean-solver = "run_long_integration_global:main"
+
+# Flat-module src layout: the modules live directly in src/ and are imported
+# by their bare names (``import config``), so they are declared as top-level
+# py-modules rather than as a ``src`` package. archive/regional/ is a retired
+# solver and is deliberately not installed (or linted).
+[tool.setuptools]
+package-dir = { "" = "src" }
+py-modules = [
+    "config",
+    "grid",
+    "jax_solver_global",
+    "run_long_integration_global",
+    "forcing",
+    "wind_reanalysis",
+    "woa_data",
+    "bench_climatology_global",
+    "fetch_sla_monthly",
+    "fetch_ssh_abs_monthly",
+]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["src"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+# Explicit excludes, and do NOT fall back to .gitignore. archive/ is the
+# retired solver and results/ holds archival, machine-specific figure
+# provenance; results/ is gitignored yet partially tracked, so a
+# gitignore-driven exclusion would behave differently in a fresh clone.
+respect-gitignore = false
+extend-exclude = [
+    "archive",       # retired regional spectral solver (not runnable)
+    "results",       # archival figure / provenance scripts (machine-specific)
+    "data", "logs", "checkpoints",   # local run I/O
+    "dashboard/node_modules",
+]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I"]
+ignore = [
+    "E501",  # long lines are common in the operator/derivation comments
+]
+
+[tool.ruff.lint.per-file-ignores]
+# jax.config.update('jax_enable_x64') must run before the jnp import.
+"src/jax_solver_global.py" = ["E402"]
+"src/run_long_integration_global.py" = ["E402"]
+# These insert ../src on sys.path before importing the flat src modules.
+"tests/*.py" = ["E402"]
+"scripts/*.py" = ["E402"]
