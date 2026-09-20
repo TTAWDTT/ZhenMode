@@ -1,5 +1,16 @@
 # 海洋模式项目综合进度报告
 
+> **📦 已归档（Archived）** — 2026-09-20 仓库整理时移入 `docs/archive/`。
+>
+> 本文属于**已退役的区域谱模式（regional spectral solver）**时期的工作、
+> 过程性工作日志，或已被后续文档取代的早期版本。保留它只是为了留存历史推理链，
+> **不代表当前主线**。
+>
+> 当前主线是**全球有限差分模式**（`src/jax_solver_global.py`，见
+> [`docs/solver_technical_report_zh.md`](../solver_technical_report_zh.md) 与
+> [`docs/decisions.md`](../decisions.md)）。文档索引见 [`docs/README.md`](../README.md)。
+
+
 > 2026-08-19 ～ 2026-08-23 · 41 次提交 · 谱方法静力原始方程海洋模式
 >
 > 本报告梳理从第一个 commit 到当前的全部进展，目标：让读者快速理清"做了什么、验证了什么、卡在哪里、下一步是什么"。

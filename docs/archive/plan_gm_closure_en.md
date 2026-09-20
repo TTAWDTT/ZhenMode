@@ -1,5 +1,16 @@
 # 修复 GM 闭合垂直 CFL 爆裂：bolus 平流形式 → skew-flux 形式
 
+> **📦 已归档（Archived）** — 2026-09-20 仓库整理时移入 `docs/archive/`。
+>
+> 本文属于**已退役的区域谱模式（regional spectral solver）**时期的工作、
+> 过程性工作日志，或已被后续文档取代的早期版本。保留它只是为了留存历史推理链，
+> **不代表当前主线**。
+>
+> 当前主线是**全球有限差分模式**（`src/jax_solver_global.py`，见
+> [`docs/solver_technical_report_zh.md`](../solver_technical_report_zh.md) 与
+> [`docs/decisions.md`](../decisions.md)）。文档索引见 [`docs/README.md`](../README.md)。
+
+
 ## 根因（已确认）
 
 GM 闭合当前以 **bolus 平流形式** `-(u*·∇T + w*·∂T/∂z)` 实现（`_gm_tracer_transport`，jax_solver_global.py:703）。其垂直项 `w*·∂T/∂z` 有 **平流 CFL** `= |w*|·dt/dz`。

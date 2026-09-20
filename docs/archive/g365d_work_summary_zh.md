@@ -1,9 +1,20 @@
 # 全球 1° 365 天积分工作总结 — 从全球 FD 重写到真实季节性强迫生产运行
 
+> **📦 已归档（Archived）** — 2026-09-20 仓库整理时移入 `docs/archive/`。
+>
+> 本文属于**已退役的区域谱模式（regional spectral solver）**时期的工作、
+> 过程性工作日志，或已被后续文档取代的早期版本。保留它只是为了留存历史推理链，
+> **不代表当前主线**。
+>
+> 当前主线是**全球有限差分模式**（`src/jax_solver_global.py`，见
+> [`docs/solver_technical_report_zh.md`](../solver_technical_report_zh.md) 与
+> [`docs/decisions.md`](../decisions.md)）。文档索引见 [`docs/README.md`](../README.md)。
+
+
 > **日期**：2026-08-25 ~ 2026-09-04
 > **范围**：从项目**初次切换到 365 天、1° 全球积分**（2026-08-25 G0 提交）起，全球有限差分模式（`jax_solver_global.py`）的全部工作：G0–G3 建设门、GM 闭合攻坚、双 PASS 气候态验证、Med eta 修复、动态季节性强迫路径、012 GPU 环境搭建与 365 天生产运行启动。
-> **前置文档**：`docs/pam_work_summary_zh.md`（Pam 全程总结，含区域谱模式 arc）、`docs/progress_report_zh.md`（08-19~08-23 底座阶段）、`docs/long_run_climatology_report_zh.md`（区域 365d + GM 攻坚 append-only 报告）、`docs/repositioning_memo_zh.md`（项目定位校正）
-> **本文取代**：`docs/g365d_work_summary_zh.md` 的窄版覆盖（原版本只写了 09-03~09-04 一段）。
+> **前置文档**：`pam_work_summary_zh.md`（Pam 全程总结，含区域谱模式 arc）、`progress_report_zh.md`（08-19~08-23 底座阶段）、`long_run_climatology_report_zh.md`（区域 365d + GM 攻坚 append-only 报告）、`../repositioning_memo_zh.md`（项目定位校正）
+> **本文取代**：`g365d_work_summary_zh.md` 的窄版覆盖（原版本只写了 09-03~09-04 一段）。
 
 ---
 
@@ -96,7 +107,7 @@
 
 双 PASS 之前还有一次**forcing 侧的诚实 FAIL**：gpu365_glap 的 A1/A2 corr PASS 但 RMSE 3.29/3.46 FAIL，偏差形态（热带 −3~−5K 对称、极区 +2~+4K）指向两个 forcing 构造 bug，均实测坐实：① `air_temp_profile` 对含陆地填充的 T_init 做裸纬向平均（赤道 T_atm 24.12 vs 海洋-only 27.36——"冷偏差"就是 forcing 本身，模型 SST 精确平衡到污染目标 24.09）；② 区域周期 y 缝 taper 被误用在有界全球域（59.5°S T_atm 17.12 vs 真值 −0.83 → +0.886 K/d 虚假极区加热）。修复：`grid.is_global` 分支 + 海洋-only 加权纬向平均 + 无 y-taper（`8aa9acc`）。**非循环性保持**：T_atm 仍纬向均匀，只规定经向梯度，纬向结构留给模式预测——这正是 A2 能 PASS 的前提。
 
-**merge 与重组**：`agent/pam-mt5l9102` → main（`549d6e1`，136 文件 +12144 行）；134 个 `_*.py`/`diag_*.py` 攻坚脚本曾移入 `src/archive_diag/` 档案（该目录已于 2026-09-19 仓库整理时清理）；测试 4 套 55/55 本地 PASS + test_gm_closure 11 个节点验证；英文 PLAN 归档 `docs/plan_gm_closure_en.md`。
+**merge 与重组**：`agent/pam-mt5l9102` → main（`549d6e1`，136 文件 +12144 行）；134 个 `_*.py`/`diag_*.py` 攻坚脚本曾移入 `src/archive_diag/` 档案（该目录已于 2026-09-19 仓库整理时清理）；测试 4 套 55/55 本地 PASS + test_gm_closure 11 个节点验证；英文 PLAN 归档 `plan_gm_closure_en.md`。
 
 **遗留（诚实）**：max|eta| 线性 +0.026 m/d，源为地中海（16.5°E, 37.5°N）半封闭海盆——Gibraltar 14km 在 1° 网格是次网格，一格直布罗陀无法支撑双层交换，残余 PGF 失配驱动伪净流出。年积分内无碍，~500d 会触 15m 看门狗。
 
@@ -227,8 +238,8 @@ python run_long_integration_global.py \
    → KE 年周期 R²=0.403（+半年项 0.770），SSH_std 年周期 R²=0.768（+半年项 0.919）；强迫侧 NW Pac 盒 |tau| 季节摆幅 560%。
 4. 结果 npz 拉回本地（base64 慢信道，压缩后 ~5-15MB）或 012 上画图取回 PNG；
    → `global_g365d_012.npz`（20.2MB，gzip 后 20.16MB）已按 base64-over-PTY 分块拉回本地，gz 与 npz 两级 md5（`6743233c` / `53876042`）均与 012 端一致。
-5. 验收通过后把 eta_relax 验证结论与季节性运行写进 `docs/report.md` 主线。
-   → `docs/report.md` §6（commit `fd77f4b`），含官方 A1/A2 评分：**OVERALL PASS**（A1 corr 0.993 / RMSE 1.080，A2 corr 0.977 / RMSE 1.881，B2 谱斜率 −3.02）。
+5. 验收通过后把 eta_relax 验证结论与季节性运行写进 `report.md` 主线。
+   → `report.md` §6（commit `fd77f4b`），含官方 A1/A2 评分：**OVERALL PASS**（A1 corr 0.993 / RMSE 1.080，A2 corr 0.977 / RMSE 1.881，B2 谱斜率 −3.02）。
 
 ---
 

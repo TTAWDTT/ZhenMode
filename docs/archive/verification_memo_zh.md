@@ -1,5 +1,16 @@
 # 积分结果可信度验证备忘（中文）
 
+> **📦 已归档（Archived）** — 2026-09-20 仓库整理时移入 `docs/archive/`。
+>
+> 本文属于**已退役的区域谱模式（regional spectral solver）**时期的工作、
+> 过程性工作日志，或已被后续文档取代的早期版本。保留它只是为了留存历史推理链，
+> **不代表当前主线**。
+>
+> 当前主线是**全球有限差分模式**（`src/jax_solver_global.py`，见
+> [`docs/solver_technical_report_zh.md`](../solver_technical_report_zh.md) 与
+> [`docs/decisions.md`](../decisions.md)）。文档索引见 [`docs/README.md`](../README.md)。
+
+
 > 对应 `verification_ladder.md` 的英文技术档；本文件用中文回答同一问题：
 > **"这个谱方法海洋模式的积分结果到底准不准、够不够 solid？"**
 >
@@ -124,7 +135,7 @@
 - `src/bench_t2_inertial.py`、`src/bench_t2_geostrophic.py`、`src/bench_t3_realdata.py` — 测试脚本
 - `logs/t2_geostrophic_final.log` — T2-2 定论 PASS
 - `logs/t3_realdata.log` — T3-1 如实 FAIL
-- `docs/verification_ladder.md` — 英文技术档（含完整方法学与数据源）
+- `verification_ladder.md` — 英文技术档（含完整方法学与数据源）
 
 ---
 

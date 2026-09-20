@@ -1,11 +1,22 @@
 # Baroclinic 激活路线图（针对真实数据 SLA 对比）
 
+> **📦 已归档（Archived）** — 2026-09-20 仓库整理时移入 `docs/archive/`。
+>
+> 本文属于**已退役的区域谱模式（regional spectral solver）**时期的工作、
+> 过程性工作日志，或已被后续文档取代的早期版本。保留它只是为了留存历史推理链，
+> **不代表当前主线**。
+>
+> 当前主线是**全球有限差分模式**（`src/jax_solver_global.py`，见
+> [`docs/solver_technical_report_zh.md`](../solver_technical_report_zh.md) 与
+> [`docs/decisions.md`](../decisions.md)）。文档索引见 [`docs/README.md`](../README.md)。
+
+
 > ⚠️ **方向已搁置（2026-08-23）**：本项目目的已重新定位为"稳定快速的谱方法海洋模式"，
 > 不再以"点对点逼近真实观测"为成败判据。斜压激活（追涡）方向作为开发主线搁置——
 > 四假设（H1-H4）证伪的结论（分辨率不足以解析变形半径）依然正确，但追涡属于另一条路
 > （网格加密到 256×256），是新项目而非当前模式的补丁。相关实验脚本原移至
 > `src/archive_baroclinic/`（该目录已于 2026-09-19 整理时清理）。
-> 详见 `docs/repositioning_memo_zh.md`。
+> 详见 `../repositioning_memo_zh.md`。
 > 下方历史内容保留作档案，不改动。
 
 > 状态：2026-08-22 由 synergy-max 起草。目标：把当前退化的 barotropic 行为升级为激活的分层

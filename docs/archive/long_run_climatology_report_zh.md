@@ -1,8 +1,19 @@
 # 长时间积分与气候态对比 — 阶段性报告
 
+> **📦 已归档（Archived）** — 2026-09-20 仓库整理时移入 `docs/archive/`。
+>
+> 本文属于**已退役的区域谱模式（regional spectral solver）**时期的工作、
+> 过程性工作日志，或已被后续文档取代的早期版本。保留它只是为了留存历史推理链，
+> **不代表当前主线**。
+>
+> 当前主线是**全球有限差分模式**（`src/jax_solver_global.py`，见
+> [`docs/solver_technical_report_zh.md`](../solver_technical_report_zh.md) 与
+> [`docs/decisions.md`](../decisions.md)）。文档索引见 [`docs/README.md`](../README.md)。
+
+
 > 2026-08-24 初版 · 2026-08-25 更新（热力学修复 + 诚实重评分）· Pam (pam-mt5l9102)
 >
-> 依据 `docs/long_run_climatology_plan_zh.md` 执行。本报告记录截至当前的进展，随迭代更新。
+> 依据 `long_run_climatology_plan_zh.md` 执行。本报告记录截至当前的进展，随迭代更新。
 >
 > **2026-08-25 重大更新**：无恢复对照跑暴露原 A1/A2 PASS 是"恢复项制造"的循环结果；已实施热力学修复（体空气-海热通量），自由运行稳定通过 365d（真实稳定性成就）。但无恢复重评分进一步暴露标准 A1/A2 仍有残留经向循环，真正预测的纬向结构 skill = FAIL (corr 0.258)——稳定 ≠ 有 skill。详见下文"热力学修复与诚实重评分"节。
 
@@ -413,5 +424,5 @@ plan 第 2 步(GM 闭合 → 365d 稳定 + 气候态)完成。**第 3 步也已�
 - 测试:本地 CPU 侧 4 套 55/55 PASS(test_grid 17 + test_equations 14 +
   test_integrator 8 + test_spectral_ops 16);test_gm_closure.py(11 个)
   需 jax,已在节点侧验证。
-- PLAN/plan 大小写冲突:英文 campaign PLAN 归档为 `docs/plan_gm_closure_en.md`
+- PLAN/plan 大小写冲突:英文 campaign PLAN 归档为 `plan_gm_closure_en.md`
   (根目录工作副本 `plan.md` 内容重复,已于 2026-09-19 整理时删除)。

@@ -1,8 +1,19 @@
 # 长时间积分与气候态对比执行计划
 
+> **📦 已归档（Archived）** — 2026-09-20 仓库整理时移入 `docs/archive/`。
+>
+> 本文属于**已退役的区域谱模式（regional spectral solver）**时期的工作、
+> 过程性工作日志，或已被后续文档取代的早期版本。保留它只是为了留存历史推理链，
+> **不代表当前主线**。
+>
+> 当前主线是**全球有限差分模式**（`src/jax_solver_global.py`，见
+> [`docs/solver_technical_report_zh.md`](../solver_technical_report_zh.md) 与
+> [`docs/decisions.md`](../decisions.md)）。文档索引见 [`docs/README.md`](../README.md)。
+
+
 > 2026-08-23 · Pam (pam-mt5l9102)
 >
-> 依据：老板指示 + `docs/repositioning_memo_zh.md` 重新定位。
+> 依据：老板指示 + `../repositioning_memo_zh.md` 重新定位。
 > 目的：在"稳定快速的谱方法海洋模式"定位下，走通 OGCM 正路 —— 长积分稳定性 + 气候态统计对比。
 > **核心纪律：统计特征对比，非逐点场相关（T3-1 教训）；判据预注册，不事后挪 bar（R1/R4 红线）。**
 
@@ -146,9 +157,9 @@
 
 ## 阶段 4：报告与归档
 
-- 产出 `docs/long_run_climatology_report_zh.md`：配置、结果、各指标 PASS/FAIL、根因分析（若有爆炸）
+- 产出 `long_run_climatology_report_zh.md`：配置、结果、各指标 PASS/FAIL、根因分析（若有爆炸）
 - 数据存 `results/long_run_*.npz`，图存 `results/figs/`
-- append-only 更新 `docs/TIMELINE.md`
+- append-only 更新 `TIMELINE.md`
 - 若有稳定性修复，记入三次爆炸速查表（成为第四次）
 
 ---

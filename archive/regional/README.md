@@ -1,6 +1,8 @@
-# archive_regional — 区域谱方法求解器（已退役）
+# regional — 区域谱方法求解器（已退役）
 
 **归档日期**: 2026-09-19 · **最后活跃**: 2026-08-25
+**位置**: 2026-09-20 从 `src/archive_regional/` 移到 `archive/regional/`，
+让 `src/` 只保留当前主线。
 
 ## 这是什么
 
@@ -12,8 +14,8 @@
 
 | | 区域谱（本目录） | 全局 FD（当前主线） |
 |---|---|---|
-| 求解器 | `jax_solver.py` | `../jax_solver_global.py` |
-| 驱动 | `run_long_integration.py` | `../run_long_integration_global.py` |
+| 求解器 | `jax_solver.py` | `../../src/jax_solver_global.py` |
+| 驱动 | `run_long_integration.py` | `../../src/run_long_integration_global.py` |
 | 网格 | 128×128 区域平面 | 全球经纬网格、可调分辨率 |
 | 水平算子 | FFT 伪谱 | 守恒型有限差分 |
 | 域 | lon 143.6–156.3E, lat 28.6–41.3N | 全球 |
@@ -47,18 +49,22 @@
 ### 测试（`tests/`）
 - `tests/test_grid.py`、`test_integrator.py`、`test_spectral_ops.py`、`test_equations.py`
 
-这些测试已移出 `tests/`，因此不再被 `pytest tests/` 收集。如需运行（需同时把
-`src/` 加进路径，因为 `config.py`/`grid.py` 仍留在那里）：
+这些测试不在 `tests/` 下，因此不会被 `pytest tests/`（`pyproject.toml` 的
+`testpaths`）收集。如需运行（需同时把 `src/` 加进路径）：
 
 ```bash
-python -m pytest src/archive_regional/tests/ -o "pythonpath=src src/archive_regional"
+python -m pytest archive/regional/tests/ -o "pythonpath=src archive/regional"
 ```
 
-## 注意
+## 注意：本目录当前**不可直接运行**
 
-- 活代码**不**依赖本目录。全局主线的 `../grid.py` 仍同时提供区域 `make_grid`
-  （`woa_data.py` 读 WOA 初值时的回退路径用）和全局 `make_global_grid`。
-- 脚本内的相对导入（`from config import ...`）按仓库根为 cwd 解析，运行方式：
+- 活代码**不**依赖本目录，本仓库的测试与 CI 也不导入它。
+- 2026-09-20 清理主线死代码时，`src/config.py` 与 `src/grid.py` 里只被本目录
+  使用的区域辅助设施被删除：`GridConfig`、`TimeConfig`、`DEFAULT_CONFIG`、
+  `make_grid`、`OceanGrid`。因此本目录的脚本 `from config import GridConfig`
+  一类导入会失败——它们是历史记录，不是可运行代码。要复活任何脚本，先把它
+  依赖的区域配置/网格生成器从 git 历史（`git log -- src/config.py`）里取回。
+- 脚本内的导入（`from config import ...`）按仓库根为 cwd 解析：
   ```bash
-  cd <repo-root> && python src/archive_regional/<script>.py
+  cd <repo-root> && PYTHONPATH=src python archive/regional/<script>.py
   ```

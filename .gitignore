@@ -19,9 +19,12 @@ env/
 *.swo
 *~
 
-# Data & results (never commit large files)
+# Data & results (never commit large files).
+# results/* rather than results/ so the checked-in guide below can be
+# re-included; a whole-directory exclusion cannot be negated per-file.
 data/
-results/
+results/*
+!results/README.md
 logs/
 checkpoints/
 *.pt
@@ -54,8 +57,8 @@ dashboard/secret.json
 dashboard/node_modules/
 dashboard/curve_cache/
 
-# Deep-heat campaign scratch artifacts (2026-09 ~ 09-13). Scripts were archived
-# to src/archive_deepheat/; these are their outputs / intermediate data.
+# Deep-heat campaign scratch artifacts (2026-09 ~ 09-13). The scripts were
+# removed in the 2026-09-19 cleanup; these patterns catch leftover outputs.
 _*.out
 _*.err
 _*.tgz

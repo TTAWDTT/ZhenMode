@@ -1,5 +1,16 @@
 # Pam 工作总结 — ocean_solver 全程
 
+> **📦 已归档（Archived）** — 2026-09-20 仓库整理时移入 `docs/archive/`。
+>
+> 本文属于**已退役的区域谱模式（regional spectral solver）**时期的工作、
+> 过程性工作日志，或已被后续文档取代的早期版本。保留它只是为了留存历史推理链，
+> **不代表当前主线**。
+>
+> 当前主线是**全球有限差分模式**（`src/jax_solver_global.py`，见
+> [`docs/solver_technical_report_zh.md`](../solver_technical_report_zh.md) 与
+> [`docs/decisions.md`](../decisions.md)）。文档索引见 [`docs/README.md`](../README.md)。
+
+
 > **作者**：Michael (god / orchestrator) 整理 · 2026-08-26
 > **对象**：Pam (pam-mt5l9102)，ocean_solver 仓库主力工程师
 > **范围**：Pam 在 `ocean_solver`（Python + JAX 静力原始方程海洋模式）的全部工作，含精确实验配置
@@ -16,7 +27,7 @@ Pam 的工作有一条贯穿始终的主线：**把"诚实的失败"当作下一
 
 ## 1. 前序工作（Pam 接手前的底座，阶段 A–E）
 
-Pam 的工作建立在 2026-08-19 ~ 08-23 的 41 次提交之上（详见 `docs/TIMELINE.md`）。底座已确立：
+Pam 的工作建立在 2026-08-19 ~ 08-23 的 41 次提交之上（详见 `TIMELINE.md`）。底座已确立：
 
 - **方程**：静力原始方程（HPE）——水平动量 + 连续性 + 静水压力 + 状态方程 + 示踪物
 - **数值**：伪谱方法（FFT 水平导数，谱精度 ~1e-17）+ 非均匀 z-level 垂直差分
@@ -96,7 +107,7 @@ Rayleigh 阻尼，标准 OGCM 手段。余弦锥削阻尼场 `sponge_rate(nx,ny,
 | 1 | 90 天季尺度 | dt=150s, WOA2023 分层初场, NCEP 2023-01 月均风, Haney τ=5d, nu_bi=1e12, 对流调整 on, 看门狗 \|eta\|>3m | **PASS**（max\|u\| 1.685, 0 NaN, wall 0.83h） |
 | 2 | 365 天年尺度 + 季节循环风 | 同上 + 12 月季节循环风（NCEP 2023 全年）+ 16 格/3d sponge + `--save-3d`（逐快照流式写盘） | **PASS**（max\|u\| 1.350, 0 NaN, wall 4.15h） |
 | 3 | 气候态统计对比 | 阶段 2 的 365d npz，稳态窗口末 90 天（day 275-365，10 快照） | A1/A2 PASS（后被修正为残余循环）；A3 FAIL |
-| 4 | 报告归档 | `docs/long_run_climatology_report_zh.md` | 完成 |
+| 4 | 报告归档 | `long_run_climatology_report_zh.md` | 完成 |
 
 **稳定性弧线（阶段 2 的 3 轮诊断—修复迭代）**：
 
@@ -304,8 +315,8 @@ bulk_T = (p.lambda_bulk * (p.T_atm_3d - state.T[:, :, 0:1])
 | `src/woa_data.py` | WOA2023 气候态读取器 |
 | `src/wind_reanalysis.py` | NCEP/NCAR R1 风应力读取器 |
 | `src/jax_solver_global.py`（worktree） | 全球 FD 求解器（G0-G2） |
-| `docs/TIMELINE.md` | 阶段 A-E 前序时间线 |
-| `docs/long_run_climatology_report_zh.md` | Arc 1 区域报告（注意：停留在 A1/A2 PASS 旧框架，已被 058db79 修正） |
+| `TIMELINE.md` | 阶段 A-E 前序时间线 |
+| `long_run_climatology_report_zh.md` | Arc 1 区域报告（注意：停留在 A1/A2 PASS 旧框架，已被 058db79 修正） |
 
 ---
 
@@ -578,7 +589,7 @@ gpu365_glap bench: corr 双 PASS(0.975/0.964)但 RMSE 双 FAIL(3.29/3.46 > 2.0)�
   test_integrator 8 + test_spectral_ops 16); test_gm_closure.py(11 个, 需 jax)
   节点侧验证。
 - PLAN/plan Windows 大小写冲突: 英文 campaign PLAN 归档
-  `docs/plan_gm_closure_en.md`, 工作副本 `plan.md` 保留。
+  `plan_gm_closure_en.md`, 工作副本 `plan.md` 保留。
 - 未推 origin(红线); 区域谱 `jax_solver.py` 全程未动(最后触达 a44b403, 早于
   本战役)。
 

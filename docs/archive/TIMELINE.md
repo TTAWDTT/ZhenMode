@@ -1,5 +1,16 @@
 # Ocean Solver — 时间线总结
 
+> **📦 已归档（Archived）** — 2026-09-20 仓库整理时移入 `docs/archive/`。
+>
+> 本文属于**已退役的区域谱模式（regional spectral solver）**时期的工作、
+> 过程性工作日志，或已被后续文档取代的早期版本。保留它只是为了留存历史推理链，
+> **不代表当前主线**。
+>
+> 当前主线是**全球有限差分模式**（`src/jax_solver_global.py`，见
+> [`docs/solver_technical_report_zh.md`](../solver_technical_report_zh.md) 与
+> [`docs/decisions.md`](../decisions.md)）。文档索引见 [`docs/README.md`](../README.md)。
+
+
 > 谱方法静力原始方程海洋模式 · 41 次提交 · 2026-08-19 ~ 2026-08-23
 >
 > 本文件按时间顺序梳理项目从第一个 commit 到当前的全部进展。
@@ -92,7 +103,7 @@
 
 ### 2026-08-22 01:00 · `23aa58d` · docs(report): mark 5.3 real-stratification instability resolved
 **文档：标记 5.3 实测层结不稳定已由 biharmonic 修复解决。**
-更新 `docs/report.md` 第五节，记录第二次爆炸的根因与修复，状态表更新为"WOA 实测 + 带强迫 + dt=300s ✅ 稳定"。
+更新 `report.md` 第五节，记录第二次爆炸的根因与修复，状态表更新为"WOA 实测 + 带强迫 + dt=300s ✅ 稳定"。
 
 ### 2026-08-22 01:05 · `980e0ca` · feat(verify): multi-day forced WOA stability + no-T-drift
 **多日强迫 WOA 稳定性 + 无漂移检查。**
@@ -159,7 +170,7 @@
 
 ### 2026-08-22 19:11 · `e0eb16e` · docs(verification): add Chinese verification memo
 **中文验证备忘。**
-`docs/verification_memo_zh.md`，把验证阶梯结果用中文记录。
+`verification_memo_zh.md`，把验证阶梯结果用中文记录。
 
 ---
 
@@ -169,7 +180,7 @@ T3-1 失败后，路线图判断问题是"分层未激活/参数阻尼"，而非
 
 ### 2026-08-22 20:12 · `d894497` · feat(bench): add Step 1 baroclinic activation diagnostic + roadmap
 **Step 1 斜压激活诊断 + 路线图。**
-`bench_baroclinic_step1.py` + `docs/baroclinic_activation_roadmap_zh.md`。
+`bench_baroclinic_step1.py` + `baroclinic_activation_roadmap_zh.md`。
 关键事实（代码读证）：模型本就是 baroclinic HPE 谱模型（`pressure.py` 有 baroclinic 项 ∫ρ'g dz'，`tracers.py` T/S 独立预报）；T3-1 只有 4mm 是因为 `bench_t3_realdata.py` 未传 T_init/S_init → 默认均匀 T/S → ρ'≡0 → 退化为正压。激活基础设施（WOA 读取、`init_state(T_init,S_init)`、Haney 恢复）均已存在。
 
 ### 2026-08-22 21:19 · `78f8e9a` · feat(bench): Step 2 viscosity scan + spatial-structure diagnostic
@@ -207,7 +218,7 @@ T3-1 失败后，路线图判断问题是"分层未激活/参数阻尼"，而非
 
 ### 2026-08-23 13:57 · `137d3cd` · docs: add comprehensive progress report
 **综合进度报告（中文，全项目时间线）。**
-`docs/progress_report_zh.md`。汇总全部进展。记录 H2/H3/H4 证伪：
+`progress_report_zh.md`。汇总全部进展。记录 H2/H3/H4 证伪：
 - **H2（缺初始扰动）证伪**：0.5°C 中尺度扰动 10 天内被 nu_bi=1e12 阻尼到 ≈0
 - **H3（黏性过强）证伪**：nu_bi 在 [3e11, 5e11] 无稳定涡窗口（3e11 day70 发散）
 - **H4（风缺高频变率）证伪**：日均风 eddy_frac 仍 0.0000%
