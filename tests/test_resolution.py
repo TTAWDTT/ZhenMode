@@ -15,6 +15,7 @@ Run:  python -m pytest tests/test_resolution.py -v
 """
 import os
 import sys
+import warnings
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
 
@@ -80,6 +81,43 @@ def test_bathymetry_reads_as_ocean():
         f"relief was probably written with the wrong sign convention")
     assert ocean.any() and (~ocean).any(), "expected both land and ocean"
     assert depth.max() > 1000.0, f"deepest point is only {depth.max():.0f} m"
+
+
+def test_npz_twin_does_not_shadow_the_real_relief(tmp_path):
+    """With both files present the netCDF relief must win.
+
+    The .npz twin exists so nodes without netCDF4 can still read a relief; if
+    it wins whenever it is present, a leftover twin silently replaces the real
+    bathymetry. Nothing downstream can tell -- both paths return the same
+    shape and both are "valid" depth fields.
+    """
+    try:
+        import netCDF4
+    except ImportError:
+        pytest.skip("netCDF4 not installed; the twin is the only readable path")
+
+    nlon, nlat = 3600, 1800
+    lon = np.arange(nlon, dtype=np.float64) * 0.1
+    lat = -90.0 + (np.arange(nlat, dtype=np.float64) + 0.5) * 0.1
+    nc_path = str(tmp_path / "relief.nc")
+    # netCDF4's writer trips a numpy 2.5 DeprecationWarning about setting
+    # .shape; it is inside the library, not this test.
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", DeprecationWarning)
+        with netCDF4.Dataset(nc_path, "w") as ds:
+            ds.createDimension("lon", nlon)
+            ds.createDimension("lat", nlat)
+            ds.createVariable("lon", "f8", ("lon",))[:] = lon
+            ds.createVariable("lat", "f8", ("lat",))[:] = lat
+            # ETOPO sign convention: ocean is negative. Real 3000 m, twin 1000 m.
+            ds.createVariable("z", "i2", ("lat", "lon"))[:, :] = np.full(
+                (nlat, nlon), -3000, dtype=np.int16)
+    np.savez(nc_path + ".npz",
+             z=np.full((nlat, nlon), -1000, dtype=np.int16), lon=lon, lat=lat)
+
+    depth, _, _ = _read_etopo_global(nc_path, resolution=1.0, lat_max=60.0)
+    assert np.allclose(depth[depth > 0], 3000.0), (
+        "the .npz twin shadowed the real relief file")
 
 
 def test_dims_use_integer_floor_not_round():

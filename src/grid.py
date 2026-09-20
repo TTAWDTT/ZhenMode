@@ -228,15 +228,22 @@ def _read_etopo_global(filepath, resolution=1.0, lat_max=85.0,
     """
     # npz twin support: offline nodes (no netCDF4/HDF) can read a pre-extracted
     # "<file>.npz" (z int16, lon, lat). Identical values to the netCDF path.
+    #
+    # The REAL file wins when both are present. The twin is a fallback for
+    # nodes without netCDF4, and letting a leftover twin shadow the real relief
+    # is silent wrong-data: the two paths return the same shape, so nothing
+    # downstream (including every dimension test) can tell which one ran.
     npz_path = filepath + ".npz"
-    if not os.path.exists(npz_path) and not os.path.exists(filepath):
+    have_nc = os.path.exists(filepath)
+    have_npz = os.path.exists(npz_path)
+    if not have_nc and not have_npz:
         raise FileNotFoundError(
             f"ETOPO bathymetry not found: neither {filepath!r} nor "
             f"{npz_path!r} exists. Set ${BATHYMETRY_ENV_VAR} to the "
             f"ETOPO2022 0.1 deg relief file, or place {ETOPO_FILENAME} "
             f"(or its .npz twin) in <repo>/data/."
         )
-    if os.path.exists(npz_path):
+    if have_npz and (not have_nc or Dataset is None):
         d = np.load(npz_path)
         etopo_lon = np.asarray(d['lon'], dtype=np.float64)
         etopo_lat = np.asarray(d['lat'], dtype=np.float64)
