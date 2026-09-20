@@ -8,6 +8,8 @@ The global run takes its wind from NCEP/NCAR R1 reanalysis
                       centred (heat_flux_meridional)
   - T_atm           : zonally-uniform atmospheric target for the bulk
                       air-sea flux (air_temp_profile)
+  - ocean_zonal_mean: the shared ocean-only zonal mean both targets are
+                      built from (land fill never enters)
   - meridional taper: raised-cosine edge ramp (taper_weight_1d, taper_2d_y)
 
 All fields are (nx, ny) shaped, matching the solver axis convention
@@ -149,13 +151,51 @@ BULK_LAMBDA_DEFAULT = 40.0  # W/m^2/K — Haney/Barnier bulk transfer coef
 # not a clamp.
 
 
+def ocean_zonal_mean(grid, field):
+    """Ocean-only zonal mean of a 2D ``(nx, ny)`` field: one value per lat row.
+
+    Averages over wet columns only, so land and below-seafloor fill values
+    never enter, and backfills an all-land row from the nearest ocean-bearing
+    rows by linear interpolation, so the profile is defined at every
+    latitude. Both properties are load-bearing for the non-circularity of the
+    A1/A2 skill test (see air_temp_profile).
+    """
+    ny = grid.ny
+    wm = np.asarray(grid.wet_mask, dtype=np.float64)   # (nx, ny)
+    f = np.asarray(field, dtype=np.float64)
+    profile = np.full(ny, np.nan)
+    for j in range(ny):
+        wet_j = wm[:, j] > 0.5
+        if wet_j.any():
+            profile[j] = f[wet_j, j].mean()
+    # backfill any all-land row from its nearest ocean-bearing row
+    if np.isnan(profile).any():
+        good = np.where(~np.isnan(profile))[0]
+        profile = np.interp(np.arange(ny), good, profile[good])
+    return profile
+
+
 def air_temp_profile(grid, sst_clim):
     """Zonally-uniform meridional atmospheric target temperature.
 
     Builds the bulk-flux atmospheric equilibrium temperature T_atm as the
-    OCEAN-ONLY zonal mean of a climatological SST field. Zonally uniform by
-    construction, so only the meridional gradient is prescribed and any zonal
-    SST structure is left for the model to predict (keeps A1/A2 non-circular).
+    OCEAN-ONLY zonal mean of a climatological SST field (ocean_zonal_mean).
+    Zonally uniform by construction, so only the meridional gradient is
+    prescribed and any zonal SST structure is left for the model to predict
+    (keeps A1/A2 non-circular).
+
+    Two measured biases this construction avoids (both on gpu365_glap):
+      1. A plain zonal mean of T_init includes the land / below-seafloor fill
+         values (init_state holds +15 C sentinels; the WOA interp holds its
+         own land fill), which dragged the equatorial T_atm down to 24.1 C vs
+         the true ocean-only 27.4 C. The model SST then equilibrated exactly
+         onto the polluted target (model 24.09 vs T_atm 24.03) -- the
+         measured -3..-5 K tropical cold bias.
+      2. Tapering the edge rows toward the domain mean pulled |lat|~59.5 to
+         17.1 C vs the true -0.8 C, injecting +0.89 K/d of spurious polar
+         warming -- the measured +2..+4 K polar warm bias. The global grid's
+         y axis is a real closed boundary, not a periodic seam, so the bulk
+         flux is already continuous there and needs no taper.
 
     Args:
         grid: GlobalOceanGrid (uses nx, ny, wet_mask)
@@ -164,29 +204,5 @@ def air_temp_profile(grid, sst_clim):
     Returns:
         T_atm: (nx, ny) atmospheric target temperature [degC].
     """
-    ny = grid.ny
-    sst = np.asarray(sst_clim, dtype=np.float64)
-    # Ocean-only zonal mean, NO y-taper. Two measured bugs this avoids (both
-    # on gpu365_glap):
-    #   1. A plain zonal mean of T_init includes the land / below-seafloor
-    #      fill values (init_state holds +15 C sentinels; the WOA interp holds
-    #      its own land fill), which dragged the equatorial T_atm down to
-    #      24.1 C vs the true ocean-only 27.4 C. The model SST then
-    #      equilibrated exactly onto the polluted target (model 24.09 vs
-    #      T_atm 24.03) -- the measured -3..-5 K tropical cold bias.
-    #   2. Tapering the edge rows toward the domain mean pulled |lat|~59.5 to
-    #      17.1 C vs the true -0.8 C, injecting +0.89 K/d of spurious polar
-    #      warming -- the measured +2..+4 K polar warm bias.
-    # The global grid's y axis is a real closed boundary, not a periodic seam,
-    # so the bulk flux is already continuous there and needs no taper.
-    wm = np.asarray(grid.wet_mask, dtype=np.float64)   # (nx, ny)
-    profile = np.full(ny, np.nan)
-    for j in range(ny):
-        wet_j = wm[:, j] > 0.5
-        if wet_j.any():
-            profile[j] = sst[wet_j, j].mean()
-    # backfill any all-land row from its nearest ocean-bearing row
-    if np.isnan(profile).any():
-        good = np.where(~np.isnan(profile))[0]
-        profile = np.interp(np.arange(ny), good, profile[good])
-    return np.broadcast_to(profile[None, :], (grid.nx, ny)).copy()
+    profile = ocean_zonal_mean(grid, sst_clim)
+    return np.broadcast_to(profile[None, :], (grid.nx, grid.ny)).copy()

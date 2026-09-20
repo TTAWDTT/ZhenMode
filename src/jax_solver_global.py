@@ -50,16 +50,14 @@ FDParams = namedtuple('FDParams', [
     'f',                # (nx, ny) full 2D Coriolis
     # Land
     'wet_mask',         # (nx, ny) 1=ocean, 0=land
-    'wet_mask_3d',      # (nx, ny, 1) for 3D broadcast (column-uniform)
     'wet_mask_z',       # (nx, ny, nz) TRUE vertical wet mask: 1 where layer is
                         # above the seafloor, 0 below (ghost water excluded).
                         # Used in pressure integration to kill the spurious PGF
                         # at steep topography (ghost-water-column bug fix).
-    'interior_mask',    # (nx, ny) 1 in the interior, 0 on the N/S boundary
-                        # rows (j=0, j=ny-1). Used to enforce the no-flux wall:
-                        # the normal (meridional) velocity v is zeroed here so
-                        # no flow crosses the closed N/S truncation wall.
-    'interior_mask_z',  # (nx, ny, 1) broadcast of interior_mask for 3D fields.
+    'interior_mask_z',  # (nx, ny, 1) 1 in the interior, 0 on the N/S boundary
+                        # rows (j=0, j=ny-1). Enforces the no-flux wall: the
+                        # normal (meridional) velocity v is zeroed here so no
+                        # flow crosses the closed N/S truncation wall.
     # Vertical grid (non-uniform z-levels)
     'dz_denom_interior', 'dz_bnd_top', 'dz_bnd_bot',
     'd2z_hm', 'd2z_hp', 'd2z_denom', 'd2z_h0_top', 'd2z_h0_bot',
@@ -141,9 +139,8 @@ def make_fd_params(grid):
     return FDParams(
         dx_2d=dx_2d, dy=dy, cos_lat=cos_lat,
         inv_dx=inv_dx, inv_dy=inv_dy, inv_dx2=inv_dx2, inv_dy2=inv_dy2,
-        f=f, wet_mask=wet_mask, wet_mask_3d=wet_mask_3d,
-        wet_mask_z=wet_mask_z,
-        interior_mask=interior_mask, interior_mask_z=interior_mask_z,
+        f=f, wet_mask=wet_mask, wet_mask_z=wet_mask_z,
+        interior_mask_z=interior_mask_z,
         dz_denom_interior=dz_denom_interior,
         dz_bnd_top=dz_bnd_top, dz_bnd_bot=dz_bnd_bot,
         d2z_hm=d2z_hm, d2z_hp=d2z_hp, d2z_denom=d2z_denom,
@@ -650,8 +647,8 @@ def _conv_flux_tendency(tracer, conv_mask_3d, kappa, p, iface_gate=None):
 FDPhysParams = namedtuple('FDPhysParams', [
     # metric + grid (from FDParams)
     'dx_2d', 'dy', 'cos_lat', 'inv_dx', 'inv_dy', 'inv_dx2', 'inv_dy2',
-    'f', 'wet_mask', 'wet_mask_3d', 'wet_mask_z',
-    'interior_mask', 'interior_mask_z',
+    'f', 'wet_mask', 'wet_mask_z',
+    'interior_mask_z',
     'dz_denom_interior', 'dz_bnd_top', 'dz_bnd_bot',
     'd2z_hm', 'd2z_hp', 'd2z_denom', 'd2z_h0_top', 'd2z_h0_bot',
     'dz_3d', 'dz_surface', 'dz_iface', 'dz_node', 'surface_mask', 'bottom_mask',
@@ -2347,9 +2344,8 @@ def make_solver_global(grid, physics, dt, forcing=None,
         dx_2d=base.dx_2d, dy=base.dy, cos_lat=base.cos_lat,
         inv_dx=base.inv_dx, inv_dy=base.inv_dy,
         inv_dx2=base.inv_dx2, inv_dy2=base.inv_dy2,
-        f=base.f, wet_mask=base.wet_mask, wet_mask_3d=base.wet_mask_3d,
-        wet_mask_z=base.wet_mask_z,
-        interior_mask=base.interior_mask, interior_mask_z=base.interior_mask_z,
+        f=base.f, wet_mask=base.wet_mask, wet_mask_z=base.wet_mask_z,
+        interior_mask_z=base.interior_mask_z,
         dz_denom_interior=base.dz_denom_interior,
         dz_bnd_top=base.dz_bnd_top, dz_bnd_bot=base.dz_bnd_bot,
         d2z_hm=base.d2z_hm, d2z_hp=base.d2z_hp, d2z_denom=base.d2z_denom,

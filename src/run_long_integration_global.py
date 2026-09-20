@@ -43,7 +43,12 @@ import jax.numpy as jnp
 import numpy as np
 
 from config import DEFAULT_CONFIG, GlobalGridConfig, PhysicsConfig
-from forcing import BULK_LAMBDA_DEFAULT, air_temp_profile, heat_flux_meridional
+from forcing import (
+    BULK_LAMBDA_DEFAULT,
+    air_temp_profile,
+    heat_flux_meridional,
+    ocean_zonal_mean,
+)
 from grid import global_grid_dims, make_global_grid
 from jax_solver_global import JaxStateG, make_solver_global
 from wind_reanalysis import real_wind_forcing
@@ -539,14 +544,7 @@ def main():
     S_ref_surf = None
     if args.sss_restore_days > 0.0:
         if args.sss_restore_zonal:
-            wm = np.asarray(grid.wet_mask, dtype=np.float64)
-            prof = np.full(grid.ny, np.nan)
-            for j in range(grid.ny):
-                wet_j = wm[:, j] > 0.5
-                if wet_j.any():
-                    prof[j] = S_sss[wet_j, j].mean()
-            good = np.where(~np.isnan(prof))[0]
-            prof = np.interp(np.arange(grid.ny), good, prof[good])
+            prof = ocean_zonal_mean(grid, S_sss)
             S_ref_surf = np.broadcast_to(prof[None, :], (grid.nx, grid.ny)).copy()
             print(f"  SSS restoring: tau={args.sss_restore_days:g}d, "
                   f"target=ZONAL WOA SSS "

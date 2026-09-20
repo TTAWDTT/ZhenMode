@@ -98,6 +98,7 @@ ocean-solver/
 |   +-- woa_data.py          # WOA2023 climatological initial fields
 |   +-- bench_climatology_global.py     # climatology scoring
 |   +-- fetch_sla_monthly.py / fetch_ssh_abs_monthly.py  # altimetry fetchers
+|   +-- erddap_fetch.py      # shared retry/backoff download helper for the above
 +-- tests/                   # pytest suite
 +-- docs/                    # Current mainline documentation (see docs/README.md)
 +-- archive/

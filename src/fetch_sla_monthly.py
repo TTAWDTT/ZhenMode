@@ -3,41 +3,31 @@
 Covers the N Pacific window matching the global-model verification region:
 lat 15-55N, lon 120-180E, 0.25-deg grid, 12 monthly means + the annual mean.
 
-Rate-limited upstream (HTTP 429 observed) -> sequential fetches with backoff
-and per-month disk cache in data/sla_npac/.
+Rate-limited upstream (HTTP 429 observed), so the download goes through the
+shared sequential fetch-with-backoff in erddap_fetch, with a per-month disk
+cache in data/sla_npac/.
 """
 import os
-import time
-import urllib.request
 
 import netCDF4
 import numpy as np
 
+from erddap_fetch import fetch
+
 CACHE_DIR = "data/sla_npac"
+DATASET = "nesdisSSH1day"
+ERDDAP = "https://coastwatch.pfeg.noaa.gov/erddap/griddap"
 
 
 def fetch_month(month: int, retries: int = 6) -> str:
     fn = os.path.join(CACHE_DIR, f"sla_2023-{month:02d}.nc")
-    if os.path.exists(fn) and os.path.getsize(fn) > 100_000:
-        return fn
     # ERDDAP constraint syntax: restrict the time axis with a month window
     # (days 1-28 exist in every month, so one request covers all of them).
-    url = (f"https://coastwatch.pfeg.noaa.gov/erddap/griddap/nesdisSSH1day.nc"
-           f"?sla[(2023-{month:02d}-01):(2023-{month:02d}-28)][(15):(55)][(120):(180)]")
-    for k in range(retries):
-        try:
-            r = urllib.request.urlopen(url, timeout=240)
-            data = r.read()
-            with open(fn, "wb") as f:
-                f.write(data)
-            print(f"  {fn}: {len(data)/1e6:.1f} MB")
-            time.sleep(12)  # politeness + 429 avoidance
-            return fn
-        except Exception as e:  # noqa: BLE001
-            wait = 30 * (k + 1)
-            print(f"  attempt {k+1} failed ({e}); backing off {wait}s")
-            time.sleep(wait)
-    raise RuntimeError(f"fetch failed for month {month}")
+    url = (f"{ERDDAP}/{DATASET}.nc"
+           f"?sla[(2023-{month:02d}-01):(2023-{month:02d}-28)]"
+           f"[(15):(55)][(120):(180)]")
+    return fetch(url, fn, min_bytes=100_000, retries=retries,
+                 politeness_s=12.0, label=f"sla month {month}")
 
 
 def main() -> None:
