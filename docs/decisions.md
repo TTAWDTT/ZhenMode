@@ -116,6 +116,13 @@ zero gradient across the floor and the one-sided bottom derivative gets the
 correct, stable sign. The background diffusion/convective BC is left as-is; its
 ghost pull is ~0.006 K/day (separate, smaller issue).
 
+One edge case worth stating: `_fill_ghost_bottom` locates the bottom wet
+level as `max(k where wet)`, which is 0 for an entirely dry column, so such a
+column is filled with its own node-0 value rather than left alone. Every caller
+masks the result with `wet_mask_z` (or gates the face on both cells being wet),
+so a dry column's fill never reaches the solution -- but the operator itself is
+only meaningful on a column with at least one wet cell.
+
 ## D9 — Vertical diffusion must telescope (interface-flux form)
 
 The node-form `_d2_dz2` integrated with `dz_node` weights does not telescope on
@@ -126,6 +133,16 @@ defect, not a small error. `_d2_dz2_flux` uses the interface-flux form, whose
 column sum telescopes to `F[bot]-F[top] = 0` for ANY kappa and ANY field.
 `conservative_kv=True` selects it in both the L half-step and the N residual;
 the default (False) keeps legacy bit-exact traces.
+
+The Strang split needs the matching SUBTRACTION. `_compute_tracer_tendency`
+includes `kappa_v*d2/dz2` (it is a physical term), and the linear half-step
+applies it over `dt/2` twice, so the N residual has to remove it or the step
+runs vertical diffusion at 2x. Measured coefficient of `kappa_v*d2/dz2` per step
+before the fix: 1.88-2.02 (and 2.12 for the momentum `nu_v` analogue). The
+biharmonic is the mirror case: it is an L-step-only term, so it must NOT appear
+in the residual -- a `+kappa_bi*biharm` there would be re-applied by `N(dt)` and
+cancel the L-step damping exactly (`-dt/2 + dt - dt/2 = 0`), making it a silent
+no-op.
 
 ## D10 — Convective adjustment must telescope, and should be localized
 
@@ -173,6 +190,15 @@ legacy default (`n_nu = n_subcyc` = 24 substeps at dt=3600 / dt_bt=150) puts the
 CFL LHS at 0.136, a 3.7x margin under the 0.5 FTCS bound; the right-sized count
 is ~6 substeps at the same margin, i.e. 4x fewer Laplacian pairs per half-step.
 
+`nu_h` must act on the FULL 3D baroclinic velocity, not on the depth-averaged
+barotropic state. The subcycle carries no `nu_h`: the baroclinic shear (which
+`nu_h` is really there to damp) is invisible to the depth mean, so putting it
+there damped only the depth-mean flow while the 3D shear grew unchecked
+(real-grid +0.65 m/s per step at a trench node, 154.5E 11.5S k=12) and blew up
+through tracer advection by step 15. It instead runs in the L half-steps on the
+full 3D field, subcycled `nu_nsub` times, which satisfies the explicit diffusion
+CFL while acting on the shear.
+
 ## D13 — Stage-2 advection velocity and the column heat leak
 
 The raw stage-2 predictor `u_pred = u + du1*dt` has `col_div(u_pred) = O(dt)`,
@@ -187,6 +213,17 @@ of the one-step interior heat change (-1123 ZJ/yr -> ~0).
 `freeze_adv_vel=True` is the cheaper alternative for the same leak: it freezes
 the tracer stage-2 velocity at the old (u, v), making the tracer RK2 consistent
 with the momentum RK2 (both stages old-velocity).
+
+`_project_column_divergence` uses the EXACT column divergence (the per-layer
+masked `_divergence_conservative` summed with `dz_node`), not a constant-H 2D
+divergence: the layer masking makes the two differ by ~40% at coastlines, and
+that residual is what the closure exists to remove. The CG solves the
+area-weighted Poisson problem
+`Div_col(Grad_conservative(psi)) = col_div_h(u,v)/(dt*g)` for a surface-pressure
+potential, then applies `(u,v) -= dt*g*grad(psi)`. The iteration count is fixed
+rather than a tolerance loop, for predictable per-step cost: the stage-2 leak
+saturates at -40 ZJ/yr (from -2238) for `n_iter >= 120`, so 150 is past the knee
+and the corrected field's column divergence sits at the CG residual (~1e-11).
 
 ## D14 — Face-gated horizontal gradients for advection
 
@@ -216,6 +253,12 @@ term, is exactly conservative, and matches the continuity-consistent tracer
 equation the free-surface subcycle already solves. Momentum keeps the advective
 form, because the vector-invariant scheme needs it.
 
+Momentum keeps the advective form for a different reason than the tracer: the
+flux form `-div(u u)` carries a spurious `u*div_h` source. Its vertical gradient
+stays the bare `_d_dz` on a ghost-filled field, because `w` is masked to zero in
+ghost layers and the terms are multiplied by `wet_mask_z`, so a wet/ghost
+vertical face carries no advective flux whatever `dT/dz` it reads.
+
 ## D16 — Donor-cell vertical tracer flux
 
 Centered vertical face values fail twice:
@@ -244,6 +287,20 @@ tendency. Left out of the budget it is a T-INDEPENDENT inflow of the deep value
 into the surface node wherever `Fz[0] != 0` (measured: +16.47 K per 600 s
 substep, linear forever). The MOM-style closure carries the surface cell's own
 value, `Fz_top = Fz[0]·T[0]`.
+
+The advective term is subcycled `adv_nsub` times (frozen velocity and frozen
+horizontal structure; only the advected field evolves, which is what the CFL
+constrains) so that `dt*(|u|/dx + |v|/dy + w/dz) < ~0.5` per substep. The
+binding term is `w/dz` in the 5 m surface layer: at dt=3600 s equatorial
+upwelling `w ~ 2e-3 m/s` gives `dt*w/dz = 1.3-1.8 > 1`, and the real-grid split
+run ran away +0.3 K/step at (310.5E, 6.5N) from step 21 and went to NaN by step
+29. `adv_nsub` is sized from a nominal `w_max = 4e-3 m/s` (upwelling plus
+western-boundary downwelling overshoot) at a 0.5 target; the horizontal terms
+(~1e-6/s at |u| ~ 1 m/s) are negligible. At the historical dt=60-300 s the CFL
+was 0.02-0.18, so `adv_nsub = 1` and that path is untouched. Diffusion
+(`kappa_h*dt/dz^2 << 0.5`), the surface fluxes (dt-weighted, non-CFL), the
+GM/Redi skew flux (CFL 0.58 at dt=3600) and convection (own `conv_nsub`) all stay
+inside their bounds at dt=3600 and are evaluated once.
 
 ## D17 — Slope limiter: DM95 taper, not a tanh clip
 
@@ -370,3 +427,167 @@ one-sided no-flux form. Regression: `tests/test_vertical_bc.py`.
 This is the one intentional break of the `conservative_kv=False` "bit-exact
 legacy trace" property: any run with `kappa_v > 0` or `nu_v > 0` changes in the
 bottom wet layer of every column shallower than the deepest level.
+
+## D21 — Polar cap: wet-point zonal mean, cos^2 taper, 3D mask, capped eta first
+
+The lat-lon grid's `dx = R*cos(lat)*dlon` goes to zero at the poles, so the
+explicit shallow-water CFL `dt < dx/sqrt(gH)` is unattainable on the edge rows.
+The standard lat-lon OGCM remedy (MOM6 polar cap / Arctic fold) replaces the
+unresolved polar dynamics with a zonally-uniform cap value, which
+`_apply_polar_cap` builds for 2D and 3D fields alike.
+
+Three things it must get right:
+
+- **Average over WET points only, and write back to WET points only.** The polar
+  rows are ~30% land. A naive all-column mean mixes ocean (`eta != 0`) with land
+  (`eta == 0`), forcing a zonally-uniform value that creates a spurious PGF at
+  EVERY coastline point in the band — wind-driven barotropic energy injection
+  exactly there. This was the wind-forced blow-up nucleation (`max|u|` diverged
+  at 79.5N 124.5E, a wet point flanked by land, sub-inertial, CFL-safe).
+- **Use the 3D mask for a 3D field.** `wet_mask` is column-wide; with
+  `polar_cap_rows=2` at 4000 m about a third of the band columns are ghost there,
+  and their `T_ref` fill (15.0 C) dragged the cap T to ~+15 C — a meridional
+  cliff against the -0.3 C WOA deep T that seeded the Southern-Ocean cold-pole
+  blow-up (d170 collapse).
+- **Taper the cap edge.** `_polar_cap_weights` gives weight 1.0 on the
+  `polar_cap_rows` poleward rows and a cos^2 ramp to 0 over the next
+  `polar_cap_taper` rows. A hard cutoff (`polar_cap_taper=0`) is a cliff at
+  `j = ncap` that `_d_dy` amplifies exponentially — the pole-wall blow-up.
+
+The cap is applied as a CONSISTENT TRIPLE: cap `eta` first, then drive the
+barotropic momentum update from the CAPPED eta's pressure gradient, then cap the
+resulting `ubt`/`vbt`. Capping all three to independent zonal means leaves `eta`
+zonally uniform in the band while `ubt`/`vbt` carry a different zonal structure,
+so `div(ubt)` and `grad(eta)` are dynamically inconsistent, the mismatch is a
+spurious PGF, and the free mode gains energy (cap-ON NaN at step 534 vs cap-OFF
+800). With the capped eta driving the PGF, `ubt`/`vbt` are consistent with `eta`
+by construction and their cap is a CFL-safety smoothing rather than an
+independent forcing.
+
+Implementation note: `_polar_cap_weights` builds `jnp.ones`/`linspace` at
+runtime, which are float64 under `jax_enable_x64`; they are cast to the field's
+dtype or the blend promotes the whole field to f64 and silently defeats the fp32
+state/params cast.
+
+The 2D and 3D copies of the cap used different denominators for the same mean
+(`max(sum(w), 1)` vs `sum(max(w, 1e-12))`). They now share `max(sum(w), 1)`,
+which is exactly "divide by the number of wet cells" with a guard for an all-dry
+row; the change is a 2.4e-13 relative difference.
+
+## D22 — Free surface: forward-backward, implicit barotropic Coriolis, implicit drag
+
+**Forward-backward (Sielecki), not forward-forward.** Forward-forward coupling
+(both eta and ubt from the old state) has amplification
+`|lambda| = sqrt(1 + (dt*c*k)^2) > 1` for ALL k — unconditionally unstable for
+free gravity waves, and CFL does not save forward-Euler, only centered/leapfrog
+schemes. At dt=60 s the basin-scale seiche grew ~1.0023/step, i.e. ~27x/day; a
+no-wind 1 m eta bump reached 5.5 m in one day (mean ~0, so mass was conserved but
+the amplitude grew). Forward-backward flips the trace of the amplification matrix
+to `2 - dt^2*g*H*k^2`, giving `|lambda| = 1` (neutral) under CFL < 1, which is
+the standard OGCM discretization (MOM6/ROMS/NEMO); bottom drag then decays the
+free mode (`|lambda| ~ 0.97/step`) so a perturbed eta relaxes to the steady
+wind-driven setup. No iterative Helmholtz solve is needed.
+
+CFL: `dt < dx/sqrt(g*H) ~ 85-560 s`, so dt=60 s is safe on the global 1 deg grid.
+
+**Implicit barotropic Coriolis.** The shallow-water momentum equation is
+`du/dt - f*v = -g*grad(eta) + F`, `dv/dt + f*u = ...`. Treating Coriolis
+implicitly (unconditionally stable, energy-neutral) gives
+`u_new = (u_star + f*dt*v_star) / (1 + (f*dt)^2)` and the mirror for `v`.
+Without it the barotropic PGF has no geostrophic balance: `F_rho ~ 4e-4 m/s^2`
+drives a convergent `ubt` that grows eta monotonically (Coriolis was 180x too
+small) into exponential eta/ubt growth and then advection overshoot. This is the
+barotropic analogue of the 3D rotation in `_linear_half_step`.
+
+**Implicit linear bottom drag, in split mode only.** The residual's `-r_bot*u`
+is forward-Euler, whose amplitude `1 - r*dt` flips past the stability bound
+`|1 - r*dt| <= 1` at `r*dt > 2` (and the RK2 form `1 - rdt + (rdt)^2/2` past
+`r*dt = 2` as well). At the historical dt=60-300 s, `r*dt = 0.06-0.3` and
+explicit was fine; the mode-split dt=3600 s gives `r*dt = 3.6`, and the bottom
+layer amplified ~2.6x/step with sign alternation (smoke-test growth 3x/step at
+8E 30N k=7). Both RK2 stages evaluate the residual at the OLD velocity, so the
+drag part is identical in `du1`/`du2`: strip it from both stages and apply the
+exact `exp(-r_bot*dt)` decay after the RK2 update.
+
+## D23 — Mass-conserving sponge and eta relaxation
+
+**The lateral sponge was adding volume.** A bare `eta *= exp(-rate*dt)` changes
+global volume by `dV = sum(A*eta*(decay-1))` over the band. The wind setup makes
+the band-mean eta NEGATIVE on both hemispheres (subpolar lows, and the
+south-of-westerlies ACC minimum), so the sponge added volume every step: +0.377 m
+of global mean-eta drift over 90 d, a steady ~10000 km^3/5d from day 5 that
+matches the eta-decay leak budget. `_refill_volume` adds the removed volume back
+UNIFORMLY over the wet domain: total volume is exactly conserved, the local
+anomaly damping is unchanged, and a uniform eta offset has zero PGF so the
+dynamics are untouched.
+
+**Semi-enclosed-sea eta relaxation.** Gibraltar is 14 km wide — sub-grid on a
+1 deg mesh. The one-cell strait cannot support the observed two-layer exchange,
+and the residual pressure mismatch drives a spurious NET outflow that drains the
+Mediterranean linearly (~+0.026 m/d; `max|eta| = 9.5 m` at d365 in `gpu365_glap`,
+which would trip the 15 m watchdog at ~d500). This is not an instability but a
+coarse-grid artifact that has to be BOUNDED for multi-year integrations. The
+MOM-family remedy is a Rayleigh relaxation of eta toward the basin equilibrium
+INSIDE the sea only (`eta *= exp(-rate*dt*mask)`, with eta = 0 the correct
+equilibrium because the basin-mean PGF at Gibraltar then matches the Atlantic
+open boundary at the same latitude), compensated by the same `_refill_volume`
+uniform refill. The mask tapers 1 -> 0 over `eta_relax_buffer` degrees around the
+box edge so the relaxation itself cannot seed a PGF cliff at the boundary.
+
+## D24 — Surface boundary conditions: bulk heat flux and salinity restoring
+
+Both surface fluxes are applied to the TOP NODE only, through `surface_mask`, and
+both are divided by the top cell's heat capacity. `heat_factor =
+1/(RHO_0*C_P*dz_surface)` turns a surface heat flux [W/m^2] into a tendency on
+the surface node; the bulk flux is the Haney/Barnier form
+`lambda_bulk*(T_atm - T[0])*heat_factor*surface_mask`, a genuine SST negative
+feedback.
+
+Surface salinity restoring is the same shape with a TRUE salt flux (psu/s, no
+`heat_factor`, because salinity has no `rho*cp`):
+`dS/dt += restore_coef_S*(S_ref_2d - S[0])*surface_mask`, i.e. Haney relaxation
+of SSS to climatology with `tau = 1/restore_coef_S`. It replaces the v0.1
+solver's missing surface salinity BC, which let SSS drift -0.9 psu/kyr. There is
+no SST restoring — the bulk flux is the only surface thermal BC.
+
+## D25 — Grid-scale de-aliasing: 2/3 FFT in lon, 5-pt binomial in lat
+
+Nonlinear products in physical space (`u*du/dx`, ...) amplify the 2-dx grid-scale
+mode. The lon axis is periodic and uniformly spaced, so a 2/3-rule FFT there is
+exact and faithful. The lat axis is NOT periodic (closed no-flux N/S walls) and
+not uniformly spaced, so an FFT there would mangle the field; a 5-pt binomial
+low-pass `[1,4,6,4,1]/16` substitutes, with edge padding that mirrors the wall
+ghost cell of `_d_dy`/`_laplacian_h`. Its transfer function is 0 at the Nyquist
+(2-dx) wavenumber, ~0.01 near Nyquist and ~0.92 at 8-dx, so it kills the grid
+scale while preserving resolvable structure.
+
+`_dealias_h_fd` is applied at exactly THREE call sites, all pointwise nonlinear
+products: `adv_u` and `adv_v` (`_advection_flux_form`) and the GM/Redi skew-flux
+tendency. It is deliberately NOT applied to the diagnosed `w`
+(`_compute_vertical_velocity`) or to the tracer advection (`_advection_scalar`):
+both are flux-form operators whose whole point is an exact discrete telescoping
+(D7, D15, D16), and a non-local FFT + low-pass filter would destroy it.
+
+## D26 — Barotropic density PGF: transport-consistent wet-column form
+
+The barotropic density forcing is the depth average, over the WET column, of the
+SAME face-gated 3D baroclinic PGF the 3D momentum feels:
+`F_rho = (1/H_sw) * SUM_k pgf3d_layer_k * dz_k * wet_iface_k`, normalized by
+`H_sw` to match `ubt = transport/H_sw` in `_barotropic_velocity`.
+
+The form it replaced was `F = -grad(p_bc_avg)/RHO_0` with `p_bc_avg` the
+`H_sw`-normalized trapezoidal average of the baroclinic pressure over ALL 13
+layers, ghost water included. Because `p_bc` is CONSTANT below the seafloor (rho
+is masked before the cumsum, so `dp = 0` there), the ghost part contributes
+`((H_sw-H)/H_sw) * grad(p_bc_bottom)`. At shelf breaks `grad(p_bc_bottom)` is
+O(5e3 Pa / 1e5 m), so the ghost term alone is O(3e-5 m/s^2). It displaces the
+implied equilibrium sea level `eta_eq = -p_bc_avg/(g*rho0)` by O(1-2 m) between
+adjacent cells across every isobath step, and the free-surface step piles eta up
+at each jump; near the equator (f -> 0) Coriolis cannot geostrophically cage the
+pile-up, and eta ran 2.5 -> 12.25 m in 15 d at 47.5W 7.5N on the 2000 m isobath
+off the Amazon fan (the "day-75 Amazon-fan eta blob"). The transport-weighted
+form contains no ghost water and no below-bottom constant, so the spurious
+isobath forcing vanishes; the remaining wet-column form stress is the physical
+(JEBAR-type) coupling, ~10x smaller at the blob site. Measured at the d75 blob
+state, cell (311,66), H=2000 m, H_sw=4000 m: `|F_old| = 4.6e-5` ->
+`|F_new| = 4.9e-6 m/s^2`; global mean `|F|` 1.3e-5 -> 6.2e-6 m/s^2.
