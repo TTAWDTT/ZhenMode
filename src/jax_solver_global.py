@@ -1735,6 +1735,33 @@ def _apply_polar_cap(field, wm, p):
     return jnp.concatenate([south, field[:, nb:-nb], north], axis=1)
 
 
+def nu_nsub_for_2d_cfl(nu_h, dt, dx_2d, dy, margin=0.25):
+    """Subcycle count that keeps the explicit nu_h Laplacian inside its FTCS bound.
+
+    The 5-point Laplacian's most negative eigenvalue sums BOTH metric terms, so
+    the split L half-step is stable iff
+    ``nu_h * dt_sub * (1/dx^2 + 1/dy^2) <= margin`` with ``dt_sub = dt/(2*n)``.
+    The worst point is the ZONAL spacing at the highest latitude -- ``dx =
+    dy*cos(lat)``, so at lat_max=60 the zonal spacing is HALF the meridional one
+    and its term is 3.9x the meridional one in the sum. Sizing from ``dy`` alone
+    (a scalar) misses that: at nu_h=5e6, dt=3600, lat_max=60 it returned 6, an
+    LHS of 0.592 -- OVER the 0.5 bound. This returns 15 (LHS 0.237).
+
+    The polar cap hides the symptom by zonally averaging exactly those rows, so
+    the undersizing stays latent while the cap does its job. Measured on the
+    real relief over 4 days: n=6 is indistinguishable from n=24 (both 1.563) with
+    the cap on, and FAIL_BLOWUP at step 36, peak pinned to j=ny-1, once the cap's
+    north band is mis-anchored. Neither defect alone moves the answer. (D21)
+
+    Returns the count for the split path; the monolithic path applies nu_h once
+    per half-step and is sized by dt=60-300 instead. (D12)
+    """
+    inv_dx2_max = float(np.max(np.asarray(dx_2d) ** -2))   # smallest dx wins
+    inv_dy2 = 1.0 / float(dy) ** 2
+    return max(1, int(np.ceil(nu_h * (dt / 2.0)
+                               * (inv_dx2_max + inv_dy2) / margin)))
+
+
 def _step_impl(state, p):
     """Strang splitting: L(dt/2) -> N(dt) -> L(dt/2).
 
@@ -1979,14 +2006,12 @@ def make_solver_global(grid, physics, dt, forcing=None,
     state_dtype = jnp.float32 if dtype == 'float32' else jnp.float64
 
     # ── nu_h subcycle right-sizing (split L half-steps) ──
-    # Legacy (None): n_nu = n_subcyc (24 at dt=3600/dt_bt=150), explicit diffusion
-    # CFL LHS = nu_h*dt/(2*n_subcyc*dy^2) ~ 0.136 at nu_h=5e6, dy=111 km -- a 3.7x
-    # margin under the 0.5 bound. nu_nsub='cfl' sizes from the actual metric worst
-    # case with the same 2x safety margin, n = ceil(nu_h*dt/(0.25*dy^2)) (~10
-    # substeps here). An int is honored verbatim (probe/benchmark override). (D12)
+    # Legacy (None): n_nu = n_subcyc (24 at dt=3600/dt_bt=150) -- comfortably
+    # inside the bound, but ~1.6x more Laplacian pairs than the bound needs.
+    # nu_nsub='cfl' right-sizes from the true worst metric point (see
+    # nu_nsub_for_2d_cfl). An int is honored verbatim (probe/benchmark). (D12)
     if nu_nsub == 'cfl':
-        dy_min = float(np.min(np.asarray(grid.dy)))
-        nu_nsub = max(1, int(np.ceil(physics.nu_h * dt / (0.25 * dy_min ** 2))))
+        nu_nsub = nu_nsub_for_2d_cfl(physics.nu_h, dt, grid.dx_2d, grid.dy)
     elif nu_nsub is not None:
         nu_nsub = max(1, int(nu_nsub))
 

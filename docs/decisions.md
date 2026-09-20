@@ -187,8 +187,14 @@ baroclinic dt — dt=3600 s is then safe at 1 deg — for ~10x wall-clock.
 
 `nu_nsub` right-sizes the nu_h subcycling inside the split L half-steps. The
 legacy default (`n_nu = n_subcyc` = 24 substeps at dt=3600 / dt_bt=150) puts the
-CFL LHS at 0.136, a 3.7x margin under the 0.5 FTCS bound; the right-sized count
-is ~6 substeps at the same margin, i.e. 4x fewer Laplacian pairs per half-step.
+CFL LHS at 0.148, a 3.4x margin under the 0.5 FTCS bound; `nu_nsub_for_2d_cfl`
+right-sizes to 15 at 1 deg under the same 0.25 margin, i.e. 1.6x fewer Laplacian
+pairs per half-step. Sizing from `dy` alone is NOT that bound: the 5-point
+Laplacian sums BOTH metric terms, and the zonal one is the finite one -- 3.9x
+the meridional term at lat 59.5 deg, where `dx = dy*cos(lat)` is half of `dy`.
+The pre-fix formula did exactly that and returned 6, an LHS of 0.592 -- over the
+bound. It stayed invisible for D21's reason: the polar cap zonally averages the
+rows in question, so nothing diverged as long as the cap was doing its job.
 
 `nu_h` must act on the FULL 3D baroclinic velocity, not on the depth-averaged
 barotropic state. The subcycle carries no `nu_h`: the baroclinic shear (which
@@ -469,17 +475,33 @@ Four things it must get right:
   the taper monotonicity; every other solver test runs with
   `polar_cap_rows=0`, which is how the reversal survived.
 
-The reversal is also LATENT in the configuration the project actually ran.
-Production long runs use `--dt 60` WITHOUT `--mode-split` (the archived G3
-365-day command, docs/archive/g365d_work_summary_zh.md), and the monolithic
-path is stable with the wall row left uncapped: re-running the UNFLIPPED code
-on the real ETOPO relief for the same 2 days gives max|u| 1.384 with the peak
-in the tropics, indistinguishable from the flipped run. Under `--mode-split`
-the same unflipped code dies at day 2.1 (dt=3600) or after ~136 steps
-(dt=600), always with the peak pinned to the north wall row. So no production
-run could have caught it, and the configuration that does catch it is the one
-the project needs next: mode split is what makes a 60x longer spin-up
-affordable.
+The reversal was LATENT -- but not because the long runs were monolithic. They
+were not. The 100-yr spin-ups ARE mode split: `--dt 3600 --mode-split
+--use-scan`, `n_subcyc = 24` x `dt_bt = 150` s (docs/archive/g365d_work_summary_zh.md
+section 10, the 10-yr `global_tenyr_ms_gm` run, 87600 steps, PASS;
+docs/spinup_plan_zh.md, ~14 h per 100 model years). Only the archived G3 365-day
+acceptance run on node 012 was monolithic at `--dt 60`, because it predates the
+split.
+
+What kept 100 model years of mode-split integration alive is the `nu_nsub`
+default. `--nu-nsub` did not exist until `286f9b2` (09-10), and every run since
+leaves it at `None`, i.e. `n_nu = n_subcyc` = 24 -- INSIDE the diffusion bound
+(LHS 0.148 vs 0.5, D12). An uncapped wall row over the bound is an instability;
+an uncapped wall row inside it is just an uncapped wall row.
+
+Measured as a 2x2 on the real ETOPO relief, mode split, dt=3600, no forcing,
+the same 4 days (`probe2`):
+
+| north cap | n_nu = 24 (the default) | n_nu = 6 (pre-fix 'cfl') |
+| --- | --- | --- |
+| pole-anchored (this fix) | 1.563 | 1.563 |
+| unflipped (the old code) | 1.563 | FAIL_BLOWUP at step 36; 1.5e10 by step 52, peak at j=ny-1 |
+
+Neither defect alone moves the answer; together they are a day-2 blow-up. The
+cap is what hides the undersizing (it zonally averages exactly those rows), and
+the undersizing is what makes the cap's orientation matter. Both are fixed:
+`tests/test_polar_cap.py` pins the orientation, `tests/test_nu_nsub_cfl.py`
+pins the sizing.
 
 The cap is applied as a CONSISTENT TRIPLE: cap `eta` first, then drive the
 barotropic momentum update from the CAPPED eta's pressure gradient, then cap the

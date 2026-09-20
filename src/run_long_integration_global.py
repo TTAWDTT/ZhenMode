@@ -246,7 +246,8 @@ def main():
     ap.add_argument("--nu-nsub", default=None,
                     help="nu_h subcycle count in split L half-steps: default "
                          "= legacy (n_subcyc=24); 'cfl' right-sizes from the "
-                         "explicit-diffusion CFL (~10, 2.4x fewer laplacians); "
+                         "explicit-diffusion CFL (15 at 1 deg, 1.6x fewer "
+                         "laplacians); "
                          "int = verbatim")
     ap.add_argument("--dtype", default="float64", choices=["float64", "float32"],
                     help="compute dtype (default float64 = legacy bit-exact; "
