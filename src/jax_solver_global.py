@@ -1668,13 +1668,19 @@ def _explicit_full_step(state, p, dt):
 
 
 def _polar_cap_weights(ncap, ntaper):
-    """Blend weights for the tapered polar cap (south end; north is mirrored).
+    """Blend weights for the tapered polar cap, in POLE-INWARD order.
 
     1D array of length ncap+ntaper, the blend fraction of the zonal mean applied to
     each row from the pole inward: rows [0:ncap] get weight 1.0 (full zonal average,
     killing the cos(lat)->0 metric singularity), rows [ncap:ncap+ntaper] ramp 1->0
     via a cos^2 taper. A hard cutoff (ntaper=0) leaves a cliff at j=ncap that _d_dy
     amplifies exponentially. (D21)
+
+    The order is a caller contract, not a convenience: the weight at index 0
+    belongs on the POLE ROW. The south band slices pole-inward and uses this
+    array as-is; the north band slices pole-FIRST and must reverse it. Applying
+    the north band unflipped leaves the wall row effectively uncapped -- see
+    _apply_polar_cap.
     """
     if ncap <= 0:
         return jnp.zeros(0)
@@ -1704,19 +1710,28 @@ def _apply_polar_cap(field, wm, p):
     # to the field's dtype or the blend promotes the whole field to f64
     # (silently defeats the fp32 state/params cast downstream).
     wts = _polar_cap_weights(ncap, p.polar_cap_taper).astype(field.dtype)
-    wts_b = wts.reshape((1, nb) + (1,) * (field.ndim - 2))
 
-    def _cap_band(f, w):
+    def _cap_band(f, w, wts_band):
         # Wet-point zonal mean over the FULL band (one value per (row, ...)),
         # broadcast back; land/ghost stays at its masked value.
         s = f * w
         wsum = jnp.maximum(jnp.sum(w, axis=0, keepdims=True), 1.0)
         zmean = jnp.sum(s, axis=0, keepdims=True) / wsum
         zmean = jnp.broadcast_to(zmean, f.shape) * w
-        return wts_b * zmean + (1.0 - wts_b) * s
+        wb = wts_band.reshape((1, nb) + (1,) * (field.ndim - 2))
+        return wb * zmean + (1.0 - wb) * s
 
-    south = _cap_band(field[:, :nb], wm[:, :nb])
-    north = _cap_band(field[:, -nb:], wm[:, -nb:])
+    # _polar_cap_weights orders the blend pole-inward (weight 1 on the POLE
+    # row, tapering into the interior). The south band already slices inward
+    # from its pole, so the order matches; the north band slices POLE-FIRST
+    # (j=ny-1 back toward the interior), so its weights must be flipped.
+    # Unflipped, the north cap spends its full zonal mean nb-1 rows INSIDE
+    # the wall and leaves the wall row itself at weight ~0.15 of it -- i.e.
+    # effectively uncapped. The wall row then grows a 2dx zonal checkerboard
+    # (measured on the real ETOPO relief: peak |u| pinned to j=ny-1, 1.0 ->
+    # 24.8 m/s between day 1.0 and day 2.0). (D21)
+    south = _cap_band(field[:, :nb], wm[:, :nb], wts)
+    north = _cap_band(field[:, -nb:], wm[:, -nb:], jnp.flip(wts))
     return jnp.concatenate([south, field[:, nb:-nb], north], axis=1)
 
 

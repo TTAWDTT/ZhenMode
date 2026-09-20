@@ -436,7 +436,7 @@ The standard lat-lon OGCM remedy (MOM6 polar cap / Arctic fold) replaces the
 unresolved polar dynamics with a zonally-uniform cap value, which
 `_apply_polar_cap` builds for 2D and 3D fields alike.
 
-Three things it must get right:
+Four things it must get right:
 
 - **Average over WET points only, and write back to WET points only.** The polar
   rows are ~30% land. A naive all-column mean mixes ocean (`eta != 0`) with land
@@ -453,6 +453,33 @@ Three things it must get right:
   `polar_cap_rows` poleward rows and a cos^2 ramp to 0 over the next
   `polar_cap_taper` rows. A hard cutoff (`polar_cap_taper=0`) is a cliff at
   `j = ncap` that `_d_dy` amplifies exponentially — the pole-wall blow-up.
+- **Anchor the weights at the POLE.** `_polar_cap_weights` returns them in
+  pole-inward order. That is the row order of the SOUTH band's slice
+  (`field[:, :nb]` starts at the pole), but the REVERSE of the north band's
+  (`field[:, -nb:]` starts `nb-1` rows INSIDE the wall), so the north weights
+  must be flipped. Unflipped, the north cap spends its full zonal mean a row
+  band inside the wall and leaves the wall row itself at weight 0.15 — i.e.
+  effectively uncapped. The wall row then grows a 2dx zonal checkerboard
+  (`-0.67, +0.72, -0.71, +0.76, ...`) that doubles every step: on the real
+  ETOPO2022 relief at 1 deg / ny=120 the peak `|u|` sat pinned to `j=ny-1`,
+  1.0 -> 24.8 m/s between day 1.0 and day 2.0, `FAIL_BLOWUP` at day 2, while
+  the correctly-anchored south wall stayed flat at 0.3 m/s. With the flip the
+  same run is stable (30 days, `max|u|` saturating at 1.62 m/s).
+  `tests/test_polar_cap.py` pins the pole anchoring, the mirror symmetry and
+  the taper monotonicity; every other solver test runs with
+  `polar_cap_rows=0`, which is how the reversal survived.
+
+The reversal is also LATENT in the configuration the project actually ran.
+Production long runs use `--dt 60` WITHOUT `--mode-split` (the archived G3
+365-day command, docs/archive/g365d_work_summary_zh.md), and the monolithic
+path is stable with the wall row left uncapped: re-running the UNFLIPPED code
+on the real ETOPO relief for the same 2 days gives max|u| 1.384 with the peak
+in the tropics, indistinguishable from the flipped run. Under `--mode-split`
+the same unflipped code dies at day 2.1 (dt=3600) or after ~136 steps
+(dt=600), always with the peak pinned to the north wall row. So no production
+run could have caught it, and the configuration that does catch it is the one
+the project needs next: mode split is what makes a 60x longer spin-up
+affordable.
 
 The cap is applied as a CONSISTENT TRIPLE: cap `eta` first, then drive the
 barotropic momentum update from the CAPPED eta's pressure gradient, then cap the
@@ -468,6 +495,10 @@ Implementation note: `_polar_cap_weights` builds `jnp.ones`/`linspace` at
 runtime, which are float64 under `jax_enable_x64`; they are cast to the field's
 dtype or the blend promotes the whole field to f64 and silently defeats the fp32
 state/params cast.
+
+`_apply_polar_cap` takes the band weights as an argument (rather than closing
+over one shared `wts`) precisely so the north band can pass the flipped array;
+the two bands are otherwise the same code.
 
 The 2D and 3D copies of the cap used different denominators for the same mean
 (`max(sum(w), 1)` vs `sum(max(w, 1e-12))`). They now share `max(sum(w), 1)`,
