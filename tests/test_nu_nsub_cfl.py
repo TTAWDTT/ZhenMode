@@ -10,6 +10,14 @@ smaller one: `dx = dy*cos(lat)`, so `1/dx^2` is 3.9x `1/dy^2` at the poleward
 rows. The old formula returned 6 where the bound needs 15 -- an LHS of 0.592
 against the 0.5 FTCS bound, i.e. straight through it.
 
+The 0.5 bound is the conservative sum-of-worst-cases, not the real line: the
+realized most negative eigenvalue of this stencil on the ETOPO metric is
+1.4515e-9, 91.9% of it. Measured against the stencil itself the growth line is
+`nu_h*dts*|lam| > 2`, i.e. an LHS of 0.544, and the old count of 6 sits at
+0.592 -- 9% over, factor 1.177 per substep. Still unstable, but by a narrower
+margin than the bound suggests, which is why the last test checks the line the
+operator actually has rather than the one the inequality promises.
+
 That never surfaced in production, for two reasons: every long run left
 `--nu-nsub` at its default (`n_nu = n_subcyc` = 24, safely inside the bound),
 and the polar cap zonally averages exactly the rows that would diverge -- with
@@ -28,6 +36,9 @@ Invariants under test:
 4. The count scales with the drive (nu_h, dt), with the margin, and falls back
    to the meridional term when the zonal spacing is no longer the worst one:
    `test_count_scales_with_the_drive`.
+5. The pre-fix count is unstable against the REALIZED growth line, and both the
+   new count and the legacy default are not:
+   `test_old_count_is_over_the_realized_growth_line`.
 
 Run:  python -m pytest tests/test_nu_nsub_cfl.py -v
 """
@@ -50,7 +61,12 @@ DT = 3600.0           # baroclinic step of the split runs
 DT_BT = 150.0         # -> n_subcyc = 24
 N_SUBCYC = int(round(DT / DT_BT))
 MARGIN = 0.25         # nu_nsub_for_2d_cfl default
-FTCS_BOUND = 0.5      # 5-point explicit Laplacian, per sub-step
+FTCS_BOUND = 0.5      # 5-point explicit Laplacian, sum-of-worst-cases
+# Most negative eigenvalue of the real stencil on this metric, measured
+# 2026-09-20 on the ETOPO grid (full domain and the pole band agree to 4
+# digits). 91.9% of the conservative bound; the growth line is
+# nu_h*dts*|lam| > 2, i.e. LHS > 0.544 in the bound's units.
+LAM_MIN_REALIZED = -1.4515e-9
 
 
 def _metrics():
@@ -120,3 +136,23 @@ def test_count_scales_with_the_drive():
     # With the zonal spacing far coarser than dy, the meridional term is the
     # binding one: n = ceil(nu_h*dt/2/(dy^2*margin)) = 3.
     assert nu_nsub_for_2d_cfl(NU_H, DT, np.full((NX, NY), 10.0 * dy), dy) == 3
+
+
+def _grows(nu_h, dt, lam, n):
+    """|1 + nu_h*dts*lam| > 1 for one sub-step: does the mode amplify?"""
+    return abs(1.0 + nu_h * (dt / (2.0 * n)) * lam) > 1.0
+
+
+def test_old_count_is_over_the_realized_growth_line():
+    dx_2d, dy = _metrics()
+    n_fixed = nu_nsub_for_2d_cfl(NU_H, DT, dx_2d, dy)
+    n_old = _dy_only_count(NU_H, DT, dy)
+    print(f"[5] realized line: old n={n_old} grows="
+          f"{_grows(NU_H, DT, LAM_MIN_REALIZED, n_old)}, "
+          f"fixed n={n_fixed} grows={_grows(NU_H, DT, LAM_MIN_REALIZED, n_fixed)}")
+    # The pre-fix count IS unstable against the operator's own spectrum, so
+    # this is a real defect and not a rounding argument about the 0.5 bound.
+    assert _grows(NU_H, DT, LAM_MIN_REALIZED, n_old)
+    assert not _grows(NU_H, DT, LAM_MIN_REALIZED, n_fixed)
+    # And the count every long run actually used is inside the line too.
+    assert not _grows(NU_H, DT, LAM_MIN_REALIZED, N_SUBCYC)

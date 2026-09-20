@@ -192,9 +192,16 @@ right-sizes to 15 at 1 deg under the same 0.25 margin, i.e. 1.6x fewer Laplacian
 pairs per half-step. Sizing from `dy` alone is NOT that bound: the 5-point
 Laplacian sums BOTH metric terms, and the zonal one is the finite one -- 3.9x
 the meridional term at lat 59.5 deg, where `dx = dy*cos(lat)` is half of `dy`.
-The pre-fix formula did exactly that and returned 6, an LHS of 0.592 -- over the
-bound. It stayed invisible for D21's reason: the polar cap zonally averages the
-rows in question, so nothing diverged as long as the cap was doing its job.
+
+The pre-fix formula did exactly that and returned 6. Checked against the stencil
+itself rather than the conservative sum-of-worst-cases: the realized most
+negative eigenvalue on the ETOPO metric is 1.4515e-9 (91.9% of the 1.5794e-9
+bound), so the growth line is `nu_h*dts*|lam| > 2`, i.e. an LHS of 0.544 -- and
+6 substeps sit at 0.592, 9% over it, with a per-substep factor of 1.177 (2.66x
+per half-step, 2.36x per step once the cap is mis-anchored). Two conservative
+statements were therefore both slightly wrong in the same direction: the 0.5
+bound is not tight (0.544 is), and "over the bound" is not the same as "the run
+will die" -- the cap decides that. The count now lands at 15 (factor 0.13).
 
 `nu_h` must act on the FULL 3D baroclinic velocity, not on the depth-averaged
 barotropic state. The subcycle carries no `nu_h`: the baroclinic shear (which
