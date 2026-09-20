@@ -69,6 +69,15 @@ at the ETOPO2022 relief file with the `OCEAN_SOLVER_BATHYMETRY` environment
 variable, or drop it in `data/`. Without it, grid construction fails with a
 message naming that variable, and the data-dependent tests skip.
 
+To exercise the grid / bathymetry / remap tests without the real file,
+generate a clearly-labelled synthetic stand-in (it is **not** ETOPO and is
+only for the test suite):
+
+```bash
+python scripts/make_synthetic_bathymetry.py   # -> data/ETOPO_..._surface.nc.npz
+python -m pytest tests/ -q                    # 130 tests, none skipped
+```
+
 ## Resolution
 
 By default `--resolution` accepts integer multiples of the 0.1 deg ETOPO
@@ -103,7 +112,8 @@ ocean-solver/
 +-- docs/                    # Current mainline documentation (see docs/README.md)
 +-- archive/
 |   +-- regional/            # RETIRED regional spectral solver (not runnable, see its README)
-+-- scripts/                 # run_tests.py, status_board.py, publish_dashboard.py
++-- scripts/                 # run_tests.py, status_board.py, publish_dashboard.py,
+|                            # make_synthetic_bathymetry.py
 +-- dashboard/               # web run dashboard
 +-- configs/                 # CDO target grid description
 +-- results/                 # run outputs + figure scripts (gitignored, a few report figures are tracked)
