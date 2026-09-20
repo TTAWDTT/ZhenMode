@@ -1,8 +1,7 @@
 """
 Long-integration driver for the GLOBAL finite-difference solver (jax_solver_global).
 
-Companion to run_long_integration.py (regional pseudo-spectral). This driver
-runs the global 1° FD solver — built on the stable G2 config (lat_max=60,
+This driver runs the global FD solver — built on the stable G2 config (lat_max=60,
 no-flux N/S wall, nu_h=5e6 spin-up stabilizer, dt=60) — with the bulk air-sea
 heat flux thermodynamics from the closed arc. The whole point of the global
 domain is the non-circular A1/A2 zonal SST skill test: a global non-periodic
@@ -261,8 +260,10 @@ def main():
                          "host-to-device copy (measured ~1.2-1.4x on split runs)")
     ap.add_argument("--lat-max", type=float, default=LAT_MAX_DEFAULT)
     ap.add_argument("--resolution", type=float, default=None,
-                    help="horizontal grid spacing in degrees (ETOPO source is "
-                         "0.1°, so this must be a positive multiple of 0.1). "
+                    help="horizontal grid spacing in degrees. With the default "
+                         "--resolution-remap legacy this must be a multiple of "
+                         "the 0.1° ETOPO source grid; with 'area' it may be "
+                         "any positive value and is conservatively remapped. "
                          "When given, nx and ny are DERIVED from it and --ny "
                          "is ignored. Default: None = legacy 1° grid (--ny "
                          "decides). KEY: on finer grids the 1°-calibrated "
@@ -272,6 +273,11 @@ def main():
                          "Pass any of those explicitly to override. At 1.0° "
                          "the scaling is a no-op. See "
                          "docs/resolution_cfl_limits.md.")
+    ap.add_argument("--resolution-remap", choices=("legacy", "area"),
+                    default="legacy",
+                    help="'legacy' preserves integer 0.1° block averaging; "
+                         "'area' uses conservative spherical-area overlap and "
+                         "supports arbitrary positive resolutions")
     ap.add_argument("--ny", type=int, default=None,
                     help=f"meridional grid points at the default 1° resolution "
                          f"(default {NY_DEFAULT}); ignored when --resolution "
@@ -332,6 +338,12 @@ def main():
                          "across unstable interfaces) instead of the historical "
                          "column-wide mask that mixes the whole column whenever "
                          "any interface is unstable; default off")
+    ap.add_argument("--monotone-adv", action="store_true",
+                    help="use first-order donor-cell horizontal tracer fluxes "
+                         "(vertical flux is already donor-cell). More diffusive "
+                         "than centered flux, but conservative and monotone "
+                         "under the combined tracer CFL; default off keeps the "
+                         "historical centered path bit-exact")
     ap.add_argument("--sponge-days", type=float, default=SPONGE_DAYS_DEFAULT_G)
     ap.add_argument("--sponge-cells", type=int, default=0)
     ap.add_argument("--polar-cap-rows", type=int, default=POLAR_CAP_ROWS_DEFAULT)
@@ -400,11 +412,14 @@ def main():
         res = float(args.resolution)
         if res <= 0.0:
             ap.error(f"--resolution must be positive (got {res})")
-        step = res / 0.1
-        if abs(step - round(step)) > 1e-9:
-            ap.error(f"--resolution must be a multiple of the 0.1° ETOPO source "
-                     f"grid (got {res})")
-        nx, ny = global_grid_dims(res, args.lat_max)
+        if args.resolution_remap == "legacy":
+            step = res / 0.1
+            if abs(step - round(step)) > 1e-9:
+                ap.error(f"--resolution must be a multiple of the 0.1° ETOPO "
+                         f"source grid when --resolution-remap=legacy "
+                         f"(got {res}; use --resolution-remap=area)")
+        nx, ny = global_grid_dims(res, args.lat_max,
+                                  remap=args.resolution_remap)
         if nx < 4 or ny < 4:
             ap.error(f"--resolution {res} at lat_max={args.lat_max} gives a "
                      f"{nx}x{ny} grid; too coarse")
@@ -453,7 +468,8 @@ def main():
           f"smooth={args.smooth_passes}, min_depth={args.min_depth})...")
     grid = make_global_grid(gcfg, bathy,
                             smooth_passes=args.smooth_passes,
-                            min_depth=args.min_depth)
+                            min_depth=args.min_depth,
+                            remap=args.resolution_remap)
     ocean = np.asarray(grid.ocean_mask, dtype=bool)
     dx_eq = float(grid.dx_2d[0, grid.ny // 2])
     print(f"  grid {grid.nx}x{grid.ny}x{grid.nz}, ocean {float(grid.wet_mask.mean()):.1%}, "
@@ -573,16 +589,25 @@ def main():
         freeze_adv_vel=args.freeze_adv_vel,
         conservative_kv=args.conservative_kv,
         project_adv_vel=args.project_adv_vel,
-        localize_conv=args.localize_conv)
+        localize_conv=args.localize_conv,
+        monotone_adv=args.monotone_adv)
     if seasonal:
         step, init_state_global, _, _params, terms_fn, step_dyn = _ret
     else:
         step, init_state_global, _, _params, terms_fn = _ret
+    # Runtime forcing must be cast to the compute dtype up front. Left in
+    # float64 they promote every downstream tensor (a f32 state + f64 flux ->
+    # f64), which under lax.scan is a hard carry-dtype error and under the
+    # python loop is a silent mixed-precision run that forfeits the fp32
+    # speedup. state_dtype is defined below for the checkpoint logic; hoisted
+    # here so the forcing path can use it.
+    _fdtype = jnp.float32 if args.dtype == "float32" else jnp.float64
     if seasonal:
-        Q_heat_2d = jnp.array(Q_heat)
+        Q_heat_2d = jnp.array(Q_heat, dtype=_fdtype)
         if args.wind_jit:
             # (12, 2, nx, ny) on device; blend happens inside the graph.
-            wind_stack = jnp.array(np.stack([np.stack(m) for m in wind_months]))
+            wind_stack = jnp.array(np.stack([np.stack(m) for m in wind_months]),
+                                   dtype=_fdtype)
             def do_step(state, month_day):
                 tx, ty = interp_seasonal_wind_jit(
                     wind_stack, month_day, blend_days=args.wind_blend_days)
@@ -591,7 +616,8 @@ def main():
             def do_step(state, month_day):
                 tx, ty = interp_seasonal_wind(wind_months, month_day,
                                               blend_days=args.wind_blend_days)
-                return step_dyn(state, jnp.array(tx), jnp.array(ty), Q_heat_2d)
+                return step_dyn(state, jnp.array(tx, dtype=_fdtype),
+                                jnp.array(ty, dtype=_fdtype), Q_heat_2d)
     else:
         def do_step(state, month_day):
             return step(state)
@@ -601,7 +627,7 @@ def main():
     # Compute dtype for checkpoint round-trips: fp32 runs keep the device
     # state in fp32 (I/O casts to float64 at the npz boundary, so checkpoint
     # files stay grid-version-agnostic and readable by float64 runs).
-    state_dtype = jnp.float32 if args.dtype == "float32" else jnp.float64
+    state_dtype = _fdtype
 
     n_total = int(round(args.days * 86400.0 / args.dt))
     if args.max_steps > 0:
@@ -661,11 +687,12 @@ def main():
     header.append(f"physics: nu_h={physics.nu_h:g}  nu_bi={physics.nu_bi:g}  "
                   f"kappa_conv={physics.kappa_conv}  kappa_v={physics.kappa_v:g}")
     if args.freeze_adv_vel or args.conservative_kv or args.project_adv_vel \
-            or args.localize_conv:
+            or args.localize_conv or args.monotone_adv:
         header.append(f"RK2 flags: freeze_adv_vel={args.freeze_adv_vel}  "
                       f"conservative_kv={args.conservative_kv}  "
                       f"project_adv_vel={args.project_adv_vel}  "
-                      f"localize_conv={args.localize_conv}")
+                      f"localize_conv={args.localize_conv}  "
+                      f"monotone_adv={args.monotone_adv}")
     if args.dtype != "float64":
         header.append(f"DTYPE: {args.dtype} (compute; I/O stays float64)")
     if args.bulk_lambda_mult != 1.0:

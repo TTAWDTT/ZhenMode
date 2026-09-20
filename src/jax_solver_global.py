@@ -1,14 +1,15 @@
 """
 Global Finite-Difference Ocean Solver — hydrostatic primitive equations, JAX.
 
-Companion to jax_solver.py (regional pseudo-spectral). This solver uses:
-  - 2nd-order finite differences on a global 1° lat-lon grid (lon-periodic),
+This solver uses:
+  - 2nd-order finite differences on a global lat-lon grid (lon-periodic),
   - spherical metric factors (dx = R*cos(lat)*dlon, varies with latitude),
   - a real wet_mask for no-flux land boundaries,
   - full 2D Coriolis f = 2*Omega*sin(lat).
 
-The spectral regional solver (jax_solver.py) is UNTOUCHED and retained as a
-cross-validation baseline. This file is the new FD verification target.
+The former regional pseudo-spectral solver is retired and archived at
+src/archive_regional/jax_solver.py; references to it below are historical
+line-number pointers into that file.
 
 G1 (this file, initial): FD horizontal operators + vertical operators +
 MMS (manufactured-solution) verification. The FD operators are pure functions
@@ -20,6 +21,7 @@ Convention (matches regional solver + grid.py):
   - 2D fields: (nx, ny)
   - z negative downward, z=0 at surface
 """
+import os
 import jax
 jax.config.update('jax_enable_x64', True)
 import jax.numpy as jnp
@@ -319,7 +321,7 @@ def _column_divergence(u, v, p):
     return jnp.sum(integrand * p.dz_node, axis=-1) * p.wet_mask
 
 
-def _project_column_divergence(u, v, p, dt, n_iter=150):
+def _project_column_divergence(u, v, p, dt, n_iter=None):
     """Return (u, v) with column-integrated horizontal divergence removed.
 
     Solves the area-weighted Poisson problem
@@ -342,6 +344,8 @@ def _project_column_divergence(u, v, p, dt, n_iter=150):
     is past the knee — the stage-2 leak saturates at -40 ZJ/yr (from -2238) for
     n_iter >= 120, so more iterations only adds cost.
     """
+    if n_iter is None:
+        n_iter = int(os.environ.get("OCEAN_PAV_NITER", "150"))
     g = G_EARTH
     wm = p.wet_mask
     area = p.dx_2d * p.dy * wm
@@ -861,12 +865,19 @@ FDPhysParams = namedtuple('FDPhysParams', [
     # so it can redistribute but not ventilate the abyss. Default False =
     # historical behavior (bit-exact legacy traces).
     'localize_conv',
+    # True: use first-order donor-cell face values for the HORIZONTAL tracer
+    # fluxes. The existing vertical tracer flux is already donor-cell; this
+    # makes the full 3D tracer transport conservative and monotone for a
+    # divergence-free velocity under the combined horizontal+vertical CFL.
+    # It is a safer fallback for fine grids where centered fluxes excite
+    # grid-scale extrema. Default False = historical centered path.
+    'monotone_adv',
 ])
 
 # Keyword-constructed callers that predate nu_nsub/use_scan/freeze_adv_vel/
-# conservative_kv/project_adv_vel (archive_diag probes) get the legacy
+# conservative_kv/project_adv_vel/localize_conv/monotone_adv get the legacy
 # behavior instead of a TypeError.
-FDPhysParams.__new__.__defaults__ = (None, False, False, False, False, False)
+FDPhysParams.__new__.__defaults__ = (None, False, False, False, False, False, False)
 
 
 # ── EOS (shared with spectral solver; copied to avoid import cycle) ─
@@ -1126,8 +1137,15 @@ def _advection_scalar(T, u, v, Fz_in, p):
     # ── Zonal flux at face (i+1/2), periodic in x ──
     # Fx = u_face * T_face, face-gated (both cells wet). Centered face values.
     # Sign: Fx is the +x-directed flux (u>0 carries T eastward).
-    Tx_face = 0.5 * (T + jnp.roll(T, -1, axis=0))
     ux_face = 0.5 * (u + jnp.roll(u, -1, axis=0))
+    if p.monotone_adv:
+        # Donor-cell face value: the cell on the upstream side of the face.
+        # Positive ux takes T[i]; negative ux takes T[i+1]. This is lower
+        # order than centered flux, but conservative and positivity-preserving
+        # when the combined multidimensional Courant number is <= 1.
+        Tx_face = jnp.where(ux_face >= 0.0, T, jnp.roll(T, -1, axis=0))
+    else:
+        Tx_face = 0.5 * (T + jnp.roll(T, -1, axis=0))
     gate_x = wm * jnp.roll(wm, -1, axis=0)
     Fx = ux_face * Tx_face * gate_x                    # (nx, ny, nz)
     # ── Meridional flux at face (j+1/2), closed N/S walls ──
@@ -1139,8 +1157,14 @@ def _advection_scalar(T, u, v, Fz_in, p):
     T_pad = jnp.pad(T, pad, mode='edge')
     v_pad = jnp.pad(v, pad, mode='edge')
     wm_pad = jnp.pad(wm, pad, mode='edge')
-    Ty_face = 0.5 * (T_pad[:, 1:-1] + T_pad[:, 2:])
     vy_face = 0.5 * (v_pad[:, 1:-1] + v_pad[:, 2:])
+    if p.monotone_adv:
+        # Same donor-cell choice as x, with the edge-padded T used so the
+        # last open face matches the current boundary treatment. The last
+        # face itself is closed below, so the edge value cannot enter.
+        Ty_face = jnp.where(vy_face >= 0.0, T_pad[:, 1:-1], T_pad[:, 2:])
+    else:
+        Ty_face = 0.5 * (T_pad[:, 1:-1] + T_pad[:, 2:])
     gate_y = wm_pad[:, 1:-1] * wm_pad[:, 2:]
     cos_face = 0.5 * (p.cos_lat + jnp.roll(p.cos_lat, -1))
     Fy = vy_face * Ty_face * gate_y * cos_face[None, :, None]   # (nx, ny, nz)
@@ -2417,7 +2441,7 @@ def make_solver_global(grid, physics, dt, forcing=None, eos_type='linear',
                        mode_split=False, dt_bt=150.0, nu_nsub=None,
                        dtype='float64', use_scan=False, freeze_adv_vel=False,
                        conservative_kv=False, project_adv_vel=False,
-                       localize_conv=False):
+                       localize_conv=False, monotone_adv=False):
     """Create a JIT-compiled global FD ocean solver.
 
     Args mirror the spectral make_solver where applicable. Key differences:
@@ -2445,6 +2469,9 @@ def make_solver_global(grid, physics, dt, forcing=None, eos_type='linear',
         GPUs — biggest kernel-time lever). Default 'float64' = bit-exact.
       - use_scan=True runs the barotropic subcycle as lax.scan (numerically
         identical, smaller XLA graph / fewer host launches).
+      - monotone_adv=True switches horizontal tracer face values from centered
+        to first-order donor-cell (upwind). The default False preserves every
+        legacy run bit-for-bit.
     """
     base = make_fd_params(grid)
     nx, ny, nz = base.nx, base.ny, base.nz
@@ -2640,6 +2667,7 @@ def make_solver_global(grid, physics, dt, forcing=None, eos_type='linear',
         conservative_kv=bool(conservative_kv),
         project_adv_vel=bool(project_adv_vel),
         localize_conv=bool(localize_conv),
+        monotone_adv=bool(monotone_adv),
     )
 
     # fp32 cast: params was just built in float64 (numpy defaults); when

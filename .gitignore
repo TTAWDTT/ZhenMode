@@ -69,3 +69,13 @@ _publish_loop.*
 init_fields_*.npz
 _blowup_snapshot.npz
 .plans/
+
+# Session scratch (convention: a leading underscore at repo root means scratch).
+# Root-anchored so dunders like src/__init__.py are never accidentally matched.
+/_*.py
+/_*.sh
+/_*.json
+/_*.csv
+/_*.npz
+/_*.pptx
+*.pptx

@@ -572,7 +572,7 @@ gpu365_glap bench: corr 双 PASS(0.975/0.964)但 RMSE 双 FAIL(3.29/3.46 > 2.0)�
 - 合并 `agent/pam-mt5l9102` → `main`(merge 549d6e1; 冲突两处: forcing.py 取
   global 分支含 regional fallback, 报告取双超集含循环性分析+攻坚记录)。
 - 漏提交的 `bench_climatology_global.py` 补交(ca4cbd2)。
-- 134 个攻坚诊断脚本归档 `src/archive_diag/`(README 索引脚本类↔历史段落映射;
+- 134 个攻坚诊断脚本曾归档 `src/archive_diag/`(该目录已于 2026-09-19 整理时清理;
   已验证无活代码 import)。src/ 顶层现为干净生产布局。
 - 测试: 本地 CPU 4 套 55/55 PASS(test_grid 17 + test_equations 14 +
   test_integrator 8 + test_spectral_ops 16); test_gm_closure.py(11 个, 需 jax)

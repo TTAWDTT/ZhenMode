@@ -5,7 +5,7 @@ build-backend = "setuptools.backends._legacy:_Backend"
 [project]
 name = "ocean-solver"
 version = "0.1.0"
-description = "Spectral-method ocean model solving hydrostatic primitive equations"
+description = "Global finite-difference ocean model solving the hydrostatic primitive equations"
 requires-python = ">=3.12"
 dependencies = [
     "numpy>=1.26",
