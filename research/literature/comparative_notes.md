@@ -1,8 +1,9 @@
 
 # Comparative notes on major ocean models
 
-This note distills the source/docs material collected in `research/literature/` into
-what is most transferable to `ocean_solver`.
+This note distills a review of public documentation and source trees from mature
+ocean models into what is most transferable to `ocean_solver`. Third-party
+source snapshots are no longer vendored in the repository.
 
 ## Scope and evidence
 

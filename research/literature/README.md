@@ -1,23 +1,14 @@
+# Literature notes
 
-# Literature snapshots
+This directory now contains only our own synthesis. Third-party model source
+code, documentation snapshots, repository-tree JSON, and web-page captures are
+not vendored in this repository.
 
-This directory stores downloaded docs and selected source-code files used during
-the ocean-model survey.
+The original survey reviewed the public documentation and source trees for:
+MOM6, MITgcm, NEMO, ROMS, POP2/CESM, MPAS-Ocean, FESOM2, ICON-Ocean, HYCOM,
+and FVCOM.
 
-Important:
-- These are evidence snapshots, not vendored code.
-- The survey synthesis is in `comparative_notes.md`.
-- `fetch_docs.py`, `fetch_mom6_docs.py`, `fetch_fesom_docs.py`, etc. are the
-  reproducible collection helpers used in this phase.
-
-Survey scope:
-- MOM6
-- MITgcm
-- NEMO
-- ROMS
-- POP2/CESM
-- MPAS-Ocean
-- FESOM2
-- ICON-Ocean
-- HYCOM
-- FVCOM
+The transferable conclusions are in
+[`comparative_notes.md`](./comparative_notes.md). To inspect any cited upstream
+implementation, use the official repository rather than adding its source tree
+here.

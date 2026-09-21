@@ -39,6 +39,11 @@ papers/
 # Downloaded reference material (journal HTML/TXT; mostly anti-bot 404 pages)
 refs/
 
+# Do not vendor third-party ocean-model source/docs; keep only our synthesis.
+research/literature/*
+!research/literature/README.md
+!research/literature/comparative_notes.md
+
 # OS artifacts
 .DS_Store
 Thumbs.db
