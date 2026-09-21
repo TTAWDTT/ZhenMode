@@ -48,9 +48,9 @@ experiments:
   trajectory: []
 
 outer_loop:
-  cycle: 2
-  last_direction: "fct-transport prototype"
-  last_reflection: "Added a compact TVD/MUSCL flux-limited horizontal tracer transport (`--fct-adv`). It passes conservation and boundedness operator tests; the next numerical experiment is a 30d/365d comparison against centered and donor-cell transport."
+  cycle: 3
+  last_direction: "fct-transport experiment"
+  last_reflection: "The 30d/365d centered/monotone/FCT comparison passed in all cases. FCT is a useful non-default option but not yet a default because the 1° differences are small. Climatology A2 is unchanged across schemes, so the next lever is diagnostics plus vertical-coordinate/topography structure, not more transport tuning."
 
 workspace:
   findings: "research/findings.md"

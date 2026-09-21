@@ -100,4 +100,6 @@
 - 已完成主流海洋模式的横向调研。
 - 已加入 `--fct-adv`，实现紧凑 TVD/MUSCL flux-limited horizontal transport。
 - `tests/test_fct_advection.py` 已覆盖 uniform conservation 和 boundedness。
-- 还缺的是：30d / 365d 的 centered、donor-cell、FCT 三方对照实验。
+- 已完成 30d / 365d 的 centered、monotone、FCT 对照实验。
+- 初步结论：FCT 与 centered 差异很小，`max|eta|` 略低，成本相近；暂不设为默认。
+- 气候态 A2 的 RMSE 在三种方案里几乎相同，说明 transport 不是当前气候误差的主要瓶颈。
