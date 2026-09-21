@@ -218,3 +218,27 @@
 `65N + lambda_bulk=80 + kappa_gm=500 + localized convective adjustment + annual real air`
 
 这一步是闭包结构改进，但仍先保持 opt-in，不等同 production default。下一步应跑 3D heat-tendency decomposition，把残余误差拆成 advection、convection、GM、diffusion 和 surface flux。
+
+## 3D 热倾向分解（2026-09-21）
+
+用当前最佳候选 `65N + lambda80 + GM500 + localized convection + annual real air` 跑 365d，最后 90d 做深度分项归因。全球 A2 RMSE 为 `1.412 C`。
+
+在北大西洋 `40..60N` 表层：
+
+| 项 | mean K/day | mean share |
+|---|---:|---:|
+| convection | +0.231 | 0.465 |
+| surface bulk flux | +0.179 | 0.360 |
+| advection | -0.069 | 0.139 |
+| GM | +0.017 | 0.034 |
+| diffusion | ~0 | ~0 |
+
+近墙 `55..60N` 更强：convection `+0.432 K/day`，bulk flux `+0.202 K/day`，advection `-0.112 K/day`。
+
+关键解释：
+
+- 表面热通量不是残余冷偏差的原因；冷格点反而收到更多 bulk 增暖。
+- 扩散几乎可以忽略。
+- 平流是明确的表层冷却项； colder cells 的平流冷却更强，相关系数约 0.43，近墙约 0.51。
+- 对流在表层是增暖、在次表层是冷却，说明它在把热往下搬，而不是直接制造表层冷偏差。
+- 因此下一步不是继续调 scalar，而是检查水平热输送和边界流结构。

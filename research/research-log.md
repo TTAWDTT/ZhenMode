@@ -47,3 +47,6 @@ Chronological record of research decisions and actions. Append-only.
 | 36 | 2026-09-21 | experiment | Ran localized convective adjustment plus kappa_conv 0.05 and 0.002 against the GM500 baseline. All three were stable. |
 | 37 | 2026-09-21 | reproduction | Repeated the localized-conv run. Global A2 RMSE remained 1.410 C and North Atlantic A2 RMSE remained 1.306 C. |
 | 38 | 2026-09-21 | reflection | Localized convection is a structural improvement: it improves global A2 by 2.71% and regional A2 by 7.84% over the GM500 baseline, while scalar kappa_conv changes are small. Freeze the combined candidate and next run a 3D heat-tendency decomposition. |
+| 39 | 2026-09-21 | experiment | Ran the preferred 65N candidate with 30-day 3D state and heat-tendency snapshots for 365d. The run passed stability and produced a global A2 RMSE of 1.412 C. |
+| 40 | 2026-09-21 | analysis | In the North Atlantic surface layer, convection and surface bulk flux warm while advection cools. Diffusion is negligible. |
+| 41 | 2026-09-21 | reflection | Colder cells have stronger advective cooling (correlation about 0.43 regionally and 0.51 near the wall). The remaining cold bias is therefore primarily a heat-transport problem. Next target horizontal heat transport and boundary-current structure, not scalar closure tuning. |

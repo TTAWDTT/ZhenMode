@@ -1,0 +1,345 @@
+{
+  "run": "results/heat_tendency_decomposition/global_real_air_lambda80_gm500_localconv_3dterms.npz",
+  "verdict": "PASS",
+  "snapshot_days_used": [
+    300.0,
+    330.0,
+    360.0,
+    365.0
+  ],
+  "global_a2_rmse": 1.4116051121494753,
+  "regions": {
+    "north_atlantic_40_60": {
+      "surface_cells": 1061,
+      "sst_mean_model_c": 10.82112207917026,
+      "sst_mean_woa_c": 11.708121909796873,
+      "sst_bias_c": -0.8869998306266145,
+      "sst_rmse_c": 1.1753575858798642,
+      "surface_tendencies": {
+        "advection": {
+          "mean_k_per_day": -0.06920904660542548,
+          "rms_k_per_day": 0.2914769899898682,
+          "mean_abs_share": 0.13900914208811402,
+          "rms_share": 0.13319068293533548
+        },
+        "horizontal_diffusion": {
+          "mean_k_per_day": -6.558795668006149e-06,
+          "rms_k_per_day": 0.0004616870731068483,
+          "mean_abs_share": 1.3173603794006034e-05,
+          "rms_share": 0.00021096833946190665
+        },
+        "vertical_diffusion": {
+          "mean_k_per_day": -0.0013294434032937498,
+          "rms_k_per_day": 0.005602800237348724,
+          "mean_abs_share": 0.002670240322774211,
+          "rms_share": 0.002560204803777738
+        },
+        "convection": {
+          "mean_k_per_day": 0.23140417983888786,
+          "rms_k_per_day": 1.2106172088006728,
+          "mean_abs_share": 0.4647845634747665,
+          "rms_share": 0.5531926647761666
+        },
+        "gm_bolus": {
+          "mean_k_per_day": 0.016702511771753335,
+          "rms_k_per_day": 0.1409998252485546,
+          "mean_abs_share": 0.033547663867487004,
+          "rms_share": 0.06443000189919189
+        },
+        "redi": {
+          "mean_k_per_day": 0.0,
+          "rms_k_per_day": 0.0,
+          "mean_abs_share": 0.0,
+          "rms_share": 0.0
+        },
+        "surface_bulk_flux": {
+          "mean_k_per_day": 0.17922232431055482,
+          "rms_k_per_day": 0.5392602546341118,
+          "mean_abs_share": 0.35997521664306426,
+          "rms_share": 0.24641547724606627
+        }
+      },
+      "surface_error_tendency_correlations": {
+        "advection": 0.4333155824396416,
+        "horizontal_diffusion": 0.4840562903030476,
+        "vertical_diffusion": 0.4618816112351309,
+        "convection": 0.25053536051590986,
+        "gm_bolus": 0.2321773517580116,
+        "redi": 0.0,
+        "surface_bulk_flux": -0.5387939043978016
+      },
+      "depth_profiles": {
+        "surface_0_50m": {
+          "advection": {
+            "mean_k_per_day": -0.011079937089718484,
+            "rms_k_per_day": 0.08569023008784747
+          },
+          "horizontal_diffusion": {
+            "mean_k_per_day": 7.238152042118471e-06,
+            "rms_k_per_day": 0.0001686051603664787
+          },
+          "vertical_diffusion": {
+            "mean_k_per_day": -0.00018782387563507798,
+            "rms_k_per_day": 0.0013086289007339209
+          },
+          "convection": {
+            "mean_k_per_day": 0.03036862205757977,
+            "rms_k_per_day": 0.2782405764713412
+          },
+          "gm_bolus": {
+            "mean_k_per_day": 0.002394489169014924,
+            "rms_k_per_day": 0.03448412088451232
+          },
+          "redi": {
+            "mean_k_per_day": 0.0,
+            "rms_k_per_day": 0.0
+          }
+        },
+        "upper_50_200m": {
+          "advection": {
+            "mean_k_per_day": 0.0006063330886625286,
+            "rms_k_per_day": 0.021761282671704577
+          },
+          "horizontal_diffusion": {
+            "mean_k_per_day": 1.2102565155922883e-05,
+            "rms_k_per_day": 0.00011821429707659793
+          },
+          "vertical_diffusion": {
+            "mean_k_per_day": -1.978652905756729e-06,
+            "rms_k_per_day": 1.3089859162773767e-05
+          },
+          "convection": {
+            "mean_k_per_day": -0.0013870039257402435,
+            "rms_k_per_day": 0.00980334645428256
+          },
+          "gm_bolus": {
+            "mean_k_per_day": -0.001252178048713503,
+            "rms_k_per_day": 0.004989230324998596
+          },
+          "redi": {
+            "mean_k_per_day": 0.0,
+            "rms_k_per_day": 0.0
+          }
+        },
+        "intermediate_200_1000m": {
+          "advection": {
+            "mean_k_per_day": -0.00017004159021594546,
+            "rms_k_per_day": 0.010532401408403985
+          },
+          "horizontal_diffusion": {
+            "mean_k_per_day": 6.473651235330347e-06,
+            "rms_k_per_day": 6.375607364938103e-05
+          },
+          "vertical_diffusion": {
+            "mean_k_per_day": 4.3359838585347287e-07,
+            "rms_k_per_day": 7.723056472662981e-07
+          },
+          "convection": {
+            "mean_k_per_day": -0.00014722255702922214,
+            "rms_k_per_day": 0.0014118173109596746
+          },
+          "gm_bolus": {
+            "mean_k_per_day": -5.882599230952836e-06,
+            "rms_k_per_day": 0.0007956268814987466
+          },
+          "redi": {
+            "mean_k_per_day": 0.0,
+            "rms_k_per_day": 0.0
+          }
+        },
+        "deep_below_1000m": {
+          "advection": {
+            "mean_k_per_day": 0.00015982482281653217,
+            "rms_k_per_day": 0.0009492751369449416
+          },
+          "horizontal_diffusion": {
+            "mean_k_per_day": -2.0409153255653863e-06,
+            "rms_k_per_day": 1.2468354281671008e-05
+          },
+          "vertical_diffusion": {
+            "mean_k_per_day": 4.8417821333002476e-08,
+            "rms_k_per_day": 8.956009824641777e-08
+          },
+          "convection": {
+            "mean_k_per_day": 0.0,
+            "rms_k_per_day": 0.0
+          },
+          "gm_bolus": {
+            "mean_k_per_day": 2.0970039993627222e-05,
+            "rms_k_per_day": 7.625142928996536e-05
+          },
+          "redi": {
+            "mean_k_per_day": 0.0,
+            "rms_k_per_day": 0.0
+          }
+        }
+      }
+    },
+    "near_wall_55_60": {
+      "surface_cells": 280,
+      "sst_mean_model_c": 6.479536950289069,
+      "sst_mean_woa_c": 7.8029227401192705,
+      "sst_bias_c": -1.3233857898302008,
+      "sst_rmse_c": 1.5048596924220772,
+      "surface_tendencies": {
+        "advection": {
+          "mean_k_per_day": -0.11154379086869431,
+          "rms_k_per_day": 0.49878504419889486,
+          "mean_abs_share": 0.14473407857688167,
+          "rms_share": 0.14163368996068415
+        },
+        "horizontal_diffusion": {
+          "mean_k_per_day": -0.00012987914250138665,
+          "rms_k_per_day": 0.0007106281206147977,
+          "mean_abs_share": 0.00016852518522005426,
+          "rms_share": 0.00020178809305349842
+        },
+        "vertical_diffusion": {
+          "mean_k_per_day": -0.0023594450000338977,
+          "rms_k_per_day": 0.00942932908839367,
+          "mean_abs_share": 0.0030615070132835095,
+          "rms_share": 0.002677527500424137
+        },
+        "convection": {
+          "mean_k_per_day": 0.4315649665094673,
+          "rms_k_per_day": 2.0572025570318018,
+          "mean_abs_share": 0.5599787965547894,
+          "rms_share": 0.5841578301870312
+        },
+        "gm_bolus": {
+          "mean_k_per_day": 0.022781624674834865,
+          "rms_k_per_day": 0.13801015675314793,
+          "mean_abs_share": 0.029560385478363583,
+          "rms_share": 0.039189001314975845
+        },
+        "redi": {
+          "mean_k_per_day": 0.0,
+          "rms_k_per_day": 0.0,
+          "mean_abs_share": 0.0,
+          "rms_share": 0.0
+        },
+        "surface_bulk_flux": {
+          "mean_k_per_day": 0.20230120023275677,
+          "rms_k_per_day": 0.8175176504009666,
+          "mean_abs_share": 0.26249670719146173,
+          "rms_share": 0.23214016294383116
+        }
+      },
+      "surface_error_tendency_correlations": {
+        "advection": 0.5110237784036834,
+        "horizontal_diffusion": 0.6318652194715125,
+        "vertical_diffusion": 0.7062259161191214,
+        "convection": 0.350026402392572,
+        "gm_bolus": 0.4058793189735256,
+        "redi": 0.0,
+        "surface_bulk_flux": -0.7278399173580469
+      },
+      "depth_profiles": {
+        "surface_0_50m": {
+          "advection": {
+            "mean_k_per_day": -0.010198673944926597,
+            "rms_k_per_day": 0.15753949213430576
+          },
+          "horizontal_diffusion": {
+            "mean_k_per_day": -6.064354903374424e-05,
+            "rms_k_per_day": 0.0002410565323183388
+          },
+          "vertical_diffusion": {
+            "mean_k_per_day": -0.0003227879463268307,
+            "rms_k_per_day": 0.002210455495498809
+          },
+          "convection": {
+            "mean_k_per_day": 0.06407535274484454,
+            "rms_k_per_day": 0.46922254067946173
+          },
+          "gm_bolus": {
+            "mean_k_per_day": 0.002275072646952088,
+            "rms_k_per_day": 0.035393974232297336
+          },
+          "redi": {
+            "mean_k_per_day": 0.0,
+            "rms_k_per_day": 0.0
+          }
+        },
+        "upper_50_200m": {
+          "advection": {
+            "mean_k_per_day": 0.00419519555308952,
+            "rms_k_per_day": 0.015199012630170166
+          },
+          "horizontal_diffusion": {
+            "mean_k_per_day": -1.8179131190815904e-05,
+            "rms_k_per_day": 0.00011414873885884201
+          },
+          "vertical_diffusion": {
+            "mean_k_per_day": -1.8209461779230292e-07,
+            "rms_k_per_day": 5.6093336629970435e-06
+          },
+          "convection": {
+            "mean_k_per_day": -0.0036912484964481884,
+            "rms_k_per_day": 0.014205116675880935
+          },
+          "gm_bolus": {
+            "mean_k_per_day": -0.0021735366651719494,
+            "rms_k_per_day": 0.006569509287316084
+          },
+          "redi": {
+            "mean_k_per_day": 0.0,
+            "rms_k_per_day": 0.0
+          }
+        },
+        "intermediate_200_1000m": {
+          "advection": {
+            "mean_k_per_day": 0.0006783686484137086,
+            "rms_k_per_day": 0.006110207800552073
+          },
+          "horizontal_diffusion": {
+            "mean_k_per_day": -1.0857747069303898e-05,
+            "rms_k_per_day": 5.9359283180065116e-05
+          },
+          "vertical_diffusion": {
+            "mean_k_per_day": 3.850357073550296e-08,
+            "rms_k_per_day": 4.927721696984549e-07
+          },
+          "convection": {
+            "mean_k_per_day": -0.0006007168944675257,
+            "rms_k_per_day": 0.002783240165988113
+          },
+          "gm_bolus": {
+            "mean_k_per_day": 0.00010691644235953315,
+            "rms_k_per_day": 0.0014399136326219818
+          },
+          "redi": {
+            "mean_k_per_day": 0.0,
+            "rms_k_per_day": 0.0
+          }
+        },
+        "deep_below_1000m": {
+          "advection": {
+            "mean_k_per_day": 0.0002619854544788408,
+            "rms_k_per_day": 0.0013024705111893413
+          },
+          "horizontal_diffusion": {
+            "mean_k_per_day": -5.770401337879637e-06,
+            "rms_k_per_day": 1.981496165407132e-05
+          },
+          "vertical_diffusion": {
+            "mean_k_per_day": 1.4131385998873626e-08,
+            "rms_k_per_day": 2.806947435703486e-08
+          },
+          "convection": {
+            "mean_k_per_day": 0.0,
+            "rms_k_per_day": 0.0
+          },
+          "gm_bolus": {
+            "mean_k_per_day": 4.522488896308807e-05,
+            "rms_k_per_day": 0.00012904104411446424
+          },
+          "redi": {
+            "mean_k_per_day": 0.0,
+            "rms_k_per_day": 0.0
+          }
+        }
+      }
+    }
+  }
+}

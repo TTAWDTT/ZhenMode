@@ -125,9 +125,9 @@ experiments:
       value: 1.455
 
 outer_loop:
-  cycle: 17
-  last_direction: "GM transport and mixed-layer closure diagnostics"
-  last_reflection: "The original GM strength is too large for the 65N lambda80 candidate: stronger GM cools the North Atlantic and worsens A2. GM500 is the preferred non-zero setting. Localized convective adjustment then improves global A2 from 1.449 to 1.410 C and North Atlantic RMSE from 1.417 to 1.306 C; the result is reproduced. Treat this combined configuration as the preferred diagnostic candidate, still opt-in. Next use 3D heat-tendency decomposition to attribute the remaining error among advection, convection, GM, diffusion and surface flux."
+  cycle: 18
+  last_direction: "3D heat-tendency decomposition"
+  last_reflection: "The 3D heat-tendency decomposition shows that the remaining North Atlantic cold bias is not caused by diffusion or insufficient surface heating. Surface bulk flux warms cold cells; convection redistributes heat downward; advection is the clear surface cooling term and correlates positively with the cold-error pattern (0.43 regionally, 0.51 near the wall). Treat this as a horizontal heat-transport/boundary-current problem. Next diagnose current structure and heat transport rather than continue scalar closure tuning."
 
 workspace:
   findings: "research/findings.md"
