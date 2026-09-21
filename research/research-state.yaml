@@ -57,11 +57,23 @@ hypotheses:
     motivation: "365d runs show a monotonic response: lambda20 gives A2 2.362 C, lambda40 1.773 C, and lambda80 1.530 C."
     priority: high
 
+  - id: H8
+    statement: "The original GM strength is excessive for the 65N lambda80 North Atlantic diagnostic."
+    status: supported
+    motivation: "GM0, GM500, GM1000 and GM3000 give A2 RMSE 1.419, 1.449, 1.530 and 2.089 C respectively."
+    priority: high
+
+  - id: H9
+    statement: "Column-wide convective adjustment over-mixes the 65N candidate; per-interface localization is a structural improvement."
+    status: supported
+    motivation: "Localized convection improves global A2 from 1.449 to 1.410 C and regional RMSE from 1.417 to 1.306 C, with a reproduced repeat."
+    priority: high
+
 experiments:
   proxy_metric: "Global annual A2 SST pattern RMSE (C)"
   baseline_value: 2.115
-  best_value: 1.530
-  total_runs: 17
+  best_value: 1.410
+  total_runs: 24
   trajectory:
     - run: "lambda1 FCT/TVD baseline"
       value: 2.115
@@ -97,11 +109,25 @@ experiments:
       value: 2.362
     - run: "65N lambda_bulk 80"
       value: 1.530
+    - run: "65N lambda80 GM0"
+      value: 1.419
+    - run: "65N lambda80 GM500"
+      value: 1.449
+    - run: "65N lambda80 GM3000"
+      value: 2.089
+    - run: "65N lambda80 GM500 localized convection"
+      value: 1.410
+    - run: "65N lambda80 GM500 localized convection repeat"
+      value: 1.410
+    - run: "65N lambda80 GM500 kconv 0.05"
+      value: 1.446
+    - run: "65N lambda80 GM500 kconv 0.002"
+      value: 1.455
 
 outer_loop:
-  cycle: 15
-  last_direction: "65N surface heat-flux sensitivity"
-  last_reflection: "Bulk heat-exchange strength is a first-order control on the 65N North Atlantic cold bias. Raising lambda_bulk from 40 to 80 improved global A2 RMSE from 1.773 to 1.530 C and regional RMSE from 2.175 to 1.572 C; lowering it to 20 failed. Keep lambda80 as a diagnostic candidate, not a production default. Residual cold errors still concentrate in the strongest imposed-warming quintile, so next diagnose GM/bolus heat transport and mixed-layer closure rather than a sea-ice flux cap."
+  cycle: 17
+  last_direction: "GM transport and mixed-layer closure diagnostics"
+  last_reflection: "The original GM strength is too large for the 65N lambda80 candidate: stronger GM cools the North Atlantic and worsens A2. GM500 is the preferred non-zero setting. Localized convective adjustment then improves global A2 from 1.449 to 1.410 C and North Atlantic RMSE from 1.417 to 1.306 C; the result is reproduced. Treat this combined configuration as the preferred diagnostic candidate, still opt-in. Next use 3D heat-tendency decomposition to attribute the remaining error among advection, convection, GM, diffusion and surface flux."
 
 workspace:
   findings: "research/findings.md"

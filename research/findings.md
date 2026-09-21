@@ -189,3 +189,32 @@
 - 但它只是标量恢复强度候选，不是机制修复，也不直接改 production default。
 - λ80 后残余冷误差仍集中在最强正热输入分位，说明下一个问题更可能在海洋热输送 / 高纬水团结构，而不是 sea-ice flux cap。
 - 下一步固定 `lambda_bulk=80`，诊断 GM / bolus heat transport 和 mixed-layer closure。
+
+## GM 热输送与混合层诊断（2026-09-21）
+
+固定 `65N + lambda_bulk=80 + reduced vertical mixing` 后先扫 GM：
+
+| run | A2 RMSE | 北大西洋 A2 bias | 北大西洋 A2 RMSE |
+|---|---:|---:|---:|
+| GM0 | 1.419 C | -0.788 C | 1.338 C |
+| GM500 | 1.449 C | -0.883 C | 1.417 C |
+| GM1000 | 1.530 C | -1.052 C | 1.572 C |
+| GM3000 | 2.089 C | -1.793 C | 2.346 C |
+
+结论是原 GM 强度偏大；`GM500` 是保留物理闭包时更好的诊断候选。
+
+随后固定 `GM500` 检查混合层/对流闭包：
+
+| run | A2 RMSE | 北大西洋 A2 bias | 北大西洋 A2 RMSE |
+|---|---:|---:|---:|
+| column conv, kconv=0.01 | 1.449 C | -0.883 C | 1.417 C |
+| localized conv | 1.410 C | -0.713 C | 1.306 C |
+| localized conv repeat | 1.410 C | -0.713 C | 1.306 C |
+| kconv=0.05 | 1.446 C | -0.888 C | 1.422 C |
+| kconv=0.002 | 1.455 C | -0.867 C | 1.402 C |
+
+局地化对流把全球 A2 再改善 2.71%，北大西洋 RMSE 再改善 7.84%，且复跑几乎完全一致。相比之下，继续改 `kappa_conv` 标量收益很小。当前最佳诊断候选是：
+
+`65N + lambda_bulk=80 + kappa_gm=500 + localized convective adjustment + annual real air`
+
+这一步是闭包结构改进，但仍先保持 opt-in，不等同 production default。下一步应跑 3D heat-tendency decomposition，把残余误差拆成 advection、convection、GM、diffusion 和 surface flux。

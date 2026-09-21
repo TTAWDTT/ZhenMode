@@ -42,3 +42,8 @@ Chronological record of research decisions and actions. Append-only.
 | 31 | 2026-09-21 | experiment | Ran 365d lambda20 and lambda80. Both were dynamically stable; lambda20 failed the A-class climate test and lambda80 passed. |
 | 32 | 2026-09-21 | analysis | Lambda80 improved global A2 RMSE from 1.773 to 1.530 C and North Atlantic 40..60N A2 RMSE from 2.175 to 1.572 C. |
 | 33 | 2026-09-21 | reflection | Surface heat exchange is a leading control, but residual cold errors remain concentrated in the strongest imposed-warming quintile. Keep lambda80 as a diagnostic candidate; next diagnose GM/bolus heat transport and mixed-layer closure rather than sea-ice flux cap. |
+| 34 | 2026-09-21 | experiment | Ran GM0, GM500, and GM3000 on the 65N lambda80 candidate. All were dynamically stable; GM3000 failed the A2 climate gate. |
+| 35 | 2026-09-21 | analysis | Stronger GM monotonically cooled the North Atlantic: A2 RMSE changed from 1.419 C at GM0 to 1.530 C at GM1000 and 2.089 C at GM3000. Selected GM500 as the preferred non-zero diagnostic setting. |
+| 36 | 2026-09-21 | experiment | Ran localized convective adjustment plus kappa_conv 0.05 and 0.002 against the GM500 baseline. All three were stable. |
+| 37 | 2026-09-21 | reproduction | Repeated the localized-conv run. Global A2 RMSE remained 1.410 C and North Atlantic A2 RMSE remained 1.306 C. |
+| 38 | 2026-09-21 | reflection | Localized convection is a structural improvement: it improves global A2 by 2.71% and regional A2 by 7.84% over the GM500 baseline, while scalar kappa_conv changes are small. Freeze the combined candidate and next run a 3D heat-tendency decomposition. |
