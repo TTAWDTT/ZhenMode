@@ -48,6 +48,7 @@ jax.config.update('jax_enable_x64', True)
 import jax.numpy as jnp
 import numpy as np
 
+from air_reanalysis import load_annual_mean_air_temp
 from config import DEFAULT_CONFIG, GlobalGridConfig, PhysicsConfig
 from diagnostics import BudgetDiagnostics, compute_budget_diagnostics, diagnostics_to_arrays
 from forcing import (
@@ -320,6 +321,11 @@ def main():
                          "(stronger surface restoring; phase-A distortion)")
     ap.add_argument("--lambda-bulk", type=float, default=LAMBDA_BULK_DEFAULT_G)
     ap.add_argument("--no-bulk-flux", action="store_true")
+    ap.add_argument("--real-air-temp", action="store_true",
+                    help="use annual-mean NCEP R1 2-m air temperature as the "
+                         "bulk-flux target instead of the zonal WOA SST "
+                         "profile. This is an observed, spatially varying "
+                         "atmospheric forcing field, not a WOA SST restore.")
     ap.add_argument("--sss-restore-days", type=float, default=0.0,
                     help="surface salinity restoring timescale [days]; "
                          "0 = off. Haney relaxation of SSS to the WOA "
@@ -544,10 +550,20 @@ def main():
     # of the global non-periodic domain.
     T_sst = T_init[:, :, 0]
     lambda_bulk = 0.0 if args.no_bulk_flux else args.lambda_bulk * args.bulk_lambda_mult
-    T_atm = air_temp_profile(grid, T_sst) if lambda_bulk > 0.0 else None
+    T_atm_source = "zonal WOA SST"
+    T_atm = None
     if lambda_bulk > 0.0:
+        if args.real_air_temp:
+            try:
+                T_atm = load_annual_mean_air_temp(grid, year=args.wind_year)
+                T_atm_source = f"annual-mean {args.wind_year} NCEP R1 2m air"
+            except Exception as exc:
+                print(f"  WARNING: real NCEP air-temperature fetch failed "
+                      f"({exc!r}); falling back to zonal WOA SST target")
+        if T_atm is None:
+            T_atm = air_temp_profile(grid, T_sst)
         print(f"  bulk air-sea flux: lambda={lambda_bulk:.1f} W/m^2/K, "
-              f"T_atm=zonal WOA SST profile "
+              f"T_atm={T_atm_source} "
               f"({float(np.nanmin(T_atm)):.2f}..{float(np.nanmax(T_atm)):.2f} C)")
 
     # ── Surface salinity restoring target ──
@@ -717,7 +733,7 @@ def main():
     else:
         header.append("sub-grid closure: NONE (kappa_gm=0, kappa_redi=0)")
     header.append(f"bulk_flux={lambda_bulk:g} W/m^2/K"
-                  + (" (T_atm=zonal WOA, non-circular)" if lambda_bulk > 0.0 else " (off)"))
+                  + (f" (T_atm={T_atm_source})" if lambda_bulk > 0.0 else " (off)"))
     if args.sss_restore_days > 0.0:
         header.append(f"sss_restore: tau={args.sss_restore_days:g}d  "
                       f"target={'zonal WOA SSS' if args.sss_restore_zonal else 'full 2D WOA SSS'}")
@@ -925,6 +941,7 @@ def main():
         'monotone_adv': args.monotone_adv,
         'fct_adv': args.fct_adv,
         'lambda_bulk': lambda_bulk, 'bulk_lambda_mult': args.bulk_lambda_mult,
+        'real_air_temp': bool(args.real_air_temp),
         'seasonal_wind': seasonal, 'wind_year': args.wind_year,
         'wind_month': args.month, 'wind_jit': bool(args.wind_jit),
         'wind_blend_days': args.wind_blend_days,
