@@ -60,3 +60,4 @@ Chronological record of research decisions and actions. Append-only.
 | 49 | 2026-09-22 | experiment | Ran a 0.7-degree 365d candidate run after a stable 30d probe. |
 | 50 | 2026-09-22 | analysis | The 0.7-degree run improved global A2 RMSE to 1.337 C and North Atlantic RMSE to 1.206 C. |
 | 51 | 2026-09-22 | reflection | 0.7 degree is the new preferred diagnostic resolution. 0.5 and 0.6 degree remain unstable and need targeted stabilization. |
+| 52 | 2026-09-22 | experiment | Tested a 0.65-degree 30d probe with area remapping. It blew up by day 10. |

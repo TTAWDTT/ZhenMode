@@ -50,3 +50,5 @@ near-wall RMSE to `1.215 C`.
 
 The 0.7-degree run is therefore the new preferred diagnostic resolution.
 0.5 and 0.6 degree remain unstable.
+
+- 0.65 degree with area remapping also failed, producing NaNs by day 10.
