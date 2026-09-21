@@ -651,3 +651,15 @@ isobath forcing vanishes; the remaining wet-column form stress is the physical
 (JEBAR-type) coupling, ~10x smaller at the blob site. Measured at the d75 blob
 state, cell (311,66), H=2000 m, H_sw=4000 m: `|F_old| = 4.6e-5` ->
 `|F_new| = 4.9e-6 m/s^2`; global mean `|F|` 1.3e-5 -> 6.2e-6 m/s^2.
+
+
+## D27 — Tracer transport: TVD/MUSCL flux limiter
+
+The historical centered tracer flux is exactly conservative but can manufacture
+local extrema at a sharp front. The donor-cell path is monotone but first-order.
+The new `--fct-adv` switch adds a compact TVD/MUSCL flux limiter: reconstruct the
+face value from the two donor cells with a minmod slope and choose the state
+consistent with the face velocity. This is not yet a full Zalesak multidimensional
+FCT limiter, but it is a cheap, local, bounded-flux step in that direction and
+keeps the same flux-form telescoping. It takes precedence over `--monotone-adv`.
+

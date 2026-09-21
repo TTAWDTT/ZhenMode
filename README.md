@@ -31,7 +31,9 @@ utilities, plus two clearly-marked side directories —
 - **Advection**: flux-form tracer advection on the rigid-lid surface term;
   `--project-adv-vel` projects the stage-2 velocity column-divergence-free
   to close the column heat budget; `--monotone-adv` switches horizontal
-  tracer fluxes to donor-cell (default is centered)
+  tracer fluxes to donor-cell (default is centered); `--fct-adv` enables an
+  experimental TVD/MUSCL flux-limited horizontal transport (bounded, but not
+  yet a full Zalesak 3D FCT limiter)
 - **Vertical mixing**: GM/Redi skew-flux (`--kappa-gm`, `--kappa-redi`),
   eddy viscosity (`--nu-h`), biharmonic (`--nu-bi`), convective adjustment
   (`--kappa-conv`), polar-edge Rayleigh sponge (`--sponge-days`)

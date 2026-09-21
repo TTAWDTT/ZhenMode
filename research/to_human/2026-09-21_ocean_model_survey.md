@@ -32,3 +32,12 @@ modular closures, and first-class diagnostics.
 - `research/literature/comparative_notes.md`
 - `research/findings.md`
 - `research/research-log.md`
+
+
+## Follow-up in this loop
+- Implemented `--fct-adv`, a compact TVD/MUSCL flux limiter for horizontal tracer
+  transport.
+- Added operator-level conservation and boundedness tests.
+- Full test suite: 147 passed.
+- The remaining experiment is a 30d/365d comparison against centered and donor-cell
+  transport.

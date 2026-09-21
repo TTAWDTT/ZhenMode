@@ -676,12 +676,17 @@ FDPhysParams = namedtuple('FDPhysParams', [
     # tracer transport conservative and monotone for a divergence-free velocity.
     # Default False = historical centered path. (D16)
     'monotone_adv',
+    # Experimental TVD/MUSCL flux limiter for horizontal tracer transport.
+    # It reconstructs the face value from the two donor cells with a minmod
+    # slope and chooses the state consistent with the face velocity. This is a
+    # first local bounded-flux step toward a full Zalesak FCT scheme.
+    'fct_adv',
 ])
 
 # Keyword-constructed callers that predate nu_nsub/use_scan/freeze_adv_vel/
 # conservative_kv/project_adv_vel/localize_conv/monotone_adv get the legacy
 # behavior instead of a TypeError.
-FDPhysParams.__new__.__defaults__ = (None, False, False, False, False, False, False)
+FDPhysParams.__new__.__defaults__ = (None, False, False, False, False, False, False, False)
 
 
 # ── Equation of state ─────────────────────────────────────────────────
@@ -882,13 +887,36 @@ def _advection_scalar(T, u, v, Fz_in, p):
     on Fz_in from _vertical_transport_iface, the exact discrete inverse of the
     horizontal divergence, so the column transport is exactly conservative and
     monotone. (D7, D16)
+
+    ``fct_adv`` is a compact TVD/MUSCL flux limiter: it reconstructs the face
+    state from the two donor cells with a minmod slope and chooses the state
+    consistent with the face velocity. It is not yet a full Zalesak multidimensional
+    FCT limiter, but it is conservative and removes the centered scheme's local
+    overshoot at a sharp front.
     """
     wm = p.wet_mask_z
     # ── Zonal flux at face (i+1/2), periodic in x ──
     # Fx = u_face * T_face (centered unless monotone_adv), face-gated on both
     # cells wet; +x-directed (u>0 carries T eastward).
     ux_face = 0.5 * (u + jnp.roll(u, -1, axis=0))
-    if p.monotone_adv:
+    if p.fct_adv:
+        # TVD/MUSCL flux limiter: reconstruct from the left and right cells with a
+        # minmod slope, then choose the state consistent with the face velocity.
+        # This is a compact local limiter, not a full Zalesak 3D FCT, but it is
+        # flux-form, conservative, and removes the centered scheme's overshoot at
+        # a sharp front while remaining second-order in smooth regions.
+        def _minmod(a, b):
+            s = jnp.sign(a) + jnp.sign(b)
+            return jnp.where(s != 0.0,
+                             0.5 * s * jnp.minimum(jnp.abs(a), jnp.abs(b)),
+                             0.0)
+        slope_x = _minmod(T - jnp.roll(T, 1, axis=0),
+                          jnp.roll(T, -1, axis=0) - T)
+        Tx_face = jnp.where(
+            ux_face >= 0.0,
+            T + 0.5 * slope_x,
+            jnp.roll(T, -1, axis=0) - 0.5 * jnp.roll(slope_x, -1, axis=0))
+    elif p.monotone_adv:
         # Donor-cell face value: the upstream cell (positive ux takes T[i],
         # negative ux takes T[i+1]). Lower order than centered flux, but
         # conservative and positivity-preserving for Courant <= 1.
@@ -905,7 +933,23 @@ def _advection_scalar(T, u, v, Fz_in, p):
     v_pad = jnp.pad(v, pad, mode='edge')
     wm_pad = jnp.pad(wm, pad, mode='edge')
     vy_face = 0.5 * (v_pad[:, 1:-1] + v_pad[:, 2:])
-    if p.monotone_adv:
+    if p.fct_adv:
+        # Same TVD/MUSCL limiter as x, but on the padded row. The last face is
+        # closed explicitly below, so the edge-padded value cannot enter the
+        # budget.
+        def _minmod_y(a, b):
+            s = jnp.sign(a) + jnp.sign(b)
+            return jnp.where(s != 0.0,
+                             0.5 * s * jnp.minimum(jnp.abs(a), jnp.abs(b)),
+                             0.0)
+        slope_y = _minmod_y(T - jnp.roll(T, 1, axis=1),
+                            jnp.roll(T, -1, axis=1) - T)
+        slope_y_pad = jnp.pad(slope_y, pad, mode='edge')
+        Ty_face = jnp.where(
+            vy_face >= 0.0,
+            T_pad[:, 1:-1] + 0.5 * slope_y_pad[:, 1:-1],
+            T_pad[:, 2:] - 0.5 * slope_y_pad[:, 2:])
+    elif p.monotone_adv:
         # Same donor-cell choice as x; the last face is closed below, so the
         # edge-padded value cannot enter.
         Ty_face = jnp.where(vy_face >= 0.0, T_pad[:, 1:-1], T_pad[:, 2:])
@@ -1860,7 +1904,8 @@ def make_solver_global(grid, physics, dt, forcing=None,
                        mode_split=False, dt_bt=150.0, nu_nsub=None,
                        dtype='float64', use_scan=False, freeze_adv_vel=False,
                        conservative_kv=False, project_adv_vel=False,
-                       localize_conv=False, monotone_adv=False):
+                       localize_conv=False, monotone_adv=False,
+                       fct_adv=False):
     """Create a JIT-compiled global FD ocean solver.
 
     Key properties:
@@ -1881,9 +1926,9 @@ def make_solver_global(grid, physics, dt, forcing=None,
         the biggest kernel-time lever); default 'float64' = bit-exact.
       - use_scan=True runs the barotropic subcycle as lax.scan (numerically
         identical, smaller XLA graph / fewer host launches).
-      - monotone_adv=True switches horizontal tracer face values from centered to
-        first-order donor-cell (upwind). The default False preserves every legacy
-        run bit-for-bit.
+      - monotone_adv=True switches horizontal tracer face values to first-order
+        donor-cell (upwind). ``fct_adv=True`` instead uses a local bounded
+        centered face value; it takes precedence over monotone_adv.
     """
     base = make_fd_params(grid)
     nx, ny, nz = base.nx, base.ny, base.nz
@@ -2081,6 +2126,7 @@ def make_solver_global(grid, physics, dt, forcing=None,
         project_adv_vel=bool(project_adv_vel),
         localize_conv=bool(localize_conv),
         monotone_adv=bool(monotone_adv),
+        fct_adv=bool(fct_adv),
     )
 
     # fp32 cast: params was just built in float64 (numpy defaults); when

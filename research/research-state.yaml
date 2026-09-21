@@ -48,9 +48,9 @@ experiments:
   trajectory: []
 
 outer_loop:
-  cycle: 1
-  last_direction: "literature survey"
-  last_reflection: "Mature OGCMs converge on conservative transport, disciplined masks, generalized vertical coordinates, modular closures, and first-class diagnostics. The next most transferable experiment is a full 3D flux-corrected-transport tracer option with a monotone low-order fallback."
+  cycle: 2
+  last_direction: "fct-transport prototype"
+  last_reflection: "Added a compact TVD/MUSCL flux-limited horizontal tracer transport (`--fct-adv`). It passes conservation and boundedness operator tests; the next numerical experiment is a 30d/365d comparison against centered and donor-cell transport."
 
 workspace:
   findings: "research/findings.md"

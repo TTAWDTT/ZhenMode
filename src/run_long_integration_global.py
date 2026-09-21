@@ -354,6 +354,13 @@ def main():
                          "than centered flux, but conservative and monotone "
                          "under the combined tracer CFL; default off keeps the "
                          "historical centered path bit-exact")
+    ap.add_argument("--fct-adv", action="store_true",
+                    help="experimental TVD/MUSCL flux-limited horizontal tracer "
+                         "transport: reconstruct the face value from the two "
+                         "donor cells with a minmod slope and choose the state "
+                         "consistent with the face velocity. This is a first "
+                         "bounded-flux prototype, not a full Zalesak 3D FCT "
+                         "limiter; it takes precedence over --monotone-adv")
     ap.add_argument("--sponge-days", type=float, default=SPONGE_DAYS_DEFAULT_G)
     ap.add_argument("--sponge-cells", type=int, default=0)
     ap.add_argument("--polar-cap-rows", type=int, default=POLAR_CAP_ROWS_DEFAULT)
@@ -593,7 +600,8 @@ def main():
         conservative_kv=args.conservative_kv,
         project_adv_vel=args.project_adv_vel,
         localize_conv=args.localize_conv,
-        monotone_adv=args.monotone_adv)
+        monotone_adv=args.monotone_adv,
+        fct_adv=args.fct_adv)
     if seasonal:
         step, init_state_global, _, _params, terms_fn, step_dyn = _ret
     else:
@@ -689,12 +697,13 @@ def main():
     header.append(f"physics: nu_h={physics.nu_h:g}  nu_bi={physics.nu_bi:g}  "
                   f"kappa_conv={physics.kappa_conv}  kappa_v={physics.kappa_v:g}")
     if args.freeze_adv_vel or args.conservative_kv or args.project_adv_vel \
-            or args.localize_conv or args.monotone_adv:
+            or args.localize_conv or args.monotone_adv or args.fct_adv:
         header.append(f"RK2 flags: freeze_adv_vel={args.freeze_adv_vel}  "
                       f"conservative_kv={args.conservative_kv}  "
                       f"project_adv_vel={args.project_adv_vel}  "
                       f"localize_conv={args.localize_conv}  "
-                      f"monotone_adv={args.monotone_adv}")
+                      f"monotone_adv={args.monotone_adv}  "
+                      f"fct_adv={args.fct_adv}")
     if args.dtype != "float64":
         header.append(f"DTYPE: {args.dtype} (compute; I/O stays float64)")
     if args.bulk_lambda_mult != 1.0:
@@ -908,6 +917,7 @@ def main():
         'project_adv_vel': args.project_adv_vel,
         'localize_conv': args.localize_conv,
         'monotone_adv': args.monotone_adv,
+        'fct_adv': args.fct_adv,
         'lambda_bulk': lambda_bulk, 'bulk_lambda_mult': args.bulk_lambda_mult,
         'seasonal_wind': seasonal, 'wind_year': args.wind_year,
         'wind_month': args.month, 'wind_jit': bool(args.wind_jit),
