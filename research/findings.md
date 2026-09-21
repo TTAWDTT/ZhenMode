@@ -148,3 +148,5 @@
 - 新增 opt-in monthly NCEP 2m air forcing；365d 稳定 PASS，但 A2 RMSE 1.990 C，未超过 annual real air，因此 annual real air 仍是更好的简单 baseline。
 - 完成 annual real air 的 coastal / vertical 归因：raw 全球 RMSE 1.665 C，平均 bias -1.211 C；深水占 raw SSE 73.9%，海岸占 17.2%，但海岸 RMSE 2.05 C。
 - WOA 表面-50m 层结越强，模式 SST 越偏冷；这指向垂直混合 / mixed layer 作为下一个实验方向。
+- 完成 vertical mixing 敏感性：`kappa_v=1e-6` 且 `kappa_conv=0.01` 的组合把 A2 RMSE 降到 1.848 C，复跑 1.844 C，均 PASS。
+- 但最强层结冷 bias 仅改善约 0.10 C，低于 0.2 C 的预注册门槛，所以垂直混合是 suggestive 而非 decisive。
