@@ -55,6 +55,7 @@ from forcing import (
     heat_flux_meridional,
     ocean_zonal_mean,
 )
+from diagnostics import BudgetDiagnostics, compute_budget_diagnostics, diagnostics_to_arrays
 from grid import global_grid_dims, make_global_grid
 from jax_solver_global import JaxStateG, make_solver_global
 from wind_reanalysis import real_wind_forcing
@@ -763,6 +764,7 @@ def main():
     snap_ke = []
     snap_eta = []
     snap_T_top = []
+    snap_budget: list[BudgetDiagnostics] = []
     maxT_history = []
     max_u_peak = 0.0
     diverged_at = None
@@ -792,6 +794,10 @@ def main():
         snap_ke.append(ke)
         snap_eta.append(eta.copy())
         snap_T_top.append(f64(state.T[:, :, 0]).copy())
+        # Snapshot-level budget audit: this is intentionally outside the core
+        # solver. It records the global heat/salt/volume invariants without
+        # changing the numerical solution.
+        snap_budget.append(compute_budget_diagnostics(state, grid))
         if args.save_3d:
             # 4-field snapshot: T,u,v,S each (nx,ny,nz). eta is NOT stacked —
             # it is 2D while these are 3D, and it is already saved per-frame in
@@ -941,6 +947,7 @@ def main():
                         ke=np.array(snap_ke),
                         eta=np.array(snap_eta),
                         T_top=np.array(snap_T_top),
+                        **diagnostics_to_arrays(snap_budget),
                         T_init=T_init,
                         S_init=S_init,
                         wet_mask=np.asarray(grid.wet_mask),

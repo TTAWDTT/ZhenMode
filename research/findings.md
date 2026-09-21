@@ -103,3 +103,4 @@
 - 已完成 30d / 365d 的 centered、monotone、FCT 对照实验。
 - 初步结论：FCT 与 centered 差异很小，`max|eta|` 略低，成本相近；暂不设为默认。
 - 气候态 A2 的 RMSE 在三种方案里几乎相同，说明 transport 不是当前气候误差的主要瓶颈。
+- 新增 heat / salt / volume budget 诊断；365d 显示体积严格守恒，热含量漂移约 0.7%，盐含量漂移约 0.0007%，centered 和 FCT 几乎一致。

@@ -48,9 +48,9 @@ experiments:
   trajectory: []
 
 outer_loop:
-  cycle: 3
-  last_direction: "fct-transport experiment"
-  last_reflection: "The 30d/365d centered/monotone/FCT comparison passed in all cases. FCT is a useful non-default option but not yet a default because the 1° differences are small. Climatology A2 is unchanged across schemes, so the next lever is diagnostics plus vertical-coordinate/topography structure, not more transport tuning."
+  cycle: 4
+  last_direction: "budget diagnostics"
+  last_reflection: "Heat/salt/volume diagnostics are now in the run driver. The 365d centered/FCT comparison shows volume exactly conserved, heat drift ~0.7%, and salt drift ~7e-6; schemes are nearly identical. The next lever is vertical-coordinate/topography structure and larger-scale closure, not transport tuning."
 
 workspace:
   findings: "research/findings.md"
