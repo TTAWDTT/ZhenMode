@@ -1,0 +1,13 @@
+scheme,region,count,mean_error,rmse,sse_share
+centered,near_wall,1416,0.142,2.329,5.56
+centered,coast,3508,-2.235,3.530,31.61
+centered,shallow_interior,97,-0.578,1.832,0.24
+centered,deep_interior,25896,-0.613,1.828,62.60
+monotone,near_wall,1416,0.212,2.334,5.58
+monotone,coast,3508,-2.228,3.533,31.65
+monotone,shallow_interior,97,-0.545,1.841,0.24
+monotone,deep_interior,25896,-0.603,1.828,62.54
+fct,near_wall,1416,0.150,2.330,5.56
+fct,coast,3508,-2.234,3.532,31.63
+fct,shallow_interior,97,-0.570,1.835,0.24
+fct,deep_interior,25896,-0.614,1.828,62.57

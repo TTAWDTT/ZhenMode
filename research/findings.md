@@ -67,15 +67,18 @@
 ## 对 ocean_solver 的建议
 
 ### 近期优先
-1. **保守 / 单调 / 有界的 tracer transport**  
-   已加入 `--fct-adv`：一个紧凑的 TVD/MUSCL flux-limited horizontal tracer transport。  
-   还不是完整的 Zalesak 3D FCT，但已经比裸 centered transport 更稳健。
+1. **真实大气强迫**  
+   已加入 `--real-air-temp`，用 NCEP R1 年均 2m 气温替代“纬向均匀 WOA SST 目标”。  
+   这是 MOM6 / NEMO / ROMS / HYCOM 一类业务模式的共同做法：先有空间变化的大气状态，再谈更复杂的闭合。
 
-2. **诊断 / budget 层**  
-   在加更多 closure 前，应先有 heat / salt / mass / energy residual 的标准诊断。
+2. **把 monthly-varying 2m air temperature 接入动态强迫路径**  
+   年均值已经让 A2 通过，下一步应验证季节相位是否带来稳健改进。
 
 3. **把 wet/dry、open/closed face contract 显式化**  
    把它做成可复用的测试不变量，而不是散落在不同算子里的隐含约定。
+
+4. **继续保留 budget / 误差归因层**  
+   不要看到最大误差点就调参；先看 squared error 的空间归属。
 
 ### 中期
 - 从 conservative remap 或 z-star 开始引入垂直坐标柔性，不要直接重写成 unstructured mesh。
@@ -96,6 +99,38 @@
 - 现有 wet/dry face contract 能否被改造成可复用的测试不变量？
 - 当前性能里，多少来自 JAX whole-step compilation？如果把代码拆得更模块化，会损失多少？
 
+## 最新归因
+
+用已有 365d 气候态做了空间归因：
+
+- 闭合南北墙附近只占 A2 squared error 的约 **5.6%**。
+- 海岸格点约 **31.6%**。
+- 深水开阔大洋约 **62.6%**。
+- 最大误差确实在高纬海岸，但数量太少，不足以解释全球 A2 失败。
+- `model - WOA` 与 `T_atm - WOA` 的相关系数约 **0.83**，`R^2` 约 **0.69**。
+
+这说明当时真正的大问题不是 transport，也不是极区墙，而是**表面大气强迫太理想化**。
+
+随后做了 λ 扫描：
+
+| bulk lambda | A1 RMSE | A2 RMSE |
+|---|---:|---:|
+| 0.25x | 3.104 C | 3.387 C |
+| 0.5x | 1.835 C | 2.482 C |
+| 1.0x baseline | 1.013 C | 2.115 C |
+| 2.0x | 0.504 C | 2.031 C |
+
+2.0x 只改善 A2 约 4%，低于预注册的 5% 门槛，所以不改默认值。
+
+接着加入 NCEP R1 年均 2m 气温作为 opt-in 大气目标：
+
+| run | A1 corr / RMSE | A2 corr / RMSE | 总判定 |
+|---|---:|---:|---|
+| zonal WOA SST baseline | 0.997 / 1.013 C | 0.974 / 2.115 C | FAIL |
+| annual NCEP 2m air | 0.997 / 1.466 C | 0.988 / 1.883 C | PASS |
+
+这是当前第一个 365d A1/A2 同时通过的气候态实验。
+
 ## 当前进展
 - 已完成主流海洋模式的横向调研。
 - 已加入 `--fct-adv`，实现紧凑 TVD/MUSCL flux-limited horizontal transport。
@@ -104,3 +139,7 @@
 - 初步结论：FCT 与 centered 差异很小，`max|eta|` 略低，成本相近；暂不设为默认。
 - 气候态 A2 的 RMSE 在三种方案里几乎相同，说明 transport 不是当前气候误差的主要瓶颈。
 - 新增 heat / salt / volume budget 诊断；365d 显示体积严格守恒，热含量漂移约 0.7%，盐含量漂移约 0.0007%，centered 和 FCT 几乎一致。
+- 完成 polar / boundary 归因：闭合边界不是主要 SSE 来源；深水开阔大洋和海岸更重要。
+- 完成 bulk lambda 0.25 / 0.5 / 2.0 对照；均稳定，但没有达到 A2 改善 5% 的门槛。
+- 新增 `--real-air-temp` 和 NCEP R1 2m 气温缓存；`tests/test_air_reanalysis.py` 通过，全量测试 151 passed。
+- 新增 365d annual-mean NCEP 2m air 实验；A2 RMSE 从 2.115 C 降到 1.883 C，首次整体 PASS。
