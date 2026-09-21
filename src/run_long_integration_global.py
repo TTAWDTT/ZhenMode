@@ -48,7 +48,7 @@ jax.config.update('jax_enable_x64', True)
 import jax.numpy as jnp
 import numpy as np
 
-from air_reanalysis import load_annual_mean_air_temp
+from air_reanalysis import load_annual_mean_air_temp, load_monthly_mean_air_temp
 from config import DEFAULT_CONFIG, GlobalGridConfig, PhysicsConfig
 from diagnostics import BudgetDiagnostics, compute_budget_diagnostics, diagnostics_to_arrays
 from forcing import (
@@ -216,6 +216,42 @@ def interp_seasonal_wind_jit(wind_stack, day, blend_days=5.0):
     return tx, ty
 
 
+def interp_monthly_field(fields, day, blend_days=5.0):
+    """Blend a single field through the same 30-day seasonal calendar as wind."""
+    month_len = 30.0
+    mpos = day % month_len
+    mi = int(day // month_len) % 12
+    half = blend_days / 2.0
+    if blend_days <= 0.0 or (mpos >= half and mpos <= month_len - half):
+        return fields[mi]
+    if mpos < half:
+        w = (half + mpos) / blend_days
+        prev = fields[(mi - 1) % 12]
+        cur = fields[mi]
+        return (1.0 - w) * prev + w * cur
+    w = (mpos - (month_len - half)) / blend_days
+    cur = fields[mi]
+    nxt = fields[(mi + 1) % 12]
+    return (1.0 - w) * cur + w * nxt
+
+
+def interp_monthly_field_jit(field_stack, day, blend_days=5.0):
+    """JIT-traceable single-field version of the seasonal wind blending."""
+    month_len = 30.0
+    mpos = day % month_len
+    mi = jnp.floor(day / month_len).astype(jnp.int32) % 12
+    prev_i = (mi - 1) % 12
+    nxt_i = (mi + 1) % 12
+    half = blend_days / 2.0
+    w_after = jnp.clip((mpos - (month_len - half)) / blend_days, 0.0, 1.0)
+    w_before = jnp.clip((half - mpos) / blend_days, 0.0, 1.0)
+    cur = field_stack[mi]
+    nxt = field_stack[nxt_i]
+    prev = field_stack[prev_i]
+    return ((1.0 - w_after - w_before) * cur
+            + w_after * nxt + w_before * prev)
+
+
 class _Tee:
     """Duplicate writes to the original stdout and a log file.
 
@@ -326,6 +362,10 @@ def main():
                          "bulk-flux target instead of the zonal WOA SST "
                          "profile. This is an observed, spatially varying "
                          "atmospheric forcing field, not a WOA SST restore.")
+    ap.add_argument("--real-air-temp-monthly", action="store_true",
+                    help="use 12 monthly NCEP R1 2-m air fields with the same "
+                         "seasonal blending as wind; requires --seasonal-wind. "
+                         "This takes precedence over --real-air-temp.")
     ap.add_argument("--sss-restore-days", type=float, default=0.0,
                     help="surface salinity restoring timescale [days]; "
                          "0 = off. Haney relaxation of SSS to the WOA "
@@ -552,8 +592,20 @@ def main():
     lambda_bulk = 0.0 if args.no_bulk_flux else args.lambda_bulk * args.bulk_lambda_mult
     T_atm_source = "zonal WOA SST"
     T_atm = None
+    T_atm_months = None
     if lambda_bulk > 0.0:
-        if args.real_air_temp:
+        if args.real_air_temp_monthly:
+            if not seasonal:
+                raise ValueError("--real-air-temp-monthly requires --seasonal-wind")
+            try:
+                T_atm_months = load_monthly_mean_air_temp(grid, year=args.wind_year)
+                T_atm = np.mean(T_atm_months, axis=0)
+                T_atm_source = f"monthly {args.wind_year} NCEP R1 2m air"
+            except Exception as exc:
+                print(f"  WARNING: monthly NCEP air-temperature fetch failed "
+                      f"({exc!r}); falling back to zonal WOA SST target")
+                T_atm_months = None
+        elif args.real_air_temp:
             try:
                 T_atm = load_annual_mean_air_temp(grid, year=args.wind_year)
                 T_atm_source = f"annual-mean {args.wind_year} NCEP R1 2m air"
@@ -632,6 +684,8 @@ def main():
     _fdtype = jnp.float32 if args.dtype == "float32" else jnp.float64
     if seasonal:
         Q_heat_2d = jnp.array(Q_heat, dtype=_fdtype)
+        if T_atm_months is not None:
+            air_stack = jnp.array(np.asarray(T_atm_months), dtype=_fdtype)
         if args.wind_jit:
             # (12, 2, nx, ny) on device; blend happens inside the graph.
             wind_stack = jnp.array(np.stack([np.stack(m) for m in wind_months]),
@@ -639,11 +693,23 @@ def main():
             def do_step(state, month_day):
                 tx, ty = interp_seasonal_wind_jit(
                     wind_stack, month_day, blend_days=args.wind_blend_days)
+                if T_atm_months is not None:
+                    ta = interp_monthly_field_jit(
+                        air_stack, month_day, blend_days=args.wind_blend_days)
+                    return step_dyn(state, tx, ty, Q_heat_2d,
+                                    T_atm_3d=ta[:, :, None])
                 return step_dyn(state, tx, ty, Q_heat_2d)
         else:
             def do_step(state, month_day):
                 tx, ty = interp_seasonal_wind(wind_months, month_day,
                                               blend_days=args.wind_blend_days)
+                if T_atm_months is not None:
+                    ta = np.asarray(interp_monthly_field(
+                        T_atm_months, month_day,
+                        blend_days=args.wind_blend_days), dtype=np.float64)
+                    return step_dyn(state, jnp.array(tx, dtype=_fdtype),
+                                    jnp.array(ty, dtype=_fdtype), Q_heat_2d,
+                                    T_atm_3d=jnp.array(ta, dtype=_fdtype)[:, :, None])
                 return step_dyn(state, jnp.array(tx, dtype=_fdtype),
                                 jnp.array(ty, dtype=_fdtype), Q_heat_2d)
     else:
@@ -743,6 +809,8 @@ def main():
     header.append(f"wind: {wind_src}")
     if seasonal and args.wind_blend_days > 0:
         header.append(f"wind blend: {args.wind_blend_days:g}d linear window at month boundaries")
+        if T_atm_months is not None:
+            header.append(f"air-temp blend: {args.wind_blend_days:g}d linear window at month boundaries")
     elif seasonal:
         header.append("wind blend: NONE (step at month boundaries)")
     if args.sponge_days > 0 and args.sponge_cells > 0:
@@ -942,6 +1010,7 @@ def main():
         'fct_adv': args.fct_adv,
         'lambda_bulk': lambda_bulk, 'bulk_lambda_mult': args.bulk_lambda_mult,
         'real_air_temp': bool(args.real_air_temp),
+        'real_air_temp_monthly': bool(args.real_air_temp_monthly),
         'seasonal_wind': seasonal, 'wind_year': args.wind_year,
         'wind_month': args.month, 'wind_jit': bool(args.wind_jit),
         'wind_blend_days': args.wind_blend_days,

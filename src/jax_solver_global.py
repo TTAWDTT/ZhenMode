@@ -2153,9 +2153,18 @@ def make_solver_global(grid, physics, dt, forcing=None,
     step_dyn = None
     if dynamic_forcing:
         @jax.jit
-        def step_dyn(state, tau_x, tau_y, q_heat):
-            return _step_impl(state, params._replace(
-                tau_x_2d=tau_x, tau_y_2d=tau_y, Q_heat_2d=q_heat))
+        def step_dyn(state, tau_x, tau_y, q_heat, T_atm_3d=None):
+            updates = {
+                'tau_x_2d': tau_x,
+                'tau_y_2d': tau_y,
+                'Q_heat_2d': q_heat,
+            }
+            # Optional runtime bulk target lets monthly atmospheric forcing
+            # reuse the single compiled dynamic-forcing graph. Existing
+            # callers that omit this argument remain bit-compatible.
+            if T_atm_3d is not None:
+                updates['T_atm_3d'] = T_atm_3d
+            return _step_impl(state, params._replace(**updates))
 
     @jax.jit
     def diagnostics(state):

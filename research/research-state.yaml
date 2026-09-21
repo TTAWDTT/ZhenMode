@@ -49,7 +49,7 @@ experiments:
   proxy_metric: "Global annual A2 SST pattern RMSE (C)"
   baseline_value: 2.115
   best_value: 1.883
-  total_runs: 6
+  total_runs: 7
   trajectory:
     - run: "lambda1 FCT/TVD baseline"
       value: 2.115
@@ -63,11 +63,13 @@ experiments:
       value: 1.883
     - run: "annual NCEP 2m air repeat"
       value: 1.886
+    - run: "monthly NCEP 2m air forcing"
+      value: 1.990
 
 outer_loop:
-  cycle: 8
-  last_direction: "real atmospheric temperature forcing"
-  last_reflection: "Attribution showed closed walls are not dominant; deep ocean is 63% of A2 SSE and a zonally uniform bulk target explains ~69% of error variance. Scalar lambda changes do not meet the 5% A2 improvement gate. Opt-in annual-mean NCEP 2m air forcing improved A2 from 2.115 to 1.883 C and passed both A1 and A2; next is confirmation plus monthly-varying atmospheric forcing."
+  cycle: 9
+  last_direction: "monthly atmospheric forcing decision"
+  last_reflection: "Attribution showed closed walls are not dominant; deep ocean is 63% of A2 SSE and a zonally uniform bulk target explains ~69% of error variance. Scalar lambda changes do not meet the 5% A2 improvement gate. Opt-in annual-mean NCEP 2m air forcing improved A2 from 2.115 to 1.883 C and passed both A1 and A2; Monthly forcing was implemented and passes (A2 1.990 C) but does not beat annual-mean real air (1.886 C), so annual real air remains the preferred simple baseline. Next lever is coastal mask/mixing, not more scalar forcing tuning."
 
 workspace:
   findings: "research/findings.md"

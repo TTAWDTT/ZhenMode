@@ -28,20 +28,67 @@ CACHE_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file_
 KELVIN_TO_CELSIUS = 273.15
 
 
-def _annual_mean_from_dataset(ds, year: int) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
-    """Read one calendar year from an open NCEP air-temperature dataset."""
+def _monthly_slab_from_dataset(ds, year: int) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Read twelve calendar months from an open NCEP air-temperature dataset."""
     start = (int(year) - 1948) * 12
     ntime = ds.variables["air"].shape[0]
     if start < 0 or start + 12 > ntime:
         raise ValueError(f"year {year} is outside NCEP air-temperature coverage")
     # Select a contiguous 12-month slab before converting to host memory.
     monthly = ds.variables["air"][start:start + 12, :, :]
-    annual = np.asarray(monthly, dtype=np.float64).mean(axis=0)
-    if hasattr(annual, "filled"):
-        annual = annual.filled(np.nan)
+    monthly = np.asarray(monthly, dtype=np.float64)
+    if hasattr(monthly, "filled"):
+        monthly = monthly.filled(np.nan)
     lon = np.asarray(ds.variables["lon"][:], dtype=np.float64)
     lat = np.asarray(ds.variables["lat"][:], dtype=np.float64)
-    return annual, lon, lat
+    return monthly, lon, lat
+
+
+def _annual_mean_from_dataset(ds, year: int) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Read one calendar year from an open NCEP air-temperature dataset."""
+    monthly, lon, lat = _monthly_slab_from_dataset(ds, year)
+    return monthly.mean(axis=0), lon, lat
+
+
+def load_monthly_mean_air_temp(grid, year: int = 2023,
+                               url_prefix: str = PSL_AIR_BASE,
+                               cache_dir: str = CACHE_DIR) -> np.ndarray:
+    """Return twelve monthly NCEP 2m air fields on the solver grid, in C.
+
+    Returns shape ``(12, nx, ny)``.  Month 0 is January.  A single cached
+    ``(12, nlat, nlon)`` slab avoids one remote request per month.  The caller
+    can use the same 30-day/blend schedule as seasonal wind.
+    """
+    year = int(year)
+    os.makedirs(cache_dir, exist_ok=True)
+    cache_file = os.path.join(cache_dir, f"air_2m_monthly_{year:04d}.npz")
+    if os.path.exists(cache_file):
+        z = np.load(cache_file)
+        monthly_native, lon, lat = z["air_2m_months"], z["lon"], z["lat"]
+    else:
+        ds = netCDF4.Dataset(url_prefix + AIR_FILENAME)
+        try:
+            monthly_native, lon, lat = _monthly_slab_from_dataset(ds, year)
+        finally:
+            ds.close()
+        np.savez(cache_file, air_2m_months=monthly_native, lon=lon, lat=lat)
+
+    if monthly_native.shape != (12, len(lat), len(lon)):
+        raise ValueError(f"unexpected NCEP monthly air shape {monthly_native.shape}")
+    if not np.all(np.isfinite(monthly_native)):
+        raise ValueError("NCEP monthly air temperature contains non-finite values")
+
+    # Transpose each field from _bilinear's (ny, nx) to solver (nx, ny).
+    air = np.stack([
+        np.asarray(
+            _bilinear(monthly_native[m], grid.lat, grid.lon, lat, lon).T,
+            dtype=np.float64,
+        )
+        for m in range(12)
+    ]) - KELVIN_TO_CELSIUS
+    if not np.all(np.isfinite(air)):
+        raise ValueError("interpolated NCEP monthly air contains non-finite values")
+    return air
 
 
 def load_annual_mean_air_temp(grid, year: int = 2023,

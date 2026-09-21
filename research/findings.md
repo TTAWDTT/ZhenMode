@@ -71,8 +71,9 @@
    已加入 `--real-air-temp`，用 NCEP R1 年均 2m 气温替代“纬向均匀 WOA SST 目标”。  
    这是 MOM6 / NEMO / ROMS / HYCOM 一类业务模式的共同做法：先有空间变化的大气状态，再谈更复杂的闭合。
 
-2. **把 monthly-varying 2m air temperature 接入动态强迫路径**  
-   年均值已经让 A2 通过，下一步应验证季节相位是否带来稳健改进。
+2. **回到海岸误差和垂直混合**  
+   monthly forcing 已经实现：稳定 PASS，但没有超过 annual real air。  
+   这说明当前下一杠杆更可能在近岸 mask / 浅水 / 垂直混合。
 
 3. **把 wet/dry、open/closed face contract 显式化**  
    把它做成可复用的测试不变量，而不是散落在不同算子里的隐含约定。
@@ -143,3 +144,5 @@
 - 完成 bulk lambda 0.25 / 0.5 / 2.0 对照；均稳定，但没有达到 A2 改善 5% 的门槛。
 - 新增 `--real-air-temp` 和 NCEP R1 2m 气温缓存；`tests/test_air_reanalysis.py` 通过，全量测试 151 passed。
 - 新增 365d annual-mean NCEP 2m air 实验；A2 RMSE 从 2.115 C 降到 1.883 C，首次整体 PASS。
+- 复跑 annual real air：A2 RMSE 1.886 C，确认稳定。
+- 新增 opt-in monthly NCEP 2m air forcing；365d 稳定 PASS，但 A2 RMSE 1.990 C，未超过 annual real air，因此 annual real air 仍是更好的简单 baseline。
