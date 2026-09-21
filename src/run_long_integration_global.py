@@ -36,6 +36,12 @@ except Exception:
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
+# Default to on-demand GPU memory allocation. XLA otherwise preallocates a
+# large private pool, which is fast on a dedicated node but wasteful and
+# prone to CUDA OOM on shared desktop GPUs. Override with the env var if a
+# benchmark wants the historical behavior.
+os.environ.setdefault("XLA_PYTHON_CLIENT_PREALLOCATE", "false")
+
 import jax
 
 jax.config.update('jax_enable_x64', True)

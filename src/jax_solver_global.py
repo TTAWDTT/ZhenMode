@@ -20,6 +20,10 @@ this file is the solver, not the lab notebook.
 """
 import os
 
+# On-demand GPU memory by default: shared desktop GPUs and fine grids are
+# less likely to hit CUDA OOM. Override with the env var when benchmarking.
+os.environ.setdefault("XLA_PYTHON_CLIENT_PREALLOCATE", "false")
+
 import jax
 
 jax.config.update('jax_enable_x64', True)
