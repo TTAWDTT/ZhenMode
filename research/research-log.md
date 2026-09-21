@@ -34,3 +34,7 @@ Chronological record of research decisions and actions. Append-only.
 | 23 | 2026-09-21 | reproduction | Repeated the combined reduced-mixing run: A2 RMSE 1.844 C, confirming the improvement. Strongest-layer bias improvement remains below the 0.2 C gate. |
 | 24 | 2026-09-21 | analysis | Regional audit of the reduced-mixing candidate: global RMSE 1.625 C, SSE improvement 4.74%, coast improves 6.46% and strongest-stratification quintile 5.98%. Remaining worst errors are warm biases in 300..360E / 40..60N. |
 | 25 | 2026-09-21 | analysis | Audited the high-latitude North Atlantic warm-error sector: 83/100 largest global errors lie in 300..360E / 40..60N, with strong warm bias near the north wall and deep open ocean. |
+| 26 | 2026-09-21 | experiment-plan | Locked a north-boundary/ice-proxy protocol: 60N baseline, 65N extension, widened polar cap, and a 90d no-cap stability probe. |
+| 27 | 2026-09-21 | experiment | All four runs completed PASS. The two 365d 65N runs were stable; the wider polar cap was stable but less accurate; the 90d no-cap probe was stable. |
+| 28 | 2026-09-21 | analysis | The 65N extension reduced North Atlantic 40..60N A2 RMSE from 2.811 to 2.175/2.175 C and cold bias from -2.044 to -1.703/-1.700 C. Global A2 improved from 1.844 to 1.770/1.773 C. |
+| 29 | 2026-09-21 | reflection | The closed 60N wall is a major source of the targeted cold bias. Widen-cap is rejected. Freeze the 65N reduced-mixing run as a diagnostic candidate and next diagnose high-latitude surface heat flux or a sea-ice proxy. |

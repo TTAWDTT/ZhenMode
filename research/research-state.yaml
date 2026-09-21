@@ -45,11 +45,17 @@ hypotheses:
     motivation: "Annual NCEP 2m air temperature turned A2 from fail (2.115 C) to pass (1.883 C) at fixed physics."
     priority: high
 
+  - id: H6
+    statement: "The closed 60N wall contributes materially to the North Atlantic cold bias, so poleward domain extension is a stronger diagnostic lever than widening the polar cap."
+    status: supported
+    motivation: "Two 365d 65N runs reduced regional A2 RMSE by ~22.6% and cold bias by ~0.34 C; a wider cap worsened the same region."
+    priority: high
+
 experiments:
   proxy_metric: "Global annual A2 SST pattern RMSE (C)"
   baseline_value: 2.115
-  best_value: 1.844
-  total_runs: 11
+  best_value: 1.770
+  total_runs: 15
   trajectory:
     - run: "lambda1 FCT/TVD baseline"
       value: 2.115
@@ -73,11 +79,19 @@ experiments:
       value: 1.848
     - run: "reduced vertical mixing repeat"
       value: 1.844
+    - run: "north boundary 65N"
+      value: 1.770
+    - run: "north boundary 65N repeat"
+      value: 1.773
+    - run: "wider polar cap 4/6"
+      value: 1.964
+    - run: "no polar cap 90d stability"
+      value: null
 
 outer_loop:
-  cycle: 13
-  last_direction: "North Atlantic warm-bias audit"
-  last_reflection: "Attribution showed closed walls are not dominant; deep ocean is 63% of A2 SSE and a zonally uniform bulk target explains ~69% of error variance. Scalar lambda changes do not meet the 5% A2 improvement gate. Opt-in annual-mean NCEP 2m air forcing improved A2 from 2.115 to 1.883 C and passed both A1 and A2; Monthly forcing was implemented and passes (A2 1.990 C) but does not beat annual-mean real air (1.886 C), so annual real air remains the preferred simple baseline. Combined reduced kappa_v/kappa_conv improved A2 to 1.844 C and was reproduced, but the strongest-layer bias change was only 0.10 C, so vertical mixing is suggestive rather than decisive. Regional audit shows the reduced-mixing candidate improves coasts and strong stratification modestly, but the largest remaining errors are warm biases in the high-latitude North Atlantic. North Atlantic audit shows the dominant errors there are cold, not warm, and concentrate near the north wall and deep ocean. Next is a boundary/ice diagnostic rather than mixed-layer closure."
+  cycle: 14
+  last_direction: "North boundary / polar-cap diagnostic"
+  last_reflection: "The closed 60N wall is a major contributor to the North Atlantic cold bias. Extending the northern wall to 65N was reproduced and reduced regional 40..60N A2 RMSE by ~22.6%, with global A2 improving from 1.844 to 1.770/1.773 C. The widened polar cap made the sector and global A2 worse. Treat the 65N reduced-mixing annual-real-air run as a diagnostic candidate. Next diagnose high-latitude surface heat flux or a sea-ice proxy rather than transport or cap widening."
 
 workspace:
   findings: "research/findings.md"
