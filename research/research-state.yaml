@@ -81,11 +81,17 @@ hypotheses:
     motivation: "30d and 90d restoring both improved global A2 by about 0.19% and regional RMSE by under 0.6%."
     priority: low
 
+  - id: H12
+    statement: "Horizontal resolution is a controlling factor for the remaining North Atlantic cold bias."
+    status: supported
+    motivation: "A 0.8-degree run improved global A2 RMSE by 3.6% and regional RMSE by 4.7% over the 1-degree candidate."
+    priority: high
+
 experiments:
   proxy_metric: "Global annual A2 SST pattern RMSE (C)"
   baseline_value: 2.115
-  best_value: 1.409
-  total_runs: 28
+  best_value: 1.360
+  total_runs: 30
   trajectory:
     - run: "lambda1 FCT/TVD baseline"
       value: 2.115
@@ -143,11 +149,15 @@ experiments:
       value: 1.409
     - run: "65N lambda80 GM500 localized SSS90"
       value: 1.409
+    - run: "65N lambda80 GM500 localized 0.8 degree"
+      value: 1.360
+    - run: "65N lambda80 GM500 localized 0.6 degree stability"
+      value: null
 
 outer_loop:
-  cycle: 19
-  last_direction: "horizontal viscosity and SSS restoring diagnostics"
-  last_reflection: "Two more candidate mechanisms were tested. Lowering horizontal viscosity from 5e6 to 1e6 increased kinetic energy but worsened the North Atlantic cold bias, so viscosity is not the bottleneck. Adding WOA SSS restoring at 30d or 90d gave only a tiny improvement (~0.19% global A2). Keep the current candidate. The remaining cold bias still points to horizontal heat transport, boundary-current geometry, or resolution."
+  cycle: 20
+  last_direction: "horizontal-resolution diagnostic"
+  last_reflection: "Resolution is a real structural lever. The 0.8-degree candidate improved global A2 RMSE from 1.412 to 1.360 C and North Atlantic RMSE from 1.313 to 1.252 C, while reducing the near-wall RMSE from 1.666 to 1.421 C. The 0.5 and 0.6 degree probes with the current closure set are unstable, so 0.8 degree is the preferred diagnostic resolution. Next archive the new candidate and either stabilize 0.5/0.6 degree or diagnose boundary-current geometry at 0.8 degree."
 
 workspace:
   findings: "research/findings.md"
