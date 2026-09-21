@@ -41,3 +41,10 @@ modular closures, and first-class diagnostics.
 - Full test suite: 147 passed.
 - The remaining experiment is a 30d/365d comparison against centered and donor-cell
   transport.
+
+
+## 实验结果
+- 30d / 365d 的 centered、monotone、FCT 对照都通过。
+- FCT 在 1° 上与 centered 差异很小，`max|eta|` 略低，成本相近。
+- 气候态 A2 RMSE 在三种方案里几乎相同，说明当前气候误差不是 transport 主导。
+- 结论：`--fct-adv` 保留为非默认选项；下一步转向诊断和垂直坐标/地形结构。
