@@ -90,8 +90,8 @@ hypotheses:
 experiments:
   proxy_metric: "Global annual A2 SST pattern RMSE (C)"
   baseline_value: 2.115
-  best_value: 1.360
-  total_runs: 30
+  best_value: 1.337
+  total_runs: 31
   trajectory:
     - run: "lambda1 FCT/TVD baseline"
       value: 2.115
@@ -151,13 +151,15 @@ experiments:
       value: 1.409
     - run: "65N lambda80 GM500 localized 0.8 degree"
       value: 1.360
+    - run: "65N lambda80 GM500 localized 0.7 degree"
+      value: 1.337
     - run: "65N lambda80 GM500 localized 0.6 degree stability"
       value: null
 
 outer_loop:
-  cycle: 20
-  last_direction: "horizontal-resolution diagnostic"
-  last_reflection: "Resolution is a real structural lever. The 0.8-degree candidate improved global A2 RMSE from 1.412 to 1.360 C and North Atlantic RMSE from 1.313 to 1.252 C, while reducing the near-wall RMSE from 1.666 to 1.421 C. The 0.5 and 0.6 degree probes with the current closure set are unstable, so 0.8 degree is the preferred diagnostic resolution. Next archive the new candidate and either stabilize 0.5/0.6 degree or diagnose boundary-current geometry at 0.8 degree."
+  cycle: 21
+  last_direction: "0.7-degree diagnostic resolution"
+  last_reflection: "Resolution is the strongest remaining structural lever. A 0.7-degree 365d run improved global A2 RMSE from 1.412 to 1.337 C and North Atlantic RMSE from 1.313 to 1.206 C, with the near-wall RMSE reduced to 1.215 C. The 0.5 and 0.6 degree probes are unstable. Treat 0.7 degree as the new preferred diagnostic resolution; next either stabilize finer rungs or diagnose boundary-current geometry at 0.7 degree."
 
 workspace:
   findings: "research/findings.md"

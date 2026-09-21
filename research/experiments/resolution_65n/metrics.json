@@ -52,5 +52,33 @@
     "salt_drift_percent": -0.0012214048356764778,
     "global_a2_change_percent": -3.6397937113051615,
     "north_atlantic_a2_change_percent": -4.652789945361091
+  },
+  "res07": {
+    "verdict": "PASS",
+    "a1_corr": 0.9984005447910106,
+    "a1_rmse": 0.9719369171878873,
+    "a2_corr": 0.9935822460160302,
+    "global_a2_rmse": 1.3367886698237577,
+    "north_atlantic_40_60": {
+      "n": 2089,
+      "raw_bias": -0.9096607103449248,
+      "raw_rmse": 1.1278881065973165,
+      "a2_bias": -0.7525002260544226,
+      "a2_rmse": 1.2058022884253776
+    },
+    "overlap_near_wall_55_60": {
+      "n": 548,
+      "raw_bias": -1.1465770663446313,
+      "raw_rmse": 1.2452410175358242,
+      "a2_bias": -0.9287990528364822,
+      "a2_rmse": 1.2149276235281437
+    },
+    "ke_last": 3349.31396484375,
+    "max_u_peak": 2.19997239112854,
+    "max_eta_last": 1.8378583192825317,
+    "heat_drift_percent": -0.49114767945708215,
+    "salt_drift_percent": -0.0007857828467782053,
+    "global_a2_change_percent": -5.300097150526273,
+    "north_atlantic_a2_change_percent": -8.139132643167136
   }
 }

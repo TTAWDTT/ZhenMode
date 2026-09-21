@@ -33,3 +33,20 @@ NaNs by day 10, so it is not yet a usable production rung.
 - 0.8 degree: PASS for both 30d and 365d.
 
 Thus 0.8 degree is currently the finest usable resolution for this candidate.
+
+## 0.7-degree follow-up
+
+A 0.7-degree 365d run also passed. It improved further over 0.8 degree:
+
+| Run | Global A2 RMSE | NA 40--60N A2 RMSE |
+|---|---:|---:|
+| 1.0 degree | 1.412 C | 1.313 C |
+| 0.8 degree | 1.360 C | 1.252 C |
+| 0.7 degree | 1.337 C | 1.206 C |
+
+Relative to 1 degree, the 0.7-degree run improves global A2 RMSE by `5.30%`
+and the North Atlantic regional RMSE by `8.14%`. It also reduces the common
+near-wall RMSE to `1.215 C`.
+
+The 0.7-degree run is therefore the new preferred diagnostic resolution.
+0.5 and 0.6 degree remain unstable.

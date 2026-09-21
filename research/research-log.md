@@ -57,3 +57,6 @@ Chronological record of research decisions and actions. Append-only.
 | 46 | 2026-09-22 | experiment | Ran a 0.8-degree 365d candidate run and a 0.5-degree 30d stability probe. |
 | 47 | 2026-09-22 | analysis | The 0.8-degree run improved global A2 RMSE from 1.412 to 1.360 C and the North Atlantic regional RMSE from 1.313 to 1.252 C. |
 | 48 | 2026-09-22 | reflection | Resolution is a real lever for the remaining cold bias. Treat 0.8 degree as the new preferred diagnostic resolution and stabilize 0.5 degree before using it. |
+| 49 | 2026-09-22 | experiment | Ran a 0.7-degree 365d candidate run after a stable 30d probe. |
+| 50 | 2026-09-22 | analysis | The 0.7-degree run improved global A2 RMSE to 1.337 C and North Atlantic RMSE to 1.206 C. |
+| 51 | 2026-09-22 | reflection | 0.7 degree is the new preferred diagnostic resolution. 0.5 and 0.6 degree remain unstable and need targeted stabilization. |

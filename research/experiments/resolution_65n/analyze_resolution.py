@@ -81,18 +81,25 @@ def main():
     p = argparse.ArgumentParser()
     p.add_argument("--baseline", default="results/heat_tendency_decomposition/global_real_air_lambda80_gm500_localconv_3dterms.npz")
     p.add_argument("--res08", default="results/resolution_65n/global_real_air_lambda80_gm500_localconv_res08_365d.npz")
+    p.add_argument("--res07", default="results/resolution_65n/global_real_air_lambda80_gm500_localconv_res07_365d.npz")
     p.add_argument("--out", default="research/experiments/resolution_65n/metrics.json")
     args = p.parse_args()
     labels = {
         "res1": args.baseline,
         "res08": args.res08,
+        "res07": args.res07,
     }
     result = {name: score(load_run(Path(path))) for name, path in labels.items()}
     base = result["res1"]
-    cur = result["res08"]
-    cur["global_a2_change_percent"] = 100.0 * (cur["global_a2_rmse"] / base["global_a2_rmse"] - 1.0)
-    cur["north_atlantic_a2_change_percent"] = 100.0 * (
-        cur["north_atlantic_40_60"]["a2_rmse"] / base["north_atlantic_40_60"]["a2_rmse"] - 1.0)
+    for name in ("res08", "res07"):
+        cur = result[name]
+        cur["global_a2_change_percent"] = 100.0 * (
+            cur["global_a2_rmse"] / base["global_a2_rmse"] - 1.0
+        )
+        cur["north_atlantic_a2_change_percent"] = 100.0 * (
+            cur["north_atlantic_40_60"]["a2_rmse"]
+            / base["north_atlantic_40_60"]["a2_rmse"] - 1.0
+        )
     Path(args.out).write_text(json.dumps(result, indent=2) + "\n")
     print(json.dumps(result, indent=2))
 
