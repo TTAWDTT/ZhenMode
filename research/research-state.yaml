@@ -69,11 +69,23 @@ hypotheses:
     motivation: "Localized convection improves global A2 from 1.449 to 1.410 C and regional RMSE from 1.417 to 1.306 C, with a reproduced repeat."
     priority: high
 
+  - id: H10
+    statement: "Horizontal viscosity is not the main limiting factor for the 65N North Atlantic cold bias."
+    status: supported
+    motivation: "Lower nu_h runs were stable but slightly worsened regional RMSE."
+    priority: medium
+
+  - id: H11
+    statement: "SSS restoring gives only a minor improvement and is not the main structural fix."
+    status: supported
+    motivation: "30d and 90d restoring both improved global A2 by about 0.19% and regional RMSE by under 0.6%."
+    priority: low
+
 experiments:
   proxy_metric: "Global annual A2 SST pattern RMSE (C)"
   baseline_value: 2.115
-  best_value: 1.410
-  total_runs: 24
+  best_value: 1.409
+  total_runs: 28
   trajectory:
     - run: "lambda1 FCT/TVD baseline"
       value: 2.115
@@ -123,11 +135,19 @@ experiments:
       value: 1.446
     - run: "65N lambda80 GM500 kconv 0.002"
       value: 1.455
+    - run: "65N lambda80 GM500 localized nu_h 2.5e6"
+      value: 1.415
+    - run: "65N lambda80 GM500 localized nu_h 1e6"
+      value: 1.422
+    - run: "65N lambda80 GM500 localized SSS30"
+      value: 1.409
+    - run: "65N lambda80 GM500 localized SSS90"
+      value: 1.409
 
 outer_loop:
-  cycle: 18
-  last_direction: "3D heat-tendency decomposition"
-  last_reflection: "The 3D heat-tendency decomposition shows that the remaining North Atlantic cold bias is not caused by diffusion or insufficient surface heating. Surface bulk flux warms cold cells; convection redistributes heat downward; advection is the clear surface cooling term and correlates positively with the cold-error pattern (0.43 regionally, 0.51 near the wall). Treat this as a horizontal heat-transport/boundary-current problem. Next diagnose current structure and heat transport rather than continue scalar closure tuning."
+  cycle: 19
+  last_direction: "horizontal viscosity and SSS restoring diagnostics"
+  last_reflection: "Two more candidate mechanisms were tested. Lowering horizontal viscosity from 5e6 to 1e6 increased kinetic energy but worsened the North Atlantic cold bias, so viscosity is not the bottleneck. Adding WOA SSS restoring at 30d or 90d gave only a tiny improvement (~0.19% global A2). Keep the current candidate. The remaining cold bias still points to horizontal heat transport, boundary-current geometry, or resolution."
 
 workspace:
   findings: "research/findings.md"

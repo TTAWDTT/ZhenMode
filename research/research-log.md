@@ -50,3 +50,7 @@ Chronological record of research decisions and actions. Append-only.
 | 39 | 2026-09-21 | experiment | Ran the preferred 65N candidate with 30-day 3D state and heat-tendency snapshots for 365d. The run passed stability and produced a global A2 RMSE of 1.412 C. |
 | 40 | 2026-09-21 | analysis | In the North Atlantic surface layer, convection and surface bulk flux warm while advection cools. Diffusion is negligible. |
 | 41 | 2026-09-21 | reflection | Colder cells have stronger advective cooling (correlation about 0.43 regionally and 0.51 near the wall). The remaining cold bias is therefore primarily a heat-transport problem. Next target horizontal heat transport and boundary-current structure, not scalar closure tuning. |
+| 42 | 2026-09-22 | experiment | Ran nu_h 2.5e6 and 1e6 sensitivity runs on the preferred 65N candidate. Both were stable but worsened the North Atlantic cold bias. |
+| 43 | 2026-09-22 | analysis | Lower horizontal viscosity increased KE and max|u| but did not improve the target region. Viscosity is not the limiting factor. |
+| 44 | 2026-09-22 | experiment | Ran 30d and 90d WOA SSS-restoring sensitivity runs. Both were stable and only slightly improved the global and regional metrics. |
+| 45 | 2026-09-22 | reflection | SSS restoring is a minor refinement, not a structural fix. The remaining cold bias still points to horizontal heat transport / boundary-current geometry or resolution. |
