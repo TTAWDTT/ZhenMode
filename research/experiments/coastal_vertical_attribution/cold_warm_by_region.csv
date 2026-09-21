@@ -1,0 +1,9 @@
+region,sign,count,cell_share,mean_error,rmse,sse_share_in_region
+all,cold,27986,0.905,-1.438,1.704,0.949
+all,warm,2931,0.095,0.960,1.223,0.051
+coast,cold,3255,0.928,-1.797,2.099,0.971
+coast,warm,253,0.072,0.985,1.310,0.029
+open_deep,cold,23980,0.926,-1.363,1.595,0.962
+open_deep,warm,1916,0.074,0.848,1.118,0.038
+near_wall,cold,679,0.480,-2.376,2.927,0.791
+near_wall,warm,737,0.520,1.250,1.444,0.209

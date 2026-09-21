@@ -29,3 +29,4 @@ Chronological record of research decisions and actions. Append-only.
 | 20 | 2026-09-21 | implementation | Added opt-in monthly NCEP R1 2m air forcing with the same 5d seasonal blending as wind; runtime bulk target reuses one compiled dynamic-forcing graph. |
 | 20 | 2026-09-21 | test | Added monthly-loader and dynamic-air-target tests; full suite 155 passed. |
 | 21 | 2026-09-21 | experiment | The monthly 2m-air 365d run PASSed, but A2 RMSE was 1.990 vs 1.886 for annual forcing; kept annual mean as the better real-air baseline. |
+| 22 | 2026-09-21 | analysis | Completed coastal/vertical attribution on annual real air. Deep ocean has 73.9% of raw SSE, coast 17.2%; coast RMSE 2.05 C. Stronger WOA surface stratification correlates with colder model SST, pointing to vertical mixing. |

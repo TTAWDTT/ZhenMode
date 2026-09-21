@@ -67,9 +67,9 @@ experiments:
       value: 1.990
 
 outer_loop:
-  cycle: 9
-  last_direction: "monthly atmospheric forcing decision"
-  last_reflection: "Attribution showed closed walls are not dominant; deep ocean is 63% of A2 SSE and a zonally uniform bulk target explains ~69% of error variance. Scalar lambda changes do not meet the 5% A2 improvement gate. Opt-in annual-mean NCEP 2m air forcing improved A2 from 2.115 to 1.883 C and passed both A1 and A2; Monthly forcing was implemented and passes (A2 1.990 C) but does not beat annual-mean real air (1.886 C), so annual real air remains the preferred simple baseline. Next lever is coastal mask/mixing, not more scalar forcing tuning."
+  cycle: 10
+  last_direction: "coastal/vertical attribution"
+  last_reflection: "Attribution showed closed walls are not dominant; deep ocean is 63% of A2 SSE and a zonally uniform bulk target explains ~69% of error variance. Scalar lambda changes do not meet the 5% A2 improvement gate. Opt-in annual-mean NCEP 2m air forcing improved A2 from 2.115 to 1.883 C and passed both A1 and A2; Monthly forcing was implemented and passes (A2 1.990 C) but does not beat annual-mean real air (1.886 C), so annual real air remains the preferred simple baseline. Diagnostic attribution points to vertical mixing/mixed-layer treatment as the next model experiment; coast remains high per-cell error but deep ocean dominates total SSE."
 
 workspace:
   findings: "research/findings.md"

@@ -146,3 +146,5 @@
 - 新增 365d annual-mean NCEP 2m air 实验；A2 RMSE 从 2.115 C 降到 1.883 C，首次整体 PASS。
 - 复跑 annual real air：A2 RMSE 1.886 C，确认稳定。
 - 新增 opt-in monthly NCEP 2m air forcing；365d 稳定 PASS，但 A2 RMSE 1.990 C，未超过 annual real air，因此 annual real air 仍是更好的简单 baseline。
+- 完成 annual real air 的 coastal / vertical 归因：raw 全球 RMSE 1.665 C，平均 bias -1.211 C；深水占 raw SSE 73.9%，海岸占 17.2%，但海岸 RMSE 2.05 C。
+- WOA 表面-50m 层结越强，模式 SST 越偏冷；这指向垂直混合 / mixed layer 作为下一个实验方向。
