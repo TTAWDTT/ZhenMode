@@ -10,9 +10,9 @@ from dataclasses import replace
 import jax.numpy as jnp
 import numpy as np
 import pytest
+from _helpers import all_wet_grid
 
 from config import PhysicsConfig
-from _helpers import all_wet_grid
 from diagnostics import compute_budget_diagnostics, node_thickness
 from jax_solver_global import make_solver_global
 

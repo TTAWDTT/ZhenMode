@@ -49,13 +49,13 @@ import jax.numpy as jnp
 import numpy as np
 
 from config import DEFAULT_CONFIG, GlobalGridConfig, PhysicsConfig
+from diagnostics import BudgetDiagnostics, compute_budget_diagnostics, diagnostics_to_arrays
 from forcing import (
     BULK_LAMBDA_DEFAULT,
     air_temp_profile,
     heat_flux_meridional,
     ocean_zonal_mean,
 )
-from diagnostics import BudgetDiagnostics, compute_budget_diagnostics, diagnostics_to_arrays
 from grid import global_grid_dims, make_global_grid
 from jax_solver_global import JaxStateG, make_solver_global
 from wind_reanalysis import real_wind_forcing

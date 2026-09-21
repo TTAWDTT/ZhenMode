@@ -60,6 +60,9 @@ extend-exclude = [
     "results",       # archival figure / provenance scripts (machine-specific)
     "data", "logs", "checkpoints",   # local run I/O
     "dashboard/node_modules",
+    "research",       # autonomous-research workspace / literature snapshots
+    "scratch",        # local probes and legacy artifacts
+    ".claude",        # local agent worktrees / session metadata
 ]
 
 [tool.ruff.lint]
