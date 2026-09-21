@@ -48,3 +48,10 @@ modular closures, and first-class diagnostics.
 - FCT 在 1° 上与 centered 差异很小，`max|eta|` 略低，成本相近。
 - 气候态 A2 RMSE 在三种方案里几乎相同，说明当前气候误差不是 transport 主导。
 - 结论：`--fct-adv` 保留为非默认选项；下一步转向诊断和垂直坐标/地形结构。
+
+
+## 新增诊断层
+- `src/diagnostics.py` 记录 heat / salt / volume / depth。
+- run driver 现在会在每个 snapshot 保存这些诊断。
+- 365d centered / FCT 对照显示：体积严格守恒，热含量漂移约 0.7%，盐含量漂移约 0.0007%。
+- 这进一步确认当前 1° 气候误差不是 transport 主导。
