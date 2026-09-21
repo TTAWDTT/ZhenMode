@@ -80,5 +80,7 @@ _blowup_snapshot.npz
 /_*.json
 /_*.csv
 /_*.npz
-/_*.pptx
+
+scratch/*
+!scratch/README.md
 *.pptx
