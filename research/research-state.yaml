@@ -75,9 +75,9 @@ experiments:
       value: 1.844
 
 outer_loop:
-  cycle: 11
-  last_direction: "vertical-mixing sensitivity"
-  last_reflection: "Attribution showed closed walls are not dominant; deep ocean is 63% of A2 SSE and a zonally uniform bulk target explains ~69% of error variance. Scalar lambda changes do not meet the 5% A2 improvement gate. Opt-in annual-mean NCEP 2m air forcing improved A2 from 2.115 to 1.883 C and passed both A1 and A2; Monthly forcing was implemented and passes (A2 1.990 C) but does not beat annual-mean real air (1.886 C), so annual real air remains the preferred simple baseline. Combined reduced kappa_v/kappa_conv improved A2 to 1.844 C and was reproduced, but the strongest-layer bias change was only 0.10 C, so vertical mixing is suggestive rather than decisive. Next is regional error audit before deciding on a mixed-layer closure or bulk heat-flux work."
+  cycle: 12
+  last_direction: "reduced-mixing regional audit"
+  last_reflection: "Attribution showed closed walls are not dominant; deep ocean is 63% of A2 SSE and a zonally uniform bulk target explains ~69% of error variance. Scalar lambda changes do not meet the 5% A2 improvement gate. Opt-in annual-mean NCEP 2m air forcing improved A2 from 2.115 to 1.883 C and passed both A1 and A2; Monthly forcing was implemented and passes (A2 1.990 C) but does not beat annual-mean real air (1.886 C), so annual real air remains the preferred simple baseline. Combined reduced kappa_v/kappa_conv improved A2 to 1.844 C and was reproduced, but the strongest-layer bias change was only 0.10 C, so vertical mixing is suggestive rather than decisive. Regional audit shows the reduced-mixing candidate improves coasts and strong stratification modestly, but the largest remaining errors are warm biases in the high-latitude North Atlantic. Next is a focused North Atlantic/coastal audit before choosing mixed-layer or bulk heat-flux work."
 
 workspace:
   findings: "research/findings.md"
