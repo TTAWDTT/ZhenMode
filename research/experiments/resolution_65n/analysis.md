@@ -52,3 +52,14 @@ The 0.7-degree run is therefore the new preferred diagnostic resolution.
 0.5 and 0.6 degree remain unstable.
 
 - 0.65 degree with area remapping also failed, producing NaNs by day 10.
+
+## 0.7-degree GM ablation
+
+| Run | Global A2 RMSE | NA 40--60N A2 RMSE |
+|---|---:|---:|
+| 0.7 degree + GM500 | 1.337 C | 1.128 C |
+| 0.7 degree + GM0 | 1.336 C | 1.043 C |
+
+At 0.7 degree, disabling GM slightly improves the global metric and meaningfully
+improves the North Atlantic regional error. This is consistent with GM being
+less necessary as the boundary current becomes better resolved.

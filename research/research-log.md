@@ -61,3 +61,5 @@ Chronological record of research decisions and actions. Append-only.
 | 50 | 2026-09-22 | analysis | The 0.7-degree run improved global A2 RMSE to 1.337 C and North Atlantic RMSE to 1.206 C. |
 | 51 | 2026-09-22 | reflection | 0.7 degree is the new preferred diagnostic resolution. 0.5 and 0.6 degree remain unstable and need targeted stabilization. |
 | 52 | 2026-09-22 | experiment | Tested a 0.65-degree 30d probe with area remapping. It blew up by day 10. |
+| 53 | 2026-09-22 | experiment | Ran a 0.7-degree GM0 365d run. It improved global A2 RMSE to 1.336 C and North Atlantic RMSE to 1.043 C. |
+| 54 | 2026-09-22 | reflection | At 0.7 degree, GM500 is no longer beneficial for the North Atlantic sector. Treat 0.7 degree + GM0 + localized convection as the new best diagnostic candidate. |
