@@ -38,3 +38,7 @@ Chronological record of research decisions and actions. Append-only.
 | 27 | 2026-09-21 | experiment | All four runs completed PASS. The two 365d 65N runs were stable; the wider polar cap was stable but less accurate; the 90d no-cap probe was stable. |
 | 28 | 2026-09-21 | analysis | The 65N extension reduced North Atlantic 40..60N A2 RMSE from 2.811 to 2.175/2.175 C and cold bias from -2.044 to -1.703/-1.700 C. Global A2 improved from 1.844 to 1.770/1.773 C. |
 | 29 | 2026-09-21 | reflection | The closed 60N wall is a major source of the targeted cold bias. Widen-cap is rejected. Freeze the 65N reduced-mixing run as a diagnostic candidate and next diagnose high-latitude surface heat flux or a sea-ice proxy. |
+| 30 | 2026-09-21 | experiment-plan | Locked a 65N surface heat-flux sensitivity protocol at fixed boundary/forcing/physics, varying only bulk lambda. |
+| 31 | 2026-09-21 | experiment | Ran 365d lambda20 and lambda80. Both were dynamically stable; lambda20 failed the A-class climate test and lambda80 passed. |
+| 32 | 2026-09-21 | analysis | Lambda80 improved global A2 RMSE from 1.773 to 1.530 C and North Atlantic 40..60N A2 RMSE from 2.175 to 1.572 C. |
+| 33 | 2026-09-21 | reflection | Surface heat exchange is a leading control, but residual cold errors remain concentrated in the strongest imposed-warming quintile. Keep lambda80 as a diagnostic candidate; next diagnose GM/bolus heat transport and mixed-layer closure rather than sea-ice flux cap. |

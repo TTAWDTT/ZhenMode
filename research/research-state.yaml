@@ -51,11 +51,17 @@ hypotheses:
     motivation: "Two 365d 65N runs reduced regional A2 RMSE by ~22.6% and cold bias by ~0.34 C; a wider cap worsened the same region."
     priority: high
 
+  - id: H7
+    statement: "Surface bulk heat-exchange strength is a leading scalar control on the 65N North Atlantic cold bias."
+    status: supported
+    motivation: "365d runs show a monotonic response: lambda20 gives A2 2.362 C, lambda40 1.773 C, and lambda80 1.530 C."
+    priority: high
+
 experiments:
   proxy_metric: "Global annual A2 SST pattern RMSE (C)"
   baseline_value: 2.115
-  best_value: 1.770
-  total_runs: 15
+  best_value: 1.530
+  total_runs: 17
   trajectory:
     - run: "lambda1 FCT/TVD baseline"
       value: 2.115
@@ -87,11 +93,15 @@ experiments:
       value: 1.964
     - run: "no polar cap 90d stability"
       value: null
+    - run: "65N lambda_bulk 20"
+      value: 2.362
+    - run: "65N lambda_bulk 80"
+      value: 1.530
 
 outer_loop:
-  cycle: 14
-  last_direction: "North boundary / polar-cap diagnostic"
-  last_reflection: "The closed 60N wall is a major contributor to the North Atlantic cold bias. Extending the northern wall to 65N was reproduced and reduced regional 40..60N A2 RMSE by ~22.6%, with global A2 improving from 1.844 to 1.770/1.773 C. The widened polar cap made the sector and global A2 worse. Treat the 65N reduced-mixing annual-real-air run as a diagnostic candidate. Next diagnose high-latitude surface heat flux or a sea-ice proxy rather than transport or cap widening."
+  cycle: 15
+  last_direction: "65N surface heat-flux sensitivity"
+  last_reflection: "Bulk heat-exchange strength is a first-order control on the 65N North Atlantic cold bias. Raising lambda_bulk from 40 to 80 improved global A2 RMSE from 1.773 to 1.530 C and regional RMSE from 2.175 to 1.572 C; lowering it to 20 failed. Keep lambda80 as a diagnostic candidate, not a production default. Residual cold errors still concentrate in the strongest imposed-warming quintile, so next diagnose GM/bolus heat transport and mixed-layer closure rather than a sea-ice flux cap."
 
 workspace:
   findings: "research/findings.md"

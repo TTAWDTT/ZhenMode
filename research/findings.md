@@ -171,3 +171,21 @@
 - 加宽极帽使目标区更冷、全球 A2 更差，不是当前补救方向。
 - 90d no-cap probe 稳定，但没有 365d 证据，暂不替代 65N 诊断基线。
 - 剩余高纬冷偏差指向缺失的高纬表面物理；下一步先诊断 surface heat flux / sea-ice proxy，而不是继续调 transport。
+
+## 65N 表面热通量敏感性（2026-09-21）
+
+在 65N 候选基线上只改 `lambda_bulk`：
+
+| run | A1 RMSE | A2 RMSE | 北大西洋 A2 bias | 北大西洋 A2 RMSE |
+|---|---:|---:|---:|---:|
+| lambda20 | 2.189 C | 2.362 C | -2.583 C | 3.128 C |
+| lambda40 | 1.463 C | 1.773 C | -1.700 C | 2.175 C |
+| lambda80 | 1.130 C | 1.530 C | -1.052 C | 1.572 C |
+
+结论：
+
+- 表面热交换时间尺度是当前残余冷偏差的一阶控制因子。
+- `lambda80` 使全球 A2 改善 13.7%，北大西洋 RMSE 改善 27.7%，并消除该区域冻结格点。
+- 但它只是标量恢复强度候选，不是机制修复，也不直接改 production default。
+- λ80 后残余冷误差仍集中在最强正热输入分位，说明下一个问题更可能在海洋热输送 / 高纬水团结构，而不是 sea-ice flux cap。
+- 下一步固定 `lambda_bulk=80`，诊断 GM / bolus heat transport 和 mixed-layer closure。
