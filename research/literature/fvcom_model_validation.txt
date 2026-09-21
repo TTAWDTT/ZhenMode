@@ -1,0 +1,101 @@
+Model Validation – FVCOM
+HOME
+FVCOM
+FVCOM
+Source code
+Model Validation
+Online Course
+In-Person Courses
+Help
+News
+Copyright
+NECOFS
+ORIGINAL NECOFS
+UPGRADED NECOFS
+NECOFS Forecast
+NECOFS Hindcast
+RESEARCH
+Atmosphere-Ocean Coupling
+Coastal Inundation
+Coastal Ocean Acidification
+Ecosystem Modeling
+Estuaries/Regional-Global Oceans/Lakes
+Water Quality
+Wetland-Estuarine Interactions
+Offshore Renewal Energy
+Observing System Simulation Experiments (OSSE)
+Tsunami/Nuclear radionuclide spreading
+OUTREACH
+AF447 Search
+Lady of Grace
+PUBLICATION
+ABOUT US
+LOGIN
+HOME
+FVCOM
+Model Validation
+01
+Comparing FVCOM, POM, and ECOM-si to the analytical solution in an idealized lake imposed by constant wind stress at the surface.
+Chen et al. 2007
+0
+2
+Comparing the surface elevation between FVCOM and POM in an idealized sloping-bottom circular lake imposed by constant wind stress at the surface .
+Chen et al. 2007
+03
+Comparing the surface currents between FVCOM and POM in an idealized sloping-bottom circular lake imposed by constant wind stress at the surface .
+Chen et al. 2007
+04
+The comparison of the salinity between FVCOM and POM in an idealized sloping-bottom circular lake.
+05
+A vortex wake experiment with a steady flow around an idealized circular island (the laminar flow forms under a condition with Re < 40).
+06
+A vortex wake experiment with a steady flow around an idealized circular island (shear instability occurs under a condition with Re ~ 40).
+0
+7
+A vortex wake experiment with a steady flow around an idealized circular island  (Kármán vortex street appears under a condition with Re ~ 300).
+0
+8
+A vortex wake experiment with a steady flow around an idealized geostrophic scale island. A constant Coriolis frequency (f = 10
+-4
+s
+-1
+) is considered (vortex shedding becomes asymmetric with a deflection to the right direction).
+0
+9
+FVCOM-simulated non-hydrostatic standing surface gravity waves (note: the free surface is amplified by a factor of 10 to provide a better view of the elevation change).
+Lai et al.. 2020
+10
+FVCOM non-hydrostatic lock exchange experiment results (the vertical and horizontal diffusion terms were turned off)
+Lai et al., 2020
+11
+FVCOM-simulated nonhydrostatic internal wave breaking over the shelf
+Chen et al. 2007
+12
+FVCOM-simulated nonhydrostatic internal wave breaking over the shore.
+Chen et al. 2007
+13
+Flooding and drying processes in an idealized semi-enclosed estuary with a lateral slope of ~0.3
+Chen et al., 2022
+14
+Comparing FVCOM-simulated Rossby equatorial soliton with a first-order approximate analytical solution
+Huang et al., 2008
+15
+The comparison of the salinity plume over an idealized linearly-slope shelf between FVCOM and POM.
+Chen et al. 2007
+16
+Demonstration of the FVCOM dike module in an idealized channel.
+17
+Changes in near-bed currents, bottom shear stress, bottom suspended sediment concentration (SSC), and bed thickness in a tidal-driven idealized inlet.
+18
+Changes in near-bed currents, fluid mud currents, bottom suspended sediment concentration (SSC), and fluid mud thickness in a tidal-driven idealized inlet.
+19
+Comparing the model results between FVCOM original upwind+MPDATA) and TVD schemes under a coarse-resolution condition (The TVD algorithm was implemented into FVCOM by Dr. Ole Anders Nøst’s team, Akvaplan-niva, Norway).
+20
+Comparing the model results between FVCOM original upwind+MPDATA) and TVD schemes under a high-resolution condition (The TVD algorithm was implemented into FVCOM by Dr. Ole Anders Nøst’s team, Akvaplan-niva, Norway).
+21
+Comparing the FVCOM code with and without the three-dimensional Runge-Kutta schemes for the internal mode.
+Author:
+hooper
+ABOUT US
+COPYRIGHT
+© 2001-2026 FVCOM @ MEDML. Designed by Dr. Chen

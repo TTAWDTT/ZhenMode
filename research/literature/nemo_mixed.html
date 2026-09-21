@@ -1,0 +1,82 @@
+Mixed-precision — NEMO release-5.0.0 documentation
+Community ocean model for multifarious space and time scales
+Click on NEMO icon to go back to NEMO Gitlab
+5.0.0
+User-guide: Basics
+Essential components
+Download and install the NEMO code
+Preparing an experiment
+Running the model
+Run the Reference configurations
+Explore the test cases
+User-guide: Advanced
+Embedded zooms
+Coupling
+Data assimilation
+Oceanic tracers
+Setting up a new configuration
+Add new diagnostics
+Tools
+XIOS3 demonstrator
+Mixed-precision
+Implementation of mixed precision on the NEMO code
+How to compile NEMO with mixed precision
+Work in progress
+Using PSyclone
+User-guide: Appendix
+v5.0 Release Notes
+Changes between 4.2.2 and 4.2.1
+Changes since 4.2.0
+Changes since 4.0.7
+Known Issues
+Migrating from 4.0.x to 4.2.x
+How to cite: Reference manuals
+Acronyms
+Developer-guide: Testing
+A guide to using SETTE
+Developer-guide: Documentation
+Contributing to the NEMO reference code
+Making changes to the User Guide
+NEMO
+Mixed-precision
+View page source
+Mixed-precision
+
+Implementation of mixed precision on the NEMO code
+How to compile NEMO with mixed precision
+Work in progress
+Implementation of mixed precision on the NEMO code
+
+NEMO is currently adapted to run with a mixed precision setup, a configuration where a large part of the real variables is defined to be single precision as opposed to the standard double precision. This allows for a considerably faster execution time without compromising the accuracy of the simulation.
+Mixed precision has been implemented using a reduced precision emulator library for Fortran (
+RPE
+), which enables the user to set an arbitrary number of significant bits for any real variable through the creation of a custom type. In the case of NEMO, we simulate variables with 52 and 23 bits for double and single precision, respectively. Then we follow a method to systematically analyze all the variables that can possibly be switched to single precision using a Python library called AutoRPE.
+The task of AutoRPE is to implement the reduced precision emulator on a Fortran code and then perform a Binary Tree Search to isolate variables whose precision cannot be reduced. This is done by applying an accuracy test on the simulations that test whether or not the results are accurate enough compared to the standard version of NEMO. The search starts with all variables in single precision. Every time the accuracy test fails, two new simulations are started, each with one-half of the variables in single precision. This procedure is repeated recursively, dividing the single precision variables into increasingly smaller groups until one of two things happens: One group passes the test, at which point that branch of the tree stops dividing, or the groups get as small as one single variable and it does not pass the test. This means that this variable will be kept in double precision.
+The result of the binary tree is a list of all the analyzed variables with the information about which variables can be safely switched to single precision.
+For example, with an ORCA2 configuration using only the OCE module, the analysis considers 1862 variables, of which only 147 are kept in double precision. This means that 92% of the variables can be set to single precision without altering the simulation output, resulting in time savings and performance gains.
+How to compile NEMO with mixed precision
+
+The compilation requires adding the key ‘key_single’ when running the “makenemo” command. The key_single will define the working precision (wp) of the variables as single precision (sp) without altering those who are defined strictly in double precision (dp). Then, the execution of the program follows the same steps as usual.
+For the moment the only configuration supported is ORCA2, without ICE.
+$
+./makenemo
+[
+...
+]
+-d
+'OCE'
+del_key
+'key_top key_si3'
+Work in progress
+
+Adding support to ORCA2 with ICE.
+Previous
+Next
+© Copyright 2008-2025, NEMO Consortium.
+Built with
+Sphinx
+using a
+theme
+provided by
+Read the Docs
+.

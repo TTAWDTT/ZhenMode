@@ -1,0 +1,61 @@
+# Research State — Central Project Tracking
+# Updated by the agent after each experiment and reflection.
+
+project:
+  title: "Survey of widely used high-fidelity ocean general circulation models"
+  question: "What numerical, physical, and software choices make the most widely used ocean models robust, scalable, and scientifically credible, and which should ocean_solver adopt next?"
+  status: active
+  started: "2026-09-21"
+  domain: "ocean modeling / geophysical fluid dynamics"
+
+literature:
+  key_papers: []
+  open_problems:
+    - "How do mature OGCMs enforce conservation and stability at coarse/fine boundaries?"
+    - "Which spatial discretizations balance accuracy, scalability, and maintainability?"
+    - "How do production models organize subgrid closures and boundary conditions?"
+  evidence_gaps:
+    - "Need quantitative side-by-side benchmark numbers on the same hardware." 
+    - "Need a focused prototype to test the full 3D FCT transport idea in ocean_solver."
+
+hypotheses:
+  - id: H1
+    statement: "Mature OGCM robustness comes more from conservative finite-volume/finite-element operators, split-explicit time stepping, and disciplined boundary masks than from exotic high-order stencils."
+    status: supported
+    motivation: "Ocean_solver has already found centered-flux and mask-boundary issues; mature models likely encode this as standard practice."
+    priority: high
+  - id: H2
+    statement: "The dominant production ocean models use a small set of proven subgrid closures (GM/Redi, KPP, Smagorinsky/biharmonic) rather than model-specific ad hoc schemes."
+    status: supported
+    motivation: "Can identify closures ocean_solver should port next."
+    priority: high
+  - id: H3
+    statement: "Modern scalability is increasingly achieved through MPI domain decomposition with optional GPU/accelerator ports rather than monolithic JAX-style whole-step compilation."
+    status: partially_supported
+    motivation: "Could guide ocean_solver's path from single-GPU to distributed runs."
+    priority: high
+  - id: H4
+    statement: "The most transferable next improvements are conservative horizontal transport, robust vertical coordinate treatment, and standardized diagnostics, not immediate neural-PDE extensions."
+    status: supported
+    motivation: "Aligns with user's desire for reliable numerical ocean model rather than neural operator."
+    priority: high
+
+experiments:
+  proxy_metric: "Structured comparison score of numerical robustness, scalability, maturity, and relevance to ocean_solver"
+  baseline_value: 0
+  best_value: null
+  total_runs: 0
+  trajectory: []
+
+outer_loop:
+  cycle: 1
+  last_direction: "literature survey"
+  last_reflection: "Mature OGCMs converge on conservative transport, disciplined masks, generalized vertical coordinates, modular closures, and first-class diagnostics. The next most transferable experiment is a full 3D flux-corrected-transport tracer option with a monotone low-order fallback."
+
+workspace:
+  findings: "research/findings.md"
+  log: "research/research-log.md"
+  literature_dir: "research/literature/"
+  experiments_dir: "research/experiments/"
+  to_human_dir: "research/to_human/"
+  paper_dir: "research/paper/"

@@ -1,0 +1,149 @@
+FVCOM Installation, Compilation, and Execution – FVCOM
+HOME
+FVCOM
+FVCOM
+Source code
+Model Validation
+Online Course
+In-Person Courses
+Help
+News
+Copyright
+NECOFS
+ORIGINAL NECOFS
+UPGRADED NECOFS
+NECOFS Forecast
+NECOFS Hindcast
+RESEARCH
+Atmosphere-Ocean Coupling
+Coastal Inundation
+Coastal Ocean Acidification
+Ecosystem Modeling
+Estuaries/Regional-Global Oceans/Lakes
+Water Quality
+Wetland-Estuarine Interactions
+Offshore Renewal Energy
+Observing System Simulation Experiments (OSSE)
+Tsunami/Nuclear radionuclide spreading
+OUTREACH
+AF447 Search
+Lady of Grace
+PUBLICATION
+ABOUT US
+LOGIN
+HOME
+FVCOM
+FVCOM Installation, Compilation, and Execution
+1.
+Where and how to obtain the source code?
+The FVCOM source code is available in the FVCOM GitHub repository at
+https://github.com/FVCOM-GitHub.
+The FVCOM GitHub contains several versions of the FVCOM source codes. For example, FVCOM v4.3, FVCOM v4.4.2, and FVCOM v5.0.
+There are two ways to download the FVCOM source code from GitHub. The first is to clone the code using a git command from a terminal, and the second is to download the code directly from the GitHub website.
+Method 1
+: Clone the code with a git command from a terminal. For example,
+git clone
+Note: it requires that “git” is installed on the computer system. Visit
+the Git webpage
+for more details about how to install git.
+Method 2
+: Download the code directly from
+the webpage
+.
+Select the version (such as fvcom43, fvcom442, fvcom50).
+Click the green button ‘Code’ and select ‘Download ZIP.’
+We also provide a package of helping users to learn and run FVCOM, including example cases, offline models, libraries interacting with FVCOM, and pre-and post-processing tools. The package is available at
+a google drive address
+:
+2
+.
+What libraries are required to install, and what Fortran compilers can run FVCOM
+Required/Optional libraries
+:
+NetCDF
+: Read input files and write output files in NetCDF format. Both
+NetCDF-C
+and NetCDF-Fortran are required.
+MPI
+: Parallel simulation with multiple CPUs. You don’t need it if you run FVCOM using a single CPU. However, we strongly suggest that you run FVCOM using parallel simulation. There are many options to download and install the free MPI software. For example,
+MPICH
+OneAPI
+Metis
+:
+Serial graphic partition
+. The Metis is used for domain partition. It is required for parallel simulation with multiple CPUs. It does not require running FVCOM using a single processor. However, we strongly recommend downloading and installing it.
+Julian
+: It is used for
+calendar calculation
+. The equilibrium tidal forcing in the FVCOM uses the Julian time.
+Proj4
+: It is used for
+coordinate conversion
+. FVCOM includes both Cartesian and spherical coordinates. The WRF NetCDF output uses the earth coordinate system defined as longitudes and latitudes. If the Cartesian coordinate is selected for FVCOM, Proj4 is required to turn on to convert longitudes and latitudes to the
+x-y
+coordinates. Proj4 is also used for the FVCOM output if the earth coordinates system is selected for the model run in the Cartesian coordinates.
+Fortran-proj4
+: Bindings for proj4 in Fortran. This program is to make Proj.4 work in Fortran. The program can be downloaded at
+https://github.com/mhagdorn/proj4-fortran
+.
+PetSc
+: The toolkit of scientific computation. This library is required when using the semi-implicit solver in FVCOM. Also, PetSc is required for matrix solvers in Kalman filter assimilation, non-hydrostatic, and SWAVE modules. It is needed to run FVCOM using the two-mode explicit solver. PetSc can be downloaded from the website addressed
+https://petsc.org/
+.
+ESMF
+: This library is only required for either two domain nesting or WRF-FVCOM coupling.
+3.
+Which Fortran Compiler works for FVCOM
+?
+FVCOM codes are written in Fortran 90 and C-language. We recommend users use the Intel Fortran compiler,
+ifort and
+icc
+The users can also use other Fortran compilers. For example,
+“gfortran and
+gcc
+” ;
+PGI Fortran (https://www.pgroup.com/index.htm).
+4.
+How to compiler FVCOM? Which files do users need to modify?
+makedepends
+Generate the module dependencies of the FVCOM code. This step is required only when new codes are added.
+Edit
+“
+make.inc
+”
+Define the modules and numerical algorithms in “make in” for the user’s case. The ‘make.inc’ includes all the settings for compiling FVCOM. This file must be edited correctly to meet what the user tried to do before the FVCOM code is compiled. Three contents in “make.inc” are required to be set up, including “library environments,” “control flags,” and “compiler settings.”  The examples can be found in the example cases posted on Google Drive.
+make clean
+This step is required after completing editing ‘make.inc’. This execution ensures all code components are compiled after the setting changes.
+make
+Compile the FVCOM codes. The user should see the executable file ‘fvcom’ if the compilation is successful.
+FVCOM can be compiled in a parallel mode using the following command:
+make -j
+N
+where
+N
+is the integer number specifying the maximum number of cores used for compiling the FVCOM source codes. Usually, it does not take a significant time to complete the FVCOM compilation, so a parallel compiler is not necessary.
+Based on the tests with Intel® Xeon® CPU E5-2640, the total time compiling FVCOM is 120 s with one core. The time can be saved by 40% with two cores and 54% with three cores. No significant improvement is reported when more than three cores are selected. The results could vary with different CPUs and selected flags.
+5.
+How to run FVCOM
+?
+Step 1: Make a folder ‘run’ and copy/link the executable file ‘fvcom’ to this folder.
+Step 2: Prepare all required input files—for example, initial conditions, meteorological forcing, boundary conditions, river charges, etc.
+Step 3: Create the namelist file with the name
+CASENAME
+_run.nml. Users can get a blank namelist file by “./fvcom –create_namelist.”
+Step 4: Run the model.
+To run FVCOM with a single CPU
+./fvcom –casename=
+CASENAME
+To run FVCOM in the parallel way
+mpiexec -np N ./fvcom –casename=
+CASENAME
+or
+mpirun -np N  ./fvcom –casename=
+CASENAME
+where N is the processor number and “CASENAME” is the name of the simulation case and must be consistent with the prefix of the namelist file. For example, if the namelist file is named ‘gom_run.nml’, then “CASENAME” is ‘gom’. The CPUs are defined in the namelist file.
+Author:
+hooper
+ABOUT US
+COPYRIGHT
+© 2001-2026 FVCOM @ MEDML. Designed by Dr. Chen

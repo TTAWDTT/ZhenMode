@@ -1,0 +1,124 @@
+Reference Publications — ICON Website
+Search Site
+Search
+Advanced Search…
+Search Site
+Search
+Advanced Search…
+Site Map
+Contact
+Newsletter
+Docs
+Log in
+Sprache:
+About us
+ICON Partners
+ICON Projects
+ICON Governance
+Collaborating Communities
+ICON Model
+Release Download
+Documentation
+Getting Started With ICON
+Community Interface
+Supported Configurations
+Publications
+Reports on ICON
+Reference Publications
+Events
+News
+News
+Community Newsletter
+Reference Publications
+Home
+Publications
+Reference Publications
+Reference Publications
+https://www.icon-model.org/publications/reference-publications
+https://www.icon-model.org/@@site-logo/ICON_logo_black_small.png
+This is a limited list of journal publications as a starting point for exploring the ICON world. For lots of further research publications please see the documentation part of this website, the websites of the ICON partners and standard search engines.
+Atmosphere
+Bonaventura, L., and T. Ringler, 2005: Analysis of Discrete Shallow-Water Models on Geodesic Delaunay Grids with C-Type Staggering. Mon. Wea. Rev., 133, 2351–2373,
+https://doi.org/10.1175/MWR2986.1
+Gassmann A and Herzog HJ. (2008). Towards a consistent numerical compressible non-hydrostatic model using generalized Hamiltonian tools. Q. J. R. Meteorol. Soc. 134: 1597–1613.
+https://doi.org/10.1002/qj.297
+Rípodas, P. et al: Icosahedral Shallow Water Model (ICOSWM): results of shallow water test cases and sensitivity to model parameters, Geosci. Model Dev., 2, 231–251,
+https://doi.org/10.5194/gmd-2-231-2009
+, 2009.
+Wan, H. et al. (2013). The ICON-1.2 hydrostatic atmospheric dynamical core on triangular grids. Part 1: Formulation and performance of the baseline version. Geoscientific Model Development, 6(3), 735–763.
+https://doi.org/10.5194/gmd-6-735-2013
+Zängl, G. et al. (2015). The ICON (ICOsahedral Non-hydrostatic) modelling framework of DWD and MPI-M: Description of the non-hydrostatic dynamical core. Q. J. R. Meteorol. Soc. 141, 563–579.
+https://doi.org/10.1002/qj.2378
+Dipankar, A. et al. (2015). Large eddy simulation using the general circulation model ICON. Journal of Advances in Modeling Earth Systems, 7(3), 963–986.
+https://doi.org/10.1002/2015MS000431
+Klocke, D., Brueck, M., Hohenegger, C. & Stevens, B. Rediscovery of the doldrums in storm-resolving simulations over the tropical Atlantic. Nature Geosci 10, 891–896 (2017).
+Giorgetta, M. A. et al. (2018). ICON‐A, the atmosphere component of the ICON Earth system model: I. Model description. Journal of Advances in Modeling Earth Systems, 10.
+https://doi.org/10.1029/2017MS001242
+Stevens, B. et al. DYAMOND: the DYnamics of the Atmospheric general circulation Modeled On Non-hydrostatic Domains. Progress in Earth and Planetary Science 6, 61 (2019).
+Stevens, B. et al. The Added Value of Large-eddy and Storm-resolving Models for Simulating Clouds and Precipitation. Journal of the Meteorological Society of Japan 98, 395–435 (2020)
+Zängl, G., D. Reinert, and F. Prill (2022). Grid refinement in ICON v2.6.4. Model Dev. 15, 7153–7176.
+https://doi.org/10.5194/gmd-15-7153-2022
+Giorgetta, et al (2022), The ICON-A model for direct QBO simulations on GPUs (version icon-cscs:baf28a514), Geosci. Model Dev., 15, 6985–7016,
+https://doi.org/10.5194/gmd-15-6985-2022
+Hohenegger, C. et al (2023). ICON-Sapphire: simulating the components of the Earth system and their interactions at kilometer and subkilometer scales. Geosci. Model Dev., 16, 779–811,
+https://doi.org/10.5194/gmd-16-779-2023
+Lapillonne, X. et al. (2026) Operational numerical weather prediction with ICON on GPUs (version 2024.10), Geosci. Model Dev., 19, 755–772,
+https://doi.org/10.5194/gmd-19-755-2026
+Ocean
+Korn, P. (2017). Formulation of an unstructured grid model for global ocean dynamics. J. Comput. Phys., 339©, 525–552.
+https://doi.org/10.1016/j.jcp.2017.03.009
+Korn, P. and Linardakis, L. (2018). A conservative discretization of the shallow-water equations on triangular grids. J. Comput. Phys., 375©, 871-900.
+https://doi.org/10.1016/j.jcp.2018.09.002
+Korn, P. and S. Danilov (2017). Elementary dispersion analysis of some mimetic discretizations on triangular C-grids. J. Comput. Phys., 330, 156 - 172.
+https://doi.org/10.1016/j.jcp.2016.10.059
+Korn, P. (2018). A structure-preserving discretization of ocean parametrizations on unstructured grids. Ocean Modelling 132, 73-90.
+https://doi.org/10.1016/j.ocemod.2018.10.002
+Mehlmann and Korn, P. (2021): Sea-ice dynamics on triangular grids. J. Comput. Phys., 428, 110086.
+https://doi.org/10.1016/j.jcp.2020.110086
+Logemann, L. Linardakis, P. Korn, C. Schrum (2021): Global tide simulations with ICON-O: testing the model performance on highly irregular meshes. Ocean Dynamics 71, 43-57.
+https://doi.org/10.1007/s10236-020-01428-7
+L. Linardakis, I. Stemmler, M. Hanke, L. Ramme, F. Chegini, T. Ilyina, and P. Korn (2022) Improving scalability of Earth system models through coarse-grained component concurrency – a case study with the ICON v2.6.5 modelling system. Geosci. Model Dev., 15, 9157–9176,
+doi.org/10.5194/gmd-15-9157-2022
+Earth System Components, Aerosols and Reactive Trace Gases (ART)
+Jungclaus, J. et al. (2022). The ICON Earth System Model Version 1.0. Journal of Advances in Modeling Earth Systems, 14: e2021MS002813.
+https://doi.org/10.1029/2021MS002813
+Schröter, J. et al. (2018). ICON-ART 2.1: a flexible tracer framework and its application for composition studies in numerical weather forecasting and climate simulations. Geosci. Model Dev., 11, 4043-4068,
+https://doi.org/10.5194/gmd-11-4043-2018
+Rieger, D. et al. (2015). ICON–ART 1.0 – a new online-coupled model system from the global to regional scale. Geosci. Model Dev., 8, 1659-1676,
+https://doi.org/10.5194/gmd-8-1659-2015
+Weimer, M. et al. (2017). An emission module for ICON-ART 2.0: implementation and simulations of acetone. Geosci. Model Dev., 10, 2471-2494,
+https://doi.org/10.5194/gmd-10-2471-2017
+Schneck, R. et al. (2022). Assessment of JSBACHv4.30 as a land component of ICON-ESM-V1 in comparison to its predecessor JSBACHv3.2 of MPI-ESM1.2. Geoscientific Model Development, 15(22), 8541–8559.
+https://doi.org/10.5194/GMD-15-8581-2022
+Pham, T. V. et al. (2021): ICON in Climate Limited-area Mode (ICON release version 2.6.1): a new regional climate model. Geosci. Model Dev., 14, 985–1005.
+https://doi.org/10.5194/gmd-14-985-2021
+Physics Packages
+There are many physics packages for the different configurations of ICON. They will be described and linked in
+docs.icon-model.org
+soon.
+Libraries used by ICON
+Here we link technical libraries, further physics libraries and external packages will be documented in
+docs.icon-model.org
+.
+Coupler
+Hanke M., Redler, R. et al. (2016). YAC 1.2.0: new aspects for coupling software in Earth system modeling. Geoscientific Model Development, 9, 2755-2769.
+https://doi.org/10.5194/gmd-9-2755-2016
+Moritz Hanke und René Redler (2019). New features with YAC 1.5.0. Reports on ICON, No 3.
+https://doi.org/10.5676/DWD_pub/nwv/icon_003
+Input/Output
+Climate Data Interface -  CDI is a C and Fortran Interface to access climate and NWP model data. Supported data formats are GRIB and NetCDF.
+External Parameters
+Extpar Datasets - for more information see
+http://www.cosmo-model.org/content/support/software/default.htm
+(EXTPAR - COSMO software)
+Gordon Bell Award
+Klocke et at. (2025): Computing the Full Earth System at 1km Resolution. Proceedings of the International Conference for High Performance Computing, Networking, Storage and Analysis. 125-136.
+https://dl.acm.org/doi/10.1145/3712285.3771789
+Hadade et al. (2025): Destination Earth: The Climate Change Adaptation Digital Twin. Proceedings of the International Conference for High Performance Computing, Networking, Storage and Analysis. 99-110.
+https://dl.acm.org/doi/10.1145/3712285.3771790
+Sitemap
+Contact
+Privacy Policy
+Imprint
+Accessibility
+Copyright

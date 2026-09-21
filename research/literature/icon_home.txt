@@ -1,0 +1,70 @@
+About ICON — ICON Website
+Search Site
+Search
+Advanced Search…
+Search Site
+Search
+Advanced Search…
+Site Map
+Contact
+Newsletter
+Docs
+Log in
+Sprache:
+About us
+ICON Partners
+ICON Projects
+ICON Governance
+Collaborating Communities
+ICON Model
+Release Download
+Documentation
+Getting Started With ICON
+Community Interface
+Supported Configurations
+Publications
+Reports on ICON
+Reference Publications
+Events
+News
+News
+Community Newsletter
+A new chapter was opened when ICON was released as open source code in January 2024. We are happy to be able to celebrate this and are grateful for the enormous amount of work that many colleagues have put in.
+ICON Open Source Release
+Home
+About ICON
+https://www.icon-model.org
+https://www.icon-model.org/@@site-logo/ICON_logo_black_small.png
+About ICON
+What is ICON
+ICON is a flexible, scalable, high-performance modelling framework for weather, climate and environmental prediction that provides actionable information for society and advances our understanding of the Earth's climate system.
+ICON is evolving into an internationally recognized and widely used modeling framework for weather, climate, and environmental prediction that allows the users to solve challenging problems of high societal relevance. It will push the boundaries of what is computationally feasible to advance knowledge and understanding and support innovation in weather, climate and environmental services.
+ICON partnership
+The ICON partnership represents a close and diverse collaboration between its members and development partners, bringing together research and operations in weather and climate and expertise in high performance computing and data in a synergistic way.
+Open source release
+ICON is available to the community under a permissive open source licence (BSD-3C). The ICON partners provide various tutorials, training courses and materials online. The framework is being tested on a range of supercomputer architectures, including CPU, vector machine and GPU-based systems.
+The ICON partners are working towards a long-term goal of open development, where tools and communication structures are expected to evolve over time. This website provides an entry point, with basic links to download and use the model, and where further material is available.
+Release Download
+About us
+Publications
+News
+New Report: Redler et al. (2026) - ICON input via Python
+We are happy to announce the publication of a new Report on ICON, Issue 12, on ICON input via Python by R. Redler et al. (2026). ...
+ICON Release 2026.04 now available
+ICON release 2026.04 has been published on April 30, 2026. A major change for this release is that the model namelist documentation is now available. ...
+ICON simulation wins Gordon Bell Prize for Climate Modelling 2025
+ICON team receives international recognition for groundbreaking achievements in high-performance computing. ...
+ICON Release 2025.10 and patch release 2025.10-1 available
+A new ICON release is now available. ...
+ICCARUS 2026
+The registration for the ICON/COSMO/CLM/ART User Seminar (ICCARUS) 2026 is now open. ...
+Show all
+Upcoming Events
+ICON All-Hands Meeting 2026
+Show all
+Sitemap
+Contact
+Privacy Policy
+Imprint
+Accessibility
+Copyright

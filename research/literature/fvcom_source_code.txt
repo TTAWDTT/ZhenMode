@@ -1,0 +1,295 @@
+GitHub - FVCOM-GitHub/FVCOM · GitHub
+Skip to content
+Navigation Menu
+Sign in
+Appearance settings
+Platform
+AI CODE CREATION
+GitHub Copilot
+Write better code with AI
+GitHub Copilot app
+Direct agents from issue to merge
+MCP Registry
+Integrate external tools
+DEVELOPER WORKFLOWS
+Actions
+Automate any workflow
+Codespaces
+Instant dev environments
+Issues
+Plan and track work
+Code Review
+Manage code changes
+Code Quality
+Enforce quality at merge
+APPLICATION SECURITY
+GitHub Advanced Security
+Find and fix vulnerabilities
+Code security
+Secure your code as you build
+Secret protection
+Stop leaks before they start
+EXPLORE
+Why GitHub
+Documentation
+Blog
+Changelog
+Marketplace
+View all features
+Solutions
+BY COMPANY SIZE
+Enterprises
+Small and medium teams
+Startups
+Nonprofits
+BY USE CASE
+App Modernization
+DevSecOps
+DevOps
+CI/CD
+View all use cases
+BY INDUSTRY
+Healthcare
+Financial services
+Manufacturing
+Government
+View all industries
+View all solutions
+Resources
+EXPLORE BY TOPIC
+AI
+Software Development
+DevOps
+Security
+View all topics
+EXPLORE BY TYPE
+Customer stories
+Events & webinars
+Ebooks & reports
+Business insights
+GitHub Skills
+SUPPORT & SERVICES
+Documentation
+Customer support
+Community forum
+Trust center
+Partners
+View all resources
+Open Source
+COMMUNITY
+GitHub Sponsors
+Fund open source developers
+PROGRAMS
+Security Lab
+Maintainer Community
+GitHub Stars
+Archive Program
+REPOSITORIES
+Topics
+Trending
+Collections
+Enterprise
+ENTERPRISE SOLUTIONS
+Enterprise platform
+AI-powered developer platform
+AVAILABLE ADD-ONS
+GitHub Advanced Security
+Enterprise-grade security features
+Copilot for Business
+Enterprise-grade AI features
+Premium Support
+Enterprise-grade 24/7 support
+Pricing
+Search
+/
+Sign in
+Sign up
+Appearance settings
+You signed in with another tab or window.
+Reload
+to refresh your session.
+You signed out in another tab or window.
+Reload
+to refresh your session.
+You switched accounts on another tab or window.
+Reload
+to refresh your session.
+Dismiss alert
+FVCOM-GitHub
+/
+FVCOM
+Public
+Notifications
+You must be signed in to change notification settings
+Fork
+55
+Star
+103
+Code
+Issues
+36
+Pull requests
+2
+Actions
+Projects
+Security and quality
+0
+Insights
+Additional navigation options
+Code
+Issues
+Pull requests
+Actions
+Projects
+Security and quality
+Insights
+main
+Branches
+Tags
+Go to file
+Code
+Open more actions menu
+Latest commit
+History
+56 Commits
+56 Commits
+Folders and files
+Name
+Name
+Last commit message
+Last commit date
+libs
+libs
+nuopc
+nuopc
+src
+src
+.gitignore
+.gitignore
+LICENSE.md
+LICENSE.md
+README.md
+README.md
+View all files
+Repository files navigation
+README
+License
+More
+items
+FVCOM 5.0.1
+FVCOM Website:
+http://fvcom.smast.umassd.edu/
+FVCOM Source Code:
+https://github.com/FVCOM-GitHub/FVCOM
+FVCOM Users Forum:
+https://groups.google.com/g/fvcom-user
+Code download
+To download the latest version of FVCOM:
+git clone
+https://github.com/FVCOM-GitHub/FVCOM.git
+To obtain an old version of FVCOM:
+git clone --branch
+VERSION
+https://github.com/FVCOM-GitHub/FVCOM.git
+where
+VERSION
+is the version number. All available verions can be found on
+https://github.com/FVCOM-GitHub/FVCOM/releases
+.
+Required libraries
+Compilers
+FVCOM codes are mainly written in Fortran 90 and C language. We recommend users to use
+ifort and icc. (
+https://www.intel.com/content/www/us/en/developer/tools/oneapi/overview.html
+)
+gfortran and gcc. (
+https://gcc.gnu.org/
+)
+Required/Optional libraries
+NetCDF: to read input files and write output files in NetCDF format. Both NetCDF-C and NetCDF-Fortran are required. (
+https://www.unidata.ucar.edu/software/netcdf/
+)
+MPI: (optional) for parallel simulation with multiple cpus. Many options are freely available online, such as
+MPICH (
+https://www.mpich.org/downloads/
+)
+OneAPI (
+https://www.intel.com/content/www/us/en/developer/tools/oneapi/overview.html
+)
+Metis: (optional) for serial graphic partition. (
+http://glaros.dtc.umn.edu/gkhome/metis/metis/overview
+)
+Julian: for calendar calculation. (
+https://pds-rings.seti.org/toolkits/
+)
+Proj4: used for coordinate conversion. (
+https://proj.org/
+)
+Fortran-proj4: bindings for proj4 in Fortran. (not available online.)
+PetSc: (optional) the toolkit of scientific computation. This library is required when using semi-implicit scheme, data assimilation, non-hydrostatic, or SWAVE module.(
+https://petsc.org/
+)
+ESMF: (optional) This library is required when online nesting or WRF-FVCOM coupling is applied.
+Installation
+make depend
+Generate the module dependencies of FVCOM codes. This step is required only when there are new codes added.
+edit make.inc
+The ‘make.inc’ file includes all the settings for compiling FVCOM. This file needs to be edited correctly based on users’ interest of simulation, before the FVCOM codes are compiled. Users need to edit three parts in this file, including library environments, control flags, and compiler settings.
+make clean
+When the ‘make.inc’ file is modified, this step is necessary to make the model compiled from the beginning with the modified settings.
+make
+Compile the FVCOM codes. You should see the executable file ‘fvcom’ when the compilation is successful.
+FVCOM can be compiled in a parallel mode, with the following command:
+make -j N
+where N is the integer number specifying the maximum number of cores used for compiling the FVCOM source codes.
+Based on the tests with Intel® Xeon® CPU E5-2640, the total time of compiling FVCOM is 120 s with one core. The time can be saved 40% with two cores and 54% with three cores. When more than three cores are applied, there is no large improvement on the compiling speed.
+The results could vary with different cpus and different flags selected. However, we recommend users compile FVCOM with 2 or 3 cores to save the compiling time.
+Set up and run
+Step 1: make a folder ‘run’ and copy/link the executable file ‘fvcom’ to this folder.
+Step 2: prepare all required input files
+Step 3: create the namelist file with the name of CASENAME_run.nml. You can get a blank namelist file by
+./fvcom –create_namelist
+Step 4: run the model.
+To run FVCOM with single cpu
+./fvcom –casename=CASENAME
+To run FVCOM in the parallel way
+mpiexec ./fvcom –casename=CASENAME
+or
+mpiexec ./fvcom –casename=CASENAME
+where CASENAME is the name of simulation case and must be consistent with the prefix of the namelist file. For example, the namelist file is named as ‘gom_run.nml’, then CASENAME is ‘gom’.
+Testsuite
+We also provide a package of helping users to learn and run FVCOM, including benchmark test cases, offline models, necessary libraries, and processing tools. The package is available at:
+https://drive.google.com/file/d/1xwcFjzkSNT26FBu83pq2I8oIGzPqnjUn/view
+About
+No description, website, or topics provided.
+Resources
+Readme
+License
+Activity
+Stars
+103
+stars
+Watchers
+7
+watching
+Forks
+55
+forks
+Report repository
+Releases
+Packages
+Contributors
+Languages
+Footer
+© 2026 GitHub, Inc.
+Footer navigation
+Terms
+Privacy
+Security
+Status
+Community
+Docs
+Contact
+Manage cookies
+Do not share my personal information
+You can’t perform that action at this time.

@@ -1,0 +1,142 @@
+Parallel Ocean Program (POP) | Community Earth System Model
+Parallel Ocean Program (POP) | Community Earth System Model
+Skip to main content
+Main navigation
+Community Earth System Model
+Contact Us
+Search CESM
+About
+Background
+Mission & Vision
+CESM Chief Scientists
+Support Policy
+FAQs
+Awards
+Contact Us
+Administration
+CESM Metrics
+Publications
+What We Do
+Publications
+Community Projects
+Experiments
+Our Events
+Projects
+Models
+Simpler Models
+Model Releases
+Community Earth System Model 2 (CESM2)
+Community Atmosphere Model (CAM)
+Community Land Model (CLM)
+Community Ice CodE (CICE)
+Community Ice Sheet Model (CISM)
+Community Sea Ice Model (CSIM)
+Paleoclimate ToolKit
+Parallel I/O Library (PIO)
+Parallel Ocean Program (POP)
+WACCM
+WACCM-X
+CCSM
+CSM Flux Coupler (CPL)
+Legacy Releases
+Working Groups
+Co-Chairs & Terms
+AMWG
+BGCWG
+CAWG
+CVCWG
+ESPWG
+LIWG
+LMWG
+OMWG
+PWG
+PCWG
+SEWG
+WAWG
+Education & Outreach
+Administrative Contacts
+CESM Mailing lists
+CESM News
+General contacts
+User Support Forums
+Faculty Network for Teaching with CESM
+Events
+Upcoming
+Tutorials
+Workshops
+Working Group Meetings
+Past
+News
+All News
+Newsletters
+Development Blog
+Search CESM
+Contact Us
+Breadcrumb
+Home
+Models
+Parallel Ocean Program (POP)
+Parallel Ocean Program (POP)
+Main content
+The ocean component of the CESM1.0 is the Parallel Ocean Program version 2 (POP2). This model is based on the POP version 2.1 of the Los Alamos National Laboratory; however, it includes many physical and software developments incorporated by the members of the Ocean Model Working Group (see the
+notable improvements
+page for these developments).
+Documentation
+The Parallel Ocean Program (POP) Reference Manual
+(Los Alamos National Laboratory, LAUR-10-01853)
+Ocean Ecosystem Model Scientific Reference
+CESM1 POP2 User Guide
+CESM1 Ocean Ecosystem Model User Guide
+CESM1.0 POP2 FAQ
+Parallel Ocean Program (POP)
+Frequently Asked Questions
+Port Validation & Model Verification
+Post-Processing Utilities
+NSF NCAR
+NSF NCAR Homepage
+ACOM | Atmospheric Chemistry Observations & Modeling
+CGD Laboratory
+CISL | Computational & Information Systems
+EdEC | Education, Engagement & Early-Career Development
+EOL | Earth Observing Laboratory
+HAO | High Altitude Observatory
+MMM | Mesoscale & Microscale Meteorology
+RAL | Research Applications Laboratory
+UCAR
+UCAR Homepage
+Community Programs
+Education & Training
+For Staff
+Government Relations & External Engagement
+Member Institutions
+Tech Transfer & Engagement
+University Collaboration
+CESM
+Chief Scientist - David Lawrence
+The CESM project is supported primarily by the
+U.S. National Science Foundation (NSF)
+. Administration of the CESM is maintained by the
+CGD Laboratory
+at the
+NSF National Center for Atmospheric Research (NSF NCAR)
+.
+CESM
+is a fully-coupled, community, global Earth system model that provides state-of-the-art computer simulations of the Earth's past, present, and future states.
+Subscribe to our newsletter
+Follow CGD
+© 2026 UCAR
+Privacy
+Cookies
+Web Accessibility
+Terms of Use
+Copyright Issues
+Sponsored by U.S. NSF
+Report Ethics Concern
+Staff Login
+Postal Address:
+P.O. Box 3000, Boulder, CO 80307-3000
+•
+Shipping Address:
+3090 Center Green Drive, Boulder, CO 80301
+This material is based upon work supported by the NSF National Center for Atmospheric Research, a major facility sponsored by the U.S. National Science Foundation and managed by the University Corporation for Atmospheric Research. Any opinions, findings and conclusions or recommendations expressed in this material do not necessarily reflect the views of the
+U.S. National Science Foundation.

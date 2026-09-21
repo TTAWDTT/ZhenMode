@@ -1,0 +1,19 @@
+icon / icon-model · GitLab
+icon-model
+Project information
+25,568
+Commits
+6
+Branches
+11
+Tags
+11
+Releases
+README
+CONTRIBUTING
+Created on
+August 24, 2023
+Loading
+Imprint
+|
+Privacy Policy

@@ -1,0 +1,175 @@
+FESOM: FESOM
+Data Protection
+Imprint
+Contact
+Search
+English
+Menu
+Home
+Models
+Meshes/Setups
+FESOM1.4
+FESOM2.0
+FESIM
+AWI-CM
+AWI-ESM
+FESOM-C
+CMIP6
+CMIP6 experiments
+Work with AWI-CM unstructured data
+How to cite AWI-CM
+FESOM days
+FESOM days 2020
+Tools
+pyfesom
+spheRlab
+FPOST
+Technology
+Scaling
+Libraries
+METIS
+Publications
+AWI-CM in CMIP6
+Media
+logos
+Video
+Projects
+Ongoing projects
+Development team
+History of development
+Contact
+FESOM
+(
+F
+inite-
+E
+lement/volum
+E
+S
+ea ice-
+O
+cean Model) is a multi-resolution sea ice-ocean model that solves the equations of motion on unstructured meshes. The model is developed and supported by researchers at the
+Alfred Wegener Institute, Helmholtz Centre for Polar and Marine Research (AWI)
+, in Bremerhaven, Germany.
+Overview
+FESOM implements the idea of using unstructured meshes with variable resolution. This mesh flexibility allows to increase resolution in dynamically active regions, while keep a relatively coarse-resolution setup elsewhere. FESOM allows global multi-resolution simulations without traditional nesting.
+The dynamical core of the original version of
+FESOM
+employs the finite element method; its successor,
+FESOM2
+, uses the finite volume method, which increases the computational efficiency by a factor of 3-5. Both versions include the Finite-Element Sea Ice Model (
+FESIM
+).
+Excellent scalability characteristics allow to make effective use of massively parallel supercomputers.
+FESOM is also used in the AWI Climate Model (
+AWI-CM
+), which contributes to CMIP6.
+News
+FESOM2.1 is out
+Zoom
+Hovmoller diagram of global mean ocean temperature bias with respect to climatology for FESOM2.0 and FESOM2.1.
+FESOM team released a new stable version of FESOM2 model - FESOM2.1:
+Main changes are:
+Parallel and asynchronous output writing (
+#14
+).
+Added Icepack sea ice thermodynamics (Zampieri et al., 2021)
+#70
+Added backscatter parameterisation (Juricke et al., 2019)
+#64
+Initial version of cavities
+#48
+, and its improvement
+#110
+New defaults in the namelists and a system to create setups from yaml files (
+#55
+). Most prominent changes are: Partial cells, zstar and unrotated mesh are now default options, JRA55-do is default forcing.
+New license (LGPL), as requested by some partners, so FESOM2 can be used as a library by comertial software
+#74
+Add an option to smooth tracer (smooth_bh_tra), which is nessesary for very high resolution setups
+#81
+Fix partial cells to work more stable in high resolution setups
+#27
+For other changes, see release
+notes on GitHub
+.
+Release also includes updated configuration for CORE2 mesh, that make overall performance of FESOM2.1 better under JRA55-do forcing.
+New publication on ICEPACK sea ice thermodynamics in FESOM2
+Zoom
+Zoom
+FESOM2 use relatively simple sea ice thermodynamics by default. Lorenzo Zampieri with co-authors implemented advanced set of sea ice parameterizations derived from the single‐column sea‐ice model Icepack into FESOM2. The update has substantially broadened the range of physical processes that can be represented by the model.
+See details in Lorenzo's publication:
+Zampieri, L., Kauker, F., Fröhle, J., Sumata, H., Hunke, E. C., & Goessling, H. F. (2021).
+Impact of sea‐ice model complexity on the performance of an unstructured‐mesh sea‐ice/ocean model under different atmospheric forcings
+. Journal of Advances in Modeling Earth Systems, 13, e2020MS002438.
+doi.org/10.1029/2020MS002438
+New publication in science magazine "Spektrum".
+German Science magazine "Spektrum der Wissenschaft - Magazin für Naturwissenschaft": Published an article, featuring several FESOM based visualizations.
+Wie ein Klimamodell entsteht :
+www.spektrum.de/magazin/wie-ein-klimamodell-entsteht/1773717
+Major wind-driven ocean currents are shifting toward the poles
+AWI press release about the new study that use AWI-CM model.
+https://www.awi.de/en/about-us/service/press/press-release/major-wind-driven-ocean-currents-are-shifting-toward-the-poles.html
+New geoengineering study published with AWI-CM
+The new study, that use AWI-CM climate model,  "
+Sea ice targeted geoengineering can delay Arctic sea ice decline but not global warming
+" has been published in the AGU Journal "Earth’s Future“.
+Media coverage:
+Can Arctic ‘ice management’ combat climate change?
+(AWI press release)
+Geoengineering: Pumpen gegen den Eisverlust?
+(Focus)
+More articles from the media can be found
+here
+.
+Paper on FESOM2 scalability and optimisation
+The new paper "
+Scalability and some optimization of the Finite-volumE Sea ice–Ocean Model, Version 2.0 (FESOM2)
+" was recently published in GMD. The authors show that "... in terms of throughput, FESOM2 is on a par with state-of-the-art structured ocean models and, in a realistic eddy-resolving configuration (1/10° resolution), can achieve about 16 years per day on 14 000 cores. This suggests that
+unstructured-mesh models are becoming very competitive tools in high-resolution climate modeling.
+"
+First CMIP6 data from AWI-CM on ESGF
+First data for CMIP6 project generated by AWI-CM start to appear on
+ESGF nodes
+. For now DECK and scenarioMIP are available.
+Fast EVP Solutions in a High‐Resolution Sea Ice Model
+Zoom
+FESOM2 high resolution setup was used to demonstrate that
+EVP sea ice dynamics can be made faster
+without degrading the quality of the solution.
+Models
+Meshes/Setups
+FESOM1.4
+FESOM2.0
+FESIM
+AWI-CM
+AWI-ESM
+FESOM-C
+CMIP6
+CMIP6 experiments
+Work with AWI-CM unstructured data
+How to cite AWI-CM
+FESOM days
+FESOM days 2020
+Tools
+pyfesom
+spheRlab
+FPOST
+Technology
+Scaling
+Libraries
+Publications
+AWI-CM in CMIP6
+Media
+logos
+Video
+Projects
+Ongoing projects
+Development team
+History of development
+Contact
+© FESOM team, 2020
+Data Protection
+Imprint
+Contact
+Search

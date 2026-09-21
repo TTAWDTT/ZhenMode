@@ -1,0 +1,2586 @@
+Oceanic tracers — NEMO release-5.0.0 documentation
+Community ocean model for multifarious space and time scales
+Click on NEMO icon to go back to NEMO Gitlab
+5.0.0
+User-guide: Basics
+Essential components
+Download and install the NEMO code
+Preparing an experiment
+Running the model
+Run the Reference configurations
+Explore the test cases
+User-guide: Advanced
+Embedded zooms
+Coupling
+Data assimilation
+Oceanic tracers
+Structure
+Synthetic Workflow
+Model initialization (
+./src/OCE/nemogcm.F90
+)
+Time marching procedure (
+./src/OCE/step.F90
+)
+BGC trends computation for each submodule (
+./src/TOP/trcsms.F90
+)
+Physical trends computation (
+./src/TOP/TRP/trctrp.F90
+)
+Namelists walkthrough
+namelist_top
+1. TOP tracers initialization:
+sn_tracer
+(
+&namtrc
+)
+2. Structures to read input initial and boundary conditions:
+&namtrc_dta
+(
+sn_trcdta
+),
+&namtrc_bc
+(
+sn_trcsbc
+/
+sn_trccbc
+/
+sn_trcobc
+)
+namelist_trc
+MY_TRC
+interface for coupling external BGC models
+Coupling an external BGC model using NEMO framework
+Setting up a new configuration
+Add new diagnostics
+Tools
+XIOS3 demonstrator
+Mixed-precision
+Using PSyclone
+User-guide: Appendix
+v5.0 Release Notes
+Changes between 4.2.2 and 4.2.1
+Changes since 4.2.0
+Changes since 4.0.7
+Known Issues
+Migrating from 4.0.x to 4.2.x
+How to cite: Reference manuals
+Acronyms
+Developer-guide: Testing
+A guide to using SETTE
+Developer-guide: Documentation
+Contributing to the NEMO reference code
+Making changes to the User Guide
+NEMO
+Oceanic tracers
+View page source
+Oceanic tracers
+
+Structure
+Synthetic Workflow
+Model initialization (
+./src/OCE/nemogcm.F90
+)
+Time marching procedure (
+./src/OCE/step.F90
+)
+BGC trends computation for each submodule (
+./src/TOP/trcsms.F90
+)
+Physical trends computation (
+./src/TOP/TRP/trctrp.F90
+)
+Namelists walkthrough
+namelist_top
+1. TOP tracers initialization:
+sn_tracer
+(
+&namtrc
+)
+2. Structures to read input initial and boundary conditions:
+&namtrc_dta
+(
+sn_trcdta
+),
+&namtrc_bc
+(
+sn_trcsbc
+/
+sn_trccbc
+/
+sn_trcobc
+)
+namelist_trc
+MY_TRC
+interface for coupling external BGC models
+Coupling an external BGC model using NEMO framework
+TOP (Tracers in the Ocean Paradigm) is the NEMO hardwired interface toward
+biogeochemical models and provide the physical constraints/boundaries for oceanic tracers.
+It consists of a modular framework to handle multiple ocean tracers,
+including also a variety of built-in modules.
+This component of the NEMO framework allows one to exploit available modules (see below) and
+further develop a range of applications, spanning from the implementation of a dye passive tracer to
+evaluate dispersion processes (by means of MY_TRC), track water masses age (AGE module),
+assess the ocean interior penetration of persistent chemical compounds
+(e.g., gases like CFC or even PCBs), up to the full set of equations involving
+marine biogeochemical cycles.
+Structure
+
+TOP interface has the following location in the source code
+./src/TOP
+and
+the following modules are available:
+TRP
+Interface to NEMO physical core for computing tracers transport
+CFC
+Inert carbon tracers (CFC11,CFC12,SF6)
+C14
+Radiocarbon passive tracer
+AGE
+Water age tracking
+MY_TRC
+Template for creation of new modules and external BGC models coupling
+PISCES
+Built in BGC model. See
+here <cite>
+for a throughout description.
+The usage of TOP is activated
+i)
+by including in the configuration definition the component
+TOP
+and
+ii)
+by adding the macro
+key_top
+in the configuration CPP file
+(see  as a template the
+ORCA2_ICE_PISCES reference configuration <cfgs#orca2-ice-pisces>
+.
+As an example, the user can also refer to other
+Reference Configurations <cfgs#id14>
+:
+GYRE_PISCES being the NEMO biogeochemical demonstrator and
+GYRE_BFM to see the required configuration elements to couple with an external biogeochemical model
+(see also Section 4) .
+Note that, since version 4.0,
+TOP interface core functionalities are activated by means of logical keys and
+all submodules preprocessing macros from previous versions have been removed.
+Here below the list of preprocessing keys that applies to the TOP interface (beside
+key_top
+):
+key_xios
+use XIOS I/O
+key_agrif
+enable AGRIF coupling
+key_trdtrc
+&
+key_trdmxl_trc
+trend computation for tracers
+Synthetic Workflow
+
+A synthetic description of the TOP interface workflow is given below to
+summarize the steps involved in the computation of biogeochemical and physical trends and
+their time integration and outputs,
+by reporting also the principal Fortran subroutine herein involved.
+Model initialization (
+./src/OCE/nemogcm.F90
+)
+
+Call to
+trc_init
+subroutine (
+./src/TOP/trcini.F90
+) to initialize TOP.
+trc_init
+subroutine
+
+SUBROUTINE
+trc_init
+(
+Kbb
+,
+Kmm
+,
+Kaa
+)
+!!---------------------------------------------------------------------
+!!                     ***  ROUTINE trc_init  ***
+!!
+!! ** Purpose :   Initialization of the passive tracer fields
+!!
+!! ** Method  : - read namelist
+!!              - control the consistancy
+!!              - compute specific initialisations
+!!              - set initial tracer fields (either read restart
+!!                or read data or analytical formulation
+!!---------------------------------------------------------------------
+INTEGER
+,
+INTENT
+(
+in
+)
+::
+Kbb
+,
+Kmm
+,
+Kaa
+! time level indices
+!
+IF
+(
+ln_timing
+)
+CALL
+timing_start
+(
+'trc_init'
+)
+!
+IF
+(
+lwp
+)
+WRITE
+(
+numout
+,
+*
+)
+IF
+(
+lwp
+)
+WRITE
+(
+numout
+,
+*
+)
+'trc_init : initial set up of the passive tracers'
+IF
+(
+lwp
+)
+WRITE
+(
+numout
+,
+*
+)
+'~~~~~~~~'
+!
+CALL
+trc_nam
+! read passive tracers namelists
+CALL
+top_alloc
+()
+! allocate TOP arrays
+!
+IF
+(.
+NOT
+.
+ln_trcdta
+)
+ln_trc_ini
+(:)
+=
+.
+FALSE
+.
+!
+IF
+(
+lwp
+)
+WRITE
+(
+numout
+,
+*
+)
+IF
+(
+ln_rsttr
+.
+AND
+.
+.
+NOT
+.
+l_offline
+)
+CALL
+trc_rst_cal
+(
+nit000
+,
+'READ'
+)
+! calendar
+IF
+(
+lwp
+)
+WRITE
+(
+numout
+,
+*
+)
+!
+CALL
+trc_ini_sms
+(
+Kmm
+)
+! SMS
+CALL
+trc_ini_trp
+! passive tracers transport
+CALL
+trc_ice_ini
+! Tracers in sea ice
+!
+IF
+(
+lwm
+.
+AND
+.
+sn_cfctl
+%
+l_trcstat
+)
+THEN
+CALL
+ctl_opn
+(
+numstr
+,
+'tracer.stat'
+,
+'REPLACE'
+,
+'FORMATTED'
+,
+'SEQUENTIAL'
+,
+-
+1
+,
+numout
+,
+lwp
+,
+narea
+)
+ENDIF
+!
+CALL
+trc_ini_state
+(
+Kbb
+,
+Kmm
+,
+Kaa
+)
+!  passive tracers initialisation : from a restart or from clim
+!
+CALL
+trc_ini_inv
+(
+Kmm
+)
+! Inventories
+!
+IF
+(
+ln_timing
+)
+CALL
+timing_stop
+(
+'trc_init'
+)
+!
+END SUBROUTINE
+trc_init
+Time marching procedure (
+./src/OCE/step.F90
+)
+
+Call to
+trc_stp
+subroutine (
+./src/TOP/trcstp.F90
+) to compute/update passive tracers.
+trc_stp
+subroutine
+
+SUBROUTINE
+trc_stp
+(
+kt
+,
+Kbb
+,
+Kmm
+,
+Krhs
+,
+Kaa
+)
+!!-------------------------------------------------------------------
+!!                     ***  ROUTINE trc_stp  ***
+!!
+!! ** Purpose :   Time loop of opa for passive tracer
+!!
+!! ** Method  :   Compute the passive tracers trends
+!!                Update the passive tracers
+!!-------------------------------------------------------------------
+INTEGER
+,
+INTENT
+(
+in
+)
+::
+kt
+! ocean time-step index
+INTEGER
+,
+INTENT
+(
+in
+)
+::
+Kbb
+,
+Kmm
+,
+Krhs
+,
+Kaa
+! time level indices
+!
+INTEGER
+::
+jk
+,
+jn
+! dummy loop indices
+REAL
+(
+wp
+)
+::
+ztrai
+! local scalar
+LOGICAL
+::
+ll_trcstat
+! local logical
+CHARACTER
+(
+len
+=
+25
+)
+::
+charout
+!
+!!-------------------------------------------------------------------
+!
+IF
+(
+ln_timing
+)
+CALL
+timing_start
+(
+'trc_stp'
+)
+!
+IF
+(
+l_1st_euler
+.
+OR
+.
+ln_top_euler
+)
+THEN
+! at nittrc000
+rDt_trc
+=
+rn_Dt
+! = rn_Dt (use or restarting with Euler time stepping)
+ELSEIF
+(
+kt
+<=
+nittrc000
++
+1
+)
+THEN
+! at nittrc000 or nittrc000+1
+rDt_trc
+=
+2.
+*
+rn_Dt
+! = 2 rn_Dt (leapfrog)
+ENDIF
+!
+ll_trcstat
+=
+(
+sn_cfctl
+%
+l_trcstat
+)
+.
+AND
+.
+&
+&
+(
+(
+MOD
+(
+kt
+,
+sn_cfctl
+%
+ptimincr
+)
+==
+0
+)
+.
+OR
+.
+(
+kt
+==
+nitend
+)
+)
+IF
+(
+kt
+==
+nittrc000
+)
+CALL
+trc_stp_ctl
+! control
+IF
+(
+kt
+==
+nittrc000
+.
+AND
+.
+lk_trdmxl_trc
+)
+CALL
+trd_mxl_trc_init
+! trends: Mixed-layer
+!
+IF
+(
+.
+NOT
+.
+ln_linssh
+)
+THEN
+! update ocean volume due to ssh temporal evolution
+DO
+jk
+=
+1
+,
+jpk
+cvol
+(:,:,
+jk
+)
+=
+e1e2t
+(:,:)
+*
+e3t
+(:,:,
+jk
+,
+Kmm
+)
+*
+tmask
+(:,:,
+jk
+)
+END DO
+IF
+(
+ll_trcstat
+.
+OR
+.
+kt
+==
+nitrst
+.
+OR
+.
+(
+ln_check_mass
+.
+AND
+.
+kt
+==
+nitend
+)
+&
+&
+.
+OR
+.
+iom_use
+(
+"pno3tot"
+)
+.
+OR
+.
+iom_use
+(
+"ppo4tot"
+)
+.
+OR
+.
+iom_use
+(
+"psiltot"
+)
+&
+&
+.
+OR
+.
+iom_use
+(
+"palktot"
+)
+.
+OR
+.
+iom_use
+(
+"pfertot"
+)
+)
+&
+&
+areatot
+=
+glob_sum
+(
+'trcstp'
+,
+cvol
+(:,:,:)
+)
+ENDIF
+!
+IF
+(
+l_trcdm2dc
+)
+CALL
+trc_mean_qsr
+(
+kt
+)
+!
+!
+IF
+(
+sn_cfctl
+%
+l_prttrc
+)
+THEN
+WRITE
+(
+charout
+,
+FMT
+=
+"('kt =', I4,'  d/m/y =',I2,I2,I4)"
+)
+kt
+,
+nday
+,
+nmonth
+,
+nyear
+CALL
+prt_ctl_info
+(
+charout
+,
+cdcomp
+=
+'top'
+)
+ENDIF
+!
+tr
+(:,:,:,:,
+Krhs
+)
+=
+0._wp
+!
+CALL
+trc_rst_opn
+(
+kt
+)
+! Open tracer restart file
+IF
+(
+lrst_trc
+)
+CALL
+trc_rst_cal
+(
+kt
+,
+'WRITE'
+)
+! calendar
+CALL
+trc_wri
+(
+kt
+,
+Kmm
+)
+! output of passive tracers with iom I/O manager
+CALL
+trc_sms
+(
+kt
+,
+Kbb
+,
+Kmm
+,
+Krhs
+)
+! tracers: sinks and sources
+#if ! defined key_sed_off
+CALL
+trc_trp
+(
+kt
+,
+Kbb
+,
+Kmm
+,
+Krhs
+,
+Kaa
+)
+! transport of passive tracers
+#endif
+!
+! Note passive tracers have been time-filtered in trc_trp but the time level
+! indices will not be swapped until after tra_atf/dyn_atf/ssh_atf in stp. Subsequent calls here
+! anticipate this update which will be: Nrhs= Nbb ; Nbb = Nnn ; Nnn = Naa ; Naa = Nrhs
+! and use the filtered levels explicitly.
+!
+IF
+(
+kt
+==
+nittrc000
+)
+THEN
+CALL
+iom_close
+(
+numrtr
+)
+! close input tracer restart file
+IF
+(
+lrxios
+)
+CALL
+iom_context_finalize
+(
+cr_toprst_cxt
+)
+IF
+(
+lwm
+)
+CALL
+FLUSH
+(
+numont
+)
+! flush namelist output
+ENDIF
+IF
+(
+lrst_trc
+)
+CALL
+trc_rst_wri
+(
+kt
+,
+Kmm
+,
+Kaa
+,
+Kbb
+)
+! write tracer restart file
+IF
+(
+lk_trdmxl_trc
+)
+CALL
+trd_mxl_trc
+(
+kt
+,
+Kaa
+)
+! trends: Mixed-layer
+!
+IF
+(
+ln_top_euler
+)
+THEN
+! For Euler timestepping for TOP we need to copy the "after" to the "now" fields
+! here then after the (leapfrog) swapping of the time-level indices in OCE/step.F90 we have
+! "before" fields = "now" fields.
+tr
+(:,:,:,:,
+Kmm
+)
+=
+tr
+(:,:,:,:,
+Kaa
+)
+ENDIF
+!
+IF
+(
+ll_trcstat
+)
+THEN
+ztrai
+=
+0._wp
+!  content of all tracers
+DO
+jn
+=
+1
+,
+jptra
+ztrai
+=
+ztrai
++
+glob_sum
+(
+'trcstp'
+,
+tr
+(:,:,:,
+jn
+,
+Kaa
+)
+*
+cvol
+(:,:,:)
+)
+END DO
+IF
+(
+lwm
+)
+WRITE
+(
+numstr
+,
+9300
+)
+kt
+,
+ztrai
+/
+areatot
+ENDIF
+9300
+FORMAT
+(
+i10
+,
+D23
+.
+16
+)
+!
+IF
+(
+ln_timing
+)
+CALL
+timing_stop
+(
+'trc_stp'
+)
+!
+END SUBROUTINE
+trc_stp
+BGC trends computation for each submodule (
+./src/TOP/trcsms.F90
+)
+
+trcsms
+subroutine
+
+SUBROUTINE
+trc_sms
+(
+kt
+,
+Kbb
+,
+Kmm
+,
+Krhs
+)
+!!---------------------------------------------------------------------
+!!                     ***  ROUTINE trc_sms  ***
+!!
+!! ** Purpose :   Managment of the time loop of passive tracers sms
+!!
+!! ** Method  : -  call the main routine of of each defined tracer model
+!! -------------------------------------------------------------------------------------
+INTEGER
+,
+INTENT
+(
+in
+)
+::
+kt
+! ocean time-step index
+INTEGER
+,
+INTENT
+(
+in
+)
+::
+Kbb
+,
+Kmm
+,
+Krhs
+! time level indices
+!!
+CHARACTER
+(
+len
+=
+25
+)
+::
+charout
+!!---------------------------------------------------------------------
+!
+IF
+(
+ln_timing
+)
+CALL
+timing_start
+(
+'trc_sms'
+)
+!
+IF
+(
+ln_pisces
+)
+CALL
+trc_sms_pisces
+(
+kt
+,
+Kbb
+,
+Kmm
+,
+Krhs
+)
+! main program of PISCES
+IF
+(
+ll_cfc
+)
+CALL
+trc_sms_cfc
+(
+kt
+,
+Kbb
+,
+Kmm
+,
+Krhs
+)
+! surface fluxes of CFC
+IF
+(
+ln_c14
+)
+CALL
+trc_sms_c14
+(
+kt
+,
+Kbb
+,
+Kmm
+,
+Krhs
+)
+! surface fluxes of C14
+IF
+(
+ln_age
+)
+CALL
+trc_sms_age
+(
+kt
+,
+Kbb
+,
+Kmm
+,
+Krhs
+)
+! Age tracer
+IF
+(
+ln_my_trc
+)
+CALL
+trc_sms_my_trc
+(
+kt
+,
+Kbb
+,
+Kmm
+,
+Krhs
+)
+! MY_TRC  tracers
+IF
+(
+sn_cfctl
+%
+l_prttrc
+)
+THEN
+! print mean trends (used for debugging)
+WRITE
+(
+charout
+,
+FMT
+=
+"('sms ')"
+)
+CALL
+prt_ctl_info
+(
+charout
+,
+cdcomp
+=
+'top'
+)
+CALL
+prt_ctl
+(
+tab4d_1
+=
+tr
+(:,:,:,:,
+Kmm
+),
+mask1
+=
+tmask
+,
+clinfo
+=
+ctrcnm
+)
+ENDIF
+!
+IF
+(
+ln_timing
+)
+CALL
+timing_stop
+(
+'trc_sms'
+)
+!
+END SUBROUTINE
+trc_sms
+Physical trends computation (
+./src/TOP/TRP/trctrp.F90
+)
+
+trc_trp
+subroutine
+
+SUBROUTINE
+trc_trp
+(
+kt
+,
+Kbb
+,
+Kmm
+,
+Krhs
+,
+Kaa
+)
+!!----------------------------------------------------------------------
+!!                     ***  ROUTINE trc_trp  ***
+!!
+!! ** Purpose :   Management of passive tracers transport
+!!
+!! ** Method  : - Compute the passive tracers trends
+!!              - Update the passive tracers
+!!----------------------------------------------------------------------
+INTEGER
+,
+INTENT
+(
+in
+)
+::
+kt
+! ocean time-step index
+INTEGER
+,
+INTENT
+(
+in
+)
+::
+Kbb
+,
+Kmm
+,
+Krhs
+,
+Kaa
+! time level indices (not swapped in this routine)
+!! ---------------------------------------------------------------------
+!
+IF
+(
+ln_timing
+)
+CALL
+timing_start
+(
+'trc_trp'
+)
+!
+IF
+(
+.
+NOT
+.
+ln_c1d
+)
+THEN
+!
+!                                                         ! Partial top/bottom cell: GRADh( trb )
+IF
+(
+ln_zps
+)
+THEN
+IF
+(
+ln_isfcav
+)
+THEN
+;
+CALL
+zps_hde_isf
+(
+kt
+,
+Kmm
+,
+jptra
+,
+tr
+(:,:,:,:,
+Kbb
+),
+pgtu
+=
+gtru
+,
+pgtv
+=
+gtrv
+,
+pgtui
+=
+gtrui
+,
+pgtvi
+=
+gtrvi
+)
+! both top & bottom
+ELSE
+;
+CALL
+zps_hde
+(
+kt
+,
+Kmm
+,
+jptra
+,
+tr
+(:,:,:,:,
+Kbb
+),
+gtru
+,
+gtrv
+)
+!  only bottom
+ENDIF
+ENDIF
+!
+CALL
+trc_sbc
+(
+kt
+,
+Kmm
+,
+tr
+,
+Krhs
+)
+! surface boundary condition
+IF
+(
+ln_trcbc
+.
+AND
+.
+lltrcbc
+.
+AND
+.
+kt
+/=
+nit000
+)
+&
+CALL
+trc_bc
+(
+kt
+,
+Kmm
+,
+tr
+,
+Krhs
+)
+! tracers: surface and lateral Boundary Conditions
+IF
+(
+ln_trcais
+)
+CALL
+trc_ais
+(
+kt
+,
+Kmm
+,
+tr
+,
+Krhs
+)
+! tracers from Antarctic Ice Sheet (icb, isf)
+IF
+(
+ln_trabbl
+)
+CALL
+trc_bbl
+(
+kt
+,
+Kbb
+,
+Kmm
+,
+tr
+,
+Krhs
+)
+! advective (and/or diffusive) bottom boundary layer scheme
+IF
+(
+ln_trcdmp
+)
+CALL
+trc_dmp
+(
+kt
+,
+Kbb
+,
+Kmm
+,
+tr
+,
+Krhs
+)
+! internal damping trends
+IF
+(
+ln_bdy
+)
+CALL
+trc_bdy_dmp
+(
+kt
+,
+Kbb
+,
+Krhs
+)
+! BDY damping trends
+#if defined key_agrif
+IF
+(.
+NOT
+.
+Agrif_Root
+())
+CALL
+Agrif_Sponge_trc
+! tracers sponge
+#endif
+CALL
+trc_adv
+(
+kt
+,
+Kbb
+,
+Kmm
+,
+tr
+,
+Krhs
+)
+! horizontal & vertical advection
+CALL
+trc_ldf
+(
+kt
+,
+Kbb
+,
+Kmm
+,
+tr
+,
+Krhs
+)
+! lateral mixing
+CALL
+trc_zdf
+(
+kt
+,
+Kbb
+,
+Kmm
+,
+Krhs
+,
+tr
+,
+Kaa
+)
+! vert. mixing & after tracer	==> after
+CALL
+trc_atf
+(
+kt
+,
+Kbb
+,
+Kmm
+,
+Kaa
+,
+tr
+)
+! time filtering of "now" tracer fields
+!
+! Subsequent calls use the filtered values: Kmm and Kaa
+! These are used explicitly here since time levels will not be swapped until after tra_atf/dyn_atf/ssh_atf in stp
+!
+IF
+(
+ln_trcrad
+)
+CALL
+trc_rad
+(
+kt
+,
+Kmm
+,
+Kaa
+,
+tr
+)
+! Correct artificial negative concentrations
+IF
+(
+ln_trcdmp_clo
+)
+CALL
+trc_dmp_clo
+(
+kt
+,
+Kmm
+,
+Kaa
+)
+! internal damping trends on closed seas only
+!
+ELSE
+! 1D vertical configuration
+CALL
+trc_sbc
+(
+kt
+,
+Kmm
+,
+tr
+,
+Krhs
+)
+! surface boundary condition
+IF
+(
+ln_trcdmp
+)
+CALL
+trc_dmp
+(
+kt
+,
+Kbb
+,
+Kmm
+,
+tr
+,
+Krhs
+)
+! internal damping trends
+CALL
+trc_zdf
+(
+kt
+,
+Kbb
+,
+Kmm
+,
+Krhs
+,
+tr
+,
+Kaa
+)
+! vert. mixing & after tracer	==> after
+CALL
+trc_atf
+(
+kt
+,
+Kbb
+,
+Kmm
+,
+Kaa
+,
+tr
+)
+! time filtering of "now" tracer fields
+!
+! Subsequent calls use the filtered values: Kmm and Kaa
+! These are used explicitly here since time levels will not be swapped until after tra_atf/dyn_atf/ssh_atf in stp
+!
+IF
+(
+ln_trcrad
+)
+CALL
+trc_rad
+(
+kt
+,
+Kmm
+,
+Kaa
+,
+tr
+)
+! Correct artificial negative concentrations
+!
+END IF
+!
+IF
+(
+ln_timing
+)
+CALL
+timing_stop
+(
+'trc_trp'
+)
+!
+END SUBROUTINE
+trc_trp
+Namelists walkthrough
+
+namelist_top
+
+Here below are listed the features/options of the TOP interface accessible through
+the
+namelist_top_ref
+and modifiable by means of
+namelist_top_cfg
+(as for NEMO physical ones).
+Note that
+##
+is used to refer to a number in an array field.
+!-----------------------------------------------------------------------
+&
+namtrc_run
+!   run information
+!-----------------------------------------------------------------------
+ln_top_euler
+=
+.
+false
+.
+!  use Euler time-stepping for TOP
+ln_rsttr
+=
+.
+false
+.
+!  start from a restart file (T) or not (F)
+nn_rsttr
+=
+0
+!  restart control = 0 initial time step is not compared to the restart file value
+!                  = 1 do not use the value in the restart file
+!                  = 2 calendar parameters read in the restart file
+cn_trcrst_in
+=
+"restart_trc"
+!  suffix of pass. sn_tracer restart name (input)
+cn_trcrst_indir
+=
+"."
+!  directory from which to read input passive tracer restarts
+cn_trcrst_out
+=
+"restart_trc"
+!  suffix of pass. sn_tracer restart name (output)
+cn_trcrst_outdir
+=
+"."
+!  directory to which to write output passive tracer restarts
+/
+!-----------------------------------------------------------------------
+&
+namtrc
+!   tracers definition
+!-----------------------------------------------------------------------
+jp_bgc
+=
+0
+!  Number of passive tracers of the BGC model
+!
+ln_pisces
+=
+.
+false
+.
+!  Run PISCES BGC model
+ln_my_trc
+=
+.
+false
+.
+!  Run MY_TRC BGC model
+ln_age
+=
+.
+false
+.
+!  Run the sea water age tracer
+ln_cfc11
+=
+.
+false
+.
+!  Run the CFC11 passive tracer
+ln_cfc12
+=
+.
+false
+.
+!  Run the CFC12 passive tracer
+ln_sf6
+=
+.
+false
+.
+!  Run the SF6 passive tracer
+ln_c14
+=
+.
+false
+.
+!  Run the Radiocarbon passive tracer
+!
+ln_trcdta
+=
+.
+false
+.
+!  Initialisation from data input file (T) or not (F)
+ln_trcdmp
+=
+.
+false
+.
+!  add a damping termn (T) or not (F)
+ln_trcdmp_clo
+=
+.
+false
+.
+!  damping term (T) or not (F) on closed seas
+ln_trcbc
+=
+.
+false
+.
+!  Surface, Lateral or Open Boundaries conditions
+ln_trcais
+=
+.
+false
+.
+!  Antarctic Ice Sheet nutrient supply
+!
+jp_dia3d
+=
+0
+! Number of 3D diagnostic variables
+jp_dia2d
+=
+0
+! Number of 2D diagnostic variables
+!_____________!___________!_________________________________________!____________!________________!
+!             !    name   !           title of the field            !   units    ! init from file !
+!  sn_tracer(1)  = 'tracer  ', 'Tracer  Concentration                 ',   ' - '    ,   .false.
+/
+!-----------------------------------------------------------------------
+&
+namtrc_dta
+!    Initialisation from data input file
+!-----------------------------------------------------------------------
+!                !  file name        ! frequency (hours) ! variable  ! time interp. !  clim  ! 'yearly'/ ! weights  ! rotation ! land/sea mask !
+!                !                   !  (if <0  months)  !   name    !   (logical)  !  (T/F) ! 'monthly' ! filename ! pairing  ! filename      !
+sn_trcdta
+(
+1
+)
+=
+'data_TRC_nomask'
+,
+-
+1
+2.
+,
+'TRC'
+,
+.
+false
+.
+,
+.
+true
+.
+,
+'yearly'
+,
+''
+,
+''
+,
+''
+!
+cn_dir
+=
+'./'
+!  root directory for the location of the data files
+/
+!-----------------------------------------------------------------------
+&
+namtrc_adv
+!   advection scheme for passive tracer                (default: NO selection)
+!-----------------------------------------------------------------------
+ln_trcadv_OFF
+=
+.
+false
+.
+!  No passive tracer advection
+ln_trcadv_cen
+=
+.
+false
+.
+!  2nd order centered scheme
+nn_cen_h
+=
+4
+!  =2/4, horizontal 2nd order CEN / 4th order CEN
+nn_cen_v
+=
+4
+!  =2/4, vertical   2nd order CEN / 4th order COMPACT
+ln_trcadv_fct
+=
+.
+false
+.
+!  FCT scheme
+nn_fct_h
+=
+2
+!  =2/4, horizontal 2nd / 4th order
+nn_fct_v
+=
+2
+!  =2/4, vertical   2nd / COMPACT 4th order
+ln_trcadv_mus
+=
+.
+false
+.
+!  MUSCL scheme
+ln_mus_ups
+=
+.
+false
+.
+!  use upstream scheme near river mouths
+ln_trcadv_ubs
+=
+.
+false
+.
+!  UBS scheme
+nn_ubs_v
+=
+2
+!  =2  , vertical 2nd order FCT
+ln_trcadv_qck
+=
+.
+false
+.
+!  QUICKEST scheme
+/
+!-----------------------------------------------------------------------
+&
+namtrc_ldf
+!   lateral diffusion scheme for passive tracer        (default: NO selection)
+!-----------------------------------------------------------------------
+!                            !  Type of the operator:
+ln_trcldf_OFF
+=
+.
+false
+.
+!  No explicit diffusion
+ln_trcldf_tra
+=
+.
+false
+.
+!  use active tracer setting
+!                         !  Coefficient (defined with namtra_ldf coefficient)
+rn_ldf_multi
+=
+1.
+!  multiplier of aht for TRC mixing coefficient
+rn_fact_lap
+=
+1.
+!  Equatorial enhanced zonal eddy diffusivity (lap only)
+/
+!-----------------------------------------------------------------------
+&
+namtrc_rad
+!  treatment of negative concentrations
+!-----------------------------------------------------------------------
+ln_trcrad
+=
+.
+true
+.
+!  artificially correct negative concentrations (T) or not (F)
+/
+!-----------------------------------------------------------------------
+&
+namtrc_snk
+!  Sedimentation of particles
+!-----------------------------------------------------------------------
+nitermax
+=
+2
+!  number of iterations for sedimentation
+/
+!-----------------------------------------------------------------------
+&
+namtrc_dmp
+!   passive tracer newtonian damping                   (ln_trcdmp=T)
+!-----------------------------------------------------------------------
+nn_zdmp_tr
+=
+1
+!  vertical   shape =0    damping throughout the water column
+!                   =1 no damping in the mixing layer (kz  criteria)
+!                   =2 no damping in the mixed  layer (rho crieria)
+cn_resto_tr
+=
+'resto_tr.nc'
+!  create a damping.coeff NetCDF file (=1) or not (=0)
+/
+!-----------------------------------------------------------------------
+&
+namtrc_ice
+!    Representation of sea ice growth & melt effects
+!-----------------------------------------------------------------------
+nn_ice_tr
+=
+-
+1
+!  tracer concentration in sea ice
+!    =-1 (no vvl: identical cc in ice and ocean / vvl: cc_ice = 0)
+!    = 0 (no vvl: cc_ice = zero / vvl: cc_ice = )
+!    = 1 prescribed to a namelist value (implemented in pisces only)
+/
+!-----------------------------------------------------------------------
+&
+namtrc_trd
+!   diagnostics on tracer trends                       ('key_trdtrc')
+!                          or mixed-layer trends                        ('key_trdmld_trc')
+!----------------------------------------------------------------------
+nn_trd_trc
+=
+5475
+!  time step frequency and tracers trends
+nn_ctls_trc
+=
+0
+!  control surface type in mixed-layer trends (0,1 or n<jpk)
+rn_ucf_trc
+=
+1
+!  unit conversion factor (=1 -> /seconds ; =86400. -> /day)
+ln_trdmld_trc_restart
+=
+.
+false
+.
+!  restart for ML diagnostics
+ln_trdmld_trc_instant
+=
+.
+true
+.
+!  flag to diagnose trends of instantantaneous or mean ML T/S
+ln_trdtrc
+(
+1
+)
+=
+.
+true
+.
+ln_trdtrc
+(
+2
+)
+=
+.
+true
+.
+ln_trdtrc
+(
+23
+)
+=
+.
+true
+.
+/
+!----------------------------------------------------------------------
+&
+namtrc_bc
+!   data for boundary conditions
+!----------------------------------------------------------------------
+! Surface and coastal input data must be specified individually for each tracer.
+! Lateral open boundary inputs are specified for each BDY segment and related inputfiles
+!  must contain data for the variables with active open boundary (set through &namtrc).
+!  By default, variable names of BDY inputfiles are the same as in &namtrc, but using
+!  cn_tronam it is possible to specify alternative variable names to match with inputfiles.
+!               !    file name             ! freq ! variable ! time interp. ! clim   !'yearly' ! weights  ! rotation | land/sea
+!  sn_trcobc(1) = 'bdy_dta_trc_North_y1980',  -1  , 'dummy'  ,  .false.     , .true. ,'yearly' ,  '',  '',  ''
+!-----------------------------------------------------------------------
+cn_dir_sbc
+=
+'./'
+!  root directory for the location of SURFACE data files
+cn_dir_cbc
+=
+'./'
+!  root directory for the location of COASTAL data files
+cn_dir_obc
+=
+'./'
+!  root directory for the location of OPEN data files
+ln_rnf_ctl
+=
+.
+false
+.
+!  Remove runoff dilution on tracers with absent river load
+rn_sbc_time
+=
+8640
+0.
+!  Time scaling factor for SBC data (seconds in a day)
+rn_cbc_time
+=
+8640
+0.
+!  Time scaling factor for CBC data (seconds in a day)
+!  cn_tronam(1)  = 'var1'    !  Tracer-name to variable-name translation
+/
+!----------------------------------------------------------------------
+&
+namtrc_bdy
+!   Setup of tracer boundary conditions
+!-----------------------------------------------------------------------
+cn_trc_dflt
+=
+'neumann'
+!  OBC applied by default to all tracers
+cn_trc
+=
+'none'
+!  Boundary conditions used for tracers with data files (selected in namtrc)
+nn_trcdmp_bdy
+=
+0
+!  Use damping timescales defined in nambdy of namelist
+!  = 0 NO damping of tracers at open boudaries
+!  = 1 Only for tracers forced with external data
+!  = 2 Damping applied to all tracers
+ln_zintobc
+=
+.
+false
+.
+! T if a vertical interpolation is required. Variables gdep[t] and e3[t] must exist in the file
+!  automatically defined to T if the number of vertical levels in bdy dta /= jpk
+/
+!-----------------------------------------------------------------------
+&
+namage
+!   AGE
+!-----------------------------------------------------------------------
+rn_age_depth
+=
+10
+! depth over which age tracer reset to zero
+rn_age_kill_rate
+=
+-
+0.000138888
+!  = -1/7200 recip of relaxation timescale (s) for  age tracer shallower than age_depth
+/
+Two main types of data structure are used within TOP interface
+to initialize tracer properties (1) and
+to provide related initial and boundary conditions (2).
+1. TOP tracers initialization:
+sn_tracer
+(
+&namtrc
+)
+
+Beside providing name and metadata for tracers,
+here are also defined the use of initial (
+sn_tracer%llinit
+) and
+boundary (
+sn_tracer%llsbc,
+sn_tracer%llcbc,
+sn_tracer%llobc
+) conditions.
+In the following, an example of the full structure definition is given for
+two idealized tracers both with initial conditions given,
+while the first has only surface boundary forcing and
+the second both surface and coastal forcings:
+!             !    name   !           title of the field            !   units    ! initial data ! sbc   !   cbc  !   obc  !
+sn_tracer
+(
+1
+)
+=
+'TRC1'
+,
+'Tracer 1 Concentration                '
+,
+' - '
+,
+.
+true
+.
+,
+.
+true
+.,
+.
+false
+.,
+.
+true
+.
+sn_tracer
+(
+2
+)
+=
+'TRC2 '
+,
+'Tracer 2 Concentration                '
+,
+' - '
+,
+.
+true
+.
+,
+.
+true
+.,
+.
+true
+.
+,
+.
+false
+.
+As tracers in BGC models are increasingly growing,
+the same structure can be written also in a more compact and readable way:
+!             !    name   !           title of the field            !   units    ! initial data !
+sn_tracer
+(
+1
+)
+=
+'TRC1'
+,
+'Tracer 1 Concentration                '
+,
+' - '
+,
+.
+true
+.
+sn_tracer
+(
+2
+)
+=
+'TRC2 '
+,
+'Tracer 2 Concentration                '
+,
+' - '
+,
+.
+true
+.
+! sbc
+sn_tracer
+(
+1
+)%
+llsbc
+=
+.
+true
+.
+sn_tracer
+(
+2
+)%
+llsbc
+=
+.
+true
+.
+! cbc
+sn_tracer
+(
+2
+)%
+llcbc
+=
+.
+true
+.
+The data structure is internally initialized by code with dummy names and
+all initialization/forcing logical fields set to
+.false.
+.
+2. Structures to read input initial and boundary conditions:
+&namtrc_dta
+(
+sn_trcdta
+),
+&namtrc_bc
+(
+sn_trcsbc
+/
+sn_trccbc
+/
+sn_trcobc
+)
+
+The overall data structure (Fortran type) is based on the general one defined for NEMO core in the SBC component
+(see details in
+SBC
+Chapter of
+Reference Manual
+on Input Data specification).
+Input fields are prescribed within
+&namtrc_dta
+(with
+sn_trcdta
+structure),
+while Boundary Conditions are applied to the model by means of
+&namtrc_bc
+,
+with dedicated structure fields for surface (
+sn_trcsbc
+), riverine (
+sn_trccbc
+), and
+lateral open (
+sn_trcobc
+) boundaries.
+The following example illustrates the data structure in the case of initial condition for
+a single tracer contained in the file named
+tracer_1_data.nc
+(
+.nc
+is implicitly assumed in namelist filename),
+with a doubled initial value, and located in the
+usr/work/model/inputdata
+folder:
+!               !  file name             ! frequency (hours) ! variable  ! time interp. !  clim  ! 'yearly'/ ! weights  ! rotation ! land/sea mask !
+!               !                        !  (if <0  months)  !   name    !   (logical)  !  (T/F) ! 'monthly' ! filename ! pairing  ! filename      !
+sn_trcdta
+(
+1
+)
+=
+'tracer_1_data'
+,
+-
+12
+,
+'TRC1'
+,
+.
+false
+.
+,
+.
+true
+.
+,
+'yearly'
+,
+''
+,
+''
+,
+''
+rf_trfac
+(
+1
+)
+=
+2.0
+cn_dir
+=
+'usr/work/model/inputdata/'
+Note that, the Lateral Open Boundaries conditions are applied on
+the segments defined for the physical core of NEMO
+(see
+BDY
+description in the
+Reference Manual
+).
+namelist_trc
+
+Here below the description of
+namelist_trc_ref
+used to handle Carbon tracers modules,
+namely CFC and C14.
+../namelist_trc_ref
+snippet
+
+&
+namcfc
+!   CFC
+&
+namc14_typ
+!  C14 - type of C14 tracer, default values of C14/C and pco2
+&
+namc14_sbc
+!  C14 - surface BC
+&
+namc14_fcg
+!  files & dates
+MY_TRC
+interface for coupling external BGC models
+
+The generalized interface is pivoted on MY_TRC module that contains template files to
+build the coupling between
+NEMO and any external BGC model.
+The call to MY_TRC is activated by setting
+ln_my_trc
+=
+.true.
+(in
+&namtrc
+)
+The following 6 fortran files are available in MY_TRC with the specific purposes here described.
+par_my_trc.F90
+This module allows to define additional arrays and public variables to
+be used within the MY_TRC interface
+trcini_my_trc.F90
+Here are initialized user defined namelists and
+the call to the external BGC model initialization procedures to populate general tracer array
+(
+trn
+and
+trb
+).
+Here are also likely to be defined support arrays related to system metrics that
+could be needed by the BGC model.
+trcnam_my_trc.F90
+This routine is called at the beginning of
+trcini_my_trc
+and
+should contain the initialization of additional namelists for the BGC model or user-defined code.
+trcsms_my_trc.F90
+The routine performs the call to Boundary Conditions and its main purpose is to
+contain the Source-Minus-Sinks terms due to the biogeochemical processes of the external model.
+Be aware that lateral boundary conditions are applied in trcnxt routine.
+Warning
+The routines to compute the light penetration along the water column and
+the tracer vertical sinking should be defined/called in here,
+as generalized modules are still missing in the code.
+trcice_my_trc.F90
+Here it is possible to prescribe the tracers concentrations in the sea-ice that
+will be used as boundary conditions when ice melting occurs (
+nn_ice_tr
+=
+1
+in
+&namtrc_ice
+).
+See e.g. the correspondent PISCES subroutine.
+trcwri_my_trc.F90
+This routine performs the output of the model tracers (only those defined in
+&namtrc
+) using
+IOM module (see chapter “Output and Diagnostics” in the
+Reference Manual
+).
+It is possible to place here the output of additional variables produced by the model,
+if not done elsewhere in the code, using the call to
+iom_put
+.
+Coupling an external BGC model using NEMO framework
+
+The coupling with an external BGC model through the NEMO compilation framework can be achieved in
+different ways according to the degree of coding complexity of the Biogeochemical model, like e.g.,
+the whole code is made only by one file or
+it has multiple modules and interfaces spread across several subfolders.
+Beside the 6 core files of MY_TRC module, let’s assume an external BGC model named
+MYBGC
+and
+constituted by a rather essential coding structure, likely few Fortran files.
+The new coupled configuration name is
+NEMO_MYBGC
+.
+The best solution is to have all files (the modified
+MY_TRC
+routines and the BGC model ones)
+placed in a unique folder with root
+MYBGCPATH
+and
+to use the makenemo external readdressing of
+MY_SRC
+folder.
+The coupled configuration listed in
+work_cfgs.txt
+will look like
+NEMO_MYBGC
+OCE
+TOP
+and the related
+cpp_MYBGC.fcm
+content will be
+bld::tool::
+fppkeys
+key_xios
+key_top
+the compilation with
+makenemo
+will be executed through the following syntax
+$
+makenemo
+-n
+'NEMO_MYBGC'
+-m
+'<arch_my_machine>'
+-j
+8
+-e
+'<MYBGCPATH>'
+The makenemo feature
+-e
+was introduced to
+readdress at compilation time the standard MY_SRC folder (usually found in NEMO configurations) with
+a user defined external one.
+The compilation of more articulated BGC model code & infrastructure,
+like in the case of BFM (
+BFM-NEMO coupling manual
+), requires some additional features.
+As before, let’s assume a coupled configuration name
+NEMO_MYBGC
+,
+but in this case MYBGC model root becomes
+MYBGC
+path that
+contains 4 different subfolders for biogeochemistry,
+named
+initialization
+,
+pelagic
+, and
+benthic
+,
+and a separate one named
+nemo_coupling
+including the modified
+MY_SRC
+routines.
+The latter folder containing the modified NEMO coupling interface will be still linked using
+the makenemo
+-e
+option.
+In order to include the BGC model subfolders in the compilation of NEMO code,
+it will be necessary to extend the configuration
+cpp_NEMO_MYBGC.fcm
+file to include the specific paths of
+MYBGC
+folders, as in the following example
+bld::tool::
+fppkeys
+key_xios
+key_top
+src::MYBGC::
+initialization
+<MYBGCPATH>
+/
+initialization
+src::MYBGC::
+pelagic
+<MYBGCPATH>
+/
+pelagic
+src::MYBGC::
+benthic
+<MYBGCPATH>
+/
+benthic
+bld::pp::
+MYBGC
+1
+bld::tool::fppflags::
+MYBGC
+%FPPFLAGS
+bld::tool::
+fppkeys
+%
+bld::tool::
+fppkeys
+MYBGC_MACROS
+where
+MYBGC_MACROS
+is the space delimited list of macros used in
+MYBGC
+model for
+selecting/excluding specific parts of the code.
+The BGC model code will be preprocessed in the configuration
+BLD
+folder as for NEMO,
+but with an independent path, like
+NEMO_MYBGC/BLD/MYBGC/<subforlders>
+.
+The compilation will be performed similarly to in the previous case with the following
+$
+makenemo
+-n
+'NEMO_MYBGC'
+-m
+'<arch_my_machine>'
+-j
+8
+-e
+'<MYBGCPATH>/nemo_coupling'
+Note
+The additional lines specific for the BGC model source and build paths can be written into
+a separate file, e.g. named
+MYBGC.fcm
+,
+and then simply included in the
+cpp_NEMO_MYBGC.fcm
+as follow
+bld::tool::
+fppkeys
+key_xios
+key_top
+inc
+<MYBGCPATH>
+/
+MYBGC
+.
+fcm
+This will enable a more portable compilation structure for all MYBGC related configurations.
+Warning
+The coupling interface contained in
+nemo_coupling
+cannot be added using the FCM syntax,
+as the same files already exists in NEMO and they are overridden only with
+the readdressing of MY_SRC contents to avoid compilation conflicts due to duplicate routines.
+All modifications illustrated above, can be easily implemented using shell or python scripting
+to edit the NEMO configuration
+CPP.fcm
+file and
+to create the BGC model specific FCM compilation file with code paths.
+Previous
+Next
+© Copyright 2008-2025, NEMO Consortium.
+Built with
+Sphinx
+using a
+theme
+provided by
+Read the Docs
+.

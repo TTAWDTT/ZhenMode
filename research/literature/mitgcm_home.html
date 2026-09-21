@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Welcome to MITgcm’s user manual &mdash; MITgcm d861cd5 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css" />
+      <link rel="stylesheet" type="text/css" href="_static/css/custom.css" />
+      <link rel="stylesheet" type="text/css" href="_static/css/wrap_tables.css" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="1. Overview" href="overview/overview.html" /> 
+<script async type="text/javascript" src="/_/static/javascript/readthedocs-addons.js"></script><meta name="readthedocs-project-slug" content="mitgcm" /><meta name="readthedocs-version-slug" content="latest" /><meta name="readthedocs-resolver-filename" content="/" /><meta name="readthedocs-http-status" content="200" /></head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="#" class="icon icon-home">
+            MITgcm
+          </a>
+              <div class="version">
+                d861cd5
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="overview/overview.html">1. Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="algorithm/algorithm.html">2. Discretization and Algorithm</a></li>
+<li class="toctree-l1"><a class="reference internal" href="getting_started/getting_started.html">3. Getting Started with MITgcm</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples/examples.html">4. MITgcm Tutorial Example Experiments</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing/contributing.html">5. Contributing to the MITgcm</a></li>
+<li class="toctree-l1"><a class="reference internal" href="software_arch/software_arch.html">6. Software Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="autodiff/autodiff.html">7. Automatic Differentiation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="phys_pkgs/phys_pkgs.html">8. Packages I - Physical Parameterizations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="outp_pkgs/outp_pkgs.html">9. Packages II - Diagnostics and I/O</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ocean_state_est/ocean_state_est.html">10. Packages III - Ocean State Estimation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utilities/utilities.html">11. Utilities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="related_projects/related_projects.html">12. Related Projects and Highlighted Papers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="references.html">13. References</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="#">MITgcm</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="#" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Welcome to MITgcm’s user manual</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="welcome-to-mitgcm-s-user-manual">
+<h1>Welcome to MITgcm’s user manual<a class="headerlink" href="#welcome-to-mitgcm-s-user-manual" title="Permalink to this heading"></a></h1>
+<section id="authors">
+<h2>Authors<a class="headerlink" href="#authors" title="Permalink to this heading"></a></h2>
+<p>Alistair Adcroft, Jean-Michel Campin, Ed Doddridge, Stephanie Dutkiewicz, Constantinos Evangelinos, David Ferreira, Mick Follows, Gael Forget, Baylor Fox-Kemper, Daniel Goldberg, Patrick Heimbach, Chris Hill, Ed Hill, Helen Hill, Oliver Jahn, Jody Klymak, Martin Losch, John Marshall, Guillaume Maze, Matt Mazloff, Dimitris Menemenlis, Andrea Molod, Jeff Scott, and Ariane Verdy</p>
+</section>
+<div class="toctree-wrapper compound">
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="overview/overview.html">1. Overview</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="overview/overview.html#introduction">1.1. Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="overview/overview.html#illustrations-of-the-model-in-action">1.2. Illustrations of the model in action</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="overview/global_atmos_hs.html">1.2.1. Global atmosphere: ‘Held-Suarez’ benchmark</a></li>
+<li class="toctree-l3"><a class="reference internal" href="overview/ocean_gyres.html">1.2.2. Ocean gyres</a></li>
+<li class="toctree-l3"><a class="reference internal" href="overview/global_ocean_circ.html">1.2.3. Global ocean circulation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="overview/cvct_mixing_topo.html">1.2.4. Convection and mixing over topography</a></li>
+<li class="toctree-l3"><a class="reference internal" href="overview/bound_forc_inter_waves.html">1.2.5. Boundary forced internal waves</a></li>
+<li class="toctree-l3"><a class="reference internal" href="overview/parm_sens.html">1.2.6. Parameter sensitivity using the adjoint of MITgcm</a></li>
+<li class="toctree-l3"><a class="reference internal" href="overview/global_state_est.html">1.2.7. Global state estimation of the ocean</a></li>
+<li class="toctree-l3"><a class="reference internal" href="overview/ocean_biogeo_cyc.html">1.2.8. Ocean biogeochemical cycles</a></li>
+<li class="toctree-l3"><a class="reference internal" href="overview/sim_lab_exp.html">1.2.9. Simulations of laboratory experiments</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="overview/overview.html#continuous-equations-in-r-coordinates">1.3. Continuous equations in ‘r’ coordinates</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="overview/kinematic_bound.html">1.3.1. Kinematic Boundary conditions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="overview/atmosphere.html">1.3.2. Atmosphere</a></li>
+<li class="toctree-l3"><a class="reference internal" href="overview/ocean.html">1.3.3. Ocean</a></li>
+<li class="toctree-l3"><a class="reference internal" href="overview/hydrostatic.html">1.3.4. Hydrostatic, Quasi-hydrostatic, Quasi-nonhydrostatic and Non-hydrostatic forms</a></li>
+<li class="toctree-l3"><a class="reference internal" href="overview/soln_strategy.html">1.3.5. Solution strategy</a></li>
+<li class="toctree-l3"><a class="reference internal" href="overview/finding_pressure.html">1.3.6. Finding the pressure field</a></li>
+<li class="toctree-l3"><a class="reference internal" href="overview/forcing_dissip.html">1.3.7. Forcing/dissipation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="overview/vector_invar.html">1.3.8. Vector invariant form</a></li>
+<li class="toctree-l3"><a class="reference internal" href="overview/adjoint.html">1.3.9. Adjoint</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="overview/overview.html#appendix-atmosphere">1.4. Appendix ATMOSPHERE</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="overview/hydro_prim_eqn.html">1.4.1. Hydrostatic Primitive Equations for the Atmosphere in Pressure Coordinates</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="overview/overview.html#appendix-ocean">1.5. Appendix OCEAN</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="overview/eqn_motion_ocn.html">1.5.1. Equations of Motion for the Ocean</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="overview/overview.html#appendix-operators">1.6. Appendix OPERATORS</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="overview/coordinate_sys.html">1.6.1. Coordinate systems</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="algorithm/algorithm.html">2. Discretization and Algorithm</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="algorithm/algorithm.html#notation">2.1. Notation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="algorithm/algorithm.html#time-stepping">2.2. Time-stepping</a></li>
+<li class="toctree-l2"><a class="reference internal" href="algorithm/algorithm.html#pressure-method-with-rigid-lid">2.3. Pressure method with rigid-lid</a></li>
+<li class="toctree-l2"><a class="reference internal" href="algorithm/algorithm.html#pressure-method-with-implicit-linear-free-surface">2.4. Pressure method with implicit linear free-surface</a></li>
+<li class="toctree-l2"><a class="reference internal" href="algorithm/algorithm.html#explicit-time-stepping-adams-bashforth">2.5. Explicit time-stepping: Adams-Bashforth</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="algorithm/algorithm.html#adams-bashforth-ii">2.5.1. Adams-Bashforth II</a></li>
+<li class="toctree-l3"><a class="reference internal" href="algorithm/algorithm.html#adams-bashforth-iii">2.5.2. Adams-Bashforth III</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="algorithm/algorithm.html#implicit-time-stepping-backward-method">2.6. Implicit time-stepping: backward method</a></li>
+<li class="toctree-l2"><a class="reference internal" href="algorithm/algorithm.html#synchronous-time-stepping-variables-co-located-in-time">2.7. Synchronous time-stepping: variables co-located in time</a></li>
+<li class="toctree-l2"><a class="reference internal" href="algorithm/algorithm.html#staggered-baroclinic-time-stepping">2.8. Staggered baroclinic time-stepping</a></li>
+<li class="toctree-l2"><a class="reference internal" href="algorithm/algorithm.html#non-hydrostatic-formulation">2.9. Non-hydrostatic formulation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="algorithm/algorithm.html#variants-on-the-free-surface">2.10. Variants on the Free Surface</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="algorithm/crank-nicol.html">2.10.1. Crank-Nicolson barotropic time stepping</a></li>
+<li class="toctree-l3"><a class="reference internal" href="algorithm/nonlinear-freesurf.html">2.10.2. Non-linear free-surface</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="algorithm/algorithm.html#spatial-discretization-of-the-dynamical-equations">2.11. Spatial discretization of the dynamical equations</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="algorithm/finitevol-meth.html">2.11.1. The finite volume method: finite volumes versus finite difference</a></li>
+<li class="toctree-l3"><a class="reference internal" href="algorithm/c-grid.html">2.11.2. C grid staggering of variables</a></li>
+<li class="toctree-l3"><a class="reference internal" href="algorithm/c-grid.html#grid-initialization-and-data">2.11.3. Grid initialization and data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="algorithm/horiz-grid.html">2.11.4. Horizontal grid</a></li>
+<li class="toctree-l3"><a class="reference internal" href="algorithm/vert-grid.html">2.11.5. Vertical grid</a></li>
+<li class="toctree-l3"><a class="reference internal" href="algorithm/vert-grid.html#topography-partially-filled-cells">2.11.6. Topography: partially filled cells</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="algorithm/algorithm.html#continuity-and-horizontal-pressure-gradient-term">2.12. Continuity and horizontal pressure gradient term</a></li>
+<li class="toctree-l2"><a class="reference internal" href="algorithm/algorithm.html#hydrostatic-balance">2.13. Hydrostatic balance</a></li>
+<li class="toctree-l2"><a class="reference internal" href="algorithm/algorithm.html#flux-form-momentum-equations">2.14. Flux-form momentum equations</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="algorithm/algorithm.html#advection-of-momentum">2.14.1. Advection of momentum</a></li>
+<li class="toctree-l3"><a class="reference internal" href="algorithm/algorithm.html#coriolis-terms">2.14.2. Coriolis terms</a></li>
+<li class="toctree-l3"><a class="reference internal" href="algorithm/algorithm.html#curvature-metric-terms">2.14.3. Curvature metric terms</a></li>
+<li class="toctree-l3"><a class="reference internal" href="algorithm/algorithm.html#non-hydrostatic-metric-terms">2.14.4. Non-hydrostatic metric terms</a></li>
+<li class="toctree-l3"><a class="reference internal" href="algorithm/algorithm.html#lateral-dissipation">2.14.5. Lateral dissipation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="algorithm/algorithm.html#vertical-dissipation">2.14.6. Vertical dissipation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="algorithm/algorithm.html#derivation-of-discrete-energy-conservation">2.14.7. Derivation of discrete energy conservation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="algorithm/algorithm.html#mom-diagnostics">2.14.8. Mom Diagnostics</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="algorithm/algorithm.html#vector-invariant-momentum-equations">2.15. Vector invariant momentum equations</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="algorithm/algorithm.html#relative-vorticity">2.15.1. Relative vorticity</a></li>
+<li class="toctree-l3"><a class="reference internal" href="algorithm/algorithm.html#kinetic-energy">2.15.2. Kinetic energy</a></li>
+<li class="toctree-l3"><a class="reference internal" href="algorithm/algorithm.html#id8">2.15.3. Coriolis terms</a></li>
+<li class="toctree-l3"><a class="reference internal" href="algorithm/algorithm.html#shear-terms">2.15.4. Shear terms</a></li>
+<li class="toctree-l3"><a class="reference internal" href="algorithm/algorithm.html#gradient-of-bernoulli-function">2.15.5. Gradient of Bernoulli function</a></li>
+<li class="toctree-l3"><a class="reference internal" href="algorithm/algorithm.html#horizontal-divergence">2.15.6. Horizontal divergence</a></li>
+<li class="toctree-l3"><a class="reference internal" href="algorithm/algorithm.html#horizontal-dissipation">2.15.7. Horizontal dissipation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="algorithm/algorithm.html#id9">2.15.8. Vertical dissipation</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="algorithm/algorithm.html#tracer-equations">2.16. Tracer equations</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="algorithm/algorithm.html#time-stepping-of-tracers-abii">2.16.1. Time-stepping of tracers: ABII</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="algorithm/algorithm.html#advection-schemes">2.17. Advection schemes</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="algorithm/adv-schemes.html">2.17.1. Linear advection schemes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="algorithm/adv-schemes.html#non-linear-advection-schemes">2.17.2. Non-linear advection schemes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="algorithm/adv-schemes.html#comparison-of-advection-schemes">2.17.3. Comparison of advection schemes</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="algorithm/algorithm.html#shapiro-filter">2.18. Shapiro Filter</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="algorithm/algorithm.html#shap-diagnostics">2.18.1. SHAP Diagnostics</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="algorithm/algorithm.html#nonlinear-viscosities-for-large-eddy-simulation">2.19. Nonlinear Viscosities for Large Eddy Simulation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="algorithm/algorithm.html#eddy-viscosity">2.19.1. Eddy Viscosity</a></li>
+<li class="toctree-l3"><a class="reference internal" href="algorithm/algorithm.html#mercator-nondimensional-equations">2.19.2. Mercator, Nondimensional Equations</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="getting_started/getting_started.html">3. Getting Started with MITgcm</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="getting_started/getting_started.html#where-to-find-information">3.1. Where to find information</a></li>
+<li class="toctree-l2"><a class="reference internal" href="getting_started/getting_started.html#obtaining-the-code">3.2. Obtaining the code</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="getting_started/getting_started.html#method-1">3.2.1. Method 1</a></li>
+<li class="toctree-l3"><a class="reference internal" href="getting_started/getting_started.html#method-2">3.2.2. Method 2</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="getting_started/getting_started.html#updating-the-code">3.3. Updating the code</a></li>
+<li class="toctree-l2"><a class="reference internal" href="getting_started/getting_started.html#model-and-directory-structure">3.4. Model and directory structure</a></li>
+<li class="toctree-l2"><a class="reference internal" href="getting_started/getting_started.html#building-the-model">3.5. Building the model</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="getting_started/getting_started.html#quickstart-guide">3.5.1. Quickstart Guide</a></li>
+<li class="toctree-l3"><a class="reference internal" href="getting_started/getting_started.html#generating-a-makefile-using-genmake2">3.5.2. Generating a <code class="docutils literal notranslate"><span class="pre">Makefile</span></code> using genmake2</a></li>
+<li class="toctree-l3"><a class="reference internal" href="getting_started/getting_started.html#make-commands">3.5.3. <code class="docutils literal notranslate"><span class="pre">make</span></code> commands</a></li>
+<li class="toctree-l3"><a class="reference internal" href="getting_started/getting_started.html#building-with-mpi">3.5.4. Building with MPI</a></li>
+<li class="toctree-l3"><a class="reference internal" href="getting_started/getting_started.html#building-with-openmp">3.5.5. Building  with OpenMP</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="getting_started/getting_started.html#running-the-model">3.6. Running the model</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="getting_started/getting_started.html#running-with-mpi">3.6.1. Running with MPI</a></li>
+<li class="toctree-l3"><a class="reference internal" href="getting_started/getting_started.html#running-with-openmp">3.6.2. Running with OpenMP</a></li>
+<li class="toctree-l3"><a class="reference internal" href="getting_started/getting_started.html#output-files">3.6.3. Output files</a></li>
+<li class="toctree-l3"><a class="reference internal" href="getting_started/getting_started.html#looking-at-the-output">3.6.4. Looking at the output</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="getting_started/getting_started.html#customizing-the-model-configuration-code-parameters-and-compilation-options">3.7. Customizing the Model Configuration - Code Parameters and Compilation Options</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="getting_started/getting_started.html#model-array-dimensions">3.7.1. Model Array Dimensions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="getting_started/getting_started.html#c-preprocessor-options">3.7.2. C Preprocessor Options</a></li>
+<li class="toctree-l3"><a class="reference internal" href="getting_started/getting_started.html#preprocessor-execution-environment-options">3.7.3. Preprocessor Execution Environment Options</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="getting_started/getting_started.html#customizing-the-model-configuration-runtime-parameters">3.8. Customizing the Model Configuration - Runtime Parameters</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="getting_started/getting_started.html#parameters-configuration-computational-domain-geometry-and-time-discretization">3.8.1. Parameters: Configuration, Computational Domain, Geometry, and Time-Discretization</a></li>
+<li class="toctree-l3"><a class="reference internal" href="getting_started/getting_started.html#parameters-main-algorithmic-parameters">3.8.2. Parameters: Main Algorithmic Parameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="getting_started/getting_started.html#parameters-equation-of-state">3.8.3. Parameters: Equation of State</a></li>
+<li class="toctree-l3"><a class="reference internal" href="getting_started/getting_started.html#parameters-momentum-equations">3.8.4. Parameters: Momentum Equations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="getting_started/getting_started.html#parameters-tracer-equations">3.8.5. Parameters: Tracer Equations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="getting_started/getting_started.html#parameters-model-forcing">3.8.6. Parameters: Model Forcing</a></li>
+<li class="toctree-l3"><a class="reference internal" href="getting_started/getting_started.html#parameters-simulation-controls">3.8.7. Parameters: Simulation Controls</a></li>
+<li class="toctree-l3"><a class="reference internal" href="getting_started/getting_started.html#parameters-used-in-optional-packages">3.8.8. Parameters Used In Optional Packages</a></li>
+<li class="toctree-l3"><a class="reference internal" href="getting_started/getting_started.html#execution-environment-parameters">3.8.9. Execution Environment Parameters</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="getting_started/getting_started.html#mitgcm-input-data-file-format">3.9. MITgcm Input Data File Format</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="examples/examples.html">4. MITgcm Tutorial Example Experiments</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="examples/barotropic_gyre/barotropic_gyre.html">4.1. Barotropic Ocean Gyre</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="examples/barotropic_gyre/barotropic_gyre.html#equations-solved">4.1.1. Equations Solved</a></li>
+<li class="toctree-l3"><a class="reference internal" href="examples/barotropic_gyre/barotropic_gyre.html#discrete-numerical-configuration">4.1.2. Discrete Numerical Configuration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="examples/barotropic_gyre/barotropic_gyre.html#configuration">4.1.3. Configuration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="examples/barotropic_gyre/barotropic_gyre.html#building-and-running-the-model">4.1.4. Building and running the model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="examples/barotropic_gyre/barotropic_gyre.html#model-solution">4.1.5. Model Solution</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="examples/baroclinic_gyre/baroclinic_gyre.html">4.2. Baroclinic Ocean Gyre</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="examples/baroclinic_gyre/baroclinic_gyre.html#equations-solved">4.2.1. Equations solved</a></li>
+<li class="toctree-l3"><a class="reference internal" href="examples/baroclinic_gyre/baroclinic_gyre.html#discrete-numerical-configuration">4.2.2. Discrete Numerical Configuration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="examples/baroclinic_gyre/baroclinic_gyre.html#configuration">4.2.3. Configuration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="examples/baroclinic_gyre/baroclinic_gyre.html#building-and-running-the-model">4.2.4. Building and running the model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="examples/baroclinic_gyre/baroclinic_gyre.html#running-with-mpi">4.2.5. Running with MPI</a></li>
+<li class="toctree-l3"><a class="reference internal" href="examples/baroclinic_gyre/baroclinic_gyre.html#running-with-openmp">4.2.6. Running with OpenMP</a></li>
+<li class="toctree-l3"><a class="reference internal" href="examples/baroclinic_gyre/baroclinic_gyre.html#model-solution">4.2.7. Model solution</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="examples/reentrant_channel/reentrant_channel.html">4.3. Southern Ocean Reentrant Channel Example</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="examples/reentrant_channel/reentrant_channel.html#equations-solved">4.3.1. Equations Solved</a></li>
+<li class="toctree-l3"><a class="reference internal" href="examples/reentrant_channel/reentrant_channel.html#discrete-numerical-configuration">4.3.2. Discrete Numerical Configuration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="examples/reentrant_channel/reentrant_channel.html#configuration">4.3.3. Configuration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="examples/reentrant_channel/reentrant_channel.html#building-and-running-the-model">4.3.4. Building and running the model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="examples/reentrant_channel/reentrant_channel.html#model-solution">4.3.5. Model Solution</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="examples/advection_in_gyre/advection_in_gyre.html">4.4. Ocean Gyre Advection Schemes</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="examples/advection_in_gyre/advection_in_gyre.html#advection-and-tracer-transport">4.4.1. Advection and tracer transport</a></li>
+<li class="toctree-l3"><a class="reference internal" href="examples/advection_in_gyre/advection_in_gyre.html#introducing-a-tracer-into-the-flow">4.4.2. Introducing a tracer into the flow</a></li>
+<li class="toctree-l3"><a class="reference internal" href="examples/advection_in_gyre/advection_in_gyre.html#selecting-an-advection-scheme">4.4.3. Selecting an advection scheme</a></li>
+<li class="toctree-l3"><a class="reference internal" href="examples/advection_in_gyre/advection_in_gyre.html#comparison-of-different-advection-schemes">4.4.4. Comparison of different advection schemes</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="examples/global_oce_latlon/global_oce_latlon.html">4.5. Global Ocean Simulation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="examples/global_oce_latlon/global_oce_latlon.html#overview">4.5.1. Overview</a></li>
+<li class="toctree-l3"><a class="reference internal" href="examples/global_oce_latlon/global_oce_latlon.html#discrete-numerical-configuration">4.5.2. Discrete Numerical Configuration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="examples/global_oce_latlon/global_oce_latlon.html#experiment-configuration">4.5.3. Experiment Configuration</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="examples/global_oce_in_p/global_oce_in_p.html">4.6. Global Ocean Simulation in Pressure Coordinates</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="examples/global_oce_in_p/global_oce_in_p.html#overview">4.6.1. Overview</a></li>
+<li class="toctree-l3"><a class="reference internal" href="examples/global_oce_in_p/global_oce_in_p.html#discrete-numerical-configuration">4.6.2. Discrete Numerical Configuration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="examples/global_oce_in_p/global_oce_in_p.html#experiment-configuration">4.6.3. Experiment Configuration</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="examples/held_suarez_cs/held_suarez_cs.html">4.7. Held-Suarez Atmosphere</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="examples/held_suarez_cs/held_suarez_cs.html#overview">4.7.1. Overview</a></li>
+<li class="toctree-l3"><a class="reference internal" href="examples/held_suarez_cs/held_suarez_cs.html#forcing">4.7.2. Forcing</a></li>
+<li class="toctree-l3"><a class="reference internal" href="examples/held_suarez_cs/held_suarez_cs.html#set-up-description">4.7.3. Set-up description</a></li>
+<li class="toctree-l3"><a class="reference internal" href="examples/held_suarez_cs/held_suarez_cs.html#experiment-configuration">4.7.4. Experiment Configuration</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="examples/deep_convection/deep_convection.html">4.8. Deep Convection</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="examples/deep_convection/deep_convection.html#overview">4.8.1. Overview</a></li>
+<li class="toctree-l3"><a class="reference internal" href="examples/deep_convection/deep_convection.html#equations-solved">4.8.2. Equations solved</a></li>
+<li class="toctree-l3"><a class="reference internal" href="examples/deep_convection/deep_convection.html#discrete-numerical-configuration">4.8.3. Discrete numerical configuration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="examples/deep_convection/deep_convection.html#numerical-stability-criteria-and-other-considerations">4.8.4. Numerical stability criteria and other considerations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="examples/deep_convection/deep_convection.html#experiment-configuration">4.8.5. Experiment configuration</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="examples/plume_on_slope/plume_on_slope.html">4.9. Gravity Plume On a Continental Slope</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="examples/plume_on_slope/plume_on_slope.html#configuration">4.9.1. Configuration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="examples/plume_on_slope/plume_on_slope.html#binary-input-data">4.9.2. Binary input data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="examples/plume_on_slope/plume_on_slope.html#code-configuration">4.9.3. Code configuration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="examples/plume_on_slope/plume_on_slope.html#model-parameters">4.9.4. Model parameters</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="examples/global_oce_biogeo/global_oce_biogeo.html">4.10. Biogeochemistry Simulation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="examples/global_oce_biogeo/global_oce_biogeo.html#overview">4.10.1. Overview</a></li>
+<li class="toctree-l3"><a class="reference internal" href="examples/global_oce_biogeo/global_oce_biogeo.html#equations-solved">4.10.2. Equations Solved</a></li>
+<li class="toctree-l3"><a class="reference internal" href="examples/global_oce_biogeo/global_oce_biogeo.html#code-configuration">4.10.3. Code configuration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="examples/global_oce_biogeo/global_oce_biogeo.html#running-the-example">4.10.4. Running the example</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="examples/global_oce_optim/global_oce_optim.html">4.11. Global Ocean State Estimation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="examples/global_oce_optim/global_oce_optim.html#overview">4.11.1. Overview</a></li>
+<li class="toctree-l3"><a class="reference internal" href="examples/global_oce_optim/global_oce_optim.html#implementation-of-the-control-variable-and-the-cost-function">4.11.2. Implementation of the control variable and the cost function</a></li>
+<li class="toctree-l3"><a class="reference internal" href="examples/global_oce_optim/global_oce_optim.html#code-configuration">4.11.3. Code Configuration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="examples/global_oce_optim/global_oce_optim.html#compiling">4.11.4. Compiling</a></li>
+<li class="toctree-l3"><a class="reference internal" href="examples/global_oce_optim/global_oce_optim.html#running-the-estimation">4.11.5. Running the estimation</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="examples/tracer_adjsens/tracer_adjsens.html">4.12. Adjoint Sensitivity Analysis for Tracer Injection</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="examples/tracer_adjsens/tracer_adjsens.html#overview-of-the-experiment">4.12.1. Overview of the experiment</a></li>
+<li class="toctree-l3"><a class="reference internal" href="examples/tracer_adjsens/tracer_adjsens.html#code-configuration">4.12.2. Code configuration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="examples/tracer_adjsens/tracer_adjsens.html#compiling-the-model-and-its-adjoint">4.12.3. Compiling the model and its adjoint</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="examples/cfc_offline/cfc_offline.html">4.13. Offline Experiments</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="examples/cfc_offline/cfc_offline.html#overview">4.13.1. Overview</a></li>
+<li class="toctree-l3"><a class="reference internal" href="examples/cfc_offline/cfc_offline.html#time-stepping-of-tracers">4.13.2. Time-stepping of tracers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="examples/cfc_offline/cfc_offline.html#code-configuration">4.13.3. Code Configuration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="examples/cfc_offline/cfc_offline.html#running-the-experiment">4.13.4. Running the Experiment</a></li>
+<li class="toctree-l3"><a class="reference internal" href="examples/cfc_offline/cfc_offline.html#a-more-complicated-example">4.13.5. A more complicated example</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="examples/rotating_tank/rotating_tank.html">4.14. Rotating Tank</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="examples/rotating_tank/rotating_tank.html#equations-solved">4.14.1. Equations Solved</a></li>
+<li class="toctree-l3"><a class="reference internal" href="examples/rotating_tank/rotating_tank.html#discrete-numerical-configuration">4.14.2. Discrete Numerical Configuration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="examples/rotating_tank/rotating_tank.html#code-configuration">4.14.3. Code Configuration</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="examples/examples.html#additional-example-experiments-forward-model-setups">4.15. Additional Example Experiments: Forward Model Setups</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples/examples.html#additional-example-experiments-adjoint-model-setups">4.16. Additional Example Experiments: Adjoint Model Setups</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="contributing/contributing.html">5. Contributing to the MITgcm</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="contributing/contributing.html#bugs-and-feature-requests">5.1. Bugs and feature requests</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contributing/contributing.html#using-git-and-github">5.2. Using Git and Github</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="contributing/contributing.html#quickstart-guide">5.2.1. Quickstart Guide</a></li>
+<li class="toctree-l3"><a class="reference internal" href="contributing/contributing.html#detailed-guide-for-those-less-familiar-with-git-and-github">5.2.2. Detailed guide for those less familiar with Git and GitHub</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="contributing/contributing.html#coding-style-guide">5.3. Coding style guide</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contributing/contributing.html#creating-mitgcm-packages">5.4. Creating MITgcm packages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="contributing/contributing.html#package-structure">5.4.1. Package structure</a></li>
+<li class="toctree-l3"><a class="reference internal" href="contributing/contributing.html#package-boot-sequence">5.4.2. Package boot sequence</a></li>
+<li class="toctree-l3"><a class="reference internal" href="contributing/contributing.html#package-s-r-calls">5.4.3. Package S/R calls</a></li>
+<li class="toctree-l3"><a class="reference internal" href="contributing/contributing.html#package-mypackage">5.4.4. Package “mypackage”</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="contributing/contributing.html#mitgcm-code-testing-protocols">5.5. MITgcm code testing protocols</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="contributing/contributing.html#test-experiment-directory-content">5.5.1. Test-experiment directory content</a></li>
+<li class="toctree-l3"><a class="reference internal" href="contributing/contributing.html#the-testreport-utility">5.5.2. The testreport utility</a></li>
+<li class="toctree-l3"><a class="reference internal" href="contributing/contributing.html#the-do-tst-2-2-utility">5.5.3. The do_tst_2+2 utility</a></li>
+<li class="toctree-l3"><a class="reference internal" href="contributing/contributing.html#daily-testing-of-mitgcm">5.5.4. Daily Testing of MITgcm</a></li>
+<li class="toctree-l3"><a class="reference internal" href="contributing/contributing.html#required-testing-for-mitgcm-code-contributors">5.5.5. Required Testing for MITgcm Code Contributors</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="contributing/contributing.html#contributing-to-the-manual">5.6. Contributing to the manual</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="contributing/contributing.html#section-headings">5.6.1. Section headings</a></li>
+<li class="toctree-l3"><a class="reference internal" href="contributing/contributing.html#internal-document-references">5.6.2. Internal document references</a></li>
+<li class="toctree-l3"><a class="reference internal" href="contributing/contributing.html#citations">5.6.3. Citations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="contributing/contributing.html#other-embedded-links">5.6.4. Other embedded links</a></li>
+<li class="toctree-l3"><a class="reference internal" href="contributing/contributing.html#symbolic-notation">5.6.5. Symbolic Notation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="contributing/contributing.html#figures">5.6.6. Figures</a></li>
+<li class="toctree-l3"><a class="reference internal" href="contributing/contributing.html#tables">5.6.7. Tables</a></li>
+<li class="toctree-l3"><a class="reference internal" href="contributing/contributing.html#other-text-blocks">5.6.8. Other text blocks</a></li>
+<li class="toctree-l3"><a class="reference internal" href="contributing/contributing.html#other-style-conventions">5.6.9. Other style conventions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="contributing/contributing.html#building-the-manual">5.6.10. Building the manual</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="contributing/contributing.html#reviewing-pull-requests">5.7. Reviewing pull requests</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="software_arch/software_arch.html">6. Software Architecture</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="software_arch/software_arch.html#overall-architectural-goals">6.1. Overall architectural goals</a></li>
+<li class="toctree-l2"><a class="reference internal" href="software_arch/software_arch.html#wrapper">6.2. WRAPPER</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="software_arch/software_arch.html#target-hardware">6.2.1. Target hardware</a></li>
+<li class="toctree-l3"><a class="reference internal" href="software_arch/software_arch.html#supporting-hardware-neutrality">6.2.2. Supporting hardware neutrality</a></li>
+<li class="toctree-l3"><a class="reference internal" href="software_arch/software_arch.html#wrapper-machine-model">6.2.3. WRAPPER machine model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="software_arch/software_arch.html#machine-model-parallelism">6.2.4. Machine model parallelism</a></li>
+<li class="toctree-l3"><a class="reference internal" href="software_arch/software_arch.html#communication-mechanisms">6.2.5. Communication mechanisms</a></li>
+<li class="toctree-l3"><a class="reference internal" href="software_arch/software_arch.html#communication-primitives">6.2.6. Communication primitives</a></li>
+<li class="toctree-l3"><a class="reference internal" href="software_arch/software_arch.html#memory-architecture">6.2.7. Memory architecture</a></li>
+<li class="toctree-l3"><a class="reference internal" href="software_arch/software_arch.html#summary">6.2.8. Summary</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="software_arch/software_arch.html#using-the-wrapper">6.3. Using the WRAPPER</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="software_arch/software_arch.html#specifying-a-domain-decomposition">6.3.1. Specifying a domain decomposition</a></li>
+<li class="toctree-l3"><a class="reference internal" href="software_arch/software_arch.html#starting-the-code">6.3.2. Starting the code</a></li>
+<li class="toctree-l3"><a class="reference internal" href="software_arch/software_arch.html#controlling-communication">6.3.3. Controlling communication</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="software_arch/software_arch.html#mitgcm-execution-under-wrapper">6.4. MITgcm execution under WRAPPER</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="software_arch/software_arch.html#annotated-call-tree-for-mitgcm-and-wrapper">6.4.1. Annotated call tree for MITgcm and WRAPPER</a></li>
+<li class="toctree-l3"><a class="reference internal" href="software_arch/software_arch.html#measuring-and-characterizing-performance">6.4.2. Measuring and Characterizing Performance</a></li>
+<li class="toctree-l3"><a class="reference internal" href="software_arch/software_arch.html#estimating-resource-requirements">6.4.3. Estimating Resource Requirements</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="autodiff/autodiff.html">7. Automatic Differentiation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="autodiff/autodiff.html#some-basic-algebra">7.1. Some basic algebra</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="autodiff/autodiff.html#forward-or-direct-sensitivity">7.1.1. Forward or direct sensitivity</a></li>
+<li class="toctree-l3"><a class="reference internal" href="autodiff/autodiff.html#reverse-or-adjoint-sensitivity">7.1.2. Reverse or adjoint sensitivity</a></li>
+<li class="toctree-l3"><a class="reference internal" href="autodiff/autodiff.html#storing-vs-recomputation-in-reverse-mode">7.1.3. Storing vs. recomputation in reverse mode</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="autodiff/autodiff.html#tlm-and-adm-generation-in-general">7.2. TLM and ADM generation in general</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="autodiff/autodiff.html#general-setup">7.2.1. General setup</a></li>
+<li class="toctree-l3"><a class="reference internal" href="autodiff/autodiff.html#building-the-ad-code-using-taf">7.2.2. Building the AD code using TAF</a></li>
+<li class="toctree-l3"><a class="reference internal" href="autodiff/autodiff.html#the-ad-build-process-in-detail">7.2.3. The AD build process in detail</a></li>
+<li class="toctree-l3"><a class="reference internal" href="autodiff/autodiff.html#the-cost-function-dependent-variable">7.2.4. The cost function (dependent variable)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="autodiff/autodiff.html#the-control-variables-independent-variables">7.2.5. The control variables (independent variables)</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="autodiff/autodiff.html#the-gradient-check-package">7.3. The gradient check package</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="autodiff/autodiff.html#code-description">7.3.1. Code description</a></li>
+<li class="toctree-l3"><a class="reference internal" href="autodiff/autodiff.html#code-configuration">7.3.2. Code configuration</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="autodiff/autodiff.html#adjoint-dump-restart-divided-adjoint-diva">7.4. Adjoint dump &amp; restart – divided adjoint (DIVA)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="autodiff/autodiff.html#introduction">7.4.1. Introduction</a></li>
+<li class="toctree-l3"><a class="reference internal" href="autodiff/autodiff.html#recipe-for-divided-adjoint-code-generation">7.4.2. Recipe for divided adjoint code generation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="autodiff/autodiff.html#special-considerations-for-multi-processor-mpi-runs">7.4.3. Special considerations for multi processor (MPI) runs</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="autodiff/autodiff.html#adjoint-code-generation-using-openad">7.5. Adjoint code generation using OpenAD</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="autodiff/autodiff.html#id14">7.5.1. Introduction</a></li>
+<li class="toctree-l3"><a class="reference internal" href="autodiff/autodiff.html#downloading-and-installing-openad">7.5.2. Downloading and installing OpenAD</a></li>
+<li class="toctree-l3"><a class="reference internal" href="autodiff/autodiff.html#building-mitgcm-adjoint-with-openad">7.5.3. Building MITgcm adjoint with OpenAD</a></li>
+<li class="toctree-l3"><a class="reference internal" href="autodiff/autodiff.html#building-the-mitgcm-adjoint-using-an-openad-singularity-container">7.5.4. Building the MITgcm adjoint using an OpenAD Singularity container</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="autodiff/autodiff.html#adjoint-code-generation-using-tapenade">7.6. Adjoint code generation using Tapenade</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="autodiff/autodiff.html#id18">7.6.1. Introduction</a></li>
+<li class="toctree-l3"><a class="reference internal" href="autodiff/autodiff.html#downloading-and-installing-tapenade">7.6.2. Downloading and installing Tapenade</a></li>
+<li class="toctree-l3"><a class="reference internal" href="autodiff/autodiff.html#prerequisites-for-linux-or-mac-os">7.6.3. Prerequisites for Linux or Mac OS</a></li>
+<li class="toctree-l3"><a class="reference internal" href="autodiff/autodiff.html#steps-for-mac-os">7.6.4. Steps for Mac OS</a></li>
+<li class="toctree-l3"><a class="reference internal" href="autodiff/autodiff.html#steps-for-linux">7.6.5. Steps for Linux</a></li>
+<li class="toctree-l3"><a class="reference internal" href="autodiff/autodiff.html#prerequisites-for-windows">7.6.6. Prerequisites for Windows</a></li>
+<li class="toctree-l3"><a class="reference internal" href="autodiff/autodiff.html#steps-for-windows">7.6.7. Steps for Windows</a></li>
+<li class="toctree-l3"><a class="reference internal" href="autodiff/autodiff.html#prerequisites-for-tapenade-setup">7.6.8. Prerequisites for Tapenade setup</a></li>
+<li class="toctree-l3"><a class="reference internal" href="autodiff/autodiff.html#building-mitgcm-tlm-with-tapenade">7.6.9. Building MITgcm TLM with Tapenade</a></li>
+<li class="toctree-l3"><a class="reference internal" href="autodiff/autodiff.html#building-mitgcm-adjoint-with-tapenade">7.6.10. Building MITgcm adjoint with Tapenade</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="phys_pkgs/phys_pkgs.html">8. Packages I - Physical Parameterizations</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="phys_pkgs/phys_pkgs.html#overview">8.1. Overview</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="phys_pkgs/packages_overview.html">8.1.1. Using MITgcm Packages</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="phys_pkgs/phys_pkgs.html#packages-related-to-hydrodynamical-kernel">8.2. Packages Related to Hydrodynamical Kernel</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="phys_pkgs/generic_advdiff.html">8.2.1. Generic Advection/Diffusion</a></li>
+<li class="toctree-l3"><a class="reference internal" href="phys_pkgs/mom_packages.html">8.2.2. Momentum Packages</a></li>
+<li class="toctree-l3"><a class="reference internal" href="phys_pkgs/shap_filt.html">8.2.3. Shapiro Filter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="phys_pkgs/zonal_filt.html">8.2.4. FFT Filtering Code</a></li>
+<li class="toctree-l3"><a class="reference internal" href="phys_pkgs/exch2.html">8.2.5. exch2: Extended Cubed Sphere Topology</a></li>
+<li class="toctree-l3"><a class="reference internal" href="phys_pkgs/gridalt.html">8.2.6. Gridalt - Alternate Grid Package</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="phys_pkgs/phys_pkgs.html#general-purpose-numerical-infrastructure-packages">8.3. General purpose numerical infrastructure packages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="phys_pkgs/obcs.html">8.3.1. OBCS: Open boundary conditions for regional modeling</a></li>
+<li class="toctree-l3"><a class="reference internal" href="phys_pkgs/rbcs.html">8.3.2. RBCS Package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="phys_pkgs/ptracers.html">8.3.3. PTRACERS Package</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="phys_pkgs/phys_pkgs.html#ocean-packages">8.4. Ocean Packages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="phys_pkgs/gmredi.html">8.4.1. GMREDI: Gent-McWilliams/Redi Eddy Parameterization</a></li>
+<li class="toctree-l3"><a class="reference internal" href="phys_pkgs/kpp.html">8.4.2. KPP: Nonlocal K-Profile Parameterization for Vertical Mixing</a></li>
+<li class="toctree-l3"><a class="reference internal" href="phys_pkgs/ggl90.html">8.4.3. GGL90: a TKE vertical mixing scheme</a></li>
+<li class="toctree-l3"><a class="reference internal" href="phys_pkgs/opps.html">8.4.4. OPPS: Ocean Penetrative Plume Scheme</a></li>
+<li class="toctree-l3"><a class="reference internal" href="phys_pkgs/kl10.html">8.4.5. KL10: Vertical Mixing Due to Breaking Internal Waves</a></li>
+<li class="toctree-l3"><a class="reference internal" href="phys_pkgs/bulk_force.html">8.4.6. BULK_FORCE: Bulk Formula Package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="phys_pkgs/exf.html">8.4.7. EXF: The external forcing package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="phys_pkgs/cal.html">8.4.8. CAL: The calendar package</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="phys_pkgs/phys_pkgs.html#atmosphere-packages">8.5. Atmosphere Packages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="phys_pkgs/aim.html">8.5.1. Atmospheric Intermediate Physics: AIM</a></li>
+<li class="toctree-l3"><a class="reference internal" href="phys_pkgs/land.html">8.5.2. Land package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="phys_pkgs/fizhi.html">8.5.3. Fizhi: High-end Atmospheric Physics</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="phys_pkgs/phys_pkgs.html#ice-and-sea-ice-packages">8.6. Ice and Sea Ice Packages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="phys_pkgs/thsice.html">8.6.1. THSICE: The Thermodynamic Sea Ice Package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="phys_pkgs/seaice.html">8.6.2. SEAICE Package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="phys_pkgs/shelfice.html">8.6.3. SHELFICE Package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="phys_pkgs/remesh.html">8.6.4. SHELFICE Remeshing</a></li>
+<li class="toctree-l3"><a class="reference internal" href="phys_pkgs/streamice.html">8.6.5. STREAMICE Package</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="phys_pkgs/phys_pkgs.html#biogeochemistry-packages">8.7. Biogeochemistry Packages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="phys_pkgs/gchem.html">8.7.1. GCHEM Package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="phys_pkgs/dic.html">8.7.2. DIC Package</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="outp_pkgs/outp_pkgs.html">9. Packages II - Diagnostics and I/O</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="outp_pkgs/outp_pkgs.html#pkg-diagnostics-a-flexible-infrastructure">9.1. pkg/diagnostics – A Flexible Infrastructure</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="outp_pkgs/outp_pkgs.html#introduction">9.1.1. Introduction</a></li>
+<li class="toctree-l3"><a class="reference internal" href="outp_pkgs/outp_pkgs.html#equations">9.1.2. Equations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="outp_pkgs/outp_pkgs.html#key-subroutines-and-parameters">9.1.3. Key Subroutines and Parameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="outp_pkgs/outp_pkgs.html#usage-notes">9.1.4. Usage Notes</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="outp_pkgs/outp_pkgs.html#fortran-native-i-o-pkg-mdsio-and-pkg-rw">9.2. Fortran Native I/O: pkg/mdsio and pkg/rw</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="outp_pkgs/outp_pkgs.html#id2">9.2.1. pkg/mdsio</a></li>
+<li class="toctree-l3"><a class="reference internal" href="outp_pkgs/outp_pkgs.html#pkg-rw-basic-binary-i-o-utilities">9.2.2. pkg/rw basic binary I/O utilities</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="outp_pkgs/outp_pkgs.html#netcdf-i-o-pkg-mnc">9.3. NetCDF I/O: pkg/mnc</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="outp_pkgs/outp_pkgs.html#using-pkg-mnc">9.3.1. Using pkg/mnc</a></li>
+<li class="toctree-l3"><a class="reference internal" href="outp_pkgs/outp_pkgs.html#pkg-mnc-troubleshooting">9.3.2. pkg/mnc Troubleshooting</a></li>
+<li class="toctree-l3"><a class="reference internal" href="outp_pkgs/outp_pkgs.html#pkg-mnc-internals">9.3.3. pkg/mnc Internals</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="outp_pkgs/outp_pkgs.html#monitor-simulation-state-monitoring-toolkit">9.4. Monitor: Simulation State Monitoring Toolkit</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="outp_pkgs/outp_pkgs.html#id32">9.4.1. Introduction</a></li>
+<li class="toctree-l3"><a class="reference internal" href="outp_pkgs/outp_pkgs.html#using-pkg-monitor">9.4.2. Using pkg/monitor</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="outp_pkgs/outp_pkgs.html#grid-generation">9.5. Grid Generation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="outp_pkgs/outp_pkgs.html#using-spgrid">9.5.1. Using SPGrid</a></li>
+<li class="toctree-l3"><a class="reference internal" href="outp_pkgs/outp_pkgs.html#example-grids">9.5.2. Example Grids</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="outp_pkgs/outp_pkgs.html#pre-and-postprocessing-scripts-and-utilities">9.6. Pre– and Post–Processing Scripts and Utilities</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="outp_pkgs/outp_pkgs.html#utilities-supplied-with-the-model">9.6.1. Utilities Supplied With the Model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="outp_pkgs/outp_pkgs.html#pre-processing-software">9.6.2. Pre-Processing Software</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="outp_pkgs/outp_pkgs.html#potential-vorticity-matlab-toolbox">9.7. Potential Vorticity Matlab Toolbox</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="outp_pkgs/outp_pkgs.html#id49">9.7.1. Introduction</a></li>
+<li class="toctree-l3"><a class="reference internal" href="outp_pkgs/outp_pkgs.html#id51">9.7.2. Equations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="outp_pkgs/outp_pkgs.html#key-routines">9.7.3. Key routines</a></li>
+<li class="toctree-l3"><a class="reference internal" href="outp_pkgs/outp_pkgs.html#technical-details">9.7.4. Technical details</a></li>
+<li class="toctree-l3"><a class="reference internal" href="outp_pkgs/outp_pkgs.html#notes-on-the-flux-form-of-the-pv-equation-and-vertical-pv-fluxes">9.7.5. Notes on the flux form of the PV equation and vertical PV fluxes</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="outp_pkgs/outp_pkgs.html#pkg-flt-simulation-of-float-parcel-displacements">9.8. pkg/flt – Simulation of float / parcel displacements</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="outp_pkgs/outp_pkgs.html#id55">9.8.1. Introduction</a></li>
+<li class="toctree-l3"><a class="reference internal" href="outp_pkgs/outp_pkgs.html#compile-time-options-in-flt-options-h">9.8.2. Compile-time options in <cite>FLT_OPTIONS.h</cite></a></li>
+<li class="toctree-l3"><a class="reference internal" href="outp_pkgs/outp_pkgs.html#compile-time-parameters-in-flt-size-h-include">9.8.3. Compile-time parameters in <cite>FLT_SIZE.h</cite> include:</a></li>
+<li class="toctree-l3"><a class="reference internal" href="outp_pkgs/outp_pkgs.html#run-time-options-in-data-flt-include">9.8.4. Run-time options in <cite>data.flt</cite> include:</a></li>
+<li class="toctree-l3"><a class="reference internal" href="outp_pkgs/outp_pkgs.html#input-files">9.8.5. Input Files</a></li>
+<li class="toctree-l3"><a class="reference internal" href="outp_pkgs/outp_pkgs.html#output-files">9.8.6. Output Files</a></li>
+<li class="toctree-l3"><a class="reference internal" href="outp_pkgs/outp_pkgs.html#verification-experiment">9.8.7. Verification Experiment</a></li>
+<li class="toctree-l3"><a class="reference internal" href="outp_pkgs/outp_pkgs.html#algorithm-details">9.8.8. Algorithm details</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="ocean_state_est/ocean_state_est.html">10. Packages III - Ocean State Estimation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="ocean_state_est/ocean_state_est.html#ecco-model-data-comparisons-using-gridded-data-sets">10.1. ECCO: model-data comparisons using gridded data sets</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="ocean_state_est/ocean_state_est.html#generic-cost-function">10.1.1. Generic Cost Function</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ocean_state_est/ocean_state_est.html#generic-integral-function">10.1.2. Generic Integral Function</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ocean_state_est/ocean_state_est.html#custom-cost-functions">10.1.3. Custom Cost Functions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ocean_state_est/ocean_state_est.html#key-routines">10.1.4. Key Routines</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ocean_state_est/ocean_state_est.html#compile-options">10.1.5. Compile Options</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="ocean_state_est/ocean_state_est.html#profiles-model-data-comparisons-at-observed-locations">10.2. PROFILES: model-data comparisons at observed locations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ocean_state_est/ocean_state_est.html#obsfit-grid-independent-model-data-comparisons">10.3. OBSFIT: grid-independent model-data comparisons</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="ocean_state_est/ocean_state_est.html#introduction">10.3.1. Introduction</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ocean_state_est/ocean_state_est.html#description">10.3.2. Description</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ocean_state_est/ocean_state_est.html#obsfit-configuration-and-compiling">10.3.3. OBSFIT configuration and compiling</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ocean_state_est/ocean_state_est.html#run-time-requirements">10.3.4. Run-time requirements</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ocean_state_est/ocean_state_est.html#general-flags-and-parameters">10.3.5. General flags and parameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ocean_state_est/ocean_state_est.html#experiments-and-tutorials-that-use-obsfit">10.3.6. Experiments and tutorials that use OBSFIT</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="ocean_state_est/ocean_state_est.html#ctrl-model-parameter-adjustment-capability">10.4. CTRL: Model Parameter Adjustment Capability</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="ocean_state_est/ocean_state_est.html#generic-control-parameters">10.4.1. Generic Control Parameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ocean_state_est/ocean_state_est.html#shelfice-control-parameters">10.4.2. Shelfice Control Parameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ocean_state_est/ocean_state_est.html#logarithmic-control-parameters">10.4.3. Logarithmic Control Parameters</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="ocean_state_est/ocean_state_est.html#smooth-smoothing-and-covariance-model">10.5. SMOOTH: Smoothing And Covariance Model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ocean_state_est/ocean_state_est.html#the-line-search-optimisation-algorithm">10.6. The line search optimisation algorithm</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="ocean_state_est/ocean_state_est.html#general-features">10.6.1. General features</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ocean_state_est/ocean_state_est.html#the-online-vs-offline-version">10.6.2. The online vs. offline version</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ocean_state_est/ocean_state_est.html#number-of-iterations-vs-number-of-simulations">10.6.3. Number of iterations vs. number of simulations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ocean_state_est/ocean_state_est.html#alternative-code-to-optim-and-lsopt">10.6.4. Alternative code to optim and lsopt</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="ocean_state_est/ocean_state_est.html#test-cases-for-estimation-package-capabilities">10.7. Test Cases For Estimation Package Capabilities</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="utilities/utilities.html">11. Utilities</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="utilities/utilities.html#mitgcmutils">11.1. MITgcmutils</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="utilities/utilities.html#module-MITgcmutils.mds">11.1.1. mds</a></li>
+<li class="toctree-l3"><a class="reference internal" href="utilities/utilities.html#module-MITgcmutils.mnc">11.1.2. mnc</a></li>
+<li class="toctree-l3"><a class="reference internal" href="utilities/utilities.html#module-MITgcmutils.diagnostics">11.1.3. diagnostics</a></li>
+<li class="toctree-l3"><a class="reference internal" href="utilities/utilities.html#module-MITgcmutils.ptracers">11.1.4. ptracers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="utilities/utilities.html#module-MITgcmutils.density">11.1.5. density</a></li>
+<li class="toctree-l3"><a class="reference internal" href="utilities/utilities.html#module-MITgcmutils.utils">11.1.6. miscellaneous utilities</a></li>
+<li class="toctree-l3"><a class="reference internal" href="utilities/utilities.html#module-MITgcmutils.conversion">11.1.7. conversion</a></li>
+<li class="toctree-l3"><a class="reference internal" href="utilities/utilities.html#module-MITgcmutils.cs">11.1.8. cs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="utilities/utilities.html#module-MITgcmutils.llc">11.1.9. llc</a></li>
+<li class="toctree-l3"><a class="reference internal" href="utilities/utilities.html#module-MITgcmutils.examples">11.1.10. examples</a></li>
+<li class="toctree-l3"><a class="reference internal" href="utilities/utilities.html#gluemncbig">11.1.11. gluemncbig</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="utilities/utilities.html#bash-scripts">11.2. Bash scripts</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="utilities/utilities.html#gluemnc">11.2.1. gluemnc</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="related_projects/related_projects.html">12. Related Projects and Highlighted Papers</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="related_projects/related_projects.html#projects-related-to-mitgcm">12.1. Projects Related to MITgcm</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="related_projects/related_projects.html#estimating-the-circulation-and-climate-of-the-ocean-ecco">12.1.1. Estimating the Circulation and Climate of the Ocean (ECCO)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="related_projects/related_projects.html#southern-ocean-state-estimation-sose">12.1.2. Southern Ocean State Estimation (SOSE)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="related_projects/related_projects.html#mitgcmis-global-ice-sheet-model-for-the-coupled-atm-ocn-sea-ice-mitgcm">12.1.3. MITgcmIS: global ice sheet model for the coupled atm-ocn-sea ice MITgcm</a></li>
+<li class="toctree-l3"><a class="reference internal" href="related_projects/related_projects.html#mitprof-in-situ-ocean-data-in-matlab-and-octave">12.1.4. MITprof: In-Situ Ocean Data In Matlab And Octave</a></li>
+<li class="toctree-l3"><a class="reference internal" href="related_projects/related_projects.html#oceanparcels-lagrangian-particle-tracker">12.1.5. OceanParcels - Lagrangian Particle Tracker</a></li>
+<li class="toctree-l3"><a class="reference internal" href="related_projects/related_projects.html#xgcm-general-circulation-model-postprocessing-with-xarray">12.1.6. Xgcm: General Circulation Model Postprocessing with xarray</a></li>
+<li class="toctree-l3"><a class="reference internal" href="related_projects/related_projects.html#xmitgcm">12.1.7. Xmitgcm</a></li>
+<li class="toctree-l3"><a class="reference internal" href="related_projects/related_projects.html#gcmfaces-gridded-earth-variables-in-matlab-and-octave">12.1.8. Gcmfaces: Gridded Earth Variables In Matlab And Octave</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="related_projects/related_projects.html#highlighted-papers">12.2. Highlighted Papers</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="references.html">13. References</a></li>
+</ul>
+</div>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="overview/overview.html" class="btn btn-neutral float-right" title="1. Overview" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 1997-, MITgcm contributors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

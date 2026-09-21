@@ -1,0 +1,77 @@
+ICON Model Documentation — ICON  documentation
+Skip to main content
+Back to top
+Ctrl
++
+K
+ICON Release
+Getting Started
+ICON Documentation
+Development Guidelines
+GitLab
+icon-exchange
+icon-model.org
+ICON Release
+Getting Started
+ICON Documentation
+Development Guidelines
+GitLab
+icon-exchange
+icon-model.org
+ICON Model Documentation
+#
+ICON is a flexible, scalable, high-performance modelling framework for weather, climate and environmental prediction that provides actionable information for society and advances our understanding of the Earth’s climate system.
+Useful links:
+Namelist Overview
+,
+ICON-Exchange
+,
+Deprecated Features
+,
+FAQ
+,
+Community Newsletter
+Release
+Get the latest release and information
+on changes to previous ICON versions.
+To the ICON release
+Getting Started
+Don’t know where to start?
+Find a short description for beginners here,
+including references to dig deeper.
+To the getting started guide
+Documentation
+Collection of everything there is to know about ICON.
+Chapters:
+User Manual
+,
+Interfaces & Tools
+,
+Atmosphere
+,
+Ocean
+,
+Waves
+,
+Land
+,
+Infrastructure
+,
+Literature
+To the ICON documentation
+Contribute
+Want to contribute to the ICON development or find out
+how the ICON partners guarantee the high standards of the ICON framework?
+To the development guidelines
+Imprint
+,
+Copyright
+and
+Privacy Policy
+© Copyright 2026, The ICON Partners.
+Created using
+Sphinx
+9.1.0.
+Built with the
+PyData Sphinx Theme
+0.15.4.

@@ -1,0 +1,63 @@
+NEMO User Guide — NEMO release-5.0.0 documentation
+Community ocean model for multifarious space and time scales
+Click on NEMO icon to go back to NEMO Gitlab
+5.0.0
+User-guide: Basics
+Essential components
+Download and install the NEMO code
+Preparing an experiment
+Running the model
+Run the Reference configurations
+Explore the test cases
+User-guide: Advanced
+Embedded zooms
+Coupling
+Data assimilation
+Oceanic tracers
+Setting up a new configuration
+Add new diagnostics
+Tools
+XIOS3 demonstrator
+Mixed-precision
+Using PSyclone
+User-guide: Appendix
+v5.0 Release Notes
+Changes between 4.2.2 and 4.2.1
+Changes since 4.2.0
+Changes since 4.0.7
+Known Issues
+Migrating from 4.0.x to 4.2.x
+How to cite: Reference manuals
+Acronyms
+Developer-guide: Testing
+A guide to using SETTE
+Developer-guide: Documentation
+Contributing to the NEMO reference code
+Making changes to the User Guide
+NEMO
+NEMO User Guide
+View page source
+NEMO User Guide
+
+Note
+These pages are a practical guide explaining how to get started with NEMO and how to
+utilise some of the more advanced features. For more detailed descriptions of NEMO’s
+scientific and numerical options, and how these are built into the code, please refer to
+the Reference manuals
+here
+This is the User’s guide for NEMO version:
+release-5.0.0.
+Use the sidebar links for navigation or start
+here
+The guide for version 4.2.2 is still available:
+Version 4.2.2 user guide
+Last updated: Oct 14, 2025
+Next
+© Copyright 2008-2025, NEMO Consortium.
+Built with
+Sphinx
+using a
+theme
+provided by
+Read the Docs
+.

@@ -1,0 +1,469 @@
+v5.0 Release Notes — NEMO release-5.0.0 documentation
+Community ocean model for multifarious space and time scales
+Click on NEMO icon to go back to NEMO Gitlab
+5.0.0
+User-guide: Basics
+Essential components
+Download and install the NEMO code
+Preparing an experiment
+Running the model
+Run the Reference configurations
+Explore the test cases
+User-guide: Advanced
+Embedded zooms
+Coupling
+Data assimilation
+Oceanic tracers
+Setting up a new configuration
+Add new diagnostics
+Tools
+XIOS3 demonstrator
+Mixed-precision
+Using PSyclone
+User-guide: Appendix
+v5.0 Release Notes
+Highlights
+Known Issues and Remarks
+Key changes
+HPC optimization
+Tools
+Notes on cpp keys
+Notes on namelist parameters
+Bibliography
+Changes between 4.2.2 and 4.2.1
+Changes since 4.2.0
+Changes since 4.0.7
+Known Issues
+Migrating from 4.0.x to 4.2.x
+How to cite: Reference manuals
+Acronyms
+Developer-guide: Testing
+A guide to using SETTE
+Developer-guide: Documentation
+Contributing to the NEMO reference code
+Making changes to the User Guide
+NEMO
+v5.0 Release Notes
+View page source
+v5.0 Release Notes
+
+Highlights
+
+NEMO v5.0 offers significant performance improvements, allowing configurations to run faster and more cost-effectively compared to previous versions. These enhancements apply to both available time-stepping schemes, Modified Leap Frog (MLF) and Runge Kutta 3rd order (RK3), though to varying extents. Key factors contributing to this performance boost include a smaller memory footprint (achieved by removing some 3D arrays), reduced halo size (extra grid cells around the computational domain), and minimized message passing interface (MPI) communication. The most notable advancement, however, comes from using the RK3 temporal scheme and increasing the time step.
+For stability reasons in ocean models, advective processes need to be centered. This can be achieved by using an intermediate value: either calculating at n+½ (half timestep)​ to progress from n (present) to n+1 (next timestep; as in the RK3 scheme) or using the value at n to progress from n−1 to n+1 (as in the MLF scheme). The limitation of increasing the time step with the MLF scheme arises because advective processes and the Coriolis effect can become unstable. The RK3 scheme, with its three-stage approach, estimates advective processes and other dynamics at n+⅓ and n+½, but without requiring the computation of all terms in the dynamics and tracer equations. This increases stability, allowing for a larger time step. A longer time step ultimately reduces the computational cost of the simulation. As a result, while RK3 offers improved performance, it is crucial for users to leverage the increased efficiency to extend the configuration’s time step, otherwise the model may be less performant than with MLF. Further performance gains can be achieved by using XIOS version 3 and adhering to the optimal use guidelines for NEMO available:
+XIOS3 demonstrator guide
+.
+Preliminary validation suggests that by using XIOS3, activating RK3, and doubling the time step, NEMO v5.0 can be up to 2.5 times faster than NEMO v4.
+NEMO v5.0 also brings with it the first steps towards compatibility with hybrid CPU-GPU computing by integrating
+PSyclone
+source-code processing into the build system. With 5.0, passthrough testing (where code is processed by PSyclone but not transformed) of all SETTE configurations with the latest release version of PSyclone is successful. Ultimately, this source-code transformation facility can be used to identify computational kernels and insert compiler directives in order to exploit parallelism. Achieving optimal performance by this method is not yet fully automatic but the transformations will be capable of generating code which will compile and run using GPU resources. At this stage, support for Nvidia compilers and hardware is more mature but progress is underway to generalize the approach towards a wider range of platforms. Any beta testing in support of this goal is strongly encouraged.
+NEMO 5.0 is the last version supporting both temporal schemes, MLF and RK3.
+Subsequent versions will no longer include MLF
+.
+Known Issues and Remarks
+
+Results of on-line trend diagnostics (see namelist block &namtrd) are not reliable for NEMO v5.0.
+Instabilities can arise due a divergence between solutions from the barotropic and baroclinic equations when coupling the two. It is more prevalent at low resolutions when the time step is large (typically ORCA2 with 3h time step). If this happens, and decreasing the time step is not working, consider setting the namelist parameter nn_bt_flt=1 (or 2) instead of 3.
+Since version 4.0, the ORCA2 configuration file provided with the code (ORCA_R2_zps_domcfg.nc) did not include a special treatment of the straights and throughflows (adjustment of depth and friction with boundaries) as was the case for older versions (hard coded in NEMO). This has now been corrected, with an additional straits_shlat variable in the configuration file. See issue
+!461
+for more details.
+The z-tilde coordinate is not implemented in this version.
+Default options for wetting & drying are not yet working but the WAD test case has the right settings and so can be used as a reference.
+Explicit free surface is not working for RK3 (ln_dynspg_exp=T)
+On-line coarsening (CRS) has been removed
+RK3 instantaneous outputs are offset by +1 time step compared to MLF. RK3 outputs at n+1 while MLF outputs at n. Similarly, vertical velocity w is outputted mid-time-step while u and v are outputted at n+1.
+Key changes
+
+OCEAN Physics
+Geometric parameterization for unresolved eddies (
+nn_aei_ijk_t=32
+)
+Geometric is a new parameterization of eddy induced velocities formulated by Marshall et al. (2012) and Mak et al. (2018, 2022). It is based on an energetically consistent Gent-McWilliams parameterization.
+Light penetration scheme using 5 bands (
+ln_qsr_5bd
+)
+A new penetration scheme is implemented. It decomposes solar radiation into 5 bands (IR-RGB-UV) instead of the original 3 bands (RGB).
+MFS (Mediterranean Forecasting System) bulk formulae (
+ln_MFS
+)
+BIOGEOCHEMISTRY
+TOP
+- New vertical sinking scheme (
+ln_sink_slg
+)
+This scheme is the one developed in CROCO to compute sedimentation for various sinking particles. A semi-Lagrangian advective flux algorithm is used to compute the trends. It uses a parabolic,  vertical reconstruction of the suspended particle in  the water column with PPT/WENO constraints to avoid oscillation.
+PISCES
+Simplified version of pisces (
+ln_p2z
+)
+This is the NPZD version of the standard version of PISCES (p4z). It models the marine biogeochemical cycles of 9 prognostic tracers, one generic group of phytoplankton and zooplankton and includes the Fe cycle for a better representation of primary production in iron-limited regions. Dedicated namelist parameters (TOP) can be found in the ORCA2_OFF_PISCES reference configuration.
+Pisces quota (
+ln_p5z
+) and diagenetic (
+ln_sediment
+) improved
+In PISCES quota, the multi-prey parameterization applied to zooplankton grazing is modified for a more versatile setting, while PISCES diagenetic model has undergone significant developments both in terms of cpu efficiency (twice as fast), and physics with an improved parameterization of sulfur and iron cycles in sediment. Tunings of the different parameters are also improved.
+SEA-ICE
+Salt flushing and gravity drainage (
+nn_icesal
+)
+Sea ice salt dynamics is improved following the paper from Thomas et al. (2020). 3 parameterizations of gravity drainage, and 1 parameterization of flushing are implemented. It is now the default option. If using the old parameterization (
+nn_icesal=2
+), be careful to change
+rn_sinew
+as well.
+Form drags (
+ln_Cx_ice_frm
+)
+A complex parameterization of ice-ocean and ice-atmosphere drags is implemented following the paper from Tsamados et al. (2014).
+Ice strength (
+ln_str_R75
+)
+The Rothrock (1975) ice strength parameterization is implemented in addition to the original Hibler (1979) formulation.
+Antarctic Landfast Ice
+To better represent Antarctic polynyas, we provide the possibility to read a mask of landfast ice. The file can be specified in the namelist via
+sn_fastmsk
+Other components
+OBS interface
+The namelist is more generic, allowing more flexibility in terms of inputs and options and making it easier to add new (e.g. biogeochemical) variables
+Assimilation
+Added support for SI3, as well as observations from surface velocity and sea ice thickness.
+AGRIF
+If at least 2 AGRIF zooms are defined, these can now run in parallel as “sisters grids”. In that case, processor resources are allocated separately to each child grid, according to their respective size, which drastically improves performances. The functionality is activated by the cpp key:
+key_agrif_psisters
+in addition to
+key_agrif
+.
+RK3
+The new temporal scheme of NEMO is the Runge-Kutta 3d order (in place of the Modified Leap-Frog). It is activated by a cpp key:
+key_RK3
+.
+Missing functionalities: RK3 cannot yet handle the trends, explicit time stepping, wetting and drying, and assimilation. Additional options like Shuman averaging for internal wave damping (
+ln_shuman=T
+) and the automation of the temporal dissipation for barotropic equations (
+nn_bt_flt=3
+) are available but not fully tested.
+Other numerics
+An 3d order upstream scheme (UP3) replaces the original UBS for the advection of momentum to correct incoherency between continuity equation and advection
+The Courant number dependent implicit vertical advection (
+ln_zad_Aimp
+) is implemented for vector form in addition to the flux form.
+In FCT, the implicit part can be approximated (
+nn_fct_imp=1
+) or fully accurate but costly (
+nn_fct_imp=2
+). Implicit is not yet coded for UBS tracer advection (
+ln_traadv_ubs
+).
+HPC optimization
+
+Reduction of the memory footprint. For instance, the type of vertical coordinates is controlled by cpp keys (
+key_vco_1d
+,
+key_vco_1d3d
+,
+key_vco_3d
+) to reduce memory access.
+Reduction in number of MPI communications
+Removal of unnecessary halo calculations
+Complete review and enhancement of the timing functionality
+Single precision compilation (
+key_single
+, no r8 option)
+New MPI communication schemes in the BENCH test case
+XIOS 3 is not set as the default IO but a test configuration (
+X3_ORCA2_ICE_PISCES
+) shows how to do it (see also
+XIOS3 demonstrator guide
+).
+The robustness of the tiling functionality has been improved since NEMO 4.2.0 and should be more stable. In the Modified Leap-Frog framework, tiling coverage is extended to main diagnostics (DIA), vertical velocity calculations (DYN), passive tracer transport (TOP/TRP) and support is added for Runge-Kutta. The tiling is still disabled by default (
+ln_tile=F
+), as the default tile size parameters (
+nn_ltile_i
+/
+nn_ltile_j
+) are not optimal for all architectures and may result in decreased performance. They should be tuned for the user’s platform. At present, tiling will be disabled if any of the following functionality is used: AGRIF, Trends diagnostics, and OSMOSIS vertical mixing scheme. A fix for AGRIF will be added in release 5.0.1.
+Tools
+
+DOMAINcfg
+Correction for ice shelves
+Added support for Multi-Envelope quasi-Eulerian vertical coordinates (Bruciaferri et al. 2018)
+Rebuild_nemo_mpp
+This is a much faster tool to recombine multiple restart files into one file.
+Rebuild iceberg trajectory files (`icb_pp.py`)
+Tools has been optimized using modern python. This leads to a much faster tool.
+Notes on cpp keys
+
+key_RK3 = 3d order Runge-Kutta temporal scheme (the original MLF scheme is used if this key is not set in the configuration’s cpp_keys)
+key_vco_1d = flat bottom (only works for z-coordinates)
+key_vco_1d3d = 1D scale factor at w-level and 3D scale factor at t-level (used in most configurations).
+key_vco_3d = full 3D scale factors (required for s-coordinates)
+key_linssh = replaces namelist parameter ln_linssh
+key_qco = stands for “quasi-eulerian coordinates” (used for most configurations)
+key_si3_1D is a test for GPU optimization and should not be used with CPU
+Notes on namelist parameters
+
+namelist:
+ln_hpg_zps is removed
+ln_dynvor_eeT is removed
+ln_bt_av is removed (replaced by the choice of nn_bt_flt)
+ln_dynadv_up3 replaces ln_dynadv_ubs
+rn_Cd(eh)_i is renamed rn_Cd(eh)_ia
+rn_cio is renamed rn_Cd_io
+namelist_pisces:
+new parameters: ratchl, xpref2m, xthresh2mes, lmzrat2, lmzrat, xprefz, xthreshzoo, bureffmin, bureffvar
+removed parameters: chlcnm, chlcdm, thetannm thetanpm, thetandm, xremip
+new blocks: &namp2zlim, &namp2zprod, &namp2zmort, &namp2zzoo, &nampisdiaz
+removed blocks: &nampismass, &namlobphy, &namlobnut, &namlobzoo, &namlobdet, &namlobdom, &namlobsed, &namlobrat, &namlobopt
+namelist_sediment:
+new parameters: nn_rstsed, rcorg1,rcorg2,rcorg3,rcorg4,rcorg5,rcorg6, Rcapat
+removed parameters: rcorgl, rcorgs, rcorgr
+namelist_top:
+new parameters: ln_sink_mus, ln_sink_slg, nn_sink_lbc, cn_fct_imp, cn_trdrst_trc_in, cn_trdrst_trc_out
+renamed parameters:
+ln_trdmld_trc_restart → ln_trdmxl_trc_restart
+ln_trdmld_trc_instant → ln_trdmxl_trc_instant
+Bibliography
+
+Bruciaferri, D., Shapiro, G.I. & Wobus, F. A multi-envelope vertical coordinate system for numerical ocean modelling. Ocean Dynamics 68, 1239–1258 (2018).
+https://doi.org/10.1007/s10236-018-1189-x
+Mak, J., Maddison, J. R., Marshall, D. P., & Munday, D. R. (2018). Implementation of a geometrically informed and energetically constrained mesoscale eddy parameterization in an ocean circulation model. Journal of Physical Oceanography, 48(10), 2363-2382.
+Mak, J., Marshall, D. P., Madec, G., & Maddison, J. R. (2022). Acute sensitivity of global ocean circulation and heat content to eddy energy dissipation timescale. Geophysical Research Letters, 49(8), e2021GL097259.
+Marshall, D. P., J. R. Maddison, and P. S. Berloff, 2012: A Framework for Parameterizing Eddy Potential Vorticity Fluxes. J. Phys. Oceanogr., 42, 539–557,
+https://doi.org/10.1175/JPO-D-11-048.1
+.
+PSyclone: Domain-specific compiler and code transformation system for Finite Volume/ Difference/Element Earth-system models in Fortran,
+https://github.com/stfc/PSyclone
+Rothrock, D. A. (1975). The mechanical behavior of pack ice. Annual Review of Earth and Planetary Sciences, 3(1), 317-342.
+Thomas, M., Vancoppenolle, M., France, J. L., Sturges, W. T., Bakker, D. C., Kaiser, J., & von Glasow, R. (2020). Tracer measurements in growing sea ice support convective gravity drainage parameterizations. Journal of Geophysical Research: Oceans, 125(2), e2019JC015791.
+Tsamados, M., Feltham, D. L., Schroeder, D., Flocco, D., Farrell, S. L., Kurtz, N., … & Bacon, S. (2014). Impact of variable atmospheric and oceanic form drag on simulations of Arctic sea ice. Journal of Physical Oceanography, 44(5), 1329-1353.
+Changes between 4.2.2 and 4.2.1
+
+List of the main bugfixes in the new 4.2.2 release - Dec 2023
+Main bug fixes
+Fix ice-ocean stress: (
+!402
+)
+Fix weekly forcings: (
+!360
+)
+Fix grazing by mesozooplankton: (
+!346
+)
+Fix OBS operator for reproducibility: (
+!342
+)
+makenemo improvements: (
+!344
+)
+Additional bug fixes
+Nesting tools: (
+!351
+)
+Hard coded flags in ASM: (
+!367
+)
+Include F-folding in DOMAINcfg tool: (
+!396
+)
+Slight change in field_def_nemo-ice.xml: (
+!398
+)
+Allow snow-ice formation when SST>0C: (
+!404
+)
+Debug Richardson number vertical mixing scheme (
+!420
+)
+Debug Langmuir cells when coupling with waves in tke (
+!421
+)
+New feature
+Addition of a 3d order upstream advection scheme alongside the “old” UBS scheme for momentum: (
+!349
+). This scheme is implemented in the new version of NEMO but cannot be compared to UBS since the latter has disappeared from the code. Hence, it has been decided to plug the 3d order upstream in version 4.2, so that comparisons with UBS can be done. It requires an additional namelist parameter (ln_dynadv_up3).
+Changes since 4.2.0
+
+List of the main bugfixes in the new 4.2.1 release - May 2023
+KERNEL
+Fix Reynolds number in flow dependent Laplacian (
+!298
+)
+Fix non monotonic behavior of FCT tracer advection scheme with non-linear free surface (
+!292
+)
+Fix emp initial value if salinity relaxation is not used (
+!221
+)
+TKE boundary condition in GLS was wrong with iceshelves cavities (
+https://forge.nemo-ocean.eu/nemo/nemo/-//commit/bad665bd
+)
+Model initialization in coupled configurations fixed (
+!151
+)
+ABL model was not working with waves options (
+!144
+)
+Spitz 12 configuration namelists have been updated (
+!175
+)
+Bugfixes in the OSMOSIS vertical mixing scheme and the associated diagnostics (
+!172
+,
+!168
+)
+CPL_OASIS test case has been updated (
+!111
+)
+Fix surface mixing length calculation in TKE scheme when using wave model Stokes drift and tiling (
+!302
+)
+Sea-ice SI3
+Surface roughness can now be ice-thickness dependant in GLS and TKE scheme (
+!49
+)
+A bug in Rothrock ice strength has been fixed (
+!139
+)
+High Performance Computing (HPC)
+Note
+Several fixes have been made to the tiling introduced at 4.2.0 (
+ln_tile = .TRUE.
+), but users may still encounter bugs when using this functionality (disabled by default).
+Improvements to the robustness and performance of the tiling will be available with the next major release of NEMO.
+Enable NEMO compilation using single-precision variable (
+!171
+)
+Fix NEMO compilation when using MPI2 option (
+!97
+) and bugfix in configurations without MPI use (
+!167
+)
+Demonstration of mixed-precision compilation using key_single (ORCA2 only) (
+!261
+)
+AGRIF zooms
+Correct freshwater budget computation when using  AGRIF zooms (
+!162
+)
+Fixed issue with sea surface height (ssh) offset with sea-ice and AGRIF (
+!121
+,
+!128
+,
+!149
+)
+Tracers and biogeochemistry TOP
+PISCES consolidation and robustness (reproducibility, bugfix corrections, memory optimisation)
+Extension of passive-tracer conservation to the Euler-forward time-stepping option (
+!187
+) and generic accuracy of the restart mechanism for configurations with Euler-forward time integration (
+!96
+)
+Bugfix on offline transport in TOP when using  linear surface option (
+!141
+)
+Boundary conditions were missing in 1D configurations with TOP (
+!103
+)
+Improve the use of multiple BDY segments and tracer inputs fields within TOP (
+!231
+)
+Input Output Manager
+Enable the use of XIOS3 to create outputs and handle restart files by means of
+key_xios3
+(
+!267
+)
+Possibility to shift the record from the middle of the forcing period to the beginning or the end when using temporal interpolation with
+fldread
+(
+!311
+)
+Diagnostics
+Correction of the isotherm-depth computation (
+!288
+)
+Some dia_ar5_hst outputs were wrong (
+!140
+)
+The qsr3d diagnostic could not be output (
+!296
+)
+Some dia_ar5 diagnostics could not be output, and some diagnostics gave different results with tiling (
+!301
+)
+diadct mfo/sfo/hfo transports through sections are now handled by XIOS (
+!299
+)
+Changes since 4.0.7
+
+List of the main additions to the 4.2.0 release - February 2022
+This section is an overview of the major NEMO upgrades as included in the 4.2.0 release.
+If you are willing to port an existing configuration in order to start using this new release, it is sugggested to also look at the 4.2
+Migration Guide
+.
+KERNEL
+New vertical scale factors management (improving computational performance and reducing memory footprint) via added keys:
+key_qco (Quasi Eulerian Coordinates)
+key_linssh (Linear Sea Surface Height)
+New HPG schemes (improvements and new option)
+Preparatory stages for new RK3 time stepping scheme, includes:
+time-pointer changes
+DO LOOP macros
+changes in main arrays dimensions)
+Full Shallow Water setup
+AIR SEA INTERACTIONS
+Currents feedbacks
+Mass-flux convection scheme (still not compatible with TOP & PISCES)
+Bulk improvements
+Atmospheric Boundary layer model (1D vertical as for now) & tools improvements
+Wave forcing improvements
+AGRIF zooms
+Improvement of Agrif for global configurations (periodic, north fold zoom, HPC),
+Allow AGRIF for multiple vertical grids
+Updated Nesting Tools to set up the AGRIF zooms
+Sea-ice SI3
+EAP & VP rheology (V&V to complete)
+Melt ponds (preliminary implementation)
+(Updated Reference Manual will be made available to users by March 2022)
+ENHANCEMENTS
+Ocean column properties in NEMO-ICB
+OSMOSIS (awaiting improvements)
+Update internal tidal mixing
+Tracers and biogeochemistry TOP
+Ice sheet iron sources
+Scheme for vertical penetration of visible light
+(Updated Reference Manual will be made available to users by March 2022)
+DATA interface
+OBS modifications
+Input Output Manager
+Use XIOS to read & write restart file (allowing to produce a unique restart file while using domain decomposition)
+High Performance Computing (HPC)
+MPI Communication cleanup & improvements using MPI3
+Reduction in memory footprint
+Improved computational performance of solar penetration scheme
+Additional improvements in preparation (requiring further developments before producing performance gains):
+Extra Halo extension (namelist activation but keep nn_hls=1 for now)
+Mixed precision preparatory phase
+Loop fusion (activated via key_loop_fusion not currently recommended)
+Tiling (namelist activation but keep ln_tile=.false. for now)
+VERIFICATION & VALIDATION
+Tests cases now available with most  new developments
+SETTE validation script improvements
+OASIS test case for ocean atmosphere coupled interface
+Known Issues
+
+Simulations are not reproductible when using a halo size of 2 points (MR !34 for details)
+Domain attributes are missing in multiple file output (Issue #14)
+SI3 manual is not yet available (coming soon !)
+Previous
+Next
+© Copyright 2008-2025, NEMO Consortium.
+Built with
+Sphinx
+using a
+theme
+provided by
+Read the Docs
+.
