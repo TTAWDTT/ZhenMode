@@ -25,3 +25,4 @@ Chronological record of research decisions and actions. Append-only.
 | 16 | 2026-09-21 | experiment | Ran 365d bulk-restoring sensitivity lambda=0.25, 0.5, and 2.0. Only 2.0 improved A2 (2.115 to 2.031), below the 5% gate. |
 | 17 | 2026-09-21 | implementation | Added opt-in annual-mean NCEP R1 2m air-temperature bulk target (`--real-air-temp`) with cache and tests; full suite 151 passed. |
 | 18 | 2026-09-21 | experiment | The real 2m-air run passed 365d stability, A1 (RMSE 1.466), and A2 (RMSE 1.883). A2 improved 11.0% over the zonal-WOA baseline. |
+| 19 | 2026-09-21 | reproduction | Repeated the annual NCEP 2m-air 365d run: A1 RMSE 1.469, A2 RMSE 1.886, PASS. Confirms the A2 improvement within GPU floating-point variability. |
