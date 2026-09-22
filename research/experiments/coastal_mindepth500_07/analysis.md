@@ -2,7 +2,7 @@
 
 Date: 2026-09-22
 Status: complete
-Runs: `coastal_mindepth500_30d`, `coastal_mindepth500_365d`
+Runs: `coastal_mindepth500_30d`, `coastal_mindepth500_365d`, `coastal_mindepth500_365d_repeat`
 
 The only change relative to the locked candidate is `--min-depth 500` instead
 of `100`. The 30d probe was stable, and the 365d run passed the global A-class
@@ -12,7 +12,7 @@ criteria.
 
 | Metric | baseline | min-depth 500 |
 |---|---:|---:|
-| Global A2 RMSE | 1.336 C | 1.282 C |
+| Global A2 RMSE | 1.336 C | 1.282 C (repeat 1.282 C) |
 | North Atlantic 40--60N A2 RMSE | 1.131 C | 1.158 C |
 | Near-wall 55--60N A2 RMSE | 1.153 C | 1.148 C |
 
@@ -36,7 +36,7 @@ issue.
 
 ## Decision
 
-Promote `min-depth 500` cautiously as a new diagnostic candidate. It is not a
-production default yet because the broader North Atlantic sector is slightly
-worse and the improvement is only about 4% global. Next either run a
-reproducibility repeat or test a gentler mask change.
+The repeat run reproduces the same global A2 RMSE. Promote `min-depth 500`
+cautiously as a new diagnostic candidate. It is not a production default yet
+because the broader North Atlantic sector is slightly worse and the improvement
+is only about 4% global.

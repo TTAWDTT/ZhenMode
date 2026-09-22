@@ -80,3 +80,5 @@ Chronological record of research decisions and actions. Append-only.
 | 69 | 2026-09-22 | experiment | Ran 30d and 365d min-depth 500 m probes on the locked candidate physics. Both were stable. |
 | 70 | 2026-09-22 | analysis | Min-depth 500 improved global A2 from 1.336 to 1.282 C and improved the 0--3 and 4--7 coastal bands, while NA 40--60N was slightly worse. |
 | 71 | 2026-09-22 | reflection | Promote min-depth 500 cautiously as a diagnostic candidate. Next validate reproducibility before changing the locked baseline. |
+| 72 | 2026-09-22 | reproduction | Repeated the 365d min-depth 500 run. Global A2 RMSE reproduced exactly at 1.282 C. |
+| 73 | 2026-09-22 | reflection | Keep min-depth 500 as the preferred diagnostic candidate. Next compare a gentler coastal mask or near-land ventilation test, changing only one lever. |

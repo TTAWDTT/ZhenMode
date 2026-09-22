@@ -52,12 +52,16 @@ Runner: `scripts/run_candidate_baseline.sh`
    North Atlantic sector was slightly worse. Promote it cautiously as a
    diagnostic candidate, not a production default.
 
-9. **Validate the new coastal-mask candidate.** [NEXT]
-   Run a reproducibility repeat of the min-depth 500 candidate and compare it
-   against the locked GM0 baseline. If confirmed, decide whether to promote it
-   as the new diagnostic baseline.
+9. **Validate the new coastal-mask candidate.** [COMPLETE 2026-09-22]
+   The 365d repeat reproduced the same global A2 RMSE (`1.282 C`). Keep
+   `min-depth 500` as the preferred diagnostic candidate, not the production
+   default.
 
-10. **Only then revisit finer resolution.** [PROBED 2026-09-22: 0.6 still fails]
+10. **Decide the next coastal lever.** [NEXT]
+   Compare a gentler coastal mask change or a near-land ventilation test
+   against the min-depth 500 candidate. Avoid changing multiple levers at once.
+
+11. **Only then revisit finer resolution.** [PROBED 2026-09-22: 0.6 still fails]
    `0.5`, `0.6`, and `0.65` degrees currently blow up. Do not push finer
    resolution until the 0.7-degree stability margin and boundary-current
    diagnostics are understood.

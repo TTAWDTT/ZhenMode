@@ -159,9 +159,9 @@ experiments:
       value: null
 
 outer_loop:
-  cycle: 27
-  last_direction: "min-depth 500 coastal-mask sensitivity"
-  last_reflection: "Min-depth 500 was stable for 365d and improved global A2 from 1.336 to 1.282 C. It improved the coastal/transitional bands, but NA 40--60N was slightly worse. Promote cautiously as a diagnostic candidate and validate reproducibility next."
+  cycle: 28
+  last_direction: "min-depth 500 reproducibility"
+  last_reflection: "The 365d min-depth 500 repeat reproduced the same 1.282 C global A2 RMSE. Keep it as the preferred diagnostic candidate, not the production default. Next compare a gentler coastal mask or near-land ventilation test, changing only one lever."
 
 workspace:
   findings: "research/findings.md"
