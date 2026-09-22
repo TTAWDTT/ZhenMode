@@ -1,33 +1,33 @@
-# GM0 Attribution at 0.7 Degree
+# Near-Wall SST Gradient Diagnostic at 0.7 Degree
 
-Status: locked
+Status: complete
 Date: 2026-09-22
 Baseline: `candidate_65n_07_gm0`
-Question: Is the GM0 benefit physical or an artifact of an over-strong GM closure?
+Question: Does the remaining North Atlantic cold bias track local SST gradients,
+current-gradient alignment, or solver advective cooling?
 
-## Runs
+## Inputs
 
-Use the locked candidate configuration. Save 30-day 3D state and heat-tendency
-snapshots. Run two cases:
+Use the matched 0.7-degree `gm0_3dterms` and `gm500_3dterms` runs. For each
+run, average the saved state fields over the final 90 days (days 300, 330, 360,
+and 365). Use WOA surface temperature from the run metadata as the reference.
 
-1. `gm0_3dterms`: `kappa_gm=0`
-2. `gm500_3dterms`: `kappa_gm=500`
+## Definitions
 
-Everything else is held fixed.
+- `grad_east` and `grad_north`: surface SST derivatives in K per 100 km.
+- `alignment`: cosine of the angle between mean surface velocity and the SST
+  gradient. Positive means the current points up-gradient.
+- `adv_tend`: horizontal proxy `-u * dT/dx - v * dT/dy` in K/day.
+- `saved_adv`: the full solver advection tendency from `terms_*.npy` in K/day.
+- Regions: North Atlantic `300..360E / 40..60N`, near-wall `55..60N`, and
+  interior `40..55N`.
 
-## Metrics
+## Outputs
 
-- Global and North Atlantic A1/A2 RMSE
-- Surface and subsurface heat-tendency decomposition
-- North Atlantic horizontal velocity statistics
-- Zonally integrated meridional heat transport at selected latitudes
-- Regional surface/subsurface heat redistribution
+- `region_summary.csv`
+- `worst_near_wall_cells.csv`
+- `metrics.json`
+- `analysis.md`
 
-## Decision rules
-
-1. If GM0 improves transport structure and does not create physical
-   inconsistencies, GM over-strength/taper is the issue.
-2. If GM500 suppresses a spurious circulation, GM is still needed but must be
-   retuned or tapered differently.
-3. If the two runs differ mainly in numerical noise, freeze GM0 cautiously and
-   prioritize direct boundary-current diagnostics.
+The worst-cell file ranks the 100 coldest near-wall cells per run and records
+their gradients, velocity, alignment, and advection.

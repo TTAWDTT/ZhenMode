@@ -159,9 +159,9 @@ experiments:
       value: null
 
 outer_loop:
-  cycle: 22
-  last_direction: "0.7-degree GM ablation"
-  last_reflection: "At 0.7 degree, disabling GM slightly improves global A2 and meaningfully improves the North Atlantic regional RMSE. The new best diagnostic candidate is 65N + lambda80 + GM0 + localized convection + annual real air at 0.7 degree. Next either reproduce this candidate or diagnose boundary-current geometry at 0.7 degree."
+  cycle: 24
+  last_direction: "worst-cell vertical heat attribution"
+  last_reflection: "GM500 causes much stronger local advective cooling in the coldest near-wall cells. GM0 leaves those cells with positive net surface warming, and the population is mixed between coastal and weakly ventilated high-latitude cells. Next separate coastal geometry from high-latitude ventilation."
 
 workspace:
   findings: "research/findings.md"

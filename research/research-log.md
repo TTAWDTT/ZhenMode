@@ -68,3 +68,8 @@ Chronological record of research decisions and actions. Append-only.
 | 57 | 2026-09-22 | attribution | Completed GM0 vs GM500 3D attribution at 0.7 degree. GM0 reduced regional A2 RMSE from 1.216 to 1.141 C, mainly by weakening near-wall advective cooling. |
 | 58 | 2026-09-22 | analysis | Diagnosed 0.7-degree surface velocity and heat-transport structure. GM0 and GM500 have nearly identical mean/rms speeds and v*T, so the regional benefit is not from gross current speed. |
 | 59 | 2026-09-22 | stability | A 30d 0.6-degree GM0 probe still produced NaNs by day 10. 0.7 degree remains the finest stable resolution. |
+| 60 | 2026-09-22 | experiment | Ran the near-wall gradient diagnostic on the matched 0.7-degree GM0 and GM500 final-90d states. |
+| 61 | 2026-09-22 | analysis | GM500 has stronger near-wall full-solver advective cooling (-0.075 versus -0.038 K/day), while mean current speed and SST gradients are nearly unchanged. |
+| 62 | 2026-09-22 | reflection | The worst cold cells cluster in local wall sectors and often have weak mean currents. Next diagnose vertical heat redistribution and local geometry in these cells before changing transport or resolution. |
+| 63 | 2026-09-22 | analysis | Decomposed heat tendencies for the 100 coldest near-wall cells. GM500 has -0.187 K/day local surface advection versus -0.058 K/day for GM0. |
+| 64 | 2026-09-22 | reflection | The GM0 coldest cells still have positive net surface warming; the near-wall cold population is mixed between land-adjacent and weakly ventilated high-latitude cells. Next separate coastal geometry from high-latitude ventilation. |

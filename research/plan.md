@@ -23,7 +23,26 @@ Runner: `scripts/run_candidate_baseline.sh`
    Inspect SST, SSH, currents, meridional heat transport, and vertical
    redistribution at 0.7 degree.
 
-4. **Only then revisit finer resolution.** [PROBED 2026-09-22: 0.6 still fails]
+4. **Diagnose near-wall gradients and local advection.** [COMPLETE 2026-09-22]
+   Compare SST gradients, velocity-gradient alignment, and the saved solver
+   advection term between GM0 and GM500 over the final 90 days.
+   Result: GM500 produces stronger near-wall advective cooling without changing
+   boundary-current speed. The worst cold cells cluster in local wall sectors
+   and often have weak mean currents.
+
+5. **Attribute vertical heat redistribution in the worst wall cells.** [COMPLETE 2026-09-22]
+   For the 100 coldest near-wall cells, decompose surface and subsurface heat
+   tendencies. GM500 has much stronger local advective cooling; GM0 leaves the
+   coldest cells with positive net surface warming. Vertical export is small,
+   and the cells are a mixed coastal/near-wall population.
+
+6. **Separate coastal geometry from high-latitude ventilation.** [NEXT]
+   Map the worst clusters against bathymetry and land masks. Recompute the
+   attribution after excluding land-adjacent cells. If the `59--60N` interior
+   cluster persists, design a narrowly scoped high-latitude boundary/ice-proxy
+   experiment; otherwise prioritize a coastal masking/ventilation diagnostic.
+
+7. **Only then revisit finer resolution.** [PROBED 2026-09-22: 0.6 still fails]
    `0.5`, `0.6`, and `0.65` degrees currently blow up. Do not push finer
    resolution until the 0.7-degree stability margin and boundary-current
    diagnostics are understood.
