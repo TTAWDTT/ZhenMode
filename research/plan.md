@@ -91,11 +91,16 @@ Runner: `scripts/run_candidate_baseline.sh`
    global A2 would drop from 1.294 to 0.947 C. Min-depth 750/1000 improve global
    A2 but degrade NA/near-wall, so the mask floor is not the main fix.
 
-17. **Test a structural coastal/vertical lever.** [NEXT]
-   Stop the mask-floor scan. Run a narrowly scoped 30d probe with finer vertical
-   resolution, then only continue to 365d if the coastal 0--3-cell bias improves.
+17. **Test a structural coastal/vertical lever.** [COMPLETE 2026-09-22]
+   The 19-level probe blew up. An 18-level probe passed but did not improve the
+   0--3-cell bias. Smooth160 improved global/NA slightly but worsened near-wall;
+   keep smooth80.
 
-18. **Only then revisit finer resolution.** [PROBED 2026-09-22: 0.6 still fails]
+18. **Design a coastal-ventilation/boundary experiment.** [NEXT]
+   Use the localized 0--3-cell diagnosis to choose one narrowly scoped boundary
+   or ventilation lever. Do not continue broad lambda/mask/resolution scans.
+
+19. **Only then revisit finer resolution.** [PROBED 2026-09-22: 0.6 still fails]
    `0.5`, `0.6`, and `0.65` degrees currently blow up. Do not push finer
    resolution until the 0.7-degree stability margin and boundary-current
    diagnostics are understood.

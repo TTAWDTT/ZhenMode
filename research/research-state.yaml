@@ -159,9 +159,9 @@ experiments:
       value: null
 
 outer_loop:
-  cycle: 34
-  last_direction: "coastal mask floor sensitivity"
-  last_reflection: "Min-depth750/1000 improve global A2 but degrade NA/near-wall, so min-depth500 remains the all-around candidate. The 0--3-cell band remains a first-order global error source. Next test a structural coastal/vertical lever."
+  cycle: 35
+  last_direction: "coastal structural levers"
+  last_reflection: "The 18-level probe did not improve the coastal band, and smooth160 trades near-wall skill for a small global gain. Keep lambda160 + min-depth500 + smooth80 as the all-around candidate. Next design a narrowly scoped coastal-ventilation/boundary experiment."
 
 workspace:
   findings: "research/findings.md"

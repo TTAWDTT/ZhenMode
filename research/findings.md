@@ -433,3 +433,11 @@ lambda160 + smooth80 复跑结果：global `1.294C`，NA `0.997C`，近墙 `1.01
 | 1000 m | 1.276 C | 1.026 C | 1.095 C |
 
 结论：抬高 floor 能改善全球 A2，但北大西洋和近墙都变差，所以 `500 m` 仍然是最稳的 all-around 选择。0..3 cells 的冷偏差不是单一深度问题，继续扫 mask floor 的收益有限。
+
+## 近岸结构杠杆（2026-09-22）
+
+- 19 层垂直网格 30d 直接 blow up；18 层 30d 稳定，但 0..3 cells 冷偏差几乎不变。
+- `smooth160` 30d 能略降全球 0..3 cells 偏差；365d 后 global A2 `1.281C`，NA `1.000C`，近墙 `1.048C`。
+- 与 `smooth80`（1.294 / 0.997 / 1.019）相比，`smooth160` 略改善全球/NA，但近墙变差。
+
+结论：继续加垂直分辨率或继续加大 bathymetry smoothing 都不是近陆冷偏差的直接解。保留 `lambda160 + min-depth500 + smooth80` 作为 all-around candidate，下一步要换成更窄的近陆通风/边界实验。

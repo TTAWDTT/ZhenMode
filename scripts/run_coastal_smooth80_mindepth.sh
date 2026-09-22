@@ -4,6 +4,7 @@ cd "$(dirname "$0")/.."
 
 LAMBDA="${1:-160}"
 MINDEPTH="${2:-1000}"
+SMOOTHPASSES="${SMOOTHPASSES:-80}"
 TAG="${3:-coastal_smooth80_mindepth${MINDEPTH}_lambda${LAMBDA}_07}"
 DAYS="${4:-365}"
 
@@ -26,7 +27,8 @@ mkdir -p "${OUT_DIR}" "${LOG_DIR}"
   --lambda-bulk "${LAMBDA}" \
   --kappa-v 1e-6 --kappa-conv 0.01 --kappa-gm 0 \
   --localize-conv --fct-adv --project-adv-vel \
-  --min-depth "${MINDEPTH}" --smooth-passes 80 \
+  --min-depth "${MINDEPTH}" --smooth-passes "${SMOOTHPASSES}" \
+  ${ZLEVELS:+--z-levels "$ZLEVELS"} \
   --days "${DAYS}" --dt 3600 \
   --tag "${TAG}" \
   --out-dir "${OUT_DIR}" \

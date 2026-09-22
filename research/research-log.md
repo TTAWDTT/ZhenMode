@@ -103,3 +103,7 @@ Chronological record of research decisions and actions. Append-only.
 | 92 | 2026-09-22 | experiment | Ran lambda160 + smooth80 + min-depth750 for 30d and 365d; both passed. |
 | 93 | 2026-09-22 | analysis | Min-depth750 gave global 1.282 C, NA 1.019 C, near-wall 1.061 C; min-depth500 remains the all-around candidate. |
 | 94 | 2026-09-22 | reflection | Stop the mask-floor scan. Next test a structural coastal/vertical lever, starting with a finer vertical grid probe. |
+| 95 | 2026-09-22 | experiment | Ran 30d probes with 19 and 18 vertical levels; the 19-level probe blew up and the 18-level probe did not improve the coastal band. |
+| 96 | 2026-09-22 | experiment | Ran smooth160 for 30d and 365d; both passed. |
+| 97 | 2026-09-22 | analysis | Smooth160 gave global 1.281 C, NA 1.000 C, and near-wall 1.048 C, trading a small global gain for worse near-wall skill. |
+| 98 | 2026-09-22 | reflection | Keep smooth80 as the all-around candidate. Next design a narrowly scoped coastal-ventilation/boundary experiment. |
