@@ -1,33 +1,37 @@
-# GM0 Attribution at 0.7 Degree
+# Near-Wall Temperature-Gradient / Advection Diagnosis
 
 Status: locked
 Date: 2026-09-22
 Baseline: `candidate_65n_07_gm0`
-Question: Is the GM0 benefit physical or an artifact of an over-strong GM closure?
+Reference runs: `gm0_3dterms`, `gm500_3dterms`
 
-## Runs
+## Question
 
-Use the locked candidate configuration. Save 30-day 3D state and heat-tendency
-snapshots. Run two cases:
+Why does the GM500 closure increase near-wall advective cooling even though the
+large-scale surface velocity field is nearly unchanged?
 
-1. `gm0_3dterms`: `kappa_gm=0`
-2. `gm500_3dterms`: `kappa_gm=500`
+## Hypothesis
 
-Everything else is held fixed.
+GM500 changes the local SST gradient/orientation more than the current speed.
+If so, the relevant lever is the near-wall temperature-gradient structure or
+advective orientation, not bulk current speed.
 
 ## Metrics
 
-- Global and North Atlantic A1/A2 RMSE
-- Surface and subsurface heat-tendency decomposition
-- North Atlantic horizontal velocity statistics
-- Zonally integrated meridional heat transport at selected latitudes
-- Regional surface/subsurface heat redistribution
+Use final 90-day 3D snapshots at 0.7 degree. For North Atlantic
+`300..360E / 40..60N` and near-wall `55..60N`:
+
+- SST gradient magnitude and dominant direction
+- surface velocity magnitude and direction
+- velocity/temperature-gradient alignment
+- advection tendency from the saved 3D stack
+- local correlations between these fields and SST error
 
 ## Decision rules
 
-1. If GM0 improves transport structure and does not create physical
-   inconsistencies, GM over-strength/taper is the issue.
-2. If GM500 suppresses a spurious circulation, GM is still needed but must be
-   retuned or tapered differently.
-3. If the two runs differ mainly in numerical noise, freeze GM0 cautiously and
-   prioritize direct boundary-current diagnostics.
+1. If cold cells have stronger `|grad(T)|` and stronger velocity-gradient
+   alignment, target the near-wall thermal front and advective orientation.
+2. If GM500 mainly strengthens the velocity-gradient alignment, retune or taper
+   GM rather than disabling it globally.
+3. If velocity fields are still nearly identical but temperature gradients
+   differ, focus on heat redistribution and vertical mixing, not momentum.
