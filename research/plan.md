@@ -12,7 +12,7 @@ Runner: `scripts/run_candidate_baseline.sh`
    Confirm global A2 RMSE is near the previous `1.336 C` and the North
    Atlantic regional RMSE is near `1.043 C`.
 
-2. **Attribute the GM0 benefit.**
+2. **Attribute the GM0 benefit.** [COMPLETE 2026-09-22]
    Compare GM0 against GM500 at 0.7 degree using horizontal velocity,
    heat transport, and local heat-tendency diagnostics.
    Determine whether GM0 helps through physically improved circulation or
@@ -27,3 +27,4 @@ Runner: `scripts/run_candidate_baseline.sh`
    `0.5`, `0.6`, and `0.65` degrees currently blow up. Do not push finer
    resolution until the 0.7-degree stability margin and boundary-current
    diagnostics are understood.
+
