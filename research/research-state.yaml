@@ -159,9 +159,9 @@ experiments:
       value: null
 
 outer_loop:
-  cycle: 25
-  last_direction: "coastal vs high-latitude ventilation"
-  last_reflection: "After excluding land-adjacent cells, the 59--60N interior cluster persists but is secondary. The coastal group remains the larger error source. Next diagnose coastal masking/ventilation, then consider only a narrow high-latitude boundary/ice-proxy experiment."
+  cycle: 26
+  last_direction: "coastal mask / ventilation attribution"
+  last_reflection: "Land-adjacent and transitional cells dominate the near-wall error: the 0--3 and 4--7 cell bands explain about 85% of near-wall SSE. The issue is not only shallow water. Next design a narrowly scoped coastal mask/ventilation sensitivity test."
 
 workspace:
   findings: "research/findings.md"

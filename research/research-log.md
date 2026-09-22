@@ -75,3 +75,5 @@ Chronological record of research decisions and actions. Append-only.
 | 64 | 2026-09-22 | reflection | The GM0 coldest cells still have positive net surface warming; the near-wall cold population is mixed between land-adjacent and weakly ventilated high-latitude cells. Next separate coastal geometry from high-latitude ventilation. |
 | 65 | 2026-09-22 | analysis | Separated coastal and interior near-wall cells by land distance. Coastal cells remain the larger error source. |
 | 66 | 2026-09-22 | reflection | The 59--60N interior cluster persists after excluding land-adjacent cells, but it is secondary. Next diagnose coastal masking/ventilation, then only consider a narrow high-latitude proxy experiment. |
+| 67 | 2026-09-22 | analysis | Attributed near-wall error by land-distance and depth. The 0--3 and 4--7 cell bands explain about 85% of near-wall SSE. |
+| 68 | 2026-09-22 | reflection | The error is a coastal/transitional-band issue, not only shallow water. Next design a narrowly scoped coastal mask/ventilation sensitivity test. |

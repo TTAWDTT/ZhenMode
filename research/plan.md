@@ -41,13 +41,17 @@ Runner: `scripts/run_candidate_baseline.sh`
    versus `1.065 C` for interior). The `59--60N` interior cluster still exists
    but is secondary, so the next step is coastal masking/ventilation diagnosis.
 
-7. **Diagnose coastal masking/ventilation.** [NEXT]
-   Quantify how much of the regional cold bias is attributable to shallow or
-   land-adjacent cells, and whether these cells are isolated by bathymetry or
-   poorly ventilated. Only after that consider a narrow high-latitude
-   boundary/ice-proxy experiment.
+7. **Diagnose coastal masking/ventilation.** [COMPLETE 2026-09-22]
+   Land-adjacent and transitional cells dominate the near-wall error. The
+   `0..3` and `4..7`-cell bands explain about 85% of near-wall SSE, while the
+   `>=8`-cell group is much better. This is not only a shallow-water problem.
 
-8. **Only then revisit finer resolution.** [PROBED 2026-09-22: 0.6 still fails]
+8. **Test coastal mask/ventilation lever.** [NEXT]
+   Design a narrowly scoped sensitivity test that changes only the coastal mask
+   or near-land ventilation, and compare it with the locked GM0 baseline.
+   Keep any high-latitude ice-proxy experiment secondary.
+
+9. **Only then revisit finer resolution.** [PROBED 2026-09-22: 0.6 still fails]
    `0.5`, `0.6`, and `0.65` degrees currently blow up. Do not push finer
    resolution until the 0.7-degree stability margin and boundary-current
    diagnostics are understood.
