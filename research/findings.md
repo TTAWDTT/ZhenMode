@@ -381,3 +381,13 @@ follow-on comparisons; the old 1-degree run remains the historical default.
 
 ���ܽ���� 365d ������ȫһ�£�global A2 RMSE ��Ϊ `1.282C`��
 
+
+## 300 m 最小水深敏感性（2026-09-22）
+
+| metric | baseline | min-depth 300 | min-depth 500 |
+|---|---:|---:|---:|
+| global A2 RMSE | 1.336 C | 1.299 C | 1.282 C |
+| NA 40..60N A2 RMSE | 1.131 C | 1.137 C | 1.158 C |
+| 近墙 55..60N A2 RMSE | 1.153 C | 1.136 C | 1.148 C |
+
+结论：300 m floor 也稳定，但不如 500 m 全球更优，也没有在北大西洋/近墙同时超过 500 m。因此保留 min-depth 500 作为首选 diagnostic candidate，下一步不要再继续扫 mask floor，而应转向近陆通风/流场结构。

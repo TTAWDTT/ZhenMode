@@ -82,3 +82,6 @@ Chronological record of research decisions and actions. Append-only.
 | 71 | 2026-09-22 | reflection | Promote min-depth 500 cautiously as a diagnostic candidate. Next validate reproducibility before changing the locked baseline. |
 | 72 | 2026-09-22 | reproduction | Repeated the 365d min-depth 500 run. Global A2 RMSE reproduced exactly at 1.282 C. |
 | 73 | 2026-09-22 | reflection | Keep min-depth 500 as the preferred diagnostic candidate. Next compare a gentler coastal mask or near-land ventilation test, changing only one lever. |
+| 74 | 2026-09-22 | experiment | Ran 30d and 365d min-depth 300 m probes. Both were stable. |
+| 75 | 2026-09-22 | analysis | The 300 m floor improved global A2 to 1.299 C but did not dominate min-depth 500. Keep min-depth 500 as the preferred diagnostic candidate. |
+| 76 | 2026-09-22 | reflection | Stop scanning the mask floor. Next diagnose near-land ventilation/current structure in the 0--7-cell coastal band. |

@@ -57,11 +57,16 @@ Runner: `scripts/run_candidate_baseline.sh`
    `min-depth 500` as the preferred diagnostic candidate, not the production
    default.
 
-10. **Decide the next coastal lever.** [NEXT]
-   Compare a gentler coastal mask change or a near-land ventilation test
-   against the min-depth 500 candidate. Avoid changing multiple levers at once.
+10. **Decide the next coastal lever.** [COMPLETE 2026-09-22]
+   The 300 m floor was stable but did not dominate min-depth 500. Stop scanning
+   the mask floor. Keep `min-depth 500` as the preferred diagnostic candidate.
 
-11. **Only then revisit finer resolution.** [PROBED 2026-09-22: 0.6 still fails]
+11. **Diagnose near-land ventilation/current structure.** [NEXT]
+   Compare the locked GM0 baseline with the min-depth 500 candidate in the
+   0--7-cell coastal band. Determine whether the remaining bias is caused by
+   weak ventilation, local current structure, or still-remaining mask geometry.
+
+12. **Only then revisit finer resolution.** [PROBED 2026-09-22: 0.6 still fails]
    `0.5`, `0.6`, and `0.65` degrees currently blow up. Do not push finer
    resolution until the 0.7-degree stability margin and boundary-current
    diagnostics are understood.

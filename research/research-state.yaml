@@ -159,9 +159,9 @@ experiments:
       value: null
 
 outer_loop:
-  cycle: 28
-  last_direction: "min-depth 500 reproducibility"
-  last_reflection: "The 365d min-depth 500 repeat reproduced the same 1.282 C global A2 RMSE. Keep it as the preferred diagnostic candidate, not the production default. Next compare a gentler coastal mask or near-land ventilation test, changing only one lever."
+  cycle: 29
+  last_direction: "min-depth 300 sensitivity"
+  last_reflection: "The 300 m floor was stable but did not dominate min-depth 500. Stop scanning the mask floor and keep min-depth 500 as the preferred diagnostic candidate. Next diagnose near-land ventilation/current structure in the 0--7-cell band."
 
 workspace:
   findings: "research/findings.md"
