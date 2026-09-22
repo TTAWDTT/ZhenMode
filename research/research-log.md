@@ -66,3 +66,4 @@ Chronological record of research decisions and actions. Append-only.
 | 55 | 2026-09-22 | baseline | Locked the best diagnostic candidate as `candidate_65n_07_gm0` with a single reproducible runner. |
 | 56 | 2026-09-22 | reproduction | Re-ran the locked candidate baseline for 365d. It passed and reproduced A1/A2 RMSE 0.973/1.336 C and North Atlantic A2 RMSE 1.043 C. |
 | 57 | 2026-09-22 | attribution | Completed GM0 vs GM500 3D attribution at 0.7 degree. GM0 reduced regional A2 RMSE from 1.216 to 1.141 C, mainly by weakening near-wall advective cooling. |
+| 58 | 2026-09-22 | analysis | Diagnosed 0.7-degree surface velocity and heat-transport structure. GM0 and GM500 have nearly identical mean/rms speeds and v*T, so the regional benefit is not from gross current speed. |
