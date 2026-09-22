@@ -159,9 +159,9 @@ experiments:
       value: null
 
 outer_loop:
-  cycle: 29
-  last_direction: "min-depth 300 sensitivity"
-  last_reflection: "The 300 m floor was stable but did not dominate min-depth 500. Stop scanning the mask floor and keep min-depth 500 as the preferred diagnostic candidate. Next diagnose near-land ventilation/current structure in the 0--7-cell band."
+  cycle: 30
+  last_direction: "upper bulk-lambda sweep"
+  last_reflection: "Bulk lambda 120/160/240 improve North Atlantic and near-wall cold bias but worsen global A2 slowly. Keep lambda80 for global A2; record lambda120/160 as regional variants. Next diagnose near-land ventilation/current structure."
 
 workspace:
   findings: "research/findings.md"

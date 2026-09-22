@@ -61,12 +61,17 @@ Runner: `scripts/run_candidate_baseline.sh`
    The 300 m floor was stable but did not dominate min-depth 500. Stop scanning
    the mask floor. Keep `min-depth 500` as the preferred diagnostic candidate.
 
-11. **Diagnose near-land ventilation/current structure.** [NEXT]
+11. **Re-open the bulk-lambda upper sweep.** [COMPLETE 2026-09-22]
+   Lambda 120/160/240 are stable and improve the North Atlantic / near-wall
+   cold bias, but global A2 worsens slowly. Keep lambda80 as the global-favored
+   candidate; treat lambda120/160 as regional-bias variants.
+
+12. **Diagnose near-land ventilation/current structure.** [NEXT]
    Compare the locked GM0 baseline with the min-depth 500 candidate in the
    0--7-cell coastal band. Determine whether the remaining bias is caused by
    weak ventilation, local current structure, or still-remaining mask geometry.
 
-12. **Only then revisit finer resolution.** [PROBED 2026-09-22: 0.6 still fails]
+13. **Only then revisit finer resolution.** [PROBED 2026-09-22: 0.6 still fails]
    `0.5`, `0.6`, and `0.65` degrees currently blow up. Do not push finer
    resolution until the 0.7-degree stability margin and boundary-current
    diagnostics are understood.

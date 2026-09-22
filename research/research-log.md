@@ -85,3 +85,6 @@ Chronological record of research decisions and actions. Append-only.
 | 74 | 2026-09-22 | experiment | Ran 30d and 365d min-depth 300 m probes. Both were stable. |
 | 75 | 2026-09-22 | analysis | The 300 m floor improved global A2 to 1.299 C but did not dominate min-depth 500. Keep min-depth 500 as the preferred diagnostic candidate. |
 | 76 | 2026-09-22 | reflection | Stop scanning the mask floor. Next diagnose near-land ventilation/current structure in the 0--7-cell coastal band. |
+| 77 | 2026-09-22 | experiment | Ran 30d bulk-lambda probes at 120, 160, and 240 on the min-depth 500 candidate. All were stable. |
+| 78 | 2026-09-22 | experiment | Ran 365d lambda 120, 160, and 240. Regional cold bias improved monotonically, but global A2 worsened slowly. |
+| 79 | 2026-09-22 | reflection | Higher lambda is not a global-metric win. Keep lambda80 for global A2; record lambda120/160 as regional-bias variants and diagnose near-land ventilation next. |

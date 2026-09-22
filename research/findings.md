@@ -391,3 +391,14 @@ follow-on comparisons; the old 1-degree run remains the historical default.
 | 近墙 55..60N A2 RMSE | 1.153 C | 1.136 C | 1.148 C |
 
 结论：300 m floor 也稳定，但不如 500 m 全球更优，也没有在北大西洋/近墙同时超过 500 m。因此保留 min-depth 500 作为首选 diagnostic candidate，下一步不要再继续扫 mask floor，而应转向近陆通风/流场结构。
+
+## 上调海汽热交换强度（2026-09-22）
+
+| lambda | global A2 RMSE | NA 40..60N A2 RMSE | 近墙 A2 RMSE |
+|---:|---:|---:|---:|
+| 80 | 1.282 C | 1.158 C | 1.148 C |
+| 120 | 1.292 C | 1.057 C | 1.057 C |
+| 160 | 1.304 C | 1.009 C | 1.010 C |
+| 240 | 1.321 C | 0.966 C | 0.964 C |
+
+结论：继续上调确实能持续改善北大西洋/近墙冷偏差，但全球 A2 并没有继续变好，反而缓慢变差。所以不是“越大越好”，而是全球指标和区域指标之间出现权衡。若优先全球 A2，`lambda_bulk=80` 仍是更好的选择；若优先区域冷偏差，`lambda_bulk=160` 是更合理的折中。
