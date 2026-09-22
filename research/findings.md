@@ -358,3 +358,23 @@ follow-on comparisons; the old 1-degree run remains the historical default.
 - 如果把 `0..3` 格带误差清零，GM0 近墙 RMSE 从 `1.186C` 降到 `0.940C`。
 - 贴岸组平均深度 `1155m`，说明这不只是浅水掩膜问题。
 - 高纬内部冷区仍然存在，但相对贴岸/过渡带是次要问题。
+
+## 500 m 最小水深敏感性（2026-09-22）
+
+只把 `--min-depth` 从 100 m 提高到 500 m：
+
+| metric | baseline | min-depth 500 |
+|---|---:|---:|
+| global A2 RMSE | 1.336 C | 1.282 C |
+| NA 40..60N A2 RMSE | 1.131 C | 1.158 C |
+| 近墙 55..60N A2 RMSE | 1.153 C | 1.148 C |
+
+贴岸/过渡带改善明显：
+
+| band | baseline RMSE | min500 RMSE |
+|---|---:|---:|
+| 离陆 0..3 格 | 1.533 C | 1.401 C |
+| 离陆 4..7 格 | 1.246 C | 1.190 C |
+| 离陆 >=8 格 | 0.764 C | 0.765 C |
+
+结论：500 m mask floor 是有效的贴岸几何实验，全球 A2 改善约 4.1%，近墙略改善。但 NA 40..60N 略变差，所以先作为 diagnostic candidate，不等同 production default。

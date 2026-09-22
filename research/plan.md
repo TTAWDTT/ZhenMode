@@ -46,12 +46,18 @@ Runner: `scripts/run_candidate_baseline.sh`
    `0..3` and `4..7`-cell bands explain about 85% of near-wall SSE, while the
    `>=8`-cell group is much better. This is not only a shallow-water problem.
 
-8. **Test coastal mask/ventilation lever.** [NEXT]
-   Design a narrowly scoped sensitivity test that changes only the coastal mask
-   or near-land ventilation, and compare it with the locked GM0 baseline.
-   Keep any high-latitude ice-proxy experiment secondary.
+8. **Test coastal mask/ventilation lever.** [COMPLETE 2026-09-22]
+   `--min-depth 500` was stable for 365d and improved global A2 by 4.1%. It
+   also improved the near-wall coastal/transitional bands, but the broader
+   North Atlantic sector was slightly worse. Promote it cautiously as a
+   diagnostic candidate, not a production default.
 
-9. **Only then revisit finer resolution.** [PROBED 2026-09-22: 0.6 still fails]
+9. **Validate the new coastal-mask candidate.** [NEXT]
+   Run a reproducibility repeat of the min-depth 500 candidate and compare it
+   against the locked GM0 baseline. If confirmed, decide whether to promote it
+   as the new diagnostic baseline.
+
+10. **Only then revisit finer resolution.** [PROBED 2026-09-22: 0.6 still fails]
    `0.5`, `0.6`, and `0.65` degrees currently blow up. Do not push finer
    resolution until the 0.7-degree stability margin and boundary-current
    diagnostics are understood.

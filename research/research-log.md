@@ -77,3 +77,6 @@ Chronological record of research decisions and actions. Append-only.
 | 66 | 2026-09-22 | reflection | The 59--60N interior cluster persists after excluding land-adjacent cells, but it is secondary. Next diagnose coastal masking/ventilation, then only consider a narrow high-latitude proxy experiment. |
 | 67 | 2026-09-22 | analysis | Attributed near-wall error by land-distance and depth. The 0--3 and 4--7 cell bands explain about 85% of near-wall SSE. |
 | 68 | 2026-09-22 | reflection | The error is a coastal/transitional-band issue, not only shallow water. Next design a narrowly scoped coastal mask/ventilation sensitivity test. |
+| 69 | 2026-09-22 | experiment | Ran 30d and 365d min-depth 500 m probes on the locked candidate physics. Both were stable. |
+| 70 | 2026-09-22 | analysis | Min-depth 500 improved global A2 from 1.336 to 1.282 C and improved the 0--3 and 4--7 coastal bands, while NA 40--60N was slightly worse. |
+| 71 | 2026-09-22 | reflection | Promote min-depth 500 cautiously as a diagnostic candidate. Next validate reproducibility before changing the locked baseline. |
