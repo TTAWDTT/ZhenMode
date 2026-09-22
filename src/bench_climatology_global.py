@@ -42,7 +42,7 @@ from dataclasses import replace
 import numpy as np
 
 from config import DEFAULT_CONFIG, GlobalGridConfig
-from grid import make_global_grid
+from grid import global_grid_dims, make_global_grid
 from woa_data import get_initial_fields
 
 EXCLUDED = [
@@ -125,6 +125,8 @@ def main():
     ap.add_argument("--min-depth", type=float, default=100.0)
     ap.add_argument("--lat-max", type=float, default=60.0)
     ap.add_argument("--ny", type=int, default=120)
+    ap.add_argument("--resolution", type=float, default=None)
+    ap.add_argument("--resolution-remap", choices=("legacy", "area"), default="legacy")
     args = ap.parse_args()
 
     os.makedirs(args.out_dir, exist_ok=True)
@@ -151,7 +153,12 @@ def main():
 
     # ── Rebuild the global grid (must match the run config) ──
     bathy = DEFAULT_CONFIG.bathymetry_file
-    gcfg = replace(GlobalGridConfig(), lat_max=args.lat_max, ny=args.ny)
+    if args.resolution is not None:
+        nx, ny = global_grid_dims(args.resolution, args.lat_max, remap=args.resolution_remap)
+        gcfg_kwargs = {"lat_max": args.lat_max, "ny": ny, "nx": nx, "resolution": args.resolution}
+    else:
+        gcfg_kwargs = {"lat_max": args.lat_max, "ny": args.ny}
+    gcfg = replace(GlobalGridConfig(), **gcfg_kwargs)
     grid = make_global_grid(gcfg, bathy, smooth_passes=args.smooth_passes,
                             min_depth=args.min_depth)
     ocean = np.asarray(grid.ocean_mask, dtype=bool)

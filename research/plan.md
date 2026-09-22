@@ -7,7 +7,7 @@ Runner: `scripts/run_candidate_baseline.sh`
 
 ## Ordered next steps
 
-1. **Reproduce the candidate baseline.**
+1. **Reproduce the candidate baseline.** [COMPLETE 2026-09-22]
    Run one 365d integration with `candidate_65n_07_gm0`.
    Confirm global A2 RMSE is near the previous `1.336 C` and the North
    Atlantic regional RMSE is near `1.043 C`.
