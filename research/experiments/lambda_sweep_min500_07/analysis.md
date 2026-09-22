@@ -2,7 +2,7 @@
 
 Date: 2026-09-22
 Status: complete
-Runs: 30d probes at lambda 120/160/240; 365d runs at 120/160/240
+Runs: 30d probes at lambda 120/160/240; 365d runs at 120/160/240; 365d repeat at lambda 160
 
 The 30d probes were all stable. At 30d the cold-region error keeps improving
 through lambda 240, while the global A2 metric is best near lambda 120.
@@ -14,6 +14,7 @@ through lambda 240, while the global A2 metric is best near lambda 120.
 | 80 | 1.282 C | 1.158 C | 1.148 C |
 | 120 | 1.292 C | 1.057 C | 1.057 C |
 | 160 | 1.304 C | 1.009 C | 1.010 C |
+| 160 repeat | 1.304 C | 1.009 C | 1.010 C |
 | 240 | 1.321 C | 0.966 C | 0.964 C |
 
 ## Interpretation
@@ -30,8 +31,10 @@ through lambda 240, while the global A2 metric is best near lambda 120.
 
 ## Decision
 
-Keep `lambda_bulk=80` as the global-A2-favored diagnostic candidate. Record
-`lambda_bulk=160` or `120` as useful regional-bias variants, but do not promote
-either as a production default yet. Future work should separate physical
-atmosphere-ocean exchange calibration from metric tuning.
+The lambda 160 repeat reproduces the regional and near-wall metrics exactly.
+Promote `lambda_bulk=160 + min-depth 500` as the preferred regional-bias
+diagnostic candidate, while keeping `lambda_bulk=80 + min-depth 500` as the
+global-A2-favored candidate. Neither is a production default. Future work
+should separate physical atmosphere-ocean exchange calibration from metric
+tuning.
 ''',encoding='utf-8')

@@ -88,3 +88,5 @@ Chronological record of research decisions and actions. Append-only.
 | 77 | 2026-09-22 | experiment | Ran 30d bulk-lambda probes at 120, 160, and 240 on the min-depth 500 candidate. All were stable. |
 | 78 | 2026-09-22 | experiment | Ran 365d lambda 120, 160, and 240. Regional cold bias improved monotonically, but global A2 worsened slowly. |
 | 79 | 2026-09-22 | reflection | Higher lambda is not a global-metric win. Keep lambda80 for global A2; record lambda120/160 as regional-bias variants and diagnose near-land ventilation next. |
+| 80 | 2026-09-22 | reproduction | Repeated the lambda 160 + min-depth 500 candidate. It reproduced global A2 1.304 C, North Atlantic 1.009 C, and near-wall 1.010 C. |
+| 81 | 2026-09-22 | reflection | Promote lambda 160 + min-depth 500 as the preferred regional-bias diagnostic candidate; keep lambda 80 + min-depth 500 as the global-A2 candidate. Next diagnose near-land ventilation/current structure. |

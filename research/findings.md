@@ -402,3 +402,5 @@ follow-on comparisons; the old 1-degree run remains the historical default.
 | 240 | 1.321 C | 0.966 C | 0.964 C |
 
 结论：继续上调确实能持续改善北大西洋/近墙冷偏差，但全球 A2 并没有继续变好，反而缓慢变差。所以不是“越大越好”，而是全球指标和区域指标之间出现权衡。若优先全球 A2，`lambda_bulk=80` 仍是更好的选择；若优先区域冷偏差，`lambda_bulk=160` 是更合理的折中。
+
+lambda160 复跑结果：global A2 RMSE `1.304C`，NA 40..60N `1.009C`，近墙 `1.010C`，与首跑一致。因此 `lambda160 + min-depth 500` 作为首选 regional-bias diagnostic candidate；`lambda80 + min-depth 500` 保留为 global-A2 candidate。

@@ -15,7 +15,7 @@ LAMBDA="${1:-120}"
 DAYS="${2:-30}"
 OUT_DIR="${OUT_DIR:-results/lambda_sweep_min500_07}"
 LOG_DIR="${LOG_DIR:-logs/lambda_sweep_min500_07}"
-TAG="${TAG:-lambda${LAMBDA}_min500_${DAYS}d}"
+TAG="${3:-${TAG:-lambda${LAMBDA}_min500_${DAYS}d}}"
 mkdir -p "${OUT_DIR}" "${LOG_DIR}"
 
 "${PYTHON_BIN}" src/run_long_integration_global.py \

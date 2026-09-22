@@ -64,14 +64,19 @@ Runner: `scripts/run_candidate_baseline.sh`
 11. **Re-open the bulk-lambda upper sweep.** [COMPLETE 2026-09-22]
    Lambda 120/160/240 are stable and improve the North Atlantic / near-wall
    cold bias, but global A2 worsens slowly. Keep lambda80 as the global-favored
-   candidate; treat lambda120/160 as regional-bias variants.
+   candidate.
 
-12. **Diagnose near-land ventilation/current structure.** [NEXT]
-   Compare the locked GM0 baseline with the min-depth 500 candidate in the
-   0--7-cell coastal band. Determine whether the remaining bias is caused by
-   weak ventilation, local current structure, or still-remaining mask geometry.
+12. **Reproduce the regional-bias candidate.** [COMPLETE 2026-09-22]
+   The lambda 160 repeat reproduces global A2 `1.304 C`, North Atlantic
+   `1.009 C`, and near-wall `1.010 C`. Keep lambda160 + min-depth 500 as the
+   preferred regional-bias diagnostic candidate, not a production default.
 
-13. **Only then revisit finer resolution.** [PROBED 2026-09-22: 0.6 still fails]
+13. **Diagnose near-land ventilation/current structure.** [NEXT]
+   Compare the global-A2 and regional-bias candidates in the 0--7-cell coastal
+   band. Determine whether the remaining bias is caused by weak ventilation,
+   local current structure, or still-remaining mask geometry.
+
+14. **Only then revisit finer resolution.** [PROBED 2026-09-22: 0.6 still fails]
    `0.5`, `0.6`, and `0.65` degrees currently blow up. Do not push finer
    resolution until the 0.7-degree stability margin and boundary-current
    diagnostics are understood.

@@ -159,9 +159,9 @@ experiments:
       value: null
 
 outer_loop:
-  cycle: 30
-  last_direction: "upper bulk-lambda sweep"
-  last_reflection: "Bulk lambda 120/160/240 improve North Atlantic and near-wall cold bias but worsen global A2 slowly. Keep lambda80 for global A2; record lambda120/160 as regional variants. Next diagnose near-land ventilation/current structure."
+  cycle: 31
+  last_direction: "lambda 160 reproducibility"
+  last_reflection: "Lambda 160 + min-depth 500 reproduced global A2 1.304 C and North Atlantic 1.009 C. Treat it as the preferred regional-bias diagnostic candidate, while lambda 80 + min-depth 500 remains the global-A2 candidate. Next diagnose near-land ventilation/current structure."
 
 workspace:
   findings: "research/findings.md"
