@@ -96,11 +96,14 @@ Runner: `scripts/run_candidate_baseline.sh`
    0--3-cell bias. Smooth160 improved global/NA slightly but worsened near-wall;
    keep smooth80.
 
-18. **Design a coastal-ventilation/boundary experiment.** [NEXT]
-   Use the localized 0--3-cell diagnosis to choose one narrowly scoped boundary
-   or ventilation lever. Do not continue broad lambda/mask/resolution scans.
+18. **Design a coastal-ventilation/boundary experiment.** [PROBED 2026-09-22]
+   A local SSH relaxation test in 300--320E/55--60N was essentially a no-op for
+   the coastal band. It should not be promoted to a 365d experiment.
 
-19. **Only then revisit finer resolution.** [PROBED 2026-09-22: 0.6 still fails]
+19. **Choose a non-SSH coastal lever.** [NEXT]
+   The remaining candidates are a dedicated coastal T/S restoring diagnostic, a
+   localized mixing closure, or a high-latitude ice proxy. Pick one lever and
+   implement it only after writing the decision rule.
    `0.5`, `0.6`, and `0.65` degrees currently blow up. Do not push finer
    resolution until the 0.7-degree stability margin and boundary-current
    diagnostics are understood.

@@ -107,3 +107,5 @@ Chronological record of research decisions and actions. Append-only.
 | 96 | 2026-09-22 | experiment | Ran smooth160 for 30d and 365d; both passed. |
 | 97 | 2026-09-22 | analysis | Smooth160 gave global 1.281 C, NA 1.000 C, and near-wall 1.048 C, trading a small global gain for worse near-wall skill. |
 | 98 | 2026-09-22 | reflection | Keep smooth80 as the all-around candidate. Next design a narrowly scoped coastal-ventilation/boundary experiment. |
+| 99 | 2026-09-22 | experiment | Ran a 30d local SSH relaxation probe in 300--320E/55--60N. |
+| 100 | 2026-09-22 | analysis | The coastal-band metrics were essentially unchanged, so local SSH relaxation is not the missing coastal lever. |

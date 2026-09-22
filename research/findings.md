@@ -441,3 +441,7 @@ lambda160 + smooth80 复跑结果：global `1.294C`，NA `0.997C`，近墙 `1.01
 - 与 `smooth80`（1.294 / 0.997 / 1.019）相比，`smooth160` 略改善全球/NA，但近墙变差。
 
 结论：继续加垂直分辨率或继续加大 bathymetry smoothing 都不是近陆冷偏差的直接解。保留 `lambda160 + min-depth500 + smooth80` 作为 all-around candidate，下一步要换成更窄的近陆通风/边界实验。
+
+### 局地 SSH relaxation 试探（2026-09-22）
+
+在 300..320E, 55..60N 用 30d relaxation 做 30d probe，结果与 baseline 的 coastal band 指标几乎完全一致。因此局地 SSH relaxation 不能解决 0..3 cells 冷偏差，不要继续沿这条线做长积分。

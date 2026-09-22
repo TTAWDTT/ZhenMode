@@ -27,3 +27,9 @@ Keep `smooth80` as the all-around candidate. A finer vertical grid is not a
 cheap coastal fix, and more bathymetry smoothing trades near-wall skill for a
 small global gain. Next try a narrower coastal-ventilation/boundary experiment
 rather than more resolution or more smoothing.
+
+## Local SSH relaxation probe
+
+A 30d probe with `--eta-relax-box 300 320 55 60 --eta-relax-days 30
+--eta-relax-buffer 3` passed, but the coastal-band metrics were essentially
+unchanged. Do not promote this to a 365d experiment.

@@ -159,9 +159,9 @@ experiments:
       value: null
 
 outer_loop:
-  cycle: 35
-  last_direction: "coastal structural levers"
-  last_reflection: "The 18-level probe did not improve the coastal band, and smooth160 trades near-wall skill for a small global gain. Keep lambda160 + min-depth500 + smooth80 as the all-around candidate. Next design a narrowly scoped coastal-ventilation/boundary experiment."
+  cycle: 36
+  last_direction: "local SSH relaxation probe"
+  last_reflection: "A local SSH relaxation probe was a no-op for the coastal band. Keep lambda160 + min-depth500 + smooth80 as the all-around candidate. Next choose one non-SSH coastal lever and write its decision rule before implementation."
 
 workspace:
   findings: "research/findings.md"
