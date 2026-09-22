@@ -445,3 +445,25 @@ lambda160 + smooth80 复跑结果：global `1.294C`，NA `0.997C`，近墙 `1.01
 ### 局地 SSH relaxation 试探（2026-09-22）
 
 在 300..320E, 55..60N 用 30d relaxation 做 30d probe，结果与 baseline 的 coastal band 指标几乎完全一致。因此局地 SSH relaxation 不能解决 0..3 cells 冷偏差，不要继续沿这条线做长积分。
+
+## 近陆 T restoring 诊断（2026-09-23）
+
+在 `lambda160 + min-depth500 + smooth80` 基础上，只增加一个 0..3 格近陆带的地表温度 restoring（tau=30d）：
+
+| band | baseline 30d | coastal-restore 30d |
+|---|---:|---:|
+| global 0..3 | -0.760 C / 1.290 C | -0.734 C / 1.252 C |
+| NA 0..3 | -0.491 C / 0.906 C | -0.478 C / 0.880 C |
+| near-wall 0..3 | -1.237 C / 1.380 C | -1.203 C / 1.342 C |
+
+结论：tau=30d 是一个弱 restoring，方向正确但强度不足。这说明近陆冷偏差确实可以被局地边界条件改善；下一步用 tau=10d 做强度定位，再决定是否值得 365d。
+
+## 近陆 T restoring 诊断结论（2026-09-23）
+
+| run | global A2 | NA 40..60N | 近墙 55..60N |
+|---|---:|---:|---:|
+| baseline | 1.294 C | 0.997 C | 1.019 C |
+| coastal-restore tau=10d | 1.277 C | 0.989 C | 1.002 C |
+| coastal-restore tau=3d | 1.253 C | 0.978 C | 0.979 C |
+
+结论：把 restoring 限制在 0..3 格近陆带，可以同时改善全球、北大西洋和近墙指标。这说明近陆冷偏差不是局部装饰性问题，而是一阶边界条件问题。但这仍是诊断分支，不是物理闭合，也不是 production default。下一步要把这个经验 restoring 替换成更可辩护的近岸边界/混合闭合。

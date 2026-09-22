@@ -159,9 +159,9 @@ experiments:
       value: null
 
 outer_loop:
-  cycle: 36
-  last_direction: "local SSH relaxation probe"
-  last_reflection: "A local SSH relaxation probe was a no-op for the coastal band. Keep lambda160 + min-depth500 + smooth80 as the all-around candidate. Next choose one non-SSH coastal lever and write its decision rule before implementation."
+  cycle: 37
+  last_direction: "coastal T restoring diagnostic"
+  last_reflection: "A 0--3-cell coastal T restoring diagnostic improves global A2 from 1.294 to 1.253 C, NA to 0.978 C, and near-wall to 0.979 C. Keep it as a diagnostic branch; next translate the empirical restoring into a defensible coastal boundary or mixing closure."
 
 workspace:
   findings: "research/findings.md"

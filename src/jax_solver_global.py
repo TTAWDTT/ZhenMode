@@ -619,6 +619,9 @@ FDPhysParams = namedtuple('FDPhysParams', [
     # equivalent salt flux, dSdt += -restore_coef_S*(S_surf - S_ref_2d)*surface_mask.
     # (D24)
     'S_ref_2d', 'restore_coef_S',
+    # Diagnostic coastal surface-temperature restoring (land-adjacent band)
+    'coastal_restore_coef_2d',  # (nx, ny) 1/s restoring coefficient
+    'coastal_restore_T_2d',     # (nx, ny) target SST climatology
     # lateral sponge (polar-edge Rayleigh damping; absorbs the wind-driven
     # barotropic energy that Laplacian dissipation can't arrest within its
     # CFL cap, which otherwise piles up at the polar edge rows)
@@ -1288,9 +1291,17 @@ def _compute_tracer_tendency(state, p):
     rest_S = (p.restore_coef_S * (p.S_ref_2d[:, :, None] - state.S[:, :, 0:1])
               * p.surface_mask)
 
+    # Diagnostic coastal surface-temperature restoring. Same Haney form as the
+    # salinity restoring, but restricted to a land-adjacent mask and used only
+    # to attribute how much of the SST error is local.
+    rest_T = (p.coastal_restore_coef_2d[:, :, None]
+              * (p.coastal_restore_T_2d[:, :, None] - state.T[:, :, 0:1])
+              * p.surface_mask)
+
     gm_T, gm_S, redi_T, redi_S = _isopycnal_closure(state, p)
 
-    dTdt = adv_T + diff_h_T + diff_v_T + heat_T + bulk_T + conv_T + gm_T + redi_T
+    dTdt = (adv_T + diff_h_T + diff_v_T + heat_T + bulk_T + conv_T
+            + gm_T + redi_T + rest_T)
     dSdt = adv_S + diff_h_S + diff_v_S + conv_S + gm_S + redi_S + rest_S
     # Land: tracers held (no tendency over land).
     dTdt = dTdt * p.wet_mask_z
@@ -1896,6 +1907,8 @@ def _step_impl(state, p):
 def make_solver_global(grid, physics, dt, forcing=None,
                        T_atm=None, lambda_bulk=0.0,
                        S_ref_surf=None, sss_restore_days=0.0,
+                       coastal_restore_mask=None, coastal_restore_days=0.0,
+                       coastal_restore_T=None,
                        sponge_days=0.0, sponge_cells=0,
                        T_init=None, S_init=None,
                        polar_cap_rows=2, polar_cap_taper=3, return_params=False,
@@ -1961,6 +1974,20 @@ def make_solver_global(grid, physics, dt, forcing=None,
     else:
         S_ref_2d = jnp.zeros((nx, ny))
         restore_coef_S = 0.0
+
+    # ── Diagnostic coastal surface-temperature restoring ──
+    # dTdt += -(SST - T_ref)/tau in the land-adjacent band. This is not a
+    # physical closure; it is a narrowly scoped attribution experiment for the
+    # 0..3-cell cold-bias population.
+    if coastal_restore_mask is not None and coastal_restore_days > 0.0 \
+            and coastal_restore_T is not None:
+        coastal_restore_coef_2d = (
+            jnp.array(coastal_restore_mask, dtype=jnp.float64)
+            / (coastal_restore_days * 86400.0))
+        coastal_restore_T_2d = jnp.array(coastal_restore_T)
+    else:
+        coastal_restore_coef_2d = jnp.zeros((nx, ny))
+        coastal_restore_T_2d = jnp.zeros((nx, ny))
 
     # ── Lateral sponge (polar-edge Rayleigh damping) ──
     # Applied at both lat edges (the polar cap rows). Cosine-tapered from
@@ -2096,6 +2123,8 @@ def make_solver_global(grid, physics, dt, forcing=None,
         H_sw=H_sw, dz_norm=dz_norm, dt=dt,
         T_atm_3d=T_atm_3d, lambda_bulk=lambda_bulk,
         S_ref_2d=S_ref_2d, restore_coef_S=restore_coef_S,
+        coastal_restore_coef_2d=coastal_restore_coef_2d,
+        coastal_restore_T_2d=coastal_restore_T_2d,
         sponge_rate=sponge_rate, sponge_rate_2d=sponge_rate_2d,
         T_clim_3d=T_clim_3d, S_clim_3d=S_clim_3d,
         polar_cap_rows=int(polar_cap_rows),

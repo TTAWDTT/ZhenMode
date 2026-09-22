@@ -100,10 +100,11 @@ Runner: `scripts/run_candidate_baseline.sh`
    A local SSH relaxation test in 300--320E/55--60N was essentially a no-op for
    the coastal band. It should not be promoted to a 365d experiment.
 
-19. **Choose a non-SSH coastal lever.** [NEXT]
-   The remaining candidates are a dedicated coastal T/S restoring diagnostic, a
-   localized mixing closure, or a high-latitude ice proxy. Pick one lever and
-   implement it only after writing the decision rule.
+19. **Test a non-SSH coastal lever.** [COMPLETE 2026-09-23]
+   A coastal T restoring diagnostic improved global A2 to 1.253 C, NA to
+   0.978 C, and near-wall to 0.979 C with tau=3d. This confirms the 0--3-cell
+   band is a first-order boundary-condition error, but it is not yet a physical
+   closure.
    `0.5`, `0.6`, and `0.65` degrees currently blow up. Do not push finer
    resolution until the 0.7-degree stability margin and boundary-current
    diagnostics are understood.

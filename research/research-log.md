@@ -109,3 +109,8 @@ Chronological record of research decisions and actions. Append-only.
 | 98 | 2026-09-22 | reflection | Keep smooth80 as the all-around candidate. Next design a narrowly scoped coastal-ventilation/boundary experiment. |
 | 99 | 2026-09-22 | experiment | Ran a 30d local SSH relaxation probe in 300--320E/55--60N. |
 | 100 | 2026-09-22 | analysis | The coastal-band metrics were essentially unchanged, so local SSH relaxation is not the missing coastal lever. |
+| 101 | 2026-09-23 | experiment | Ran 30d coastal T restoring probes with tau=30/10/3 days in the 0--3-cell band. |
+| 102 | 2026-09-23 | analysis | The 30d probes show monotonic improvement of the coastal band, with tau=3d giving global 0--3 RMSE 1.003 C versus 1.290 C baseline. |
+| 103 | 2026-09-23 | experiment | Ran 365d coastal T restoring with tau=10d and tau=3d; both passed. |
+| 104 | 2026-09-23 | analysis | The tau=3d run improves global A2 to 1.253 C, NA to 0.978 C, and near-wall to 0.979 C. |
+| 105 | 2026-09-23 | reflection | Keep coastal restoring as a diagnostic branch, not a production default. Next translate it into a defensible coastal boundary or mixing closure. |
