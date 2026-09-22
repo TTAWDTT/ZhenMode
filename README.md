@@ -143,3 +143,17 @@ Strang splitting) is retired and lives in
 as-is** — the shared config classes it depended on (`GridConfig`,
 `TimeConfig`, `make_grid`) have been deleted. The current global FD solver
 supersedes it entirely.
+
+## Candidate diagnostic baseline
+
+The current diagnostic baseline is the reproduced 65N, 0.7-degree candidate:
+
+```bash
+bash scripts/run_candidate_baseline.sh
+```
+
+Locked configuration: `lat-max=65`, 0.7-degree resolution, annual NCEP R1 2m
+air forcing, `lambda_bulk=80`, `kappa_v=1e-6`, `kappa_conv=0.01`, localized
+convective adjustment, `kappa_gm=0`, FCT/TVD transport, and projected stage-2
+advective velocity. This is a diagnostic baseline, not yet a changed default.
+Override days with `DAYS=30 bash scripts/run_candidate_baseline.sh`.

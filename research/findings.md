@@ -277,3 +277,10 @@
 0.65° 也 NaN，因此 0.7° 是当前最细的稳定诊断分辨率。
 
 在 0.7° 上关闭 GM 进一步改善：全球 A2 `1.336C`，北大西洋 RMSE `1.043C`。当前新的最佳诊断候选是 `65N + lambda80 + GM0 + localized convection + annual real air at 0.7°`。
+
+## Candidate baseline freeze
+
+The `0.7-degree + GM0 + localized convection + lambda80 + annual real air`
+configuration is now locked as `candidate_65n_07_gm0` in
+`scripts/run_candidate_baseline.sh`. It is the new diagnostic baseline for
+follow-on comparisons; the old 1-degree run remains the historical default.

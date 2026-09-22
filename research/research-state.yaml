@@ -170,3 +170,19 @@ workspace:
   experiments_dir: "research/experiments/"
   to_human_dir: "research/to_human/"
   paper_dir: "research/paper/"
+candidate_baseline:
+  name: "candidate_65n_07_gm0"
+  status: locked
+  command: "scripts/run_candidate_baseline.sh"
+  grid: "lat_max=65, resolution=0.7 degree"
+  forcing: "seasonal 2023 NCEP wind + annual NCEP R1 2m air"
+  closures:
+    lambda_bulk: 80.0
+    kappa_v: 1e-6
+    kappa_conv: 0.01
+    kappa_gm: 0.0
+    localized_convective_adjustment: true
+    fct_tvd_transport: true
+  reference_metrics:
+    global_a2_rmse_c: 1.336
+    north_atlantic_a2_rmse_c: 1.043
