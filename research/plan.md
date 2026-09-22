@@ -71,12 +71,27 @@ Runner: `scripts/run_candidate_baseline.sh`
    `1.009 C`, and near-wall `1.010 C`. Keep lambda160 + min-depth 500 as the
    preferred regional-bias diagnostic candidate, not a production default.
 
-13. **Diagnose near-land ventilation/current structure.** [NEXT]
-   Compare the global-A2 and regional-bias candidates in the 0--7-cell coastal
-   band. Determine whether the remaining bias is caused by weak ventilation,
-   local current structure, or still-remaining mask geometry.
+13. **Diagnose near-land ventilation/current structure.** [COMPLETE 2026-09-22]
+   The lambda160 benefit is mostly stronger surface bulk restoring rather than a
+   boundary-current restructuring. The remaining immediate-land band is still
+   cold, and upper-ocean vertical export is not the dominant term.
 
-14. **Only then revisit finer resolution.** [PROBED 2026-09-22: 0.6 still fails]
+14. **Test the lambda120 + smooth80 compromise.** [COMPLETE 2026-09-22]
+   Lambda120 + smooth80 gives global A2 `1.281 C`, NA `1.044 C`, and near-wall
+   `1.063 C`. It is a useful compromise but does not beat lambda160 + smooth80
+   on regional skill.
+
+15. **Reproduce lambda160 + smooth80.** [COMPLETE 2026-09-22]
+   The repeat reproduces global A2 `1.294 C`, NA `0.997 C`, and near-wall
+   `1.019 C`. Promote lambda160 + smooth80 as the all-around diagnostic
+   candidate; keep lambda80 + smooth80 as the pure global-A2 candidate.
+
+16. **Isolate the immediate-land cold band.** [NEXT]
+   Stop the lambda scan. Design a narrowly scoped coastal-ventilation or
+   land-adjacent boundary experiment for the 0--3-cell band, changing only one
+   lever.
+
+17. **Only then revisit finer resolution.** [PROBED 2026-09-22: 0.6 still fails]
    `0.5`, `0.6`, and `0.65` degrees currently blow up. Do not push finer
    resolution until the 0.7-degree stability margin and boundary-current
    diagnostics are understood.

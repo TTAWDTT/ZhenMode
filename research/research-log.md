@@ -90,3 +90,11 @@ Chronological record of research decisions and actions. Append-only.
 | 79 | 2026-09-22 | reflection | Higher lambda is not a global-metric win. Keep lambda80 for global A2; record lambda120/160 as regional-bias variants and diagnose near-land ventilation next. |
 | 80 | 2026-09-22 | reproduction | Repeated the lambda 160 + min-depth 500 candidate. It reproduced global A2 1.304 C, North Atlantic 1.009 C, and near-wall 1.010 C. |
 | 81 | 2026-09-22 | reflection | Promote lambda 160 + min-depth 500 as the preferred regional-bias diagnostic candidate; keep lambda 80 + min-depth 500 as the global-A2 candidate. Next diagnose near-land ventilation/current structure. |
+| 82 | 2026-09-22 | experiment | Ran lambda80 + min-depth500 + smooth80 for 30d and 365d; both passed. |
+| 83 | 2026-09-22 | analysis | Smooth80 improved global A2 from 1.282 to 1.269 C and NA 40--60N from 1.158 to 1.143 C, with near-wall unchanged. |
+| 84 | 2026-09-22 | reflection | Promote lambda80 + smooth80 over lambda80 + smooth30 as the global-A2 diagnostic candidate; next test lambda120 + smooth80. |
+| 85 | 2026-09-22 | experiment | Ran lambda120 + min-depth500 + smooth80 for 30d and 365d; both passed. |
+| 86 | 2026-09-22 | analysis | Lambda120 + smooth80 gives global A2 1.281 C, NA 40--60N 1.044 C, and near-wall 1.063 C. |
+| 87 | 2026-09-22 | reflection | Lambda120 is a good compromise but not the regional optimum. Next reproduce lambda160 + smooth80 before choosing the next diagnostic candidate. |
+| 88 | 2026-09-22 | reproduction | Repeated lambda160 + min-depth500 + smooth80 for 365d. Global A2 1.294 C, NA 0.997 C, near-wall 1.019 C. |
+| 89 | 2026-09-22 | reflection | Promote lambda160 + smooth80 as the all-around diagnostic candidate; keep lambda80 + smooth80 for pure global A2. Stop the lambda scan and isolate the 0--3-cell coastal band next. |

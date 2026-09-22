@@ -404,3 +404,20 @@ follow-on comparisons; the old 1-degree run remains the historical default.
 结论：继续上调确实能持续改善北大西洋/近墙冷偏差，但全球 A2 并没有继续变好，反而缓慢变差。所以不是“越大越好”，而是全球指标和区域指标之间出现权衡。若优先全球 A2，`lambda_bulk=80` 仍是更好的选择；若优先区域冷偏差，`lambda_bulk=160` 是更合理的折中。
 
 lambda160 复跑结果：global A2 RMSE `1.304C`，NA 40..60N `1.009C`，近墙 `1.010C`，与首跑一致。因此 `lambda160 + min-depth 500` 作为首选 regional-bias diagnostic candidate；`lambda80 + min-depth 500` 保留为 global-A2 candidate。
+
+## 海岸几何平滑敏感性（2026-09-22）
+
+在 `min-depth 500` 基础上，只把 bathymetry smoothing 从 30 pass 增加到 80 pass：
+
+| lambda | global A2 RMSE | NA 40..60N A2 RMSE | 近墙 55..60N A2 RMSE |
+|---:|---:|---:|---:|
+| 80 + smooth30 | 1.282 C | 1.158 C | 1.148 C |
+| 80 + smooth80 | 1.269 C | 1.143 C | 1.148 C |
+| 160 + smooth30 | 1.304 C | 1.009 C | 1.010 C |
+| 160 + smooth80 | 1.294 C | 0.997 C | 1.019 C |
+
+lambda120 + smooth80 的折中结果是：global `1.281C`，NA `1.044C`，近墙 `1.063C`。
+
+lambda160 + smooth80 复跑结果：global `1.294C`，NA `0.997C`，近墙 `1.019C`，与首跑一致。
+
+结论：综合三项指标，`lambda160 + min-depth500 + smooth80` 更适合作为当前 all-around diagnostic candidate；`lambda80 + smooth80` 保留为 pure global-A2 candidate。海岸几何平滑有效，但近墙 0..3 cells 的冷偏差仍未消失。下一步不应继续扫 lambda，而应转向更窄的近陆通风/边界条件实验。
