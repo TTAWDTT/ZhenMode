@@ -159,9 +159,9 @@ experiments:
       value: null
 
 outer_loop:
-  cycle: 37
-  last_direction: "coastal T restoring diagnostic"
-  last_reflection: "A 0--3-cell coastal T restoring diagnostic improves global A2 from 1.294 to 1.253 C, NA to 0.978 C, and near-wall to 0.979 C. Keep it as a diagnostic branch; next translate the empirical restoring into a defensible coastal boundary or mixing closure."
+  cycle: 38
+  last_direction: "coastal bulk-flux probe"
+  last_reflection: "Coastal T restoring is an effective diagnostic but local extra bulk flux is not. The next physical closure should be a localized mixing or high-latitude ice-proxy experiment rather than stronger air-sea exchange."
 
 workspace:
   findings: "research/findings.md"

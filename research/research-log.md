@@ -114,3 +114,5 @@ Chronological record of research decisions and actions. Append-only.
 | 103 | 2026-09-23 | experiment | Ran 365d coastal T restoring with tau=10d and tau=3d; both passed. |
 | 104 | 2026-09-23 | analysis | The tau=3d run improves global A2 to 1.253 C, NA to 0.978 C, and near-wall to 0.979 C. |
 | 105 | 2026-09-23 | reflection | Keep coastal restoring as a diagnostic branch, not a production default. Next translate it into a defensible coastal boundary or mixing closure. |
+| 106 | 2026-09-23 | experiment | Ran 30d coastal extra bulk-flux probes with lambda=40 and 80 in the 0--3-cell band. |
+| 107 | 2026-09-23 | analysis | Both probes worsened the near-wall 0--3-cell bias, so extra local bulk exchange is not the physical closure. |

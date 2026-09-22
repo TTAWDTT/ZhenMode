@@ -622,6 +622,8 @@ FDPhysParams = namedtuple('FDPhysParams', [
     # Diagnostic coastal surface-temperature restoring (land-adjacent band)
     'coastal_restore_coef_2d',  # (nx, ny) 1/s restoring coefficient
     'coastal_restore_T_2d',     # (nx, ny) target SST climatology
+    # Diagnostic coastal extra bulk heat exchange
+    'coastal_bulk_lambda_2d',   # (nx, ny) extra W/m^2/K
     # lateral sponge (polar-edge Rayleigh damping; absorbs the wind-driven
     # barotropic energy that Laplacian dissipation can't arrest within its
     # CFL cap, which otherwise piles up at the polar edge rows)
@@ -1284,6 +1286,9 @@ def _compute_tracer_tendency(state, p):
     # Bulk air-sea heat flux (Haney/Barnier): genuine SST negative feedback.
     bulk_T = (p.lambda_bulk * (p.T_atm_3d - state.T[:, :, 0:1])
               * heat_factor * p.surface_mask)
+    coastal_bulk_T = (p.coastal_bulk_lambda_2d[:, :, None]
+                      * (p.T_atm_3d - state.T[:, :, 0:1])
+                      * heat_factor * p.surface_mask)
 
     # Surface salinity restoring (Haney): equivalent salt flux relaxing SSS
     # to climatology with timescale tau = 1/restore_coef_S. Same form as the
@@ -1300,8 +1305,8 @@ def _compute_tracer_tendency(state, p):
 
     gm_T, gm_S, redi_T, redi_S = _isopycnal_closure(state, p)
 
-    dTdt = (adv_T + diff_h_T + diff_v_T + heat_T + bulk_T + conv_T
-            + gm_T + redi_T + rest_T)
+    dTdt = (adv_T + diff_h_T + diff_v_T + heat_T + bulk_T + coastal_bulk_T
+            + conv_T + gm_T + redi_T + rest_T)
     dSdt = adv_S + diff_h_S + diff_v_S + conv_S + gm_S + redi_S + rest_S
     # Land: tracers held (no tendency over land).
     dTdt = dTdt * p.wet_mask_z
@@ -1908,6 +1913,7 @@ def make_solver_global(grid, physics, dt, forcing=None,
                        T_atm=None, lambda_bulk=0.0,
                        S_ref_surf=None, sss_restore_days=0.0,
                        coastal_restore_mask=None, coastal_restore_days=0.0,
+                       coastal_bulk_mask=None, coastal_bulk_lambda=0.0,
                        coastal_restore_T=None,
                        sponge_days=0.0, sponge_cells=0,
                        T_init=None, S_init=None,
@@ -1974,6 +1980,16 @@ def make_solver_global(grid, physics, dt, forcing=None,
     else:
         S_ref_2d = jnp.zeros((nx, ny))
         restore_coef_S = 0.0
+
+    # ── Diagnostic coastal extra bulk heat exchange ──
+    # Same air-sea form as the bulk flux, but only in the land-adjacent band.
+    # This is a more physical alternative to direct SST restoring.
+    if coastal_bulk_mask is not None and coastal_bulk_lambda > 0.0:
+        coastal_bulk_lambda_2d = (
+            jnp.array(coastal_bulk_mask, dtype=jnp.float64)
+            * coastal_bulk_lambda)
+    else:
+        coastal_bulk_lambda_2d = jnp.zeros((nx, ny))
 
     # ── Diagnostic coastal surface-temperature restoring ──
     # dTdt += -(SST - T_ref)/tau in the land-adjacent band. This is not a
@@ -2124,6 +2140,7 @@ def make_solver_global(grid, physics, dt, forcing=None,
         T_atm_3d=T_atm_3d, lambda_bulk=lambda_bulk,
         S_ref_2d=S_ref_2d, restore_coef_S=restore_coef_S,
         coastal_restore_coef_2d=coastal_restore_coef_2d,
+        coastal_bulk_lambda_2d=coastal_bulk_lambda_2d,
         coastal_restore_T_2d=coastal_restore_T_2d,
         sponge_rate=sponge_rate, sponge_rate_2d=sponge_rate_2d,
         T_clim_3d=T_clim_3d, S_clim_3d=S_clim_3d,

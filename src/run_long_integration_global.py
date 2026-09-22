@@ -381,6 +381,11 @@ def main():
                          "[days] in the land-adjacent band; 0 = off")
     ap.add_argument("--coastal-restore-cells", type=int, default=0,
                     help="width of the land-adjacent restoring band in cells")
+    ap.add_argument("--coastal-bulk-lambda", type=float, default=0.0,
+                    help="extra bulk heat-exchange coefficient [W/m^2/K] in "
+                         "the land-adjacent band; 0 = off")
+    ap.add_argument("--coastal-bulk-cells", type=int, default=0,
+                    help="width of the land-adjacent extra bulk-flux band")
     ap.add_argument("--kappa-gm", type=float, default=0.0,
                     help="GM eddy diffusivity [m^2/s] (bolus transport); 0=off")
     ap.add_argument("--kappa-redi", type=float, default=0.0,
@@ -575,6 +580,29 @@ def main():
     # The 0..3-cell band is a first-order SST error source. This is a controlled
     # attribution experiment, not a production closure: it restores the surface
     # temperature toward WOA only in the land-adjacent band.
+    coastal_bulk_mask = None
+    if args.coastal_bulk_lambda > 0.0 and args.coastal_bulk_cells > 0:
+        dist = np.full(ocean.shape, np.inf, dtype=np.float64)
+        dist[~ocean] = 0.0
+        q = deque((i, j) for i in range(ocean.shape[0])
+                  for j in range(ocean.shape[1]) if not ocean[i, j])
+        while q:
+            i, j = q.popleft()
+            for di in (-1, 0, 1):
+                for dj in (-1, 0, 1):
+                    if di == 0 and dj == 0:
+                        continue
+                    ni = (i + di) % ocean.shape[0]
+                    nj = j + dj
+                    if (0 <= nj < ocean.shape[1] and ocean[ni, nj]
+                            and dist[i, j] + 1.0 < dist[ni, nj]):
+                        dist[ni, nj] = dist[i, j] + 1.0
+                        q.append((ni, nj))
+        coastal_bulk_mask = (ocean & (dist <= float(args.coastal_bulk_cells)))
+        print(f"  coastal bulk flux: lambda={args.coastal_bulk_lambda:g} W/m^2/K, "
+              f"cells<={args.coastal_bulk_cells}, "
+              f"n={int(coastal_bulk_mask.sum())}")
+
     coastal_restore_mask = None
     if args.coastal_restore_days > 0.0 and args.coastal_restore_cells > 0:
         dist = np.full(ocean.shape, np.inf, dtype=np.float64)
@@ -690,6 +718,8 @@ def main():
         coastal_restore_mask=coastal_restore_mask,
         coastal_restore_days=args.coastal_restore_days,
         coastal_restore_T=T_init[:, :, 0],
+        coastal_bulk_mask=coastal_bulk_mask,
+        coastal_bulk_lambda=args.coastal_bulk_lambda,
         sponge_days=args.sponge_days, sponge_cells=args.sponge_cells,
         T_init=T_init, S_init=S_init,
         polar_cap_rows=args.polar_cap_rows,

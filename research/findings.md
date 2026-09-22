@@ -467,3 +467,15 @@ lambda160 + smooth80 复跑结果：global `1.294C`，NA `0.997C`，近墙 `1.01
 | coastal-restore tau=3d | 1.253 C | 0.978 C | 0.979 C |
 
 结论：把 restoring 限制在 0..3 格近陆带，可以同时改善全球、北大西洋和近墙指标。这说明近陆冷偏差不是局部装饰性问题，而是一阶边界条件问题。但这仍是诊断分支，不是物理闭合，也不是 production default。下一步要把这个经验 restoring 替换成更可辩护的近岸边界/混合闭合。
+
+## 近陆 extra bulk-flux 试探（2026-09-23）
+
+在 0..3 格近陆带额外加 bulk 热交换系数：
+
+| coastal extra lambda | global 0..3 | near-wall 0..3 |
+|---:|---:|---:|
+| baseline | -0.760 C / 1.290 C | -1.237 C / 1.380 C |
+| +40 | -0.756 C / 1.302 C | -1.253 C / 1.417 C |
+| +80 | -0.753 C / 1.312 C | -1.262 C / 1.445 C |
+
+结论：近陆 extra bulk flux 反而让近墙更冷，说明仅靠增强局地海气交换不能解释冷偏差。保留 coastal T restoring 作为诊断分支，物理闭合需要另找。
