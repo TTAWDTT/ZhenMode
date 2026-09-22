@@ -23,9 +23,10 @@ Runner: `scripts/run_candidate_baseline.sh`
    Inspect SST, SSH, currents, meridional heat transport, and vertical
    redistribution at 0.7 degree.
 
-4. **Only then revisit finer resolution.**
+4. **Only then revisit finer resolution.** [PROBED 2026-09-22: 0.6 still fails]
    `0.5`, `0.6`, and `0.65` degrees currently blow up. Do not push finer
    resolution until the 0.7-degree stability margin and boundary-current
    diagnostics are understood.
+
 
 
