@@ -421,3 +421,15 @@ lambda120 + smooth80 的折中结果是：global `1.281C`，NA `1.044C`，近墙
 lambda160 + smooth80 复跑结果：global `1.294C`，NA `0.997C`，近墙 `1.019C`，与首跑一致。
 
 结论：综合三项指标，`lambda160 + min-depth500 + smooth80` 更适合作为当前 all-around diagnostic candidate；`lambda80 + smooth80` 保留为 pure global-A2 candidate。海岸几何平滑有效，但近墙 0..3 cells 的冷偏差仍未消失。下一步不应继续扫 lambda，而应转向更窄的近陆通风/边界条件实验。
+
+## 近岸 mask floor 继续敏感性（2026-09-22）
+
+在 `lambda160 + smooth80` 基础上继续改最小水深：
+
+| min-depth | global A2 | NA 40..60N | 近墙 55..60N |
+|---:|---:|---:|---:|
+| 500 m | 1.294 C | 0.997 C | 1.019 C |
+| 750 m | 1.282 C | 1.019 C | 1.061 C |
+| 1000 m | 1.276 C | 1.026 C | 1.095 C |
+
+结论：抬高 floor 能改善全球 A2，但北大西洋和近墙都变差，所以 `500 m` 仍然是最稳的 all-around 选择。0..3 cells 的冷偏差不是单一深度问题，继续扫 mask floor 的收益有限。

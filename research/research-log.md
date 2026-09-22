@@ -98,3 +98,8 @@ Chronological record of research decisions and actions. Append-only.
 | 87 | 2026-09-22 | reflection | Lambda120 is a good compromise but not the regional optimum. Next reproduce lambda160 + smooth80 before choosing the next diagnostic candidate. |
 | 88 | 2026-09-22 | reproduction | Repeated lambda160 + min-depth500 + smooth80 for 365d. Global A2 1.294 C, NA 0.997 C, near-wall 1.019 C. |
 | 89 | 2026-09-22 | reflection | Promote lambda160 + smooth80 as the all-around diagnostic candidate; keep lambda80 + smooth80 for pure global A2. Stop the lambda scan and isolate the 0--3-cell coastal band next. |
+| 90 | 2026-09-22 | experiment | Ran lambda160 + smooth80 + min-depth1000 for 30d and 365d; both passed. |
+| 91 | 2026-09-22 | analysis | Min-depth1000 improved global A2 to 1.276 C but worsened NA to 1.026 C and near-wall to 1.095 C. |
+| 92 | 2026-09-22 | experiment | Ran lambda160 + smooth80 + min-depth750 for 30d and 365d; both passed. |
+| 93 | 2026-09-22 | analysis | Min-depth750 gave global 1.282 C, NA 1.019 C, near-wall 1.061 C; min-depth500 remains the all-around candidate. |
+| 94 | 2026-09-22 | reflection | Stop the mask-floor scan. Next test a structural coastal/vertical lever, starting with a finer vertical grid probe. |

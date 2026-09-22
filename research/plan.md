@@ -86,12 +86,16 @@ Runner: `scripts/run_candidate_baseline.sh`
    `1.019 C`. Promote lambda160 + smooth80 as the all-around diagnostic
    candidate; keep lambda80 + smooth80 as the pure global-A2 candidate.
 
-16. **Isolate the immediate-land cold band.** [NEXT]
-   Stop the lambda scan. Design a narrowly scoped coastal-ventilation or
-   land-adjacent boundary experiment for the 0--3-cell band, changing only one
-   lever.
+16. **Isolate the immediate-land cold band.** [COMPLETE 2026-09-22]
+   The 0--3-cell band is a first-order global error source: if it were perfect,
+   global A2 would drop from 1.294 to 0.947 C. Min-depth 750/1000 improve global
+   A2 but degrade NA/near-wall, so the mask floor is not the main fix.
 
-17. **Only then revisit finer resolution.** [PROBED 2026-09-22: 0.6 still fails]
+17. **Test a structural coastal/vertical lever.** [NEXT]
+   Stop the mask-floor scan. Run a narrowly scoped 30d probe with finer vertical
+   resolution, then only continue to 365d if the coastal 0--3-cell bias improves.
+
+18. **Only then revisit finer resolution.** [PROBED 2026-09-22: 0.6 still fails]
    `0.5`, `0.6`, and `0.65` degrees currently blow up. Do not push finer
    resolution until the 0.7-degree stability margin and boundary-current
    diagnostics are understood.
