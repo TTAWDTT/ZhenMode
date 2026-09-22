@@ -159,9 +159,9 @@ experiments:
       value: null
 
 outer_loop:
-  cycle: 24
-  last_direction: "worst-cell vertical heat attribution"
-  last_reflection: "GM500 causes much stronger local advective cooling in the coldest near-wall cells. GM0 leaves those cells with positive net surface warming, and the population is mixed between coastal and weakly ventilated high-latitude cells. Next separate coastal geometry from high-latitude ventilation."
+  cycle: 25
+  last_direction: "coastal vs high-latitude ventilation"
+  last_reflection: "After excluding land-adjacent cells, the 59--60N interior cluster persists but is secondary. The coastal group remains the larger error source. Next diagnose coastal masking/ventilation, then consider only a narrow high-latitude boundary/ice-proxy experiment."
 
 workspace:
   findings: "research/findings.md"

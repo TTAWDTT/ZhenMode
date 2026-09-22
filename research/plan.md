@@ -36,13 +36,18 @@ Runner: `scripts/run_candidate_baseline.sh`
    coldest cells with positive net surface warming. Vertical export is small,
    and the cells are a mixed coastal/near-wall population.
 
-6. **Separate coastal geometry from high-latitude ventilation.** [NEXT]
-   Map the worst clusters against bathymetry and land masks. Recompute the
-   attribution after excluding land-adjacent cells. If the `59--60N` interior
-   cluster persists, design a narrowly scoped high-latitude boundary/ice-proxy
-   experiment; otherwise prioritize a coastal masking/ventilation diagnostic.
+6. **Separate coastal geometry from high-latitude ventilation.** [COMPLETE 2026-09-22]
+   Land-adjacent cells remain the larger error source (`1.539 C` RMSE in GM0
+   versus `1.065 C` for interior). The `59--60N` interior cluster still exists
+   but is secondary, so the next step is coastal masking/ventilation diagnosis.
 
-7. **Only then revisit finer resolution.** [PROBED 2026-09-22: 0.6 still fails]
+7. **Diagnose coastal masking/ventilation.** [NEXT]
+   Quantify how much of the regional cold bias is attributable to shallow or
+   land-adjacent cells, and whether these cells are isolated by bathymetry or
+   poorly ventilated. Only after that consider a narrow high-latitude
+   boundary/ice-proxy experiment.
+
+8. **Only then revisit finer resolution.** [PROBED 2026-09-22: 0.6 still fails]
    `0.5`, `0.6`, and `0.65` degrees currently blow up. Do not push finer
    resolution until the 0.7-degree stability margin and boundary-current
    diagnostics are understood.

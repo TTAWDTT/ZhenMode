@@ -73,3 +73,5 @@ Chronological record of research decisions and actions. Append-only.
 | 62 | 2026-09-22 | reflection | The worst cold cells cluster in local wall sectors and often have weak mean currents. Next diagnose vertical heat redistribution and local geometry in these cells before changing transport or resolution. |
 | 63 | 2026-09-22 | analysis | Decomposed heat tendencies for the 100 coldest near-wall cells. GM500 has -0.187 K/day local surface advection versus -0.058 K/day for GM0. |
 | 64 | 2026-09-22 | reflection | The GM0 coldest cells still have positive net surface warming; the near-wall cold population is mixed between land-adjacent and weakly ventilated high-latitude cells. Next separate coastal geometry from high-latitude ventilation. |
+| 65 | 2026-09-22 | analysis | Separated coastal and interior near-wall cells by land distance. Coastal cells remain the larger error source. |
+| 66 | 2026-09-22 | reflection | The 59--60N interior cluster persists after excluding land-adjacent cells, but it is secondary. Next diagnose coastal masking/ventilation, then only consider a narrow high-latitude proxy experiment. |
