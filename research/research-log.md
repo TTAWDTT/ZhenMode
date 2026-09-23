@@ -131,3 +131,5 @@ Chronological record of research decisions and actions. Append-only.
 | 120 | 2026-09-23 | experiment | Ran 30d coastal vertical-diffusion probes with kappa_v=1e-5 and 1e-4 in the 0--7-cell band. |
 | 121 | 2026-09-23 | analysis | Both probes failed to improve the coastal band; the stronger case worsened it. |
 | 122 | 2026-09-23 | reflection | Local enhanced diffusion and bulk exchange are not the missing physical closure. Next consider a more explicit coastal boundary-layer scheme or a high-latitude proxy. |
+| 123 | 2026-09-23 | reproduction | Repeated the tau=0.5d, cells<=7 coastal T restore run for 365d. |
+| 124 | 2026-09-23 | analysis | The repeat reproduces global A2 1.154 C, NA 0.880 C, and near-wall 0.804 C. |

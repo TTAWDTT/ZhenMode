@@ -159,9 +159,9 @@ experiments:
       value: null
 
 outer_loop:
-  cycle: 42
-  last_direction: "coastal vertical diffusion probe"
-  last_reflection: "Local enhanced vertical diffusion did not reproduce the coastal SST constraint gain. The best diagnostic remains tau=0.5d, cells<=7. Next consider a more explicit coastal boundary-layer scheme or a high-latitude proxy."
+  cycle: 43
+  last_direction: "coastal SST constraint reproduction"
+  last_reflection: "The tau=0.5d, cells<=7 coastal SST constraint reproduces exactly with global A2 1.154 C, NA 0.880 C, and near-wall 0.804 C. Keep it as a diagnostic upper bound; next design a defensible coastal boundary-layer scheme."
 
 workspace:
   findings: "research/findings.md"

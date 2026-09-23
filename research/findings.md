@@ -529,3 +529,7 @@ lambda160 + smooth80 复跑结果：global `1.294C`，NA `0.997C`，近墙 `1.01
 | +1e-4 | -0.746 / 1.113 C | -0.641 / 0.846 C | -0.954 / 1.058 C |
 
 结论：增强近陆垂直扩散没有改善冷偏差，甚至略变差。加上前面的 extra bulk flux 和水平扩散结果，说明简单的局地扩散/交换增强都不是缺失的物理闭合。
+
+## 近陆 SST constraint 复跑（2026-09-23）
+
+`tau=0.5d, cells<=7` 复跑结果与首跑一致：global A2 `1.154C`，NA `0.880C`，近墙 `0.804C`。因此该结果可以作为稳健的 diagnostic upper bound，但仍不是 production default。
