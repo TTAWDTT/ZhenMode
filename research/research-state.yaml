@@ -159,9 +159,9 @@ experiments:
       value: null
 
 outer_loop:
-  cycle: 40
-  last_direction: "coastal T restore strength upper bound"
-  last_reflection: "Coastal T restoring with tau=0.5d and cells<=7 improves global A2 to 1.154 C, NA to 0.880 C, and near-wall to 0.804 C. This is a strong diagnostic upper bound, not a production default. Next design a physically defensible coastal boundary-layer or mixing closure."
+  cycle: 41
+  last_direction: "coastal T restore spatial compromise"
+  last_reflection: "At tau=0.5d, cells<=7 remains the best spatial compromise over cells<=3 and cells<=5. Keep the tau=0.5d, cells<=7 diagnostic upper bound. Next design a physically defensible coastal boundary-layer or mixing closure."
 
 workspace:
   findings: "research/findings.md"

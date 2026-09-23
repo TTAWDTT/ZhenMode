@@ -126,3 +126,5 @@ Chronological record of research decisions and actions. Append-only.
 | 115 | 2026-09-23 | experiment | Ran 365d coastal T restoring with tau=1d and 0.5d at cells<=7; both passed. |
 | 116 | 2026-09-23 | analysis | The tau=0.5d run improves global A2 to 1.154 C, NA to 0.880 C, and near-wall to 0.804 C. |
 | 117 | 2026-09-23 | reflection | Keep tau=0.5d, cells<=7 as the diagnostic upper bound, not a production default. Next translate it into a defensible coastal boundary-layer or mixing closure. |
+| 118 | 2026-09-23 | experiment | Ran 30d coastal T restoring width probes at tau=0.5d with cells<=3, 5, and 7. |
+| 119 | 2026-09-23 | analysis | cells<=7 remains the best compromise; cells<=5 is close but leaves more error in the 4..7-cell band. |
