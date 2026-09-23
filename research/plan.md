@@ -229,8 +229,14 @@ Runner: `scripts/run_candidate_baseline.sh`
    new ice-floor baseline; do not combine it with marine-air smoothing.
 
 
-44. **Promote tau=30d coastal proxy to 365d.** [ACTIVE 2026-09-24]
+44. **Promote tau=30d coastal proxy to 365d.** [PASSED 2026-09-24]
    On the ice-floor baseline, the 30d `tau=30d, cells<=7` run improves
    global/NA A2 to `0.8962/0.8438 C` and near-wall bias to `-0.7318 C`.
    Validate for 365d before deciding whether it can be a documented
    diagnostic parameterization.
+
+
+45. **Bracket the coastal-proxy strength.** [ACTIVE 2026-09-24]
+   The 365d tau=30d proxy improves global/NA A2 to `1.0914/0.9973 C` and
+   near-wall bias to `-0.8842 C`. Run the tau=10d 30d rung next, then only
+   promote the best all-around strength after reproducibility.

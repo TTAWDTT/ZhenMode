@@ -203,3 +203,7 @@ Chronological record of research decisions and actions. Append-only.
 
 | 159 | 2026-09-24 | experiment | Ran a 30d tau=30d cells<=7 coastal SST constraint on top of the ice-floor candidate. |
 | 159 | 2026-09-24 | analysis | The gentle constraint improves global/NA A2 to 0.8962/0.8438 C and near-wall bias to -0.7318 C; promote to a 365d check. |
+
+| 160 | 2026-09-24 | experiment | Ran the 365d tau=30d cells<=7 coastal proxy on the ice-floor baseline. |
+| 160 | 2026-09-24 | analysis | It passes and improves global/NA A2 to 1.0914/0.9973 C and near-wall bias to -0.8842 C versus the ice-floor candidate. |
+| 160 | 2026-09-24 | reflection | Test tau=10d to bracket the weakest useful strength; do not promote until a repeat of the chosen strength passes. |

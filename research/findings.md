@@ -716,3 +716,10 @@ Redi500 30d 的指标几乎和 GM500 一致：global A2 `0.9132C`，NA `0.8485C`
 因为 0..3 格近岸仍占 global A2 SSE 47.9%，且简单扩散、GM、marine air smoothing 都失败，先做最温和的 `tau=30d, cells<=7` SST constraint。这个解释为 unresolved boundary-current/eddy heat transport proxy，不是无约束 restore。
 
 30d A/B：global A2 `0.9041 -> 0.8962C`，NA `0.8494 -> 0.8438C`，近墙 bias `-0.7426 -> -0.7318C`。全方向小幅改善，因此推进 365d。
+
+
+## 0.45 度 tau=30d coastal proxy 365d（2026-09-24）
+
+温和 restore 在 365d 通过：global A2 `1.1126 -> 1.0914C`（-1.90%），NA `1.0096 -> 0.9973C`，近墙 bias `-0.9121 -> -0.8842C`。这是在物理 ice floor 之上的进一步 all-around improvement。
+
+下一步试 `tau=10d`，看是否存在更好的最小强度；若更强会明显变差，则 tau=30d 是折中。
