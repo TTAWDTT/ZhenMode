@@ -87,10 +87,22 @@ hypotheses:
     motivation: "A 0.8-degree run improved global A2 RMSE by 3.6% and regional RMSE by 4.7% over the 1-degree candidate."
     priority: high
 
+  - id: H13
+    statement: "Horizontal resolution reaches diminishing returns near 0.45 degree for this prototype; further refinement is not the next dominant lever."
+    status: supported
+    motivation: "At dt=1800s and nu_h=2e6, 365d global A2 improves from 1.171 C at 0.50 to 1.149 C at 0.45, but 0.40 gives only 1.142 C and 0.35 gives 1.114 C while near-wall bias worsens from -0.917 to -0.965 C and runtime roughly doubles."
+    priority: high
+
+  - id: H14
+    statement: "Simple enhanced local diffusion is not the missing coastal closure; the remaining lever is boundary-current/lateral heat transport representation."
+    status: supported
+    motivation: "Coastal vertical diffusivity at 1e-5/1e-4 and horizontal diffusivity at 1e3/1e4 all failed to improve the near-wall band, while hard coastal restore exposes a strong boundary-value/mixed-layer control."
+    priority: high
+
 experiments:
   proxy_metric: "Global annual A2 SST pattern RMSE (C)"
   baseline_value: 2.115
-  best_value: 1.336
+  best_value: 1.171
   total_runs: 32
   trajectory:
     - run: "lambda1 FCT/TVD baseline"
@@ -159,9 +171,9 @@ experiments:
       value: null
 
 outer_loop:
-  cycle: 49
-  last_direction: "gentler 0.50-degree restore timescales"
-  last_reflection: "At 0.50 degree, tau=1d gives 365d metrics of 1.100/0.831/0.776 C, close to the tau=0.5d upper bound at half the restoring strength. Keep tau=0.5d as the diagnostic upper bound and tau=1d as the gentler compromise."
+  cycle: 50
+  last_direction: "resolution ladder and physical coastal closure"
+  last_reflection: "The 365d ladder is 0.50: 1.171/1.025/-0.923, 0.45: 1.149/1.011/-0.917, 0.40: 1.142/1.005/-0.937, and 0.35: 1.114/1.017/-0.965 C. Promote 0.45 as the best all-around candidate if reproducibility passes; stop finer-resolution scanning and target boundary-current/lateral heat transport."
 
 workspace:
   findings: "research/findings.md"
@@ -211,7 +223,8 @@ diagnostic_candidates:
     smooth_passes: 80
     global_a2_rmse_c: 1.281
     north_atlantic_40_60_a2_rmse_c: 1.044
-    near_wall_55_60_a2_rmse_c: 1.063  finest_resolution_favored:
+    near_wall_55_60_a2_rmse_c: 1.063
+  finest_resolution_favored:
     name: "resolution_stability_07/global_res050_nuh2e6_dt1800_365d"
     lambda_bulk: 160.0
     min_depth: 500.0
@@ -267,6 +280,35 @@ diagnostic_candidates:
     north_atlantic_40_60_a2_rmse_c: 0.911
     north_atlantic_raw_bias_c: -0.520
     near_wall_raw_bias_c: -0.508
+  resolution_ladder:
+    status: complete
+    note: "metrics are global_a2_rmse_c / NA 40-60N A2 RMSE C / near-wall 55-60N raw bias C; all use dt=1800s, nu_h=2e6"
+    res_050: [1.171, 1.025, -0.923]
+    res_045: [1.149, 1.011, -0.917]
+    res_040: [1.142, 1.005, -0.937]
+    res_035: [1.114, 1.017, -0.965]
+candidate_baseline_045:
+  name: "candidate_65n_045_gm0"
+  status: pending_reproducibility
+  command: "src/run_long_integration_global.py --resolution 0.45 --resolution-remap area"
+  grid: "lat_max=65, resolution=0.45 degree"
+  forcing: "seasonal 2023 NCEP wind + annual NCEP R1 2m air"
+  closures:
+    lambda_bulk: 80.0
+    kappa_v: 1e-6
+    kappa_conv: 0.01
+    kappa_gm: 0.0
+    localized_convective_adjustment: true
+    fct_tvd_transport: true
+    min_depth: 500.0
+    smooth_passes: 80
+    dt: 1800.0
+    nu_h: 2000000.0
+  reference_metrics:
+    global_a2_rmse_c: 1.149
+    north_atlantic_40_60_a2_rmse_c: 1.011
+    north_atlantic_raw_bias_c: -0.677
+    near_wall_raw_bias_c: -0.917
 candidate_baseline_050:
   name: "candidate_65n_05_gm0"
   status: locked

@@ -167,3 +167,8 @@ Chronological record of research decisions and actions. Append-only.
 | 143 | 2026-09-23 | experiment | Ran a 30d lambda120 probe on the stabilized 0.50-degree grid. |
 | 143 | 2026-09-23 | analysis | Lambda120 gives global A2 0.866 C, worse than lambda80 at 0.836 C; lambda80 remains the best production-like scalar choice. |
 
+
+| 144 | 2026-09-24 | experiment | Extended the stabilized resolution ladder to 0.45/0.40/0.35 degree; all three 365d runs passed. |
+| 145 | 2026-09-24 | analysis | 0.45 gives global/NA 1.149/1.011 C and near-wall bias -0.917 C; 0.40 and 0.35 cost more and 0.40/0.35 worsen near-wall bias. |
+| 146 | 2026-09-24 | reflection | Resolution gains diminish near 0.45 degree; stop the finer-resolution scan and promote 0.45 only after reproducibility. |
+| 147 | 2026-09-24 | experiment | Launched a 365d reproducibility run for the 0.45-degree lambda80 candidate. |

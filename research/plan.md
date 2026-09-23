@@ -146,3 +146,22 @@ Runner: `scripts/run_candidate_baseline.sh`
 28. **Test lambda120 at 0.50 degree.** [COMPLETE 2026-09-23]
    The 30d lambda120 probe gives A2 0.866 C, worse than lambda80 0.836 C. Keep lambda80 in the locked 0.50-degree candidate.
 
+
+
+29. **Validate the 0.45-degree all-around rung.** [ACTIVE 2026-09-24]
+   Run one repeat of the 365d 0.45-degree lambda80 candidate with the same
+   seeds/flags. If it matches the first run, promote it to the current
+   production-like baseline and make 0.50 the fallback.
+
+30. **Stop the resolution ladder.** [COMPLETE 2026-09-24]
+   0.40/0.35 add little global skill, cost substantially more, and worsen the
+   near-wall raw bias. Do not continue blind refinement.
+
+31. **Design a boundary-current/lateral heat-transport closure.** [ACTIVE]
+   Use the coastal heat-budget and velocity/gradient diagnostics to test an
+   explicit near-boundary lateral transport or boundary-layer closure, rather
+   than another local diffusion/restore scalar.
+
+32. **Guard the candidate boundary.** [ACTIVE]
+   Once 0.45 is locked, use it as the fixed reference for new closure A/B tests.
+   Do not combine unvalidated physics changes in the first diagnostic run.
