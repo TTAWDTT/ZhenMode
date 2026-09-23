@@ -159,9 +159,9 @@ experiments:
       value: null
 
 outer_loop:
-  cycle: 43
-  last_direction: "coastal SST constraint reproduction"
-  last_reflection: "The tau=0.5d, cells<=7 coastal SST constraint reproduces exactly with global A2 1.154 C, NA 0.880 C, and near-wall 0.804 C. Keep it as a diagnostic upper bound; next design a defensible coastal boundary-layer scheme."
+  cycle: 44
+  last_direction: "coastal SST constraint taper rejection"
+  last_reflection: "Cosine tapering reduces the restoring strength and performs worse than the hard-band diagnostic even after equal-strength compensation. Keep the hard band as the diagnostic upper bound and move to a coastal heat-budget diagnostic."
 
 workspace:
   findings: "research/findings.md"

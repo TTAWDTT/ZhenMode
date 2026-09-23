@@ -7,6 +7,7 @@ DAYS="${2:-30}"
 TAU="${3:-30}"
 CELLS="${4:-3}"
 TAG="${5:-coastal_restore${TAU}_${DAYS}d}"
+TAPER="${TAPER:-none}"
 
 PYTHON_BIN="${PYTHON_BIN:-.venv-gpu-jax/bin/python}"
 if [[ ! -x "${PYTHON_BIN}" && -x "/mnt/c/Users/zhen.luo/ocean_solver/.venv-gpu-jax/bin/python" ]]; then
@@ -29,6 +30,7 @@ mkdir -p "${OUT_DIR}" "${LOG_DIR}"
   --localize-conv --fct-adv --project-adv-vel \
   --min-depth 500 --smooth-passes 80 \
   --coastal-restore-days "${TAU}" --coastal-restore-cells "${CELLS}" \
+  --coastal-restore-taper "${TAPER}" \
   --days "${DAYS}" --dt 3600 \
   --tag "${TAG}" \
   --out-dir "${OUT_DIR}" \

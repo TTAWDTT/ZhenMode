@@ -381,6 +381,10 @@ def main():
                          "[days] in the land-adjacent band; 0 = off")
     ap.add_argument("--coastal-restore-cells", type=int, default=0,
                     help="width of the land-adjacent restoring band in cells")
+    ap.add_argument("--coastal-restore-taper", choices=("none", "linear", "cos"),
+                    default="none",
+                    help="weight the coastal restoring band away from land; "
+                         "none keeps the current hard mask")
     ap.add_argument("--coastal-bulk-lambda", type=float, default=0.0,
                     help="extra bulk heat-exchange coefficient [W/m^2/K] in "
                          "the land-adjacent band; 0 = off")
@@ -677,10 +681,21 @@ def main():
                             and dist[i, j] + 1.0 < dist[ni, nj]):
                         dist[ni, nj] = dist[i, j] + 1.0
                         q.append((ni, nj))
-        coastal_restore_mask = (ocean & (dist <= float(args.coastal_restore_cells)))
+        band = (ocean & (dist <= float(args.coastal_restore_cells)))
+        coastal_restore_mask = np.zeros(ocean.shape, dtype=np.float64)
+        taper = args.coastal_restore_taper
+        if taper == "none":
+            coastal_restore_mask[band] = 1.0
+        else:
+            dmax = max(float(args.coastal_restore_cells), 1.0)
+            if taper == "linear":
+                weight = np.clip(1.0 - dist / dmax, 0.0, 1.0)
+            else:
+                weight = 0.5 * (1.0 + np.cos(np.pi * np.clip(dist / dmax, 0.0, 1.0)))
+            coastal_restore_mask = ocean * weight
         print(f"  coastal T restore: tau={args.coastal_restore_days:g}d, "
-              f"cells<={args.coastal_restore_cells}, "
-              f"n={int(coastal_restore_mask.sum())}")
+              f"cells<={args.coastal_restore_cells}, taper={taper}, "
+              f"n={int(np.count_nonzero(coastal_restore_mask))}")
 
     # ── Wind forcing ──
     seasonal = args.seasonal_wind
@@ -1148,6 +1163,12 @@ def main():
         'eta_relax_days': args.eta_relax_days, 'eta_relax_box': args.eta_relax_box,
         'eta_relax_buffer': args.eta_relax_buffer,
         'smooth_passes': args.smooth_passes, 'min_depth': args.min_depth,
+        'coastal_restore_days': args.coastal_restore_days,
+        'coastal_restore_cells': args.coastal_restore_cells,
+        'coastal_restore_taper': args.coastal_restore_taper,
+        'coastal_bulk_lambda': args.coastal_bulk_lambda,
+        'coastal_kappa_h': args.coastal_kappa_h,
+        'coastal_kappa_v': args.coastal_kappa_v,
         'init_from': args.init_from or '',
     }
     np.savez_compressed(out_npz,

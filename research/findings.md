@@ -533,3 +533,16 @@ lambda160 + smooth80 复跑结果：global `1.294C`，NA `0.997C`，近墙 `1.01
 ## 近陆 SST constraint 复跑（2026-09-23）
 
 `tau=0.5d, cells<=7` 复跑结果与首跑一致：global A2 `1.154C`，NA `0.880C`，近墙 `0.804C`。因此该结果可以作为稳健的 diagnostic upper bound，但仍不是 production default。
+
+## 近陆 SST constraint taper 试探（2026-09-23）
+
+把 	au=0.5d, cells<=7 的硬带改成从海岸向外衰减的 cosine profile：
+
+| run | global A2 | NA 40..60N | 近墙 55..60N |
+|---|---:|---:|---:|
+| hard tau=0.5d | 0.919 C | 0.763 C | 0.785 C |
+| cos tau=0.5d | 0.935 C | 0.786 C | 0.823 C |
+| cos tau=0.25d 等强度 | 0.924 C | 0.786 C | 0.830 C |
+
+结论：cosine taper 不是更好的形状。它把总恢复强度降到约一半；即便用 	au=0.25d 近似补偿总强度，仍不如硬带，尤其 4..7 格过渡带控制不足。因此不做 365d 推进，继续保留硬带作为 diagnostic upper bound。
+

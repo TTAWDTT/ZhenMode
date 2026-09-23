@@ -111,3 +111,10 @@ Runner: `scripts/run_candidate_baseline.sh`
 
 
 
+
+20. **Test a tapered coastal constraint.** [REJECTED 2026-09-23]
+   Cosine tapering at tau=0.5d is worse than the hard band (30d A2 0.935 vs 0.919 C), and an equal-strength tau=0.25d probe remains worse (0.924 vs 0.919 C). Reject tapering and keep the hard-band diagnostic.
+
+21. **Run a coastal heat-budget diagnostic.** [ACTIVE 2026-09-23]
+   Decompose near-wall SST evolution into advection, diffusion, surface flux, and residual bands. Use the result to identify the missing physical closure instead of adding another local scalar forcing.
+

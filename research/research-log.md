@@ -133,3 +133,6 @@ Chronological record of research decisions and actions. Append-only.
 | 122 | 2026-09-23 | reflection | Local enhanced diffusion and bulk exchange are not the missing physical closure. Next consider a more explicit coastal boundary-layer scheme or a high-latitude proxy. |
 | 123 | 2026-09-23 | reproduction | Repeated the tau=0.5d, cells<=7 coastal T restore run for 365d. |
 | 124 | 2026-09-23 | analysis | The repeat reproduces global A2 1.154 C, NA 0.880 C, and near-wall 0.804 C. |
+| 125 | 2026-09-23 | experiment | Ran 30d cosine-taper coastal T restoring probes at tau=0.5d and an equal-total-strength tau=0.25d. |
+| 126 | 2026-09-23 | analysis | Both taper variants are worse than the hard-band control; keep hard-band coastal restore as the diagnostic upper bound. |
+
