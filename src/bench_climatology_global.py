@@ -160,7 +160,7 @@ def main():
         gcfg_kwargs = {"lat_max": args.lat_max, "ny": args.ny}
     gcfg = replace(GlobalGridConfig(), **gcfg_kwargs)
     grid = make_global_grid(gcfg, bathy, smooth_passes=args.smooth_passes,
-                            min_depth=args.min_depth)
+                            min_depth=args.min_depth, remap=args.resolution_remap)
     ocean = np.asarray(grid.ocean_mask, dtype=bool)
     lat = np.asarray(grid.lat)
     lon = np.asarray(grid.lon)

@@ -140,3 +140,7 @@ Chronological record of research decisions and actions. Append-only.
 | 128 | 2026-09-23 | analysis | Near-wall surface budgets show negligible diffusion and bulk terms, a strong direct SST restore term, and a large compensating reduction in convection. |
 | 129 | 2026-09-23 | reflection | The missing coastal closure is boundary-value or lateral transport, not another scalar diffusion or bulk-exchange process. |
 
+| 130 | 2026-09-23 | experiment | Stabilized 0.65/0.60/0.55/0.50-degree probes with dt=1800s and nu_h=2e6. |
+| 131 | 2026-09-23 | analysis | The 0.65 and 0.60 degree 365d runs pass and improve global, NA, and near-wall metrics over 0.70 degree. |
+| 132 | 2026-09-23 | reflection | Promote 0.60 degree as the finest validated all-around diagnostic resolution; wait for the 0.50 degree 365d check before further promotion. |
+

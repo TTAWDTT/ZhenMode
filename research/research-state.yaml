@@ -159,9 +159,9 @@ experiments:
       value: null
 
 outer_loop:
-  cycle: 45
-  last_direction: "coastal surface heat budget"
-  last_reflection: "The coastal SST restore term dominates the top-layer budget and suppresses local convection, while bulk/diffusion terms are near zero. Next test a boundary-value or lateral-transport closure, not another scalar local forcing."
+  cycle: 46
+  last_direction: "stabilized finer resolution"
+  last_reflection: "dt=1800s and nu_h=2e6 stabilize 0.65/0.60/0.55/0.50-degree probes. The 0.65 and 0.60 degree 365d runs improve all-around metrics over 0.70; 0.60 is the finest validated diagnostic resolution while the 0.50 365d run is pending."
 
 workspace:
   findings: "research/findings.md"
