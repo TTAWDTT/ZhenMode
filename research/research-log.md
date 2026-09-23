@@ -156,3 +156,7 @@ Chronological record of research decisions and actions. Append-only.
 | 138 | 2026-09-23 | analysis | The tau=1d 365d run gives global A2 1.100 C, NA 0.831 C, and near-wall 0.776 C; tau=0.5d remains the diagnostic upper bound. |
 | 138 | 2026-09-23 | reflection | Keep tau=1d as the gentler compromise and tau=0.5d as the upper bound; both remain assimilation-like diagnostic constraints. |
 
+| 139 | 2026-09-23 | experiment | Ran 30d and 365d lambda80 candidates at 0.50 degree with dt=1800s and nu_h=2e6. |
+| 140 | 2026-09-23 | analysis | The 0.50-degree lambda80 candidate improves global A2 to 1.171 C and North Atlantic A2 to 1.025 C over the 0.70-degree baseline. |
+| 140 | 2026-09-23 | reflection | Promote candidate_65n_05_gm0 as the finer-resolution production-like candidate; keep the 0.70-degree baseline as fallback. |
+
