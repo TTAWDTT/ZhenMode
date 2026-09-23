@@ -240,3 +240,8 @@ Runner: `scripts/run_candidate_baseline.sh`
    The 365d tau=30d proxy improves global/NA A2 to `1.0914/0.9973 C` and
    near-wall bias to `-0.8842 C`. Run the tau=10d 30d rung next, then only
    promote the best all-around strength after reproducibility.
+
+
+46. **Validate tau=10d coastal proxy.** [ACTIVE 2026-09-24]
+   The 30d tau=10d proxy beats tau=30d: global/NA A2 `0.8827/0.8344 C`
+   and near-wall bias `-0.7117 C`. Run its 365d check next.

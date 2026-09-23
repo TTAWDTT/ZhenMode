@@ -723,3 +723,8 @@ Redi500 30d 的指标几乎和 GM500 一致：global A2 `0.9132C`，NA `0.8485C`
 温和 restore 在 365d 通过：global A2 `1.1126 -> 1.0914C`（-1.90%），NA `1.0096 -> 0.9973C`，近墙 bias `-0.9121 -> -0.8842C`。这是在物理 ice floor 之上的进一步 all-around improvement。
 
 下一步试 `tau=10d`，看是否存在更好的最小强度；若更强会明显变差，则 tau=30d 是折中。
+
+
+## 0.45 度 tau=10d coastal proxy（2026-09-24）
+
+tau=10d 30d 进一步改善：global A2 `0.8827C`，NA `0.8344C`，近墙 bias `-0.7117C`，优于 tau=30d 的 `0.8962/0.8438/-0.7318C`。因此推进 tau=10d 365d；这是目前测试到的更优 strength，但还需一年验证和复跑。

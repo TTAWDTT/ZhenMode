@@ -207,3 +207,6 @@ Chronological record of research decisions and actions. Append-only.
 | 160 | 2026-09-24 | experiment | Ran the 365d tau=30d cells<=7 coastal proxy on the ice-floor baseline. |
 | 160 | 2026-09-24 | analysis | It passes and improves global/NA A2 to 1.0914/0.9973 C and near-wall bias to -0.8842 C versus the ice-floor candidate. |
 | 160 | 2026-09-24 | reflection | Test tau=10d to bracket the weakest useful strength; do not promote until a repeat of the chosen strength passes. |
+
+| 161 | 2026-09-24 | experiment | Ran the 30d tau=10d coastal proxy. It improves global/NA A2 to 0.8827/0.8344 C and near-wall bias to -0.7117 C. |
+| 161 | 2026-09-24 | reflection | Promote tau=10d over tau=30d for a 365d check; keep the final choice contingent on annual reproducibility. |
