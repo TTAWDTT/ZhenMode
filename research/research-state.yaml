@@ -307,7 +307,7 @@ candidate_baseline_045:
   reference_metrics:
     global_a2_rmse_c: 1.149
     north_atlantic_40_60_a2_rmse_c: 1.011
-    north_atlantic_raw_bias_c: -0.677
+    north_atlantic_raw_bias_c: -0.689
     near_wall_raw_bias_c: -0.917
 candidate_baseline_050:
   name: "candidate_65n_05_gm0"
@@ -340,3 +340,4 @@ legacy_candidate_baseline_070:
   reference_metrics:
     global_a2_rmse_c: 1.336
     north_atlantic_40_60_a2_rmse_c: 1.025
+
