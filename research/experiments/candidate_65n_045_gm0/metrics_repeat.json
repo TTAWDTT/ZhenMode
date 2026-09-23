@@ -1,0 +1,42 @@
+{
+  "first": {
+    "path": "results\\resolution_stability_07\\global_res045_nuh2e6_dt1800_365d.npz",
+    "verdict": "PASS",
+    "days_end": 365.0,
+    "global_a2_rmse": 1.1487647837498924,
+    "north_atlantic_40_60": {
+      "n": 4818,
+      "raw_bias": -0.6888359186501017,
+      "raw_rmse": 0.9128943008247399,
+      "a2_rmse": 1.0105393186281206
+    },
+    "near_wall_55_60": {
+      "n": 1251,
+      "raw_bias": -0.9174417666063848,
+      "raw_rmse": 1.0759342900621984,
+      "a2_rmse": 1.0857184445187127
+    },
+    "max_u_peak": 2.36430287361145,
+    "max_eta_last": 1.8647232055664062
+  },
+  "repeat": {
+    "path": "results\\candidate_65n_045_gm0\\global_candidate_65n_045_gm0_repeat.npz",
+    "verdict": "PASS",
+    "days_end": 365.0,
+    "global_a2_rmse": 1.1487645441101526,
+    "north_atlantic_40_60": {
+      "n": 4818,
+      "raw_bias": -0.6888340696374428,
+      "raw_rmse": 0.9128938055993906,
+      "a2_rmse": 1.0105383087132414
+    },
+    "near_wall_55_60": {
+      "n": 1251,
+      "raw_bias": -0.9174503971516897,
+      "raw_rmse": 1.0759338406624774,
+      "a2_rmse": 1.0857203865052143
+    },
+    "max_u_peak": 2.3643059730529785,
+    "max_eta_last": 1.8647156953811646
+  }
+}

@@ -172,3 +172,7 @@ Chronological record of research decisions and actions. Append-only.
 | 145 | 2026-09-24 | analysis | 0.45 gives global/NA 1.149/1.011 C and near-wall bias -0.917 C; 0.40 and 0.35 cost more and 0.40/0.35 worsen near-wall bias. |
 | 146 | 2026-09-24 | reflection | Resolution gains diminish near 0.45 degree; stop the finer-resolution scan and promote 0.45 only after reproducibility. |
 | 147 | 2026-09-24 | experiment | Launched a 365d reproducibility run for the 0.45-degree lambda80 candidate. |
+
+| 148 | 2026-09-24 | reproduction | The 0.45-degree 365d repeat passed in 39.6 min and reproduces global/NA A2 1.1488/1.0105 C and near-wall bias -0.9175 C. |
+| 149 | 2026-09-24 | reflection | Lock candidate_65n_045_gm0 as the production-like baseline; keep the reproduced 0.50-degree candidate as fallback. |
+| 149 | 2026-09-24 | experiment | Registered and prepared 30d GM500/GM1000 boundary-transport A/B probes at 0.45 degree. |

@@ -148,7 +148,7 @@ Runner: `scripts/run_candidate_baseline.sh`
 
 
 
-29. **Validate the 0.45-degree all-around rung.** [ACTIVE 2026-09-24]
+29. **Validate the 0.45-degree all-around rung.** [COMPLETE 2026-09-24]
    Run one repeat of the 365d 0.45-degree lambda80 candidate with the same
    seeds/flags. If it matches the first run, promote it to the current
    production-like baseline and make 0.50 the fallback.
@@ -165,3 +165,14 @@ Runner: `scripts/run_candidate_baseline.sh`
 32. **Guard the candidate boundary.** [ACTIVE]
    Once 0.45 is locked, use it as the fixed reference for new closure A/B tests.
    Do not combine unvalidated physics changes in the first diagnostic run.
+
+
+33. **0.45-degree repeat result.** [COMPLETE 2026-09-24]
+   The repeat reproduces global/NA A2 `1.1488/1.0105 C` and near-wall bias
+   `-0.9175 C`. Promote `candidate_65n_045_gm0` to the production-like
+   baseline; keep the 0.50-degree candidate as fallback.
+
+
+34. **Run the first GM transport A/B ladder.** [ACTIVE 2026-09-24]
+   Use the 0.45-degree candidate as the fixed control and run 30d GM500 and
+   GM1000 probes. Promote only an all-around improvement to a 365d check.

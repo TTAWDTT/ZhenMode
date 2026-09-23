@@ -102,7 +102,7 @@ hypotheses:
 experiments:
   proxy_metric: "Global annual A2 SST pattern RMSE (C)"
   baseline_value: 2.115
-  best_value: 1.171
+  best_value: 1.149
   total_runs: 32
   trajectory:
     - run: "lambda1 FCT/TVD baseline"
@@ -172,8 +172,8 @@ experiments:
 
 outer_loop:
   cycle: 50
-  last_direction: "resolution ladder and physical coastal closure"
-  last_reflection: "The 365d ladder is 0.50: 1.171/1.025/-0.923, 0.45: 1.149/1.011/-0.917, 0.40: 1.142/1.005/-0.937, and 0.35: 1.114/1.017/-0.965 C. Promote 0.45 as the best all-around candidate if reproducibility passes; stop finer-resolution scanning and target boundary-current/lateral heat transport."
+  last_direction: "lock 0.45 candidate; test GM lateral transport"
+  last_reflection: "The 0.45-degree repeat reproduces global/NA A2 1.1488/1.0105 C and near-wall bias -0.9175 C. Promote 0.45 to production-like baseline and keep 0.50 as fallback. Next run 30d GM500/GM1000 boundary-transport probes."
 
 workspace:
   findings: "research/findings.md"
@@ -289,8 +289,8 @@ diagnostic_candidates:
     res_035: [1.114, 1.017, -0.965]
 candidate_baseline_045:
   name: "candidate_65n_045_gm0"
-  status: pending_reproducibility
-  command: "src/run_long_integration_global.py --resolution 0.45 --resolution-remap area"
+  status: locked
+  command: "scripts/run_candidate_baseline_045.sh"
   grid: "lat_max=65, resolution=0.45 degree"
   forcing: "seasonal 2023 NCEP wind + annual NCEP R1 2m air"
   closures:
@@ -311,7 +311,7 @@ candidate_baseline_045:
     near_wall_raw_bias_c: -0.917
 candidate_baseline_050:
   name: "candidate_65n_05_gm0"
-  status: locked
+  status: fallback_locked
   command: "scripts/run_candidate_baseline_050.sh"
   grid: "lat_max=65, resolution=0.5 degree"
   forcing: "seasonal 2023 NCEP wind + annual NCEP R1 2m air"
@@ -340,4 +340,5 @@ legacy_candidate_baseline_070:
   reference_metrics:
     global_a2_rmse_c: 1.336
     north_atlantic_40_60_a2_rmse_c: 1.025
+
 

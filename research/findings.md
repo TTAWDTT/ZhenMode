@@ -639,3 +639,8 @@ u_h=2.0e6 m2/s 重新打开更细分辨率：0.65、0.60、0.55、0.50 的 10/30
 ## 下一个主要方向（2026-09-24）
 
 简单的近岸垂直/水平扩散都已排除，近岸 restore 只是 diagnostic 约束。下一步做边界流/侧向热输运闭合，并在 0.45 度 candidate 锁定后用它作为固定的 A/B 参考基线。
+
+
+## 0.45 度 candidate 复跑（2026-09-24）
+
+0.45 度 lambda80 candidate 的 365d repeat 通过，和首跑一致：global A2 `1.1488C`，NA `1.0105C`，近墙 raw bias `-0.9175C`。因此 `candidate_65n_045_gm0` 已升级为 production-like baseline，0.50 度保留 fallback。接下来用这个固定基线做 GM 侧向输运 A/B。

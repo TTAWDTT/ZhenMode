@@ -22,8 +22,9 @@ The 365d ladder shows diminishing returns beyond 0.45 degree:
 | 0.40 | 1.142 C | 1.005 C | -0.937 C | 64 min |
 | 0.35 | 1.114 C | 1.017 C | -0.965 C | 88 min |
 
-0.45 is the best all-around rung. A reproducibility repeat is running; if it
-matches, it becomes the production-like candidate and 0.50 becomes fallback.
+0.45 is the best all-around rung. The repeat matches: global/NA A2 
+`1.1488/1.0105 C`, near-wall bias `-0.9175 C`. `candidate_65n_045_gm0` is now 
+locked and 0.50 is the fallback.
 
 ## What was rejected
 
@@ -45,3 +46,5 @@ A/B test compares the 0.45-degree control with:
 Run 30d first. Promote to 365d only if the global and regional metrics improve
 without a stability cost. Runner:
 `scripts/run_res045_gm_probe.sh`.
+
+
