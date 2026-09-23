@@ -160,3 +160,7 @@ Chronological record of research decisions and actions. Append-only.
 | 140 | 2026-09-23 | analysis | The 0.50-degree lambda80 candidate improves global A2 to 1.171 C and North Atlantic A2 to 1.025 C over the 0.70-degree baseline. |
 | 140 | 2026-09-23 | reflection | Promote candidate_65n_05_gm0 as the finer-resolution production-like candidate; keep the 0.70-degree baseline as fallback. |
 
+| 141 | 2026-09-23 | experiment | Ran 30d and 365d lambda80 + 0.50-degree runs with tau=1d coastal restore. |
+| 142 | 2026-09-23 | analysis | The 365d tau=1d run improves global A2 to 1.020 C, North Atlantic A2 to 0.911 C, and near-wall bias to -0.508 C. |
+| 141 | 2026-09-23 | reflection | This is the best all-around diagnostic so far, but remains assimilation-like; the next step is to physicalize the coastal boundary closure. |
+
