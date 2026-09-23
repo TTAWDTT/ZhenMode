@@ -148,3 +148,7 @@ Chronological record of research decisions and actions. Append-only.
 | 134 | 2026-09-23 | analysis | The 0.50-degree run improves global A2 to 1.204 C, NA to 0.914 C, and near-wall to 0.976 C over 0.70 degree. |
 | 134 | 2026-09-23 | reflection | Promote 0.50 degree as the finest validated all-around diagnostic resolution; keep the 0.70-degree lambda80 candidate as the locked production-like baseline. |
 
+| 135 | 2026-09-23 | experiment | Ran 30d and 365d 0.50-degree runs with and without the hard coastal SST restore. |
+| 136 | 2026-09-23 | analysis | The 365d combined run improves global A2 to 1.078 C, NA to 0.818 C, and near-wall to 0.749 C over the no-restore 0.50-degree run. |
+| 136 | 2026-09-23 | reflection | Resolution and coastal restore are complementary; record the combined run as the diagnostic upper bound and test gentler restore strengths next. |
+

@@ -589,3 +589,17 @@ u_h=2.0e6 m2/s 重新打开更细分辨率：0.65、0.60、0.55、0.50 的 10/30
 
 结论：0.50 度是当前最细的 365d 已验证 diagnostic resolution，但不是 production default，也不替换 locked 0.7-degree lambda80 baseline。
 
+
+## 0.5 度 + 近岸 restore 组合（2026-09-23）
+
+在 0.50 度稳定 rung 上比较有无 	au=0.5d, cells<=7 硬带 restore：
+
+| run | global A2 | NA 40..60N | 近墙 55..60N |
+|---|---:|---:|---:|
+| 30d no restore | 0.893 C | 0.734 C | 0.756 C |
+| 30d + restore | 0.831 C | 0.700 C | 0.683 C |
+| 365d no restore | 1.204 C | 0.914 C | 0.976 C |
+| 365d + restore | 1.078 C | 0.818 C | 0.749 C |
+
+结论：分辨率没有消除近岸边界值误差，两者互补。 .50 度 + restore 是当前最强的 diagnostic upper bound；仍不是 production default。下一步可以在 0.50 度上试更温和的 restore timescale。
+

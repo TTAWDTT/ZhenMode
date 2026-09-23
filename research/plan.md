@@ -130,3 +130,7 @@ Runner: `scripts/run_candidate_baseline.sh`
 24. **Validate the 0.50-degree diagnostic rung.** [COMPLETE 2026-09-23]
    The 0.50-degree 365d run passes with dt=1800s and nu_h=2e6. It improves global A2 to 1.204 C, NA 40--60N to 0.914 C, and near-wall 55--60N to 0.976 C. Promote it as the finest validated all-around diagnostic resolution, not the locked production-like baseline.
 
+
+25. **Combine 0.50 degree with coastal restore.** [COMPLETE 2026-09-23]
+   The 365d combined run improves global A2 to 1.078 C, NA to 0.818 C, and near-wall to 0.749 C. Record it as the diagnostic upper bound; resolution does not make the coastal constraint redundant.
+
