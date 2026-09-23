@@ -138,3 +138,7 @@ Runner: `scripts/run_candidate_baseline.sh`
 26. **Sweep gentler restore strengths at 0.50 degree.** [COMPLETE 2026-09-23]
    The 30d ladder is no-restore 0.893 C, tau=3d 0.866 C, tau=1d 0.843 C, and tau=0.5d 0.831 C. The tau=1d 365d run gives 1.100/0.831/0.776 C. Keep tau=1d as the gentler compromise and tau=0.5d as the diagnostic upper bound.
 
+
+27. **Lock the 0.50-degree candidate.** [COMPLETE 2026-09-23]
+   The 0.50-degree lambda80 candidate reproduces global A2 1.171 C, NA 1.025 C, and the same raw biases. Promote it to the current production-like baseline and keep the 0.70-degree candidate as fallback.
+

@@ -267,3 +267,34 @@ diagnostic_candidates:
     north_atlantic_40_60_a2_rmse_c: 0.911
     north_atlantic_raw_bias_c: -0.520
     near_wall_raw_bias_c: -0.508
+candidate_baseline_050:
+  name: "candidate_65n_05_gm0"
+  status: locked
+  command: "scripts/run_candidate_baseline_050.sh"
+  grid: "lat_max=65, resolution=0.5 degree"
+  forcing: "seasonal 2023 NCEP wind + annual NCEP R1 2m air"
+  closures:
+    lambda_bulk: 80.0
+    kappa_v: 1e-6
+    kappa_conv: 0.01
+    kappa_gm: 0.0
+    localized_convective_adjustment: true
+    fct_tvd_transport: true
+    min_depth: 500.0
+    smooth_passes: 80
+    dt: 1800.0
+    nu_h: 2000000.0
+  reference_metrics:
+    global_a2_rmse_c: 1.171
+    north_atlantic_40_60_a2_rmse_c: 1.025
+    north_atlantic_raw_bias_c: -0.695
+    near_wall_raw_bias_c: -0.923
+
+legacy_candidate_baseline_070:
+  name: "candidate_65n_07_gm0"
+  status: fallback_locked
+  command: "scripts/run_candidate_baseline.sh"
+  grid: "lat_max=65, resolution=0.7 degree"
+  reference_metrics:
+    global_a2_rmse_c: 1.336
+    north_atlantic_40_60_a2_rmse_c: 1.025
