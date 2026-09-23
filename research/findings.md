@@ -669,3 +669,14 @@ GM500 30d 的小幅改善没有保持到一年。365d 结果：
 | GM500 | 1.1718 C | 1.1086 C | -0.9430 C | 更差，拒绝 |
 
 结论：GM500 在 0.45 度上不是新的 production candidate。30d 的短期收益是暂态；一年尺度上 GM bolus 输运让 NA 和近墙更冷。保留 GM0 作为 baseline。
+
+
+## 0.45 度 Redi 试探（2026-09-24）
+
+Redi500 30d 的指标几乎和 GM500 一致：global A2 `0.9132C`，NA `0.8485C`。原因是当前 GM/Redi 共用同一个 skew-flux 算子，只开 GM 或 Redi 不是独立物理分支；既然 GM500 一年尺度失败，不再浪费 365d。
+
+## 冰点强迫 proxy（2026-09-24）
+
+发现 GM0 candidate 最后有 3030 个海表点低于 `-1.8C`，而 WOA 最低约 `-1.46C`。加入 `--ice-air-floor`，把 bulk target 的冷端夹到 `-1.8C`，相当于简单 sea-ice/freezing proxy。
+
+30d A/B：global A2 `0.9190 -> 0.9041C`（-1.63%），NA/近墙几乎不变，最终没有低于冰点的点。因此推进 365d 验证。

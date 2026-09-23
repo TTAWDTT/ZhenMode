@@ -188,3 +188,14 @@ Runner: `scripts/run_candidate_baseline.sh`
    Its 30d gain reverses by 365d: global A2 `1.1488 -> 1.1718 C`, NA A2
    `1.0105 -> 1.1086 C`, and near-wall bias `-0.9175 -> -0.9430 C`.
    Keep GM0 and look for a boundary closure that does not overcool the band.
+
+
+37. **Reject the GM/Redi branch.** [COMPLETE 2026-09-24]
+   Redi500 duplicates GM500 because both share the same skew-flux operator in
+   this prototype. After the GM500 annual failure, do not spend a separate
+   365d run on Redi.
+
+38. **Test a freezing-point sea-ice proxy.** [ACTIVE 2026-09-24]
+   The 365d GM0 candidate has 3030 cells colder than `-1.8 C`. A 30d
+   `--ice-air-floor` probe improves global A2 by 1.63% and removes all
+   sub-freezing cells. Run the 365d stability/climate check next.

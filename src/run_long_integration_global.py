@@ -367,6 +367,12 @@ def main():
                     help="use 12 monthly NCEP R1 2-m air fields with the same "
                          "seasonal blending as wind; requires --seasonal-wind. "
                          "This takes precedence over --real-air-temp.")
+    ap.add_argument("--ice-air-floor", action="store_true",
+                    help="simple sea-ice proxy: floor the bulk target at the "
+                         "freezing point so sub-freezing air does not force "
+                         "open water below freezing")
+    ap.add_argument("--ice-air-floor-temp", type=float, default=-1.8,
+                    help="freezing-point floor for --ice-air-floor [C]")
     ap.add_argument("--sss-restore-days", type=float, default=0.0,
                     help="surface salinity restoring timescale [days]; "
                          "0 = off. Haney relaxation of SSS to the WOA "
@@ -731,8 +737,14 @@ def main():
                 raise ValueError("--real-air-temp-monthly requires --seasonal-wind")
             try:
                 T_atm_months = load_monthly_mean_air_temp(grid, year=args.wind_year)
+                if args.ice_air_floor:
+                    T_atm_months = np.maximum(
+                        np.asarray(T_atm_months), args.ice_air_floor_temp)
+                    T_atm_source = (f"monthly {args.wind_year} NCEP R1 2m air "
+                                    f"+ {args.ice_air_floor_temp:g} C ice floor")
                 T_atm = np.mean(T_atm_months, axis=0)
-                T_atm_source = f"monthly {args.wind_year} NCEP R1 2m air"
+                if not args.ice_air_floor:
+                    T_atm_source = f"monthly {args.wind_year} NCEP R1 2m air"
             except Exception as exc:
                 print(f"  WARNING: monthly NCEP air-temperature fetch failed "
                       f"({exc!r}); falling back to zonal WOA SST target")
@@ -741,6 +753,9 @@ def main():
             try:
                 T_atm = load_annual_mean_air_temp(grid, year=args.wind_year)
                 T_atm_source = f"annual-mean {args.wind_year} NCEP R1 2m air"
+                if args.ice_air_floor:
+                    T_atm = np.maximum(np.asarray(T_atm), args.ice_air_floor_temp)
+                    T_atm_source += f" + {args.ice_air_floor_temp:g} C ice floor"
             except Exception as exc:
                 print(f"  WARNING: real NCEP air-temperature fetch failed "
                       f"({exc!r}); falling back to zonal WOA SST target")

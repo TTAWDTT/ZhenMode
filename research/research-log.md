@@ -184,3 +184,8 @@ Chronological record of research decisions and actions. Append-only.
 | 151 | 2026-09-24 | experiment | Ran the promoted 365d 0.45-degree GM500 check. |
 | 152 | 2026-09-24 | analysis | GM500 passes but degrades to global/NA A2 1.1718/1.1086 C and near-wall bias -0.9430 C versus the GM0 candidate. |
 | 152 | 2026-09-24 | reflection | Reject GM500; retain GM0 as the 0.45-degree production-like baseline. The standard GM bolus closure does not solve the remaining boundary bias at this grid. |
+
+| 153 | 2026-09-24 | experiment | Ran a 30d Redi500 check. It nearly duplicates GM500 because both enable the same skew-flux operator. |
+| 153 | 2026-09-24 | reflection | Do not run a separate Redi 365d check after the GM500 rejection; the closure family is already rejected. |
+| 154 | 2026-09-24 | experiment | Added an opt-in freezing-point air-target floor and ran a 30d 0.45-degree ice-proxy probe. |
+| 155 | 2026-09-24 | analysis | The ice floor removes all sub-freezing SST cells and improves 30d global A2 from 0.9190 to 0.9041 C while leaving NA metrics neutral. |

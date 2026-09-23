@@ -4,6 +4,7 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 
 KAPPA_GM="${KAPPA_GM:-500}"
+KAPPA_RED="${KAPPA_RED:-0}"
 DAYS="${DAYS:-30}"
 TAG="${1:-res045_gm${KAPPA_GM}_${DAYS}d}"
 PYTHON_BIN="${PYTHON_BIN:-.venv-gpu-jax/bin/python}"
@@ -24,7 +25,7 @@ mkdir -p "${OUT_DIR}" "${LOG_DIR}"
   --seasonal-wind --wind-year 2023 --real-air-temp \
   --lambda-bulk 80 \
   --kappa-v 1e-6 --kappa-conv 0.01 \
-  --kappa-gm "${KAPPA_GM}" \
+  --kappa-gm "${KAPPA_GM}" --kappa-redi "${KAPPA_RED}" \
   --localize-conv --fct-adv --project-adv-vel \
   --min-depth 500 --smooth-passes 80 \
   --nu-h 2e6 --dt 1800 \
