@@ -178,7 +178,13 @@ Runner: `scripts/run_candidate_baseline.sh`
    GM1000 probes. Promote only an all-around improvement to a 365d check.
 
 
-35. **Validate GM500 at 0.45 degree for 365d.** [ACTIVE 2026-09-24]
+35. **Validate GM500 at 0.45 degree for 365d.** [REJECTED 2026-09-24]
    The 30d A/B promotes GM500: global `0.9190 -> 0.9132 C`, NA A2
    `0.8494 -> 0.8485 C`, and near-wall bias `-0.7425 -> -0.7403 C`.
    GM1000 is rejected because it makes the regional/near-wall band colder.
+
+
+36. **Reject GM500 as a production closure.** [COMPLETE 2026-09-24]
+   Its 30d gain reverses by 365d: global A2 `1.1488 -> 1.1718 C`, NA A2
+   `1.0105 -> 1.1086 C`, and near-wall bias `-0.9175 -> -0.9430 C`.
+   Keep GM0 and look for a boundary closure that does not overcool the band.

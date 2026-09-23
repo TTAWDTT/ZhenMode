@@ -1,6 +1,6 @@
 # Boundary Transport Closure A/B at 0.45 Degree
 
-Status: active
+Status: complete
 Date: 2026-09-24
 
 ## Question
@@ -20,18 +20,28 @@ unchanged.
 | `kappa_gm` | global A2 | NA 40--60N A2 | near-wall raw bias | verdict |
 |---:|---:|---:|---:|---|
 | 0 | 0.9190 C | 0.8494 C | -0.7425 C | control |
-| 500 | 0.9132 C | 0.8485 C | -0.7403 C | promote to 365d |
+| 500 | 0.9132 C | 0.8485 C | -0.7403 C | promoted to 365d |
 | 1000 | 0.9195 C | 0.8648 C | -0.7501 C | reject |
 
 GM500 improves the global metric and is marginally better in both regional
 metrics. GM1000 makes the North Atlantic and near-wall cells colder and is
 rejected.
 
-## Current test
+## 365d validation
 
-Run the same GM500 setting for 365d. If it passes and preserves the 30d
-all-around gain, consider it as the next candidate; otherwise retain the
-0.45-degree GM0 candidate.
+| `kappa_gm` | global A2 | NA 40--60N A2 | near-wall raw bias | verdict |
+|---:|---:|---:|---:|---|
+| 0 | 1.1488 C | 1.0105 C | -0.9175 C | locked candidate |
+| 500 | 1.1718 C | 1.1086 C | -0.9430 C | reject |
+
+The 30d GM500 gain does not survive the annual integration. The bolus
+transport overcools the North Atlantic/near-wall band on climate timescales.
+
+## Decision
+
+Reject GM500. Retain `candidate_65n_045_gm0` (`kappa_gm=0`) as the
+production-like baseline. The next closure must improve the boundary heat
+budget without adding this sustained regional cooling.
 
 ## Decision rules
 

@@ -172,8 +172,8 @@ experiments:
 
 outer_loop:
   cycle: 50
-  last_direction: "lock 0.45 candidate; test GM lateral transport"
-  last_reflection: "The 0.45-degree repeat reproduces global/NA A2 1.1488/1.0105 C and near-wall bias -0.9175 C. Promote 0.45 to production-like baseline and keep 0.50 as fallback. Next run 30d GM500/GM1000 boundary-transport probes."
+  last_direction: "GM transport rejection and next boundary closure"
+  last_reflection: "GM500 passes 365d but degrades to global/NA A2 1.1718/1.1086 C and near-wall bias -0.9430 C versus GM0 1.1488/1.0105/-0.9175 C. Reject GM500, retain GM0, and move to a non-bolus boundary closure/diagnostic."
 
 workspace:
   findings: "research/findings.md"
@@ -340,5 +340,6 @@ legacy_candidate_baseline_070:
   reference_metrics:
     global_a2_rmse_c: 1.336
     north_atlantic_40_60_a2_rmse_c: 1.025
+
 
 

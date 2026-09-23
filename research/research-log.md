@@ -180,3 +180,7 @@ Chronological record of research decisions and actions. Append-only.
 | 150 | 2026-09-24 | experiment | Ran 30d 0.45-degree GM500 and GM1000 probes against the locked GM0 candidate. |
 | 150 | 2026-09-24 | analysis | GM500 gives global/NA A2 0.9132/0.8485 C and near-wall bias -0.7403 C, a small all-around improvement; GM1000 worsens regional/near-wall metrics. |
 | 151 | 2026-09-24 | reflection | Reject GM1000; promote GM500 to a 365d stability and climate check. |
+
+| 151 | 2026-09-24 | experiment | Ran the promoted 365d 0.45-degree GM500 check. |
+| 152 | 2026-09-24 | analysis | GM500 passes but degrades to global/NA A2 1.1718/1.1086 C and near-wall bias -0.9430 C versus the GM0 candidate. |
+| 152 | 2026-09-24 | reflection | Reject GM500; retain GM0 as the 0.45-degree production-like baseline. The standard GM bolus closure does not solve the remaining boundary bias at this grid. |
