@@ -173,6 +173,12 @@ Runner: `scripts/run_candidate_baseline.sh`
    baseline; keep the 0.50-degree candidate as fallback.
 
 
-34. **Run the first GM transport A/B ladder.** [ACTIVE 2026-09-24]
+34. **Run the first GM transport A/B ladder.** [PROBED 2026-09-24]
    Use the 0.45-degree candidate as the fixed control and run 30d GM500 and
    GM1000 probes. Promote only an all-around improvement to a 365d check.
+
+
+35. **Validate GM500 at 0.45 degree for 365d.** [ACTIVE 2026-09-24]
+   The 30d A/B promotes GM500: global `0.9190 -> 0.9132 C`, NA A2
+   `0.8494 -> 0.8485 C`, and near-wall bias `-0.7425 -> -0.7403 C`.
+   GM1000 is rejected because it makes the regional/near-wall band colder.

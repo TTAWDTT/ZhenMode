@@ -176,3 +176,7 @@ Chronological record of research decisions and actions. Append-only.
 | 148 | 2026-09-24 | reproduction | The 0.45-degree 365d repeat passed in 39.6 min and reproduces global/NA A2 1.1488/1.0105 C and near-wall bias -0.9175 C. |
 | 149 | 2026-09-24 | reflection | Lock candidate_65n_045_gm0 as the production-like baseline; keep the reproduced 0.50-degree candidate as fallback. |
 | 149 | 2026-09-24 | experiment | Registered and prepared 30d GM500/GM1000 boundary-transport A/B probes at 0.45 degree. |
+
+| 150 | 2026-09-24 | experiment | Ran 30d 0.45-degree GM500 and GM1000 probes against the locked GM0 candidate. |
+| 150 | 2026-09-24 | analysis | GM500 gives global/NA A2 0.9132/0.8485 C and near-wall bias -0.7403 C, a small all-around improvement; GM1000 worsens regional/near-wall metrics. |
+| 151 | 2026-09-24 | reflection | Reject GM1000; promote GM500 to a 365d stability and climate check. |

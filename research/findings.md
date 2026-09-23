@@ -644,3 +644,16 @@ u_h=2.0e6 m2/s 重新打开更细分辨率：0.65、0.60、0.55、0.50 的 10/30
 ## 0.45 度 candidate 复跑（2026-09-24）
 
 0.45 度 lambda80 candidate 的 365d repeat 通过，和首跑一致：global A2 `1.1488C`，NA `1.0105C`，近墙 raw bias `-0.9175C`。因此 `candidate_65n_045_gm0` 已升级为 production-like baseline，0.50 度保留 fallback。接下来用这个固定基线做 GM 侧向输运 A/B。
+
+
+## 0.45 度 GM 侧向输运 A/B（2026-09-24）
+
+用锁定的 0.45 度 candidate 做固定 control，先跑 30d：
+
+| kappa_gm | global A2 | NA 40..60N A2 | 近墙 raw bias | 结论 |
+|---:|---:|---:|---:|---|
+| 0 | 0.919 C | 0.849 C | -0.743 C | control |
+| 500 | 0.913 C | 0.848 C | -0.740 C | 全方向小幅改善 |
+| 1000 | 0.919 C | 0.865 C | -0.750 C | 更差，拒绝 |
+
+GM500 通过第一轮 A/B；GM1000 使 NA 和近墙更冷，拒绝。GM500 需要再做 365d 稳定性和气候验证。
