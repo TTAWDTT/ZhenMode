@@ -4,37 +4,37 @@ Status: complete
 Date: 2026-09-23
 Baseline: `lambda160 + min-depth500 + smooth80`
 
-## 30d width sweep (tau=3d)
+## 30d restoring-strength sweep (cells<=7)
 
-| band | global 0..3 | global 0..7 | NA 0..7 | near-wall 0..7 |
-|---|---:|---:|---:|---:|
-| baseline | -0.760 / 1.290 C | -0.644 / 1.079 C | -0.564 / 0.838 C | -0.950 / 1.064 C |
-| cells<=1 | -0.669 / 1.144 C | -0.602 / 1.001 C | -0.554 / 0.806 C | -0.922 / 1.021 C |
-| cells<=3 | -0.560 / 1.003 C | -0.546 / 0.920 C | -0.514 / 0.745 C | -0.847 / 0.928 C |
-| cells<=5 | -0.550 / 0.992 C | -0.502 / 0.867 C | -0.456 / 0.674 C | -0.758 / 0.841 C |
-| cells<=7 | -0.551 / 0.992 C | -0.465 / 0.828 C | -0.415 / 0.621 C | -0.707 / 0.799 C |
-| cells<=9 | -0.550 / 0.991 C | -0.460 / 0.823 C | -0.408 / 0.615 C | -0.698 / 0.793 C |
+| tau | global 0..7 | NA 0..7 | near-wall 0..7 |
+|---:|---:|---:|---:|
+| baseline | -0.644 / 1.079 C | -0.564 / 0.838 C | -0.950 / 1.064 C |
+| 10d | -0.578 / 0.986 C | -0.510 / 0.759 C | -0.863 / 0.969 C |
+| 3d | -0.465 / 0.828 C | -0.415 / 0.621 C | -0.707 / 0.799 C |
+| 1d | -0.296 / 0.609 C | -0.268 / 0.406 C | -0.458 / 0.524 C |
+| 0.5d | -0.193 / 0.490 C | -0.175 / 0.268 C | -0.298 / 0.343 C |
+| 0.25d | -0.116 / 0.414 C | -0.103 / 0.161 C | -0.175 / 0.203 C |
 
 ## 365d metrics
 
 | run | global A2 | NA 40--60N | near-wall 55--60N |
 |---|---:|---:|---:|
 | baseline | 1.294 C | 0.997 C | 1.019 C |
-| coastal-restore tau=3d, cells<=3 | 1.253 C | 0.978 C | 0.979 C |
-| coastal-restore tau=3d, cells<=7 | 1.229 C | 0.933 C | 0.885 C |
-| coastal-restore tau=3d, cells<=9 | 1.217 C | 0.913 C | 0.866 C |
+| tau=3d, cells<=7 | 1.229 C | 0.933 C | 0.885 C |
+| tau=1d, cells<=7 | 1.181 C | 0.894 C | 0.816 C |
+| tau=0.5d, cells<=7 | 1.154 C | 0.880 C | 0.804 C |
 
 ## Interpretation
 
-1. The restoring band-width sweep shows a clear monotonic improvement from the
-   immediate coast into the `0..7`-cell coastal/transitional zone.
-2. The gain from `0..7` to `0..9` is smaller, so `0..7` is a reasonable
-   diagnostic width.
-3. The 365d `cells<=7` run improves global A2 from `1.294 C` to `1.229 C`, NA
-   from `0.997 C` to `0.933 C`, and near-wall from `1.019 C` to `0.885 C`.
+1. Stronger coastal SST restoring improves all metrics monotonically.
+2. `tau=0.5d, cells<=7` is already a strong upper-bound diagnostic; pushing to
+   `tau=0.25d` would be closer to direct SST assimilation than a physical
+   closure.
+3. The improvement is largest in the immediate coastal and transitional bands,
+   but it also improves the global metric substantially.
 
 ## Decision
 
-Keep `lambda160 + min-depth500 + smooth80 + coastal T restore tau=3d,
-cells<=7` as the current diagnostic candidate. It is not a production default
-and should be replaced later by a more physical coastal closure.
+Keep `tau=0.5d, cells<=7` as the best diagnostic upper bound. It is not a
+production default. The next step is to replace this SST constraint with a
+defensible coastal boundary-layer or mixing closure.

@@ -159,9 +159,9 @@ experiments:
       value: null
 
 outer_loop:
-  cycle: 39
-  last_direction: "coastal T restore width sweep"
-  last_reflection: "Coastal T restoring with tau=3d and cells<=7 improves global A2 to 1.229 C, NA to 0.933 C, and near-wall to 0.885 C. Keep it as a diagnostic SST constraint, not a production default; next decide how to turn it into a defensible boundary scheme."
+  cycle: 40
+  last_direction: "coastal T restore strength upper bound"
+  last_reflection: "Coastal T restoring with tau=0.5d and cells<=7 improves global A2 to 1.154 C, NA to 0.880 C, and near-wall to 0.804 C. This is a strong diagnostic upper bound, not a production default. Next design a physically defensible coastal boundary-layer or mixing closure."
 
 workspace:
   findings: "research/findings.md"

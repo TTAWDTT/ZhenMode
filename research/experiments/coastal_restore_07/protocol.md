@@ -3,8 +3,8 @@
 Status: complete
 Date: 2026-09-23
 Baseline: `lambda160 + min-depth500 + smooth80`
-Question: How much of the 0..3-cell coastal cold bias can be attributed to a
-local surface boundary condition?
+Question: How much of the coastal-band cold bias can be attributed to a local
+surface boundary condition?
 
 ## Change
 
@@ -14,19 +14,18 @@ The production candidate remains unchanged when the flag is off.
 
 ## Runs
 
-1. 30d probes with tau=30d, 10d, and 3d: all PASS.
-2. 30d width probes with cells<=1, 3, 5, 7, 9: all PASS.
-3. 365d runs with tau=3d and cells<=3, 7, 9: all PASS.
+1. 30d restoring-strength probes with tau=10d, 3d, 1d, 0.5d, and 0.25d.
+2. 365d runs with tau=3d, 1d, and 0.5d at cells<=7.
 
 ## Result
 
-The 365d tau=3d, cells<=7 run improves global A2 from `1.294 C` to `1.229 C`,
-NA 40--60N from `0.997 C` to `0.933 C`, and near-wall 55--60N from `1.019 C`
-to `0.885 C`. The tau=3d, cells<=9 run improves slightly further but covers a
-much larger fraction of the ocean.
+The 365d tau=0.5d, cells<=7 run improves global A2 from `1.294 C` to
+`1.154 C`, NA 40--60N from `0.997 C` to `0.880 C`, and near-wall 55--60N from
+`1.019 C` to `0.804 C`. The tau=0.25d probe is stronger but approaches direct
+SST assimilation.
 
 ## Decision
 
-Keep `tau=3d, cells<=7` as the current diagnostic candidate. It is not a
-production default and should be replaced later by a more physical coastal
-closure.
+Keep `tau=0.5d, cells<=7` as the best diagnostic upper bound. It is not a
+production default. Next replace it with a defensible coastal boundary-layer
+or mixing closure.

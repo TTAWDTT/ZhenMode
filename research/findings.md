@@ -492,3 +492,16 @@ lambda160 + smooth80 复跑结果：global `1.294C`，NA `0.997C`，近墙 `1.01
 | cells<=9 | 1.217 C | 0.913 C | 0.866 C |
 
 结论：0..7 格是一个较好的折中，继续扩到 0..9 改善变小且覆盖面过大。当前把 `tau=3d, cells<=7` 记录为 diagnostic candidate，但仍然不是 production default。
+
+## 近陆 SST constraint 强度上限（2026-09-23）
+
+在 `lambda160 + min-depth500 + smooth80` 基础上，把 0..7 格近陆带做不同 tau 的 SST restoring：
+
+| run | global A2 | NA 40..60N | 近墙 55..60N |
+|---|---:|---:|---:|
+| baseline | 1.294 C | 0.997 C | 1.019 C |
+| tau=3d | 1.229 C | 0.933 C | 0.885 C |
+| tau=1d | 1.181 C | 0.894 C | 0.816 C |
+| tau=0.5d | 1.154 C | 0.880 C | 0.804 C |
+
+结论：这是一个很强的上限诊断，说明近陆带冷偏差可以被边界条件显著修正。`tau=0.5d` 已经接近直接 SST assimilation，因此不适合作为 production default。下一步应把它替换成更物理的近岸边界层/混合闭合。
