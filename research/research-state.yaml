@@ -211,4 +211,34 @@ diagnostic_candidates:
     smooth_passes: 80
     global_a2_rmse_c: 1.281
     north_atlantic_40_60_a2_rmse_c: 1.044
-    near_wall_55_60_a2_rmse_c: 1.063
+    near_wall_55_60_a2_rmse_c: 1.063  finest_resolution_favored:
+    name: "resolution_stability_07/global_res050_nuh2e6_dt1800_365d"
+    lambda_bulk: 160.0
+    min_depth: 500.0
+    smooth_passes: 80
+    resolution: 0.5
+    dt: 1800.0
+    nu_h: 2000000.0
+    global_a2_rmse_c: 1.204
+    north_atlantic_40_60_a2_rmse_c: 0.914
+    near_wall_55_60_a2_rmse_c: 0.976
+  coastal_restore_upper_bound:
+    name: "res050_coastal_restore_07/global_res050_coastal_restore0.5_c7_365d"
+    status: diagnostic_only
+    lambda_bulk: 160.0
+    resolution: 0.5
+    dt: 1800.0
+    nu_h: 2000000.0
+    coastal_restore_days: 0.5
+    coastal_restore_cells: 7
+    global_a2_rmse_c: 1.078
+    north_atlantic_40_60_a2_rmse_c: 0.818
+    near_wall_55_60_a2_rmse_c: 0.749
+  gentler_restore_compromise:
+    name: "res050_coastal_restore_07/global_res050_coastal_restore1_c7_365d"
+    status: diagnostic_only
+    coastal_restore_days: 1.0
+    coastal_restore_cells: 7
+    global_a2_rmse_c: 1.100
+    north_atlantic_40_60_a2_rmse_c: 0.831
+    near_wall_55_60_a2_rmse_c: 0.776
