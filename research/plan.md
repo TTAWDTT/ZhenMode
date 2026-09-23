@@ -134,3 +134,7 @@ Runner: `scripts/run_candidate_baseline.sh`
 25. **Combine 0.50 degree with coastal restore.** [COMPLETE 2026-09-23]
    The 365d combined run improves global A2 to 1.078 C, NA to 0.818 C, and near-wall to 0.749 C. Record it as the diagnostic upper bound; resolution does not make the coastal constraint redundant.
 
+
+26. **Sweep gentler restore strengths at 0.50 degree.** [COMPLETE 2026-09-23]
+   The 30d ladder is no-restore 0.893 C, tau=3d 0.866 C, tau=1d 0.843 C, and tau=0.5d 0.831 C. The tau=1d 365d run gives 1.100/0.831/0.776 C. Keep tau=1d as the gentler compromise and tau=0.5d as the diagnostic upper bound.
+

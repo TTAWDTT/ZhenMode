@@ -603,3 +603,17 @@ u_h=2.0e6 m2/s 重新打开更细分辨率：0.65、0.60、0.55、0.50 的 10/30
 
 结论：分辨率没有消除近岸边界值误差，两者互补。 .50 度 + restore 是当前最强的 diagnostic upper bound；仍不是 production default。下一步可以在 0.50 度上试更温和的 restore timescale。
 
+
+## 0.5 度 restore 强度折中（2026-09-23）
+
+在 0.50 度 + cells<=7 下做 tau 扫描：
+
+| tau | global A2 | NA 40..60N | 近墙 55..60N |
+|---:|---:|---:|---:|
+| no restore | 0.893 C | 0.734 C | 0.756 C |
+| 3d | 0.866 C | 0.717 C | 0.718 C |
+| 1d | 0.843 C | 0.704 C | 0.690 C |
+| 0.5d | 0.831 C | 0.700 C | 0.683 C |
+
+	au=1d 的 365d 验证为 global A2 1.100C，NA  .831C，近墙  .776C。因此保留 	au=0.5d 作为 diagnostic upper bound，	au=1d 作为更温和的折中；两者都不是 production default。
+

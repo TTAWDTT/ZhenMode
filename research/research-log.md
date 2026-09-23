@@ -152,3 +152,7 @@ Chronological record of research decisions and actions. Append-only.
 | 136 | 2026-09-23 | analysis | The 365d combined run improves global A2 to 1.078 C, NA to 0.818 C, and near-wall to 0.749 C over the no-restore 0.50-degree run. |
 | 136 | 2026-09-23 | reflection | Resolution and coastal restore are complementary; record the combined run as the diagnostic upper bound and test gentler restore strengths next. |
 
+| 137 | 2026-09-23 | experiment | Ran 30d tau=3d and tau=1d restore probes at 0.50 degree and validated tau=1d for 365d. |
+| 138 | 2026-09-23 | analysis | The tau=1d 365d run gives global A2 1.100 C, NA 0.831 C, and near-wall 0.776 C; tau=0.5d remains the diagnostic upper bound. |
+| 138 | 2026-09-23 | reflection | Keep tau=1d as the gentler compromise and tau=0.5d as the upper bound; both remain assimilation-like diagnostic constraints. |
+

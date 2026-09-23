@@ -11,3 +11,8 @@ Timescales: 30d probe followed by a 365d validation run.
 
 Decision rule: run 365d only if the 30d probe improves global, North Atlantic,
 and near-wall metrics over the no-restore control.
+
+## Gentler-timescale follow-up
+
+After validating tau=0.5d, run 30d probes at tau=3d and tau=1d, then validate tau=1d for 365d. Decision rule: choose the gentlest timescale that retains most of the all-around gain while still reporting tau=0.5d as the upper bound.
+

@@ -159,9 +159,9 @@ experiments:
       value: null
 
 outer_loop:
-  cycle: 48
-  last_direction: "0.50-degree plus coastal restore"
-  last_reflection: "The 0.50-degree 365d run plus tau=0.5d coastal restore improves global A2 to 1.078 C, NA to 0.818 C, and near-wall to 0.749 C. This is the diagnostic upper bound; next test gentler restore timescales at 0.50 degree."
+  cycle: 49
+  last_direction: "gentler 0.50-degree restore timescales"
+  last_reflection: "At 0.50 degree, tau=1d gives 365d metrics of 1.100/0.831/0.776 C, close to the tau=0.5d upper bound at half the restoring strength. Keep tau=0.5d as the diagnostic upper bound and tau=1d as the gentler compromise."
 
 workspace:
   findings: "research/findings.md"
