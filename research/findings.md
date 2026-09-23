@@ -694,3 +694,18 @@ Redi500 30d 的指标几乎和 GM500 一致：global A2 `0.9132C`，NA `0.8485C`
 365d repeat 一致：global A2 `1.1126C`，NA `1.0096C`，近墙 raw bias `-0.9121C`，没有低于 `-1.8C` 的点。因此 ice floor 升级为当前 production-like candidate；`candidate_65n_045_gm0` 变为 no-proxy fallback。
 
 对比原 GM0 candidate：global A2 -3.15%，NA 和近墙小幅改善。这是一个物理上合理的 freezing-point proxy，不是完整海冰模式。
+
+
+## 0.45 度 marine air smoothing A/B（2026-09-24）
+
+先诊断：ice floor candidate 的 NCEP 2m air target 在 0..3 格近岸比 WOA SST 冷约 `0.93C`；模型同带 raw bias `-1.23C`，说明相当一部分近岸误差来自强迫目标，不只是海洋动力。
+
+加入 opt-in `--air-marine-smooth-passes`（只对海洋格点平滑 air target）。30d A/B：
+
+| air smooth | global A2 | NA A2 | 近墙 bias | 结论 |
+|---:|---:|---:|---:|---|
+| 0 | 0.9041 C | 0.8494 C | -0.7426 C | control |
+| 5 | 0.9029 C | 0.8539 C | -0.7467 C | global 略好，NA/近墙更差 |
+| 20 | 0.9028 C | 0.8658 C | -0.7571 C | 更差，拒绝 |
+
+结论：简单的 wet-cell air smoothing 不是近岸闭合；不进入 candidate。保留 ice floor candidate。

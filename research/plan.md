@@ -212,6 +212,18 @@ Runner: `scripts/run_candidate_baseline.sh`
    `-0.9121 C`, with zero sub-freezing cells. Make this the production-like
    baseline and keep the no-proxy GM0 run as fallback.
 
-41. **Re-baseline the next error diagnosis.** [ACTIVE]
+41. **Re-baseline the next error diagnosis.** [COMPLETE 2026-09-24]
    Use `candidate_65n_045_icefloor` as the fixed reference. Re-score the
    remaining error bands before choosing the next physical lever.
+
+
+42. **Re-check the coastal forcing target.** [PROBED 2026-09-24]
+   In the 0..3-cell band the NCEP target is `0.933 C` colder than WOA, versus
+   a model raw bias of `-1.229 C`. A wet-cell-only air-target smoother gives a
+   tiny global gain but worsens regional/near-wall metrics; reject it.
+
+
+43. **Next targeted coastal test.** [ACTIVE]
+   The unresolved boundary-current/eddy heat transport remains the main
+   candidate. Test only a gentle constraint or parameterization against the
+   new ice-floor baseline; do not combine it with marine-air smoothing.

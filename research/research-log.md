@@ -196,3 +196,7 @@ Chronological record of research decisions and actions. Append-only.
 
 | 157 | 2026-09-24 | reproduction | The 365d ice-floor repeat passed in 39.7 min and reproduces global/NA A2 1.1126/1.0096 C with near-wall bias -0.9121 C. |
 | 157 | 2026-09-24 | reflection | Promote the -1.8 C ice-air floor to the production-like 0.45-degree candidate; retain the GM0 no-proxy candidate as fallback. |
+
+| 157 | 2026-09-24 | experiment | Re-scored remaining error bands for the ice-floor candidate; the 0..3-cell coastal band holds 47.9% of global A2 SSE. |
+| 158 | 2026-09-24 | experiment | Tested 30d wet-cell-only marine-air target smoothing at 5 and 20 passes. |
+| 158 | 2026-09-24 | analysis | Both make global A2 slightly better but worsen NA/near-wall metrics; reject marine-air smoothing as a coastal closure. |

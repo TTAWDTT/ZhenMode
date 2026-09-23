@@ -147,6 +147,34 @@ def total_kinetic_energy(state, ocean_mask):
     return float(ke)
 
 
+def marine_smooth_2d(field, ocean_mask, passes=0):
+    """Smooth a 2-D forcing field using only wet-cell neighbours.
+
+    This is a simple marine-air correction: it reduces land-contaminated
+    coastal extrema without interpolating temperature through land.
+    """
+    if passes <= 0:
+        return np.asarray(field, dtype=np.float64)
+    mask = np.asarray(ocean_mask, dtype=bool)
+    y = np.asarray(field, dtype=np.float64).copy()
+    for _ in range(int(passes)):
+        s = np.zeros_like(y, dtype=np.float64)
+        c = np.zeros_like(y, dtype=np.int64)
+        for src_mask, src in (
+                (np.roll(mask, -1, axis=0), np.roll(y, -1, axis=0)),
+                (np.roll(mask, 1, axis=0), np.roll(y, 1, axis=0)),
+                (np.roll(mask, -1, axis=1), np.roll(y, -1, axis=1)),
+                (np.roll(mask, 1, axis=1), np.roll(y, 1, axis=1))):
+            valid = mask & src_mask
+            s[valid] += src[valid]
+            c[valid] += 1
+        avg = np.zeros_like(y)
+        good = mask & (c > 0)
+        avg[good] = s[good] / c[good]
+        y = np.where(good, 0.5 * y + 0.5 * avg, y)
+    return y
+
+
 def build_seasonal_wind_global(grid, year=2023):
     """12 monthly NCEP wind-stress snapshots interpolated to the global grid.
 
@@ -373,6 +401,9 @@ def main():
                          "open water below freezing")
     ap.add_argument("--ice-air-floor-temp", type=float, default=-1.8,
                     help="freezing-point floor for --ice-air-floor [C]")
+    ap.add_argument("--air-marine-smooth-passes", type=int, default=0,
+                    help="number of wet-cell-only smoothing passes for the "
+                         "bulk air-temperature target; 0 keeps the raw target")
     ap.add_argument("--sss-restore-days", type=float, default=0.0,
                     help="surface salinity restoring timescale [days]; "
                          "0 = off. Haney relaxation of SSS to the WOA "
@@ -742,9 +773,15 @@ def main():
                         np.asarray(T_atm_months), args.ice_air_floor_temp)
                     T_atm_source = (f"monthly {args.wind_year} NCEP R1 2m air "
                                     f"+ {args.ice_air_floor_temp:g} C ice floor")
-                T_atm = np.mean(T_atm_months, axis=0)
                 if not args.ice_air_floor:
                     T_atm_source = f"monthly {args.wind_year} NCEP R1 2m air"
+                if args.air_marine_smooth_passes > 0:
+                    T_atm_months = np.stack([
+                        marine_smooth_2d(f, grid.ocean_mask, args.air_marine_smooth_passes)
+                        for f in T_atm_months
+                    ])
+                    T_atm_source += f" + {args.air_marine_smooth_passes} marine smooth"
+                T_atm = np.mean(T_atm_months, axis=0)
             except Exception as exc:
                 print(f"  WARNING: monthly NCEP air-temperature fetch failed "
                       f"({exc!r}); falling back to zonal WOA SST target")
@@ -756,6 +793,10 @@ def main():
                 if args.ice_air_floor:
                     T_atm = np.maximum(np.asarray(T_atm), args.ice_air_floor_temp)
                     T_atm_source += f" + {args.ice_air_floor_temp:g} C ice floor"
+                if args.air_marine_smooth_passes > 0:
+                    T_atm = marine_smooth_2d(
+                        T_atm, grid.ocean_mask, args.air_marine_smooth_passes)
+                    T_atm_source += f" + {args.air_marine_smooth_passes} marine smooth"
             except Exception as exc:
                 print(f"  WARNING: real NCEP air-temperature fetch failed "
                       f"({exc!r}); falling back to zonal WOA SST target")
