@@ -159,9 +159,9 @@ experiments:
       value: null
 
 outer_loop:
-  cycle: 44
-  last_direction: "coastal SST constraint taper rejection"
-  last_reflection: "Cosine tapering reduces the restoring strength and performs worse than the hard-band diagnostic even after equal-strength compensation. Keep the hard band as the diagnostic upper bound and move to a coastal heat-budget diagnostic."
+  cycle: 45
+  last_direction: "coastal surface heat budget"
+  last_reflection: "The coastal SST restore term dominates the top-layer budget and suppresses local convection, while bulk/diffusion terms are near zero. Next test a boundary-value or lateral-transport closure, not another scalar local forcing."
 
 workspace:
   findings: "research/findings.md"

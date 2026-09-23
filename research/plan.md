@@ -118,3 +118,7 @@ Runner: `scripts/run_candidate_baseline.sh`
 21. **Run a coastal heat-budget diagnostic.** [ACTIVE 2026-09-23]
    Decompose near-wall SST evolution into advection, diffusion, surface flux, and residual bands. Use the result to identify the missing physical closure instead of adding another local scalar forcing.
 
+
+22. **Run a coastal heat-budget diagnostic.** [COMPLETE 2026-09-23]
+   The hard coastal restore supplies +0.875 K/d in the 0--3-cell near-wall band and +0.573 K/d in the 4--7-cell band, while diffusion and bulk terms are near zero. It also suppresses local convection by 1.163 K/d in the 0--3-cell band. Treat it as a boundary-value/mixed-layer control, not a missing scalar diffusion or bulk flux.
+

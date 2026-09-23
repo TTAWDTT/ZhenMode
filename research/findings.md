@@ -546,3 +546,17 @@ lambda160 + smooth80 复跑结果：global `1.294C`，NA `0.997C`，近墙 `1.01
 
 结论：cosine taper 不是更好的形状。它把总恢复强度降到约一半；即便用 	au=0.25d 近似补偿总强度，仍不如硬带，尤其 4..7 格过渡带控制不足。因此不做 365d 推进，继续保留硬带作为 diagnostic upper bound。
 
+
+## 近墙表面热收支（2026-09-23）
+
+用 30d 控制组和 	au=0.5d, cells<=7 硬带 restore 的 3D terms 做差分诊断：
+
+| 近墙 land 距离 | SST bias baseline -> restore | convection baseline -> restore | SST restore |
+|---|---:|---:|---:|
+| 0..3 格 | -1.31 -> -0.44 C | +1.398 -> +0.236 K/d | +0.875 K/d |
+| 4..7 格 | -0.96 -> -0.29 C | +0.321 -> -0.032 K/d | +0.573 K/d |
+| 8..14 格 | -0.73 -> -0.36 C | +0.377 -> +0.174 K/d | 0 |
+| >=15 格 | -0.54 -> -0.53 C | +0.431 -> +0.447 K/d | 0 |
+
+结论：顶层 horizontal diffusion、vertical diffusion 和 bulk flux 都几乎为零，而直接 SST restore 在近墙提供 +0.875 K/d（约 200 W/m2）和 +0.573 K/d（约 130 W/m2）。同时它大幅压制局地对流：0..3 格减少 1.163 K/d。因此它更像边界值约束 / 近岸混合层控制，而不是缺失的局地扩散或 bulk exchange。下一步应考虑边界值或侧向输运闭合，而不是继续加强简单的局地扩散/交换。
+
