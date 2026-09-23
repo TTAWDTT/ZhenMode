@@ -189,3 +189,7 @@ Chronological record of research decisions and actions. Append-only.
 | 153 | 2026-09-24 | reflection | Do not run a separate Redi 365d check after the GM500 rejection; the closure family is already rejected. |
 | 154 | 2026-09-24 | experiment | Added an opt-in freezing-point air-target floor and ran a 30d 0.45-degree ice-proxy probe. |
 | 155 | 2026-09-24 | analysis | The ice floor removes all sub-freezing SST cells and improves 30d global A2 from 0.9190 to 0.9041 C while leaving NA metrics neutral. |
+
+| 155 | 2026-09-24 | experiment | Ran the promoted 365d 0.45-degree ice-air-floor check. |
+| 156 | 2026-09-24 | analysis | The ice floor passes and improves global/NA A2 to 1.1126/1.0096 C, near-wall bias to -0.9121 C, and removes all sub-freezing cells. |
+| 156 | 2026-09-24 | reflection | This is the first physical annual-closure improvement; promote to reproducibility before replacing candidate_65n_045_gm0. |

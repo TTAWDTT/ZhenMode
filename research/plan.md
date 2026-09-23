@@ -195,7 +195,13 @@ Runner: `scripts/run_candidate_baseline.sh`
    this prototype. After the GM500 annual failure, do not spend a separate
    365d run on Redi.
 
-38. **Test a freezing-point sea-ice proxy.** [ACTIVE 2026-09-24]
+38. **Test a freezing-point sea-ice proxy.** [PASSED 2026-09-24]
    The 365d GM0 candidate has 3030 cells colder than `-1.8 C`. A 30d
    `--ice-air-floor` probe improves global A2 by 1.63% and removes all
    sub-freezing cells. Run the 365d stability/climate check next.
+
+
+39. **Validate the ice floor annually.** [ACTIVE 2026-09-24]
+   The 365d check improves global A2 from `1.1488` to `1.1126 C`, slightly
+   improves NA/near-wall metrics, and removes all sub-freezing cells.
+   Run one reproducibility repeat before promotion.

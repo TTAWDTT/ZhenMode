@@ -680,3 +680,10 @@ Redi500 30d 的指标几乎和 GM500 一致：global A2 `0.9132C`，NA `0.8485C`
 发现 GM0 candidate 最后有 3030 个海表点低于 `-1.8C`，而 WOA 最低约 `-1.46C`。加入 `--ice-air-floor`，把 bulk target 的冷端夹到 `-1.8C`，相当于简单 sea-ice/freezing proxy。
 
 30d A/B：global A2 `0.9190 -> 0.9041C`（-1.63%），NA/近墙几乎不变，最终没有低于冰点的点。因此推进 365d 验证。
+
+
+## 0.45 度 ice floor 365d 验证（2026-09-24）
+
+冰点强迫 proxy 的 365d 通过：global A2 `1.1488 -> 1.1126C`（-3.15%），NA `1.0105 -> 1.0096C`，近墙 bias `-0.9175 -> -0.9121C`。最终低于 `-1.8C` 的海表点从 3030 降到 0。
+
+这是目前最强的 production-like all-around improvement。正在做 365d 复跑；一致后升级为 candidate，GM0 保留 fallback。

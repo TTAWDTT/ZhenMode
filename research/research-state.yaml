@@ -172,8 +172,8 @@ experiments:
 
 outer_loop:
   cycle: 50
-  last_direction: "GM transport rejection and next boundary closure"
-  last_reflection: "GM500 passes 365d but degrades to global/NA A2 1.1718/1.1086 C and near-wall bias -0.9430 C versus GM0 1.1488/1.0105/-0.9175 C. Reject GM500, retain GM0, and move to a non-bolus boundary closure/diagnostic."
+  last_direction: "annual ice-floor validation"
+  last_reflection: "The 365d ice-air floor improves global/NA A2 to 1.1126/1.0096 C and near-wall bias to -0.9121 C versus GM0 1.1488/1.0105/-0.9175 C, while removing all sub-freezing cells. Run reproducibility before promotion."
 
 workspace:
   findings: "research/findings.md"
@@ -331,6 +331,31 @@ candidate_baseline_050:
     north_atlantic_40_60_a2_rmse_c: 1.025
     north_atlantic_raw_bias_c: -0.695
     near_wall_raw_bias_c: -0.923
+
+candidate_baseline_045_icefloor:
+  name: "res045_icefloor_365d"
+  status: pending_reproducibility
+  command: "src/run_long_integration_global.py --ice-air-floor"
+  grid: "lat_max=65, resolution=0.45 degree"
+  forcing: "seasonal 2023 NCEP wind + annual NCEP R1 2m air with -1.8 C ice floor"
+  closures:
+    lambda_bulk: 80.0
+    kappa_v: 1e-6
+    kappa_conv: 0.01
+    kappa_gm: 0.0
+    localized_convective_adjustment: true
+    fct_tvd_transport: true
+    min_depth: 500.0
+    smooth_passes: 80
+    dt: 1800.0
+    nu_h: 2000000.0
+    ice_air_floor: true
+    ice_air_floor_temp_c: -1.8
+  reference_metrics:
+    global_a2_rmse_c: 1.113
+    north_atlantic_40_60_a2_rmse_c: 1.010
+    north_atlantic_raw_bias_c: -0.688
+    near_wall_raw_bias_c: -0.912
 
 legacy_candidate_baseline_070:
   name: "candidate_65n_07_gm0"
