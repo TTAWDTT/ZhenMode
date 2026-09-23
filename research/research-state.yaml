@@ -254,3 +254,16 @@ diagnostic_candidates:
     north_atlantic_40_60_a2_rmse_c: 1.025
     north_atlantic_raw_bias_c: -0.695
     near_wall_raw_bias_c: -0.923
+  lambda80_050_restore1_compromise:
+    name: "lambda80_res050_07/global_lambda80_res050_restore1_c7_365d"
+    status: diagnostic_only
+    lambda_bulk: 80.0
+    resolution: 0.5
+    dt: 1800.0
+    nu_h: 2000000.0
+    coastal_restore_days: 1.0
+    coastal_restore_cells: 7
+    global_a2_rmse_c: 1.020
+    north_atlantic_40_60_a2_rmse_c: 0.911
+    north_atlantic_raw_bias_c: -0.520
+    near_wall_raw_bias_c: -0.508
