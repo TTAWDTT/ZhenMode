@@ -223,7 +223,14 @@ Runner: `scripts/run_candidate_baseline.sh`
    tiny global gain but worsens regional/near-wall metrics; reject it.
 
 
-43. **Next targeted coastal test.** [ACTIVE]
+43. **Next targeted coastal test.** [ACTIVE 2026-09-24]
    The unresolved boundary-current/eddy heat transport remains the main
    candidate. Test only a gentle constraint or parameterization against the
    new ice-floor baseline; do not combine it with marine-air smoothing.
+
+
+44. **Promote tau=30d coastal proxy to 365d.** [ACTIVE 2026-09-24]
+   On the ice-floor baseline, the 30d `tau=30d, cells<=7` run improves
+   global/NA A2 to `0.8962/0.8438 C` and near-wall bias to `-0.7318 C`.
+   Validate for 365d before deciding whether it can be a documented
+   diagnostic parameterization.

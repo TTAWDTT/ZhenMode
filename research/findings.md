@@ -709,3 +709,10 @@ Redi500 30d 的指标几乎和 GM500 一致：global A2 `0.9132C`，NA `0.8485C`
 | 20 | 0.9028 C | 0.8658 C | -0.7571 C | 更差，拒绝 |
 
 结论：简单的 wet-cell air smoothing 不是近岸闭合；不进入 candidate。保留 ice floor candidate。
+
+
+## 0.45 度 ice floor + 温和 coastal restore（2026-09-24）
+
+因为 0..3 格近岸仍占 global A2 SSE 47.9%，且简单扩散、GM、marine air smoothing 都失败，先做最温和的 `tau=30d, cells<=7` SST constraint。这个解释为 unresolved boundary-current/eddy heat transport proxy，不是无约束 restore。
+
+30d A/B：global A2 `0.9041 -> 0.8962C`，NA `0.8494 -> 0.8438C`，近墙 bias `-0.7426 -> -0.7318C`。全方向小幅改善，因此推进 365d。

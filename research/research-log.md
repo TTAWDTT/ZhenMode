@@ -200,3 +200,6 @@ Chronological record of research decisions and actions. Append-only.
 | 157 | 2026-09-24 | experiment | Re-scored remaining error bands for the ice-floor candidate; the 0..3-cell coastal band holds 47.9% of global A2 SSE. |
 | 158 | 2026-09-24 | experiment | Tested 30d wet-cell-only marine-air target smoothing at 5 and 20 passes. |
 | 158 | 2026-09-24 | analysis | Both make global A2 slightly better but worsen NA/near-wall metrics; reject marine-air smoothing as a coastal closure. |
+
+| 159 | 2026-09-24 | experiment | Ran a 30d tau=30d cells<=7 coastal SST constraint on top of the ice-floor candidate. |
+| 159 | 2026-09-24 | analysis | The gentle constraint improves global/NA A2 to 0.8962/0.8438 C and near-wall bias to -0.7318 C; promote to a 365d check. |
