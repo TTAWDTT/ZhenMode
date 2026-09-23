@@ -242,3 +242,15 @@ diagnostic_candidates:
     global_a2_rmse_c: 1.100
     north_atlantic_40_60_a2_rmse_c: 0.831
     near_wall_55_60_a2_rmse_c: 0.776
+  candidate_65n_05_gm0:
+    name: "candidate_65n_05_gm0/global_lambda80_res050_365d"
+    status: validated_not_locked
+    command: "scripts/run_candidate_baseline_050.sh"
+    lambda_bulk: 80.0
+    resolution: 0.5
+    dt: 1800.0
+    nu_h: 2000000.0
+    global_a2_rmse_c: 1.171
+    north_atlantic_40_60_a2_rmse_c: 1.025
+    north_atlantic_raw_bias_c: -0.695
+    near_wall_raw_bias_c: -0.923
