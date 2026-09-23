@@ -144,3 +144,7 @@ Chronological record of research decisions and actions. Append-only.
 | 131 | 2026-09-23 | analysis | The 0.65 and 0.60 degree 365d runs pass and improve global, NA, and near-wall metrics over 0.70 degree. |
 | 132 | 2026-09-23 | reflection | Promote 0.60 degree as the finest validated all-around diagnostic resolution; wait for the 0.50 degree 365d check before further promotion. |
 
+| 133 | 2026-09-23 | experiment | The 0.50-degree 365d run passed with dt=1800s and nu_h=2e6. |
+| 134 | 2026-09-23 | analysis | The 0.50-degree run improves global A2 to 1.204 C, NA to 0.914 C, and near-wall to 0.976 C over 0.70 degree. |
+| 134 | 2026-09-23 | reflection | Promote 0.50 degree as the finest validated all-around diagnostic resolution; keep the 0.70-degree lambda80 candidate as the locked production-like baseline. |
+

@@ -159,9 +159,9 @@ experiments:
       value: null
 
 outer_loop:
-  cycle: 46
-  last_direction: "stabilized finer resolution"
-  last_reflection: "dt=1800s and nu_h=2e6 stabilize 0.65/0.60/0.55/0.50-degree probes. The 0.65 and 0.60 degree 365d runs improve all-around metrics over 0.70; 0.60 is the finest validated diagnostic resolution while the 0.50 365d run is pending."
+  cycle: 47
+  last_direction: "0.50-degree validation"
+  last_reflection: "The 0.50-degree 365d run passes and improves global A2 to 1.204 C, NA to 0.914 C, and near-wall to 0.976 C. Promote 0.50 degree as the finest validated all-around diagnostic resolution while keeping the 0.70-degree lambda80 candidate as the locked production-like baseline."
 
 workspace:
   findings: "research/findings.md"

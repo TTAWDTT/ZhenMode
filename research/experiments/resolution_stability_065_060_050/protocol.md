@@ -1,6 +1,6 @@
 # Finer-Resolution Stability Protocol
 
-Status: active
+Status: complete
 Date: 2026-09-23
 Question: Does stabilizing finer horizontal resolution improve the remaining
 coastal/North Atlantic error?

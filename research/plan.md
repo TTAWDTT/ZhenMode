@@ -126,3 +126,7 @@ Runner: `scripts/run_candidate_baseline.sh`
 23. **Stabilize and test finer resolution.** [ACTIVE 2026-09-23]
    With dt=1800s and nu_h=2e6, 0.65/0.60/0.55/0.50-degree 10d and 30d probes pass. The 365d 0.65/0.60 runs improve all three climate metrics over 0.70. Promote 0.60 as the finest validated diagnostic resolution; wait for the 0.50 365d run before further promotion.
 
+
+24. **Validate the 0.50-degree diagnostic rung.** [COMPLETE 2026-09-23]
+   The 0.50-degree 365d run passes with dt=1800s and nu_h=2e6. It improves global A2 to 1.204 C, NA 40--60N to 0.914 C, and near-wall 55--60N to 0.976 C. Promote it as the finest validated all-around diagnostic resolution, not the locked production-like baseline.
+

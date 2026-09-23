@@ -1,6 +1,6 @@
 # Finer-Resolution Stability and Skill Probe
 
-Status: active
+Status: complete
 Date: 2026-09-23
 Baseline: `lambda160 + min-depth500 + smooth80` at 0.7 degree
 
@@ -23,8 +23,8 @@ advective velocity, `min_depth=500`, and `smooth_passes=80`.
 |---:|---|---|---|---|
 | 0.65 | area | PASS | PASS | PASS |
 | 0.60 | legacy | PASS | PASS | PASS |
-| 0.55 | area | PASS | PASS | pending |
-| 0.50 | legacy | PASS | PASS | running |
+| 0.55 | area | PASS | PASS | not run |
+| 0.50 | legacy | PASS | PASS | PASS |
 
 The previous 0.65/0.6/0.5 failures used the 0.7-degree time step and automatic
 viscosity scaling. The current probes show that a smaller baroclinic step plus a
@@ -47,6 +47,7 @@ modest viscosity floor is sufficient for these rungs.
 | 0.70 | 1.294 C | 0.997 C | 1.019 C |
 | 0.65 | 1.265 C | 0.952 C | 0.998 C |
 | 0.60 | 1.221 C | 0.940 C | 0.989 C |
+| 0.50 | 1.204 C | 0.914 C | 0.976 C |
 
 ## Interpretation
 
