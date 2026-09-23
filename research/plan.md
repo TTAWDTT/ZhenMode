@@ -201,7 +201,17 @@ Runner: `scripts/run_candidate_baseline.sh`
    sub-freezing cells. Run the 365d stability/climate check next.
 
 
-39. **Validate the ice floor annually.** [ACTIVE 2026-09-24]
+39. **Validate the ice floor annually.** [COMPLETE 2026-09-24]
    The 365d check improves global A2 from `1.1488` to `1.1126 C`, slightly
    improves NA/near-wall metrics, and removes all sub-freezing cells.
    Run one reproducibility repeat before promotion.
+
+
+40. **Lock the 0.45-degree ice-floor candidate.** [COMPLETE 2026-09-24]
+   The repeat reproduces global/NA A2 `1.1126/1.0096 C` and near-wall bias
+   `-0.9121 C`, with zero sub-freezing cells. Make this the production-like
+   baseline and keep the no-proxy GM0 run as fallback.
+
+41. **Re-baseline the next error diagnosis.** [ACTIVE]
+   Use `candidate_65n_045_icefloor` as the fixed reference. Re-score the
+   remaining error bands before choosing the next physical lever.

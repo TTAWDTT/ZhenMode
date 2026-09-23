@@ -193,3 +193,6 @@ Chronological record of research decisions and actions. Append-only.
 | 155 | 2026-09-24 | experiment | Ran the promoted 365d 0.45-degree ice-air-floor check. |
 | 156 | 2026-09-24 | analysis | The ice floor passes and improves global/NA A2 to 1.1126/1.0096 C, near-wall bias to -0.9121 C, and removes all sub-freezing cells. |
 | 156 | 2026-09-24 | reflection | This is the first physical annual-closure improvement; promote to reproducibility before replacing candidate_65n_045_gm0. |
+
+| 157 | 2026-09-24 | reproduction | The 365d ice-floor repeat passed in 39.7 min and reproduces global/NA A2 1.1126/1.0096 C with near-wall bias -0.9121 C. |
+| 157 | 2026-09-24 | reflection | Promote the -1.8 C ice-air floor to the production-like 0.45-degree candidate; retain the GM0 no-proxy candidate as fallback. |

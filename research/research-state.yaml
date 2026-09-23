@@ -102,7 +102,7 @@ hypotheses:
 experiments:
   proxy_metric: "Global annual A2 SST pattern RMSE (C)"
   baseline_value: 2.115
-  best_value: 1.149
+  best_value: 1.113
   total_runs: 32
   trajectory:
     - run: "lambda1 FCT/TVD baseline"
@@ -172,8 +172,8 @@ experiments:
 
 outer_loop:
   cycle: 50
-  last_direction: "annual ice-floor validation"
-  last_reflection: "The 365d ice-air floor improves global/NA A2 to 1.1126/1.0096 C and near-wall bias to -0.9121 C versus GM0 1.1488/1.0105/-0.9175 C, while removing all sub-freezing cells. Run reproducibility before promotion."
+  last_direction: "ice-floor candidate locked"
+  last_reflection: "The ice-floor repeat reproduces global/NA A2 1.1126/1.0096 C and near-wall bias -0.9121 C. Promote it to the production-like baseline; GM0 is now the no-proxy fallback. Re-baseline remaining error bands before the next closure."
 
 workspace:
   findings: "research/findings.md"
@@ -289,7 +289,7 @@ diagnostic_candidates:
     res_035: [1.114, 1.017, -0.965]
 candidate_baseline_045:
   name: "candidate_65n_045_gm0"
-  status: locked
+  status: fallback_locked
   command: "scripts/run_candidate_baseline_045.sh"
   grid: "lat_max=65, resolution=0.45 degree"
   forcing: "seasonal 2023 NCEP wind + annual NCEP R1 2m air"
@@ -334,8 +334,8 @@ candidate_baseline_050:
 
 candidate_baseline_045_icefloor:
   name: "res045_icefloor_365d"
-  status: pending_reproducibility
-  command: "src/run_long_integration_global.py --ice-air-floor"
+  status: locked
+  command: "scripts/run_candidate_baseline_045_icefloor.sh"
   grid: "lat_max=65, resolution=0.45 degree"
   forcing: "seasonal 2023 NCEP wind + annual NCEP R1 2m air with -1.8 C ice floor"
   closures:
@@ -365,6 +365,7 @@ legacy_candidate_baseline_070:
   reference_metrics:
     global_a2_rmse_c: 1.336
     north_atlantic_40_60_a2_rmse_c: 1.025
+
 
 
 
