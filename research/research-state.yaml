@@ -159,9 +159,9 @@ experiments:
       value: null
 
 outer_loop:
-  cycle: 41
-  last_direction: "coastal T restore spatial compromise"
-  last_reflection: "At tau=0.5d, cells<=7 remains the best spatial compromise over cells<=3 and cells<=5. Keep the tau=0.5d, cells<=7 diagnostic upper bound. Next design a physically defensible coastal boundary-layer or mixing closure."
+  cycle: 42
+  last_direction: "coastal vertical diffusion probe"
+  last_reflection: "Local enhanced vertical diffusion did not reproduce the coastal SST constraint gain. The best diagnostic remains tau=0.5d, cells<=7. Next consider a more explicit coastal boundary-layer scheme or a high-latitude proxy."
 
 workspace:
   findings: "research/findings.md"

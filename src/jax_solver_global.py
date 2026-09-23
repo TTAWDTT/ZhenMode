@@ -543,6 +543,11 @@ def _conv_flux_tendency(tracer, conv_mask_3d, kappa, p, iface_gate=None):
     return _iface_flux_divergence(Fz_i, p) * p.wet_mask_z
 
 
+def _effective_kappa_v(p):
+    """Return the effective vertical diffusivity including the coastal band."""
+    return p.kappa_v + p.coastal_kappa_v_2d[:, :, None]
+
+
 def _vertical_diffusion(tracer, kappa, p):
     """Vertical diffusion of one tracer.
 
@@ -626,6 +631,8 @@ FDPhysParams = namedtuple('FDPhysParams', [
     'coastal_bulk_lambda_2d',   # (nx, ny) extra W/m^2/K
     # Diagnostic coastal horizontal tracer diffusivity
     'coastal_kappa_h_2d',       # (nx, ny) extra m^2/s
+    # Diagnostic coastal vertical tracer diffusivity
+    'coastal_kappa_v_2d',       # (nx, ny) extra m^2/s
     # lateral sponge (polar-edge Rayleigh damping; absorbs the wind-driven
     # barotropic energy that Laplacian dissipation can't arrest within its
     # CFL cap, which otherwise piles up at the polar edge rows)
@@ -1216,7 +1223,7 @@ def _tracer_terms(state, p):
     adv_T = _advection_scalar(state.T, state.u, state.v, Fz, p)
     kappa_h_eff = p.kappa_h + p.coastal_kappa_h_2d[:, :, None]
     diff_h_T = kappa_h_eff * _laplacian_h(state.T, p)
-    diff_v_T = _vertical_diffusion(state.T, p.kappa_v, p)
+    diff_v_T = _vertical_diffusion(state.T, _effective_kappa_v(p), p)
 
     conv_mask_3d, unstable_iface = _convective_mask(state, p)
     conv_T = _conv_flux_tendency(state.T, conv_mask_3d, p.kappa_conv, p,
@@ -1259,8 +1266,8 @@ def _compute_tracer_tendency(state, p):
     kappa_h_eff = p.kappa_h + p.coastal_kappa_h_2d[:, :, None]
     diff_h_T = kappa_h_eff * _laplacian_h(state.T, p)
     diff_h_S = kappa_h_eff * _laplacian_h(state.S, p)
-    diff_v_T = _vertical_diffusion(state.T, p.kappa_v, p)
-    diff_v_S = _vertical_diffusion(state.S, p.kappa_v, p)
+    diff_v_T = _vertical_diffusion(state.T, _effective_kappa_v(p), p)
+    diff_v_S = _vertical_diffusion(state.S, _effective_kappa_v(p), p)
 
     # Convective adjustment: the kappa_conv CFL at dt=3600 s on the thin surface
     # layer is 1.8 >> 0.5, so the operator is subcycled conv_nsub times with
@@ -1543,8 +1550,8 @@ def _linear_half_step(state, p, dt_half):
         S = S - p.kappa_bi * _biharmonic_h(state.S, p) * dt_half
     u = u + p.nu_v * _d2_dz2(state.u, p) * dt_half
     v = v + p.nu_v * _d2_dz2(state.v, p) * dt_half
-    T = T + _vertical_diffusion(state.T, p.kappa_v, p) * dt_half
-    S = S + _vertical_diffusion(state.S, p.kappa_v, p) * dt_half
+    T = T + _vertical_diffusion(state.T, _effective_kappa_v(p), p) * dt_half
+    S = S + _vertical_diffusion(state.S, _effective_kappa_v(p), p) * dt_half
     # Mask: no diffusion updates over land or below seafloor (ghost water). Hold
     # land/ghost values at their ORIGINAL state (not zero): masking to zero
     # creates a T=0 cliff at every coastline that the (unmasked) _laplacian_h in
@@ -1604,8 +1611,8 @@ def _compute_tracer_residual(state, p):
     kappa_h_eff = p.kappa_h + p.coastal_kappa_h_2d[:, :, None]
     dTdt = dTdt - kappa_h_eff * _laplacian_h(state.T, p)
     dSdt = dSdt - kappa_h_eff * _laplacian_h(state.S, p)
-    dTdt = dTdt - _vertical_diffusion(state.T, p.kappa_v, p)
-    dSdt = dSdt - _vertical_diffusion(state.S, p.kappa_v, p)
+    dTdt = dTdt - _vertical_diffusion(state.T, _effective_kappa_v(p), p)
+    dSdt = dSdt - _vertical_diffusion(state.S, _effective_kappa_v(p), p)
     return dTdt, dSdt
 
 
@@ -1921,6 +1928,7 @@ def make_solver_global(grid, physics, dt, forcing=None,
                        coastal_restore_mask=None, coastal_restore_days=0.0,
                        coastal_bulk_mask=None, coastal_bulk_lambda=0.0,
                        coastal_kappa_h_mask=None, coastal_kappa_h=0.0,
+                       coastal_kappa_v_mask=None, coastal_kappa_v=0.0,
                        coastal_restore_T=None,
                        sponge_days=0.0, sponge_cells=0,
                        T_init=None, S_init=None,
@@ -1987,6 +1995,14 @@ def make_solver_global(grid, physics, dt, forcing=None,
     else:
         S_ref_2d = jnp.zeros((nx, ny))
         restore_coef_S = 0.0
+
+    # ── Diagnostic coastal extra vertical tracer diffusion ──
+    if coastal_kappa_v_mask is not None and coastal_kappa_v > 0.0:
+        coastal_kappa_v_2d = (
+            jnp.array(coastal_kappa_v_mask, dtype=jnp.float64)
+            * coastal_kappa_v)
+    else:
+        coastal_kappa_v_2d = jnp.zeros((nx, ny))
 
     # ── Diagnostic coastal extra horizontal tracer diffusion ──
     if coastal_kappa_h_mask is not None and coastal_kappa_h > 0.0:
@@ -2157,6 +2173,7 @@ def make_solver_global(grid, physics, dt, forcing=None,
         coastal_restore_coef_2d=coastal_restore_coef_2d,
         coastal_bulk_lambda_2d=coastal_bulk_lambda_2d,
         coastal_kappa_h_2d=coastal_kappa_h_2d,
+        coastal_kappa_v_2d=coastal_kappa_v_2d,
         coastal_restore_T_2d=coastal_restore_T_2d,
         sponge_rate=sponge_rate, sponge_rate_2d=sponge_rate_2d,
         T_clim_3d=T_clim_3d, S_clim_3d=S_clim_3d,

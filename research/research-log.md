@@ -128,3 +128,6 @@ Chronological record of research decisions and actions. Append-only.
 | 117 | 2026-09-23 | reflection | Keep tau=0.5d, cells<=7 as the diagnostic upper bound, not a production default. Next translate it into a defensible coastal boundary-layer or mixing closure. |
 | 118 | 2026-09-23 | experiment | Ran 30d coastal T restoring width probes at tau=0.5d with cells<=3, 5, and 7. |
 | 119 | 2026-09-23 | analysis | cells<=7 remains the best compromise; cells<=5 is close but leaves more error in the 4..7-cell band. |
+| 120 | 2026-09-23 | experiment | Ran 30d coastal vertical-diffusion probes with kappa_v=1e-5 and 1e-4 in the 0--7-cell band. |
+| 121 | 2026-09-23 | analysis | Both probes failed to improve the coastal band; the stronger case worsened it. |
+| 122 | 2026-09-23 | reflection | Local enhanced diffusion and bulk exchange are not the missing physical closure. Next consider a more explicit coastal boundary-layer scheme or a high-latitude proxy. |

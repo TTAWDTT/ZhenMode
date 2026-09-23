@@ -391,6 +391,11 @@ def main():
                          "the land-adjacent band; 0 = off")
     ap.add_argument("--coastal-kappa-h-cells", type=int, default=0,
                     help="width of the land-adjacent horizontal-diffusion band")
+    ap.add_argument("--coastal-kappa-v", type=float, default=0.0,
+                    help="extra vertical tracer diffusivity [m^2/s] in "
+                         "the land-adjacent band; 0 = off")
+    ap.add_argument("--coastal-kappa-v-cells", type=int, default=0,
+                    help="width of the land-adjacent vertical-diffusion band")
     ap.add_argument("--kappa-gm", type=float, default=0.0,
                     help="GM eddy diffusivity [m^2/s] (bolus transport); 0=off")
     ap.add_argument("--kappa-redi", type=float, default=0.0,
@@ -608,6 +613,29 @@ def main():
               f"cells<={args.coastal_bulk_cells}, "
               f"n={int(coastal_bulk_mask.sum())}")
 
+    coastal_kappa_v_mask = None
+    if args.coastal_kappa_v > 0.0 and args.coastal_kappa_v_cells > 0:
+        dist = np.full(ocean.shape, np.inf, dtype=np.float64)
+        dist[~ocean] = 0.0
+        q = deque((i, j) for i in range(ocean.shape[0])
+                  for j in range(ocean.shape[1]) if not ocean[i, j])
+        while q:
+            i, j = q.popleft()
+            for di in (-1, 0, 1):
+                for dj in (-1, 0, 1):
+                    if di == 0 and dj == 0:
+                        continue
+                    ni = (i + di) % ocean.shape[0]
+                    nj = j + dj
+                    if (0 <= nj < ocean.shape[1] and ocean[ni, nj]
+                            and dist[i, j] + 1.0 < dist[ni, nj]):
+                        dist[ni, nj] = dist[i, j] + 1.0
+                        q.append((ni, nj))
+        coastal_kappa_v_mask = (ocean & (dist <= float(args.coastal_kappa_v_cells)))
+        print(f"  coastal kappa_v: +{args.coastal_kappa_v:g} m^2/s, "
+              f"cells<={args.coastal_kappa_v_cells}, "
+              f"n={int(coastal_kappa_v_mask.sum())}")
+
     coastal_kappa_h_mask = None
     if args.coastal_kappa_h > 0.0 and args.coastal_kappa_h_cells > 0:
         dist = np.full(ocean.shape, np.inf, dtype=np.float64)
@@ -750,6 +778,8 @@ def main():
         coastal_bulk_lambda=args.coastal_bulk_lambda,
         coastal_kappa_h_mask=coastal_kappa_h_mask,
         coastal_kappa_h=args.coastal_kappa_h,
+        coastal_kappa_v_mask=coastal_kappa_v_mask,
+        coastal_kappa_v=args.coastal_kappa_v,
         sponge_days=args.sponge_days, sponge_cells=args.sponge_cells,
         T_init=T_init, S_init=S_init,
         polar_cap_rows=args.polar_cap_rows,
