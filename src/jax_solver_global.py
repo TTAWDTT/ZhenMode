@@ -624,6 +624,8 @@ FDPhysParams = namedtuple('FDPhysParams', [
     'coastal_restore_T_2d',     # (nx, ny) target SST climatology
     # Diagnostic coastal extra bulk heat exchange
     'coastal_bulk_lambda_2d',   # (nx, ny) extra W/m^2/K
+    # Diagnostic coastal horizontal tracer diffusivity
+    'coastal_kappa_h_2d',       # (nx, ny) extra m^2/s
     # lateral sponge (polar-edge Rayleigh damping; absorbs the wind-driven
     # barotropic energy that Laplacian dissipation can't arrest within its
     # CFL cap, which otherwise piles up at the polar edge rows)
@@ -1212,7 +1214,8 @@ def _tracer_terms(state, p):
     """
     Fz = _vertical_transport_iface(state.u, state.v, p)
     adv_T = _advection_scalar(state.T, state.u, state.v, Fz, p)
-    diff_h_T = p.kappa_h * _laplacian_h(state.T, p)
+    kappa_h_eff = p.kappa_h + p.coastal_kappa_h_2d[:, :, None]
+    diff_h_T = kappa_h_eff * _laplacian_h(state.T, p)
     diff_v_T = _vertical_diffusion(state.T, p.kappa_v, p)
 
     conv_mask_3d, unstable_iface = _convective_mask(state, p)
@@ -1253,8 +1256,9 @@ def _compute_tracer_tendency(state, p):
         adv_T = _advection_scalar(state.T, state.u, state.v, Fz, p)
         adv_S = _advection_scalar(state.S, state.u, state.v, Fz, p)
 
-    diff_h_T = p.kappa_h * _laplacian_h(state.T, p)
-    diff_h_S = p.kappa_h * _laplacian_h(state.S, p)
+    kappa_h_eff = p.kappa_h + p.coastal_kappa_h_2d[:, :, None]
+    diff_h_T = kappa_h_eff * _laplacian_h(state.T, p)
+    diff_h_S = kappa_h_eff * _laplacian_h(state.S, p)
     diff_v_T = _vertical_diffusion(state.T, p.kappa_v, p)
     diff_v_S = _vertical_diffusion(state.S, p.kappa_v, p)
 
@@ -1525,8 +1529,9 @@ def _linear_half_step(state, p, dt_half):
     else:
         u = state.u + p.nu_h * _laplacian_h(state.u, p) * dt_half
         v = state.v + p.nu_h * _laplacian_h(state.v, p) * dt_half
-    T = state.T + p.kappa_h * _laplacian_h(state.T, p) * dt_half
-    S = state.S + p.kappa_h * _laplacian_h(state.S, p) * dt_half
+    kappa_h_eff = p.kappa_h + p.coastal_kappa_h_2d[:, :, None]
+    T = state.T + kappa_h_eff * _laplacian_h(state.T, p) * dt_half
+    S = state.S + kappa_h_eff * _laplacian_h(state.S, p) * dt_half
     # Scale-selective biharmonic (nabla^4): damps grid-scale modes far more than
     # large-scale ones. Explicit forward-Euler; CFL nu_bi*dt/dx^4 < ~0.05.
     # docs/resolution_cfl_limits.md has the dx^4 auto-scaling.
@@ -1596,8 +1601,9 @@ def _compute_tracer_residual(state, p):
     cancel the L-step damping exactly (-dt/2 + dt - dt/2 = 0), a silent no-op. (D9)
     """
     dTdt, dSdt = _compute_tracer_tendency(state, p)
-    dTdt = dTdt - p.kappa_h * _laplacian_h(state.T, p)
-    dSdt = dSdt - p.kappa_h * _laplacian_h(state.S, p)
+    kappa_h_eff = p.kappa_h + p.coastal_kappa_h_2d[:, :, None]
+    dTdt = dTdt - kappa_h_eff * _laplacian_h(state.T, p)
+    dSdt = dSdt - kappa_h_eff * _laplacian_h(state.S, p)
     dTdt = dTdt - _vertical_diffusion(state.T, p.kappa_v, p)
     dSdt = dSdt - _vertical_diffusion(state.S, p.kappa_v, p)
     return dTdt, dSdt
@@ -1914,6 +1920,7 @@ def make_solver_global(grid, physics, dt, forcing=None,
                        S_ref_surf=None, sss_restore_days=0.0,
                        coastal_restore_mask=None, coastal_restore_days=0.0,
                        coastal_bulk_mask=None, coastal_bulk_lambda=0.0,
+                       coastal_kappa_h_mask=None, coastal_kappa_h=0.0,
                        coastal_restore_T=None,
                        sponge_days=0.0, sponge_cells=0,
                        T_init=None, S_init=None,
@@ -1980,6 +1987,14 @@ def make_solver_global(grid, physics, dt, forcing=None,
     else:
         S_ref_2d = jnp.zeros((nx, ny))
         restore_coef_S = 0.0
+
+    # ── Diagnostic coastal extra horizontal tracer diffusion ──
+    if coastal_kappa_h_mask is not None and coastal_kappa_h > 0.0:
+        coastal_kappa_h_2d = (
+            jnp.array(coastal_kappa_h_mask, dtype=jnp.float64)
+            * coastal_kappa_h)
+    else:
+        coastal_kappa_h_2d = jnp.zeros((nx, ny))
 
     # ── Diagnostic coastal extra bulk heat exchange ──
     # Same air-sea form as the bulk flux, but only in the land-adjacent band.
@@ -2141,6 +2156,7 @@ def make_solver_global(grid, physics, dt, forcing=None,
         S_ref_2d=S_ref_2d, restore_coef_S=restore_coef_S,
         coastal_restore_coef_2d=coastal_restore_coef_2d,
         coastal_bulk_lambda_2d=coastal_bulk_lambda_2d,
+        coastal_kappa_h_2d=coastal_kappa_h_2d,
         coastal_restore_T_2d=coastal_restore_T_2d,
         sponge_rate=sponge_rate, sponge_rate_2d=sponge_rate_2d,
         T_clim_3d=T_clim_3d, S_clim_3d=S_clim_3d,

@@ -479,3 +479,16 @@ lambda160 + smooth80 复跑结果：global `1.294C`，NA `0.997C`，近墙 `1.01
 | +80 | -0.753 C / 1.312 C | -1.262 C / 1.445 C |
 
 结论：近陆 extra bulk flux 反而让近墙更冷，说明仅靠增强局地海气交换不能解释冷偏差。保留 coastal T restoring 作为诊断分支，物理闭合需要另找。
+
+## 近陆 T restoring 带宽敏感性（2026-09-23）
+
+在 `lambda160 + min-depth500 + smooth80` 基础上，把 0..N 格近陆带做 tau=3d 的 SST restoring：
+
+| run | global A2 | NA 40..60N | 近墙 55..60N |
+|---|---:|---:|---:|
+| baseline | 1.294 C | 0.997 C | 1.019 C |
+| cells<=3 | 1.253 C | 0.978 C | 0.979 C |
+| cells<=7 | 1.229 C | 0.933 C | 0.885 C |
+| cells<=9 | 1.217 C | 0.913 C | 0.866 C |
+
+结论：0..7 格是一个较好的折中，继续扩到 0..9 改善变小且覆盖面过大。当前把 `tau=3d, cells<=7` 记录为 diagnostic candidate，但仍然不是 production default。

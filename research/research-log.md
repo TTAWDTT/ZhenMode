@@ -116,3 +116,8 @@ Chronological record of research decisions and actions. Append-only.
 | 105 | 2026-09-23 | reflection | Keep coastal restoring as a diagnostic branch, not a production default. Next translate it into a defensible coastal boundary or mixing closure. |
 | 106 | 2026-09-23 | experiment | Ran 30d coastal extra bulk-flux probes with lambda=40 and 80 in the 0--3-cell band. |
 | 107 | 2026-09-23 | analysis | Both probes worsened the near-wall 0--3-cell bias, so extra local bulk exchange is not the physical closure. |
+| 108 | 2026-09-23 | experiment | Ran 30d coastal T restoring width probes with cells<=1/3/5/7/9 at tau=3d. |
+| 109 | 2026-09-23 | analysis | The coastal-band improvement is monotonic with width, with most of the extra gain coming from the 0..7-cell coastal/transitional zone. |
+| 110 | 2026-09-23 | experiment | Ran 365d coastal T restoring with tau=3d and cells<=7 and cells<=9; both passed. |
+| 111 | 2026-09-23 | analysis | The tau=3d, cells<=7 run improves global A2 to 1.229 C, NA to 0.933 C, and near-wall to 0.885 C. |
+| 112 | 2026-09-23 | reflection | Keep tau=3d, cells<=7 as the current diagnostic candidate; cells<=9 gives a small extra gain but covers a much larger ocean fraction. |
