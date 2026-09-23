@@ -164,3 +164,6 @@ Chronological record of research decisions and actions. Append-only.
 | 142 | 2026-09-23 | analysis | The 365d tau=1d run improves global A2 to 1.020 C, North Atlantic A2 to 0.911 C, and near-wall bias to -0.508 C. |
 | 141 | 2026-09-23 | reflection | This is the best all-around diagnostic so far, but remains assimilation-like; the next step is to physicalize the coastal boundary closure. |
 
+| 143 | 2026-09-23 | experiment | Ran a 30d lambda120 probe on the stabilized 0.50-degree grid. |
+| 143 | 2026-09-23 | analysis | Lambda120 gives global A2 0.866 C, worse than lambda80 at 0.836 C; lambda80 remains the best production-like scalar choice. |
+

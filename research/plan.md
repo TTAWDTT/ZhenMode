@@ -142,3 +142,7 @@ Runner: `scripts/run_candidate_baseline.sh`
 27. **Lock the 0.50-degree candidate.** [COMPLETE 2026-09-23]
    The 0.50-degree lambda80 candidate reproduces global A2 1.171 C, NA 1.025 C, and the same raw biases. Promote it to the current production-like baseline and keep the 0.70-degree candidate as fallback.
 
+
+28. **Test lambda120 at 0.50 degree.** [COMPLETE 2026-09-23]
+   The 30d lambda120 probe gives A2 0.866 C, worse than lambda80 0.836 C. Keep lambda80 in the locked 0.50-degree candidate.
+
