@@ -27,7 +27,6 @@ import argparse
 import os
 import sys
 import time
-from collections import deque
 from dataclasses import replace
 
 try:
@@ -58,7 +57,7 @@ from forcing import (
     heat_flux_meridional,
     ocean_zonal_mean,
 )
-from grid import global_grid_dims, make_global_grid
+from grid import global_grid_dims, land_distance_from_land_mask, make_global_grid
 from jax_solver_global import JaxStateG, make_solver_global
 from wind_reanalysis import real_wind_forcing
 from woa_data import get_initial_fields
@@ -633,22 +632,7 @@ def main():
     # temperature toward WOA only in the land-adjacent band.
     coastal_bulk_mask = None
     if args.coastal_bulk_lambda > 0.0 and args.coastal_bulk_cells > 0:
-        dist = np.full(ocean.shape, np.inf, dtype=np.float64)
-        dist[~ocean] = 0.0
-        q = deque((i, j) for i in range(ocean.shape[0])
-                  for j in range(ocean.shape[1]) if not ocean[i, j])
-        while q:
-            i, j = q.popleft()
-            for di in (-1, 0, 1):
-                for dj in (-1, 0, 1):
-                    if di == 0 and dj == 0:
-                        continue
-                    ni = (i + di) % ocean.shape[0]
-                    nj = j + dj
-                    if (0 <= nj < ocean.shape[1] and ocean[ni, nj]
-                            and dist[i, j] + 1.0 < dist[ni, nj]):
-                        dist[ni, nj] = dist[i, j] + 1.0
-                        q.append((ni, nj))
+        dist = land_distance_from_land_mask(ocean, connectivity=8)
         coastal_bulk_mask = (ocean & (dist <= float(args.coastal_bulk_cells)))
         print(f"  coastal bulk flux: lambda={args.coastal_bulk_lambda:g} W/m^2/K, "
               f"cells<={args.coastal_bulk_cells}, "
@@ -656,22 +640,7 @@ def main():
 
     coastal_kappa_v_mask = None
     if args.coastal_kappa_v > 0.0 and args.coastal_kappa_v_cells > 0:
-        dist = np.full(ocean.shape, np.inf, dtype=np.float64)
-        dist[~ocean] = 0.0
-        q = deque((i, j) for i in range(ocean.shape[0])
-                  for j in range(ocean.shape[1]) if not ocean[i, j])
-        while q:
-            i, j = q.popleft()
-            for di in (-1, 0, 1):
-                for dj in (-1, 0, 1):
-                    if di == 0 and dj == 0:
-                        continue
-                    ni = (i + di) % ocean.shape[0]
-                    nj = j + dj
-                    if (0 <= nj < ocean.shape[1] and ocean[ni, nj]
-                            and dist[i, j] + 1.0 < dist[ni, nj]):
-                        dist[ni, nj] = dist[i, j] + 1.0
-                        q.append((ni, nj))
+        dist = land_distance_from_land_mask(ocean, connectivity=8)
         coastal_kappa_v_mask = (ocean & (dist <= float(args.coastal_kappa_v_cells)))
         print(f"  coastal kappa_v: +{args.coastal_kappa_v:g} m^2/s, "
               f"cells<={args.coastal_kappa_v_cells}, "
@@ -679,22 +648,7 @@ def main():
 
     coastal_kappa_h_mask = None
     if args.coastal_kappa_h > 0.0 and args.coastal_kappa_h_cells > 0:
-        dist = np.full(ocean.shape, np.inf, dtype=np.float64)
-        dist[~ocean] = 0.0
-        q = deque((i, j) for i in range(ocean.shape[0])
-                  for j in range(ocean.shape[1]) if not ocean[i, j])
-        while q:
-            i, j = q.popleft()
-            for di in (-1, 0, 1):
-                for dj in (-1, 0, 1):
-                    if di == 0 and dj == 0:
-                        continue
-                    ni = (i + di) % ocean.shape[0]
-                    nj = j + dj
-                    if (0 <= nj < ocean.shape[1] and ocean[ni, nj]
-                            and dist[i, j] + 1.0 < dist[ni, nj]):
-                        dist[ni, nj] = dist[i, j] + 1.0
-                        q.append((ni, nj))
+        dist = land_distance_from_land_mask(ocean, connectivity=8)
         coastal_kappa_h_mask = (ocean & (dist <= float(args.coastal_kappa_h_cells)))
         print(f"  coastal kappa_h: +{args.coastal_kappa_h:g} m^2/s, "
               f"cells<={args.coastal_kappa_h_cells}, "
@@ -702,22 +656,7 @@ def main():
 
     coastal_restore_mask = None
     if args.coastal_restore_days > 0.0 and args.coastal_restore_cells > 0:
-        dist = np.full(ocean.shape, np.inf, dtype=np.float64)
-        dist[~ocean] = 0.0
-        q = deque((i, j) for i in range(ocean.shape[0])
-                  for j in range(ocean.shape[1]) if not ocean[i, j])
-        while q:
-            i, j = q.popleft()
-            for di in (-1, 0, 1):
-                for dj in (-1, 0, 1):
-                    if di == 0 and dj == 0:
-                        continue
-                    ni = (i + di) % ocean.shape[0]
-                    nj = j + dj
-                    if (0 <= nj < ocean.shape[1] and ocean[ni, nj]
-                            and dist[i, j] + 1.0 < dist[ni, nj]):
-                        dist[ni, nj] = dist[i, j] + 1.0
-                        q.append((ni, nj))
+        dist = land_distance_from_land_mask(ocean, connectivity=8)
         band = (ocean & (dist <= float(args.coastal_restore_cells)))
         coastal_restore_mask = np.zeros(ocean.shape, dtype=np.float64)
         taper = args.coastal_restore_taper

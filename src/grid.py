@@ -11,6 +11,7 @@ Grid convention:
   - Vertical: z negative downward, z=0 at surface
 """
 import os
+from collections import deque
 
 import numpy as np
 
@@ -297,6 +298,41 @@ def _read_etopo_global(filepath, resolution=1.0, lat_max=85.0,
     # Transpose to (nx, ny) = (lon, lat) convention
     depth = depth.T    # (nlon, ny)
     return depth, lon_c, lat_c
+
+
+def land_distance_from_land_mask(ocean_mask, connectivity=8):
+    """Return cell distance to land for ocean cells.
+
+    Land cells are 0 and ocean starts at 1. The zonal axis is periodic; the
+    meridional axis is bounded. This shared metric supports diagnostic bands
+    and optional coastal closures.
+    """
+    if connectivity == 4:
+        neighbours = ((-1, 0), (1, 0), (0, -1), (0, 1))
+    elif connectivity == 8:
+        neighbours = ((-1, -1), (-1, 0), (-1, 1), (0, -1),
+                      (0, 1), (1, -1), (1, 0), (1, 1))
+    else:
+        raise ValueError("connectivity must be 4 or 8")
+
+    mask = np.asarray(ocean_mask, dtype=bool)
+    if mask.ndim != 2:
+        raise ValueError("ocean_mask must be a 2-D (nx, ny) array")
+    dist = np.full(mask.shape, np.inf, dtype=np.float64)
+    dist[~mask] = 0.0
+    q = deque((i, j) for i in range(mask.shape[0])
+              for j in range(mask.shape[1]) if not mask[i, j])
+    while q:
+        i, j = q.popleft()
+        for di, dj in neighbours:
+            ni, nj = (i + di) % mask.shape[0], j + dj
+            if (0 <= nj < mask.shape[1] and mask[ni, nj]
+                    and dist[i, j] + 1.0 < dist[ni, nj]):
+                dist[ni, nj] = dist[i, j] + 1.0
+                q.append((ni, nj))
+    return dist
+
+
 
 
 def make_global_grid(grid_config, bathymetry_file, smooth_passes=0,
