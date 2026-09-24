@@ -242,6 +242,12 @@ Runner: `scripts/run_candidate_baseline.sh`
    promote the best all-around strength after reproducibility.
 
 
-46. **Validate tau=10d coastal proxy.** [ACTIVE 2026-09-24]
+46. **Validate tau=10d coastal proxy.** [PASSED 2026-09-24]
    The 30d tau=10d proxy beats tau=30d: global/NA A2 `0.8827/0.8344 C`
    and near-wall bias `-0.7117 C`. Run its 365d check next.
+
+
+47. **Repeat tau=10d before validation.** [ACTIVE 2026-09-24]
+   The 365d tau=10d proxy improves global/NA A2 to `1.0597/0.9777 C` and
+   near-wall bias to `-0.8345 C`. Repeat it; then classify it as the best
+   diagnostic parameterization, not a pure dynamical production default.

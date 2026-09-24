@@ -728,3 +728,10 @@ Redi500 30d 的指标几乎和 GM500 一致：global A2 `0.9132C`，NA `0.8485C`
 ## 0.45 度 tau=10d coastal proxy（2026-09-24）
 
 tau=10d 30d 进一步改善：global A2 `0.8827C`，NA `0.8344C`，近墙 bias `-0.7117C`，优于 tau=30d 的 `0.8962/0.8438/-0.7318C`。因此推进 tau=10d 365d；这是目前测试到的更优 strength，但还需一年验证和复跑。
+
+
+## 0.45 度 tau=10d coastal proxy 365d（2026-09-24）
+
+tau=10d 一年验证通过：global A2 `1.0597C`，NA `0.9777C`，近墙 bias `-0.8345C`。相对 ice floor candidate，global A2 -4.75%，NA/近墙也更好。当前 tau=10d 是更强的 diagnostic parameterization；tau=30d 是更温和的折中。
+
+正在复跑 tau=10d。复跑一致后，把它记录为当前 best diagnostic parameterization，但不再把它说成纯动力 production default；ice floor candidate 仍是最保守 production-like baseline。
