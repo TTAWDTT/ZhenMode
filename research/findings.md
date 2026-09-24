@@ -740,3 +740,16 @@ tau=10d 一年验证通过：global A2 `1.0597C`，NA `0.9777C`，近墙 bias `-
 ## 0.45 度 tau=10d coastal proxy 复跑（2026-09-24）
 
 365d repeat 一致：global A2 `1.0598C`，NA `0.9777C`，近墙 bias `-0.8344C`。因此 tau=10d 记为当前 best validated diagnostic parameterization，不是纯动力 production default；保守 production-like baseline 仍是 ice floor candidate。
+
+
+## 0.45 度 coastal restore 强度继续括弧（2026-09-24）
+
+在 ice floor candidate 上继续 30d bracket：
+
+| tau | global A2 | NA A2 | 近墙 bias |
+|---:|---:|---:|---:|
+| 10d | 0.8827 C | 0.8344 C | -0.7117 C |
+| 3d | 0.8519 C | 0.8139 C | -0.6519 C |
+| 1d | 0.8199 C | 0.7929 C | -0.5458 C |
+
+tau=3d/1d 仍继续改善，但说明 restore 约束正在变强。已启动 tau=3d 365d 检查；tau=1d 暂不推进，避免过强数据约束。

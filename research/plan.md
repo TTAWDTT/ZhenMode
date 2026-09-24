@@ -259,7 +259,13 @@ Runner: `scripts/run_candidate_baseline.sh`
    the ice-floor candidate as the conservative production-like baseline.
 
 
-49. **Bracket tau=3d.** [ACTIVE 2026-09-24]
+49. **Bracket tau=3d.** [PROBED 2026-09-24]
    Run a 30d tau=3d probe only to see whether the diagnostic curve is near
    saturation. Do not promote a stronger restore unless the 365d check is
    clearly better and stable.
+
+
+50. **Validate tau=3d as the strong-proxy rung.** [ACTIVE 2026-09-24]
+   The 30d ladder continues improving through tau=3d (`0.8519/0.8139 C`,
+   near-wall bias `-0.6519 C`). Run tau=3d for 365d, but keep tau=1d out of
+   promotion because it is a tighter data constraint.
