@@ -735,3 +735,8 @@ tau=10d 30d 进一步改善：global A2 `0.8827C`，NA `0.8344C`，近墙 bias `
 tau=10d 一年验证通过：global A2 `1.0597C`，NA `0.9777C`，近墙 bias `-0.8345C`。相对 ice floor candidate，global A2 -4.75%，NA/近墙也更好。当前 tau=10d 是更强的 diagnostic parameterization；tau=30d 是更温和的折中。
 
 正在复跑 tau=10d。复跑一致后，把它记录为当前 best diagnostic parameterization，但不再把它说成纯动力 production default；ice floor candidate 仍是最保守 production-like baseline。
+
+
+## 0.45 度 tau=10d coastal proxy 复跑（2026-09-24）
+
+365d repeat 一致：global A2 `1.0598C`，NA `0.9777C`，近墙 bias `-0.8344C`。因此 tau=10d 记为当前 best validated diagnostic parameterization，不是纯动力 production default；保守 production-like baseline 仍是 ice floor candidate。

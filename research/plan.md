@@ -247,7 +247,19 @@ Runner: `scripts/run_candidate_baseline.sh`
    and near-wall bias `-0.7117 C`. Run its 365d check next.
 
 
-47. **Repeat tau=10d before validation.** [ACTIVE 2026-09-24]
+47. **Repeat tau=10d before validation.** [COMPLETE 2026-09-24]
    The 365d tau=10d proxy improves global/NA A2 to `1.0597/0.9777 C` and
    near-wall bias to `-0.8345 C`. Repeat it; then classify it as the best
    diagnostic parameterization, not a pure dynamical production default.
+
+
+48. **Classify tau=10d coastal proxy.** [COMPLETE 2026-09-24]
+   The repeat reproduces global/NA A2 `1.0598/0.9777 C` and near-wall bias
+   `-0.8344 C`. Record it as the validated diagnostic parameterization; keep
+   the ice-floor candidate as the conservative production-like baseline.
+
+
+49. **Bracket tau=3d.** [ACTIVE 2026-09-24]
+   Run a 30d tau=3d probe only to see whether the diagnostic curve is near
+   saturation. Do not promote a stronger restore unless the 365d check is
+   clearly better and stable.

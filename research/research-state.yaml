@@ -357,6 +357,20 @@ candidate_baseline_045_icefloor:
     north_atlantic_raw_bias_c: -0.688
     near_wall_raw_bias_c: -0.912
 
+diagnostic_parameterizations:
+  coastal_restore_tau10_icefloor:
+    name: "coastal_restore_icefloor_045/global_res045_icefloor_restore10_365d_repeat"
+    status: validated_diagnostic
+    base_candidate: "candidate_baseline_045_icefloor"
+    coastal_restore_days: 10.0
+    coastal_restore_cells: 7
+    note: "WOA coastal SST relaxation proxy for unresolved boundary-current/lateral heat transport; not a pure dynamical production default"
+    reference_metrics:
+      global_a2_rmse_c: 1.060
+      north_atlantic_40_60_a2_rmse_c: 0.978
+      north_atlantic_raw_bias_c: -0.650
+      near_wall_raw_bias_c: -0.834
+
 legacy_candidate_baseline_070:
   name: "candidate_65n_07_gm0"
   status: fallback_locked

@@ -213,3 +213,6 @@ Chronological record of research decisions and actions. Append-only.
 
 | 162 | 2026-09-24 | experiment | Ran the 365d tau=10d coastal proxy. It improves global/NA A2 to 1.0597/0.9777 C and near-wall bias to -0.8345 C. |
 | 162 | 2026-09-24 | reflection | Treat tau=10d as the best diagnostic parameterization and tau=30d as the gentler compromise; run a tau=10d repeat before recording it as validated. |
+
+| 163 | 2026-09-24 | reproduction | The tau=10d coastal proxy repeat passed and matches: global/NA A2 1.0598/0.9777 C with near-wall bias -0.8344 C. |
+| 163 | 2026-09-24 | reflection | Lock tau=10d as the validated diagnostic parameterization, not a pure dynamical production default; test tau=3d only as a bracketing probe. |
