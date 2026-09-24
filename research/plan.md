@@ -277,7 +277,15 @@ Runner: `scripts/run_candidate_baseline.sh`
    Stop here; tau=1d is a tighter data constraint and should not be promoted.
 
 
-52. **Separate diagnostics from production defaults.** [ACTIVE]
+52. **Separate diagnostics from production defaults.** [COMPLETE 2026-09-24]
    Keep the ice-floor candidate as the conservative production-like baseline.
    Record tau=3d/10d as diagnostic parameterizations. Next work should either
    physicalize the boundary transport or move to another error source.
+
+
+53. **Stop and consolidate.** [COMPLETE 2026-09-24]
+   The incremental closure, forcing, and structural-flag probes are bracketed
+   or rejected. Record the stop node in
+   `research/to_human/2026-09-24_stop_node_summary.md`. The next branch should
+   be a physical boundary-current closure, full mixed-layer/ice treatment, or a
+   new bulk-flux formulation.

@@ -501,7 +501,9 @@ def _d2_dz2_flux(tracer, kappa, p):
     kappa and any field. The node form does not telescope on a non-uniform grid, and
     vertical diffusion can only redistribute within a column. (D9)
     """
-    if kappa == 0.0:
+    # kappa may be scalar or a (nx, ny, nz) coastal-enhanced field; only the
+    # scalar-zero shortcut can be branched on at trace time.
+    if getattr(kappa, "ndim", 0) == 0 and kappa == 0.0:
         return jnp.zeros_like(tracer)
     tracer = _fill_ghost_bottom(tracer, p)
     Cm = tracer[..., :-1]

@@ -1,0 +1,43 @@
+{
+  "control": {
+    "path": "results\\ice_proxy_045\\global_res045_icefloor_30d.npz",
+    "verdict": "PASS",
+    "days_end": 30.0,
+    "global_a2_rmse": 0.9040791631116054,
+    "north_atlantic_40_60": {
+      "n": 4818,
+      "raw_bias": -0.6568339638959946,
+      "raw_rmse": 0.7324206192572889,
+      "a2_rmse": 0.8493507192678285
+    },
+    "near_wall_55_60": {
+      "n": 1251,
+      "raw_bias": -0.7425652738883233,
+      "raw_rmse": 0.7879254252569772,
+      "a2_rmse": 0.8623799750552945
+    },
+    "max_u_peak": 1.1628097295761108,
+    "max_eta_last": 1.8554292917251587
+  },
+  "lambda60": {
+    "path": "results\\lambda_icefloor_045\\global_res045_icefloor_lambda60_30d.npz",
+    "verdict": "PASS",
+    "days_end": 30.0,
+    "global_a2_rmse": 0.8865374725689629,
+    "north_atlantic_40_60": {
+      "n": 4818,
+      "raw_bias": -0.6932949786218409,
+      "raw_rmse": 0.7569255075403158,
+      "a2_rmse": 0.8624741311751389
+    },
+    "near_wall_55_60": {
+      "n": 1251,
+      "raw_bias": -0.7402408745735719,
+      "raw_rmse": 0.7744570844888009,
+      "a2_rmse": 0.8603422391502348
+    },
+    "max_u_peak": 1.1631444692611694,
+    "max_eta_last": 1.854234218597412,
+    "global_a2_change_percent": -1.9402825834707427
+  }
+}

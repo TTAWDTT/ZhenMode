@@ -171,9 +171,9 @@ experiments:
       value: null
 
 outer_loop:
-  cycle: 50
-  last_direction: "ice-floor candidate locked"
-  last_reflection: "The ice-floor repeat reproduces global/NA A2 1.1126/1.0096 C and near-wall bias -0.9121 C. Promote it to the production-like baseline; GM0 is now the no-proxy fallback. Re-baseline remaining error bands before the next closure."
+  cycle: 51
+  last_direction: "stop-node consolidation"
+  last_reflection: "The 0.45-degree ice-floor candidate is the conservative production-like baseline (global/NA A2 1.1126/1.0096 C). The tau=3d coastal proxy is the strongest validated diagnostic rung (1.0033/0.9392 C), but is not a production default. Incremental structural, forcing, and lambda probes are rejected; consolidate before opening a physical boundary-current or sea-ice branch."
 
 workspace:
   findings: "research/findings.md"

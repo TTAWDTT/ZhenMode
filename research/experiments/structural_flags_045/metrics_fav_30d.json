@@ -1,0 +1,43 @@
+{
+  "control": {
+    "path": "results\\ice_proxy_045\\global_res045_icefloor_30d.npz",
+    "verdict": "PASS",
+    "days_end": 30.0,
+    "global_a2_rmse": 0.9040791631116054,
+    "north_atlantic_40_60": {
+      "n": 4818,
+      "raw_bias": -0.6568339638959946,
+      "raw_rmse": 0.7324206192572889,
+      "a2_rmse": 0.8493507192678285
+    },
+    "near_wall_55_60": {
+      "n": 1251,
+      "raw_bias": -0.7425652738883233,
+      "raw_rmse": 0.7879254252569772,
+      "a2_rmse": 0.8623799750552945
+    },
+    "max_u_peak": 1.1628097295761108,
+    "max_eta_last": 1.8554292917251587
+  },
+  "freeze_adv_vel": {
+    "path": "results\\structural_flags_045\\global_res045_icefloor_fav_30d.npz",
+    "verdict": "PASS",
+    "days_end": 30.0,
+    "global_a2_rmse": 0.9158846880558228,
+    "north_atlantic_40_60": {
+      "n": 4818,
+      "raw_bias": -0.7042547886758446,
+      "raw_rmse": 0.7901256351616466,
+      "a2_rmse": 0.8931803069393921
+    },
+    "near_wall_55_60": {
+      "n": 1251,
+      "raw_bias": -0.7573640803916233,
+      "raw_rmse": 0.7987912065828375,
+      "a2_rmse": 0.8719809464023498
+    },
+    "max_u_peak": 1.1562411785125732,
+    "max_eta_last": 1.85464608669281,
+    "global_a2_change_percent": 1.305806551672517
+  }
+}
