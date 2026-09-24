@@ -265,7 +265,19 @@ Runner: `scripts/run_candidate_baseline.sh`
    clearly better and stable.
 
 
-50. **Validate tau=3d as the strong-proxy rung.** [ACTIVE 2026-09-24]
+50. **Validate tau=3d as the strong-proxy rung.** [COMPLETE 2026-09-24]
    The 30d ladder continues improving through tau=3d (`0.8519/0.8139 C`,
    near-wall bias `-0.6519 C`). Run tau=3d for 365d, but keep tau=1d out of
    promotion because it is a tighter data constraint.
+
+
+51. **Set the coastal-proxy diagnostic ladder.** [COMPLETE 2026-09-24]
+   tau=10d is the gentler validated compromise (`1.0598/0.9777 C`), while
+   tau=3d is the strongest validated diagnostic rung (`1.0033/0.9392 C`).
+   Stop here; tau=1d is a tighter data constraint and should not be promoted.
+
+
+52. **Separate diagnostics from production defaults.** [ACTIVE]
+   Keep the ice-floor candidate as the conservative production-like baseline.
+   Record tau=3d/10d as diagnostic parameterizations. Next work should either
+   physicalize the boundary transport or move to another error source.

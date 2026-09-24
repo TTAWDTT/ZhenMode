@@ -753,3 +753,8 @@ tau=10d 一年验证通过：global A2 `1.0597C`，NA `0.9777C`，近墙 bias `-
 | 1d | 0.8199 C | 0.7929 C | -0.5458 C |
 
 tau=3d/1d 仍继续改善，但说明 restore 约束正在变强。已启动 tau=3d 365d 检查；tau=1d 暂不推进，避免过强数据约束。
+
+
+## 0.45 度 tau=3d coastal proxy 365d（2026-09-24）
+
+tau=3d 一年验证通过：global A2 `1.0033C`，NA `0.9392C`，近墙 bias `-0.7115C`。相对 ice floor candidate，global A2 -9.82%。这是当前 strongest validated diagnostic rung；tau=10d 仍是更温和的折中，tau=1d 不推进。

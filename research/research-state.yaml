@@ -370,8 +370,22 @@ diagnostic_parameterizations:
       north_atlantic_40_60_a2_rmse_c: 0.978
       north_atlantic_raw_bias_c: -0.650
       near_wall_raw_bias_c: -0.834
+  coastal_restore_tau3_icefloor:
+    name: "coastal_restore_icefloor_045/global_res045_icefloor_restore3_365d"
+    status: validated_diagnostic_upper_bound
+    base_candidate: "candidate_baseline_045_icefloor"
+    coastal_restore_days: 3.0
+    coastal_restore_cells: 7
+    note: "strongest validated diagnostic rung; not promoted as a production default"
+    reference_metrics:
+      global_a2_rmse_c: 1.003
+      north_atlantic_40_60_a2_rmse_c: 0.939
+      north_atlantic_raw_bias_c: -0.595
+      near_wall_raw_bias_c: -0.711
 
 legacy_candidate_baseline_070:
+  name: "candidate_65n_07_gm0"
+  status: fallback_locked
   name: "candidate_65n_07_gm0"
   status: fallback_locked
   command: "scripts/run_candidate_baseline.sh"
