@@ -400,6 +400,12 @@ def main():
                          "open water below freezing")
     ap.add_argument("--ice-air-floor-temp", type=float, default=-1.8,
                     help="freezing-point floor for --ice-air-floor [C]")
+    ap.add_argument("--ice-salt-flux", type=float, default=0.0,
+                    help="minimal sea-ice brine-rejection salt flux [psu/s] "
+                         "applied where the live SST is at or below the "
+                         "freezing point; 0 = off")
+    ap.add_argument("--ice-freeze-temp", type=float, default=-1.8,
+                    help="freezing-point threshold for --ice-salt-flux [C]")
     ap.add_argument("--air-marine-smooth-passes", type=int, default=0,
                     help="number of wet-cell-only smoothing passes for the "
                          "bulk air-temperature target; 0 keeps the raw target")
@@ -811,7 +817,9 @@ def main():
         localize_conv=args.localize_conv,
         monotone_adv=args.monotone_adv,
         fct_adv=args.fct_adv,
-        mixed_layer_depth_m=args.mixed_layer_depth_m)
+        mixed_layer_depth_m=args.mixed_layer_depth_m,
+        ice_freeze_temp_c=args.ice_freeze_temp,
+        ice_salt_flux=args.ice_salt_flux)
     if seasonal:
         step, init_state_global, _, _params, terms_fn, step_dyn = _ret
     else:
@@ -1150,6 +1158,8 @@ def main():
         'monotone_adv': args.monotone_adv,
         'fct_adv': args.fct_adv,
         'mixed_layer_depth_m': args.mixed_layer_depth_m,
+        'ice_freeze_temp': args.ice_freeze_temp,
+        'ice_salt_flux': args.ice_salt_flux,
         'lambda_bulk': lambda_bulk, 'bulk_lambda_mult': args.bulk_lambda_mult,
         'real_air_temp': bool(args.real_air_temp),
         'real_air_temp_monthly': bool(args.real_air_temp_monthly),

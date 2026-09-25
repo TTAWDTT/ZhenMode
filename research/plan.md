@@ -303,10 +303,22 @@ Runner: `scripts/run_candidate_baseline.sh`
     Add unit tests before solver coupling.
 
 56. **Couple the closure into the solver.** [PROBED 2026-09-26]
-    Add an opt-in `--mixed-layer-depth` solver flag that spreads surface heat
-    flux over a well-mixed slab. Unit tests confirm the parameter reaches
-    `FDPhysParams`. Next: add sea-ice salt flux and run the 30d/365d benchmark
-    comparison.
+    Add opt-in `--mixed-layer-depth` and `--ice-salt-flux` solver flags. The
+    mixed-layer path spreads surface heat flux over a well-mixed slab; the ice
+    path adds brine-rejection salt flux only where the live SST is at or below
+    the freezing point. Unit tests cover the parameter plumbing and the
+    salt-flux tendency.
+
+57. **Run the mixed-layer/ice benchmark ladder.** [ACTIVE]
+    Compare `--mixed-layer-depth 50` and `--ice-salt-flux` against the locked
+    `candidate_65n_045_icefloor` using the standardized benchmark protocol.
+    Start with a 30d probe, then run a 365d check only if the 30d result is
+    all-around better or at least not worse.
+
+58. **Try to exceed industrial models on a defined slice.** [ACTIVE]
+    Do not try to beat mature models globally.  Choose a narrow benchmark slice,
+    fix forcing/grid/reference, and compare only on reproducible metrics such
+    as SST RMSE, coastal bias, mixed-layer diagnostics, and GPU wall time.
 
 57. **Try to exceed industrial models on a defined slice.** [ACTIVE]
     Do not try to beat mature models globally.  Choose a narrow benchmark slice,

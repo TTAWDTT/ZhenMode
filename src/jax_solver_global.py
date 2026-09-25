@@ -701,12 +701,17 @@ FDPhysParams = namedtuple('FDPhysParams', [
     # distributed over this depth instead of the surface grid-cell thickness.
     # 0/None keeps the legacy bit-exact surface-node treatment.
     'mixed_layer_depth_m',
+    # Minimal thermodynamic sea-ice closure: a constant brine-rejection salt
+    # flux (psu/s) applied only where the surface temperature is at or below
+    # the freezing point. 0 = off.
+    'ice_freeze_temp_c',
+    'ice_salt_flux',
 ])
 
 # Keyword-constructed callers that predate nu_nsub/use_scan/freeze_adv_vel/
 # conservative_kv/project_adv_vel/localize_conv/monotone_adv get the legacy
 # behavior instead of a TypeError.
-FDPhysParams.__new__.__defaults__ = (None, False, False, False, False, False, False, False, None)
+FDPhysParams.__new__.__defaults__ = (None, False, False, False, False, False, False, False, None, -1.8, 0.0)
 
 
 # ── Equation of state ─────────────────────────────────────────────────
@@ -1318,6 +1323,13 @@ def _compute_tracer_tendency(state, p):
     rest_S = (p.restore_coef_S * (p.S_ref_2d[:, :, None] - state.S[:, :, 0:1])
               * p.surface_mask)
 
+    # Minimal thermodynamic sea-ice closure: add brine-rejection salt flux
+    # where the live SST is at or below the freezing point.  This is opt-in
+    # and does not alter the heat budget until enabled.
+    ice_salt = (p.ice_salt_flux
+                * (state.T[:, :, 0:1] <= p.ice_freeze_temp_c)
+                * p.surface_mask)
+
     # Diagnostic coastal surface-temperature restoring. Same Haney form as the
     # salinity restoring, but restricted to a land-adjacent mask and used only
     # to attribute how much of the SST error is local.
@@ -1329,7 +1341,8 @@ def _compute_tracer_tendency(state, p):
 
     dTdt = (adv_T + diff_h_T + diff_v_T + heat_T + bulk_T + coastal_bulk_T
             + conv_T + gm_T + redi_T + rest_T)
-    dSdt = adv_S + diff_h_S + diff_v_S + conv_S + gm_S + redi_S + rest_S
+    dSdt = (adv_S + diff_h_S + diff_v_S + conv_S + gm_S + redi_S
+            + rest_S + ice_salt)
     # Land: tracers held (no tendency over land).
     dTdt = dTdt * p.wet_mask_z
     dSdt = dSdt * p.wet_mask_z
@@ -1936,6 +1949,7 @@ def _step_impl(state, p):
 def make_solver_global(grid, physics, dt, forcing=None,
                        T_atm=None, lambda_bulk=0.0,
                        mixed_layer_depth_m=None,
+                       ice_freeze_temp_c=-1.8, ice_salt_flux=0.0,
                        S_ref_surf=None, sss_restore_days=0.0,
                        coastal_restore_mask=None, coastal_restore_days=0.0,
                        coastal_bulk_mask=None, coastal_bulk_lambda=0.0,
@@ -2219,6 +2233,8 @@ def make_solver_global(grid, physics, dt, forcing=None,
         monotone_adv=bool(monotone_adv),
         fct_adv=bool(fct_adv),
         mixed_layer_depth_m=float(mixed_layer_depth_m or 0.0),
+        ice_freeze_temp_c=float(ice_freeze_temp_c),
+        ice_salt_flux=float(ice_salt_flux),
     )
 
     # fp32 cast: params was just built in float64 (numpy defaults); when

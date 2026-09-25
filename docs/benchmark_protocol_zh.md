@@ -106,6 +106,17 @@ pure post-hoc mask.  The first implementation should support:
    - brine-rejection salt flux;
    - ice thickness or effective ice state;
    - melt/growth feedback.
+
+   The current solver coupling has two opt-in switches:
+
+   ```text
+   --mixed-layer-depth 50.0
+   --ice-salt-flux 1e-7 --ice-freeze-temp -1.8
+   ```
+
+   `--mixed-layer-depth` spreads the surface heat flux over a well-mixed
+   slab.  `--ice-salt-flux` adds brine rejection only where the live SST is at
+   or below the freezing point.  Both are off by default.
 3. **Diagnostics**
    - mixed-layer depth
    - sea-ice extent
