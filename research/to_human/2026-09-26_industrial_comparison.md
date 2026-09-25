@@ -42,3 +42,4 @@ cannot be used to claim superiority over MOM6/NEMO/FESOM2/ICON-Ocean.
 A concrete first comparison slice is now defined at
 `research/experiments/industrial_comparison_045/slice.yaml`.  It fixes the
 inputs, duration, reference, and metrics before either model is run.
+- MOM6 setup checklist: `research/experiments/industrial_comparison_045/mom6_runbook.md`
