@@ -236,3 +236,12 @@ stability fields.  The current repeat reports:
 
 
 
+To apply the pre-registered candidate gates:
+
+```bash
+python src/benchmark_gate.py \
+  --control <control_benchmark.json> \
+  --experiment <experiment_benchmark.json> \
+  --days 365 \
+  --out <gate_result.json>
+```

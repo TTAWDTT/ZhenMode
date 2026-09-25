@@ -10,3 +10,5 @@ Status: internal ladder only; not an industrial-model ranking
 
 Do not interpret the 30d row as an annual replacement yet.  The 365d
 mixed-layer/ice check is still running.
+
+The 30d gate is recorded in `gate_30d.json` and passes.
