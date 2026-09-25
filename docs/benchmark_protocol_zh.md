@@ -164,6 +164,29 @@ A candidate is accepted only if:
 5. near-wall raw bias is not worse;
 6. the result is reproducible within numerical precision.
 
+### Standardized manifest and comparison table
+
+To keep a run reproducible and portable, write a manifest after scoring:
+
+```bash
+python src/benchmark_manifest.py \
+  --npz <run.npz> \
+  --metrics <run>_benchmark.json \
+  --commit <git-commit> \
+  --out <run>_manifest.json
+```
+
+To compare several benchmark JSON files without editing reports by hand:
+
+```bash
+python src/benchmark_table.py \
+  <benchmark-a.json> <benchmark-b.json> \
+  --label "A=<benchmark-a.json>" \
+  --label "B=<benchmark-b.json>"
+```
+
+The table currently reports verdict, duration, global A2, North Atlantic RMSE,
+near-wall RMSE, global bias, and heat/salt drift.
 ## 6. Industrial-mode comparison stance
 
 We should not claim that `ocean_solver` surpasses industrial-grade models as
@@ -208,3 +231,4 @@ stability fields.  The current repeat reports:
 - heat drift `-0.283%`
 - salt drift `-0.00036%`
 - mean MLD `31.5 m` (density-threshold definition)
+
