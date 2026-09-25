@@ -21,6 +21,10 @@ annual real air forcing, seasonal wind, ice-air floor.
 | global A1 RMSE | 0.4058 C | 0.2101 C | -48.2% |
 | global raw bias | -0.3024 C | -0.1443 C | +52.3% |
 | global raw RMSE | 0.4828 C | 0.3262 C | -32.4% |
+| NA 40--60N raw bias | -0.4926 C | -0.2948 C | +40.2% |
+| NA 40--60N raw RMSE | 0.5493 C | 0.4282 C | -22.0% |
+| near-wall 55--60N raw bias | -0.5569 C | -0.2045 C | +63.3% |
+| near-wall 55--60N raw RMSE | 0.5909 C | 0.2195 C | -62.9% |
 | heat drift | -0.1063% | -0.0441% | better |
 | salt drift | -0.000189% | -0.000183% | similar |
 | below-freezing cells | 0 | 0 | same |

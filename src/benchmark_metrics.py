@@ -66,7 +66,7 @@ def cell_area(lat: np.ndarray, lon: np.ndarray,
 def regional_masks(lat: np.ndarray, lon: np.ndarray,
                    ocean: np.ndarray) -> dict[str, np.ndarray]:
     """Pre-registered North Atlantic and near-wall masks."""
-    lat2, lon2 = np.meshgrid(np.asarray(lat), np.asarray(lon), indexing="ij")
+    lon2, lat2 = np.meshgrid(np.asarray(lon), np.asarray(lat), indexing="ij")
     return {
         "north_atlantic_40_60": ocean
         & (lon2 >= 300.0) & (lon2 < 360.0) & (lat2 >= 40.0) & (lat2 <= 60.0),
@@ -230,6 +230,8 @@ def score_npz(path: str | os.PathLike,
     }
     result.update(global_pattern_metrics(sst, reference, ocean, lat))
     result.update(regional_error_metrics(raw_error, ocean))
+    for name, mask in regional_masks(lat, lon, ocean).items():
+        result[name] = regional_error_metrics(raw_error, mask)
     result["ice"] = sea_ice_metrics(
         sst, ocean, freeze_temp=freeze_temp,
         area=cell_area(lat, lon))
