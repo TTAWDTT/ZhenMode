@@ -41,3 +41,10 @@ the next step is a same-resolution 0.5-degree control/repeat ladder.
 3. Global A2 not worse than the current internal annual control.
 4. NA 40--60N RMSE not worse.
 5. Near-wall bias not worse.
+
+## Update
+
+The first annual run used a single 365d snapshot, which made the 90d steady
+window degenerate. It is retained as a preliminary signal only. A second run
+with 10-day snapshots is running so the scorer can use the same 90d mean
+definition as the existing 0.5-degree control.
