@@ -324,5 +324,11 @@ Runner: `scripts/run_candidate_baseline.sh`
     A 1-day 1-degree smoke run with `--mixed-layer-depth 50` and
     `--ice-salt-flux 1e-7` passed the stability watchdog. The saved config
     carries both flags, and the benchmark scorer reports mean MLD `31.7 m`
-    and zero sub-freezing cells. Next: use this as the plumbing gate for a
-    30-day 0.45-degree A/B probe.
+    and zero sub-freezing cells.
+
+60. **Mixed-layer/ice 30d A/B.** [PASSED 2026-09-26]
+    Against the 30d ice-floor control, the mixed-layer/ice run improves global
+    A2 from `0.8023` to `0.7165 C` and raw global bias from `-0.3024` to
+    `-0.1443 C`. It passes the 30d stability and benchmark gates. Promote the
+    closure to the 365d A/B check, but do not promote it as production default
+    until that check repeats.
