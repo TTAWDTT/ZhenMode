@@ -31,9 +31,10 @@ mkdir -p "${OUT_DIR}" "${LOG_DIR}"
   --localize-conv --fct-adv --project-adv-vel \
   --min-depth 500 --smooth-passes 80 \
   --nu-h 2e6 --dt 1800 \
-  --days "${DAYS}" --snap-days "${DAYS}" \
+  --days "${DAYS}" --snap-days "${SNAP_DAYS:-10}" \
   --tag "${TAG}" \
   --out-dir "${OUT_DIR}" \
   --log-dir "${LOG_DIR}" \
   --mixed-layer-depth "${MIXED_LAYER_DEPTH}" \
   --ice-salt-flux "${ICE_SALT_FLUX}"
+
