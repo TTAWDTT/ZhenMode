@@ -421,6 +421,10 @@ def main():
                     default="none",
                     help="weight the coastal restoring band away from land; "
                          "none keeps the current hard mask")
+    ap.add_argument("--mixed-layer-depth", type=float, default=None,
+                    help="optional mixed-layer heat-capacity depth [m]. "
+                         "When set, the same surface heat flux is spread over "
+                         "this slab instead of the top grid-cell thickness.")
     ap.add_argument("--coastal-bulk-lambda", type=float, default=0.0,
                     help="extra bulk heat-exchange coefficient [W/m^2/K] in "
                          "the land-adjacent band; 0 = off")
@@ -806,7 +810,8 @@ def main():
         project_adv_vel=args.project_adv_vel,
         localize_conv=args.localize_conv,
         monotone_adv=args.monotone_adv,
-        fct_adv=args.fct_adv)
+        fct_adv=args.fct_adv,
+        mixed_layer_depth_m=args.mixed_layer_depth_m)
     if seasonal:
         step, init_state_global, _, _params, terms_fn, step_dyn = _ret
     else:
@@ -1144,6 +1149,7 @@ def main():
         'localize_conv': args.localize_conv,
         'monotone_adv': args.monotone_adv,
         'fct_adv': args.fct_adv,
+        'mixed_layer_depth_m': args.mixed_layer_depth_m,
         'lambda_bulk': lambda_bulk, 'bulk_lambda_mult': args.bulk_lambda_mult,
         'real_air_temp': bool(args.real_air_temp),
         'real_air_temp_monthly': bool(args.real_air_temp_monthly),

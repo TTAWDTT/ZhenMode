@@ -697,12 +697,16 @@ FDPhysParams = namedtuple('FDPhysParams', [
     # slope and chooses the state consistent with the face velocity. This is a
     # first local bounded-flux step toward a full Zalesak FCT scheme.
     'fct_adv',
+    # Optional mixed-layer heat capacity: when set, surface heat flux is
+    # distributed over this depth instead of the surface grid-cell thickness.
+    # 0/None keeps the legacy bit-exact surface-node treatment.
+    'mixed_layer_depth_m',
 ])
 
 # Keyword-constructed callers that predate nu_nsub/use_scan/freeze_adv_vel/
 # conservative_kv/project_adv_vel/localize_conv/monotone_adv get the legacy
 # behavior instead of a TypeError.
-FDPhysParams.__new__.__defaults__ = (None, False, False, False, False, False, False, False)
+FDPhysParams.__new__.__defaults__ = (None, False, False, False, False, False, False, False, None)
 
 
 # ── Equation of state ─────────────────────────────────────────────────
@@ -1293,7 +1297,12 @@ def _compute_tracer_tendency(state, p):
         conv_T = _conv_flux_tendency(state.T, conv_mask_3d, p.kappa_conv, p, iface_gate)
         conv_S = _conv_flux_tendency(state.S, conv_mask_3d, p.kappa_conv, p, iface_gate)
 
-    heat_factor = 1.0 / (RHO_0 * C_P * p.dz_surface)
+    # The default keeps the legacy bit-exact 5 m surface-node treatment.  When
+    # a mixed-layer depth is supplied, the same flux is spread over that slab,
+    # which is the minimal heat-capacity closure for a well-mixed layer.
+    mixed_depth = float(p.mixed_layer_depth_m or 0.0)
+    heat_factor = 1.0 / (RHO_0 * C_P * (mixed_depth if mixed_depth > 0.0
+                                        else float(p.dz_surface)))
     heat_T = p.Q_heat_2d[:, :, None] * heat_factor * p.surface_mask
 
     # Bulk air-sea heat flux (Haney/Barnier): genuine SST negative feedback.
@@ -1926,6 +1935,7 @@ def _step_impl(state, p):
 
 def make_solver_global(grid, physics, dt, forcing=None,
                        T_atm=None, lambda_bulk=0.0,
+                       mixed_layer_depth_m=None,
                        S_ref_surf=None, sss_restore_days=0.0,
                        coastal_restore_mask=None, coastal_restore_days=0.0,
                        coastal_bulk_mask=None, coastal_bulk_lambda=0.0,
@@ -2208,6 +2218,7 @@ def make_solver_global(grid, physics, dt, forcing=None,
         localize_conv=bool(localize_conv),
         monotone_adv=bool(monotone_adv),
         fct_adv=bool(fct_adv),
+        mixed_layer_depth_m=float(mixed_layer_depth_m or 0.0),
     )
 
     # fp32 cast: params was just built in float64 (numpy defaults); when
