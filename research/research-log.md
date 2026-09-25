@@ -227,3 +227,4 @@ Chronological record of research decisions and actions. Append-only.
 | 167 | 2026-09-26 | tooling | Added benchmark manifest generation and a reusable comparison-table CLI so internal and later external model runs share the same reproducible report format. |
 | 168 | 2026-09-26 | tooling | Added the pre-registered benchmark gate CLI and recorded the 30d mixed-layer/ice gate as PASS. |
 | 169 | 2026-09-26 | plan | Added the MOM6 direct-slice setup checklist without vendoring external source code. |
+| 170 | 2026-09-26 | ops | Found the first 0.5-degree mixed-layer/ice annual run was CPU-bound because the wrong Windows JAX environment lacked CUDA. Stopped it and restarted through the WSL GPU environment with the same 365d snapshot cadence. |
