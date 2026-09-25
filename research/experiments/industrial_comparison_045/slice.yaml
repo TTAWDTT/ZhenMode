@@ -1,0 +1,48 @@
+experiment_id: ocean_solver_vs_mom6_sst_050_365d
+question: "On one fixed ocean-only SST slice, how does ocean_solver compare with MOM6?"
+status: defined_not_run
+
+models:
+  ocean_solver:
+    role: primary_rerun
+    version: git_commit
+    resolution_deg: 0.5
+    vertical_levels: 14
+    vertical_coordinate: z
+    sea_ice: "ice-air floor plus opt-in mixed-layer/ice closure"
+  mom6:
+    role: external_rerun
+    target_version: "latest stable MOM6, exact commit recorded at run time"
+    resolution_deg: 0.5
+    vertical_coordinate: "fixed z or ALE; must be recorded"
+    sea_ice: "same ice treatment or none; do not compare with CICE unless ocean_solver uses the same gate"
+
+fixed_inputs:
+  initial_state: "WOA temperature/salinity, same masking and remap"
+  bathymetry: "ETOPO 2022, same wet-mask and minimum-depth rules"
+  wind: "seasonal NCEP wind"
+  air_temperature: "NCEP R1 2m air"
+  duration_days: 365
+  timestep_rule: "Each model may use its own stable dt; report dt and wall time separately"
+
+reference:
+  sst: "WOA annual SST on the same-grid reference field"
+
+metrics:
+  - global_a1_corr
+  - global_a2_rmse
+  - global_raw_bias
+  - global_raw_rmse
+  - north_atlantic_40_60_raw_bias
+  - north_atlantic_40_60_raw_rmse
+  - near_wall_55_60_raw_bias
+  - near_wall_55_60_raw_rmse
+  - heat_drift_fraction
+  - salt_drift_fraction
+  - stability_verdict
+  - reproducible_repeat
+
+reporting:
+  winner_table_requires: "both rerun with same inputs"
+  wall_time: "report only, not the primary climate metric"
+  public_output_or_literature: "context only, not primary comparison"

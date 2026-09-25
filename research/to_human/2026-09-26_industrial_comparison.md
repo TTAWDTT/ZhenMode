@@ -37,3 +37,8 @@ cannot be used to claim superiority over MOM6/NEMO/FESOM2/ICON-Ocean.
   data infrastructure, and decades of validation.
 - The fair near-term claim is not "we beat industrial models"; it is "we are
   competitive on one explicitly defined slice" or "we identify a specific gap."
+## Slice definition
+
+A concrete first comparison slice is now defined at
+`research/experiments/industrial_comparison_045/slice.yaml`.  It fixes the
+inputs, duration, reference, and metrics before either model is run.
