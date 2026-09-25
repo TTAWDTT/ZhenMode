@@ -196,3 +196,4 @@ stability fields.  The current repeat reports:
 - zero below-freezing surface cells
 - heat drift `-0.283%`
 - salt drift `-0.00036%`
+- mean MLD `31.5 m` (density-threshold definition)

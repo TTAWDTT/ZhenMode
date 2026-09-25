@@ -233,6 +233,19 @@ def score_npz(path: str | os.PathLike,
     result["ice"] = sea_ice_metrics(
         sst, ocean, freeze_temp=freeze_temp,
         area=cell_area(lat, lon))
+    if "S_init" in z:
+        mld = mixed_layer_depth(np.asarray(z["T_init"], dtype=float),
+                                np.asarray(z["S_init"], dtype=float),
+                                np.asarray(z["z"], dtype=float),
+                                ocean=ocean)
+        finite = np.isfinite(mld)
+        if finite.any():
+            result["mld"] = {
+                "definition": "density_threshold_0.03_kg_m3_ref10m",
+                "mean_m": float(np.mean(mld[finite])),
+                "median_m": float(np.median(mld[finite])),
+                "p90_m": float(np.percentile(mld[finite], 90)),
+            }
     return result
 
 

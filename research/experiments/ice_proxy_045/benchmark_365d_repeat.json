@@ -23,5 +23,11 @@
     "fraction": 0.0,
     "extent_m2": 0.0,
     "extent_fraction": 0.0
+  },
+  "mld": {
+    "definition": "density_threshold_0.03_kg_m3_ref10m",
+    "mean_m": 31.535973175794346,
+    "median_m": 30.0,
+    "p90_m": 50.0
   }
 }
