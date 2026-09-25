@@ -173,6 +173,8 @@ python src/benchmark_manifest.py \
   --npz <run.npz> \
   --metrics <run>_benchmark.json \
   --commit <git-commit> \
+  --model <model-name> \
+  --config-json <config.json> \
   --out <run>_manifest.json
 ```
 
@@ -231,4 +233,6 @@ stability fields.  The current repeat reports:
 - heat drift `-0.283%`
 - salt drift `-0.00036%`
 - mean MLD `31.5 m` (density-threshold definition)
+
+
 

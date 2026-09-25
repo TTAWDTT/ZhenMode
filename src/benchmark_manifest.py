@@ -27,33 +27,44 @@ def _load_config(npz_path: str | Path) -> dict:
 
 def make_manifest(npz_path: str | Path,
                   metrics_path: str | Path | None = None,
-                  commit: str | None = None) -> dict:
+                  commit: str | None = None,
+                  model: str = "ocean_solver",
+                  config_json: str | Path | None = None) -> dict:
     """Build one portable manifest for benchmark reporting."""
     npz_path = Path(npz_path)
     if metrics_path is not None:
         metrics = json.loads(Path(metrics_path).read_text(encoding="utf-8"))
     else:
         metrics = score_npz(npz_path)
+    if config_json is not None:
+        config = json.loads(Path(config_json).read_text(encoding="utf-8"))
+    else:
+        config = _load_config(npz_path)
     return {
-        "model": "ocean_solver",
+        "model": model,
         "npz": str(npz_path),
         "commit": commit,
-        "config": _load_config(npz_path),
+        "config": config,
         "metrics": metrics,
     }
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Write a reproducible ocean_solver benchmark manifest.")
+        description="Write a reproducible benchmark manifest.")
     parser.add_argument("--npz", required=True)
     parser.add_argument("--metrics", default=None,
                         help="benchmark JSON; if omitted, score the NPZ")
     parser.add_argument("--commit", default=None,
                         help="git commit used for the run")
+    parser.add_argument("--model", default="ocean_solver",
+                        help="model label for external or internal comparisons")
+    parser.add_argument("--config-json", default=None,
+                        help="JSON config for an external model")
     parser.add_argument("--out", required=True)
     args = parser.parse_args()
-    manifest = make_manifest(args.npz, args.metrics, args.commit)
+    manifest = make_manifest(args.npz, args.metrics, args.commit,
+                             model=args.model, config_json=args.config_json)
     Path(args.out).write_text(json.dumps(manifest, indent=2) + "\n")
     print(json.dumps(manifest, indent=2))
 

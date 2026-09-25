@@ -41,3 +41,16 @@ def test_make_manifest_accepts_precomputed_metrics(tmp_path):
                             encoding="utf-8")
     manifest = make_manifest(npz_path, metrics_path=metrics_path)
     assert manifest["metrics"]["days_end"] == 365.0
+
+
+def test_make_manifest_supports_external_model(tmp_path):
+    metrics_path = tmp_path / "metrics.json"
+    config_path = tmp_path / "config.json"
+    metrics_path.write_text(json.dumps({"verdict": "PASS", "days_end": 365.0}),
+                            encoding="utf-8")
+    config_path.write_text(json.dumps(
+        {"model": "MOM6", "resolution_deg": 0.5}), encoding="utf-8")
+    manifest = make_manifest("unused.npz", metrics_path=metrics_path,
+                             model="MOM6", config_json=config_path)
+    assert manifest["model"] == "MOM6"
+    assert manifest["config"]["resolution_deg"] == 0.5
