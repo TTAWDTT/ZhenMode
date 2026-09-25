@@ -1,0 +1,27 @@
+{
+  "path": "results\\ice_proxy_045\\global_res045_icefloor_365d_repeat.npz",
+  "verdict": "PASS",
+  "days_end": 365.0,
+  "steady_window_days": [
+    280.0,
+    365.0
+  ],
+  "max_u_peak": 2.364377021789551,
+  "max_eta_last": 1.733203411102295,
+  "heat_drift_percent": -0.28333701736199574,
+  "salt_drift_percent": -0.0003595730747482854,
+  "a1_corr": 0.999135403839574,
+  "a1_rmse_c": 0.7458735800727516,
+  "a2_corr": 0.9955195671375958,
+  "global_a2_rmse_c": 1.112570737767704,
+  "n": 156575,
+  "raw_bias": -0.537904548737954,
+  "raw_rmse": 0.913642930844384,
+  "ice": {
+    "freeze_temp_c": -1.8,
+    "n_cells": 0,
+    "fraction": 0.0,
+    "extent_m2": 0.0,
+    "extent_fraction": 0.0
+  }
+}

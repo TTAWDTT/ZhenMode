@@ -289,3 +289,25 @@ Runner: `scripts/run_candidate_baseline.sh`
    `research/to_human/2026-09-24_stop_node_summary.md`. The next branch should
    be a physical boundary-current closure, full mixed-layer/ice treatment, or a
    new bulk-flux formulation.
+
+
+54. **Create the standardized benchmark protocol.** [COMPLETE 2026-09-26]
+    Add `docs/benchmark_protocol_zh.md` and a reusable metric module that
+    scores the locked candidate from a saved run without rerunning analysis
+    scripts. The current 365d ice-floor repeat passes with raw global RMSE
+    `0.9136 C` and zero sub-freezing cells.
+
+55. **Add the minimal thermodynamic mixed-layer/ice closure.** [PASSED 2026-09-26]
+    Add `src/mixed_layer_ice.py` with a heat-capacity mixed layer, freezing
+    point, ice growth/melt, and a brine-rejection salt-flux sign convention.
+    Add unit tests before solver coupling.
+
+56. **Couple the closure into the solver.** [ACTIVE]
+    Promote the mixed-layer/ice closure from a tested prototype to an opt-in
+    solver path, then compare it against `candidate_65n_045_icefloor` under the
+    standardized benchmark protocol.
+
+57. **Try to exceed industrial models on a defined slice.** [ACTIVE]
+    Do not try to beat mature models globally.  Choose a narrow benchmark slice,
+    fix forcing/grid/reference, and compare only on reproducible metrics such
+    as SST RMSE, coastal bias, mixed-layer diagnostics, and GPU wall time.
