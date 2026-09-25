@@ -302,10 +302,11 @@ Runner: `scripts/run_candidate_baseline.sh`
     point, ice growth/melt, and a brine-rejection salt-flux sign convention.
     Add unit tests before solver coupling.
 
-56. **Couple the closure into the solver.** [ACTIVE]
-    Promote the mixed-layer/ice closure from a tested prototype to an opt-in
-    solver path, then compare it against `candidate_65n_045_icefloor` under the
-    standardized benchmark protocol.
+56. **Couple the closure into the solver.** [PROBED 2026-09-26]
+    Add an opt-in `--mixed-layer-depth` solver flag that spreads surface heat
+    flux over a well-mixed slab. Unit tests confirm the parameter reaches
+    `FDPhysParams`. Next: add sea-ice salt flux and run the 30d/365d benchmark
+    comparison.
 
 57. **Try to exceed industrial models on a defined slice.** [ACTIVE]
     Do not try to beat mature models globally.  Choose a narrow benchmark slice,
