@@ -231,3 +231,4 @@ Chronological record of research decisions and actions. Append-only.
 | 171 | 2026-09-26 | protocol | Pre-registered the 0.5-degree annual mixed-layer/ice check with explicit gates and control files. |
 | 172 | 2026-09-26 | analysis | The first 0.5-degree annual closure run had only a final snapshot, making the steady-window scoring degenerate. It failed the global/NA gates, so a 10-day-snapshot rerun is now running for a fair comparison. |
 | 173 | 2026-09-26 | experiment | The 10-day-snapshot 0.5-degree mixed-layer/ice annual run improved near-wall bias but failed the global and North Atlantic gates. Rejected as a production candidate; launched the same-resolution ice-floor control. |
+| 174 | 2026-09-26 | audit | Audited the MLD diagnostic: without 3D snapshots it is computed from the initial T/S state. Marked it as such in the scorer so it cannot be used as a post-integration climate metric. |

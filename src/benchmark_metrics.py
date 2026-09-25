@@ -243,7 +243,7 @@ def score_npz(path: str | os.PathLike,
         finite = np.isfinite(mld)
         if finite.any():
             result["mld"] = {
-                "definition": "density_threshold_0.03_kg_m3_ref10m",
+                "definition": "density_threshold_0.03_kg_m3_ref10m", "source": "initial_T_S",
                 "mean_m": float(np.mean(mld[finite])),
                 "median_m": float(np.median(mld[finite])),
                 "p90_m": float(np.percentile(mld[finite], 90)),
@@ -294,3 +294,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+

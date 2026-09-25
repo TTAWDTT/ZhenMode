@@ -245,3 +245,10 @@ python src/benchmark_gate.py \
   --days 365 \
   --out <gate_result.json>
 ```
+
+### MLD caveat
+
+When a run does not save 3D T/S snapshots, the scorer computes MLD from the
+initial T/S state and labels it `source=initial_T_S`.  Such an MLD number is a
+sanity check, not a post-integration climate metric, and must not be used to
+promote a closure.
