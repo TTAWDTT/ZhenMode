@@ -817,7 +817,7 @@ def main():
         localize_conv=args.localize_conv,
         monotone_adv=args.monotone_adv,
         fct_adv=args.fct_adv,
-        mixed_layer_depth_m=args.mixed_layer_depth_m,
+        mixed_layer_depth_m=args.mixed_layer_depth,
         ice_freeze_temp_c=args.ice_freeze_temp,
         ice_salt_flux=args.ice_salt_flux)
     if seasonal:
@@ -1157,7 +1157,7 @@ def main():
         'localize_conv': args.localize_conv,
         'monotone_adv': args.monotone_adv,
         'fct_adv': args.fct_adv,
-        'mixed_layer_depth_m': args.mixed_layer_depth_m,
+        'mixed_layer_depth_m': args.mixed_layer_depth,
         'ice_freeze_temp': args.ice_freeze_temp,
         'ice_salt_flux': args.ice_salt_flux,
         'lambda_bulk': lambda_bulk, 'bulk_lambda_mult': args.bulk_lambda_mult,

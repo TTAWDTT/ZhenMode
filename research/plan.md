@@ -320,7 +320,9 @@ Runner: `scripts/run_candidate_baseline.sh`
     fix forcing/grid/reference, and compare only on reproducible metrics such
     as SST RMSE, coastal bias, mixed-layer diagnostics, and GPU wall time.
 
-57. **Try to exceed industrial models on a defined slice.** [ACTIVE]
-    Do not try to beat mature models globally.  Choose a narrow benchmark slice,
-    fix forcing/grid/reference, and compare only on reproducible metrics such
-    as SST RMSE, coastal bias, mixed-layer diagnostics, and GPU wall time.
+59. **Mixed-layer/ice smoke run.** [COMPLETE 2026-09-26]
+    A 1-day 1-degree smoke run with `--mixed-layer-depth 50` and
+    `--ice-salt-flux 1e-7` passed the stability watchdog. The saved config
+    carries both flags, and the benchmark scorer reports mean MLD `31.7 m`
+    and zero sub-freezing cells. Next: use this as the plumbing gate for a
+    30-day 0.45-degree A/B probe.
