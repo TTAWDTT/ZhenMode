@@ -1,0 +1,43 @@
+{
+  "path": "results\\candidate_65n_05_gm0\\global_candidate_65n_05_gm0_repeat.npz",
+  "verdict": "PASS",
+  "days_end": 365.0,
+  "steady_window_days": [
+    280.0,
+    365.0
+  ],
+  "max_u_peak": 2.404019355773926,
+  "max_eta_last": 1.853595495223999,
+  "heat_drift_percent": -0.39109484836628206,
+  "salt_drift_percent": -0.00047724818283857056,
+  "a1_corr": 0.9989273143678273,
+  "a1_rmse_c": 0.8070258022005784,
+  "a2_corr": 0.994986076227609,
+  "global_a2_rmse_c": 1.1708494891701724,
+  "n": 127082,
+  "raw_bias": -0.6053756033669249,
+  "raw_rmse": 0.9725018682923874,
+  "north_atlantic_40_60": {
+    "n": 3958,
+    "raw_bias": -0.6948221136303045,
+    "raw_rmse": 0.9237935758770581
+  },
+  "near_wall_55_60": {
+    "n": 1026,
+    "raw_bias": -0.9229321180699397,
+    "raw_rmse": 1.0855182652879438
+  },
+  "ice": {
+    "freeze_temp_c": -1.8,
+    "n_cells": 2864,
+    "fraction": 0.02253662989251035,
+    "extent_m2": 609926.5363603154,
+    "extent_fraction": 0.012240705874127483
+  },
+  "mld": {
+    "definition": "density_threshold_0.03_kg_m3_ref10m",
+    "mean_m": 31.535307911427267,
+    "median_m": 30.0,
+    "p90_m": 50.0
+  }
+}
