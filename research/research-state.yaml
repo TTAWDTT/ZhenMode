@@ -404,3 +404,21 @@ external_comparison:
   protocol: "research/experiments/industrial_comparison_045/protocol.md"
   targets: "research/experiments/industrial_comparison_045/targets.md"
   rule: "Do not compare with industrial models as numbers until grid, bathymetry, initial state, forcing, duration, diagnostics, and reproducibility are matched."
+
+benchmark_tooling:
+  status: active
+  scorer: "src/benchmark_metrics.py"
+  manifest: "src/benchmark_manifest.py"
+  comparison_table: "src/benchmark_table.py"
+  gate: "src/benchmark_gate.py"
+  docs: "docs/benchmark_protocol_zh.md"
+  note: "Manifest and gate are model-agnostic enough to score an external rerun once its SST output is remapped to the shared grid."
+
+mixed_layer_ice_050_annual:
+  status: running
+  runner: "scripts/run_mixed_layer_ice_050.sh"
+  protocol: "research/experiments/mixed_layer_ice_050/protocol.md"
+  output: "results/mixed_layer_ice_050/global_mixed_layer_ice_050_365d.npz"
+  expected_days: 365
+  control: "research/experiments/ice_proxy_045/benchmark_365d_repeat.json"
+  gate: "src/benchmark_gate.py"
