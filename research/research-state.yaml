@@ -397,3 +397,10 @@ legacy_candidate_baseline_070:
 
 
 
+external_comparison:
+  status: active
+  current_level: tier_2_protocol_alignment
+  primary_external_target: MOM6
+  protocol: "research/experiments/industrial_comparison_045/protocol.md"
+  targets: "research/experiments/industrial_comparison_045/targets.md"
+  rule: "Do not compare with industrial models as numbers until grid, bathymetry, initial state, forcing, duration, diagnostics, and reproducibility are matched."

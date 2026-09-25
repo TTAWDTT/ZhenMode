@@ -1,12 +1,23 @@
 # Current Research Plan
 
-Updated: 2026-09-22
+Updated: 2026-09-26
 
-Locked diagnostic baseline: `candidate_65n_07_gm0`
-Runner: `scripts/run_candidate_baseline.sh`
+## Active priority: external industrial comparison
+
+The current annual candidate is not directly comparable with mature ocean
+models. The next major step is a same-protocol slice against one mature model,
+preferably MOM6, using the same initial/reference field, forcing, bathymetry,
+duration, diagnostics, and stability gates. Details:
+
+- `research/experiments/industrial_comparison_045/protocol.md`
+- `research/literature/external_model_targets.md`
+
+## Historical ordered steps
+
+Locked diagnostic baseline: candidate_65n_07_gm0
+Runner: scripts/run_candidate_baseline.sh
 
 ## Ordered next steps
-
 1. **Reproduce the candidate baseline.** [COMPLETE 2026-09-22]
    Run one 365d integration with `candidate_65n_07_gm0`.
    Confirm global A2 RMSE is near the previous `1.336 C` and the North
@@ -332,3 +343,5 @@ Runner: `scripts/run_candidate_baseline.sh`
     `-0.1443 C`. It passes the 30d stability and benchmark gates. Promote the
     closure to the 365d A/B check, but do not promote it as production default
     until that check repeats.
+
+
