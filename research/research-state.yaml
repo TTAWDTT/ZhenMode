@@ -399,10 +399,20 @@ legacy_candidate_baseline_070:
 
 external_comparison:
   status: active
-  current_level: stage_i_closed_loop_complete_stage_f_prepared
+  current_level: stage_f_internal_probe_external_running
   primary_external_target: MOM6
   protocol: "research/experiments/industrial_comparison_045/protocol_v2.md"
-  next_stage: "Stage F 30d sensible-heat proxy; then annual bulk forcing"
+  gap_matrix: "research/experiments/industrial_comparison_045/industrial_gap_matrix.md"
+  next_stage: "Score MOM6 Stage-F 30d; then annual matched bulk forcing"
+  stage_f_30d_internal:
+    status: completed_not_climate_benchmark
+    benchmark: "research/experiments/industrial_comparison_045/ocean_solver_stage_f_30d_benchmark.json"
+    manifest: "research/experiments/industrial_comparison_045/stage_f_30d_manifest.json"
+    metrics:
+      global_a2_rmse_c: 1.6915
+      north_atlantic_40_60_raw_rmse_c: 2.0879
+      near_wall_55_60_raw_bias_c: -1.8720
+    interpretation: "No-ice bulk proxy is worse than Stage-I dynamic ice/mixed-layer; dynamic closure improves the matched 30d probe."
   stage_f_tooling:
     air_temp_exporter: "src/export_mom6_air_temp_forcing.py"
     sensible_heat_proxy: "src/export_mom6_sensible_forcing.py"
