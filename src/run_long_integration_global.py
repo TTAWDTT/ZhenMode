@@ -834,6 +834,8 @@ def main():
     if args.sensible_heat_proxy:
         if not args.real_air_temp_monthly:
             raise ValueError("--sensible-heat-proxy requires --real-air-temp-monthly")
+        if not seasonal:
+            raise ValueError("--sensible-heat-proxy requires --seasonal-wind")
         if T_atm_months is None:
             raise ValueError("--sensible-heat-proxy could not load monthly air")
         if lambda_bulk <= 0.0:
