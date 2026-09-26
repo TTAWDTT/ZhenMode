@@ -335,3 +335,4 @@ Chronological record of research decisions and actions. Append-only.
 | 230 | 2026-09-27 | ops | The annual ocean_solver 3D control died after ~90d during snapshot I/O. It was relaunched with 30-day 3D snapshots to reduce I/O/memory pressure. |
 
 | 231 | 2026-09-27 | experiment | Completed the 365d ocean_solver Stage-F 3D snapshot control. Final-90d global 3D RMSE is 1.547 C, North Atlantic 3D RMSE is 1.276 C, and surface A2 is 1.204 C; stability PASS. |
+| 233 | 2026-09-27 | ops | Isolated the first MOM6 365d startup failure by launching an annual run with the validated 30d configuration plus 365-day segment length. It passes startup and continues as the v2 annual dynamic-bulk comparison. |
