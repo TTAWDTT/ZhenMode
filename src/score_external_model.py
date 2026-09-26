@@ -15,12 +15,24 @@ import numpy as np
 from benchmark_metrics import score_snapshot
 
 
-def _read_1d(ds: netCDF4.Dataset, name: str | None, fallback: np.ndarray | None = None,
-             default_name: str | None = None) -> np.ndarray:
+def _read_centers(ds: netCDF4.Dataset, name: str | None,
+                  reference_centers: np.ndarray,
+                  default_name: str | None = None) -> np.ndarray:
+    """Read 1D or MOM6-style 2D center coordinates and validate against the reference."""
     name = name or default_name
     if not name:
         raise ValueError("latitude/longitude variable is required unless the input has standard 1D lat/lon")
-    return np.asarray(ds[name][:], dtype=float)
+    values = np.asarray(ds[name][:], dtype=float)
+    if values.ndim == 1:
+        centers = values
+    elif values.ndim == 2 and values.shape[0] == reference_centers.size:
+        # MOM6 ocean_geometry.nc stores geolat/geolon on the cell-center tile. The
+        # shared structured slice has latitude varying along rows and longitude
+        # varying along columns, so take those vectors for validation.
+        centers = values[:, 0] if name in {"lat", "geolat", "latitude"} else values[0, :]
+    else:
+        centers = values
+    return centers
 
 
 def _steady_mask(days: np.ndarray, steady_days: float) -> np.ndarray:
@@ -55,8 +67,8 @@ def score_external_field(path: str | Path, *, variable: str,
     ds = netCDF4.Dataset(path)
     geometry = netCDF4.Dataset(geometry) if geometry is not None else ds
 
-    lat = _read_1d(geometry, lat_var, ref_lat, "lat")
-    lon = _read_1d(geometry, lon_var, ref_lon, "lon")
+    lat = _read_centers(geometry, lat_var, ref_lat, "lat")
+    lon = _read_centers(geometry, lon_var, ref_lon, "lon")
     if lat.shape != ref_lat.shape or lon.shape != ref_lon.shape:
         raise RuntimeError(f"coordinate mismatch: external {lat.shape}, reference {ref_lat.shape}")
     if not np.allclose(ref_lat, lat, atol=1e-6) or not np.allclose(ref_lon, lon, atol=1e-6):

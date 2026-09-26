@@ -68,3 +68,32 @@ def test_score_external_field_rejects_coordinate_mismatch(tmp_path):
 
 
 
+
+
+def test_score_external_field_accepts_mom6_2d_centers(tmp_path):
+    ref_path = tmp_path / "reference.npz"
+    model_path = tmp_path / "mom6.nc"
+    _write_reference(ref_path)
+    # MOM6 stores a structured tile with lat varying down rows and lon across columns.
+    with netCDF4.Dataset(model_path, "w") as ds:
+        ds.createDimension("time", 1)
+        ds.createDimension("zl", 1)
+        ds.createDimension("yh", 3)
+        ds.createDimension("xh", 3)
+        ds.createVariable("time", "f8", ("time",))
+        ds.createVariable("temp", "f8", ("time", "yh", "xh"))
+        ds.createVariable("geolat", "f8", ("yh", "xh"))
+        ds.createVariable("geolon", "f8", ("yh", "xh"))
+        ds.createVariable("wet", "i1", ("yh", "xh"))
+        ds["time"][:] = 30.0
+        ds["temp"][:] = np.array([[[18.0, 20.0, 22.0],
+                                    [21.0, 999.0, 23.0],
+                                    [23.0, 25.0, 999.0]]], dtype=float)
+        ds["geolat"][:] = np.array([[30.0] * 3, [45.0] * 3, [55.0] * 3], dtype=float)
+        ds["geolon"][:] = np.array([[300.0, 320.0, 0.0]] * 3, dtype=float)
+        ds["wet"][:] = np.array([[1, 1, 1], [1, 0, 1], [1, 1, 0]], dtype=np.int8)
+    result = score_external_field(model_path, variable="temp", reference_path=ref_path,
+                                  geometry=model_path, lat_var="geolat", lon_var="geolon",
+                                  wet_var="wet", level=0)
+    assert result["verdict"] == "PASS"
+    assert result["n_scored"] == 7

@@ -300,3 +300,6 @@ Chronological record of research decisions and actions. Append-only.
 
 | 214 | 2026-09-26 | experiment | The exact Stage-F prescribed sensible proxy ran 30d but failed drift: max|T| 51.4 C, global A2 5.63 C, NA RMSE 2.98 C. It is therefore not a valid climate comparison until the same prescribed flux is checked in MOM6. |
 
+
+| 215 | 2026-09-26 | external | Configured a MOM6 exact Stage-F dynamic bulk slice by restoring toward live monthly 2m air with FLUXCONST_T=1.701 m/day (80 W/m2/K at rho=1035, Cp=3925) and FLUXCONST_S=0. The 1d local-filesystem smoke passed in 210 s; the 30d run is launched. |
+| 216 | 2026-09-26 | audit | The earlier MOM6 Stage-F prescribed-proxy run reached day 30 with a stable logged mean temperature, but its final spatial/restart NetCDF write failed because the C: filesystem was full. It therefore has no valid spatial benchmark and is recorded only as a stability warning. |

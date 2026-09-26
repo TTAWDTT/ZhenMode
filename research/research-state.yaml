@@ -630,3 +630,21 @@ wind_only_050:
     mpi_ranks: 4
     verdict: PASS
   comparability: "wind-forced dynamic control only; not a climate benchmark"
+
+mom6_stage_f_dynamic_050:
+  status: exact_dynamic_bulk_30d_running
+  run_dir: "/root/external_models/mom6_slice_050/p0_stage_f_dynamic_30d"
+  implementation: "RESTOREBUOY target=NCEP 2m air, FLUXCONST_T=1.7010 m/day, FLUXCONST_S=0, rho=1035, C_p=3925"
+  matched_inputs:
+    grid: "720x260, lat -65..65, lon 0..360"
+    bathymetry: "shared ETOPO-derived topog_050.nc"
+    initial_state: "shared WOA woa_ts_050.nc"
+    wind: "2023 monthly NCEP stress"
+    heat_flux: "q=80*(2m air-live SST) W/m2/K"
+    salt_flux: "none"
+  smoke:
+    days: 1
+    ranks: 4
+    wall_seconds: 210.4
+    verdict: "PASS"
+  previous_proxy_note: "MOM6 prescribed proxy reached day 30 with stable logged mean temperature but no spatial score because /mnt/c ran out of space."
