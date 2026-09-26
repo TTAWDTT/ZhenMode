@@ -27,3 +27,19 @@ just surface forcing.
 Source:
 - 30d: `ocean_solver_stage_f_30d_3d_benchmark.json`
 - 365d: `ocean_solver_stage_f_365d_3d_benchmark.json`
+
+## Latitude-band decomposition (final-90d annual 3D)
+
+| band | RMSE | bias |
+|---|---:|---:|
+| 60--40S | 0.919 C | -0.296 C |
+| 40--20S | 1.743 C | -1.146 C |
+| 20--0S | 1.633 C | -0.625 C |
+| 0--20N | 1.680 C | -0.475 C |
+| 20--40N | 1.978 C | -1.230 C |
+| 40--60N | 1.370 C | -0.170 C |
+
+The largest annual 3D errors are in the southern subtropics and northern
+subtropics/extratropics, not only the high-latitude wall. This reinforces the
+upper-ocean/ventilation interpretation and argues against a high-latitude-only
+closure.
