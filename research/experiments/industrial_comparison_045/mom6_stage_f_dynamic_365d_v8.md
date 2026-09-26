@@ -1,7 +1,7 @@
-# MOM6 Stage-F exact dynamic-bulk 365d v7
+# MOM6 Stage-F exact dynamic-bulk 365d v8
 
 Date: 2026-09-27  
-Run directory: `/root/external_models/mom6_slice_050/p0_stage_f_dynamic_365d_v7`  
+Run directory: `/root/external_models/mom6_slice_050/p0_stage_f_dynamic_365d_v8`  
 Status: running on local Linux storage via `tmux`.
 
 ## Contract
@@ -22,9 +22,9 @@ When complete, score the final 90d window with:
 
 ```bash
 python src/score_external_3d.py \
-  --input /root/external_models/mom6_slice_050/p0_stage_f_dynamic_365d_v7/prog.nc \
+  --input /root/external_models/mom6_slice_050/p0_stage_f_dynamic_365d_v8/prog.nc \
   --variable temp \
-  --geometry /root/external_models/mom6_slice_050/p0_stage_f_dynamic_365d_v7/ocean_geometry.nc \
+  --geometry /root/external_models/mom6_slice_050/p0_stage_f_dynamic_365d_v8/ocean_geometry.nc \
   --wet-var wet \
   --lat-var lath \
   --lon-var lonh \
@@ -33,3 +33,4 @@ python src/score_external_3d.py \
   --steady-days 90 \
   --out research/experiments/industrial_comparison_045/mom6_stage_f_dynamic_365d_3d_benchmark.json
 ```
+

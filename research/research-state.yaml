@@ -770,11 +770,11 @@ ocean_solver_stage_f_365d_3d:
     global_a2_rmse_c: 1.2042
     heat_drift_percent: -0.9620
   interpretation: "Annual Stage-F 3D control is stable; it gives the ocean_solver side for the eventual matched MOM6 annual 3D comparison."
-mom6_stage_f_dynamic_365d_v7:
+mom6_stage_f_dynamic_365d_v8:
   status: running_local
   days: 365
   ranks: 4
-  run_dir: "/root/external_models/mom6_slice_050/p0_stage_f_dynamic_365d_v7"
+  run_dir: "/root/external_models/mom6_slice_050/p0_stage_f_dynamic_365d_v8"
   config_note: "annual segment from the successful 30d exact dynamic-bulk configuration; daily diagnostics; scientific Stage-F contract unchanged"
   ocean_solver_reference_3d:
     benchmark: "research/experiments/industrial_comparison_045/ocean_solver_stage_f_365d_3d_benchmark.json"
@@ -799,3 +799,4 @@ ocean_solver_stage_f_strat_mld_365d:
     ice_cells: 64
     max_ice_thickness_m: 3.7100
   interpretation: "Improves near-wall bias but loses to the annual Stage-F no-ice control on global and North Atlantic RMSE; do not promote."
+
