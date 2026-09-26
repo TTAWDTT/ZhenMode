@@ -349,3 +349,7 @@ Chronological record of research decisions and actions. Append-only.
 | 242 | 2026-09-27 | experiment | The 365d northern-only stratification-MLD run with dynamic ice also failed the annual gate, producing 5787 explicit-ice cells and a 11.03 m maximum thickness. It is retained only as a negative diagnostic. |
 | 243 | 2026-09-27 | experiment | The 365d Stage-F dynamic-ice/no-MLD ablation passed stability and improved global A2 to 1.213 C versus the no-ice control 1.297 C, but North Atlantic RMSE worsened to 0.983 C and near-wall RMSE to 1.095 C. It also produced 5918 explicit-ice cells and 11.03 m maximum thickness. Not promoted. |
 | 244 | 2026-09-27 | audit | Corrected the prior 40--60N probe label: the run used a fixed 100m mixed layer in the band, not the stratification-derived MLD mode. It improved NA/near-wall to 0.848/0.533 C but global A2 remained 1.562 C; the mislabeled annual launch was stopped before scoring.
+
+| 245 | 2026-09-27 | experiment | The corrected 30d Stage-F 40--60N stratification-MLD probe passed stability but scored global A2 1.600 C, NA RMSE 1.246 C, and near-wall RMSE 0.969 C, worse than the fixed 100m 40--60N probe. The next annual gate is the fixed-depth variant. |
+
+| 246 | 2026-09-27 | experiment | Launched the 365d Stage-F fixed 100m 40--60N no-ice probe because it beat both the Stage-F no-ice control and the stratification-derived 40--60N probe on the 30d regional gate. |

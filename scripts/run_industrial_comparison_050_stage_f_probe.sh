@@ -36,7 +36,8 @@ fi
 if [[ -n "${MIXED_LAYER_LAT_BAND}" ]]; then
   read -r ML_LAT_MIN ML_LAT_MAX <<< "${MIXED_LAYER_LAT_BAND}"
   MIXED_LAYER_ARGS+=(--mixed-layer-lat-band "${ML_LAT_MIN}" "${ML_LAT_MAX}")
-elif [[ "${MIXED_LAYER_MODE}" == "stratification" ]]; then
+fi
+if [[ "${MIXED_LAYER_MODE}" == "stratification" ]]; then
   MIXED_LAYER_ARGS+=(
     --mixed-layer-mode stratification
     --mld-density-delta "${MLD_DENSITY_DELTA:-0.03}"
