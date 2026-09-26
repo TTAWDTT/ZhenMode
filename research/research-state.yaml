@@ -702,3 +702,14 @@ ocean_solver_stage_f_365d:
     heat_drift_percent: -0.9620
     salt_drift_percent: -0.000621
   interpretation: "Annual monthly-air dynamic-bulk no-ice improves NA/near-wall skill but degrades global A2 and heat drift versus the 0.50 icefloor baseline; do not promote."
+
+stage_f_30d_3d:
+  status: diagnostic_comparison
+  mom6_3d_benchmark: "research/experiments/industrial_comparison_045/mom6_stage_f_dynamic_30d_3d_benchmark.json"
+  ocean_solver_3d_benchmark: "research/experiments/industrial_comparison_045/ocean_solver_stage_f_30d_3d_benchmark.json"
+  metrics:
+    mom6_global_3d_raw_rmse_c: 1.1290
+    ocean_solver_global_3d_raw_rmse_c: 2.8420
+    mom6_surface_raw_rmse_c: 1.8840
+    ocean_solver_surface_raw_rmse_c: 1.7030
+  interpretation: "The first 3D diagnostic shows ocean_solver has better surface SST but a large deep-ocean warm bias; this is the next physics target after annual bulk comparison."

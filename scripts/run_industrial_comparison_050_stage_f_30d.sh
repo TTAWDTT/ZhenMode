@@ -6,6 +6,8 @@ cd "$(dirname "$0")/.."
 
 DAYS="${DAYS:-30}"
 LAMBDA="${LAMBDA:-80}"
+SAVE_3D="${SAVE_3D:-false}"
+SAVE_3D_TERMS="${SAVE_3D_TERMS:-false}"
 TAG="${1:-industrial_comparison_050_stage_f_${DAYS}d}"
 OUT_DIR="${OUT_DIR:-results/industrial_comparison_045}"
 LOG_DIR="${LOG_DIR:-logs/industrial_comparison_045}"
@@ -32,6 +34,8 @@ mkdir -p "${OUT_DIR}" "${LOG_DIR}"
   --min-depth 500 --smooth-passes 80 \
   --nu-h 2e6 --dt 1800 \
   --days "${DAYS}" --snap-days "${SNAP_DAYS:-10}" \
+  $( [[ "${SAVE_3D}" == "true" ]] && echo --save-3d ) \
+  $( [[ "${SAVE_3D_TERMS}" == "true" ]] && echo --save-3d-terms ) \
   --tag "${TAG}" \
   --out-dir "${OUT_DIR}" \
   --log-dir "${LOG_DIR}"
