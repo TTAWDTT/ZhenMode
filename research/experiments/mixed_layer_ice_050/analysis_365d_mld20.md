@@ -31,3 +31,22 @@ and North Atlantic RMSE.  It is not a production candidate.
 2. Do not scan mixed-layer depth as a pure tuning knob.
 3. Next useful step is to diagnose the mixed-layer heat budget and understand
    why the regional improvement is bought by a global error.
+
+## Error decomposition
+
+A 10-degree latitude-band decomposition shows that the 20m mixed-layer/ice run
+does not merely trade coastal skill for global skill.  It worsens the 10S..40N
+band and the southern subtropics, while improving the polar/near-wall band.
+
+| band | control RMSE | 20m mixed-layer RMSE |
+|---|---:|---:|
+| -40..-30S | 0.870 | 1.052 |
+| -20..-10S | 0.843 | 0.953 |
+| 0..10N | 0.729 | 0.954 |
+| 20..30N | 1.106 | 1.134 |
+| 30..40N | 1.334 | 1.506 |
+| 50..60N | 1.353 | 1.337 |
+| 60..70N | 2.397 | 2.201 |
+
+So the next physical experiment should not simply deepen or weaken the uniform
+slab; it should test a latitude/stratification-aware mixed-layer mask.
