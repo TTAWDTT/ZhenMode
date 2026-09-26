@@ -252,3 +252,12 @@ When a run does not save 3D T/S snapshots, the scorer computes MLD from the
 initial T/S state and labels it `source=initial_T_S`.  Such an MLD number is a
 sanity check, not a post-integration climate metric, and must not be used to
 promote a closure.
+The mixed-layer closure can be spatially restricted for diagnosis:
+
+```bash
+--mixed-layer-depth 20 --mixed-layer-lat-band 55 65
+```
+
+Use this only when the pre-registered hypothesis is that the mixed layer is
+locally too shallow in the restricted band.  Do not use a latitude mask as a
+post-hoc global-error fix without recording the physical hypothesis first.
