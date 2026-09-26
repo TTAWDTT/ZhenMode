@@ -233,3 +233,4 @@ Chronological record of research decisions and actions. Append-only.
 | 173 | 2026-09-26 | experiment | The 10-day-snapshot 0.5-degree mixed-layer/ice annual run improved near-wall bias but failed the global and North Atlantic gates. Rejected as a production candidate; launched the same-resolution ice-floor control. |
 | 174 | 2026-09-26 | audit | Audited the MLD diagnostic: without 3D snapshots it is computed from the initial T/S state. Marked it as such in the scorer so it cannot be used as a post-integration climate metric. |
 | 175 | 2026-09-26 | control | Added the same-resolution 0.5-degree ice-floor control. It improves global A2 to 1.128 C and confirms that the 50m mixed-layer/ice pair is the source of the global error, not the ice floor. |
+| 176 | 2026-09-26 | experiment | A 20m mixed-layer/ice annual probe reduced the global penalty versus the 50m pair but still failed the global and NA gates. It remains diagnostic-only. |
