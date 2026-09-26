@@ -405,6 +405,10 @@ def main():
                     help="use 12 monthly NCEP R1 2-m air fields with the same "
                          "seasonal blending as wind; requires --seasonal-wind. "
                          "This takes precedence over --real-air-temp.")
+    ap.add_argument("--sensible-heat-proxy", action="store_true",
+                    help="replace the dynamic bulk term q=lambda*(air-SST) with "
+                         "prescribed q=lambda*(monthly air-WOA SST), matching the "
+                         "MOM6 sensible-heat proxy slice.")
     ap.add_argument("--ice-air-floor", action="store_true",
                     help="simple sea-ice proxy: floor the bulk target at the "
                          "freezing point so sub-freezing air does not force "
@@ -823,6 +827,28 @@ def main():
               f"T_atm={T_atm_source} "
               f"({float(np.nanmin(T_atm)):.2f}..{float(np.nanmax(T_atm)):.2f} C)")
 
+    # Prescribed sensible-heat proxy for exact MOM6 Stage-F comparison:
+    # q(t)=lambda*(monthly air - WOA SST). The dynamic q=lambda*(air-live SST)
+    # term is disabled, so lambda_bulk is set to zero here.
+    Q_heat_months = None
+    if args.sensible_heat_proxy:
+        if not args.real_air_temp_monthly:
+            raise ValueError("--sensible-heat-proxy requires --real-air-temp-monthly")
+        if T_atm_months is None:
+            raise ValueError("--sensible-heat-proxy could not load monthly air")
+        if lambda_bulk <= 0.0:
+            raise ValueError("--sensible-heat-proxy requires lambda_bulk > 0")
+        Q_heat_months = np.stack([
+            lambda_bulk * (np.asarray(f) - T_init[:, :, 0]) for f in T_atm_months
+        ])
+        Q_heat = np.mean(Q_heat_months, axis=0)
+        lambda_bulk = 0.0
+        T_atm_source = (f"monthly {args.wind_year} NCEP R1 2m air - WOA SST "
+                        "sensible proxy")
+        print(f"  prescribed sensible proxy: lambda={args.lambda_bulk:g} "
+              f"W/m^2/K, q range={float(np.nanmin(Q_heat)):.2f}.."
+              f"{float(np.nanmax(Q_heat)):.2f} W/m^2")
+
     # ── Surface salinity restoring target ──
     # Default: full 2D WOA SSS (real ocean SSS has strong zonal structure —
     # Atlantic 36.5 vs Pacific 34.5 — that a zonal-mean target would erase).
@@ -906,6 +932,8 @@ def main():
     _fdtype = jnp.float32 if args.dtype == "float32" else jnp.float64
     if seasonal:
         Q_heat_2d = jnp.array(Q_heat, dtype=_fdtype)
+        Q_heat_stack = (jnp.array(np.asarray(Q_heat_months), dtype=_fdtype)
+                        if Q_heat_months is not None else None)
         if T_atm_months is not None:
             air_stack = jnp.array(np.asarray(T_atm_months), dtype=_fdtype)
         if args.wind_jit:
@@ -915,25 +943,34 @@ def main():
             def do_step(state, month_day):
                 tx, ty = interp_seasonal_wind_jit(
                     wind_stack, month_day, blend_days=args.wind_blend_days)
+                q = (interp_monthly_field_jit(
+                        Q_heat_stack, month_day, blend_days=args.wind_blend_days)
+                     if Q_heat_stack is not None else Q_heat_2d)
                 if T_atm_months is not None:
                     ta = interp_monthly_field_jit(
                         air_stack, month_day, blend_days=args.wind_blend_days)
-                    return step_dyn(state, tx, ty, Q_heat_2d,
+                    return step_dyn(state, tx, ty, q,
                                     T_atm_3d=ta[:, :, None])
-                return step_dyn(state, tx, ty, Q_heat_2d)
+                return step_dyn(state, tx, ty, q)
         else:
             def do_step(state, month_day):
                 tx, ty = interp_seasonal_wind(wind_months, month_day,
                                               blend_days=args.wind_blend_days)
+                q = (interp_monthly_field(
+                        Q_heat_months, month_day,
+                        blend_days=args.wind_blend_days)
+                     if Q_heat_months is not None else Q_heat)
                 if T_atm_months is not None:
                     ta = np.asarray(interp_monthly_field(
                         T_atm_months, month_day,
                         blend_days=args.wind_blend_days), dtype=np.float64)
                     return step_dyn(state, jnp.array(tx, dtype=_fdtype),
-                                    jnp.array(ty, dtype=_fdtype), Q_heat_2d,
+                                    jnp.array(ty, dtype=_fdtype),
+                                    jnp.array(q, dtype=_fdtype),
                                     T_atm_3d=jnp.array(ta, dtype=_fdtype)[:, :, None])
                 return step_dyn(state, jnp.array(tx, dtype=_fdtype),
-                                jnp.array(ty, dtype=_fdtype), Q_heat_2d)
+                                jnp.array(ty, dtype=_fdtype),
+                                jnp.array(q, dtype=_fdtype))
     else:
         def do_step(state, month_day):
             return step(state)
@@ -1025,6 +1062,10 @@ def main():
         header.append("sub-grid closure: NONE (kappa_gm=0, kappa_redi=0)")
     header.append(f"bulk_flux={lambda_bulk:g} W/m^2/K"
                   + (f" (T_atm={T_atm_source})" if lambda_bulk > 0.0 else " (off)"))
+    if args.sensible_heat_proxy:
+        header.append("prescribed sensible proxy: lambda="
+                      f"{args.lambda_bulk:g} W/m^2/K, "
+                      "q=lambda*(monthly NCEP 2m air - WOA SST)")
     if args.sss_restore_days > 0.0:
         header.append(f"sss_restore: tau={args.sss_restore_days:g}d  "
                       f"target={'zonal WOA SSS' if args.sss_restore_zonal else 'full 2D WOA SSS'}")
