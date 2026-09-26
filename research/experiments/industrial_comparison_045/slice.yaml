@@ -1,6 +1,6 @@
 experiment_id: ocean_solver_vs_mom6_sst_050_365d
 question: "On one fixed ocean-only SST slice, how does ocean_solver compare with MOM6?"
-status: defined_not_run
+status: static_grid_initialized_forcing_not_run
 
 models:
   ocean_solver:
@@ -10,6 +10,7 @@ models:
     vertical_levels: 14
     vertical_coordinate: z
     sea_ice: "ice-air floor plus opt-in mixed-layer/ice closure"
+    shared_restoring_support: "--global-sst-restore-days"
   mom6:
     role: external_rerun
     target_version: "latest stable MOM6, exact commit recorded at run time"

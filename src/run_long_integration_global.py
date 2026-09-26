@@ -436,6 +436,9 @@ def main():
     ap.add_argument("--coastal-restore-days", type=float, default=0.0,
                     help="diagnostic surface-temperature restoring timescale "
                          "[days] in the land-adjacent band; 0 = off")
+    ap.add_argument("--global-sst-restore-days", type=float, default=0.0,
+                    help="shared external-benchmark SST restoring timescale "
+                         "[days] over all wet cells; 0 = off")
     ap.add_argument("--coastal-restore-cells", type=int, default=0,
                     help="width of the land-adjacent restoring band in cells")
     ap.add_argument("--coastal-restore-taper", choices=("none", "linear", "cos"),
@@ -735,6 +738,13 @@ def main():
         print(f"  coastal T restore: tau={args.coastal_restore_days:g}d, "
               f"cells<={args.coastal_restore_cells}, taper={taper}, "
               f"n={int(np.count_nonzero(coastal_restore_mask))}")
+
+    if args.global_sst_restore_days > 0.0:
+        if coastal_restore_mask is not None:
+            raise SystemExit("--global-sst-restore-days cannot be combined with "
+                             "--coastal-restore-days")
+        coastal_restore_mask = ocean.astype(float)
+        print(f"  global SST restore: tau={args.global_sst_restore_days:g}d over all wet cells")
 
     # ── Wind forcing ──
     seasonal = args.seasonal_wind
@@ -1249,6 +1259,7 @@ def main():
         'eta_relax_buffer': args.eta_relax_buffer,
         'smooth_passes': args.smooth_passes, 'min_depth': args.min_depth,
         'coastal_restore_days': args.coastal_restore_days,
+        'global_sst_restore_days': args.global_sst_restore_days,
         'coastal_restore_cells': args.coastal_restore_cells,
         'coastal_restore_taper': args.coastal_restore_taper,
         'coastal_bulk_lambda': args.coastal_bulk_lambda,
