@@ -301,6 +301,13 @@ class _Tee:
         self.file.flush()
 
 
+def _lat_band_mask(grid, band):
+    """Build a 2D mixed-layer mask from a inclusive latitude band."""
+    lat_min, lat_max = band
+    return ((grid.lat[None, :] >= lat_min)
+            & (grid.lat[None, :] <= lat_max)).astype(float)
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--days", type=float, default=365.0)
@@ -427,6 +434,9 @@ def main():
                     default="none",
                     help="weight the coastal restoring band away from land; "
                          "none keeps the current hard mask")
+    ap.add_argument("--mixed-layer-lat-band", type=float, nargs=2, default=None,
+                         metavar=("LAT_MIN", "LAT_MAX"),
+                         help="restrict --mixed-layer-depth to a latitude band")
     ap.add_argument("--mixed-layer-depth", type=float, default=None,
                     help="optional mixed-layer heat-capacity depth [m]. "
                          "When set, the same surface heat flux is spread over "
@@ -818,6 +828,8 @@ def main():
         monotone_adv=args.monotone_adv,
         fct_adv=args.fct_adv,
         mixed_layer_depth_m=args.mixed_layer_depth,
+        mixed_layer_mask=(_lat_band_mask(grid, args.mixed_layer_lat_band)
+                          if args.mixed_layer_lat_band else None),
         ice_freeze_temp_c=args.ice_freeze_temp,
         ice_salt_flux=args.ice_salt_flux)
     if seasonal:
@@ -1158,6 +1170,7 @@ def main():
         'monotone_adv': args.monotone_adv,
         'fct_adv': args.fct_adv,
         'mixed_layer_depth_m': args.mixed_layer_depth,
+        'mixed_layer_lat_band': args.mixed_layer_lat_band,
         'ice_freeze_temp': args.ice_freeze_temp,
         'ice_salt_flux': args.ice_salt_flux,
         'lambda_bulk': lambda_bulk, 'bulk_lambda_mult': args.bulk_lambda_mult,

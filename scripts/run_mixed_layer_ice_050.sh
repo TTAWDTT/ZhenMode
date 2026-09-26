@@ -7,6 +7,7 @@ LAMBDA="${LAMBDA:-80}"
 DAYS="${DAYS:-365}"
 MIXED_LAYER_DEPTH="${MIXED_LAYER_DEPTH:-50}"
 ICE_SALT_FLUX="${ICE_SALT_FLUX:-1e-7}"
+MIXED_LAYER_LAT_BAND="${MIXED_LAYER_LAT_BAND:-}"
 TAG="${1:-mixed_layer_ice_050_${DAYS}d}"
 
 PYTHON_BIN="${PYTHON_BIN:-/mnt/c/Users/zhen.luo/ocean_solver/.venv-gpu-jax/bin/python}"
@@ -19,6 +20,11 @@ fi
 export OCEAN_SOLVER_BATHYMETRY="${OCEAN_SOLVER_BATHYMETRY:-/mnt/c/Users/zhen.luo/Desktop/ETOPO_2022_v1_r3600x1800_surface.nc}"
 OUT_DIR="${OUT_DIR:-results/mixed_layer_ice_050}"
 LOG_DIR="${LOG_DIR:-logs/mixed_layer_ice_050}"
+MIXED_LAYER_ARGS=(--mixed-layer-depth "${MIXED_LAYER_DEPTH}")
+if [[ -n "${MIXED_LAYER_LAT_BAND}" ]]; then
+  read -r ML_LAT_MIN ML_LAT_MAX <<< "${MIXED_LAYER_LAT_BAND}"
+  MIXED_LAYER_ARGS+=(--mixed-layer-lat-band "${ML_LAT_MIN}" "${ML_LAT_MAX}")
+fi
 mkdir -p "${OUT_DIR}" "${LOG_DIR}"
 
 "${PYTHON_BIN}" src/run_long_integration_global.py \
@@ -35,6 +41,6 @@ mkdir -p "${OUT_DIR}" "${LOG_DIR}"
   --tag "${TAG}" \
   --out-dir "${OUT_DIR}" \
   --log-dir "${LOG_DIR}" \
-  --mixed-layer-depth "${MIXED_LAYER_DEPTH}" \
+  "${MIXED_LAYER_ARGS[@]}" \
   --ice-salt-flux "${ICE_SALT_FLUX}"
 

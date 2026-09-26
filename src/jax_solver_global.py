@@ -701,6 +701,8 @@ FDPhysParams = namedtuple('FDPhysParams', [
     # distributed over this depth instead of the surface grid-cell thickness.
     # 0/None keeps the legacy bit-exact surface-node treatment.
     'mixed_layer_depth_m',
+    # Optional 2D mask (1=apply mixed-layer depth, 0=legacy surface-node)
+    'mixed_layer_mask_2d',
     # Minimal thermodynamic sea-ice closure: a constant brine-rejection salt
     # flux (psu/s) applied only where the surface temperature is at or below
     # the freezing point. 0 = off.
@@ -711,7 +713,7 @@ FDPhysParams = namedtuple('FDPhysParams', [
 # Keyword-constructed callers that predate nu_nsub/use_scan/freeze_adv_vel/
 # conservative_kv/project_adv_vel/localize_conv/monotone_adv get the legacy
 # behavior instead of a TypeError.
-FDPhysParams.__new__.__defaults__ = (None, False, False, False, False, False, False, False, None, -1.8, 0.0)
+FDPhysParams.__new__.__defaults__ = (None, False, False, False, False, False, False, False, None, None, -1.8, 0.0)
 
 
 # ── Equation of state ─────────────────────────────────────────────────
@@ -1306,8 +1308,12 @@ def _compute_tracer_tendency(state, p):
     # a mixed-layer depth is supplied, the same flux is spread over that slab,
     # which is the minimal heat-capacity closure for a well-mixed layer.
     mixed_depth = float(p.mixed_layer_depth_m or 0.0)
-    heat_factor = 1.0 / (RHO_0 * C_P * (mixed_depth if mixed_depth > 0.0
-                                        else float(p.dz_surface)))
+    # A spatially restricted mixed-layer mask lets a high-lat/polar closure
+    # improve regional bias without globally changing the surface heat capacity.
+    effective_depth = jnp.where((p.mixed_layer_mask_2d[:, :, None] > 0.5)
+                                & (mixed_depth > 0.0),
+                                mixed_depth, float(p.dz_surface))
+    heat_factor = 1.0 / (RHO_0 * C_P * effective_depth)
     heat_T = p.Q_heat_2d[:, :, None] * heat_factor * p.surface_mask
 
     # Bulk air-sea heat flux (Haney/Barnier): genuine SST negative feedback.
@@ -1948,7 +1954,7 @@ def _step_impl(state, p):
 
 def make_solver_global(grid, physics, dt, forcing=None,
                        T_atm=None, lambda_bulk=0.0,
-                       mixed_layer_depth_m=None,
+                       mixed_layer_depth_m=None, mixed_layer_mask=None,
                        ice_freeze_temp_c=-1.8, ice_salt_flux=0.0,
                        S_ref_surf=None, sss_restore_days=0.0,
                        coastal_restore_mask=None, coastal_restore_days=0.0,
@@ -2233,6 +2239,9 @@ def make_solver_global(grid, physics, dt, forcing=None,
         monotone_adv=bool(monotone_adv),
         fct_adv=bool(fct_adv),
         mixed_layer_depth_m=float(mixed_layer_depth_m or 0.0),
+        mixed_layer_mask_2d=(jnp.asarray(mixed_layer_mask, dtype=jnp.float64)
+                              if mixed_layer_mask is not None
+                              else jnp.ones((nx, ny), dtype=jnp.float64)),
         ice_freeze_temp_c=float(ice_freeze_temp_c),
         ice_salt_flux=float(ice_salt_flux),
     )
