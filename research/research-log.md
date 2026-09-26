@@ -248,3 +248,8 @@ Chronological record of research decisions and actions. Append-only.
 | 186 | 2026-09-26 | experiment | The dynamic-ice 30d probe is numerically stable and identical to the stratification-MLD probe because no explicit ice nucleates in the first 30d; annual diagnostic is running. |
 
 | 187 | 2026-09-26 | external | Built MOM6 at commit f49a00096 with FMS 2023.03, GSW, and CVMix in an external local directory; the ocean-only executable passed a 32x32 one-hour smoke run. |
+
+| 188 | 2026-09-26 | audit | The first annual dynamic-ice run was stable but formed no ice because the -1.8C air floor removed the cold forcing needed for nucleation; dynamic-ice probes now omit that proxy floor. |
+| 189 | 2026-09-26 | bugfix | Corrected brine salt flux: the latent-ice salt change is applied directly, not multiplied by dt. The first monthly probe blew up; after the fix it is stable and forms 18 explicit-ice cells. |
+| 190 | 2026-09-26 | audit | Fixed cell_area to use R^2 times angular increments. The old sea-ice extents were too small by the Earth-radius factor; climate SST metrics were unaffected. |
+| 191 | 2026-09-26 | experiment | The fixed monthly dynamic-ice 30d probe is stable, forms 18 cells, max thickness 1.757m, extent 3.33e10 m2, but worsens global/NA metrics versus the annual-air diagnostic. |

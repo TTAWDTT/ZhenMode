@@ -58,7 +58,7 @@ def cell_area(lat: np.ndarray, lon: np.ndarray,
         raise ValueError("lat/lon must have at least two points")
     dlat = float(np.mean(np.abs(np.diff(lat))))
     dlon = float(np.mean(np.abs(np.diff(lon))))
-    area = (radius * np.radians(dlon) * np.radians(dlat) *
+    area = (radius * radius * np.radians(dlon) * np.radians(dlat) *
             np.cos(np.radians(lat))[None, :])
     return np.broadcast_to(area, (lon.size, lat.size)).copy()
 

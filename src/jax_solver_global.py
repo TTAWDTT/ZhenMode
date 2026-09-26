@@ -1971,11 +1971,11 @@ def _dynamic_ice_closure(state, p):
                                   ice))
     salt_flux = (rho_ice * ice_salt_diff * latent_change
                  / (RHO_0 * effective_depth))
-    salt_tendency = jnp.where(grows_existing | grows_new, salt_flux,
-                              -salt_flux)
+    salt_change = jnp.where(grows_existing | grows_new, salt_flux,
+                            -salt_flux)
     active = grows_new | grows_existing | melts
     T_new_surface = jnp.where(active, p.ice_freeze_temp_c, T_sst)
-    S_new_surface = state.S[:, :, 0] + salt_tendency * dt
+    S_new_surface = state.S[:, :, 0] + salt_change
     T = state.T.at[:, :, 0].set(jnp.where(
         active & (p.wet_mask > 0.5), T_new_surface, T_sst))
     S = state.S.at[:, :, 0].set(jnp.where(

@@ -464,11 +464,23 @@ stratification_mld_050:
   verdict: "Annual gate FAIL; do not promote. The spatial MLD field helps 30d but degrades annual global/NA."
 
 dynamic_ice_050:
-  status: prototype_running
+  status: prototype_stable_but_nofloor_annual_no_ice
   definition: "minimal stateful ice thickness with latent growth/melt, conductivity insulation, and brine salt flux"
   default: false
   unit_tests: "tests/test_dynamic_ice_state.py"
-  annual_probe: "results/dynamic_ice_050/global_dynamic_ice_strat_mld_050_365d.npz"
+  annual_no_floor_metrics:
+    global_a2_rmse_c: 1.268
+    north_atlantic_40_60_raw_rmse_c: 1.051
+    near_wall_raw_bias_c: -0.408
+    explicit_ice_cells: 0
+  monthly_30d_fixed_salt:
+    verdict: PASS
+    global_a2_rmse_c: 0.956
+    north_atlantic_40_60_raw_rmse_c: 0.874
+    explicit_ice_cells: 18
+    max_thickness_m: 1.757
+    extent_m2: 3.33e10
+  note: "Annual-air no-floor ice cannot nucleate in this forcing; monthly cold-air 30d probe can. Do not promote."
 
 
 mom6_build_status:

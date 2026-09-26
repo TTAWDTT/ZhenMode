@@ -71,3 +71,11 @@ def test_score_npz_reports_stable_fields(tmp_path):
     assert result["days_end"] == 365.0
     assert result["ice"]["n_cells"] == 0
     assert result["heat_drift_percent"] == 0.0
+
+
+def test_cell_area_is_physical():
+    lat = np.linspace(-65.0, 65.0, 260)
+    lon = np.linspace(0.25, 359.75, 720)
+    area = cell_area(lat, lon)
+    assert area.shape == (720, 260)
+    assert 1.2e9 < float(np.min(area)) < 2.0e9

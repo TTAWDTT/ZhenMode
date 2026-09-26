@@ -21,6 +21,14 @@ export OCEAN_SOLVER_BATHYMETRY="${OCEAN_SOLVER_BATHYMETRY:-/mnt/c/Users/zhen.luo
 OUT_DIR="${OUT_DIR:-results/mixed_layer_ice_050}"
 LOG_DIR="${LOG_DIR:-logs/mixed_layer_ice_050}"
 ICE_FLOOR_ARGS=(--ice-air-floor)
+AIR_TEMP_ARGS=(--real-air-temp)
+if [[ "${DYNAMIC_ICE:-}" == "true" ]]; then
+  # Dynamic ice owns freezing/melting; do not also clamp the air target.
+  ICE_FLOOR_ARGS=()
+fi
+if [[ "${AIR_MONTHLY:-}" == "true" ]]; then
+  AIR_TEMP_ARGS=(--real-air-temp-monthly)
+fi
 if [[ "${DYNAMIC_ICE:-}" == "true" ]]; then
   # Dynamic ice owns freezing/melting; do not also clamp the air target.
   ICE_FLOOR_ARGS=()
@@ -42,7 +50,7 @@ mkdir -p "${OUT_DIR}" "${LOG_DIR}"
 "${PYTHON_BIN}" src/run_long_integration_global.py \
   --mode-split --use-scan --dtype float32 \
   --lat-max 65 --resolution 0.5 --resolution-remap area \
-  --seasonal-wind --wind-year 2023 --real-air-temp ${ICE_FLOOR_ARGS[@]+"${ICE_FLOOR_ARGS[@]}"} \
+  --seasonal-wind --wind-year 2023 ${AIR_TEMP_ARGS[@]+"${AIR_TEMP_ARGS[@]}"} ${ICE_FLOOR_ARGS[@]+"${ICE_FLOOR_ARGS[@]}"} \
   --lambda-bulk "${LAMBDA}" \
   --kappa-v 1e-6 --kappa-conv 0.01 \
   --kappa-gm 0 \

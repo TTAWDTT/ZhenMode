@@ -1,0 +1,47 @@
+{
+  "path": "results\\dynamic_ice_050\\global_dynamic_ice_nofloor_strat_mld_050_365d.npz",
+  "verdict": "PASS",
+  "days_end": 365.0,
+  "steady_window_days": [
+    280.0,
+    365.0
+  ],
+  "max_u_peak": 2.4106767177581787,
+  "max_eta_last": 1.7001980543136597,
+  "heat_drift_percent": -0.14153804563866268,
+  "salt_drift_percent": 4.7750284682476406e-05,
+  "a1_corr": 0.9993778362710526,
+  "a1_rmse_c": 0.7328728499219345,
+  "a2_corr": 0.9937247657439067,
+  "global_a2_rmse_c": 1.2684277096765273,
+  "n": 127083,
+  "raw_bias": -0.5669400736216869,
+  "raw_rmse": 1.0691126371221356,
+  "north_atlantic_40_60": {
+    "n": 3958,
+    "raw_bias": -0.41620913384231584,
+    "raw_rmse": 1.0511157952143464
+  },
+  "near_wall_55_60": {
+    "n": 1026,
+    "raw_bias": -0.4082703398856503,
+    "raw_rmse": 1.0325545870666115
+  },
+  "ice": {
+    "source": "explicit_ice_thickness",
+    "freeze_temp_c": -1.8,
+    "n_cells": 0,
+    "fraction": 0.0,
+    "mean_thickness_m": 0.0,
+    "max_thickness_m": 0.0,
+    "extent_m2": 0.0,
+    "extent_fraction": 0.0
+  },
+  "mld": {
+    "definition": "density_threshold_0.03_kg_m3_ref10m",
+    "source": "initial_T_S",
+    "mean_m": 31.535295830284145,
+    "median_m": 30.0,
+    "p90_m": 50.0
+  }
+}
