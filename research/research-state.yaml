@@ -662,3 +662,9 @@ ocean_solver_stage_f_365d:
   days: 365
   forcing: "monthly NCEP air, dynamic bulk lambda=80 W/m2/K, no ice, no restoring"
   purpose: "internal 365d counterpart for matched MOM6 exact dynamic-bulk comparison"
+
+mom6_stage_f_dynamic_365d:
+  status: running_local
+  days: 365
+  run_dir: "/root/external_models/mom6_slice_050/p0_stage_f_dynamic_365d"
+  contract: "same as mom6_stage_f_dynamic_30d, with daily diagnostics"
