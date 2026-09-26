@@ -10,6 +10,7 @@
 | MOM6 | direct rerun | 30d wind-only | ocean_solver A2 `0.866 C`; MOM6 `1.096 C` |
 | MOM6 | direct rerun | 30d prescribed restore | ocean_solver A2 `0.865 C`; MOM6 `1.115 C` |
 | MOM6 | direct rerun | 365d prescribed restore | ocean_solver A2 `2.245 C`; MOM6 本地重跑中 |
+| MOM6 | direct rerun | 365d Stage-F exact dynamic bulk | ocean_solver 365d internal running; MOM6 365d local running |
 | MOM6 | direct rerun | 30d Stage-F exact dynamic bulk | ocean_solver A2 `1.692 C`; MOM6 本地运行中 |
 | ocean_solver | internal | 30d Stage-F prescribed proxy | FAIL_DRIFT; A2 `5.629 C`; max T `51.35 C` |
 | MOM6 | direct rerun | 30d Stage-F prescribed proxy | 稳定性警告; 因 C 盘满无空间评分 |
