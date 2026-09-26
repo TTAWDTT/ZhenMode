@@ -38,14 +38,20 @@ def main():
         ds.createDimension("y", ny)
         ds.createDimension("x", nx)
         t = ds.createVariable("time", "f8", ("time",))
-        t.units = "days since 0001-01-01 00:00:00"; t.calendar = "julian"
-        x = ds.createVariable("x", "f8", ("x",)); x.units = "degrees_east"
-        y = ds.createVariable("y", "f8", ("y",)); y.units = "degrees_north"
+        t.units = "days since 0001-01-01 00:00:00"
+        t.calendar = "julian"
+        x = ds.createVariable("x", "f8", ("x",))
+        x.units = "degrees_east"
+        y = ds.createVariable("y", "f8", ("y",))
+        y.units = "degrees_north"
         vx = ds.createVariable("STRESS_X", "f4", ("time", "y", "x"))
         vy = ds.createVariable("STRESS_Y", "f4", ("time", "y", "x"))
-        vx.units = "N m-2"; vy.units = "N m-2"
-        vx.long_name = "zonal wind stress on A-grid"; vy.long_name = "meridional wind stress on A-grid"
-        x[:] = grid.lon; y[:] = grid.lat
+        vx.units = "N m-2"
+        vy.units = "N m-2"
+        vx.long_name = "zonal wind stress on A-grid"
+        vy.long_name = "meridional wind stress on A-grid"
+        x[:] = grid.lon
+        y[:] = grid.lat
         for m in range(12):
             taux, tauy = real_wind_forcing(grid, month_idx=month0 + m,
                                            taper_cells=args.taper_cells)

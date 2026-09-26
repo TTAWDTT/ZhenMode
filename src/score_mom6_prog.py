@@ -1,10 +1,10 @@
 """Convert the final/mean MOM6 surface T on the shared grid and score it."""
+import json
 from argparse import ArgumentParser
 from pathlib import Path
-import json
 
-import numpy as np
 import netCDF4
+import numpy as np
 
 from benchmark_metrics import score_snapshot
 
