@@ -1,7 +1,7 @@
 # MOM6 0.5° global ALE dynamic smoke
 
 Date: 2026-09-26  
-Status: dynamic smoke passed; matched 30d comparison running  
+Status: matched 30d wind-only comparison completed  
 Run directory: `C:/Users/zhen.luo/external_models/mom6_slice_050/p0_shared_ale`
 
 ## Fixed relative to the first `p0_shared` attempt
@@ -39,15 +39,18 @@ A one-day 4-rank run reproduced the same state and stayed stable.
 
 ## 30-day comparison
 
-- ocean_solver wind-only 30d: PASS in 3.4 min
-  - global A2 `0.8658 C`
-  - raw global bias/RMSE `-0.0580 / 0.5660 C`
-  - NA 40--60N RMSE `0.6751 C`
-  - near-wall 55--60N bias `-0.1442 C`
-  - heat drift `-0.0262%`
-- MOM6 30d: running with 4 MPI ranks
-- status: `not comparable` until the MOM6 run finishes and both models are scored
-  with the same mask and reference.
+Both runs use the same 720x260 grid, WOA T/S, ETOPO-derived bathymetry,
+2023 monthly NCEP wind, 30d duration, and no heat/salt forcing.
+
+| model | days | verdict | global A2 RMSE | global raw bias/RMSE | NA 40--60N RMSE | near-wall 55--60N bias/RMSE | wall time |
+|---|---:|---|---:|---:|---:|---:|---:|
+| ocean_solver | 30 | PASS | 0.8658 C | -0.0580 / 0.5660 C | 0.6751 C | -0.1442 / 0.2106 C | 3.4 min |
+| MOM6 | 30 | PASS | 1.0961 C | -0.4070 / 1.1827 C | 0.6814 C | +0.0567 / 0.2434 C | 49.6 min (4 ranks) |
+
+MOM6 files:
+
+- `research/experiments/industrial_comparison_045/mom6_wind_only_30d_benchmark.json`
+- `research/experiments/industrial_comparison_045/wind_only_30d_comparison_table.md`
 
 ## Comparability caveats
 

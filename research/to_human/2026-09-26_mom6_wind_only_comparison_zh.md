@@ -22,9 +22,21 @@ ocean_solver 30d wind-only：
 - near-wall bias：-0.144 C
 - 30 天稳定 PASS
 
-MOM6 30d 还在跑。跑完后才做第一张真正的同输入对照表。
+MOM6 30d 也跑完了，4 进程用时 49.6 分钟。
 
-## 还不能说的
+## 同输入 wind-only 30d 对比
 
-现在没有热/盐通量，所以这不是完整气候态比较。不能说“打败工业级模式”。
-下一步是先完成 30 天同风场对照，再加 matched bulk forcing 或 SST restoring。
+| 模型 | days | global A2 | global raw bias/RMSE | NA 40-60N RMSE | near-wall bias/RMSE | wall time |
+|---|---:|---:|---:|---:|---:|---:|
+| ocean_solver | 30 | 0.8658 C | -0.0580 / 0.5660 C | 0.6751 C | -0.1442 / 0.2106 C | 3.4 min |
+| MOM6 | 30 | 1.0961 C | -0.4070 / 1.1827 C | 0.6814 C | +0.0567 / 0.2434 C | 49.6 min |
+
+这是第一张真正的同输入对照表。结论要克制：ocean_solver 在这个 30d wind-only
+控制下 global A2 更好、NA RMSE 基本相当；但缺热/盐通量，所以还不是气候态比较，
+也不能说“打败工业级模式”。
+
+## 下一步
+
+1. 用同协议做 matched bulk heat/salt forcing 或 SST restoring。
+2. 再跑 30d 稳定性检查，然后到 365d。
+3. 把 heat/salt drift、MLD、wall time 和物理设置一起写进 manifest。

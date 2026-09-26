@@ -261,3 +261,5 @@ Chronological record of research decisions and actions. Append-only.
 | 196 | 2026-09-26 | feature | Added --no-meridional-heat-flux and a wind-only 0.5-degree comparison script. |
 | 197 | 2026-09-26 | experiment | The 30d 0.5-degree ocean_solver wind-only control passed: global A2 0.8658 C, raw bias/RMSE -0.0580/0.5660 C, NA RMSE 0.6751 C, near-wall bias -0.1442 C. |
 | 198 | 2026-09-26 | external | Launched the matched 30d 4-rank MOM6 wind-only run; it is not scored until its NetCDF output is converted to the shared grid and reference. |
+| 199 | 2026-09-26 | external | Completed the matched 30d MOM6 wind-only run with 4 MPI ranks; it was stable and used 49.6 min wall time. |
+| 200 | 2026-09-26 | comparison | The first matched 0.5-degree 30d wind-only comparison is available: ocean_solver global A2 0.8658 C vs MOM6 1.0961 C; NA RMSE 0.6751 vs 0.6814 C. This remains a wind-only dynamic control, not a climate benchmark. |

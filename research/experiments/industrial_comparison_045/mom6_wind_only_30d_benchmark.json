@@ -1,0 +1,36 @@
+{
+  "global": {
+    "n": 127083,
+    "raw_bias": -0.4069891826534714,
+    "raw_rmse": 1.1827306456126858
+  },
+  "a1_corr": 0.9969530787004651,
+  "a1_rmse_c": 0.8303379525266925,
+  "a2_corr": 0.994378894830705,
+  "global_a2_rmse_c": 1.0961459231234663,
+  "north_atlantic_40_60": {
+    "n": 3958,
+    "raw_bias": -0.34160555324560815,
+    "raw_rmse": 0.6813671806712817
+  },
+  "near_wall_55_60": {
+    "n": 1026,
+    "raw_bias": 0.05668929653209553,
+    "raw_rmse": 0.24336339027061096
+  },
+  "verdict": "PASS",
+  "days_end": 30.0,
+  "model": "MOM6",
+  "run_id": "mom6_wind_only_30d",
+  "source_prog": "C:\\Users\\zhen.luo\\external_models\\mom6_slice_050\\p0_shared_ale\\prog.nc",
+  "time_records": 30,
+  "time_first": 1.0,
+  "time_last": 30.0,
+  "steady_window_days": [
+    20.0,
+    30.0
+  ],
+  "n_mom6_wet": 127083,
+  "n_reference_wet": 127083,
+  "n_scored": 127083
+}

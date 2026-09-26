@@ -490,7 +490,7 @@ mom6_build_status:
   examples_commit: "a5ebafec64c12f308d9f740ce40be1c1bfddd25a"
   executable: "C:/Users/zhen.luo/external_models/MOM6/build/MOM6"
   smoke_test: "32x32 Cartesian benchmark, 1h, one MPI rank"
-  comparable_run_status: "wind_only_30d_running"
+  comparable_run_status: "wind_only_30d_completed"
 
 
 global_sst_restore_050:
@@ -518,7 +518,9 @@ mom6_dynamic_smoke_050:
 
 
 wind_only_050:
-  status: ocean_solver_done_mom6_running
+  status: completed_not_climate_benchmark
+  manifest: "research/experiments/industrial_comparison_045/wind_only_30d_manifest.json"
+  comparison_table: "research/experiments/industrial_comparison_045/wind_only_30d_comparison_table.md"
   run: "results/industrial_comparison_045/global_industrial_comparison_050_wind_only_30d.npz"
   benchmark: "research/experiments/industrial_comparison_045/ocean_solver_wind_only_30d_benchmark.json"
   days: 30
@@ -535,6 +537,17 @@ wind_only_050:
     global_raw_rmse_c: 0.566
     north_atlantic_40_60_raw_rmse_c: 0.675
     near_wall_55_60_raw_bias_c: -0.144
+    near_wall_55_60_raw_rmse_c: 0.211
     heat_drift_percent: -0.026
+    verdict: PASS
+  mom6_metrics:
+    global_a2_rmse_c: 1.096
+    global_raw_bias_c: -0.407
+    global_raw_rmse_c: 1.183
+    north_atlantic_40_60_raw_rmse_c: 0.681
+    near_wall_55_60_raw_bias_c: 0.057
+    near_wall_55_60_raw_rmse_c: 0.243
+    wall_time_min: 49.6
+    mpi_ranks: 4
     verdict: PASS
   comparability: "wind-forced dynamic control only; not a climate benchmark"
