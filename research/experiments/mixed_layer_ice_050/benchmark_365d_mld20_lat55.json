@@ -1,0 +1,44 @@
+{
+  "path": "results\\mixed_layer_ice_050\\global_mixed_layer_ice_050_365d_mld20_lat55.npz",
+  "verdict": "PASS",
+  "days_end": 365.0,
+  "steady_window_days": [
+    280.0,
+    365.0
+  ],
+  "max_u_peak": 2.403822422027588,
+  "max_eta_last": 1.7313231229782104,
+  "heat_drift_percent": -0.22750246496096832,
+  "salt_drift_percent": -0.0002660885605269794,
+  "a1_corr": 0.999420194633901,
+  "a1_rmse_c": 0.6899639668754175,
+  "a2_corr": 0.9953625654603816,
+  "global_a2_rmse_c": 1.1272502145777017,
+  "n": 127083,
+  "raw_bias": -0.5248197291492748,
+  "raw_rmse": 0.9029092254475366,
+  "north_atlantic_40_60": {
+    "n": 3958,
+    "raw_bias": -0.6150750137947114,
+    "raw_rmse": 0.8722517738362837
+  },
+  "near_wall_55_60": {
+    "n": 1026,
+    "raw_bias": -0.6038397861909679,
+    "raw_rmse": 0.8883913521601345
+  },
+  "ice": {
+    "freeze_temp_c": -1.8,
+    "n_cells": 0,
+    "fraction": 0.0,
+    "extent_m2": 0.0,
+    "extent_fraction": 0.0
+  },
+  "mld": {
+    "definition": "density_threshold_0.03_kg_m3_ref10m",
+    "source": "initial_T_S",
+    "mean_m": 31.535295830284145,
+    "median_m": 30.0,
+    "p90_m": 50.0
+  }
+}

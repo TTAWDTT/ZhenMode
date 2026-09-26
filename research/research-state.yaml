@@ -434,3 +434,16 @@ candidate_baseline_050_icefloor:
     north_atlantic_40_60_raw_rmse_c: 0.924
     north_atlantic_40_60_raw_bias_c: -0.696
     near_wall_raw_bias_c: -0.921
+
+diagnostic_parameterizations_050:
+  mixed_layer_ice_mld20_lat55:
+    name: "mixed_layer_ice_050/global_mixed_layer_ice_050_365d_mld20_lat55"
+    status: passed_annual_gate_not_reproduced
+    base_candidate: "candidate_baseline_050_icefloor"
+    mixed_layer_depth_m: 20.0
+    mixed_layer_lat_band: [55.0, 65.0]
+    ice_salt_flux: 1.0e-7
+    reference_metrics:
+      global_a2_rmse_c: 1.127
+      north_atlantic_40_60_raw_rmse_c: 0.872
+      near_wall_raw_bias_c: -0.604
