@@ -42,3 +42,16 @@ The prepared MOM6 Stage-F slice currently uses the prescribed
 `lambda*(air-WOA SST)` sensible proxy, not an instantaneous dynamic bulk
 formulation.  A direct dynamic-bulk comparison therefore needs that limitation
 recorded as `not_comparable` until both models share the same bulk closure.
+
+## Exact-proxy control
+
+The exact ocean_solver counterpart to the MOM6 sensible file is now:
+
+```bash
+DAYS=30 bash scripts/run_industrial_comparison_050_stage_f_proxy_30d.sh
+```
+
+It uses `q=lambda*(monthly NCEP 2m air - WOA SST)` with no dynamic SST
+feedback.  The 30d run is `FAIL_DRIFT`: max T 51.35 C, global A2 5.629 C,
+NA RMSE 2.978 C.  This is therefore a diagnostic, not a valid climate
+comparison unless MOM6 is shown to remain stable under the identical contract.
