@@ -11,6 +11,7 @@
 | MOM6 | direct rerun | 30d prescribed restore | ocean_solver A2 `0.865 C`; MOM6 `1.115 C` |
 | MOM6 | direct rerun | 365d prescribed restore | ocean_solver A2 `2.245 C`; MOM6 还在跑 |
 | MOM6 | direct rerun | 30d Stage-F bulk proxy | ocean_solver A2 `1.692 C`; MOM6 还在跑 |
+| ocean_solver | internal | 30d Stage-F proxy | FAIL_DRIFT; A2 `5.629 C`; max T `51.35 C` |
 | ocean_solver | internal | 30d Stage-I ice/mixed-layer | A2 `1.231 C`; NA RMSE `1.316 C` |
 
 这些数字只代表固定 0.5 度切片，不是 OMIP、预报系统或全球气候模式级结论。
@@ -35,3 +36,4 @@
 2. **Stage-F 是下一个门槛**：只有通过完整 bulk forcing 365d，才比 30d restore 更有说服力。
 3. **最小 ice/mixed-layer 闭环已经稳定**，但仍要和 industrial 模式在同一 forcing 下对比。
 4. **要超过工业级模式，优先级不是继续调参**，而是：完整 bulk forcing → 365d 对照 → 三维误差 → 并行/速度 → 扩展到更多物理过程。
+
