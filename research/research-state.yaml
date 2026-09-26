@@ -438,7 +438,7 @@ candidate_baseline_050_icefloor:
 diagnostic_parameterizations_050:
   mixed_layer_ice_mld20_lat55:
     name: "mixed_layer_ice_050/global_mixed_layer_ice_050_365d_mld20_lat55"
-    status: passed_annual_gate_not_reproduced
+    status: validated_diagnostic
     base_candidate: "candidate_baseline_050_icefloor"
     mixed_layer_depth_m: 20.0
     mixed_layer_lat_band: [55.0, 65.0]
