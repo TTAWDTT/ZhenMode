@@ -784,3 +784,18 @@ mom6_stage_f_dynamic_365d_v7:
     surface_raw_rmse_c: 1.1417
     verdict: PASS
 
+ocean_solver_stage_f_strat_mld_365d:
+  status: completed_not_promoted
+  benchmark: "research/experiments/industrial_comparison_045/ocean_solver_stage_f_strat_mld_365d_benchmark.json"
+  comparison_table: "research/experiments/industrial_comparison_045/stage_f_365d_internal_stratification_table.md"
+  config: "density-threshold stratification MLD 10..100m + dynamic ice + Stage-F monthly-air dynamic bulk"
+  metrics:
+    global_a2_rmse_c: 1.3400
+    north_atlantic_40_60_raw_rmse_c: 1.2304
+    near_wall_55_60_raw_rmse_c: 1.0852
+    near_wall_55_60_raw_bias_c: -0.0948
+    heat_drift_percent: -0.2853
+    salt_drift_percent: -0.0000634
+    ice_cells: 64
+    max_ice_thickness_m: 3.7100
+  interpretation: "Improves near-wall bias but loses to the annual Stage-F no-ice control on global and North Atlantic RMSE; do not promote."
