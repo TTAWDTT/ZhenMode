@@ -359,3 +359,8 @@ Runner: scripts/run_candidate_baseline.sh
     Annual 3D error is concentrated above 500 m and in the subtropical bands.
     Next test a regional or seasonally varying upper-ocean closure rather than
     a uniform MLD or deep-ocean tuning.
+64. **Diagnose the 30d Stage-F term balance.** [COMPLETE 2026-09-27]
+    A saved 3D term snapshot shows convection dominates the upper-ocean
+    warming/cooling in the tropics and northern subtropics, with advection as
+    the main opposing cooling. This narrows the next physical lever to
+    upper-ocean ventilation, not horizontal diffusion.
