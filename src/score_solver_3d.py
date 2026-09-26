@@ -39,6 +39,8 @@ def score_solver_3d(npz_path, snap_path, *, steady_days: float = 10.0,
     else:
         ocean3d = np.broadcast_to(ocean2d[:, :, None], T.shape)
 
+    depth_ok = bool(depth_file is not None or "wet_mask_z" in z.files)
+
     error = T - reference
     finite = np.isfinite(error[ocean3d])
     if not finite.any():
@@ -47,8 +49,8 @@ def score_solver_3d(npz_path, snap_path, *, steady_days: float = 10.0,
         "global_3d": regional_error_metrics(error, ocean3d),
         "layers": {},
         "n_scored_cells": int(ocean3d.sum()),
-        "depth_mask_applied": bool(depth_file is not None or "wet_mask_z" in z.files),
-        "verdict": "PASS" if finite.all() else "FAIL",
+        "depth_mask_applied": depth_ok,
+        "verdict": "PASS" if finite.all() and depth_ok else "FAIL",
         "source_snapshot": str(Path(snap_path)),
         "source_npz": str(Path(npz_path)),
         "source_depth": str(Path(depth_file)) if depth_file else None,
@@ -81,3 +83,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+

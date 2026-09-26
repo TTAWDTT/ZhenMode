@@ -48,3 +48,23 @@ def test_solver_3d_excludes_ghost_layers(tmp_path, monkeypatch):
     assert result["global_3d"]["n"] == 6
     assert result["depth_mask_applied"]
 
+def test_solver_3d_requires_depth_mask(tmp_path):
+    import numpy as np
+    from score_solver_3d import score_solver_3d
+    ref = np.full((2, 2, 1), 10.0)
+    snap = np.stack([ref, np.zeros_like(ref), np.zeros_like(ref), np.full_like(ref, 35.0)])
+    npz_path = tmp_path / "run.npz"
+    np.savez(
+        npz_path,
+        T_init=ref,
+        S_init=np.full_like(ref, 35.0),
+        wet_mask=np.ones((2, 2)),
+        lat=np.array([0.0, 1.0]),
+        lon=np.array([0.0, 1.0]),
+        z=np.array([0.0]),
+    )
+    snap_path = tmp_path / "snap.npy"
+    np.save(snap_path, np.stack([ref, np.zeros_like(ref), np.zeros_like(ref), np.full_like(ref, 35.0)]))
+    result = score_solver_3d(str(npz_path), str(snap_path))
+    assert result["depth_mask_applied"] is False
+    assert result["verdict"] == "FAIL"

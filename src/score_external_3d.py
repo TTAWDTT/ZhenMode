@@ -91,6 +91,8 @@ def score_external_3d(path, *, variable, reference_path, lat_var=None,
     if replace_land_with_reference:
         field3d = np.where(ocean3d, field3d, reference)
 
+    depth_ok = bool(depth_var is not None or "wet_mask_z" in ref.files)
+
     error = field3d - reference
     result = {
         "global_3d": regional_error_metrics(error, ocean3d),
@@ -98,8 +100,8 @@ def score_external_3d(path, *, variable, reference_path, lat_var=None,
         "n_model_wet": int(wet.sum()),
         "n_reference_wet": int(ref_ocean.sum()),
         "n_scored_cells": int(ocean3d.sum()),
-        "depth_mask_applied": bool(depth_var is not None or "wet_mask_z" in ref.files),
-        "verdict": "PASS" if np.isfinite(error[ocean3d]).all() else "FAIL",
+        "depth_mask_applied": depth_ok,
+        "verdict": "PASS" if np.isfinite(error[ocean3d]).all() and depth_ok else "FAIL",
         "variable": variable,
         "steady_days": steady_days,
         "source_file": str(Path(path)),
@@ -141,3 +143,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+
