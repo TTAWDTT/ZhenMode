@@ -144,6 +144,15 @@ Any 3D profile comparison must apply the shared bathymetric vertical mask:
 
 The initial bug counted below-seafloor ghost layers and falsely implied a
 4000m warm bias of +6.35 C. The scorer now reports `depth_mask_applied`; without the shared bathymetric mask it returns `FAIL` instead of silently producing a misleading PASS.
+For a multi-snapshot 3D window, use:
+
+```bash
+python src/score_solver_3d.py \
+  --npz <run.npz> \
+  --snap-dir <run>_3d \
+  --snap-days 10 --steady-days 90 \
+  --out <solver_3d_benchmark.json>
+```
 ## Scoring commands
 
 Internal run:
@@ -208,5 +217,6 @@ The current 30d wind-only comparison supports only these statements:
 
 It does **not** establish superiority as a global climate model, sea-ice model,
 or industrial production system.
+
 
 

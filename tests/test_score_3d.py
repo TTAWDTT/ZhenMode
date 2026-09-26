@@ -69,3 +69,36 @@ def test_solver_3d_requires_depth_mask(tmp_path):
     assert result["depth_mask_applied"] is False
     assert result["verdict"] == "FAIL"
 
+def test_solver_3d_uses_snapshot_window(tmp_path):
+    import numpy as np
+
+    from score_solver_3d import score_solver_3d
+    z = np.array([0.0, -100.0])
+    ref = np.full((2, 2, 2), 10.0)
+    T0 = ref.copy()
+    T0[0, 0, 0] = 8.0
+    T1 = ref.copy()
+    T1[0, 0, 0] = 12.0
+    snap0 = np.stack([T0, np.zeros_like(T0), np.zeros_like(T0), np.full_like(T0, 35.0)])
+    snap1 = np.stack([T1, np.zeros_like(T1), np.zeros_like(T1), np.full_like(T1, 35.0)])
+    npz_path = tmp_path / "run.npz"
+    np.savez(
+        npz_path,
+        T_init=ref,
+        S_init=np.full_like(ref, 35.0),
+        wet_mask=np.ones((2, 2)),
+        lat=np.array([0.0, 1.0]),
+        lon=np.array([0.0, 1.0]),
+        z=z,
+    )
+    snap_dir = tmp_path / "snaps"
+    snap_dir.mkdir()
+    np.save(snap_dir / "snap_00000.npy", snap0)
+    np.save(snap_dir / "snap_00001.npy", snap1)
+    result = score_solver_3d(
+        str(npz_path), snap_dir=str(snap_dir), snap_days=10.0, steady_days=20.0
+    )
+    assert result["n_snapshots"] == 2
+    assert result["global_3d"]["raw_rmse"] == 0.0
+
+
