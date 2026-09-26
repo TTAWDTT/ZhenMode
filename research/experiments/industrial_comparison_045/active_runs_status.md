@@ -1,6 +1,8 @@
 # Active external/internal comparison runs
 
-Updated: 2026-09-27 01:30 local.
+Updated: 2026-09-27 01:41 local.
+
+All long runs below were relaunched after a WSL restart at 01:40 local.
 
 | Run | Model | Status | Purpose |
 |---|---|---|---|

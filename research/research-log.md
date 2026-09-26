@@ -327,3 +327,5 @@ Chronological record of research decisions and actions. Append-only.
 | 226 | 2026-09-27 | audit | Corrected the 3D scorer to apply the shared bathymetric vertical mask. The earlier +6.35 C 4000m warm bias was an artifact from scoring below-seafloor ghost layers. Corrected 30d global 3D RMSE is ocean_solver 0.861 C vs MOM6 1.036 C; MOM6 is modestly better in 40-60N. |
 
 | 227 | 2026-09-27 | benchmark | Launched a 365d Stage-F ocean_solver rerun with 3D snapshots to provide the annual counterpart for the MOM6 exact dynamic-bulk 3D comparison. |
+
+| 228 | 2026-09-27 | ops | WSL became inaccessible and was restarted. The two MOM6 365d runs and the ocean_solver annual 3D run were relaunched from day 0; prior partial runs are not usable for scoring. |

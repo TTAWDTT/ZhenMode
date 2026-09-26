@@ -751,3 +751,6 @@ ocean_solver_stage_f_365d_3d:
   days: 365
   purpose: "annual Stage-F no-ice rerun with 3D snapshots for the matched MOM6 comparison"
   output: "/root/external_models/results/industrial_comparison_045/global_industrial_comparison_050_stage_f_365d_3d.npz"
+
+runtime_notes:
+  - "2026-09-27 01:40: WSL became inaccessible and was restarted; all three active 365d runs were relaunched from day 0."
