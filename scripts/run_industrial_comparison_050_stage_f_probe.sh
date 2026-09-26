@@ -45,6 +45,11 @@ elif [[ "${MIXED_LAYER_MODE}" == "stratification" ]]; then
   )
 fi
 
+DYNAMIC_ICE_ARGS=()
+if [[ "${DYNAMIC_ICE}" == "true" ]]; then
+  DYNAMIC_ICE_ARGS+=(--dynamic-ice --ice-insulation-scale-m "${ICE_INSULATION_SCALE_M}")
+fi
+
 "${PYTHON_BIN}" src/run_long_integration_global.py \
   --mode-split --use-scan --dtype float32 \
   --lat-max 65 --resolution 0.5 --resolution-remap area \
@@ -65,5 +70,4 @@ fi
   --log-dir "${LOG_DIR}" \
   "${MIXED_LAYER_ARGS[@]}" \
   --ice-salt-flux "${ICE_SALT_FLUX}" \
-  ${DYNAMIC_ICE:+--dynamic-ice} \
-  ${DYNAMIC_ICE:+--ice-insulation-scale-m "${ICE_INSULATION_SCALE_M}"}
+  "${DYNAMIC_ICE_ARGS[@]}"
