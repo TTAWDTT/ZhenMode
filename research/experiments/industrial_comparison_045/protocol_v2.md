@@ -62,6 +62,10 @@ Gate:
 - heat/salt drift bounded;
 - both scored by `score_external_model.py` or `benchmark_metrics.py`.
 
+The 30d prescribed-restore run is completed and recorded in
+`restore_30d_manifest.json`. It validates this stage on the matched 30d slice,
+but a 365d reproducible run is still required before any climate-state claim.
+
 ### Stage F — matched bulk heat/salt forcing
 
 Goal: move from prescribed restoring to the realistic air-sea flux contract.

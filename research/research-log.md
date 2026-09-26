@@ -266,3 +266,8 @@ Chronological record of research decisions and actions. Append-only.
 
 
 | 201 | 2026-09-26 | tooling | Added the model-neutral external scorer, Stage-R protocol v2, and generic MOM6 wind-only benchmark. The scorer now has coordinate, wet-mask, steady-window, and mismatch tests; the full suite passes. |
+
+
+| 202 | 2026-09-26 | external | Configured the Stage-R MOM6 slice with zero bulk fluxes plus WOA surface SST/SSS restoring; FLUXCONST=0.16666667 m/day matches the ocean_solver 30d direct restore over a 5m top cell. A 1-day smoke passed. |
+| 203 | 2026-09-26 | experiment | The matched 30d prescribed-restore controls both passed: ocean_solver global/NA A2 0.8645/0.6661 C and MOM6 1.1148/0.5794 C. Wall times were 3.5 and 47.6 min for 4 MPI ranks. |
+| 204 | 2026-09-26 | comparison | Stage-R 30d promotes only the protocol, not a climate claim: ocean_solver improves global A2/bias, MOM6 improves NA RMSE, and near-wall RMSE is nearly tied. The next gate is a 365d reproducible Stage-R check before Stage F. |

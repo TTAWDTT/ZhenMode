@@ -399,16 +399,25 @@ legacy_candidate_baseline_070:
 
 external_comparison:
   status: active
-  current_level: wind_control_30d_completed
+  current_level: prescribed_restore_30d_completed
   primary_external_target: MOM6
   protocol: "research/experiments/industrial_comparison_045/protocol_v2.md"
-  next_stage: "Stage R: prescribed SST/SSS restoring"
+  next_stage: "Stage R 365d reproducibility, then Stage F"
   wind_only_30d:
     status: completed_not_climate_benchmark
     ocean_solver_global_a2_rmse_c: 0.8658
     mom6_global_a2_rmse_c: 1.0961
     ocean_solver_wall_time_min: 3.4
     mom6_wall_time_min: 49.6
+  restore_30d:
+    status: stage_r_protocol_pass_not_climate_benchmark
+    manifest: "research/experiments/industrial_comparison_045/restore_30d_manifest.json"
+    ocean_solver_global_a2_rmse_c: 0.8645
+    mom6_global_a2_rmse_c: 1.1148
+    ocean_solver_na_rmse_c: 0.6661
+    mom6_na_rmse_c: 0.5794
+    ocean_solver_wall_time_min: 3.5
+    mom6_wall_time_min: 47.6
   targets: "research/experiments/industrial_comparison_045/targets.md"
   rule: "Do not compare with industrial models as numbers until grid, bathymetry, initial state, forcing, duration, diagnostics, and reproducibility are matched."
 
