@@ -295,3 +295,6 @@ Chronological record of research decisions and actions. Append-only.
 
 
 | 212 | 2026-09-26 | audit | Rescored the 30d monthly dynamic-ice benchmark on the standard final-10d window. It gives global A2/NA RMSE 1.231/1.316 C, not the earlier full-window 0.956/0.874 C. Ice still improves the Stage-F no-ice control, but the improvement is smaller than initially inferred. |
+
+| 213 | 2026-09-26 | synthesis | Added the industrial-model gap matrix and recorded Stage-F 30d internal metrics; MOM6 Stage-F and 365d Stage-R remain running. |
+
