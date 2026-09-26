@@ -2,6 +2,8 @@
 
 Current direct external model is MOM6 on the matched 0.5-degree slice.
 
+## Surface / integrated diagnostics
+
 | run | verdict | days | global A2 | NA RMSE | near-wall RMSE | global bias | heat drift | salt drift |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
 | wind_30d_ocean_solver | PASS | 30 | 0.8658 | 0.6751 | 0.2106 | -0.05795 | -0.02618 | -0.000203 |
@@ -12,3 +14,12 @@ Current direct external model is MOM6 on the matched 0.5-degree slice.
 | stage_f_30d_MOM6 | PASS | 30 | 1.782 | 2.207 | 2.095 | -0.4771 | -0.1074 | 0 |
 | stage_f_365d_ocean_solver | PASS | 365 | 1.297 | 0.7992 | 0.788 | -0.6496 | -0.962 | -0.0006209 |
 | stage_f_365d_MOM6 | pending | 365 | - | - | - | - | - | - |
+
+## 3D temperature diagnostics
+
+| run | global 3D RMSE | 40--60N 3D RMSE | surface RMSE | verdict |
+|---|---:|---:|---:|---|
+| stage_f_30d_ocean_solver | 0.861 C | 1.175 C | 1.703 C | PASS |
+| stage_f_30d_MOM6 | 1.036 C | 1.123 C | 1.884 C | PASS |
+| stage_f_365d_ocean_solver | 1.547 C | 1.276 C | 1.142 C | PASS |
+| stage_f_365d_MOM6 | pending | pending | pending | running |
