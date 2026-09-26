@@ -116,6 +116,23 @@ recorded in one manifest:
 It may not be called a full sea-ice model.  It is a coupled thermodynamic proxy
 for the eventual industrial comparison.
 
+## Stage-F exact dynamic-bulk MOM6 configuration
+
+The prescribed `lambda*(air-WOA SST)` file is a proxy and cannot be used for a
+climate comparison because it lacks the live SST negative feedback.  For the
+matched Stage-F 30d/365d bulk control, MOM6 must use the live SST form:
+
+- `RESTOREBUOY = True`;
+- `VARIABLE_BUOYFORCE = True`;
+- target SST field = 2023 monthly NCEP R1 2m air temperature;
+- `FLUXCONST_T = 1.7010 m/day` with `RESTORE_FLUX_RHO=1035`, `C_p=3925`,
+  giving 80 W/m2/K;
+- `FLUXCONST_S = 0`;
+- prescribed sensible/latent/longwave/shortwave/precip/runoff = zero.
+
+Keep the run on local Linux storage.  The C: filesystem is full and caused the
+earlier proxy run to lose its final spatial output.
+
 ## Scoring commands
 
 Internal run:
