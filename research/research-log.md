@@ -292,3 +292,6 @@ Chronological record of research decisions and actions. Append-only.
 
 
 | 211 | 2026-09-26 | experiment | The first Stage-F 30d dynamic-bulk probe with monthly 2m air and no ice is stable but has global A2 1.692 C and NA RMSE 2.088 C. The same forcing with the Stage-I dynamic-ice closure improves to 0.956/0.874 C, showing that the ice/mixed-layer closure is a major climate lever rather than a diagnostic add-on. |
+
+
+| 212 | 2026-09-26 | audit | Rescored the 30d monthly dynamic-ice benchmark on the standard final-10d window. It gives global A2/NA RMSE 1.231/1.316 C, not the earlier full-window 0.956/0.874 C. Ice still improves the Stage-F no-ice control, but the improvement is smaller than initially inferred. |

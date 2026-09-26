@@ -29,12 +29,12 @@
   },
   "attribution": {
     "stage_i_dynamic_ice_30d": {
-      "benchmark": "research/experiments/mixed_layer_ice_050/benchmark_30d_dynamic_ice_monthly_nofloor_strat.json",
-      "global_a2_rmse_c": 0.9561,
-      "north_atlantic_40_60_raw_rmse_c": 0.8743,
-      "near_wall_raw_bias_c": -0.6040
+      "benchmark": "research/experiments/mixed_layer_ice_050/benchmark_30d_dynamic_ice_monthly_nofloor_strat_steady10.json",
+      "global_a2_rmse_c": 1.2309,
+      "north_atlantic_40_60_raw_rmse_c": 1.3160,
+      "near_wall_raw_bias_c": -0.9289
     },
-    "interpretation": "Adding the Stage-I dynamic ice/mixed-layer closure to the same forcing improves global A2 by ~43% and NA RMSE by ~58% on this 30d slice."
+    "interpretation": "Adding the Stage-I dynamic ice/mixed-layer closure improves global A2 from 1.6915 to 1.2309 C and NA RMSE from 2.0879 to 1.3160 C on the standard final-10d window."
   },
   "comparison_table": "research/experiments/industrial_comparison_045/stage_f_vs_stage_i_30d_table.md",
   "caveat": "This run has no sea ice and no restoring; it is not directly comparable to MOM6 until MOM6 uses the same bulk closure or a matched prescribed-flux contract."
