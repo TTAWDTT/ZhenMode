@@ -422,3 +422,15 @@ mixed_layer_ice_050_annual:
   expected_days: 365
   control: "research/experiments/ice_proxy_045/benchmark_365d_repeat.json"
   gate: "src/benchmark_gate.py"
+
+candidate_baseline_050_icefloor:
+  name: "candidate_65n_050_icefloor/global_candidate_65n_050_icefloor_365d"
+  status: validated_not_locked
+  command: "scripts/run_candidate_baseline_050_icefloor.sh"
+  grid: "lat_max=65, resolution=0.5 degree"
+  forcing: "seasonal 2023 NCEP wind + annual NCEP R1 2m air with -1.8 C ice floor"
+  reference_metrics:
+    global_a2_rmse_c: 1.128
+    north_atlantic_40_60_raw_rmse_c: 0.924
+    north_atlantic_40_60_raw_bias_c: -0.696
+    near_wall_raw_bias_c: -0.921

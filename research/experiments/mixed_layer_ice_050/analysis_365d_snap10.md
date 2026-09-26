@@ -34,3 +34,15 @@ mixed-layer depth and **no** ice-salt flux, now running as
 After that control finishes, repeat the gate.  If the mixed-layer/ice run still
 fails, reject the current parameter pair and run only one closed-loop variant at
 a time rather than changing two closures together.
+
+## Same-resolution ice-floor control
+
+The 0.5-degree ice-floor control is now available:
+
+- global A2 RMSE `1.128 C`
+- NA 40--60N raw RMSE `0.924 C`
+- near-wall raw bias `-0.921 C`
+
+Against this fair 0.5-degree control, the mixed-layer/ice run still fails the
+global and NA gates while improving near-wall bias.  Therefore the current
+mixed-layer/ice parameter pair is rejected.
