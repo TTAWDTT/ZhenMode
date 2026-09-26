@@ -220,3 +220,37 @@ or industrial production system.
 
 
 
+
+## Annual 3D direct comparison
+
+For the annual Stage-F direct comparison, use the same final-90d window on both
+models.
+
+ocean_solver:
+
+```bash
+python src/score_solver_3d.py \
+  --npz results/industrial_comparison_045/global_global_industrial_comparison_050_stage_f_365d_3d.npz \
+  --snap-dir /root/external_models/results/industrial_comparison_045/global_global_industrial_comparison_050_stage_f_365d_3d_3d \
+  --snap-days 30 --steady-days 90 \
+  --out research/experiments/industrial_comparison_045/ocean_solver_stage_f_365d_3d_benchmark.json
+```
+
+MOM6:
+
+```bash
+python src/score_external_3d.py \
+  --input <run_dir>/prog.nc \
+  --variable temp \
+  --geometry <run_dir>/ocean_geometry.nc \
+  --wet-var wet \
+  --lat-var lath \
+  --lon-var lonh \
+  --depth-var D \
+  --reference-npz /root/external_models/results/industrial_comparison_045/global_global_industrial_comparison_050_stage_f_365d_3d.npz \
+  --steady-days 90 \
+  --out research/experiments/industrial_comparison_045/mom6_stage_f_dynamic_365d_3d_benchmark.json
+```
+
+A 30d result may diagnose a scoring bug or short-term behavior, but only the
+annual final-90d window is the pre-registered annual climate gate.
