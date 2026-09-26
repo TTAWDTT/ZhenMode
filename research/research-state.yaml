@@ -708,11 +708,11 @@ stage_f_30d_3d:
   mom6_3d_benchmark: "research/experiments/industrial_comparison_045/mom6_stage_f_dynamic_30d_3d_benchmark.json"
   ocean_solver_3d_benchmark: "research/experiments/industrial_comparison_045/ocean_solver_stage_f_30d_3d_benchmark.json"
   metrics:
-    mom6_global_3d_raw_rmse_c: 1.1290
-    ocean_solver_global_3d_raw_rmse_c: 2.8420
+    mom6_global_3d_raw_rmse_c: 1.0363
+    ocean_solver_global_3d_raw_rmse_c: 0.8613
     mom6_surface_raw_rmse_c: 1.8840
     ocean_solver_surface_raw_rmse_c: 1.7030
-  interpretation: "The first 3D diagnostic shows ocean_solver has better surface SST but a large deep-ocean warm bias; this is the next physics target after annual bulk comparison."
+  interpretation: "Corrected for below-seafloor ghost layers; ocean_solver has better global/surface 3D temperature and MOM6 is modestly better in North Atlantic 40-60N."
 
 ocean_solver_stage_f_mld20_365d:
   status: completed_not_promoted
@@ -750,3 +750,10 @@ stage_f_30d_3d_corrected:
     mom6_surface_raw_rmse_c: 1.8840
     ocean_solver_surface_raw_rmse_c: 1.7030
   interpretation: "After excluding ghost layers, ocean_solver has better global/surface 3D temperature and MOM6 is modestly better in North Atlantic 40-60N; the previous 4000m warm-bias signal was an artifact."
+
+
+ocean_solver_stage_f_365d_3d:
+  status: running_local
+  days: 365
+  purpose: "annual Stage-F no-ice rerun with 3D snapshots for the matched MOM6 comparison"
+  output: "/root/external_models/results/industrial_comparison_045/global_industrial_comparison_050_stage_f_365d_3d.npz"

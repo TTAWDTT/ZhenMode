@@ -1,6 +1,6 @@
 # Active external/internal comparison runs
 
-Updated: 2026-09-27 03:30 local.
+Updated: 2026-09-27 01:30 local.
 
 | Run | Model | Status | Purpose |
 |---|---|---|---|
@@ -12,3 +12,4 @@ Updated: 2026-09-27 03:30 local.
 | ocean_solver Stage-F 365d no-ice | ocean_solver | completed | internal annual bulk control |
 | ocean_solver Stage-F 365d MLD20 | ocean_solver | completed | stratification sensitivity; not promoted |
 | Stage-I annual dynamic ice | ocean_solver | completed | minimal ice/MLD closed loop |
+| ocean_solver Stage-F 365d 3D | ocean_solver | running | annual 3D snapshot counterpart for MOM6 bulk comparison |
