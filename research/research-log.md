@@ -286,3 +286,6 @@ Chronological record of research decisions and actions. Append-only.
 
 
 | 209 | 2026-09-26 | attribution | A 365d monthly-air no-ice control has global A2 1.378 C and NA RMSE 1.185 C, nearly matching the dynamic-ice run (1.362/1.190 C). The annual degradation therefore comes mainly from monthly-air forcing, not the ice closure itself. |
+
+
+| 210 | 2026-09-26 | tooling | Added MOM6 monthly 2m air and lambda*(air-WOA SST) sensible-heat export tools. They are ready for a first Stage-F 30d slice, with the limitation that the current sensible proxy uses a prescribed rather than instantaneous SST in the heat-flux denominator. |

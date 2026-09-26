@@ -399,10 +399,14 @@ legacy_candidate_baseline_070:
 
 external_comparison:
   status: active
-  current_level: prescribed_restore_30d_completed
+  current_level: stage_i_closed_loop_complete_stage_f_prepared
   primary_external_target: MOM6
   protocol: "research/experiments/industrial_comparison_045/protocol_v2.md"
-  next_stage: "Stage R 365d reproducibility, then Stage F"
+  next_stage: "Stage F 30d sensible-heat proxy; then annual bulk forcing"
+  stage_f_tooling:
+    air_temp_exporter: "src/export_mom6_air_temp_forcing.py"
+    sensible_heat_proxy: "src/export_mom6_sensible_forcing.py"
+    note: "The sensible file is a prescribed lambda*(air-WOA SST) proxy; it is not yet the fully matched dynamic bulk contract."
   wind_only_30d:
     status: completed_not_climate_benchmark
     ocean_solver_global_a2_rmse_c: 0.8658
