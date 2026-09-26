@@ -97,3 +97,24 @@ def test_score_external_field_accepts_mom6_2d_centers(tmp_path):
                                   wet_var="wet", level=0)
     assert result["verdict"] == "PASS"
     assert result["n_scored"] == 7
+
+
+def test_score_external_field_rejects_empty_output(tmp_path):
+    ref_path = tmp_path / "reference.npz"
+    model_path = tmp_path / "empty.nc"
+    _write_reference(ref_path)
+    with netCDF4.Dataset(model_path, "w") as ds:
+        ds.createDimension("time", 0)
+        ds.createDimension("lat", 3)
+        ds.createDimension("lon", 3)
+        ds.createVariable("sst", "f8", ("time", "lat", "lon"))
+        ds.createVariable("lat", "f8", ("lat",))
+        ds.createVariable("lon", "f8", ("lon",))
+        ds["lat"][:] = np.array([30.0, 45.0, 55.0], dtype=float)
+        ds["lon"][:] = np.array([300.0, 320.0, 0.0], dtype=float)
+    try:
+        score_external_field(model_path, variable="sst", reference_path=ref_path)
+    except RuntimeError as exc:
+        assert "no time records" in str(exc)
+    else:
+        raise AssertionError("empty output was accepted")

@@ -75,6 +75,8 @@ def score_external_field(path: str | Path, *, variable: str,
         raise RuntimeError("external-model grid centers differ from reference")
 
     field = ds[variable]
+    if "time" in field.dimensions and field.shape[0] == 0:
+        raise RuntimeError(f"external output has no time records: {field.shape}")
     if "time" in field.dimensions:
         time_var = next((name for name in ds.variables
                          if "time" in ds[name].dimensions and ds[name].ndim == 1), None)
