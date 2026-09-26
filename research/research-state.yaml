@@ -800,3 +800,28 @@ ocean_solver_stage_f_strat_mld_365d:
     max_ice_thickness_m: 3.7100
   interpretation: "Improves near-wall bias but loses to the annual Stage-F no-ice control on global and North Atlantic RMSE; do not promote."
 
+ocean_solver_stage_f_strat_mld_lat20_60_noice_365d:
+  status: completed_not_promoted
+  benchmark: "research/experiments/industrial_comparison_045/ocean_solver_stage_f_strat_mld_lat20_60_noice_365d_benchmark.json"
+  metrics:
+    global_a2_rmse_c: 1.2807
+    north_atlantic_40_60_raw_rmse_c: 1.6048
+    near_wall_55_60_raw_rmse_c: 1.2914
+    near_wall_55_60_raw_bias_c: 0.0386
+    heat_drift_percent: -0.7321
+    salt_drift_percent: -0.0004204
+  interpretation: "Northern-only stratification MLD without ice improves global A2 slightly but degrades North Atlantic RMSE; do not promote."
+
+ocean_solver_stage_f_strat_mld_lat20_60_ice_365d:
+  status: completed_not_promoted
+  benchmark: "research/experiments/industrial_comparison_045/ocean_solver_stage_f_strat_mld_lat20_60_365d_benchmark.json"
+  metrics:
+    global_a2_rmse_c: 1.2888
+    north_atlantic_40_60_raw_rmse_c: 1.6064
+    near_wall_55_60_raw_rmse_c: 1.2607
+    near_wall_55_60_raw_bias_c: 0.0614
+    heat_drift_percent: -0.6857
+    salt_drift_percent: 0.0021920
+    ice_cells: 5787
+    max_ice_thickness_m: 11.0278
+  interpretation: "Regional stratification MLD with dynamic ice creates excessive ice and fails the annual climate gate; do not promote."
