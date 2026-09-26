@@ -1,6 +1,6 @@
 # 工业级海洋模式差距矩阵
 
-> 2026-09-26。这里区分三类证据：`direct rerun`、`public output`、`design/literature reference`。
+> 2026-09-27。这里区分三类证据：`direct rerun`、`public output`、`design/literature reference`。
 > 只有 MOM6 0.5 度切片目前有 direct rerun；其他模式先作为设计和协议参照。
 
 ## 当前直接对照
@@ -10,10 +10,12 @@
 | MOM6 | direct rerun | 30d wind-only | ocean_solver A2 `0.866 C`; MOM6 `1.096 C` |
 | MOM6 | direct rerun | 30d prescribed restore | ocean_solver A2 `0.865 C`; MOM6 `1.115 C` |
 | MOM6 | direct rerun | 365d prescribed restore | ocean_solver A2 `2.245 C`; MOM6 本地重跑中 |
-| MOM6 | direct rerun | 365d Stage-F exact dynamic bulk | ocean_solver 365d internal running; MOM6 365d local running |
-| MOM6 | direct rerun | 30d Stage-F exact dynamic bulk | ocean_solver A2 `1.692 C`; MOM6 本地运行中 |
+| MOM6 | direct rerun | 365d Stage-F exact dynamic bulk | ocean_solver annual no-ice A2 `1.297 C`; MOM6 365d local running |
+| MOM6 | direct rerun | 30d Stage-F exact dynamic bulk | ocean_solver A2 `1.692 C`; MOM6 `1.782 C` |
 | ocean_solver | internal | 30d Stage-F prescribed proxy | FAIL_DRIFT; A2 `5.629 C`; max T `51.35 C` |
 | MOM6 | direct rerun | 30d Stage-F prescribed proxy | 稳定性警告; 因 C 盘满无空间评分 |
+| MOM6 | direct rerun | 30d Stage-F 3D temperature | ocean_solver `2.842 C`; MOM6 `1.129 C`; ocean_solver deep warm bias is dominant |
+| ocean_solver | internal | 365d Stage-F MLD20 | A2 `1.406 C`; NA RMSE `1.302 C`; heat drift `-0.276%` |
 | ocean_solver | internal | 30d Stage-I ice/mixed-layer | A2 `1.231 C`; NA RMSE `1.316 C` |
 
 这些数字只代表固定 0.5 度切片，不是 OMIP、预报系统或全球气候模式级结论。
@@ -37,5 +39,7 @@
 1. **小切片上已经能跑通工业级对照协议**，但还不能宣称超过工业级模式。
 2. **Stage-F 是下一个门槛**：只有通过完整 bulk forcing 365d，才比 30d restore 更有说服力。
 3. **最小 ice/mixed-layer 闭环已经稳定**，但仍要和 industrial 模式在同一 forcing 下对比。
-4. **要超过工业级模式，优先级不是继续调参**，而是：完整 bulk forcing → 365d 对照 → 三维误差 → 并行/速度 → 扩展到更多物理过程。
+4. **当前最明确的工业级差距是三维温度**：30d 对照里 MOM6 全域 3D RMSE `1.129 C`，ocean_solver `2.842 C`，主要来自 1000m 以下暖偏差。
+5. **要超过工业级模式，优先级不是继续调参**，而是：完整 bulk forcing → 365d 对照 → 三维误差 → 并行/速度 → 扩展到更多物理过程。
+
 

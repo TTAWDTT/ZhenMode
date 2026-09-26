@@ -632,7 +632,7 @@ wind_only_050:
   comparability: "wind-forced dynamic control only; not a climate benchmark"
 
 mom6_stage_f_dynamic_050:
-  status: exact_dynamic_bulk_30d_running
+  status: completed_not_climate_benchmark
   run_dir: "/root/external_models/mom6_slice_050/p0_stage_f_dynamic_30d"
   implementation: "RESTOREBUOY target=NCEP 2m air, FLUXCONST_T=1.7010 m/day, FLUXCONST_S=0, rho=1035, C_p=3925"
   matched_inputs:
@@ -713,3 +713,25 @@ stage_f_30d_3d:
     mom6_surface_raw_rmse_c: 1.8840
     ocean_solver_surface_raw_rmse_c: 1.7030
   interpretation: "The first 3D diagnostic shows ocean_solver has better surface SST but a large deep-ocean warm bias; this is the next physics target after annual bulk comparison."
+
+ocean_solver_stage_f_mld20_365d:
+  status: completed_not_promoted
+  benchmark: "research/experiments/industrial_comparison_045/ocean_solver_stage_f_mld20_365d_benchmark.json"
+  comparison_table: "research/experiments/industrial_comparison_045/stage_f_365d_internal_stratification_table.md"
+  metrics:
+    global_a2_rmse_c: 1.4059
+    north_atlantic_40_60_raw_rmse_c: 1.3020
+    near_wall_55_60_raw_rmse_c: 1.0258
+    near_wall_55_60_raw_bias_c: 0.0418
+    heat_drift_percent: -0.2762
+    salt_drift_percent: -0.000216
+  interpretation: "MLD20 stratification reduces heat drift and near-wall bias but degrades global and North Atlantic A2; do not promote."
+
+stage_f_30d_performance:
+  status: diagnostic_performance_comparison
+  table: "research/experiments/industrial_comparison_045/stage_f_30d_performance_table.md"
+  metrics:
+    ocean_solver_30d_wall_min: 3.5
+    mom6_30d_wall_min: 74.5
+    mom6_mpi_ranks: 4
+  interpretation: "ocean_solver is much faster on this short matched slice, but MOM6 remains much better for 3D temperature; speed and climate skill are separate claims."
