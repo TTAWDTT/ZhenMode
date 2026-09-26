@@ -329,3 +329,5 @@ Chronological record of research decisions and actions. Append-only.
 | 227 | 2026-09-27 | benchmark | Launched a 365d Stage-F ocean_solver rerun with 3D snapshots to provide the annual counterpart for the MOM6 exact dynamic-bulk 3D comparison. |
 
 | 228 | 2026-09-27 | ops | WSL became inaccessible and was restarted. The two MOM6 365d runs and the ocean_solver annual 3D run were relaunched from day 0; prior partial runs are not usable for scoring. |
+
+| 229 | 2026-09-27 | ops | After the WSL restart, both MOM6 365d relaunch attempts exited during startup; the ocean_solver annual 3D control was relaunched and remains active. |
