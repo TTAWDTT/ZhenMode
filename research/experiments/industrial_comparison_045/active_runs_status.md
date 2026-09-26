@@ -1,6 +1,6 @@
 # Active external/internal comparison runs
 
-Updated: 2026-09-27 06:45 local.
+Updated: 2026-09-27 07:25 local.
 
 | Run | Model | Status | Purpose |
 |---|---|---|---|
@@ -12,3 +12,4 @@ Updated: 2026-09-27 06:45 local.
 | ocean_solver Stage-F 365d stratification MLD | ocean_solver | completed | annual upper-ocean gate; not promoted |
 | ocean_solver Stage-F 30d northern-only stratification MLD | ocean_solver | completed | regional upper-ocean probe |
 | ocean_solver Stage-F 365d northern-only stratification MLD | ocean_solver | completed | annual regional gate; not promoted |
+| ocean_solver Stage-F 365d dynamic ice no MLD | ocean_solver | completed | sea-ice ablation; not promoted |
