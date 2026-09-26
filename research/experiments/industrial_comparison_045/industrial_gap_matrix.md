@@ -9,9 +9,10 @@
 |---|---|---|---|
 | MOM6 | direct rerun | 30d wind-only | ocean_solver A2 `0.866 C`; MOM6 `1.096 C` |
 | MOM6 | direct rerun | 30d prescribed restore | ocean_solver A2 `0.865 C`; MOM6 `1.115 C` |
-| MOM6 | direct rerun | 365d prescribed restore | ocean_solver A2 `2.245 C`; MOM6 还在跑 |
-| MOM6 | direct rerun | 30d Stage-F bulk proxy | ocean_solver A2 `1.692 C`; MOM6 还在跑 |
-| ocean_solver | internal | 30d Stage-F proxy | FAIL_DRIFT; A2 `5.629 C`; max T `51.35 C` |
+| MOM6 | direct rerun | 365d prescribed restore | ocean_solver A2 `2.245 C`; MOM6 本地重跑中 |
+| MOM6 | direct rerun | 30d Stage-F exact dynamic bulk | ocean_solver A2 `1.692 C`; MOM6 本地运行中 |
+| ocean_solver | internal | 30d Stage-F prescribed proxy | FAIL_DRIFT; A2 `5.629 C`; max T `51.35 C` |
+| MOM6 | direct rerun | 30d Stage-F prescribed proxy | 稳定性警告; 因 C 盘满无空间评分 |
 | ocean_solver | internal | 30d Stage-I ice/mixed-layer | A2 `1.231 C`; NA RMSE `1.316 C` |
 
 这些数字只代表固定 0.5 度切片，不是 OMIP、预报系统或全球气候模式级结论。
