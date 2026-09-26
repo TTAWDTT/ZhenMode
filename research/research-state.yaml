@@ -825,3 +825,18 @@ ocean_solver_stage_f_strat_mld_lat20_60_ice_365d:
     ice_cells: 5787
     max_ice_thickness_m: 11.0278
   interpretation: "Regional stratification MLD with dynamic ice creates excessive ice and fails the annual climate gate; do not promote."
+ocean_solver_stage_f_dynamic_ice_no_mld_365d:
+  status: completed_not_promoted
+  benchmark: "research/experiments/industrial_comparison_045/ocean_solver_stage_f_dynamic_ice_no_mld_365d_benchmark.json"
+  config: "Stage-F monthly-air dynamic bulk + dynamic ice, no mixed-layer slab"
+  metrics:
+    global_a2_rmse_c: 1.2134
+    north_atlantic_40_60_raw_rmse_c: 0.9825
+    near_wall_55_60_raw_rmse_c: 1.0952
+    near_wall_55_60_raw_bias_c: -0.8992
+    heat_drift_percent: -0.9130
+    salt_drift_percent: 0.0022461
+    ice_cells: 5918
+    max_ice_thickness_m: 11.0252
+    ice_extent_fraction: 0.0269461
+  interpretation: "Dynamic ice without the mixed-layer slab improves global A2 but worsens North Atlantic and near-wall RMSE; not promoted."
