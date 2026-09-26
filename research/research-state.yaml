@@ -754,3 +754,19 @@ ocean_solver_stage_f_365d_3d:
 
 runtime_notes:
   - "2026-09-27 01:40: WSL became inaccessible and was restarted; all three active 365d runs were relaunched from day 0."
+
+ocean_solver_stage_f_365d_3d:
+  status: completed
+  days: 365
+  snap_days: 30
+  steady_days: 90
+  output: "/root/external_models/results/industrial_comparison_045/global_global_industrial_comparison_050_stage_f_365d_3d.npz"
+  benchmark: "research/experiments/industrial_comparison_045/ocean_solver_stage_f_365d_3d_benchmark.json"
+  surface_benchmark: "research/experiments/industrial_comparison_045/ocean_solver_stage_f_365d_3d_surface_benchmark.json"
+  metrics:
+    global_3d_raw_rmse_c: 1.5470
+    north_atlantic_40_60_3d_raw_rmse_c: 1.2759
+    surface_raw_rmse_c: 1.1417
+    global_a2_rmse_c: 1.2042
+    heat_drift_percent: -0.9620
+  interpretation: "Annual Stage-F 3D control is stable; it gives the ocean_solver side for the eventual matched MOM6 annual 3D comparison."

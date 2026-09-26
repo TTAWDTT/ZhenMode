@@ -331,3 +331,7 @@ Chronological record of research decisions and actions. Append-only.
 | 228 | 2026-09-27 | ops | WSL became inaccessible and was restarted. The two MOM6 365d runs and the ocean_solver annual 3D run were relaunched from day 0; prior partial runs are not usable for scoring. |
 
 | 229 | 2026-09-27 | ops | After the WSL restart, both MOM6 365d relaunch attempts exited during startup; the ocean_solver annual 3D control was relaunched and remains active. |
+
+| 230 | 2026-09-27 | ops | The annual ocean_solver 3D control died after ~90d during snapshot I/O. It was relaunched with 30-day 3D snapshots to reduce I/O/memory pressure. |
+
+| 231 | 2026-09-27 | experiment | Completed the 365d ocean_solver Stage-F 3D snapshot control. Final-90d global 3D RMSE is 1.547 C, North Atlantic 3D RMSE is 1.276 C, and surface A2 is 1.204 C; stability PASS. |

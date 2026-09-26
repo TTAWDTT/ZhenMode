@@ -1,0 +1,102 @@
+{
+  "global_3d": {
+    "n": 1703703,
+    "raw_bias": -0.6700936373115239,
+    "raw_rmse": 1.547042407827675
+  },
+  "layers": {
+    "z0000m": {
+      "n": 127083,
+      "raw_bias": -0.5779238055280344,
+      "raw_rmse": 1.1416975358945876
+    },
+    "z-005m": {
+      "n": 127083,
+      "raw_bias": -1.2927118521726189,
+      "raw_rmse": 1.6900186478404606
+    },
+    "z-015m": {
+      "n": 127083,
+      "raw_bias": -1.6448437810669698,
+      "raw_rmse": 2.0751617191839973
+    },
+    "z-030m": {
+      "n": 127083,
+      "raw_bias": -1.717114628897736,
+      "raw_rmse": 2.191149994599432
+    },
+    "z-050m": {
+      "n": 127083,
+      "raw_bias": -1.4108910501761516,
+      "raw_rmse": 2.0228796572576475
+    },
+    "z-075m": {
+      "n": 127083,
+      "raw_bias": -0.8654152642220619,
+      "raw_rmse": 1.7960166871011962
+    },
+    "z-100m": {
+      "n": 127083,
+      "raw_bias": -0.5861916455660097,
+      "raw_rmse": 1.7438580860467936
+    },
+    "z-150m": {
+      "n": 127083,
+      "raw_bias": -0.09027162767127188,
+      "raw_rmse": 1.651863508504731
+    },
+    "z-200m": {
+      "n": 127083,
+      "raw_bias": -0.280838361559659,
+      "raw_rmse": 1.6144781084647433
+    },
+    "z-300m": {
+      "n": 127083,
+      "raw_bias": -0.35049500022011015,
+      "raw_rmse": 1.377641040441129
+    },
+    "z-500m": {
+      "n": 127083,
+      "raw_bias": -0.2732019657655903,
+      "raw_rmse": 1.0211786819785853
+    },
+    "z-1000m": {
+      "n": 123010,
+      "raw_bias": 0.0441625537438695,
+      "raw_rmse": 0.3838490483487881
+    },
+    "z-2000m": {
+      "n": 115514,
+      "raw_bias": 0.04788503923354123,
+      "raw_rmse": 0.19105624956073117
+    },
+    "z-4000m": {
+      "n": 67266,
+      "raw_bias": 0.03816585065907762,
+      "raw_rmse": 0.12394464634845782
+    }
+  },
+  "n_scored_cells": 1703703,
+  "n_snapshots": 3,
+  "steady_days": 90.0,
+  "snap_days": 30.0,
+  "depth_mask_applied": true,
+  "verdict": "PASS",
+  "source_snapshots": [
+    "\\\\wsl$\\Ubuntu\\root\\external_models\\results\\industrial_comparison_045\\global_global_industrial_comparison_050_stage_f_365d_3d_3d\\snap_00011.npy",
+    "\\\\wsl$\\Ubuntu\\root\\external_models\\results\\industrial_comparison_045\\global_global_industrial_comparison_050_stage_f_365d_3d_3d\\snap_00012.npy",
+    "\\\\wsl$\\Ubuntu\\root\\external_models\\results\\industrial_comparison_045\\global_global_industrial_comparison_050_stage_f_365d_3d_3d\\snap_00013.npy"
+  ],
+  "source_npz": "\\\\wsl$\\Ubuntu\\root\\external_models\\results\\industrial_comparison_045\\global_global_industrial_comparison_050_stage_f_365d_3d.npz",
+  "source_depth": null,
+  "north_atlantic_40_60_3d": {
+    "n": 51141,
+    "raw_bias": -0.07437766365896975,
+    "raw_rmse": 1.2758770455562842
+  },
+  "near_wall_55_60_3d": {
+    "n": 12938,
+    "raw_bias": -0.25566403259122766,
+    "raw_rmse": 1.1239172824996928
+  }
+}
