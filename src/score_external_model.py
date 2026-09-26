@@ -162,6 +162,8 @@ def main():
     result["model"] = args.model
     result["run_id"] = args.run_id
     result["source_file"] = str(Path(args.input))
+    result["source_geometry"] = str(Path(args.geometry)) if args.geometry else None
+    result["variable"] = args.variable
     out = Path(args.out or Path(args.input).with_name("external_benchmark.json"))
     out.write_text(json.dumps(result, indent=2) + "\n")
     print(json.dumps(result, indent=2))
