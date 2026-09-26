@@ -393,6 +393,9 @@ def main():
                          "(stronger surface restoring; phase-A distortion)")
     ap.add_argument("--lambda-bulk", type=float, default=LAMBDA_BULK_DEFAULT_G)
     ap.add_argument("--no-bulk-flux", action="store_true")
+    ap.add_argument("--no-meridional-heat-flux", action="store_true",
+                    help="disable idealized meridional Q_heat for wind-only "
+                         "external comparison; combine with --no-bulk-flux")
     ap.add_argument("--real-air-temp", action="store_true",
                     help="use annual-mean NCEP R1 2-m air temperature as the "
                          "bulk-flux target instead of the zonal WOA SST "
@@ -651,6 +654,8 @@ def main():
                       kappa_conv=args.kappa_conv,
                       gm_slope_max=args.gm_slope_max)
     Q_heat = heat_flux_meridional(grid, Q0=50.0)
+    if args.no_meridional_heat_flux:
+        Q_heat = np.zeros_like(Q_heat)
 
     # ── Initial fields (WOA2023, or precomputed npz via --init-from) ──
     if args.init_from:

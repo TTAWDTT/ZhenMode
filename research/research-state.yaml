@@ -490,7 +490,7 @@ mom6_build_status:
   examples_commit: "a5ebafec64c12f308d9f740ce40be1c1bfddd25a"
   executable: "C:/Users/zhen.luo/external_models/MOM6/build/MOM6"
   smoke_test: "32x32 Cartesian benchmark, 1h, one MPI rank"
-  comparable_run_status: "not_started"
+  comparable_run_status: "wind_only_30d_running"
 
 
 global_sst_restore_050:
@@ -502,3 +502,39 @@ global_sst_restore_050:
     north_atlantic_40_60_raw_rmse_c: 0.551
     near_wall_raw_bias_c: -0.563
   note: "Not better than the validated 55--65N mixed-layer diagnostic; do not promote."
+
+mom6_dynamic_smoke_050:
+  status: dynamic_smoke_passed
+  run_dir: "C:/Users/zhen.luo/external_models/mom6_slice_050/p0_shared_ale"
+  grid: "720x260x14"
+  grid_config: "spherical, lat -65..65, lon 0..360"
+  vertical_coordinate: "Z* ALE, 14 levels"
+  bathymetry: "shared ETOPO-derived topog_050.nc"
+  initial_state: "shared WOA woa_ts_050.nc"
+  wind: "2023 monthly NCEP stress converted from ocean_solver"
+  heat_salt_forcing: "NONE"
+  one_day_wall_seconds: 332
+  verdict: "stable; matched 30d run in progress"
+
+
+wind_only_050:
+  status: ocean_solver_done_mom6_running
+  run: "results/industrial_comparison_045/global_industrial_comparison_050_wind_only_30d.npz"
+  benchmark: "research/experiments/industrial_comparison_045/ocean_solver_wind_only_30d_benchmark.json"
+  days: 30
+  matched_inputs:
+    grid: "720x260, lat -65..65, lon 0..360"
+    bathymetry: "ETOPO-derived, 80 smoothing passes, 500m floor"
+    initial_state: "WOA T/S"
+    wind: "2023 monthly NCEP stress"
+    heat_flux: "none"
+    salt_flux: "none"
+  ocean_solver_metrics:
+    global_a2_rmse_c: 0.866
+    global_raw_bias_c: -0.058
+    global_raw_rmse_c: 0.566
+    north_atlantic_40_60_raw_rmse_c: 0.675
+    near_wall_55_60_raw_bias_c: -0.144
+    heat_drift_percent: -0.026
+    verdict: PASS
+  comparability: "wind-forced dynamic control only; not a climate benchmark"

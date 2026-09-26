@@ -256,3 +256,8 @@ Chronological record of research decisions and actions. Append-only.
 
 | 192 | 2026-09-26 | feature | Added --global-sst-restore-days so ocean_solver can run the same prescribed SST-restoring boundary condition as a future MOM6 comparison slice. |
 | 193 | 2026-09-26 | experiment | A 30d global 30d-restoring probe is stable (global A2 0.8253 C) but is not better than the 55--65N mixed-layer diagnostic; it is a benchmark-enabling option, not a tuning win. |
+| 194 | 2026-09-26 | external | Fixed the shared MOM6 grid to 720x260 0.5-degree global ALE, read WOA T/S, and completed a stable 1-day dynamic smoke. |
+| 195 | 2026-09-26 | feature | Exported the shared 2023 monthly NCEP wind stress to an A-grid MOM6 forcing file with an unlimited time dimension. |
+| 196 | 2026-09-26 | feature | Added --no-meridional-heat-flux and a wind-only 0.5-degree comparison script. |
+| 197 | 2026-09-26 | experiment | The 30d 0.5-degree ocean_solver wind-only control passed: global A2 0.8658 C, raw bias/RMSE -0.0580/0.5660 C, NA RMSE 0.6751 C, near-wall bias -0.1442 C. |
+| 198 | 2026-09-26 | external | Launched the matched 30d 4-rank MOM6 wind-only run; it is not scored until its NetCDF output is converted to the shared grid and reference. |
