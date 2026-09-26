@@ -14,7 +14,7 @@ from benchmark_metrics import regional_error_metrics, regional_masks
 def _select_snapshot_paths(snap_path, snap_dir=None, steady_days=0.0,
                            snap_days=10.0):
     if snap_dir is not None:
-        paths = sorted(Path(snap_dir).glob("snap_*.npy"))
+        paths = [path for path in sorted(Path(snap_dir).glob("snap_*.npy")) if path.stat().st_size > 0]
         if not paths:
             raise RuntimeError(f"no snap_*.npy files in {snap_dir}")
         if steady_days > 0:
@@ -120,3 +120,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+

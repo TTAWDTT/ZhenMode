@@ -102,3 +102,30 @@ def test_solver_3d_uses_snapshot_window(tmp_path):
     assert result["global_3d"]["raw_rmse"] == 0.0
 
 
+def test_solver_3d_ignores_empty_snapshot_files(tmp_path):
+    import numpy as np
+
+    from score_solver_3d import score_solver_3d
+    ref = np.full((2, 2, 1), 10.0)
+    T = ref.copy()
+    snap = np.stack([T, np.zeros_like(T), np.zeros_like(T), np.full_like(T, 35.0)])
+    npz_path = tmp_path / "run.npz"
+    np.savez(
+        npz_path,
+        T_init=ref,
+        S_init=np.full_like(ref, 35.0),
+        wet_mask=np.ones((2, 2)),
+        lat=np.array([0.0, 1.0]),
+        lon=np.array([0.0, 1.0]),
+        z=np.array([0.0]),
+        wet_mask_z=np.ones((2, 2, 1), dtype=bool),
+    )
+    snap_dir = tmp_path / "snaps"
+    snap_dir.mkdir()
+    np.save(snap_dir / "snap_00000.npy", snap)
+    (snap_dir / "snap_00001.npy").write_bytes(b"")
+    result = score_solver_3d(
+        str(npz_path), snap_dir=str(snap_dir), snap_days=10.0, steady_days=10.0
+    )
+    assert result["n_snapshots"] == 1
+    assert result["global_3d"]["raw_rmse"] == 0.0
