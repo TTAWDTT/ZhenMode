@@ -311,3 +311,5 @@ Chronological record of research decisions and actions. Append-only.
 | 218 | 2026-09-26 | external | Prepared and launched a local 365d MOM6 exact dynamic-bulk run (`p0_stage_f_dynamic_365d`) with the same live-air bulk closure and daily diagnostics as the 30d probe. |
 
 | 219 | 2026-09-26 | audit | The first annual Stage-F no-ice run was killed when WSL stopped. It was relaunched after the restart; the 30d exact dynamic-bulk probe is the only other active MOM6 job. |
+
+| 220 | 2026-09-27 | comparison | The first matched 30d exact dynamic-bulk controls both passed: ocean_solver global/NA A2 1.692/2.088 C and MOM6 1.782/2.207 C. This is now a direct Stage-F comparison, not the failed prescribed proxy. |

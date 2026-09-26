@@ -1,0 +1,38 @@
+{
+  "global": {
+    "n": 127083,
+    "raw_bias": -0.4771029772576774,
+    "raw_rmse": 1.8840319004136736
+  },
+  "a1_corr": 0.9859391177539335,
+  "a1_rmse_c": 1.759847838930843,
+  "a2_corr": 0.9837658411909104,
+  "global_a2_rmse_c": 1.781822091517029,
+  "north_atlantic_40_60": {
+    "n": 3958,
+    "raw_bias": -2.039555594427376,
+    "raw_rmse": 2.206550184676969
+  },
+  "near_wall_55_60": {
+    "n": 1026,
+    "raw_bias": -1.8749536831132767,
+    "raw_rmse": 2.095433324661178
+  },
+  "verdict": "PASS",
+  "days_end": 30.0,
+  "time_records": 30,
+  "steady_window_days": [
+    20.0,
+    30.0
+  ],
+  "n_model_wet": 127083,
+  "n_reference_wet": 127083,
+  "n_scored": 127083,
+  "heat_drift_percent": -0.10741811294979679,
+  "salt_drift_percent": 0.0,
+  "model": "MOM6",
+  "run_id": "mom6_stage_f_dynamic_30d",
+  "source_file": "\\\\wsl$\\Ubuntu\\root\\external_models\\mom6_slice_050\\p0_stage_f_dynamic_30d\\prog.nc",
+  "source_geometry": "\\\\wsl$\\Ubuntu\\root\\external_models\\mom6_slice_050\\p0_stage_f_dynamic_30d\\ocean_geometry.nc",
+  "variable": "temp"
+}
