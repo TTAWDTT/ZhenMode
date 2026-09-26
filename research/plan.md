@@ -4,10 +4,10 @@ Updated: 2026-09-26
 
 ## Active priority: external industrial comparison
 
-The current annual candidate is not directly comparable with mature ocean
-models. The next major step is a same-protocol slice against one mature model,
-preferably MOM6, using the same initial/reference field, forcing, bathymetry,
-duration, diagnostics, and stability gates. Details:
+The active direct industrial comparison is the matched MOM6 0.5-degree slice.
+The 30d Stage-F controls are complete; the annual MOM6 Stage-F dynamic-bulk v7
+run is now the next gate. Keep grid, bathymetry, initial state, forcing,
+duration, diagnostics, and stability gates matched.
 
 - `research/experiments/industrial_comparison_045/protocol.md`
 - `research/literature/external_model_targets.md`
@@ -343,5 +343,6 @@ Runner: scripts/run_candidate_baseline.sh
     `-0.1443 C`. It passes the 30d stability and benchmark gates. Promote the
     closure to the 365d A/B check, but do not promote it as production default
     until that check repeats.
+
 
 
