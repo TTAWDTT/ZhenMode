@@ -238,3 +238,4 @@ Chronological record of research decisions and actions. Append-only.
 | 177 | 2026-09-26 | feature | Added an optional mixed-layer latitude-band mask. A 30d 0.5-degree probe with 20m MLD only in 50-65N preserves global A2, improves NA RMSE from 0.5511 to 0.4573 C, and improves near-wall bias from -0.5626 to -0.3113 C; annual check is running. |
 | 178 | 2026-09-26 | experiment | The annual 50-65N mixed-layer mask nearly preserved global A2 (1.130 C) but still failed the NA gate (0.9867 C); a narrower 55-65N annual probe is running. |
 | 179 | 2026-09-26 | experiment | The 55-65N mixed-layer mask passes the pre-registered annual gate: global A2 1.127 C, NA RMSE 0.8723 C, near-wall bias -0.6038 C. Promote to reproducibility before any promotion. |
+| 180 | 2026-09-26 | reproduction | The 55-65N mixed-layer/ice annual repeat reproduces to numerical precision and passes the same-resolution control gates. Promote to validated diagnostic, not a pure production default. |

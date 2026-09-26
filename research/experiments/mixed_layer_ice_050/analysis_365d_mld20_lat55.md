@@ -15,3 +15,14 @@ Status: 55--65N passes the pre-registered annual gate
 The narrow 55--65N mask preserves global A2, improves the North Atlantic RMSE
 by 5.6%, and improves near-wall bias by 0.317 C without breaking stability or
 heat/salt drift.  It is a diagnostic-only candidate until reproduced.
+
+## Reproducibility
+
+The 365d repeat reproduces the candidate to ~4 decimal places:
+
+- global A2 RMSE `1.12725 C`
+- NA 40--60N raw RMSE `0.87224 C`
+- near-wall raw bias `-0.60383 C`
+
+This is a validated diagnostic closure at 0.5 degree. It is not a full CICE/SI3
+sea-ice model and should not be described as production sea-ice.
