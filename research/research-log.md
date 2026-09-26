@@ -339,3 +339,5 @@ Chronological record of research decisions and actions. Append-only.
 | 232 | 2026-09-27 | ops | Removed failed MOM6 365d test directories and stale pip/uv caches; this restored enough host disk space for the annual MOM6 run. |
 | 233 | 2026-09-27 | benchmark | Launched the annual MOM6 Stage-F dynamic-bulk v7 run from the validated 30d configuration with 365-day segment length and daily diagnostics. |
 | 234 | 2026-09-27 | analysis | Added the Stage-F annual 3D layer decomposition. The annual skill loss is concentrated in the upper 500 m, pointing to mixed-layer/ventilation error rather than deep-ocean or surface forcing alone. |
+| 235 | 2026-09-27 | experiment | A 30d Stage-F stratification-MLD probe (density-threshold MLD, dynamic ice) improved global A2 from 1.692 to 1.173 C, North Atlantic RMSE from 2.088 to 1.228 C, and near-wall RMSE from 1.958 to 0.941 C versus the Stage-F no-ice control. |
+| 236 | 2026-09-27 | experiment | Launched the 365d Stage-F stratification-MLD probe to test whether the 30d upper-ocean improvement survives the annual gate. |
