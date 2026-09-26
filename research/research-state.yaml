@@ -399,20 +399,28 @@ legacy_candidate_baseline_070:
 
 external_comparison:
   status: active
-  current_level: tier_2_protocol_alignment
+  current_level: wind_control_30d_completed
   primary_external_target: MOM6
-  protocol: "research/experiments/industrial_comparison_045/protocol.md"
+  protocol: "research/experiments/industrial_comparison_045/protocol_v2.md"
+  next_stage: "Stage R: prescribed SST/SSS restoring"
+  wind_only_30d:
+    status: completed_not_climate_benchmark
+    ocean_solver_global_a2_rmse_c: 0.8658
+    mom6_global_a2_rmse_c: 1.0961
+    ocean_solver_wall_time_min: 3.4
+    mom6_wall_time_min: 49.6
   targets: "research/experiments/industrial_comparison_045/targets.md"
   rule: "Do not compare with industrial models as numbers until grid, bathymetry, initial state, forcing, duration, diagnostics, and reproducibility are matched."
 
 benchmark_tooling:
   status: active
   scorer: "src/benchmark_metrics.py"
+  external_scorer: "src/score_external_model.py"
   manifest: "src/benchmark_manifest.py"
   comparison_table: "src/benchmark_table.py"
   gate: "src/benchmark_gate.py"
   docs: "docs/benchmark_protocol_zh.md"
-  note: "Manifest and gate are model-agnostic enough to score an external rerun once its SST output is remapped to the shared grid."
+  note: "score_external_model.py enforces shared coordinates/masks and reuses score_snapshot; covered by tests/test_score_external_model.py."
 
 mixed_layer_ice_050_annual:
   status: running

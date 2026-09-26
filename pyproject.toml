@@ -38,6 +38,7 @@ py-modules = [
     "wind_reanalysis",
     "woa_data",
     "benchmark_metrics",
+    "score_external_model",
     "mixed_layer_ice",
     "bench_climatology_global",
     "fetch_sla_monthly",

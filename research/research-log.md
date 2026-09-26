@@ -263,3 +263,6 @@ Chronological record of research decisions and actions. Append-only.
 | 198 | 2026-09-26 | external | Launched the matched 30d 4-rank MOM6 wind-only run; it is not scored until its NetCDF output is converted to the shared grid and reference. |
 | 199 | 2026-09-26 | external | Completed the matched 30d MOM6 wind-only run with 4 MPI ranks; it was stable and used 49.6 min wall time. |
 | 200 | 2026-09-26 | comparison | The first matched 0.5-degree 30d wind-only comparison is available: ocean_solver global A2 0.8658 C vs MOM6 1.0961 C; NA RMSE 0.6751 vs 0.6814 C. This remains a wind-only dynamic control, not a climate benchmark. |
+
+
+| 201 | 2026-09-26 | tooling | Added the model-neutral external scorer, Stage-R protocol v2, and generic MOM6 wind-only benchmark. The scorer now has coordinate, wet-mask, steady-window, and mismatch tests; the full suite passes. |
