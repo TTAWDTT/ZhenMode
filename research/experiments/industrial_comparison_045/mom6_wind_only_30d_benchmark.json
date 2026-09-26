@@ -20,6 +20,8 @@
   },
   "verdict": "PASS",
   "days_end": 30.0,
+  "heat_drift_percent": 1.886284665732572e-14,
+  "salt_drift_percent": 0.0,
   "model": "MOM6",
   "run_id": "mom6_wind_only_30d",
   "source_prog": "C:\\Users\\zhen.luo\\external_models\\mom6_slice_050\\p0_shared_ale\\prog.nc",

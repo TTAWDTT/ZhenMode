@@ -42,8 +42,8 @@
         "north_atlantic_40_60_raw_rmse_c": 0.6814,
         "near_wall_55_60_raw_bias_c": 0.0567,
         "near_wall_55_60_raw_rmse_c": 0.2434,
-        "heat_drift_percent": "not_recorded",
-        "salt_drift_percent": "not_recorded"
+        "heat_drift_percent": 0.0,
+        "salt_drift_percent": 0.0
       }
     }
   },

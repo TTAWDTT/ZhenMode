@@ -18,6 +18,7 @@ def main():
     p.add_argument("--steady-days", type=float, default=0.0)
     p.add_argument("--model", default="MOM6")
     p.add_argument("--run-id", default="")
+    p.add_argument("--stats", default=None)
     args = p.parse_args()
 
     geo = netCDF4.Dataset(args.geometry)
@@ -53,6 +54,14 @@ def main():
     result = score_snapshot(sst, reference, ocean, lat1, lon1)
     result["verdict"] = "PASS" if np.isfinite(result["global"]["raw_rmse"]) else "FAIL"
     result["days_end"] = float(days[-1]) if days.size else None
+    if args.stats:
+        stats = netCDF4.Dataset(args.stats)
+        heat = np.asarray(stats["Heat"][:], dtype=float)
+        salt = np.asarray(stats["Salt"][:], dtype=float)
+        result["heat_drift_percent"] = (
+            float(100.0 * (heat[-1] - heat[0]) / abs(heat[0])) if heat[0] else 0.0)
+        result["salt_drift_percent"] = (
+            float(100.0 * (salt[-1] - salt[0]) / abs(salt[0])) if salt[0] else 0.0)
     result.update({
         "model": args.model,
         "run_id": args.run_id,
