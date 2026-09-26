@@ -305,3 +305,5 @@ Chronological record of research decisions and actions. Append-only.
 | 216 | 2026-09-26 | audit | The earlier MOM6 Stage-F prescribed-proxy run reached day 30 with a stable logged mean temperature, but its final spatial/restart NetCDF write failed because the C: filesystem was full. It therefore has no valid spatial benchmark and is recorded only as a stability warning. |
 
 | 217 | 2026-09-26 | external | Stopped the C-drive 365d Stage-R run at about day 118 before its guaranteed NetCDF failure and migrated the matched configuration to `/root/external_models/mom6_slice_050/p0_restore_ale_365d_local`. The local run is restarted from day 0 with 4 MPI ranks. |
+
+| 218 | 2026-09-26 | experiment | Launched the 365d ocean_solver Stage-F dynamic-bulk no-ice control (monthly air, lambda 80 W/m2/K, 4 500m floor, FCT/TVD). This provides the internal annual counterpart for the exact MOM6 bulk comparison. |

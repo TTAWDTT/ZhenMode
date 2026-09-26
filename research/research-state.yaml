@@ -656,3 +656,9 @@ mom6_restore_ale_365d_local:
   ranks: 4
   days: 365
   matched_inputs: "same protocol-v2 Stage-R inputs as the prior /mnt/c run"
+
+ocean_solver_stage_f_365d:
+  status: running_local
+  days: 365
+  forcing: "monthly NCEP air, dynamic bulk lambda=80 W/m2/K, no ice, no restoring"
+  purpose: "internal 365d counterpart for matched MOM6 exact dynamic-bulk comparison"
