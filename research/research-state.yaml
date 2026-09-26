@@ -510,10 +510,20 @@ dynamic_ice_050:
     max_thickness_m: 1.757
     extent_m2: 3.33e10
   stage_i_closed_loop_diagnostic:
-    status: minimal_closed_loop_diagnostic_pass
+    status: annual_minimal_closed_loop_diagnostic_pass
     protocol: "research/experiments/mixed_layer_ice_050/stage_i_protocol.md"
-    manifest: "research/experiments/mixed_layer_ice_050/stage_i_minimal_closed_loop_manifest.json"
-    summary: "Records explicit ice growth/latent heat, brine salt change, effective MLD, surface budget residual, stability, and climate score on the 30d monthly cold-air probe."
+    manifest: "research/experiments/mixed_layer_ice_050/stage_i_annual_dynamic_ice_manifest.json"
+    30d_manifest: "research/experiments/mixed_layer_ice_050/stage_i_minimal_closed_loop_manifest.json"
+    annual_metrics:
+      global_a2_rmse_c: 1.3619
+      north_atlantic_40_60_raw_rmse_c: 1.1897
+      near_wall_raw_bias_c: -0.2559
+      explicit_ice_cells: 77
+      max_thickness_m: 4.774
+      extent_m2: 1.322e11
+      latent_growth_J: 2.376e20
+      latent_melt_J: 1.743e20
+    summary: "Annual monthly-air dynamic ice closes the minimal loop but fails the climate gate; it improves near-wall bias while worsening global/NA skill."
   note: "Annual-air no-floor ice cannot nucleate in this forcing; monthly cold-air 30d probe can. Do not promote."
 
 

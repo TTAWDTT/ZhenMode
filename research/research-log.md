@@ -277,3 +277,6 @@ Chronological record of research decisions and actions. Append-only.
 
 
 | 206 | 2026-09-26 | experiment | The 365d prescribed-restore ocean_solver control passed stability but degraded to global A2 2.245 C and NA RMSE 1.858 C over the final 90d; heat/salt drift stayed small. This confirms the 30d Stage-R slice is not predictive of an annual climate score and should not be promoted. |
+
+
+| 207 | 2026-09-26 | ice | Added the first annual minimal closed-loop diagnostic: monthly-air dynamic ice is stable and forms 77 cells (max 4.77 m, extent 1.32e11 m2), with finite growth/melt and brine salt flux. It improves near-wall bias to -0.256 C but fails the climate gate at global A2 1.362 C and NA RMSE 1.190 C. |

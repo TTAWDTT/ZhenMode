@@ -48,3 +48,25 @@ The 30d monthly run is stable and forms explicit ice, so it is useful as a
 minimal closed-loop diagnostic.  It is not a production default and not an
 annual climate claim.  The annual no-floor run still forms no explicit ice and
 is retained as a negative control.
+
+
+## Annual diagnostic
+
+A 365d monthly-air dynamic-ice run also closed the same loop:
+
+- `results/mixed_layer_ice_050/global_dynamic_ice_monthly_air_strat_365d.npz`
+- standardized benchmark: `benchmark_365d_dynamic_ice_monthly_air.json`
+- manifest: `stage_i_annual_dynamic_ice_manifest.json`
+
+It forms explicit ice (77 cells, max thickness 4.77 m, extent 1.32e11 m2),
+has finite growth/melt and brine salt flux, and remains stable.  It is
+therefore the first **annual minimal closed-loop diagnostic**, but not a
+production default:
+
+- global A2 RMSE 1.362 C vs the 0.5-degree ice-floor control 1.128 C;
+- NA RMSE 1.190 C vs control 0.924 C;
+- near-wall bias improves to -0.256 C vs control -0.921 C.
+
+The next tuning target is therefore not simply more ice, but a regional
+heat-budget/MLD formulation that keeps the near-wall gain without hurting
+North Atlantic RMSE.

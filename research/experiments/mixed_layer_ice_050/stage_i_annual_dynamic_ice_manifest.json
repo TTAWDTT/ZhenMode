@@ -1,0 +1,53 @@
+{
+  "experiment_id": "stage_i_minimal_closed_loop_050_365d_monthly",
+  "status": "minimal_closed_loop_diagnostic",
+  "source_npz": "results\\mixed_layer_ice_050\\global_dynamic_ice_monthly_air_strat_365d.npz",
+  "source_benchmark": "research\\experiments\\mixed_layer_ice_050\\benchmark_365d_dynamic_ice_monthly_air.json",
+  "duration_days": 365.0,
+  "climate_score": {
+    "verdict": "PASS",
+    "global_a2_rmse_c": 1.36189755529152,
+    "north_atlantic_40_60_raw_rmse_c": 1.1896734217854619,
+    "north_atlantic_40_60_raw_bias_c": 0.16544068638189527,
+    "near_wall_55_60_raw_bias_c": -0.2559342582904339,
+    "heat_drift_percent": -0.28336983567333507,
+    "salt_drift_percent": -0.00010282006633625564
+  },
+  "ice": {
+    "source": "explicit_ice_thickness",
+    "freeze_temp_c": -1.8,
+    "n_cells": 77,
+    "fraction": 0.0006059032285986324,
+    "mean_thickness_m": 1.6072096655314618,
+    "max_thickness_m": 4.7736711502075195,
+    "extent_m2": 132206748625.75488,
+    "extent_fraction": 0.0004164598287944731,
+    "growth_volume_m3": 775697569433.2062,
+    "melt_volume_m3": 569050673840.025,
+    "latent_heat_growth_J": 2.375791001708635e+20,
+    "latent_heat_melt_J": 1.742877022823752e+20
+  },
+  "mixed_layer": {
+    "definition": "density_threshold_0.03_kg_m3_ref10m",
+    "source": "initial_T_S",
+    "mean_m": 31.535295830284145,
+    "median_m": 30.0,
+    "p90_m": 50.0
+  },
+  "surface_budget": {
+    "heat_content_change_J": -5.916025442010615e+22,
+    "latent_heat_growth_J": 2.375791001708635e+20,
+    "latent_heat_melt_J": 1.742877022823752e+20,
+    "heat_budget_residual_J": -5.922354581799464e+22,
+    "mean_residual_W_m2": -5.91571564677753
+  },
+  "brine_salt_flux": {
+    "salt_content_change_kg": -4.546761788804301e+16,
+    "definition": "total wet-column salt change in a run with dynamic ice as the only surface salt source"
+  },
+  "stability": {
+    "verdict": "PASS",
+    "max_u_peak_m_s": 2.411898374557495,
+    "max_eta_last_m": 1.6954654455184937
+  }
+}
