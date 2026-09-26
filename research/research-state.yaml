@@ -689,3 +689,16 @@ mom6_stage_f_dynamic_30d:
     heat_drift_percent: -0.1838
     salt_drift_percent: -0.000209
   interpretation: "On the matched 30d exact dynamic-bulk slice, ocean_solver is modestly better on the pre-registered metrics; both are stable."
+
+ocean_solver_stage_f_365d:
+  status: completed_not_promoted
+  benchmark: "research/experiments/industrial_comparison_045/ocean_solver_stage_f_365d_local_benchmark.json"
+  comparison_table: "research/experiments/industrial_comparison_045/stage_f_365d_internal_comparison_table.md"
+  metrics:
+    global_a2_rmse_c: 1.2970
+    north_atlantic_40_60_raw_rmse_c: 0.7992
+    near_wall_55_60_raw_rmse_c: 0.7880
+    near_wall_55_60_raw_bias_c: -0.5438
+    heat_drift_percent: -0.9620
+    salt_drift_percent: -0.000621
+  interpretation: "Annual monthly-air dynamic-bulk no-ice improves NA/near-wall skill but degrades global A2 and heat drift versus the 0.50 icefloor baseline; do not promote."
