@@ -303,3 +303,5 @@ Chronological record of research decisions and actions. Append-only.
 
 | 215 | 2026-09-26 | external | Configured a MOM6 exact Stage-F dynamic bulk slice by restoring toward live monthly 2m air with FLUXCONST_T=1.701 m/day (80 W/m2/K at rho=1035, Cp=3925) and FLUXCONST_S=0. The 1d local-filesystem smoke passed in 210 s; the 30d run is launched. |
 | 216 | 2026-09-26 | audit | The earlier MOM6 Stage-F prescribed-proxy run reached day 30 with a stable logged mean temperature, but its final spatial/restart NetCDF write failed because the C: filesystem was full. It therefore has no valid spatial benchmark and is recorded only as a stability warning. |
+
+| 217 | 2026-09-26 | external | Stopped the C-drive 365d Stage-R run at about day 118 before its guaranteed NetCDF failure and migrated the matched configuration to `/root/external_models/mom6_slice_050/p0_restore_ale_365d_local`. The local run is restarted from day 0 with 4 MPI ranks. |
