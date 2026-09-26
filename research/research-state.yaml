@@ -668,3 +668,6 @@ mom6_stage_f_dynamic_365d:
   days: 365
   run_dir: "/root/external_models/mom6_slice_050/p0_stage_f_dynamic_365d"
   contract: "same as mom6_stage_f_dynamic_30d, with daily diagnostics"
+
+runtime_notes:
+  - "2026-09-26 22:39: WSL stopped under four concurrent MOM6 runs; restarted, then relaunched only the 30d exact dynamic-bulk probe."
