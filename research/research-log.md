@@ -253,3 +253,6 @@ Chronological record of research decisions and actions. Append-only.
 | 189 | 2026-09-26 | bugfix | Corrected brine salt flux: the latent-ice salt change is applied directly, not multiplied by dt. The first monthly probe blew up; after the fix it is stable and forms 18 explicit-ice cells. |
 | 190 | 2026-09-26 | audit | Fixed cell_area to use R^2 times angular increments. The old sea-ice extents were too small by the Earth-radius factor; climate SST metrics were unaffected. |
 | 191 | 2026-09-26 | experiment | The fixed monthly dynamic-ice 30d probe is stable, forms 18 cells, max thickness 1.757m, extent 3.33e10 m2, but worsens global/NA metrics versus the annual-air diagnostic. |
+
+| 192 | 2026-09-26 | feature | Added --global-sst-restore-days so ocean_solver can run the same prescribed SST-restoring boundary condition as a future MOM6 comparison slice. |
+| 193 | 2026-09-26 | experiment | A 30d global 30d-restoring probe is stable (global A2 0.8253 C) but is not better than the 55--65N mixed-layer diagnostic; it is a benchmark-enabling option, not a tuning win. |

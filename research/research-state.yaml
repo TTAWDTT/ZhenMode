@@ -491,3 +491,14 @@ mom6_build_status:
   executable: "C:/Users/zhen.luo/external_models/MOM6/build/MOM6"
   smoke_test: "32x32 Cartesian benchmark, 1h, one MPI rank"
   comparable_run_status: "not_started"
+
+
+global_sst_restore_050:
+  status: benchmark_enabled_option
+  definition: "SST restore toward WOA over all wet cells; same boundary-condition family as a future MOM6 restoring slice"
+  default: false
+  probe_30d_metrics:
+    global_a2_rmse_c: 0.825
+    north_atlantic_40_60_raw_rmse_c: 0.551
+    near_wall_raw_bias_c: -0.563
+  note: "Not better than the validated 55--65N mixed-layer diagnostic; do not promote."

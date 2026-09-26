@@ -7,6 +7,11 @@ cd "$(dirname "$0")/.."
 LAMBDA="${LAMBDA:-80}"
 DAYS="${DAYS:-365}"
 TAG="${1:-candidate_65n_050_icefloor_${DAYS}d}"
+GLOBAL_SST_RESTORE_DAYS="${GLOBAL_SST_RESTORE_DAYS:-0}"
+GLOBAL_RESTORE_ARGS=()
+if (( $(echo "${GLOBAL_SST_RESTORE_DAYS} > 0" | bc -l) )); then
+  GLOBAL_RESTORE_ARGS+=(--global-sst-restore-days "${GLOBAL_SST_RESTORE_DAYS}")
+fi
 
 PYTHON_BIN="${PYTHON_BIN:-/mnt/c/Users/zhen.luo/ocean_solver/.venv-gpu-jax/bin/python}"
 if [[ ! -x "${PYTHON_BIN}" && -x "/mnt/c/Users/zhen.luo/ocean_solver/.venv-gpu-jax/bin/python" ]]; then
@@ -29,6 +34,7 @@ mkdir -p "${OUT_DIR}" "${LOG_DIR}"
   --kappa-gm 0 \
   --localize-conv --fct-adv --project-adv-vel \
   --min-depth 500 --smooth-passes 80 \
+  ${GLOBAL_RESTORE_ARGS[@]+"${GLOBAL_RESTORE_ARGS[@]}"} \
   --nu-h 2e6 --dt 1800 \
   --days "${DAYS}" --snap-days "${SNAP_DAYS:-10}" \
   --tag "${TAG}" \
