@@ -13,5 +13,4 @@ Updated: 2026-09-27 07:50 local.
 | ocean_solver Stage-F 30d northern-only stratification MLD | ocean_solver | completed | regional upper-ocean probe |
 | ocean_solver Stage-F 365d northern-only stratification MLD | ocean_solver | completed | annual regional gate; not promoted |
 | ocean_solver Stage-F 365d dynamic ice no MLD | ocean_solver | completed | sea-ice ablation; not promoted |
-| ocean_solver Stage-F 30d 40--60N stratification MLD, no ice | ocean_solver | completed | regional MLD probe; beats Stage-F 30d no-ice on NA/wall, not global |
-| ocean_solver Stage-F 365d 40--60N stratification MLD, no ice | ocean_solver | running | annual gate for the regional MLD probe |
+| ocean_solver Stage-F 30d fixed 100m MLD, 40--60N, no ice | ocean_solver | completed | regional fixed-depth attribution; beats Stage-F 30d no-ice on NA/wall, not global |

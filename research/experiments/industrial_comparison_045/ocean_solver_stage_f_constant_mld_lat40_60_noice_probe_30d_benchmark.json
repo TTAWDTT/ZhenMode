@@ -1,5 +1,5 @@
 {
-  "path": "results/industrial_comparison_045/global_stage_f_strat_mld_lat40_60_noice_probe_30d.npz",
+  "path": "results/industrial_comparison_045/global_stage_f_constant_mld_lat40_60_noice_probe_30d.npz",
   "verdict": "PASS",
   "days_end": 30.0,
   "steady_window_days": [
