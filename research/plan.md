@@ -346,3 +346,8 @@ Runner: scripts/run_candidate_baseline.sh
 
 
 
+
+61. **Diagnose the annual Stage-F 3D error structure.** [COMPLETE 2026-09-27]
+    Compare 30d and 365d ocean_solver 3D temperature by layer. The annual
+    skill loss is concentrated above 500 m, so the next lever should target
+    upper-ocean mixed-layer/ventilation, not deep-ocean tuning.
