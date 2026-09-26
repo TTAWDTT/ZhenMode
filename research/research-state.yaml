@@ -840,3 +840,18 @@ ocean_solver_stage_f_dynamic_ice_no_mld_365d:
     max_ice_thickness_m: 11.0252
     ice_extent_fraction: 0.0269461
   interpretation: "Dynamic ice without the mixed-layer slab improves global A2 but worsens North Atlantic and near-wall RMSE; not promoted."
+ocean_solver_stage_f_strat_mld_lat40_60_noice_probe_30d:
+  status: completed_diagnostic
+  benchmark: "research/experiments/industrial_comparison_045/ocean_solver_stage_f_strat_mld_lat40_60_noice_probe_30d_benchmark.json"
+  comparison_table: "research/experiments/industrial_comparison_045/stage_f_30d_stratification_probe_table.md"
+  config: "Stage-F monthly-air dynamic bulk + 40--60N stratification MLD, no dynamic ice"
+  metrics:
+    global_a2_rmse_c: 1.5616
+    north_atlantic_40_60_raw_rmse_c: 0.8483
+    near_wall_55_60_raw_rmse_c: 0.5327
+    heat_drift_percent: -0.1432
+  interpretation: "Strong regional and near-wall improvement, but global A2 does not beat the 30d dynamic-ice stratification probe; promoted only to an annual diagnostic gate."
+
+ocean_solver_stage_f_strat_mld_lat40_60_noice_365d:
+  status: running_local
+  purpose: "test whether the 30d 40--60N no-ice MLD improvement survives the annual gate"
