@@ -1328,6 +1328,7 @@ def main():
                         ice_fraction=np.array(snap_ice_fraction),
                         **diagnostics_to_arrays(snap_budget),
                         T_init=T_init,
+                        wet_mask_z=np.asarray(grid.wet_mask_3d),
                         S_init=S_init,
                         wet_mask=np.asarray(grid.wet_mask),
                         lat=np.asarray(grid.lat),
@@ -1348,3 +1349,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
