@@ -497,6 +497,11 @@ dynamic_ice_050:
     explicit_ice_cells: 18
     max_thickness_m: 1.757
     extent_m2: 3.33e10
+  stage_i_closed_loop_diagnostic:
+    status: minimal_closed_loop_diagnostic_pass
+    protocol: "research/experiments/mixed_layer_ice_050/stage_i_protocol.md"
+    manifest: "research/experiments/mixed_layer_ice_050/stage_i_minimal_closed_loop_manifest.json"
+    summary: "Records explicit ice growth/latent heat, brine salt change, effective MLD, surface budget residual, stability, and climate score on the 30d monthly cold-air probe."
   note: "Annual-air no-floor ice cannot nucleate in this forcing; monthly cold-air 30d probe can. Do not promote."
 
 
