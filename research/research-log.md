@@ -336,3 +336,5 @@ Chronological record of research decisions and actions. Append-only.
 
 | 231 | 2026-09-27 | experiment | Completed the 365d ocean_solver Stage-F 3D snapshot control. Final-90d global 3D RMSE is 1.547 C, North Atlantic 3D RMSE is 1.276 C, and surface A2 is 1.204 C; stability PASS. |
 | 233 | 2026-09-27 | ops | Isolated the first MOM6 365d startup failure by launching an annual run with the validated 30d configuration plus 365-day segment length. It passes startup and continues as the v2 annual dynamic-bulk comparison. |
+| 232 | 2026-09-27 | ops | Removed failed MOM6 365d test directories and stale pip/uv caches; this restored enough host disk space for the annual MOM6 run. |
+| 233 | 2026-09-27 | benchmark | Launched the annual MOM6 Stage-F dynamic-bulk v7 run from the validated 30d configuration with 365-day segment length and daily diagnostics. |
