@@ -119,16 +119,37 @@ def regional_error_metrics(error: np.ndarray, mask: np.ndarray) -> dict:
 
 def sea_ice_metrics(sst: np.ndarray, ocean: np.ndarray,
                     freeze_temp: float = -1.8,
-                    area: np.ndarray | None = None) -> dict:
-    """Simple freezing-point sea-ice diagnostics from the surface field."""
+                    area: np.ndarray | None = None,
+                    ice_thickness: np.ndarray | None = None) -> dict:
+    """Sea-ice diagnostics.
+
+    With ``ice_thickness`` the mask is the model's explicit ice state.  Without
+    it, this falls back to the legacy freezing-SST proxy so older runs remain
+    directly comparable.
+    """
     wet = np.asarray(ocean, dtype=bool)
-    frozen = wet & np.isfinite(sst) & (np.asarray(sst, dtype=float) <= freeze_temp)
+    if ice_thickness is not None:
+        thickness = np.asarray(ice_thickness, dtype=float)
+        frozen = wet & np.isfinite(thickness) & (thickness > 0.0)
+        source = "explicit_ice_thickness"
+    else:
+        thickness = None
+        frozen = wet & np.isfinite(sst) & (np.asarray(sst, dtype=float) <= freeze_temp)
+        source = "freezing_sst_proxy"
     n = int(frozen.sum())
     result = {
+        "source": source,
         "freeze_temp_c": float(freeze_temp),
         "n_cells": n,
         "fraction": float(n / max(wet.sum(), 1)),
     }
+    if thickness is not None:
+        if n:
+            result["mean_thickness_m"] = float(np.mean(thickness[frozen]))
+            result["max_thickness_m"] = float(np.max(thickness[frozen]))
+        else:
+            result["mean_thickness_m"] = 0.0
+            result["max_thickness_m"] = 0.0
     if area is not None:
         area = np.asarray(area, dtype=float)
         total = float(area[wet].sum())
@@ -234,7 +255,9 @@ def score_npz(path: str | os.PathLike,
         result[name] = regional_error_metrics(raw_error, mask)
     result["ice"] = sea_ice_metrics(
         sst, ocean, freeze_temp=freeze_temp,
-        area=cell_area(lat, lon))
+        area=cell_area(lat, lon),
+        ice_thickness=(np.asarray(z["ice_top"][-1], dtype=float)
+                       if "ice_top" in z else None))
     if "S_init" in z:
         mld = mixed_layer_depth(np.asarray(z["T_init"], dtype=float),
                                 np.asarray(z["S_init"], dtype=float),

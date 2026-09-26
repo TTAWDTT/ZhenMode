@@ -447,3 +447,25 @@ diagnostic_parameterizations_050:
       global_a2_rmse_c: 1.127
       north_atlantic_40_60_raw_rmse_c: 0.872
       near_wall_raw_bias_c: -0.604
+
+
+stratification_mld_050:
+  status: annual_rejected_diagnostic
+  protocol: "research/experiments/mixed_layer_ice_050/analysis_30d_stratification_mld.md"
+  definition: "2D density-threshold MLD from initial WOA T/S; 0.03 kg/m3 at 10m, clipped 10..100m"
+  probe_metrics:
+    global_a2_rmse_c: 0.756
+    north_atlantic_40_60_raw_rmse_c: 0.420
+    near_wall_raw_bias_c: -0.286
+  annual_metrics:
+    global_a2_rmse_c: 1.279
+    north_atlantic_40_60_raw_rmse_c: 1.051
+    near_wall_raw_bias_c: -0.405
+  verdict: "Annual gate FAIL; do not promote. The spatial MLD field helps 30d but degrades annual global/NA."
+
+dynamic_ice_050:
+  status: prototype_running
+  definition: "minimal stateful ice thickness with latent growth/melt, conductivity insulation, and brine salt flux"
+  default: false
+  unit_tests: "tests/test_dynamic_ice_state.py"
+  annual_probe: "results/dynamic_ice_050/global_dynamic_ice_strat_mld_050_365d.npz"

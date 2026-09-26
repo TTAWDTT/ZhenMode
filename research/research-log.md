@@ -240,3 +240,9 @@ Chronological record of research decisions and actions. Append-only.
 | 179 | 2026-09-26 | experiment | The 55-65N mixed-layer mask passes the pre-registered annual gate: global A2 1.127 C, NA RMSE 0.8723 C, near-wall bias -0.6038 C. Promote to reproducibility before any promotion. |
 | 180 | 2026-09-26 | reproduction | The 55-65N mixed-layer/ice annual repeat reproduces to numerical precision and passes the same-resolution control gates. Promote to validated diagnostic, not a pure production default. |
 | 181 | 2026-09-26 | summary | Added a human-facing summary of the validated 55-65N mixed-layer/ice diagnostic candidate. |
+
+| 182 | 2026-09-26 | feature | Replaced the fixed-latitude MLD choice with an optional 2D stratification-derived MLD using the WOA 0.03 kg/m3 density threshold, clipped to 10--100m. |
+| 183 | 2026-09-26 | experiment | The stratification-MLD 30d probe improved global A2 to 0.7557 C, NA RMSE to 0.4196 C, and near-wall bias to -0.2858 C versus the 55--65N 20m diagnostic. |
+| 184 | 2026-09-26 | experiment | The stratification-MLD annual check failed: global A2 rose to 1.2793 C and NA RMSE to 1.0505 C despite a better near-wall bias. It is rejected as a default. |
+| 185 | 2026-09-26 | feature | Added a minimal stateful dynamic-ice closure with ice thickness, latent growth/melt, conductivity insulation, brine salt flux, checkpoint/output diagnostics, and unit tests. |
+| 186 | 2026-09-26 | experiment | The dynamic-ice 30d probe is numerically stable and identical to the stratification-MLD probe because no explicit ice nucleates in the first 30d; annual diagnostic is running. |

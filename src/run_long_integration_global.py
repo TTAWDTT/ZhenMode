@@ -49,6 +49,7 @@ import jax.numpy as jnp
 import numpy as np
 
 from air_reanalysis import load_annual_mean_air_temp, load_monthly_mean_air_temp
+from benchmark_metrics import mixed_layer_depth
 from config import DEFAULT_CONFIG, GlobalGridConfig, PhysicsConfig
 from diagnostics import BudgetDiagnostics, compute_budget_diagnostics, diagnostics_to_arrays
 from forcing import (
@@ -132,7 +133,7 @@ SPONGE_DAYS_DEFAULT_G = 0.0   # OFF (no residual instability at lat_max=60; the
 
 
 def state_is_finite(state):
-    for f in (state.u, state.v, state.T, state.S, state.eta):
+    for f in (state.u, state.v, state.T, state.S, state.eta, state.ice):
         a = np.asarray(f)
         if not np.isfinite(a).all():
             return False
@@ -413,6 +414,13 @@ def main():
                          "freezing point; 0 = off")
     ap.add_argument("--ice-freeze-temp", type=float, default=-1.8,
                     help="freezing-point threshold for --ice-salt-flux [C]")
+    ap.add_argument("--dynamic-ice", action="store_true",
+                    help="carry a minimal ice-thickness state with latent "
+                         "growth/melt, conductivity insulation, and brine salt "
+                         "flux; overrides --ice-salt-flux")
+    ap.add_argument("--ice-insulation-scale-m", type=float, default=1.0,
+                    help="1m of ice reduces surface exchange by this scale; "
+                         "1/(1+h/scale)")
     ap.add_argument("--air-marine-smooth-passes", type=int, default=0,
                     help="number of wet-cell-only smoothing passes for the "
                          "bulk air-temperature target; 0 keeps the raw target")
@@ -441,6 +449,18 @@ def main():
                     help="optional mixed-layer heat-capacity depth [m]. "
                          "When set, the same surface heat flux is spread over "
                          "this slab instead of the top grid-cell thickness.")
+    ap.add_argument("--mixed-layer-mode", choices=("constant", "stratification"),
+                    default="constant",
+                    help="constant uses --mixed-layer-depth everywhere in the "
+                         "selected mask; stratification derives a 2D depth "
+                         "from the WOA density threshold")
+    ap.add_argument("--mld-density-delta", type=float, default=0.03,
+                    help="density threshold for --mixed-layer-mode "
+                         "stratification [kg/m^3]")
+    ap.add_argument("--mixed-layer-depth-min", type=float, default=10.0,
+                    help="lower clamp for the stratification-derived MLD [m]")
+    ap.add_argument("--mixed-layer-depth-max", type=float, default=100.0,
+                    help="upper clamp for the stratification-derived MLD [m]")
     ap.add_argument("--coastal-bulk-lambda", type=float, default=0.0,
                     help="extra bulk heat-exchange coefficient [W/m^2/K] in "
                          "the land-adjacent band; 0 = off")
@@ -646,6 +666,29 @@ def main():
         print(f"  WARNING: {nan_init} NaN in initial fields (should be 0 after fill)")
     print(f"  T_init range=[{T_init.min():.2f}, {T_init_max:.2f}] C")
 
+    # Stratification-aware mixed-layer depth.  Unlike the latitude mask, this
+    # field follows the observed density structure.  It remains an initial-state
+    # diagnostic (not an evolving MLD state), but avoids a hard 55--65N choice.
+    stratification_mld = None
+    if args.mixed_layer_mode == "stratification":
+        if args.mixed_layer_depth is None:
+            raise SystemExit("--mixed-layer-mode stratification requires "
+                             "--mixed-layer-depth as an upper/backstop depth")
+        raw_mld = mixed_layer_depth(
+            T_init, S_init, np.asarray(grid.z), ocean=ocean,
+            density_delta=float(args.mld_density_delta))
+        mld_lo = max(0.0, float(args.mixed_layer_depth_min))
+        mld_hi = float(args.mixed_layer_depth_max)
+        if not np.isfinite(mld_lo) or not np.isfinite(mld_hi) or mld_hi <= mld_lo:
+            raise SystemExit("--mixed-layer-depth-max must exceed --mixed-layer-depth-min")
+        fallback = float(np.clip(np.nanmedian(raw_mld[ocean]), mld_lo, mld_hi))
+        stratification_mld = np.where(
+            ocean & np.isfinite(raw_mld), np.clip(raw_mld, mld_lo, mld_hi), fallback)
+        print(f"  stratification MLD: threshold={args.mld_density_delta:g} kg/m^3, "
+              f"clip=[{mld_lo:g},{mld_hi:g}]m, "
+              f"mean={float(np.mean(stratification_mld[ocean])):.1f}m, "
+              f"p10/p50/p90={np.nanpercentile(stratification_mld[ocean], [10,50,90]).round(1)}")
+
     # ── Narrow coastal T restoring mask (diagnostic only) ──
     # The 0..3-cell band is a first-order SST error source. This is a controlled
     # attribution experiment, not a production closure: it restores the surface
@@ -830,8 +873,11 @@ def main():
         mixed_layer_depth_m=args.mixed_layer_depth,
         mixed_layer_mask=(_lat_band_mask(grid, args.mixed_layer_lat_band)
                           if args.mixed_layer_lat_band else None),
+        mixed_layer_depth_2d=stratification_mld,
         ice_freeze_temp_c=args.ice_freeze_temp,
-        ice_salt_flux=args.ice_salt_flux)
+        ice_salt_flux=args.ice_salt_flux,
+        dynamic_ice=args.dynamic_ice,
+        ice_insulation_scale_m=args.ice_insulation_scale_m)
     if seasonal:
         step, init_state_global, _, _params, terms_fn, step_dyn = _ret
     else:
@@ -905,7 +951,10 @@ def main():
             v=jnp.array(ck["v"], dtype=state_dtype),
             T=jnp.array(ck["T"], dtype=state_dtype),
             S=jnp.array(ck["S"], dtype=state_dtype),
-            eta=jnp.array(ck["eta"], dtype=state_dtype))
+            eta=jnp.array(ck["eta"], dtype=state_dtype),
+            ice=(jnp.array(ck["ice"], dtype=state_dtype)
+                 if "ice" in ck else jnp.zeros((grid.nx, grid.ny),
+                                               dtype=state_dtype)))
         start_step = int(ck["cur_step"])
         assert start_step % n_snap == 0, "checkpoint must land on a snap boundary"
         # Re-align snapshot bookkeeping with what already exists on disk.
@@ -1009,6 +1058,8 @@ def main():
     snap_ke = []
     snap_eta = []
     snap_T_top = []
+    snap_ice_top = []
+    snap_ice_fraction = []
     snap_budget: list[BudgetDiagnostics] = []
     maxT_history = []
     max_u_peak = 0.0
@@ -1039,6 +1090,10 @@ def main():
         snap_ke.append(ke)
         snap_eta.append(eta.copy())
         snap_T_top.append(f64(state.T[:, :, 0]).copy())
+        ice_top = f64(state.ice) if np.asarray(state.ice).shape != () \
+            else np.zeros_like(f64(state.T[:, :, 0]))
+        snap_ice_top.append(ice_top.copy())
+        snap_ice_fraction.append(float(np.mean(ice_top[ocean] > 0.0)) if ocean.any() else 0.0)
         # Snapshot-level budget audit: this is intentionally outside the core
         # solver. It records the global heat/salt/volume invariants without
         # changing the numerical solution.
@@ -1170,9 +1225,15 @@ def main():
         'monotone_adv': args.monotone_adv,
         'fct_adv': args.fct_adv,
         'mixed_layer_depth_m': args.mixed_layer_depth,
+        'mixed_layer_mode': args.mixed_layer_mode,
         'mixed_layer_lat_band': args.mixed_layer_lat_band,
+        'mld_density_delta': args.mld_density_delta,
+        'mixed_layer_depth_min': args.mixed_layer_depth_min,
+        'mixed_layer_depth_max': args.mixed_layer_depth_max,
         'ice_freeze_temp': args.ice_freeze_temp,
         'ice_salt_flux': args.ice_salt_flux,
+        'dynamic_ice': bool(args.dynamic_ice),
+        'ice_insulation_scale_m': args.ice_insulation_scale_m,
         'lambda_bulk': lambda_bulk, 'bulk_lambda_mult': args.bulk_lambda_mult,
         'real_air_temp': bool(args.real_air_temp),
         'real_air_temp_monthly': bool(args.real_air_temp_monthly),
@@ -1204,6 +1265,8 @@ def main():
                         ke=np.array(snap_ke),
                         eta=np.array(snap_eta),
                         T_top=np.array(snap_T_top),
+                        ice_top=np.array(snap_ice_top),
+                        ice_fraction=np.array(snap_ice_fraction),
                         **diagnostics_to_arrays(snap_budget),
                         T_init=T_init,
                         S_init=S_init,

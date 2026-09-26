@@ -24,6 +24,13 @@ MIXED_LAYER_ARGS=(--mixed-layer-depth "${MIXED_LAYER_DEPTH}")
 if [[ -n "${MIXED_LAYER_LAT_BAND}" ]]; then
   read -r ML_LAT_MIN ML_LAT_MAX <<< "${MIXED_LAYER_LAT_BAND}"
   MIXED_LAYER_ARGS+=(--mixed-layer-lat-band "${ML_LAT_MIN}" "${ML_LAT_MAX}")
+elif [[ "${MIXED_LAYER_MODE:-constant}" == "stratification" ]]; then
+  MIXED_LAYER_ARGS+=(
+    --mixed-layer-mode stratification
+    --mld-density-delta "${MLD_DENSITY_DELTA:-0.03}"
+    --mixed-layer-depth-min "${MIXED_LAYER_DEPTH_MIN:-10}"
+    --mixed-layer-depth-max "${MIXED_LAYER_DEPTH_MAX:-100}"
+  )
 fi
 mkdir -p "${OUT_DIR}" "${LOG_DIR}"
 
@@ -42,5 +49,7 @@ mkdir -p "${OUT_DIR}" "${LOG_DIR}"
   --out-dir "${OUT_DIR}" \
   --log-dir "${LOG_DIR}" \
   "${MIXED_LAYER_ARGS[@]}" \
-  --ice-salt-flux "${ICE_SALT_FLUX}"
+  --ice-salt-flux "${ICE_SALT_FLUX}" \
+  ${DYNAMIC_ICE:+--dynamic-ice} \
+  ${DYNAMIC_ICE:+--ice-insulation-scale-m "${ICE_INSULATION_SCALE_M:-1}"}
 
