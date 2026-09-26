@@ -523,6 +523,8 @@ dynamic_ice_050:
       extent_m2: 1.322e11
       latent_growth_J: 2.376e20
       latent_melt_J: 1.743e20
+    gate: "research/experiments/mixed_layer_ice_050/gate_365d_dynamic_ice_monthly_air_vs_050_icefloor.json"
+    control_benchmark: "research/experiments/mixed_layer_ice_050/benchmark_365d_050_icefloor_control.json"
     summary: "Annual monthly-air dynamic ice closes the minimal loop but fails the climate gate; it improves near-wall bias while worsening global/NA skill."
   note: "Annual-air no-floor ice cannot nucleate in this forcing; monthly cold-air 30d probe can. Do not promote."
 

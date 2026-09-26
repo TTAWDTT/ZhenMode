@@ -280,3 +280,6 @@ Chronological record of research decisions and actions. Append-only.
 
 
 | 207 | 2026-09-26 | ice | Added the first annual minimal closed-loop diagnostic: monthly-air dynamic ice is stable and forms 77 cells (max 4.77 m, extent 1.32e11 m2), with finite growth/melt and brine salt flux. It improves near-wall bias to -0.256 C but fails the climate gate at global A2 1.362 C and NA RMSE 1.190 C. |
+
+
+| 208 | 2026-09-26 | gate | The annual dynamic-ice closed loop passes stability and improves near-wall bias, but fails the same-resolution 0.5-degree ice-floor climate gate on global A2 and NA RMSE. It remains a diagnostic, not a promoted default. |
