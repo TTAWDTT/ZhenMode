@@ -8,8 +8,8 @@ from pathlib import Path
 import netCDF4
 import numpy as np
 
-from benchmark_metrics import regional_masks, regional_error_metrics
-from score_external_model import _read_centers, _steady_mask, _relative_drift
+from benchmark_metrics import regional_error_metrics, regional_masks
+from score_external_model import _read_centers, _steady_mask
 
 
 def _steady_mean(field: np.ndarray, steady_days: float) -> np.ndarray:

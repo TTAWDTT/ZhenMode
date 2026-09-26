@@ -1,5 +1,5 @@
 import numpy as np
-import pytest
+
 from score_external_3d import _vertical_mask
 from score_solver_3d import score_solver_3d
 
@@ -50,9 +50,9 @@ def test_solver_3d_excludes_ghost_layers(tmp_path, monkeypatch):
 
 def test_solver_3d_requires_depth_mask(tmp_path):
     import numpy as np
+
     from score_solver_3d import score_solver_3d
     ref = np.full((2, 2, 1), 10.0)
-    snap = np.stack([ref, np.zeros_like(ref), np.zeros_like(ref), np.full_like(ref, 35.0)])
     npz_path = tmp_path / "run.npz"
     np.savez(
         npz_path,
@@ -68,3 +68,4 @@ def test_solver_3d_requires_depth_mask(tmp_path):
     result = score_solver_3d(str(npz_path), str(snap_path))
     assert result["depth_mask_applied"] is False
     assert result["verdict"] == "FAIL"
+
