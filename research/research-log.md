@@ -309,3 +309,5 @@ Chronological record of research decisions and actions. Append-only.
 | 218 | 2026-09-26 | experiment | Launched the 365d ocean_solver Stage-F dynamic-bulk no-ice control (monthly air, lambda 80 W/m2/K, 4 500m floor, FCT/TVD). This provides the internal annual counterpart for the exact MOM6 bulk comparison. |
 
 | 218 | 2026-09-26 | external | Prepared and launched a local 365d MOM6 exact dynamic-bulk run (`p0_stage_f_dynamic_365d`) with the same live-air bulk closure and daily diagnostics as the 30d probe. |
+
+| 219 | 2026-09-26 | audit | The first annual Stage-F no-ice run was killed when WSL stopped. It was relaunched after the restart; the 30d exact dynamic-bulk probe is the only other active MOM6 job. |
