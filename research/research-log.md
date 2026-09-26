@@ -283,3 +283,6 @@ Chronological record of research decisions and actions. Append-only.
 
 
 | 208 | 2026-09-26 | gate | The annual dynamic-ice closed loop passes stability and improves near-wall bias, but fails the same-resolution 0.5-degree ice-floor climate gate on global A2 and NA RMSE. It remains a diagnostic, not a promoted default. |
+
+
+| 209 | 2026-09-26 | attribution | A 365d monthly-air no-ice control has global A2 1.378 C and NA RMSE 1.185 C, nearly matching the dynamic-ice run (1.362/1.190 C). The annual degradation therefore comes mainly from monthly-air forcing, not the ice closure itself. |

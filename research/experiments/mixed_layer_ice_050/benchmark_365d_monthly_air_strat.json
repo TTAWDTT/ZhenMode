@@ -1,0 +1,47 @@
+{
+  "path": "results\\mixed_layer_ice_050\\global_monthly_air_strat_365d.npz",
+  "verdict": "PASS",
+  "days_end": 365.0,
+  "steady_window_days": [
+    280.0,
+    365.0
+  ],
+  "max_u_peak": 2.411855697631836,
+  "max_eta_last": 1.644667387008667,
+  "heat_drift_percent": -0.21147648486823908,
+  "salt_drift_percent": -0.00015677772947417796,
+  "a1_corr": 0.9983441916828015,
+  "a1_rmse_c": 0.7183851534275946,
+  "a2_corr": 0.9915605121565428,
+  "global_a2_rmse_c": 1.377780431193538,
+  "n": 127083,
+  "raw_bias": -0.464201759974088,
+  "raw_rmse": 1.1922105561864955,
+  "north_atlantic_40_60": {
+    "n": 3958,
+    "raw_bias": 0.16707648513959442,
+    "raw_rmse": 1.1853490912338336
+  },
+  "near_wall_55_60": {
+    "n": 1026,
+    "raw_bias": -0.22873344162867548,
+    "raw_rmse": 1.0079347303452284
+  },
+  "ice": {
+    "source": "explicit_ice_thickness",
+    "freeze_temp_c": -1.8,
+    "n_cells": 0,
+    "fraction": 0.0,
+    "mean_thickness_m": 0.0,
+    "max_thickness_m": 0.0,
+    "extent_m2": 0.0,
+    "extent_fraction": 0.0
+  },
+  "mld": {
+    "definition": "density_threshold_0.03_kg_m3_ref10m",
+    "source": "initial_T_S",
+    "mean_m": 31.535295830284145,
+    "median_m": 30.0,
+    "p90_m": 50.0
+  }
+}

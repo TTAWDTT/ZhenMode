@@ -525,6 +525,14 @@ dynamic_ice_050:
       latent_melt_J: 1.743e20
     gate: "research/experiments/mixed_layer_ice_050/gate_365d_dynamic_ice_monthly_air_vs_050_icefloor.json"
     control_benchmark: "research/experiments/mixed_layer_ice_050/benchmark_365d_050_icefloor_control.json"
+    no_ice_monthly_air:
+      benchmark: "research/experiments/mixed_layer_ice_050/benchmark_365d_monthly_air_strat.json"
+      gate: "research/experiments/mixed_layer_ice_050/gate_365d_monthly_air_strat_vs_050_icefloor.json"
+      metrics:
+        global_a2_rmse_c: 1.3778
+        north_atlantic_40_60_raw_rmse_c: 1.1853
+        near_wall_raw_bias_c: -0.2287
+      interpretation: "Monthly-air forcing alone causes the climate degradation; dynamic ice is not the primary cause."
     summary: "Annual monthly-air dynamic ice closes the minimal loop but fails the climate gate; it improves near-wall bias while worsening global/NA skill."
   note: "Annual-air no-floor ice cannot nucleate in this forcing; monthly cold-air 30d probe can. Do not promote."
 
