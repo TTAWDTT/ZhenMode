@@ -20,6 +20,11 @@ fi
 export OCEAN_SOLVER_BATHYMETRY="${OCEAN_SOLVER_BATHYMETRY:-/mnt/c/Users/zhen.luo/Desktop/ETOPO_2022_v1_r3600x1800_surface.nc}"
 OUT_DIR="${OUT_DIR:-results/mixed_layer_ice_050}"
 LOG_DIR="${LOG_DIR:-logs/mixed_layer_ice_050}"
+ICE_FLOOR_ARGS=(--ice-air-floor)
+if [[ "${DYNAMIC_ICE:-}" == "true" ]]; then
+  # Dynamic ice owns freezing/melting; do not also clamp the air target.
+  ICE_FLOOR_ARGS=()
+fi
 MIXED_LAYER_ARGS=(--mixed-layer-depth "${MIXED_LAYER_DEPTH}")
 if [[ -n "${MIXED_LAYER_LAT_BAND}" ]]; then
   read -r ML_LAT_MIN ML_LAT_MAX <<< "${MIXED_LAYER_LAT_BAND}"
@@ -37,7 +42,7 @@ mkdir -p "${OUT_DIR}" "${LOG_DIR}"
 "${PYTHON_BIN}" src/run_long_integration_global.py \
   --mode-split --use-scan --dtype float32 \
   --lat-max 65 --resolution 0.5 --resolution-remap area \
-  --seasonal-wind --wind-year 2023 --real-air-temp --ice-air-floor \
+  --seasonal-wind --wind-year 2023 --real-air-temp ${ICE_FLOOR_ARGS[@]+"${ICE_FLOOR_ARGS[@]}"} \
   --lambda-bulk "${LAMBDA}" \
   --kappa-v 1e-6 --kappa-conv 0.01 \
   --kappa-gm 0 \

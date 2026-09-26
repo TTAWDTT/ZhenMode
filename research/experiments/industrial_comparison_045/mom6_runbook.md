@@ -1,6 +1,6 @@
 # MOM6 direct-slice runbook
 
-Status: prepared, not started  
+Status: build/smoke complete; slice not configured  
 Target: `research/experiments/industrial_comparison_045/slice.yaml`
 
 ## Principle

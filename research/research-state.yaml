@@ -469,3 +469,13 @@ dynamic_ice_050:
   default: false
   unit_tests: "tests/test_dynamic_ice_state.py"
   annual_probe: "results/dynamic_ice_050/global_dynamic_ice_strat_mld_050_365d.npz"
+
+
+mom6_build_status:
+  status: built_smoke_passed
+  mom6_commit: "f49a00096df607b48354603e2398e14e189fd62e"
+  fms_commit: "527a42f3ff36d75aac68b65757b35f73a74146bb"
+  examples_commit: "a5ebafec64c12f308d9f740ce40be1c1bfddd25a"
+  executable: "C:/Users/zhen.luo/external_models/MOM6/build/MOM6"
+  smoke_test: "32x32 Cartesian benchmark, 1h, one MPI rank"
+  comparable_run_status: "not_started"

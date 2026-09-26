@@ -246,3 +246,5 @@ Chronological record of research decisions and actions. Append-only.
 | 184 | 2026-09-26 | experiment | The stratification-MLD annual check failed: global A2 rose to 1.2793 C and NA RMSE to 1.0505 C despite a better near-wall bias. It is rejected as a default. |
 | 185 | 2026-09-26 | feature | Added a minimal stateful dynamic-ice closure with ice thickness, latent growth/melt, conductivity insulation, brine salt flux, checkpoint/output diagnostics, and unit tests. |
 | 186 | 2026-09-26 | experiment | The dynamic-ice 30d probe is numerically stable and identical to the stratification-MLD probe because no explicit ice nucleates in the first 30d; annual diagnostic is running. |
+
+| 187 | 2026-09-26 | external | Built MOM6 at commit f49a00096 with FMS 2023.03, GSW, and CVMix in an external local directory; the ocean-only executable passed a 32x32 one-hour smoke run. |
