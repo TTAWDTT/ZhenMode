@@ -289,3 +289,6 @@ Chronological record of research decisions and actions. Append-only.
 
 
 | 210 | 2026-09-26 | tooling | Added MOM6 monthly 2m air and lambda*(air-WOA SST) sensible-heat export tools. They are ready for a first Stage-F 30d slice, with the limitation that the current sensible proxy uses a prescribed rather than instantaneous SST in the heat-flux denominator. |
+
+
+| 211 | 2026-09-26 | experiment | The first Stage-F 30d dynamic-bulk probe with monthly 2m air and no ice is stable but has global A2 1.692 C and NA RMSE 2.088 C. The same forcing with the Stage-I dynamic-ice closure improves to 0.956/0.874 C, showing that the ice/mixed-layer closure is a major climate lever rather than a diagnostic add-on. |
