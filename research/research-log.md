@@ -323,3 +323,5 @@ Chronological record of research decisions and actions. Append-only.
 | 224 | 2026-09-27 | performance | Added a diagnostic performance table: ocean_solver completes the matched 30d Stage-F slice in 3.5 min, while MOM6 takes 74.5 min on 4 MPI ranks. This supports a speed observation only, not model superiority. |
 
 | 225 | 2026-09-27 | experiment | The 365d Stage-F MLD20 stratification run passed stability but degraded global A2 to 1.406 C and NA RMSE to 1.302 C. It is not promoted; the annual no-ice control also remains unpromoted because of worse global skill and heat drift. |
+
+| 226 | 2026-09-27 | audit | Corrected the 3D scorer to apply the shared bathymetric vertical mask. The earlier +6.35 C 4000m warm bias was an artifact from scoring below-seafloor ghost layers. Corrected 30d global 3D RMSE is ocean_solver 0.861 C vs MOM6 1.036 C; MOM6 is modestly better in 40-60N. |

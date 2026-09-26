@@ -133,6 +133,17 @@ matched Stage-F 30d/365d bulk control, MOM6 must use the live SST form:
 Keep the run on local Linux storage.  The C: filesystem is full and caused the
 earlier proxy run to lose its final spatial output.
 
+## 3D scoring requirement
+
+Any 3D profile comparison must apply the shared bathymetric vertical mask:
+
+- solver snapshots: use `--depth-file <ocean_geometry.nc> --depth-var D`, or
+  store/read `wet_mask_z` in the run NPZ;
+- MOM6/external NetCDF: use `--depth-var D`;
+- never score a level just because the horizontal column is wet.
+
+The initial bug counted below-seafloor ghost layers and falsely implied a
+4000m warm bias of +6.35 C. Corrected scores must use the same bathymetry.
 ## Scoring commands
 
 Internal run:
@@ -197,3 +208,4 @@ The current 30d wind-only comparison supports only these statements:
 
 It does **not** establish superiority as a global climate model, sea-ice model,
 or industrial production system.
+

@@ -1,8 +1,8 @@
 {
   "global_3d": {
-    "n": 1779162,
-    "raw_bias": -0.13208450014059267,
-    "raw_rmse": 1.1290249054961197
+    "n": 1703703,
+    "raw_bias": -0.19296710759822536,
+    "raw_rmse": 1.0362794975041205
   },
   "layers": {
     "z0000m": {
@@ -61,37 +61,39 @@
       "raw_rmse": 0.3088398323657159
     },
     "z-1000m": {
-      "n": 127083,
-      "raw_bias": 0.1371072148589849,
-      "raw_rmse": 0.6076450982075011
+      "n": 123010,
+      "raw_bias": 0.06135143358778895,
+      "raw_rmse": 0.207699830777795
     },
     "z-2000m": {
-      "n": 127083,
-      "raw_bias": 0.24800563824629307,
-      "raw_rmse": 1.0968535025144375
+      "n": 115514,
+      "raw_bias": -0.0001399855782760086,
+      "raw_rmse": 0.10034408378885724
     },
     "z-4000m": {
-      "n": 127083,
-      "raw_bias": 0.42248362954495167,
-      "raw_rmse": 1.3886577017493715
+      "n": 67266,
+      "raw_bias": 0.019953580944488816,
+      "raw_rmse": 0.034504954957478406
     }
   },
   "n_model_wet": 127083,
   "n_reference_wet": 127083,
-  "n_scored_cells": 1779162,
+  "n_scored_cells": 1703703,
+  "depth_mask_applied": true,
   "verdict": "PASS",
   "variable": "temp",
   "steady_days": 10.0,
   "source_file": "\\\\wsl$\\Ubuntu\\root\\external_models\\mom6_slice_050\\p0_stage_f_dynamic_30d\\prog.nc",
   "source_geometry": "\\\\wsl$\\Ubuntu\\root\\external_models\\mom6_slice_050\\p0_stage_f_dynamic_30d\\ocean_geometry.nc",
+  "depth_var": "D",
   "north_atlantic_40_60_3d": {
-    "n": 55412,
-    "raw_bias": -0.39537331879384796,
-    "raw_rmse": 1.3095770398799822
+    "n": 51141,
+    "raw_bias": -0.5658303179892235,
+    "raw_rmse": 1.122631482455587
   },
   "near_wall_55_60_3d": {
-    "n": 14364,
-    "raw_bias": -0.27721240909196504,
-    "raw_rmse": 1.3331426171397163
+    "n": 12938,
+    "raw_bias": -0.5334577136078004,
+    "raw_rmse": 1.0784594561962428
   }
 }

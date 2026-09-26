@@ -14,7 +14,7 @@
 | MOM6 | direct rerun | 30d Stage-F exact dynamic bulk | ocean_solver A2 `1.692 C`; MOM6 `1.782 C` |
 | ocean_solver | internal | 30d Stage-F prescribed proxy | FAIL_DRIFT; A2 `5.629 C`; max T `51.35 C` |
 | MOM6 | direct rerun | 30d Stage-F prescribed proxy | 稳定性警告; 因 C 盘满无空间评分 |
-| MOM6 | direct rerun | 30d Stage-F 3D temperature | ocean_solver `2.842 C`; MOM6 `1.129 C`; ocean_solver deep warm bias is dominant |
+| MOM6 | direct rerun | 30d Stage-F 3D temperature | corrected: ocean_solver `0.861 C`; MOM6 `1.036 C`; surface favors ocean_solver, NA favors MOM6 |
 | ocean_solver | internal | 365d Stage-F MLD20 | A2 `1.406 C`; NA RMSE `1.302 C`; heat drift `-0.276%` |
 | ocean_solver | internal | 30d Stage-I ice/mixed-layer | A2 `1.231 C`; NA RMSE `1.316 C` |
 
@@ -39,7 +39,8 @@
 1. **小切片上已经能跑通工业级对照协议**，但还不能宣称超过工业级模式。
 2. **Stage-F 是下一个门槛**：只有通过完整 bulk forcing 365d，才比 30d restore 更有说服力。
 3. **最小 ice/mixed-layer 闭环已经稳定**，但仍要和 industrial 模式在同一 forcing 下对比。
-4. **当前最明确的工业级差距是三维温度**：30d 对照里 MOM6 全域 3D RMSE `1.129 C`，ocean_solver `2.842 C`，主要来自 1000m 以下暖偏差。
+4. **修正后的 30d 3D 对照**：ocean_solver 全域 RMSE `0.861 C`，MOM6 `1.036 C`；MOM6 在 40--60N 与近壁略好。此前“深层暖偏差”主要是 3D scorer 把海底以下 ghost layers 计入了。
 5. **要超过工业级模式，优先级不是继续调参**，而是：完整 bulk forcing → 365d 对照 → 三维误差 → 并行/速度 → 扩展到更多物理过程。
+
 
 

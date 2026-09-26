@@ -735,3 +735,18 @@ stage_f_30d_performance:
     mom6_30d_wall_min: 74.5
     mom6_mpi_ranks: 4
   interpretation: "ocean_solver is much faster on this short matched slice, but MOM6 remains much better for 3D temperature; speed and climate skill are separate claims."
+
+stage_f_30d_3d_corrected:
+  status: benchmark_scoring_bug_fixed
+  depth_mask: "required; shared bathymetric D excludes below-seafloor ghost layers"
+  mom6_3d_benchmark: "research/experiments/industrial_comparison_045/mom6_stage_f_dynamic_30d_3d_benchmark.json"
+  ocean_solver_3d_benchmark: "research/experiments/industrial_comparison_045/ocean_solver_stage_f_30d_3d_benchmark.json"
+  comparison_table: "research/experiments/industrial_comparison_045/stage_f_dynamic_30d_3d_comparison_table.md"
+  metrics:
+    mom6_global_3d_raw_rmse_c: 1.0363
+    ocean_solver_global_3d_raw_rmse_c: 0.8613
+    mom6_north_atlantic_40_60_3d_raw_rmse_c: 1.1226
+    ocean_solver_north_atlantic_40_60_3d_raw_rmse_c: 1.1753
+    mom6_surface_raw_rmse_c: 1.8840
+    ocean_solver_surface_raw_rmse_c: 1.7030
+  interpretation: "After excluding ghost layers, ocean_solver has better global/surface 3D temperature and MOM6 is modestly better in North Atlantic 40-60N; the previous 4000m warm-bias signal was an artifact."

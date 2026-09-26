@@ -1,8 +1,8 @@
 {
   "global_3d": {
-    "n": 1779162,
-    "raw_bias": 0.38366495067063605,
-    "raw_rmse": 2.842035875211719
+    "n": 1703703,
+    "raw_bias": -0.17744272498117278,
+    "raw_rmse": 0.8613205457748178
   },
   "layers": {
     "z0000m": {
@@ -61,33 +61,35 @@
       "raw_rmse": 0.3715172704722311
     },
     "z-1000m": {
-      "n": 127083,
-      "raw_bias": 0.3301336175855055,
-      "raw_rmse": 1.8676948279138732
+      "n": 123010,
+      "raw_bias": 0.011032543022507554,
+      "raw_rmse": 0.20602210837689397
     },
     "z-2000m": {
-      "n": 127083,
-      "raw_bias": 1.0938162411057035,
-      "raw_rmse": 3.664497560620613
+      "n": 115514,
+      "raw_bias": 0.008768812068820535,
+      "raw_rmse": 0.10271015151727679
     },
     "z-4000m": {
-      "n": 127083,
-      "raw_bias": 6.347202827681982,
-      "raw_rmse": 9.288220910552084
+      "n": 67266,
+      "raw_bias": 0.004453354208345632,
+      "raw_rmse": 0.06961566849348855
     }
   },
-  "n_scored_cells": 1779162,
+  "n_scored_cells": 1703703,
+  "depth_mask_applied": true,
   "verdict": "PASS",
   "source_snapshot": "\\\\wsl$\\Ubuntu\\root\\external_models\\results\\industrial_comparison_045\\global_industrial_comparison_050_stage_f_30d_3d_3d\\snap_00003.npy",
   "source_npz": "\\\\wsl$\\Ubuntu\\root\\external_models\\results\\industrial_comparison_045\\global_industrial_comparison_050_stage_f_30d_3d.npz",
+  "source_depth": "\\\\wsl$\\Ubuntu\\root\\external_models\\mom6_slice_050\\p0_stage_f_dynamic_30d\\ocean_geometry.nc",
   "north_atlantic_40_60_3d": {
-    "n": 55412,
-    "raw_bias": 0.40850030911885954,
-    "raw_rmse": 3.5993478711163664
+    "n": 51141,
+    "raw_bias": -0.5811499435005354,
+    "raw_rmse": 1.1752747961049943
   },
   "near_wall_55_60_3d": {
-    "n": 14364,
-    "raw_bias": 0.582963339660451,
-    "raw_rmse": 4.0320009810557975
+    "n": 12938,
+    "raw_bias": -0.7088249211550224,
+    "raw_rmse": 1.1245347618391
   }
 }

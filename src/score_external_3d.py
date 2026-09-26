@@ -35,9 +35,18 @@ def _layer_metrics(error: np.ndarray, ocean3d: np.ndarray, z: np.ndarray) -> dic
     return out
 
 
+def _vertical_mask(depth: np.ndarray, ocean2d: np.ndarray,
+                   zlevels: np.ndarray) -> np.ndarray:
+    if depth.shape != ocean2d.shape:
+        raise RuntimeError(f"depth shape mismatch: {depth.shape} vs {ocean2d.shape}")
+    return ocean2d[:, :, None] & (
+        np.abs(zlevels)[None, None, :] <= depth[:, :, None])
+
+
 def score_external_3d(path, *, variable, reference_path, lat_var=None,
                       lon_var=None, wet_var=None, geometry=None,
-                      steady_days=0.0, replace_land_with_reference=True) -> dict:
+                      depth_var=None, steady_days=0.0,
+                      replace_land_with_reference=True) -> dict:
     ref = np.load(reference_path, allow_pickle=True)
     if variable == "temp":
         reference = np.asarray(ref["T_init"], dtype=float)
@@ -71,7 +80,14 @@ def score_external_3d(path, *, variable, reference_path, lat_var=None,
 
     wet = (np.asarray(geom[wet_var][:], dtype=bool).T if wet_var is not None else ref_ocean)
     ocean2d = ref_ocean & wet
-    ocean3d = ocean2d[:, :, None] & np.ones(reference.shape[2], dtype=bool)[None, None, :]
+    if depth_var is not None:
+        depth = np.asarray(geom[depth_var][:], dtype=float).T
+        ocean3d = _vertical_mask(depth, ocean2d, z)
+    elif "wet_mask_z" in ref.files:
+        ocean3d = np.asarray(ref["wet_mask_z"], dtype=bool)
+    else:
+        ocean3d = ocean2d[:, :, None] & np.ones(
+            reference.shape[2], dtype=bool)[None, None, :]
     if replace_land_with_reference:
         field3d = np.where(ocean3d, field3d, reference)
 
@@ -82,14 +98,16 @@ def score_external_3d(path, *, variable, reference_path, lat_var=None,
         "n_model_wet": int(wet.sum()),
         "n_reference_wet": int(ref_ocean.sum()),
         "n_scored_cells": int(ocean3d.sum()),
+        "depth_mask_applied": bool(depth_var is not None or "wet_mask_z" in ref.files),
         "verdict": "PASS" if np.isfinite(error[ocean3d]).all() else "FAIL",
         "variable": variable,
         "steady_days": steady_days,
         "source_file": str(Path(path)),
         "source_geometry": str(Path(geometry)) if geometry else None,
+        "depth_var": depth_var,
     }
     for name, mask2d in regional_masks(ref_lat, ref_lon, ocean2d).items():
-        mask3d = mask2d[:, :, None] & np.ones(reference.shape[2], dtype=bool)[None, None, :]
+        mask3d = mask2d[:, :, None] & ocean3d
         result[name + "_3d"] = regional_error_metrics(error, mask3d)
     return result
 
@@ -103,6 +121,8 @@ def main() -> None:
     p.add_argument("--wet-var", default=None)
     p.add_argument("--lat-var", default=None)
     p.add_argument("--lon-var", default=None)
+    p.add_argument("--depth-var", default=None,
+                   help="column depth variable on (lat,lon), e.g. D")
     p.add_argument("--steady-days", type=float, default=10.0)
     p.add_argument("--no-land-fill", action="store_true")
     p.add_argument("--out", default=None)
@@ -111,6 +131,7 @@ def main() -> None:
                                reference_path=args.reference_npz,
                                lat_var=args.lat_var, lon_var=args.lon_var,
                                wet_var=args.wet_var, geometry=args.geometry,
+                               depth_var=args.depth_var,
                                steady_days=args.steady_days,
                                replace_land_with_reference=not args.no_land_fill)
     out = Path(args.out or Path(args.input).with_name("external_3d_benchmark.json"))
