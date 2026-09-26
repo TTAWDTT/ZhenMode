@@ -351,3 +351,11 @@ Runner: scripts/run_candidate_baseline.sh
     Compare 30d and 365d ocean_solver 3D temperature by layer. The annual
     skill loss is concentrated above 500 m, so the next lever should target
     upper-ocean mixed-layer/ventilation, not deep-ocean tuning.
+62. **Gate the annual stratification-MLD probe.** [COMPLETE 2026-09-27]
+    The 365d Stage-F stratification-MLD run improves near-wall bias but fails
+    global and North Atlantic RMSE against the annual no-ice control. Keep it
+    as a diagnostic, not a production default.
+63. **Target the annual upper-ocean ventilation error.** [ACTIVE]
+    Annual 3D error is concentrated above 500 m and in the subtropical bands.
+    Next test a regional or seasonally varying upper-ocean closure rather than
+    a uniform MLD or deep-ocean tuning.
