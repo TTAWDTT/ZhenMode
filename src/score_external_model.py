@@ -25,11 +25,18 @@ def _read_centers(ds: netCDF4.Dataset, name: str | None,
     values = np.asarray(ds[name][:], dtype=float)
     if values.ndim == 1:
         centers = values
-    elif values.ndim == 2 and values.shape[0] == reference_centers.size:
+    elif values.ndim == 2:
         # MOM6 ocean_geometry.nc stores geolat/geolon on the cell-center tile. The
         # shared structured slice has latitude varying along rows and longitude
         # varying along columns, so take those vectors for validation.
-        centers = values[:, 0] if name in {"lat", "geolat", "latitude"} else values[0, :]
+        if name in {"lat", "geolat", "latitude"}:
+            centers = values[:, 0]
+        elif name in {"lon", "geolon", "longitude"}:
+            centers = values[0, :]
+        elif values.shape[1] == reference_centers.size:
+            centers = values[0, :]
+        else:
+            centers = values[:, 0]
     else:
         centers = values
     return centers
