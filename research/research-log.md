@@ -274,3 +274,6 @@ Chronological record of research decisions and actions. Append-only.
 
 
 | 205 | 2026-09-26 | ice | Added a reproducible Stage-I closed-loop manifest for the 30d monthly dynamic-ice probe: explicit growth volume 2.41e10 m3, latent growth heat 7.38e18 J, brine salt change -8.86e16 kg, effective MLD 31.5 m, and surface heat residual -1.70e22 J. The annual no-floor control remains a no-ice negative control. |
+
+
+| 206 | 2026-09-26 | experiment | The 365d prescribed-restore ocean_solver control passed stability but degraded to global A2 2.245 C and NA RMSE 1.858 C over the final 90d; heat/salt drift stayed small. This confirms the 30d Stage-R slice is not predictive of an annual climate score and should not be promoted. |

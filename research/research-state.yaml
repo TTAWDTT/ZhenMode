@@ -418,6 +418,18 @@ external_comparison:
     mom6_na_rmse_c: 0.5794
     ocean_solver_wall_time_min: 3.5
     mom6_wall_time_min: 47.6
+  restore_365d_internal:
+    status: completed_not_promoted_negative_signal
+    benchmark: "research/experiments/industrial_comparison_045/ocean_solver_restore_365d_benchmark.json"
+    run: "results/industrial_comparison_045/global_industrial_comparison_050_restore_365d.npz"
+    wall_time_min: 32.7
+    metrics:
+      global_a2_rmse_c: 2.2453
+      north_atlantic_40_60_raw_rmse_c: 1.8584
+      near_wall_55_60_raw_bias_c: 0.5121
+      heat_drift_percent: -0.0605
+      salt_drift_percent: -0.000284
+    interpretation: "With no bulk flux and only prescribed restoring, the 30d skill does not carry to 365d. Do not promote Stage R; move to matched bulk forcing."
   targets: "research/experiments/industrial_comparison_045/targets.md"
   rule: "Do not compare with industrial models as numbers until grid, bathymetry, initial state, forcing, duration, diagnostics, and reproducibility are matched."
 
