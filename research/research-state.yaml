@@ -413,6 +413,17 @@ external_comparison:
       north_atlantic_40_60_raw_rmse_c: 2.0879
       near_wall_55_60_raw_bias_c: -1.8720
     interpretation: "No-ice bulk proxy is worse than Stage-I dynamic ice/mixed-layer; dynamic closure improves the matched 30d probe."
+  stage_f_30d_proxy_internal:
+    status: completed_failed_drift_not_comparable
+    benchmark: "research/experiments/industrial_comparison_045/ocean_solver_stage_f_proxy_30d_benchmark.json"
+    run: "results/industrial_comparison_045/global_industrial_comparison_050_stage_f_proxy_30d.npz"
+    script: "scripts/run_industrial_comparison_050_stage_f_proxy_30d.sh"
+    metrics:
+      global_a2_rmse_c: 5.6292
+      north_atlantic_40_60_raw_rmse_c: 2.9784
+      heat_drift_percent: -0.2373
+      max_temp_c: 51.352
+    interpretation: "The exact lambda*(monthly air-WOA SST) proxy drifts in ocean_solver; do not use this as a valid Stage-F comparison until the MOM6 side is also checked for drift."
   stage_f_tooling:
     air_temp_exporter: "src/export_mom6_air_temp_forcing.py"
     sensible_heat_proxy: "src/export_mom6_sensible_forcing.py"
