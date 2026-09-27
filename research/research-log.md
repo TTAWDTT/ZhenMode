@@ -365,3 +365,5 @@ Chronological record of research decisions and actions. Append-only.
 | 251 | 2026-09-27 | diagnostic | Added a standardized MLD bias/RMSE metric to the 3D scorer. The annual Stage-F no-ice control has model MLD 170.8m versus reference 31.5m (bias +139.3m, RMSE 655.7m), so the current solver entrains far deeper than the WOA initial state. |
 
 | 252 | 2026-09-27 | experiment | A 30d Stage-F fine-upper-z vertical-grid probe (0,-5,-10,-20,-35,-50,-75,-100,-150,-200,-300,-500,-1000,-2000m) passed stability but worsened the climate gate to global A2 1.699 C, NA RMSE 2.110 C, near-wall 1.970 C. Do not promote; the default 14-level grid remains better on the current protocol. |
+
+| 253 | 2026-09-27 | experiment | A 30d Stage-F low-mixing probe (kappa_v=1e-7, kappa_conv=0.005) was stable but essentially unchanged versus the Stage-F no-ice control (global A2 1.695 vs 1.692 C, NA RMSE 2.086 vs 2.088 C, near-wall 1.955 vs 1.958 C). A scalar mixing reduction is therefore not the main MLD fix. |

@@ -905,3 +905,13 @@ ocean_solver_stage_f_fine_upper_z_30d:
     near_wall_55_60_raw_rmse_c: 1.9703
     heat_drift_percent: -0.2668
   interpretation: "Fine upper-ocean z levels are stable but worse than the default Stage-F grid on the 30d gate; do not promote."
+
+ocean_solver_stage_f_lowmix_30d:
+  status: completed_not_promoted
+  benchmark: "research/experiments/industrial_comparison_045/ocean_solver_stage_f_lowmix_30d_benchmark.json"
+  config: "Stage-F no-ice control with kappa_v=1e-7 and kappa_conv=0.005"
+  metrics:
+    global_a2_rmse_c: 1.6952
+    north_atlantic_40_60_raw_rmse_c: 2.0856
+    near_wall_55_60_raw_rmse_c: 1.9551
+  interpretation: "Lower scalar vertical/convective diffusivity is stable but only marginally changes the 30d Stage-F result; do not promote."
