@@ -377,3 +377,4 @@ Chronological record of research decisions and actions. Append-only.
 | 258b | 2026-09-27 | fix | Corrected the band gate so an off-mask cell keeps normal surface exchange; the first probe had accidentally zeroed air-sea flux outside the ice band. |
 | 259 | 2026-09-27 | analysis | Rescored the 30d full dynamic-ice diagnostic on the protocol final-10d window; it is equivalent to the 40--65N-only probe and no-ice control. The earlier 0.707C result was a whole-30d average and is not comparable. |
 | 259b | 2026-09-27 | ops | WSL is currently unavailable because the host D: volume is full; the annual MOM6 v10 run must be relaunched after freeing disk space. |
+| 260 | 2026-09-27 | ops | Validated a 10-day temp+salt diag_table on a 1-day MOM6 smoke and relaunched the annual Stage-F comparison as v11 to fit the available disk while keeping the final-90d 3D/MLD gate. |
