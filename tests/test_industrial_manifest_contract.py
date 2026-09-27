@@ -44,3 +44,12 @@ def test_pre_registered_cooling_ice_manifest_records_gate():
     assert manifest["config"]["mixed_layer_gate_mode"] == "cooling_ice"
     assert manifest["metrics"] is None
     assert manifest["npz"] is None
+
+
+def test_all_industrial_manifests_are_contract_ready():
+    paths = sorted(ROOT.rglob('*manifest*.json'))
+    assert paths
+    for path in paths:
+        report = validate_contract(json.loads(path.read_text(encoding='utf-8')))
+        assert report['contract_pass'] is True, path
+        assert report['missing_sections'] == [], path
