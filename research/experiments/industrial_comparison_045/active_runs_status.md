@@ -1,13 +1,13 @@
 # Active external/internal comparison runs
 
-Updated: 2026-09-27 12:15 local.
+Updated: 2026-09-27 13:25 local.
 
 ## Core direct comparison
 
 | Run | Model | Status | Purpose |
 |---|---|---|---|
 | Stage-F exact dynamic bulk 30d | MOM6/ocean_solver | completed | monthly-air dynamic-bulk control |
-| Stage-F exact dynamic bulk 365d v10 | MOM6 local | running | fresh annual exact dynamic-bulk 3D comparison with daily temp+salt |
+| Stage-F exact dynamic bulk 365d v11 | MOM6 local | running | annual exact dynamic-bulk 3D comparison with 10-day temp+salt |
 | ocean_solver Stage-F 365d no-ice | ocean_solver | completed | internal annual bulk control |
 | ocean_solver Stage-F 365d 3D | ocean_solver | completed | annual 3D snapshot control |
 | ocean_solver Stage-F 365d 3D latitude-depth/MLD | ocean_solver | completed | standardized upper-ocean error diagnostic |
@@ -37,4 +37,4 @@ Updated: 2026-09-27 12:15 local.
 
 
 
-Note: v10 relaunched 2026-09-27 12:14 local with the exact v8 dynamic-bulk contract and daily temp+salt output. A 1-day salt smoke test passed, so this run enables the standardized MLD metric. It was alive at 12:48 local, but the WSL instance is currently unavailable after the host D: volume filled; the annual run must be relaunched after disk space is restored.
+Note: v10 relaunched 2026-09-27 12:14 local with the exact v8 dynamic-bulk contract and daily temp+salt output. A 1-day salt smoke test passed, so this run enables the standardized MLD metric. It was alive at 12:48 local, but the WSL instance later became unavailable after the host D: volume filled. V11 was relaunched at 13:20 local with the exact v8 dynamic-bulk contract and 10-day temp+salt output; a 1-day smoke test validated the 10-day diag-table format. This reduces annual I/O enough to fit the available disk while still supporting the final-90d 3D and MLD gates.
