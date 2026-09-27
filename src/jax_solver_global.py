@@ -1944,16 +1944,8 @@ def _dynamic_ice_closure(state, p):
          + p.coastal_bulk_lambda_2d * air_minus_sst)
     q = q * insulation * p.wet_mask * p.ice_mask_2d
 
-    # Reuse the same mixed-layer depth used by the surface heat budget.
-    mixed_depth = float(p.mixed_layer_depth_m or 0.0)
-    if getattr(p, 'mixed_layer_depth_2d', None) is not None:
-        effective_depth = jnp.where(
-            (p.mixed_layer_mask_2d > 0.5) & (mixed_depth > 0.0),
-            p.mixed_layer_depth_2d, float(p.dz_surface))
-    else:
-        effective_depth = jnp.where(
-            (p.mixed_layer_mask_2d > 0.5) & (mixed_depth > 0.0),
-            mixed_depth, float(p.dz_surface))
+    # Reuse the same gated mixed-layer depth used by the surface heat budget.
+    effective_depth = _mixed_layer_depth_with_gate(state, p)[:, :, 0]
     heat_capacity = RHO_0 * C_P * effective_depth
     T_projected = T_sst + q * dt / heat_capacity
 
