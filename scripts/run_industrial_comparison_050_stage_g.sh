@@ -33,6 +33,14 @@ if [[ -z "${OCEAN_SOLVER_BATHYMETRY:-}" ]]; then
     export OCEAN_SOLVER_BATHYMETRY="/mnt/c/Users/zhen.luo/ocean_solver/data/ETOPO_2022_v1_r3600x1800_surface.nc"
   fi
 fi
+STAGE_G_WOA="${STAGE_G_WOA:-/root/external_models/mom6_slice_050/p0_stage_f_dynamic_365d_v12/INPUT/woa_ts_050.nc}"
+STAGE_G_INIT="data/stage_g/stage_g_init_2023_050.npz"
+if [[ -z "${INIT_FROM:-}" ]]; then
+  if [[ -f "${STAGE_G_WOA}" ]]; then
+    "${PYTHON_BIN}" scripts/build_stage_g_init_from_mom6_woa.py --woa "${STAGE_G_WOA}" --out "${STAGE_G_INIT}"
+    INIT_FROM="${STAGE_G_INIT}"
+  fi
+fi
 STAGE_G_FORCING="${STAGE_G_FORCING:-data/stage_g/stage_g_forcing_2023_050.npz}"
 mkdir -p "${OUT_DIR}" "${LOG_DIR}"
 
