@@ -400,3 +400,5 @@ The cooling-season-only fixed-MLD candidate completed but was rejected on the an
 | 274 | 2026-09-27 | benchmark | Extended the annual gate with global/NA/near-wall 3D RMSE, MLD bias/RMSE, depth-mask, and MLD-presence checks. Contract validator and gate CLIs now exit nonzero on failure, and benchmark_manifest supports pre-registered manifests without an NPZ. |
 | 275 | 2026-09-27 | benchmark | The 30d and 365d Stage-I manifests are now contract-ready and locked by tests. Full suite is 128 passed, 98 skipped; MOM6 annual v12 remains running. |
 | 276 | 2026-09-27 | benchmark | Clarified that an external 3D scorer with zero time records is an incomplete run, not an empty score. Locked the pre-registered cooling_ice manifest and the Stage-I manifests by tests. |
+
+| 277 | 2026-09-27 | benchmark | Added a regression test that scans every industrial-comparison manifest and requires contract_pass. Current sweep is 11/11 manifests contract-ready. |
