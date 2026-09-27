@@ -11,6 +11,10 @@ v11 input directory. This is the direct industrial annual 3D comparison target.
 
 ## Scoring
 
+A local completion watcher is active. When the MOM6 annual run exits it will
+automatically score surface and final-90d 3D/MLD, then run the annual gate with
+--require-3d.
+
 When complete, use the standard final-90d window with:
 
     python src/score_external_3d.py \
