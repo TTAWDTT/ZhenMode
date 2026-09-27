@@ -399,11 +399,11 @@ legacy_candidate_baseline_070:
 
 external_comparison:
   status: active
-  current_level: stage_f_internal_completed_mom6_annual_running
+  current_level: stage_f_internal_completed_mom6_annual_v12_running
   primary_external_target: MOM6
   protocol: "research/experiments/industrial_comparison_045/protocol_v2.md"
   gap_matrix: "research/experiments/industrial_comparison_045/industrial_gap_matrix.md"
-  next_stage: "Score MOM6 Stage-F annual v8 3D; then identify a narrow surpass target"
+  next_stage: "Score MOM6 Stage-F annual v12 final-90d 3D/MLD; then decide Stage-G or NEMO"
   stage_f_30d_internal:
     status: completed_not_climate_benchmark
     benchmark: "research/experiments/industrial_comparison_045/ocean_solver_stage_f_30d_benchmark.json"
