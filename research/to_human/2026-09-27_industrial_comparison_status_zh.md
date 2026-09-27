@@ -52,10 +52,10 @@ MOM6 在 30d 的 North Atlantic 三维误差略好；年度三维对照是当前
 - 全局 MLD 恶化到 `288.7 m`；
 - 但 40--60N MLD 改善到 `153.8 m`，60--40S 恶化到 `314.9 m`。
 
-所以它不是年度 baseline。新的 30d 40--65N-only dynamic-ice probe 也没有通过：
-它稳定，但不改善 global/NA 指标，且去掉 full dynamic ice 在 30d 的大部分
-3D/MLD 增益。因此下一步必须做 band/ice-state 依赖的上层闭包，而不是继续
-换纬度切法。
+所以它不是年度 baseline。新的 30d 40--65N-only dynamic-ice probe 在协议 final-10d 窗口下，
+和 full dynamic ice 几乎等价，都没有超过 no-ice control。之前看到的
+full-ice 0.707C 是整个 30d 平均，不是 final-10d 气候门。
+因此这个 30d probe 不能作为年度 baseline，也不能用来支持“只做北半球”的结论。
 
 
 ## 4. 当前运行
