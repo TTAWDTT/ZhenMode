@@ -19,14 +19,27 @@ from benchmark_metrics import (
 from score_external_model import _read_centers, _steady_mask
 
 
-def _steady_mean(field: np.ndarray, steady_days: float) -> np.ndarray:
+def _time_days(field: netCDF4.Variable, ds: netCDF4.Dataset) -> np.ndarray:
+    """Return the actual time coordinate when available, else record indices."""
+    time_name = next((name for name in field.dimensions
+                      if name in ds.variables and ds[name].ndim == 1), None)
+    if time_name is None:
+        return np.arange(field.shape[0], dtype=float)
+    values = np.asarray(ds[time_name][:], dtype=float)
+    if values.size != field.shape[0]:
+        raise RuntimeError(
+            f"time coordinate length {values.size} does not match field records "
+            f"{field.shape[0]}")
+    return values
+
+
+def _steady_mean(field: netCDF4.Variable, ds: netCDF4.Dataset,
+                 steady_days: float) -> np.ndarray:
     if field.ndim != 4:
         raise RuntimeError("expected (time,z,y,x)")
-    time_var_index = next((i for i, name in enumerate(
-        ("time", "Time")) if name in field.dimensions), 0)
-    if field.shape[time_var_index] == 0:
+    if field.shape[0] == 0:
         raise RuntimeError("external output has no time records")
-    days = np.arange(field.shape[time_var_index], dtype=float)
+    days = _time_days(field, ds)
     keep = _steady_mask(days, steady_days)
     arr = np.asarray(field[keep], dtype=float)
     return np.mean(arr, axis=0)
@@ -79,7 +92,7 @@ def score_external_3d(path, *, variable, reference_path, lat_var=None,
         raise RuntimeError("external-model grid centers differ from reference")
 
     field = ds[variable]
-    field3d = _steady_mean(field, steady_days)
+    field3d = _steady_mean(field, ds, steady_days)
     if field3d.shape == (reference.shape[2], reference.shape[1], reference.shape[0]):
         # MOM6 stores (z,y,x); transpose to (x,y,z).
         field3d = np.transpose(field3d, (2, 1, 0))
@@ -122,7 +135,7 @@ def score_external_3d(path, *, variable, reference_path, lat_var=None,
     result["latitude_depth"] = latitude_depth_metrics(error, ocean3d, ref_lat, z)
     if variable == "temp" and salt_var is not None and salt_var in ds.variables:
         salt_field = ds[salt_var]
-        salt3d = _steady_mean(salt_field, steady_days)
+        salt3d = _steady_mean(salt_field, ds, steady_days)
         if salt3d.shape == (reference.shape[2], reference.shape[1], reference.shape[0]):
             salt3d = np.transpose(salt3d, (2, 1, 0))
         if salt3d.shape != reference.shape:
@@ -174,4 +187,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-
