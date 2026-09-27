@@ -43,11 +43,11 @@
     "precipitation": "not used in both runs",
     "evaporation": "not used in both runs",
     "runoff": "not used in both runs",
-    "status": "comparable_for_stage_f_noice_contract"
+    "status": "comparable"
   },
   "sea_ice": {
     "treatment": "none in both ocean_solver no-ice control and MOM6 run",
-    "status": "comparable_for_noice_control"
+    "status": "comparable"
   },
   "duration": {
     "days": 365.0,
@@ -61,7 +61,7 @@
       "shared wet_mask intersection",
       "shared bathymetric vertical depth mask"
     ],
-    "status": "comparable_if_run_completes"
+    "status": "comparable"
   },
   "provenance": {
     "mom6_source_commit": "not_recorded",
@@ -70,7 +70,8 @@
     "mpi": "OpenMPI mpirun",
     "mpi_version": "not_recorded",
     "scoring_python": "netCDF4 1.7.4; xarray 2026.1.0",
-    "note": "Numerical comparison may proceed, but exact source reproducibility remains incomplete."
+    "note": "Numerical comparison may proceed, but exact source reproducibility remains incomplete.",
+    "status": "not_comparable"
   },
   "outputs": {
     "surface_or_3d": "prog.nc",
