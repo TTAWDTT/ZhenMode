@@ -783,3 +783,20 @@ tau=3d 一年验证通过：global A2 `1.0033C`，NA `0.9392C`，近墙 bias `-0
 
 因此这个组合只保留为诊断，不升为 baseline。下一步仍等 MOM6 年度 3D
 温度/MLD，而不是继续固定深度调参。
+
+## Band-ice + fixed-MLD 季节性失败（2026-09-27）
+
+有效 v2 annual run 的逐日诊断显示：候选在前半年明显改善，约 day180 后优势
+消失，day300 之后 North Atlantic / near-wall 3D 误差超过 no-ice control。
+
+final-90d 的 candidate-minus-control 差值集中在 40--60N 上层海洋：
+
+| depth | bias | RMSE |
+|---|---:|---:|
+| 0m | +1.348C | 1.765C |
+| 5m | +1.374C | 1.738C |
+| 30m | +1.231C | 1.541C |
+| 50m | +1.125C | 1.382C |
+| 100m | +0.651C | 0.856C |
+
+因此下一层改进目标不是继续调深度，而是季节性的上层热容 / 通风闭合。
