@@ -766,3 +766,20 @@ tau=3d 一年验证通过：global A2 `1.0033C`，NA `0.9392C`，近墙 bias `-0
 ## 年度动态海冰 3D gate（2026-09-27）
 
 365d Stage-F dynamic ice/no-MLD 稳定，但没有通过年度 gate：global 3D RMSE `1.543C`，几乎不变；global MLD 从 `170.8m` 恶化到 `288.7m`。分纬度看，40--60N MLD 改善到 `153.8m`，但 60--40S 恶化到 `314.9m`。因此不能升为 baseline；下一个闭包必须依赖 band/ice-state，而不是继续全局标量调参。
+
+## Band-ice + fixed-MLD 年度 gate（2026-09-27）
+
+先说明：第一个 365d 检查（v1）误用了另一个 bathymetry，ocean fraction 是
+`90.8%`，而 30d probe 和年度 no-ice control 都是 `67.9%`，所以 v1 的差分
+指标不能作为物理结论。
+
+有效 v2 rerun 的结论是：
+
+- stability、heat/salt bound、signed near-wall bias 通过；
+- 但 annual climate gate 失败；
+- global A2 `1.204 -> 1.246C`，NA `0.975 -> 1.495C`；
+- global 3D RMSE `1.547 -> 1.559C`，NA 3D `1.276 -> 1.626C`；
+- MLD bias 明显改善：`+139.3 -> +121.2m`，40--60N 到 `+17.2m`。
+
+因此这个组合只保留为诊断，不升为 baseline。下一步仍等 MOM6 年度 3D
+温度/MLD，而不是继续固定深度调参。
