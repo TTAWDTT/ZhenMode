@@ -758,3 +758,11 @@ tau=3d/1d 仍继续改善，但说明 restore 约束正在变强。已启动 tau
 ## 0.45 度 tau=3d coastal proxy 365d（2026-09-24）
 
 tau=3d 一年验证通过：global A2 `1.0033C`，NA `0.9392C`，近墙 bias `-0.7115C`。相对 ice floor candidate，global A2 -9.82%。这是当前 strongest validated diagnostic rung；tau=10d 仍是更温和的折中，tau=1d 不推进。
+
+## 工业级对照（2026-09-27）
+
+最硬的对照是 0.5° 同切片 MOM6 direct rerun。30d Stage-F 3D 上 ocean_solver `0.861C`、MOM6 `1.036C`，但 annual v8 尚未完成。年度 ocean_solver no-ice 3D control 的 global RMSE 是 `1.547C`，主要冷偏差集中在 40--20S/20--40N 的 15--50m。
+
+## 年度动态海冰 3D gate（2026-09-27）
+
+365d Stage-F dynamic ice/no-MLD 稳定，但没有通过年度 gate：global 3D RMSE `1.543C`，几乎不变；global MLD 从 `170.8m` 恶化到 `288.7m`。分纬度看，40--60N MLD 改善到 `153.8m`，但 60--40S 恶化到 `314.9m`。因此不能升为 baseline；下一个闭包必须依赖 band/ice-state，而不是继续全局标量调参。
