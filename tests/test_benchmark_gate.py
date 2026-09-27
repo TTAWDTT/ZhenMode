@@ -1,4 +1,6 @@
 """Tests for the pre-registered benchmark gate."""
+import json
+
 from benchmark_gate import evaluate_gate
 
 
@@ -106,3 +108,19 @@ def test_gate_rejects_missing_mld_in_3d_input():
     assert not result["pass"]
     assert not result["checks"]["mld_present"]
     assert not result["checks"]["three_d_complete"]
+
+
+def test_cli_exits_nonzero_on_failed_gate(tmp_path):
+    import subprocess
+    import sys
+    control_path = tmp_path / "control.json"
+    experiment_path = tmp_path / "experiment.json"
+    control_path.write_text(json.dumps(_run()))
+    experiment_path.write_text(json.dumps(_run(global_a2=1.2)))
+    result = subprocess.run(
+        [sys.executable, "src/benchmark_gate.py",
+         "--control", str(control_path),
+         "--experiment", str(experiment_path)],
+        capture_output=True, text=True)
+    assert result.returncode != 0
+    assert json.loads(result.stdout)["pass"] is False
