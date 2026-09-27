@@ -102,5 +102,67 @@
       "median_m": 30.0,
       "p90_m": 50.0
     }
+  },
+  "run_id": "ice_proxy_045_icefloor_365d_repeat",
+  "status": "completed_diagnostic",
+  "grid": {
+    "type": "global_slice",
+    "lat_range": [
+      -65.0,
+      65.0
+    ],
+    "lon_range": [
+      0.0,
+      360.0
+    ],
+    "n_lat": 288,
+    "n_lon": 800,
+    "vertical_levels": 14,
+    "vertical_coordinate": "z",
+    "status": "comparable"
+  },
+  "bathymetry": {
+    "source": "ETOPO2022-derived shared topography",
+    "smoothing_passes": 80,
+    "minimum_depth_m": 500.0,
+    "status": "comparable"
+  },
+  "initial_state": {
+    "temperature_salinity": "WOA T/S",
+    "status": "comparable"
+  },
+  "forcing": {
+    "wind": "2023 NCEP R1 10m wind converted to stress",
+    "heat": "NCEP R1 2m air via live-SST bulk proxy",
+    "heat_exchange_w_m2_k": 80.0,
+    "salt_exchange_constant_m_per_day": 0.0,
+    "radiation": "not used",
+    "humidity": "not used",
+    "precipitation": "not used",
+    "evaporation": "not used",
+    "runoff": "not used",
+    "status": "comparable"
+  },
+  "sea_ice": {
+    "treatment": "none",
+    "status": "comparable"
+  },
+  "duration": {
+    "days": 365.0,
+    "status": "comparable"
+  },
+  "scoring": {
+    "reference": "WOA top-level SST on the same grid",
+    "surface_window_days": 365,
+    "masks": [
+      "shared wet_mask intersection"
+    ],
+    "status": "comparable"
+  },
+  "provenance": {
+    "model_source_commit": "9944bbde671080ac0828087015b03b4bd6553327",
+    "model_source_commit_status": "comparable",
+    "compiler": "Python; JAX",
+    "status": "comparable"
   }
 }
