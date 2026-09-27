@@ -971,3 +971,44 @@ mom6_stage_f_dynamic_365d_v11:
   run_dir: "/root/external_models/mom6_slice_050/p0_stage_f_dynamic_365d_v11"
   config: "Stage-F exact dynamic bulk, 10-day temp+salt output, final-90d annual gate"
   purpose: "Matched annual 3D temperature and MLD comparison against the ocean_solver no-ice control."
+
+ocean_solver_stage_f_dyn_ice_band40_65_mld100_lat40_60_30d:
+  status: completed_30d_passed_annual_rejected
+  benchmark: "research/experiments/industrial_comparison_045/ocean_solver_stage_f_dyn_ice_band40_65_mld100_lat40_60_probe_30d_benchmark.json"
+  benchmark_3d: "research/experiments/industrial_comparison_045/ocean_solver_stage_f_dyn_ice_band40_65_mld100_lat40_60_probe_30d_3d_benchmark.json"
+  comparison_table: "research/experiments/industrial_comparison_045/stage_f_30d_band_mld_ice_table.md"
+  gate: "research/experiments/industrial_comparison_045/stage_f_30d_band_mld_ice_gate.json"
+  config: "Stage-F monthly-air dynamic bulk + dynamic ice 40--65N + fixed 100m MLD 40--60N"
+  metrics:
+    global_a2_rmse_c: 1.5617
+    north_atlantic_40_60_raw_rmse_c: 0.8484
+    near_wall_55_60_raw_rmse_c: 0.5335
+    global_3d_rmse_c: 0.7766
+    north_atlantic_40_60_3d_rmse_c: 0.5802
+    near_wall_55_60_3d_rmse_c: 0.3114
+    mld_raw_bias_m: 16.2955
+    mld_raw_rmse_m: 151.5101
+    ice_cells: 22
+  interpretation: "Attractive on the final-10d window, but this is only a short-window diagnostic; promotion requires the annual gate."
+
+ocean_solver_stage_f_dyn_ice_band40_65_mld100_lat40_60_365d:
+  status: completed_not_promoted
+  benchmark: "research/experiments/industrial_comparison_045/ocean_solver_stage_f_band_mld_ice_365d_benchmark.json"
+  benchmark_3d: "research/experiments/industrial_comparison_045/ocean_solver_stage_f_band_mld_ice_365d_3d_benchmark.json"
+  comparison_table: "research/experiments/industrial_comparison_045/stage_f_365d_band_mld_ice_table.md"
+  gate: "research/experiments/industrial_comparison_045/stage_f_365d_band_mld_ice_gate.json"
+  config: "Stage-F monthly-air dynamic bulk + dynamic ice 40--65N + fixed 100m MLD 40--60N"
+  scoring_window_days: 90
+  wall_time_min: 31.9
+  metrics:
+    global_a2_rmse_c: 4.7593
+    north_atlantic_40_60_raw_rmse_c: 8.4335
+    near_wall_55_60_raw_rmse_c: 11.9492
+    global_3d_rmse_c: 4.0421
+    north_atlantic_40_60_3d_rmse_c: 6.8597
+    near_wall_55_60_3d_rmse_c: 9.6966
+    mld_raw_bias_m: 81.2108
+    mld_raw_rmse_m: 464.5520
+    salt_drift_percent: -0.1497
+    ice_fraction: 0.04931
+  interpretation: "Rejected. The 30d gain does not generalize; annual North Atlantic and near-wall temperature fields become unusable."
