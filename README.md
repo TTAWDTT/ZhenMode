@@ -78,7 +78,7 @@ only for the test suite):
 
 ```bash
 python scripts/make_synthetic_bathymetry.py   # -> data/ETOPO_..._surface.nc.npz
-python -m pytest tests/ -q                    # 233 tests; data-dependent tests skip
+python -m pytest tests/ -q                    # 233 tests; data-dependent tests skip unless synthetic bathymetry is generated
 ```
 
 ## Resolution
