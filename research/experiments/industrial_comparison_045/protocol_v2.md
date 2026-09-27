@@ -275,3 +275,15 @@ python src/score_external_3d.py \
 A 30d result may diagnose a scoring bug or short-term behavior, but only the
 annual final-90d window is the pre-registered annual climate gate.
 
+
+
+
+## Contract validation
+
+Before scoring, run the contract validator on every standardized manifest:
+
+python src/benchmark_contract.py manifest.json
+
+contract_pass=true means every required section is present and every section has
+an explicit comparability status. A section may still be not_comparable; this is
+recorded rather than silently dropped from the comparison.
