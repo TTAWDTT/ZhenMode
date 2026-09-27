@@ -478,6 +478,12 @@ def main():
                     help="apply the mixed-layer depth only when the 2m air "
                          "temperature is colder than the live SST (cooling "
                         "season gate)")
+    ap.add_argument("--mixed-layer-gate-mode", choices=("none", "cooling", "ice", "cooling_ice"),
+                    default="none",
+                    help="explicit mixed-layer gate; none keeps the legacy "
+                         "mixed-layer treatment, cooling is the old boolean "
+                         "gate, ice is ice-state dependent, and cooling_ice "
+                         "is the pre-registered seasonal/ice-state candidate")
     ap.add_argument("--coastal-bulk-lambda", type=float, default=0.0,
                     help="extra bulk heat-exchange coefficient [W/m^2/K] in "
                          "the land-adjacent band; 0 = off")
@@ -925,6 +931,7 @@ def main():
                           if args.mixed_layer_lat_band else None),
         mixed_layer_depth_2d=stratification_mld,
         mixed_layer_cooling_gate=args.mixed_layer_cooling_gate,
+        mixed_layer_gate_mode=args.mixed_layer_gate_mode,
         ice_freeze_temp_c=args.ice_freeze_temp,
         ice_salt_flux=args.ice_salt_flux,
         dynamic_ice=args.dynamic_ice,
@@ -1299,6 +1306,7 @@ def main():
         'mixed_layer_depth_min': args.mixed_layer_depth_min,
         'mixed_layer_depth_max': args.mixed_layer_depth_max,
         'mixed_layer_cooling_gate': bool(args.mixed_layer_cooling_gate),
+        'mixed_layer_gate_mode': args.mixed_layer_gate_mode,
         'ice_freeze_temp': args.ice_freeze_temp,
         'ice_salt_flux': args.ice_salt_flux,
         'dynamic_ice': bool(args.dynamic_ice),

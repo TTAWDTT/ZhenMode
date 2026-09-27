@@ -722,12 +722,16 @@ FDPhysParams = namedtuple('FDPhysParams', [
     # atmosphere is colder than the live SST.  This keeps deep winter mixing
     # while avoiding an artificial summer heat reservoir.
     "mixed_layer_cooling_gate",
+    # Explicit mixed-layer gate mode; none keeps legacy, cooling is the old
+    # boolean gate, ice is ice-state dependent, and cooling_ice is the next
+    # pre-registered seasonal/ice-state candidate.
+    "mixed_layer_gate_mode",
 ])
 
 # Keyword-constructed callers that predate nu_nsub/use_scan/freeze_adv_vel/
 # conservative_kv/project_adv_vel/localize_conv/monotone_adv get the legacy
 # behavior instead of a TypeError.
-FDPhysParams.__new__.__defaults__ = (None, False, False, False, False, False, False, False, None, None, None, -1.8, 0.0, False, 1.0, None, False)
+FDPhysParams.__new__.__defaults__ = (None, False, False, False, False, False, False, False, None, None, None, -1.8, 0.0, False, 1.0, None, False, "none")
 
 
 # ── Equation of state ─────────────────────────────────────────────────
@@ -1897,7 +1901,12 @@ def nu_nsub_for_2d_cfl(nu_h, dt, dx_2d, dy, margin=0.25):
 
 
 def _mixed_layer_depth_with_gate(state, p):
-    """Return the 3D effective mixed-layer depth with the optional cooling gate."""
+    """Return the 3D effective mixed-layer depth after an explicit gate.
+
+    Modes: none keeps legacy behavior; cooling uses the mixed layer only
+    for atmosphere-to-ocean cooling; ice only for ice-covered cells;
+    cooling_ice is the pre-registered seasonal/ice-state candidate.
+    """
     mixed_depth = float(p.mixed_layer_depth_m or 0.0)
     if getattr(p, "mixed_layer_depth_2d", None) is not None:
         effective_depth = jnp.where(
@@ -1907,9 +1916,22 @@ def _mixed_layer_depth_with_gate(state, p):
         effective_depth = jnp.where(
             (p.mixed_layer_mask_2d > 0.5) & (mixed_depth > 0.0),
             mixed_depth, float(p.dz_surface))
-    if getattr(p, "mixed_layer_cooling_gate", False):
+
+    mode = str(getattr(p, "mixed_layer_gate_mode", "none") or "none")
+    if mode == "none" and getattr(p, "mixed_layer_cooling_gate", False):
+        mode = "cooling"
+    if mode not in ("none", "cooling", "ice", "cooling_ice"):
+        raise ValueError(f"unsupported mixed_layer_gate_mode: {mode}")
+    if mode != "none":
         cooling = (p.T_atm_3d[:, :, 0] - state.T[:, :, 0]) < 0.0
-        effective_depth = jnp.where(cooling, effective_depth, float(p.dz_surface))
+        ice_present = state.ice > 0.0
+        if mode == "cooling":
+            gate = cooling
+        elif mode == "ice":
+            gate = ice_present
+        else:
+            gate = cooling | ice_present
+        effective_depth = jnp.where(gate, effective_depth, float(p.dz_surface))
     return effective_depth[:, :, None]
 
 
@@ -2064,7 +2086,7 @@ def make_solver_global(grid, physics, dt, forcing=None,
                        T_atm=None, lambda_bulk=0.0,
                        mixed_layer_depth_m=None, mixed_layer_mask=None,
                        mixed_layer_depth_2d=None,
-                       mixed_layer_cooling_gate=False,
+                       mixed_layer_cooling_gate=False, mixed_layer_gate_mode="none",
                        ice_freeze_temp_c=-1.8, ice_salt_flux=0.0,
                        dynamic_ice=False, ice_insulation_scale_m=1.0, ice_mask=None,
                        S_ref_surf=None, sss_restore_days=0.0,
@@ -2359,6 +2381,7 @@ def make_solver_global(grid, physics, dt, forcing=None,
         ice_freeze_temp_c=float(ice_freeze_temp_c),
         ice_salt_flux=float(ice_salt_flux),
         mixed_layer_cooling_gate=bool(mixed_layer_cooling_gate),
+        mixed_layer_gate_mode=str(mixed_layer_gate_mode or "none"),
         dynamic_ice=bool(dynamic_ice),
         ice_insulation_scale_m=float(ice_insulation_scale_m),
         ice_mask_2d=(jnp.asarray(ice_mask, dtype=jnp.float64)

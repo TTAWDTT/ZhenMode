@@ -80,3 +80,12 @@ worsen. The Stage-I proxy therefore remains diagnostic only.
 The 30d Stage-I manifest is now contract-ready with explicit comparable/not-comparable
 fields. Provenance remains not comparable because the exact source commit was not
 recorded with the saved output.
+
+
+## Next candidate (pre-registered, not launched)
+
+The next candidate is a seasonal/ice-state dependent mixed-layer gate: keep the
+100m mixed-layer only when the atmosphere cools the live SST or dynamic ice is
+present. It is deliberately not launched until the annual MOM6 v12 final-90d
+3D/MLD gate is scored. The pre-registered decision rule is in
+next_closure_pre_registration.md.

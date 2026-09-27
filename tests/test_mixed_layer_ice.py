@@ -114,3 +114,35 @@ def test_mixed_layer_cooling_gate_off_keeps_depth():
     depth = np.asarray(_mixed_layer_depth_with_gate(_state(10.0), params))
     assert np.allclose(depth, 20.0)
 
+
+
+def _ice_state(T_value, ice_value):
+    return JaxStateG(jnp.zeros((8, 8, 4)), jnp.zeros((8, 8, 4)),
+                     jnp.full((8, 8, 4), T_value), jnp.full((8, 8, 4), 35.0),
+                     jnp.zeros((8, 8)), jnp.full((8, 8), ice_value))
+
+
+def test_mixed_layer_ice_gate_uses_depth_only_where_ice():
+    params = _params(15.0, cooling_gate=False)._replace(mixed_layer_gate_mode="ice")
+    open_water = _ice_state(10.0, ice_value=0.0)
+    depth = np.asarray(_mixed_layer_depth_with_gate(open_water, params))
+    assert np.allclose(depth, params.dz_surface)
+
+    ice_water = _ice_state(10.0, ice_value=0.25)
+    depth = np.asarray(_mixed_layer_depth_with_gate(ice_water, params))
+    assert np.allclose(depth, 20.0)
+
+
+def test_mixed_layer_cooling_ice_gate_combines_both():
+    params = _params(15.0, cooling_gate=False)._replace(mixed_layer_gate_mode="cooling_ice")
+    warm_open_water = _ice_state(10.0, ice_value=0.0)
+    depth = np.asarray(_mixed_layer_depth_with_gate(warm_open_water, params))
+    assert np.allclose(depth, params.dz_surface)
+
+    cooling_open_water = _ice_state(20.0, ice_value=0.0)
+    depth = np.asarray(_mixed_layer_depth_with_gate(cooling_open_water, params))
+    assert np.allclose(depth, 20.0)
+
+    warm_ice_water = _ice_state(10.0, ice_value=0.25)
+    depth = np.asarray(_mixed_layer_depth_with_gate(warm_ice_water, params))
+    assert np.allclose(depth, 20.0)
