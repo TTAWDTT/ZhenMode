@@ -146,6 +146,11 @@ mixed-layer-depth bias/RMSE using the same density-threshold definition and the
 same WOA reference field. The 3D MLD metric is diagnostic, not a substitute for
 SST skill; it exists to tell us whether a closure changes ventilation.
 
+For ocean_solver snapshots, the same report must also include
+`mld_latitude_bands` using the standardized latitude bands above. This is
+required because a global MLD number can hide opposite high-latitude and
+subtropical errors.
+
 
 ## 3D scoring requirement
 
@@ -268,3 +273,4 @@ python src/score_external_3d.py \
 
 A 30d result may diagnose a scoring bug or short-term behavior, but only the
 annual final-90d window is the pre-registered annual climate gate.
+
