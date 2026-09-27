@@ -66,6 +66,8 @@
     "solver_commit": "c014c32",
     "solver_commit_status": "comparable",
     "forcing_artifact": "data/stage_g/stage_g_forcing_2023_050.npz",
+    "topography_artifact": "data/stage_g/stage_g_shared_topog_010.nc.npz",
+    "initial_state_artifact": "data/stage_g/stage_g_init_2023_050.npz",
     "compiler": "to be recorded at run time",
     "status": "comparable"
   }
