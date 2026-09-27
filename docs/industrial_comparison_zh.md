@@ -51,6 +51,9 @@
 1. 等 MOM6 annual Stage-F v12 完成 final-90d 3D/MLD 评分。
 2. 用 --require-3d 的年度 gate 决定是否接受或拒绝候选。
 3. 评分后再启动 pre-registered cooling_ice 或第二个工业对照。
+4. 当前已把 cooling_ice 接到自动链路：等 MOM6 annual gate JSON 出现后运行候选，
+   然后自动做 surface/3D/MLD 评分和年度 gate。
+5. NEMO 365d Stage-F 已预注册为第二个 structured industrial 对照目标。
 
 ## 权威文件
 
