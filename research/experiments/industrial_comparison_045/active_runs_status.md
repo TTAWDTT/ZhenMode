@@ -57,7 +57,7 @@ Latest progress check: 2026-09-27 22:55 local. MOM6 v12 is still running; the la
 - The paired annual manifests now pass the standardized contract validator, with
   provenance explicitly marked not_comparable because the exact source commits
   were not recorded with the saved outputs.
-- Full test status after the latest gate change: 233 passed, 0 skipped.
+- Full test status after Stage-G implementation: 238 passed, 0 skipped.
 - A consolidated MOM6 v12 completion watcher is active; when the run finishes it
   will score the paired surface and 3D/MLD benchmarks, then run the annual
   climate gate with --require-3d.
