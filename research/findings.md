@@ -3238,3 +3238,14 @@ final-90d 的 candidate-minus-control 差值集中在 40--60N 上层海洋：
 The paired annual Stage-F manifests now pass the standardized contract validator. The validator requires grid, bathymetry, initial state, forcing, sea-ice treatment, duration, scoring, and provenance to be explicitly marked comparable or not comparable. Both annual manifests mark provenance as not comparable because the exact source commits were not recorded with the saved outputs. Numerical comparison may proceed, but exact code reproducibility remains incomplete.
 
 All direct-comparison manifests now pass the standardized contract validator. Provenance remains explicitly not comparable where the exact source commit was not recorded with the saved outputs.
+
+
+## Next ice/MLD closure (pre-registered, not launched)
+
+The annual band-ice/fixed-MLD and cooling-gate candidates were both rejected.
+They improved some MLD or near-wall bias, but North Atlantic surface and 3D RMSE
+worsened. The next candidate is therefore not another global scalar: it is a
+cooling_ice gate that enables the 40--60N 100m mixed layer only when the
+atmosphere is cooling the live SST or dynamic ice is present. The plan is
+pre-registered and the standardized manifest is marked pre_registered; launch
+waits for the MOM6 annual v12 final-90d 3D/MLD score.
