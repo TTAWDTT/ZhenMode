@@ -103,6 +103,8 @@ def main() -> None:
     if args.out:
         Path(args.out).write_text(text + "\n", encoding="utf-8")
     print(text)
+    if not result["contract_pass"]:
+        raise SystemExit(1)
 
 
 if __name__ == "__main__":

@@ -1,4 +1,7 @@
 """Tests for the standardized benchmark contract validator."""
+from pathlib import Path
+import json
+
 from benchmark_contract import validate_contract
 
 
@@ -56,3 +59,15 @@ def test_unknown_manifest_fails_closed():
         "grid:missing_status", "bathymetry:missing_status", "initial_state:missing_status",
         "forcing:missing_status", "sea_ice:missing_status", "duration:missing_status",
         "scoring:missing_status", "provenance:missing_status"]
+
+
+def test_cli_exits_nonzero_on_missing_section(tmp_path):
+    import subprocess
+    import sys
+    manifest = {"model": "x"}
+    path = Path("/tmp/test_missing_section.json")
+    path.write_text(json.dumps(manifest))
+    result = subprocess.run([sys.executable, "src/benchmark_contract.py", str(path)],
+                            capture_output=True, text=True)
+    assert result.returncode != 0
+    assert json.loads(result.stdout)["contract_pass"] is False
