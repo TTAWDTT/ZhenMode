@@ -762,6 +762,13 @@ ocean_solver_stage_f_365d_3d:
     surface_raw_rmse_c: 1.1417
     global_a2_rmse_c: 1.2042
     heat_drift_percent: -0.9620
+    mean_mld_m: 170.7876
+    mld_bias_m: 139.2523
+    mld_rmse_m: 655.6671
+    mld_mean_model_m_60_40s: 224.6473
+    mld_rmse_m_60_40s: 546.0969
+    mld_mean_model_m_40_60n: 247.0907
+    mld_rmse_m_40_60n: 751.8124
   interpretation: "Annual Stage-F 3D control is stable; it gives the ocean_solver side for the eventual matched MOM6 annual 3D comparison."
 mom6_stage_f_dynamic_365d_v8:
   status: running_local
