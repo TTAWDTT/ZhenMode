@@ -57,6 +57,12 @@ recorded in the manifest.
 8. flux diagnostics report global mean shortwave, longwave, latent, sensible,
    precipitation-minus-evaporation, and runoff.
 
+## Shared-grid provenance
+
+The Stage-G launcher now auto-generates a 0.1-degree ETOPO twin from the
+MOM6 0.5-degree `topog_050.nc`. This reproduces the shared 67.9% ocean grid
+without extra smoothing and is validated by the 1d/10d full-bulk smokes.
+
 ## Provenance
 
 The manifest must record every forcing file, source variable, unit conversion,
