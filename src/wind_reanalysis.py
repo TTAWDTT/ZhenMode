@@ -160,6 +160,44 @@ def real_wind_forcing(grid, month_idx=-1, taper_cells=None):
     return tau_x, tau_y
 
 
+def load_monthly_wind_speed(grid, year=2023, url_prefix=PSL_BASE,
+                            cache_dir=CACHE_DIR):
+    """Load twelve monthly NCEP R1 10-m wind speeds on the solver grid."""
+    year = int(year)
+    cache_file = os.path.join(cache_dir, f"wind_speed_monthly_{year:04d}.npz")
+    if os.path.exists(cache_file):
+        z = np.load(cache_file)
+        return np.asarray(z["wind_speed_months"], dtype=np.float64)
+    start = (year - 1948) * 12
+    u_ds = netCDF4.Dataset(url_prefix + "uwnd.10m.mon.mean.nc")
+    try:
+        v_ds = netCDF4.Dataset(url_prefix + "vwnd.10m.mon.mean.nc")
+        try:
+            lon = np.asarray(u_ds.variables["lon"][:], dtype=np.float64)
+            lat = np.asarray(u_ds.variables["lat"][:], dtype=np.float64)
+            u_native = np.asarray(u_ds.variables["uwnd"][start:start + 12, :, :],
+                                  dtype=np.float64)
+            v_native = np.asarray(v_ds.variables["vwnd"][start:start + 12, :, :],
+                                  dtype=np.float64)
+        finally:
+            v_ds.close()
+    finally:
+        u_ds.close()
+    if u_native.shape != (12, len(lat), len(lon)):
+        raise ValueError("unexpected NCEP monthly wind shape")
+    speed_native = np.sqrt(u_native ** 2 + v_native ** 2)
+    speed = np.stack([
+        np.asarray(_bilinear(speed_native[m], grid.lat, grid.lon, lat, lon).T,
+                   dtype=np.float64)
+        for m in range(12)
+    ])
+    if not np.all(np.isfinite(speed)):
+        raise ValueError("interpolated NCEP wind speed contains non-finite values")
+    os.makedirs(cache_dir, exist_ok=True)
+    np.savez(cache_file, wind_speed_months=speed, lon=lon, lat=lat)
+    return speed
+
+
 if __name__ == "__main__":
     from config import DEFAULT_CONFIG, GlobalGridConfig
     from grid import make_global_grid

@@ -35,6 +35,17 @@ import numpy as np
 
 from config import ALPHA_T, BETA_S, C_P, G_EARTH, OMEGA, R_EARTH, RHO_0
 
+# Stage-G full bulk surface exchange constants (ocean_solver contract).
+RHO_AIR = 1.225
+CP_AIR = 1005.0
+C_H_BULK = 1.3e-3
+C_E_BULK = 1.3e-3
+STEFAN_BOLTZMANN = 5.670374419e-8
+SURFACE_EMISSIVITY = 0.98
+SURFACE_ALBEDO = 0.07
+LATENT_HEAT_VAPORIZATION = 2.501e6
+SEA_LEVEL_PRESSURE_PA = 101325.0
+
 # ── State ──────────────────────────────────────────────────────────
 JaxStateG = namedtuple('JaxStateG', ['u', 'v', 'T', 'S', 'eta', 'ice'])
 # Older five-field callers remain valid; a new run starts with no ice.
@@ -726,12 +737,23 @@ FDPhysParams = namedtuple('FDPhysParams', [
     # boolean gate, ice is ice-state dependent, and cooling_ice is the next
     # pre-registered seasonal/ice-state candidate.
     "mixed_layer_gate_mode",
+    # Stage-G full-bulk surface exchange.  Monthly atmospheric states and
+    # transfer coefficients are stored as params; SST-dependent emitted longwave,
+    # sensible and latent fluxes are evaluated in the tracer tendency.
+    "full_bulk",
+    "downward_shortwave_2d",
+    "downward_longwave_2d",
+    "specific_humidity_air_2d",
+    "sensible_transfer_2d",
+    "latent_transfer_2d",
+    "precipitation_rate_2d",
+    "full_bulk_salinity",
 ])
 
 # Keyword-constructed callers that predate nu_nsub/use_scan/freeze_adv_vel/
 # conservative_kv/project_adv_vel/localize_conv/monotone_adv get the legacy
 # behavior instead of a TypeError.
-FDPhysParams.__new__.__defaults__ = (None, False, False, False, False, False, False, False, None, None, None, -1.8, 0.0, False, 1.0, None, False, "none")
+FDPhysParams.__new__.__defaults__ = (None, False, False, False, False, False, False, False, None, None, None, -1.8, 0.0, False, 1.0, None, False, "none", False, None, None, None, None, None, None, True)
 
 
 # ── Equation of state ─────────────────────────────────────────────────
@@ -1333,17 +1355,51 @@ def _compute_tracer_tendency(state, p):
             jnp.asarray(state.ice, dtype=state.T.dtype), (p.nx, p.ny))
         ice_insulation = 1.0 / (1.0 + ice_now[:, :, None] / p.ice_insulation_scale_m)
 
-    heat_T = (p.Q_heat_2d[:, :, None] * heat_factor * p.surface_mask
-              * ice_insulation)
-    # Bulk air-sea heat flux (Haney/Barnier): genuine SST negative feedback.
-    bulk_T = (p.lambda_bulk * (p.T_atm_3d - state.T[:, :, 0:1])
-              * heat_factor * p.surface_mask)
-    coastal_bulk_T = (p.coastal_bulk_lambda_2d[:, :, None]
-                      * (p.T_atm_3d - state.T[:, :, 0:1])
-                      * heat_factor * p.surface_mask)
-    if getattr(p, 'dynamic_ice', False):
-        bulk_T = bulk_T * ice_insulation
-        coastal_bulk_T = coastal_bulk_T * ice_insulation
+    if getattr(p, 'full_bulk', False):
+        sst_k = state.T[:, :, 0:1] + 273.15
+        saturation_vapor_pressure = 611.2 * jnp.exp(
+            17.67 * state.T[:, :, 0:1] / (state.T[:, :, 0:1] + 243.5))
+        q_saturation = (0.622 * saturation_vapor_pressure
+                        / (SEA_LEVEL_PRESSURE_PA
+                           - 0.378 * saturation_vapor_pressure))
+        net_surface_heat = ((1.0 - SURFACE_ALBEDO)
+                            * p.downward_shortwave_2d[:, :, None]
+                            + p.downward_longwave_2d[:, :, None]
+                            - SURFACE_EMISSIVITY * STEFAN_BOLTZMANN * sst_k ** 4
+                            - p.sensible_transfer_2d[:, :, None]
+                            * (state.T[:, :, 0:1] - p.T_atm_3d)
+                            - p.latent_transfer_2d[:, :, None]
+                            * (q_saturation
+                               - p.specific_humidity_air_2d[:, :, None]))
+        latent_out = (p.latent_transfer_2d[:, :, None]
+                      * (q_saturation
+                         - p.specific_humidity_air_2d[:, :, None]))
+        heat_T = ((net_surface_heat
+                   * heat_factor * p.surface_mask)
+                  * ice_insulation)
+        full_bulk_salt = jnp.zeros_like(heat_T)
+        if getattr(p, 'full_bulk_salinity', True):
+            evaporation_rate = jnp.maximum(latent_out, 0.0) / LATENT_HEAT_VAPORIZATION
+            evaporation_minus_precipitation = (
+                evaporation_rate
+                - p.precipitation_rate_2d[:, :, None])
+            full_bulk_salt = (
+                state.S[:, :, 0:1]
+                * evaporation_minus_precipitation
+                / (RHO_0 * effective_depth))
+    else:
+        heat_T = (p.Q_heat_2d[:, :, None] * heat_factor * p.surface_mask
+                  * ice_insulation)
+        # Bulk air-sea heat flux (Haney/Barnier): genuine SST negative feedback.
+        bulk_T = (p.lambda_bulk * (p.T_atm_3d - state.T[:, :, 0:1])
+                  * heat_factor * p.surface_mask)
+        coastal_bulk_T = (p.coastal_bulk_lambda_2d[:, :, None]
+                          * (p.T_atm_3d - state.T[:, :, 0:1])
+                          * heat_factor * p.surface_mask)
+        if getattr(p, 'dynamic_ice', False):
+            bulk_T = bulk_T * ice_insulation
+            coastal_bulk_T = coastal_bulk_T * ice_insulation
+        full_bulk_salt = jnp.zeros_like(heat_T)
 
     # Surface salinity restoring (Haney): equivalent salt flux relaxing SSS
     # to climatology with timescale tau = 1/restore_coef_S. Same form as the
@@ -1369,10 +1425,16 @@ def _compute_tracer_tendency(state, p):
 
     gm_T, gm_S, redi_T, redi_S = _isopycnal_closure(state, p)
 
-    dTdt = (adv_T + diff_h_T + diff_v_T + heat_T + bulk_T + coastal_bulk_T
-            + conv_T + gm_T + redi_T + rest_T)
-    dSdt = (adv_S + diff_h_S + diff_v_S + conv_S + gm_S + redi_S
-            + rest_S + ice_salt)
+    if getattr(p, 'full_bulk', False):
+        dTdt = (adv_T + diff_h_T + diff_v_T + heat_T
+                + conv_T + gm_T + redi_T + rest_T)
+        dSdt = (adv_S + diff_h_S + diff_v_S + conv_S + gm_S + redi_S
+                + rest_S + ice_salt + full_bulk_salt)
+    else:
+        dTdt = (adv_T + diff_h_T + diff_v_T + heat_T + bulk_T + coastal_bulk_T
+                + conv_T + gm_T + redi_T + rest_T)
+        dSdt = (adv_S + diff_h_S + diff_v_S + conv_S + gm_S + redi_S
+                + rest_S + ice_salt)
     # Land: tracers held (no tendency over land).
     dTdt = dTdt * p.wet_mask_z
     dSdt = dSdt * p.wet_mask_z
@@ -2084,6 +2146,12 @@ def _step_impl(state, p):
 
 def make_solver_global(grid, physics, dt, forcing=None,
                        T_atm=None, lambda_bulk=0.0,
+                       full_bulk=False,
+                       downward_shortwave=None, downward_longwave=None,
+                       specific_humidity_air=None, wind_speed=None,
+                       precipitation_rate=None,
+                       transfer_coefficient=C_H_BULK,
+                       full_bulk_salinity=True,
                        mixed_layer_depth_m=None, mixed_layer_mask=None,
                        mixed_layer_depth_2d=None,
                        mixed_layer_cooling_gate=False, mixed_layer_gate_mode="none",
@@ -2143,11 +2211,39 @@ def make_solver_global(grid, physics, dt, forcing=None,
     H_sw = float(jnp.sum(jnp.array(grid.dz)))
     dz_norm = (jnp.array(grid.dz).reshape(1, 1, -1) / H_sw)
 
-    if T_atm is not None and lambda_bulk > 0.0:
+    if full_bulk:
+        if T_atm is None:
+            raise ValueError("full_bulk=True requires T_atm")
+        if (downward_shortwave is None or downward_longwave is None
+                or specific_humidity_air is None or wind_speed is None):
+            raise ValueError("full_bulk=True requires shortwave, longwave, "
+                             "specific humidity and wind speed")
         T_atm_3d = jnp.array(T_atm)[:, :, None]
+        lambda_bulk = 0.0
+        wind_speed_2d = jnp.array(wind_speed)
+        sensible_transfer_2d = (RHO_AIR * CP_AIR
+                                * transfer_coefficient * wind_speed_2d)
+        latent_transfer_2d = (RHO_AIR * LATENT_HEAT_VAPORIZATION
+                              * transfer_coefficient * wind_speed_2d)
+        downward_shortwave_2d = jnp.array(downward_shortwave)
+        downward_longwave_2d = jnp.array(downward_longwave)
+        specific_humidity_air_2d = jnp.array(specific_humidity_air)
+        precipitation_rate_2d = (
+            jnp.array(precipitation_rate)
+            if precipitation_rate is not None
+            else jnp.zeros((nx, ny)))
     else:
         T_atm_3d = jnp.zeros((nx, ny, 1))
-        lambda_bulk = 0.0
+        lambda_bulk = 0.0 if T_atm is None or lambda_bulk <= 0.0 else lambda_bulk
+        T_atm_3d = (jnp.array(T_atm)[:, :, None]
+                    if lambda_bulk > 0.0 else T_atm_3d)
+        full_bulk_fields_zero = True
+        sensible_transfer_2d = jnp.zeros((nx, ny))
+        latent_transfer_2d = jnp.zeros((nx, ny))
+        downward_shortwave_2d = jnp.zeros((nx, ny))
+        downward_longwave_2d = jnp.zeros((nx, ny))
+        specific_humidity_air_2d = jnp.zeros((nx, ny))
+        precipitation_rate_2d = jnp.zeros((nx, ny))
 
     # ── Surface salinity restoring (Haney) ──
     # dSdt += -(SSS - S_ref)/tau at wet surface cells. tau=0 => off (bit-exact to
@@ -2334,6 +2430,14 @@ def make_solver_global(grid, physics, dt, forcing=None,
         tau_x_2d=tau_x_2d, tau_y_2d=tau_y_2d, Q_heat_2d=Q_heat_2d,
         H_sw=H_sw, dz_norm=dz_norm, dt=dt,
         T_atm_3d=T_atm_3d, lambda_bulk=lambda_bulk,
+        full_bulk=bool(full_bulk),
+        downward_shortwave_2d=downward_shortwave_2d,
+        downward_longwave_2d=downward_longwave_2d,
+        specific_humidity_air_2d=specific_humidity_air_2d,
+        sensible_transfer_2d=sensible_transfer_2d,
+        latent_transfer_2d=latent_transfer_2d,
+        precipitation_rate_2d=precipitation_rate_2d,
+        full_bulk_salinity=bool(full_bulk_salinity),
         S_ref_2d=S_ref_2d, restore_coef_S=restore_coef_S,
         coastal_restore_coef_2d=coastal_restore_coef_2d,
         coastal_bulk_lambda_2d=coastal_bulk_lambda_2d,
@@ -2413,7 +2517,8 @@ def make_solver_global(grid, physics, dt, forcing=None,
     step_dyn = None
     if dynamic_forcing:
         @jax.jit
-        def step_dyn(state, tau_x, tau_y, q_heat, T_atm_3d=None):
+        def step_dyn(state, tau_x, tau_y, q_heat, T_atm_3d=None,
+                     full_bulk_fields=None):
             updates = {
                 'tau_x_2d': tau_x,
                 'tau_y_2d': tau_y,
@@ -2424,6 +2529,8 @@ def make_solver_global(grid, physics, dt, forcing=None,
             # callers that omit this argument remain bit-compatible.
             if T_atm_3d is not None:
                 updates['T_atm_3d'] = T_atm_3d
+            if full_bulk_fields is not None:
+                updates.update(full_bulk_fields)
             return _step_impl(state, params._replace(**updates))
 
     @jax.jit

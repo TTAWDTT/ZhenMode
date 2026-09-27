@@ -16,7 +16,9 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
 from config import DEFAULT_CONFIG, GlobalGridConfig
+from air_reanalysis import load_monthly_mean_air_temp
 from grid import global_grid_dims, make_global_grid
+from wind_reanalysis import load_monthly_wind_speed
 from humidity_reanalysis import load_monthly_mean_specific_humidity
 from surface_reanalysis import (
     load_monthly_downward_longwave,
@@ -71,6 +73,15 @@ def main():
         downward_longwave_w_m2=np.asarray(longwave),
         downward_shortwave_w_m2=np.asarray(shortwave),
         precipitation_rate_kg_m2_s=np.asarray(precipitation),
+
+        air_temperature_c=np.asarray(
+
+            load_monthly_mean_air_temp(grid, year=args.year)),
+
+        wind_speed_m_s=np.asarray(
+
+            load_monthly_wind_speed(grid, year=args.year)),
+
         year=np.array(args.year),
     )
     print(f"saved {out}")

@@ -54,6 +54,7 @@ from air_reanalysis import load_annual_mean_air_temp, load_monthly_mean_air_temp
 from benchmark_metrics import mixed_layer_depth
 from config import DEFAULT_CONFIG, GlobalGridConfig, PhysicsConfig
 from diagnostics import BudgetDiagnostics, compute_budget_diagnostics, diagnostics_to_arrays
+from full_bulk_forcing import build_full_bulk_fields
 from forcing import (
     BULK_LAMBDA_DEFAULT,
     air_temp_profile,
@@ -422,6 +423,14 @@ def main():
                     help="use 12 monthly NCEP R1 2-m air fields with the same "
                          "seasonal blending as wind; requires --seasonal-wind. "
                          "This takes precedence over --real-air-temp.")
+    ap.add_argument("--full-bulk", action="store_true",
+                    help="enable the Stage-G full bulk surface flux contract")
+    ap.add_argument("--full-bulk-forcing", default=None,
+                    help="Stage-G monthly forcing NPZ (required with --full-bulk)")
+    ap.add_argument("--full-bulk-transfer-coefficient", type=float, default=1.3e-3,
+                    help="bulk sensible/latent transfer coefficient")
+    ap.add_argument("--no-full-bulk-salinity", action="store_true",
+                    help="disable precipitation-minus-evaporation salinity forcing")
     ap.add_argument("--sensible-heat-proxy", action="store_true",
                     help="replace the dynamic bulk term q=lambda*(air-SST) with "
                          "prescribed q=lambda*(monthly air-WOA SST), matching the "
@@ -813,7 +822,49 @@ def main():
     T_atm_source = "zonal WOA SST"
     T_atm = None
     T_atm_months = None
-    if lambda_bulk > 0.0:
+    full_bulk_arrays = None
+    if args.full_bulk:
+        if not args.full_bulk_forcing:
+            raise SystemExit("--full-bulk requires --full-bulk-forcing")
+        if not seasonal:
+            raise ValueError("--full-bulk requires --seasonal-wind")
+        print(f"Loading Stage-G full-bulk forcing ({args.full_bulk_forcing})...")
+        z = np.load(args.full_bulk_forcing)
+        required = {
+            "air_temperature_c", "specific_humidity_kg_kg",
+            "downward_longwave_w_m2", "downward_shortwave_w_m2",
+            "precipitation_rate_kg_m2_s", "wind_speed_m_s",
+        }
+        missing = required - set(z.files)
+        if missing:
+            raise ValueError(f"Stage-G forcing missing fields: {sorted(missing)}")
+        T_atm_months = np.asarray(z["air_temperature_c"], dtype=float)
+        if T_atm_months.shape != (12, grid.nx, grid.ny):
+            raise ValueError("Stage-G air temperature grid mismatch")
+        full_bulk_arrays = build_full_bulk_fields(
+            T_atm_months,
+            z["specific_humidity_kg_kg"],
+            z["downward_longwave_w_m2"],
+            z["downward_shortwave_w_m2"],
+            z["precipitation_rate_kg_m2_s"],
+            z["wind_speed_m_s"],
+            transfer_coefficient=args.full_bulk_transfer_coefficient,
+        )
+        T_atm = np.mean(T_atm_months, axis=0)
+        lambda_bulk = 0.0
+        T_atm_source = "Stage-G monthly NCEP full-bulk atmospheric state"
+        print(
+            "  full bulk: "
+            f"sw={float(np.nanmin(full_bulk_arrays['downward_shortwave_w_m2'])):.3g}"
+            f"..{float(np.nanmax(full_bulk_arrays['downward_shortwave_w_m2'])):.3g}, "
+            f"lw={float(np.nanmin(full_bulk_arrays['downward_longwave_w_m2'])):.3g}"
+            f"..{float(np.nanmax(full_bulk_arrays['downward_longwave_w_m2'])):.3g}, "
+            f"precip={float(np.nanmin(full_bulk_arrays['precipitation_rate_kg_m2_s'])):.3g}"
+            f"..{float(np.nanmax(full_bulk_arrays['precipitation_rate_kg_m2_s'])):.3g}, "
+            f"wind={float(np.nanmin(full_bulk_arrays['wind_speed_m_s'])):.3g}"
+            f"..{float(np.nanmax(full_bulk_arrays['wind_speed_m_s'])):.3g} m/s"
+        )
+    elif lambda_bulk > 0.0:
         if args.real_air_temp_monthly:
             if not seasonal:
                 raise ValueError("--real-air-temp-monthly requires --seasonal-wind")
@@ -916,6 +967,19 @@ def main():
         grid, physics, args.dt,
         forcing=forcing_baked,
         T_atm=T_atm, lambda_bulk=lambda_bulk,
+        full_bulk=bool(args.full_bulk),
+        downward_shortwave=(np.mean(full_bulk_arrays["downward_shortwave_w_m2"], axis=0)
+                            if full_bulk_arrays is not None else None),
+        downward_longwave=(np.mean(full_bulk_arrays["downward_longwave_w_m2"], axis=0)
+                           if full_bulk_arrays is not None else None),
+        specific_humidity_air=(np.mean(full_bulk_arrays["specific_humidity_air_kg_kg"], axis=0)
+                               if full_bulk_arrays is not None else None),
+        wind_speed=(np.mean(full_bulk_arrays["wind_speed_m_s"], axis=0)
+                    if full_bulk_arrays is not None else None),
+        precipitation_rate=(np.mean(full_bulk_arrays["precipitation_rate_kg_m2_s"], axis=0)
+                            if full_bulk_arrays is not None else None),
+        transfer_coefficient=args.full_bulk_transfer_coefficient,
+        full_bulk_salinity=(not args.no_full_bulk_salinity),
         S_ref_surf=S_ref_surf, sss_restore_days=args.sss_restore_days,
         coastal_restore_mask=coastal_restore_mask,
         coastal_restore_days=args.coastal_restore_days,
@@ -970,6 +1034,25 @@ def main():
         Q_heat_2d = jnp.array(Q_heat, dtype=_fdtype)
         Q_heat_stack = (jnp.array(np.asarray(Q_heat_months), dtype=_fdtype)
                         if Q_heat_months is not None else None)
+        full_bulk_field_names = (
+            "downward_shortwave_2d", "downward_longwave_2d",
+            "specific_humidity_air_2d", "sensible_transfer_2d",
+            "latent_transfer_2d", "precipitation_rate_2d")
+        full_bulk_stacks = None
+        if full_bulk_arrays is not None:
+            source_to_param = {
+                "downward_shortwave_w_m2": "downward_shortwave_2d",
+                "downward_longwave_w_m2": "downward_longwave_2d",
+                "specific_humidity_air_kg_kg": "specific_humidity_air_2d",
+                "sensible_transfer_w_m2_k": "sensible_transfer_2d",
+                "latent_transfer_w_m2_kgkg": "latent_transfer_2d",
+                "precipitation_rate_kg_m2_s": "precipitation_rate_2d",
+            }
+            full_bulk_stacks = {
+                param: jnp.array(np.asarray(full_bulk_arrays[source]),
+                                 dtype=_fdtype)
+                for source, param in source_to_param.items()
+            }
         if T_atm_months is not None:
             air_stack = jnp.array(np.asarray(T_atm_months), dtype=_fdtype)
         if args.wind_jit:
@@ -982,12 +1065,21 @@ def main():
                 q = (interp_monthly_field_jit(
                         Q_heat_stack, month_day, blend_days=args.wind_blend_days)
                      if Q_heat_stack is not None else Q_heat_2d)
+                fbd = None
+                if full_bulk_stacks is not None:
+                    fbd = {
+                        key: interp_monthly_field_jit(
+                            full_bulk_stacks[key], month_day,
+                            blend_days=args.wind_blend_days)
+                        for key in full_bulk_field_names
+                    }
                 if T_atm_months is not None:
                     ta = interp_monthly_field_jit(
                         air_stack, month_day, blend_days=args.wind_blend_days)
                     return step_dyn(state, tx, ty, q,
-                                    T_atm_3d=ta[:, :, None])
-                return step_dyn(state, tx, ty, q)
+                                    T_atm_3d=ta[:, :, None],
+                                    full_bulk_fields=fbd)
+                return step_dyn(state, tx, ty, q, full_bulk_fields=fbd)
         else:
             def do_step(state, month_day):
                 tx, ty = interp_seasonal_wind(wind_months, month_day,
@@ -996,6 +1088,15 @@ def main():
                         Q_heat_months, month_day,
                         blend_days=args.wind_blend_days)
                      if Q_heat_months is not None else Q_heat)
+                fbd = None
+                if full_bulk_stacks is not None:
+                    fbd = {
+                        key: jnp.asarray(interp_monthly_field(
+                                             full_bulk_stacks[key], month_day,
+                                             blend_days=args.wind_blend_days),
+                                         dtype=_fdtype)
+                        for key in full_bulk_field_names
+                    }
                 if T_atm_months is not None:
                     ta = np.asarray(interp_monthly_field(
                         T_atm_months, month_day,
@@ -1003,10 +1104,12 @@ def main():
                     return step_dyn(state, jnp.array(tx, dtype=_fdtype),
                                     jnp.array(ty, dtype=_fdtype),
                                     jnp.array(q, dtype=_fdtype),
-                                    T_atm_3d=jnp.array(ta, dtype=_fdtype)[:, :, None])
+                                    T_atm_3d=jnp.array(ta, dtype=_fdtype)[:, :, None],
+                                    full_bulk_fields=fbd)
                 return step_dyn(state, jnp.array(tx, dtype=_fdtype),
                                 jnp.array(ty, dtype=_fdtype),
-                                jnp.array(q, dtype=_fdtype))
+                                jnp.array(q, dtype=_fdtype),
+                                full_bulk_fields=fbd)
     else:
         def do_step(state, month_day):
             return step(state)
@@ -1329,6 +1432,10 @@ def main():
         'dynamic_ice': bool(args.dynamic_ice),
         'ice_insulation_scale_m': args.ice_insulation_scale_m,
         'dynamic_ice_lat_band': args.dynamic_ice_lat_band,
+        'full_bulk': bool(args.full_bulk),
+        'full_bulk_forcing': args.full_bulk_forcing or '',
+        'full_bulk_transfer_coefficient': float(args.full_bulk_transfer_coefficient),
+        'full_bulk_salinity': not bool(args.no_full_bulk_salinity),
         'lambda_bulk': lambda_bulk, 'bulk_lambda_mult': args.bulk_lambda_mult,
         'real_air_temp': bool(args.real_air_temp),
         'real_air_temp_monthly': bool(args.real_air_temp_monthly),
