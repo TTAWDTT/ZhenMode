@@ -133,6 +133,7 @@ Index: [`docs/README.md`](docs/README.md). The mainline set:
 - [`docs/resolution_cfl_limits.md`](docs/resolution_cfl_limits.md) — resolution limits and the CFL fix
 - [`docs/deep-heat-poisoning-root-cause.md`](docs/deep-heat-poisoning-root-cause.md) — the column heat-leak root cause
 - [`docs/hydrostatic_primitive_equations.md`](docs/hydrostatic_primitive_equations.md) — the equations
+- [`docs/industrial_comparison_zh.md`](docs/industrial_comparison_zh.md) — 工业级对照简报（中文）
 - [`docs/repositioning_memo_zh.md`](docs/repositioning_memo_zh.md) — project positioning
 
 ## Legacy: regional spectral solver
