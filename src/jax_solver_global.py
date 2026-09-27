@@ -1910,7 +1910,7 @@ def _mixed_layer_depth_with_gate(state, p):
     if getattr(p, "mixed_layer_cooling_gate", False):
         cooling = (p.T_atm_3d[:, :, 0] - state.T[:, :, 0]) < 0.0
         effective_depth = jnp.where(cooling, effective_depth, float(p.dz_surface))
-    return effective_depth
+    return effective_depth[:, :, None]
 
 
 def _dynamic_ice_closure(state, p):
