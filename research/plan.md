@@ -355,10 +355,11 @@ Runner: scripts/run_candidate_baseline.sh
     The 365d Stage-F stratification-MLD run improves near-wall bias but fails
     global and North Atlantic RMSE against the annual no-ice control. Keep it
     as a diagnostic, not a production default.
-63. **Target the annual upper-ocean ventilation error.** [ACTIVE]
+63. **Target the annual upper-ocean ventilation error.** [PAUSED 2026-09-27]
     Annual 3D error is concentrated above 500 m and in the subtropical bands.
     Next test a regional or seasonally varying upper-ocean closure rather than
-    a uniform MLD or deep-ocean tuning.
+    a uniform MLD or deep-ocean tuning. This is paused until the matched MOM6
+    annual Stage-F v12 comparison is scored.
 64. **Diagnose the 30d Stage-F term balance.** [COMPLETE 2026-09-27]
     A saved 3D term snapshot shows convection dominates the upper-ocean
     warming/cooling in the tropics and northern subtropics, with advection as
@@ -392,12 +393,10 @@ Runner: scripts/run_candidate_baseline.sh
    1.495 C, and global 3D RMSE from 1.547 to 1.559 C. MLD bias improves from
    +139.3 to +121.2 m and 40--60N MLD bias to +17.2 m. Keep this as a
    diagnostic only; do not promote another fixed-depth band.
-69. **Design the seasonal upper-ocean heat-capacity gate.** [ACTIVE 2026-09-27]
-   The valid band-ice/fixed-MLD annual run improves MLD but over-warms the
-   North Atlantic upper ocean in the final-90d window (surface bias +1.35 C
-   versus the no-ice control). Design a seasonally gated 40--60N mixed-layer
-   closure that keeps the winter/cooling-season benefit without causing
-   late-season warming. Do not add another global scalar.
+69. **Design the seasonal upper-ocean heat-capacity gate.** [COMPLETE 2026-09-27]
+   The cooling-season-only 40--60N gate was designed and run, but its annual
+   climate/3D gate was rejected. Keep it as a diagnostic; do not add another
+   global scalar or fixed-depth band.
 
 
 70. **Pause internal closure tuning until MOM6 annual is scored.** [ACTIVE]
