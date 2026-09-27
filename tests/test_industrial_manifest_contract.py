@@ -14,3 +14,12 @@ def test_paired_annual_manifests_are_contract_ready():
     assert all(report["contract_pass"] for report in reports)
     assert all(not report["missing_sections"] for report in reports)
     assert all("provenance" in report["not_comparable_sections"] for report in reports)
+
+
+def test_stage_i_manifest_is_contract_ready():
+    report = validate_contract(json.loads(
+        (ROOT / "ocean_solver_stage_f_dynamic_ice_constant_mld_lat40_60_probe_30d_manifest.json")
+        .read_text(encoding="utf-8")))
+    assert report["contract_pass"] is True
+    assert report["missing_sections"] == []
+    assert "provenance" in report["not_comparable_sections"]

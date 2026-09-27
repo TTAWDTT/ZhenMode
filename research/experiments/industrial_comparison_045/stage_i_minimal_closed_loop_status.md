@@ -75,3 +75,8 @@ also completed and is **rejected**: global A2 rises to 1.315 C, NA RMSE to
 1.947 C, global 3D RMSE to 1.574 C, and NA 3D RMSE to 1.878 C. Near-wall
 signed bias improves to +0.667 C, but the broader climate and 3D errors
 worsen. The Stage-I proxy therefore remains diagnostic only.
+
+
+The 30d Stage-I manifest is now contract-ready with explicit comparable/not-comparable
+fields. Provenance remains not comparable because the exact source commit was not
+recorded with the saved output.
