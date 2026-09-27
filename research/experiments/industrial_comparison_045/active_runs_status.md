@@ -65,3 +65,5 @@ Latest progress check: 2026-09-28 00:15 local. MOM6 v12 is still running; the la
   the candidate is numerically equivalent to the already-rejected cooling-season
   gate in the 40--60N mixed-layer band.
 
+
+- Updated: 2026-09-28. The second structured industrial target is now the NEMO Stage-F 30d smoke; see second_industrial_comparison_gate.md. No further solver-physics candidate launches are allowed until that gate is either produced or explicitly marked blocked.

@@ -54,8 +54,9 @@
 4. 当前已把 cooling_ice 接到自动链路：等 MOM6 annual gate JSON 出现后运行候选，
    然后自动做 surface/3D/MLD 评分和年度 gate。
 5. NEMO 365d Stage-F 已预注册为第二个 structured industrial 对照目标。
-6. 因为 `cooling_ice` 被判定为冗余候选，Stage-G 的下一个主要缺口是完整 bulk forcing：湿度、辐射、降水/蒸发、runoff。  
-7. Stage-G 全 bulk forcing 的 solver 路径、30d/365d manifest 和 2023 年 NCEP forcing 已就绪；launch 仍等 MOM6 年度 gate。
+6. 该目标已经提升为硬门槛：MOM6 年度 gate 后，必须先完成或明确记录 NEMO 30d smoke，才能继续开新的 solver-physics 候选。
+7. 因为 `cooling_ice` 被判定为冗余候选，Stage-G 的下一个主要缺口是完整 bulk forcing：湿度、辐射、降水/蒸发、runoff。  
+8. Stage-G 全 bulk forcing 的 solver 路径、30d/365d manifest 和 2023 年 NCEP forcing 已就绪；launch 仍等 MOM6 年度 gate。
 
 ## 权威文件
 
@@ -64,3 +65,4 @@
 - Direct table：[current_direct_comparison_table.md](../research/experiments/industrial_comparison_045/current_direct_comparison_table.md)
 - Stage-I status：[stage_i_minimal_closed_loop_status.md](../research/experiments/industrial_comparison_045/stage_i_minimal_closed_loop_status.md)
 - Next closure：[next_closure_pre_registration.md](../research/experiments/industrial_comparison_045/next_closure_pre_registration.md)
+- Second gate：[second_industrial_comparison_gate.md](../research/experiments/industrial_comparison_045/second_industrial_comparison_gate.md)
