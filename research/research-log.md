@@ -408,3 +408,4 @@ The cooling-season-only fixed-MLD candidate completed but was rejected on the an
 | 280 | 2026-09-27 | ops | Fixed the consolidated MOM6 v12 completion watcher so it uses explicit file paths and LF script text; it is now running and will score surface plus 3D/MLD before the annual gate. |
 | 281 | 2026-09-27 | protocol | Annual run NPZs now record git commit/dirty state, Python/NumPy/JAX versions and devices; manifest creation falls back to the NPZ commit when --commit is omitted. |
 | 282 | 2026-09-27 | ops | Added and armed a gate-triggered watcher that starts the pre-registered cooling_ice run after the MOM6 annual gate JSON is produced. |
+| 283 | 2026-09-27 | diagnostic | Quantified the annual band-ice candidate: ice is confined to 60--65N (68 cells, 6.1% of that sub-band) and the 40--60N fixed MLD covers 90.3% of the 40--65N band, so the candidate is mainly an MLD closure with a small ice cap. |

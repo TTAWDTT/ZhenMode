@@ -82,6 +82,30 @@ fields. Provenance remains not comparable because the exact source commit was no
 recorded with the saved outputs.
 
 
+## Spatial diagnostic of the annual band-ice candidate
+
+Using the corrected 365d band-ice/fixed-MLD v2 run, the dynamic ice is not a
+broad 40--65N closure. At its peak snapshot (day 150), ice cells are:
+
+
+| latitude band | ocean cells | ice cells | band ice fraction | 
+|---:|---:|---:|---:| 
+| 40--45N | 3201 | 0 | 0.0000% | 
+| 45--50N | 2796 | 0 | 0.0000% | 
+| 50--55N | 2476 | 0 | 0.0000% | 
+| 55--60N | 1930 | 0 | 0.0000% | 
+| 60--65N | 1117 | 68 | 6.0877% | 
+
+
+Over the whole 40--65N dynamic-ice band (11520 wet cells), this is only
+0.59%.
+The same run fixes a 100m mixed layer over 10403 wet cells in 40--60N,
+which is 90.3% of the 40--65N band. Thus the candidate is mostly an MLD
+closure with a small ice cap, not a broad coupled ice/MLD field. Therefore the candidate is effectively a 60--65N ice closure plus a
+40--60N mixed-layer closure, not a broad 40--65N coupled closure. This
+explains why the annual candidate can improve some MLD diagnostics while
+still worsening the broader North Atlantic and 3D errors.
+
 ## Next candidate (pre-registered, not launched)
 
 The next candidate is a seasonal/ice-state dependent mixed-layer gate: keep the
