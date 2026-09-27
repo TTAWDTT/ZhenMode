@@ -28,7 +28,7 @@ Current direct external model is MOM6 on the matched 0.5-degree slice.
 
 ## Contract status
 
-The paired annual Stage-F manifests now pass the standardized contract validator:
+All direct-comparison manifests now pass the standardized contract validator:
 
 - ocean_solver: ocean_solver_stage_f_365d_3d_manifest.json
 - MOM6: mom6_stage_f_dynamic_365d_v12_manifest.json
