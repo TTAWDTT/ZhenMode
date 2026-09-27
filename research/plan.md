@@ -392,8 +392,3 @@ Runner: scripts/run_candidate_baseline.sh
    1.495 C, and global 3D RMSE from 1.547 to 1.559 C. MLD bias improves from
    +139.3 to +121.2 m and 40--60N MLD bias to +17.2 m. Keep this as a
    diagnostic only; do not promote another fixed-depth band.
-   The 30d probe passed every pre-registered gate. The first 365d check used a
-   different bathymetry (90.8% ocean) and is therefore invalid; it is not
-   evidence against the candidate. A corrected v2 rerun with the same 67.9%
-   ocean bathymetry as the annual no-ice control is now running. Score its
-   final-90d 3D/MLD gate before any promotion or rejection.
