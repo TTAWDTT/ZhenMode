@@ -28,6 +28,25 @@ Every external comparison run must record these fields:
 A missing contract item is reported as `not_comparable`; it must not be silently
 dropped.
 
+## Runtime provenance contract
+
+For every new ocean_solver run, the NPZ must carry the exact runtime
+environment in its config payload:
+
+- git_commit
+- git_dirty
+- python_version
+- 
+umpy_version
+- jax_version
+- jax_devices
+
+enchmark_manifest.py may derive commit from this field when the caller
+does not pass --commit. A manifest is still allowed to be
+
+ot_comparable, but it must say so explicitly; provenance is not silently
+dropped.
+
 ## Stage ladder
 
 ### Stage W — wind-only dynamic control
