@@ -2,6 +2,14 @@
 set -euo pipefail
 cd /mnt/c/Users/zhen.luo/ocean_solver
 
+# Redundancy audit: this candidate is equivalent to the already-rejected
+# cooling-season gate in the 40--60N mixed-layer band. Require an explicit
+# override before spending compute on it again.
+if [ "${ALLOW_COOLING_ICE_RERUN:-0}" != "1" ]; then
+  echo "Refusing to launch cooling_ice rerun without ALLOW_COOLING_ICE_RERUN=1" >&2
+  exit 2
+fi
+
 # Launch the pre-registered cooling_ice candidate only after the MOM6 annual
 # comparison has produced its gate JSON. The inner script performs the same
 # existence check as a second guard.
