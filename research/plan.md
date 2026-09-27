@@ -364,3 +364,15 @@ Runner: scripts/run_candidate_baseline.sh
     warming/cooling in the tropics and northern subtropics, with advection as
     the main opposing cooling. This narrows the next physical lever to
     upper-ocean ventilation, not horizontal diffusion.
+
+65. **Gate the annual dynamic-ice 3D rerun.** [COMPLETE 2026-09-27]
+   The 365d Stage-F dynamic-ice/no-MLD rerun is stable but does not improve
+   annual 3D temperature; global RMSE is 1.543 vs 1.547 C and global MLD
+   worsens to 288.7 m. It does improve 40--60N MLD to 153.8 m but worsens
+   60--40S MLD to 314.9 m, so the next closure must be band/ice-state
+   dependent rather than another global scalar.
+
+66. **Complete the matched MOM6 annual 3D score.** [ACTIVE]
+   When the Stage-F annual v8 run finishes, score global 3D RMSE, regional
+   3D, latitude-depth, and MLD metrics against the ocean_solver annual
+   no-ice control, then update the direct comparison table and gap matrix.
