@@ -394,3 +394,5 @@ Chronological record of research decisions and actions. Append-only.
 ## 365d cooling-gate MLD candidate（2026-09-27）
 
 The cooling-season-only fixed-MLD candidate completed but was rejected on the annual gate. Global A2 rose from 1.204 to 1.315 C, North Atlantic RMSE from 0.975 to 1.947 C, global 3D RMSE from 1.547 to 1.574 C, and North Atlantic 3D RMSE from 1.276 to 1.878 C. Near-wall signed bias improved, but not enough. Keep this as a diagnostic only.
+
+| 272 | 2026-09-27 | benchmark | Added a standardized benchmark contract validator and made the paired annual Stage-F manifests contract-ready. Provenance remains explicitly not_comparable because the exact source commits were not recorded with the saved outputs. |
