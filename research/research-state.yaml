@@ -851,3 +851,15 @@ ocean_solver_stage_f_constant_mld_lat40_60_noice_probe_30d:
     near_wall_55_60_raw_rmse_c: 0.5327
     heat_drift_percent: -0.1432
   interpretation: "Fixed-depth regional MLD attribution: strong regional and near-wall improvement, but not the stratification-derived closure. Do not promote."
+
+ocean_solver_stage_f_constant_mld_lat40_60_noice_365d:
+  status: completed_not_promoted
+  benchmark: "research/experiments/industrial_comparison_045/ocean_solver_stage_f_constant_mld_lat40_60_noice_probe_365d_benchmark.json"
+  config: "Stage-F monthly-air dynamic bulk + fixed 100m MLD in 40--60N, no dynamic ice"
+  metrics:
+    global_a2_rmse_c: 1.3427
+    north_atlantic_40_60_raw_rmse_c: 1.4513
+    near_wall_55_60_raw_rmse_c: 1.2089
+    heat_drift_percent: -0.8541
+    salt_drift_percent: -0.0003724
+  interpretation: "The 30d regional gain reverses by 365d; it loses to the Stage-F no-ice control on global, North Atlantic, and near-wall metrics."

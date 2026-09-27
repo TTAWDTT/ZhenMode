@@ -15,4 +15,4 @@ Updated: 2026-09-27 07:50 local.
 | ocean_solver Stage-F 365d dynamic ice no MLD | ocean_solver | completed | sea-ice ablation; not promoted |
 | ocean_solver Stage-F 30d fixed 100m MLD, 40--60N, no ice | ocean_solver | completed | regional fixed-depth attribution; beats Stage-F 30d no-ice on NA/wall, not global |\n| ocean_solver Stage-F 30d 40--60N stratification MLD, no ice | ocean_solver | completed | stratification MLD probe; worse than fixed-depth probe |
 
-| ocean_solver Stage-F 365d fixed 100m MLD, 40--60N, no ice | ocean_solver | running | annual gate for the fixed-depth regional MLD probe |
+| ocean_solver Stage-F 365d fixed 100m MLD, 40--60N, no ice | ocean_solver | completed | annual gate; not promoted |
