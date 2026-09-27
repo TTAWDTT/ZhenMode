@@ -76,6 +76,42 @@ def regional_masks(lat: np.ndarray, lon: np.ndarray,
 
 
 
+
+
+def latitude_depth_metrics(error: np.ndarray,
+                           ocean3d: np.ndarray,
+                           lat: np.ndarray,
+                           z: np.ndarray,
+                           bands: list[tuple[float, float]] | None = None) -> dict:
+    """Standardized latitude-band x depth bias/RMSE for 3D snapshots.
+
+    Bands are inclusive at the lower edge and exclusive at the upper edge,
+    except that the final band includes its upper edge.  Depth keys use positive
+    metres below the surface and are useful for diagnosing upper-ocean
+    ventilation errors.
+    """
+    if bands is None:
+        bands = [(-60.0, -40.0), (-40.0, -20.0), (-20.0, 0.0),
+                 (0.0, 20.0), (20.0, 40.0), (40.0, 60.0)]
+    error = np.asarray(error, dtype=float)
+    ocean3d = np.asarray(ocean3d, dtype=bool)
+    lat = np.asarray(lat, dtype=float)
+    z = np.asarray(z, dtype=float)
+    out: dict[str, dict[str, dict]] = {}
+    for lo, hi in bands:
+        mask_lat = ((lat >= lo) & (lat < hi)) if hi < bands[-1][1] else ((lat >= lo) & (lat <= hi))
+        band_key = f"{int(lo)}_{int(hi)}"
+        band: dict[str, dict] = {}
+        for k, depth in enumerate(z):
+            mask = ocean3d[:, :, k] & mask_lat[None, :]
+            if not mask.any():
+                continue
+            band[f"z{int(-float(depth)):04d}m"] = regional_error_metrics(
+                error[:, :, k], mask)
+        if band:
+            out[band_key] = band
+    return out
+
 def global_pattern_metrics(model_sst: np.ndarray,
                            reference_sst: np.ndarray,
                            ocean: np.ndarray,

@@ -129,3 +129,15 @@ def test_solver_3d_ignores_empty_snapshot_files(tmp_path):
     )
     assert result["n_snapshots"] == 1
     assert result["global_3d"]["raw_rmse"] == 0.0
+
+def test_latitude_depth_metrics_uses_band_masks():
+    from benchmark_metrics import latitude_depth_metrics
+    z = np.array([0.0, -100.0])
+    ocean3d = np.ones((2, 2, 2), dtype=bool)
+    lat = np.array([-50.0, 50.0])
+    error = np.zeros((2, 2, 2))
+    error[:, 0, 0] = -1.0
+    error[:, 1, 1] = 2.0
+    result = latitude_depth_metrics(error, ocean3d, lat, z)
+    assert result["-60_-40"]["z0000m"]["raw_bias"] == -1.0
+    assert result["40_60"]["z0100m"]["raw_bias"] == 2.0

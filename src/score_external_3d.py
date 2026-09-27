@@ -8,7 +8,7 @@ from pathlib import Path
 import netCDF4
 import numpy as np
 
-from benchmark_metrics import regional_error_metrics, regional_masks
+from benchmark_metrics import latitude_depth_metrics, regional_error_metrics, regional_masks
 from score_external_model import _read_centers, _steady_mask
 
 
@@ -111,6 +111,7 @@ def score_external_3d(path, *, variable, reference_path, lat_var=None,
     for name, mask2d in regional_masks(ref_lat, ref_lon, ocean2d).items():
         mask3d = mask2d[:, :, None] & ocean3d
         result[name + "_3d"] = regional_error_metrics(error, mask3d)
+    result["latitude_depth"] = latitude_depth_metrics(error, ocean3d, ref_lat, z)
     return result
 
 

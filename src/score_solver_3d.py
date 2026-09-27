@@ -8,7 +8,7 @@ from pathlib import Path
 
 import numpy as np
 
-from benchmark_metrics import regional_error_metrics, regional_masks
+from benchmark_metrics import latitude_depth_metrics, regional_error_metrics, regional_masks
 
 
 def _select_snapshot_paths(snap_path, snap_dir=None, steady_days=0.0,
@@ -88,6 +88,7 @@ def score_solver_3d(npz_path, snap_path=None, *, snap_dir=None,
     for name, mask2d in regional_masks(lat, lon, ocean2d).items():
         mask3d = mask2d[:, :, None] & ocean3d
         result[name + "_3d"] = regional_error_metrics(error, mask3d)
+    result["latitude_depth"] = latitude_depth_metrics(error, ocean3d, lat, zlevels)
     return result
 
 
