@@ -2,7 +2,7 @@
 
 Date: 2026-09-27  
 Run directory: /root/external_models/mom6_slice_050/p0_stage_f_dynamic_365d_v12  
-Status: running in tmux session mom6_v12; about day 59 of 365 at 18:20 local.
+Status: running in tmux session mom6_v12; latest log point is about day 94 of 365 at 19:12 local.
 
 ## Contract
 
