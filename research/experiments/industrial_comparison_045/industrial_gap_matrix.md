@@ -15,7 +15,8 @@
 | ocean_solver | internal | 30d Stage-F prescribed proxy | FAIL_DRIFT; A2 `5.629 C`; max T `51.35 C` |
 | MOM6 | direct rerun | 30d Stage-F prescribed proxy | 稳定性警告; 因 C 盘满无空间评分 |
 | MOM6 | direct rerun | 30d Stage-F 3D temperature | corrected: ocean_solver `0.861 C`; MOM6 `1.036 C`; surface favors ocean_solver, NA favors MOM6 |
-| MOM6/ocean_solver | direct rerun | 30d Stage-F band ice + fixed MLD | ocean_solver A2 `1.562 C`, 3D `0.777 C`; MOM6 A2 `1.782 C`, 3D `1.036 C`; annual check running |
+| MOM6/ocean_solver | direct rerun | 30d Stage-F band ice + fixed MLD | ocean_solver A2 `1.562 C`, 3D `0.777 C`; MOM6 A2 `1.782 C`, 3D `1.036 C`; 30d gate passed |
+| ocean_solver | internal | 365d Stage-F band ice + fixed MLD | rejected: A2 `4.759 C`, NA `8.434 C`, 3D `4.042 C`; salt drift `-0.1497%` |
 | ocean_solver | internal | 365d Stage-F MLD20 | A2 `1.406 C`; NA RMSE `1.302 C`; heat drift `-0.276%` |
 | ocean_solver | internal | 365d fixed 100m 40--60N MLD | A2 1.343 C; NA RMSE 1.451 C; near-wall 1.209 C; not promoted |
 | ocean_solver | internal | 30d Stage-I ice/mixed-layer | A2 `1.231 C`; NA RMSE `1.316 C` |

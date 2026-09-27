@@ -63,3 +63,9 @@ A corrected 30d final-10d probe now combines dynamic ice in 40--65N with a
 `1.562 C`, NA RMSE to `0.848 C`, global 3D RMSE to `0.777 C`, and MLD bias to
 `+16.3 m`. The matching 365d final-90d gate is running; promotion still waits
 for that annual check.
+The matching 365d final-90d check for the combined band-ice/fixed-depth probe
+has completed and is **rejected**: global A2 rises to `4.759 C`, NA RMSE to
+`8.434 C`, global 3D RMSE to `4.042 C`, and salt drift worsens to `-0.1497%`.
+MLD bias improves to `+81.2 m`, but that is not enough because the North
+Atlantic 3D temperature field is grossly too warm. This rules out another
+fixed-depth band probe; the next closure must be seasonal/ice-state dependent.

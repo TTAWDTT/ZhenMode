@@ -384,10 +384,12 @@ Runner: scripts/run_candidate_baseline.sh
    The earlier large 3D/MLD gain came from scoring the whole 30d average,
    not the final-10d window. The next closure still needs band/ice-state
    dependence, but not because of this probe.
-68. **Gate the band-ice plus fixed-MLD annual candidate.** [ACTIVE 2026-09-27]
-   The corrected 30d probe with dynamic ice in 40--65N and a 100m mixed-layer
-   in 40--60N passes every pre-registered 30d gate: global A2 improves from
-   1.692 to 1.562 C, NA RMSE from 2.088 to 0.848 C, global 3D RMSE from 0.861
-   to 0.777 C, and MLD bias from +36.7 to +16.3 m. Run the matching 365d
-   final-90d check before any promotion; do not reuse the failed fixed-depth
+68. **Gate the band-ice plus fixed-MLD annual candidate.** [REJECTED 2026-09-27]
+   The 30d probe passed every pre-registered gate, but the matching 365d
+   final-90d check fails badly: global A2 rises from 1.204 to 4.759 C, NA
+   RMSE from 0.975 to 8.434 C, global 3D RMSE from 1.547 to 4.042 C, and
+   salt drift worsens from -0.00038% to -0.1497%. Although MLD bias improves
+   to +81.2 m, the temperature field is unusable. Do not promote this family;
+   the next physical change must handle seasonal ice/stratification rather
+   than another fixed-depth band.
    no-ice annual verdict as proof.
