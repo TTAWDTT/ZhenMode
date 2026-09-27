@@ -2,7 +2,7 @@
 
 Updated: 2026-09-27 22:55 local.
 
-Latest progress check: 2026-09-27 22:55 local. MOM6 v12 is still running; the latest ocean.stats point is model day 220.25/365. The completion watcher is active; the redundant cooling_ice launcher is cancelled. Stage-G full-bulk forcing is implemented but not launched.
+Latest progress check: 2026-09-27 22:55 local. MOM6 v12 is still running; the latest ocean.stats point is model day 220.25/365. The completion watcher is active; the redundant cooling_ice launcher is cancelled. Stage-G full-bulk forcing is implemented but not launched; its 2023 forcing artifact is on the shared 67.9% ocean Stage-F grid.
 
 
 ## Core direct comparison
