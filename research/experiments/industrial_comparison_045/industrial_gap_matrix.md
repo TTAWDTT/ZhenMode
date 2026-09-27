@@ -49,3 +49,5 @@
 5. **年度动态海冰 3D gate 已失败**：3D RMSE 基本不变（1.543 vs 1.547 C），MLD 反而恶化到 288.7 m，因此不能作为年度基线。
 6. **要超过工业级模式，优先级不是继续调参**，而是：完整 bulk forcing → 365d 对照 → 三维误差 → 并行/速度 → 扩展到更多物理过程。
 7. **在 MOM6 annual v12 final-90d 对照完成前，暂停新的内部 upper-ocean closure 调参。**
+8. **年度 paired manifests 已通过 contract validator；provenance 均显式标为 not_comparable，**
+   因为保存输出时没有记录精确 source commit。数值对照可以继续，但还不等于完全源码级可复现。
