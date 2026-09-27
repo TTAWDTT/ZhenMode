@@ -24,6 +24,11 @@ def load_metric(path: str | Path, label: str | None = None) -> dict:
         "near_wall_raw_rmse": data.get("near_wall_55_60", {}).get("raw_rmse"),
         "raw_bias": global_metrics.get("raw_bias"),
         "raw_rmse": global_metrics.get("raw_rmse"),
+        "global_3d_rmse": data.get("global_3d", {}).get("raw_rmse"),
+        "na_3d_rmse": data.get("north_atlantic_40_60_3d", {}).get("raw_rmse"),
+        "near_wall_3d_rmse": data.get("near_wall_55_60_3d", {}).get("raw_rmse"),
+        "mld_bias_m": data.get("mld", {}).get("raw_bias_m"),
+        "mld_rmse_m": data.get("mld", {}).get("raw_rmse_m"),
         "heat_drift": data.get("heat_drift_percent"),
         "salt_drift": data.get("salt_drift_percent"),
         "frozen_cells": data.get("ice", {}).get("n_cells"),
@@ -33,9 +38,11 @@ def load_metric(path: str | Path, label: str | None = None) -> dict:
 def markdown_table(rows: list[dict]) -> str:
     """Render rows as a compact benchmark comparison table."""
     headers = ["run", "verdict", "days", "global A2", "NA RMSE",
-               "near-wall RMSE", "global bias", "heat drift", "salt drift"]
+               "near-wall RMSE", "global bias", "heat drift", "salt drift",
+               "global 3D", "NA 3D", "near-wall 3D", "MLD bias", "MLD RMSE"]
     fields = ["label", "verdict", "days_end", "global_a2_rmse", "na_raw_rmse",
-              "near_wall_raw_rmse", "raw_bias", "heat_drift", "salt_drift"]
+              "near_wall_raw_rmse", "raw_bias", "heat_drift", "salt_drift",
+              "global_3d_rmse", "na_3d_rmse", "near_wall_3d_rmse", "mld_bias_m", "mld_rmse_m"]
     lines = ["| " + " | ".join(headers) + " |",
              "|---|---:|---:|---:|---:|---:|---:|---:|---:|"]
     for row in rows:
