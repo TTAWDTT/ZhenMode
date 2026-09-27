@@ -1,6 +1,6 @@
 # Active external/internal comparison runs
 
-Updated: 2026-09-27 09:40 local.
+Updated: 2026-09-27 10:15 local.
 
 ## Core direct comparison
 
@@ -21,7 +21,7 @@ Updated: 2026-09-27 09:40 local.
 | 365d northern-only stratification MLD, dynamic ice | completed | not promoted |
 | 365d dynamic-ice/no-MLD ablation | completed | not promoted |
 | 365d fixed 100m 40--60N MLD, no ice | completed | not promoted |
-| 365d dynamic ice, no MLD, 3D | running | awaiting annual gate |
+| 365d dynamic ice, no MLD, 3D | completed | not promoted; 3D/MLD gate fails |
 
 ## Completed 30d diagnostics
 
@@ -33,3 +33,4 @@ Updated: 2026-09-27 09:40 local.
 | fixed 100m MLD, 40--60N | regional gain, but annual gate failed |
 | dynamic ice + fixed 100m MLD, 40--60N | not annualized after annual fixed-depth failure |
 | dynamic ice + stratification MLD | completed; 30d 3D diagnostic improves global RMSE, but annual candidate still under test |
+

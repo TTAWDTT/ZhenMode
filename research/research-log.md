@@ -367,3 +367,6 @@ Chronological record of research decisions and actions. Append-only.
 | 252 | 2026-09-27 | experiment | A 30d Stage-F fine-upper-z vertical-grid probe (0,-5,-10,-20,-35,-50,-75,-100,-150,-200,-300,-500,-1000,-2000m) passed stability but worsened the climate gate to global A2 1.699 C, NA RMSE 2.110 C, near-wall 1.970 C. Do not promote; the default 14-level grid remains better on the current protocol. |
 
 | 253 | 2026-09-27 | experiment | A 30d Stage-F low-mixing probe (kappa_v=1e-7, kappa_conv=0.005) was stable but essentially unchanged versus the Stage-F no-ice control (global A2 1.695 vs 1.692 C, NA RMSE 2.086 vs 2.088 C, near-wall 1.955 vs 1.958 C). A scalar mixing reduction is therefore not the main MLD fix. |
+
+| 254 | 2026-09-27 | experiment | Completed the 365d Stage-F dynamic-ice/no-MLD 3D rerun in 28.9 min; it is stable but annual 3D RMSE is essentially unchanged versus the no-ice control (1.543 vs 1.547 C) and MLD worsens to 288.7 m mean. Do not promote. |
+| 255 | 2026-09-27 | comparison | The direct industrial target remains the MOM6 annual v8 3D score; the ocean_solver annual control and standardized latitude-depth/MLD metrics are now ready, while the MOM6 v8 run continues. |
