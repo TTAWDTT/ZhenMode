@@ -33,8 +33,8 @@ Updated: 2026-09-27 12:15 local.
 | fixed 100m MLD, 40--60N | regional gain, but annual gate failed |
 | dynamic ice + fixed 100m MLD, 40--60N | not annualized after annual fixed-depth failure |
 | dynamic ice + stratification MLD | completed; 30d 3D diagnostic improves global RMSE, but annual candidate still under test |
-| dynamic ice, 40--65N only | rejected; stable but no global/NA gain and loses most 30d 3D/MLD benefit |
+| dynamic ice, 40--65N only | final-10d window: equivalent to full dynamic ice; no global/NA gain |
 
 
 
-Note: v10 relaunched 2026-09-27 12:14 local with the exact v8 dynamic-bulk contract and daily temp+salt output. A 1-day salt smoke test passed, so this run enables the standardized MLD metric. It is held by a persistent WSL session; at 12:48 local it had reached about 19.5 simulated days in 34.5 wall minutes, so the remaining wall time is roughly 15 hours.
+Note: v10 relaunched 2026-09-27 12:14 local with the exact v8 dynamic-bulk contract and daily temp+salt output. A 1-day salt smoke test passed, so this run enables the standardized MLD metric. It was alive at 12:48 local, but the WSL instance is currently unavailable after the host D: volume filled; the annual run must be relaunched after disk space is restored.
