@@ -17,12 +17,12 @@ Current direct external model is MOM6 on the matched 0.5-degree slice.
 
 ## 3D temperature diagnostics
 
-| run | global 3D RMSE | 40--60N 3D RMSE | surface RMSE | verdict |
+| run | global 3D RMSE | 40--60N 3D RMSE | 55--60N 3D RMSE | surface RMSE | MLD bias | MLD RMSE | verdict |
 |---|---:|---:|---:|---|
-| stage_f_30d_ocean_solver | 0.861 C | 1.175 C | 1.703 C | PASS |
-| stage_f_30d_MOM6 | 1.036 C | 1.123 C | 1.884 C | PASS |
-| stage_f_365d_ocean_solver | 1.547 C | 1.276 C | 1.142 C | PASS |
-| stage_f_365d_MOM6 | pending | pending | pending | running |
+| stage_f_30d_ocean_solver | 0.861 C | 1.175 C | pending | 1.703 C | pending | pending | PASS |
+| stage_f_30d_MOM6 | 1.036 C | 1.123 C | pending | 1.884 C | pending | pending | PASS |
+| stage_f_365d_ocean_solver | 1.547 C | 1.276 C | 1.124 C | 1.142 C | +139.3 m | 655.7 m | PASS |
+| stage_f_365d_MOM6 | pending | pending | pending | pending | pending | pending | running |
 
 
 
