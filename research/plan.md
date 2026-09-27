@@ -392,3 +392,9 @@ Runner: scripts/run_candidate_baseline.sh
    1.495 C, and global 3D RMSE from 1.547 to 1.559 C. MLD bias improves from
    +139.3 to +121.2 m and 40--60N MLD bias to +17.2 m. Keep this as a
    diagnostic only; do not promote another fixed-depth band.
+69. **Design the seasonal upper-ocean heat-capacity gate.** [ACTIVE 2026-09-27]
+   The valid band-ice/fixed-MLD annual run improves MLD but over-warms the
+   North Atlantic upper ocean in the final-90d window (surface bias +1.35 C
+   versus the no-ice control). Design a seasonally gated 40--60N mixed-layer
+   closure that keeps the winter/cooling-season benefit without causing
+   late-season warming. Do not add another global scalar.
