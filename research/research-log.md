@@ -419,3 +419,4 @@ The cooling-season-only fixed-MLD candidate completed but was rejected on the an
 | 289 | 2026-09-27 | fix | Fixed Stage-G snapshot flux diagnostics so the 1d full-bulk smoke passes on the shared 67.9% grid (correct bathymetry + wet-mask guard + correct flux key mapping). |
 | 290 | 2026-09-27 | diagnostic | A 10d Stage-G full-bulk smoke on the shared 67.9% grid also passes stability, confirming the Stage-G path is ready beyond the 1d smoke once the shared bathymetry is pinned. |
 | 291 | 2026-09-27 | diagnostic | Added passing 1d/10d Stage-G dynamic-ice + fixed 100m 40--60N MLD smoke runs; they validate the sea-ice/mixed-layer closure under full-bulk forcing but remain diagnostic-only until the shared bathymetry and pre-registered Stage-G launch are pinned. |
+| 292 | 2026-09-27 | protocol | Added an SMOOTH_PASSES override to the Stage-G launcher so the shared MOM6-topography-derived grid can be reproduced without extra smoothing. |
