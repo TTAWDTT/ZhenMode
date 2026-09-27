@@ -258,15 +258,24 @@ def score_npz(path: str | os.PathLike,
         area=cell_area(lat, lon),
         ice_thickness=(np.asarray(z["ice_top"][-1], dtype=float)
                        if "ice_top" in z else None))
-    if "S_init" in z:
+    if "mixed_layer_depth_applied" in z:
+        mld = np.asarray(z["mixed_layer_depth_applied"], dtype=float)
+        mld_source = "solver_effective"
+    elif "S_init" in z:
         mld = mixed_layer_depth(np.asarray(z["T_init"], dtype=float),
                                 np.asarray(z["S_init"], dtype=float),
                                 np.asarray(z["z"], dtype=float),
                                 ocean=ocean)
-        finite = np.isfinite(mld)
+        mld_source = "initial_T_S"
+    else:
+        mld = None
+        mld_source = "unavailable"
+    if mld is not None:
+        finite = np.isfinite(mld) & ocean
         if finite.any():
             result["mld"] = {
-                "definition": "density_threshold_0.03_kg_m3_ref10m", "source": "initial_T_S",
+                "definition": "solver_effective_or_density_threshold_0.03_kg_m3_ref10m",
+                "source": mld_source,
                 "mean_m": float(np.mean(mld[finite])),
                 "median_m": float(np.median(mld[finite])),
                 "p90_m": float(np.percentile(mld[finite], 90)),

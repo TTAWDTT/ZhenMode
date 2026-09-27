@@ -1315,6 +1315,18 @@ def main():
         'coastal_kappa_v': args.coastal_kappa_v,
         'init_from': args.init_from or '',
     }
+    dz_surface = float(abs(np.asarray(grid.z)[0] - np.asarray(grid.z)[1]))
+    if args.mixed_layer_depth is not None:
+        mixed_mask = (_lat_band_mask(grid, args.mixed_layer_lat_band)
+                      if args.mixed_layer_lat_band else np.ones_like(ocean))
+        effective_mld = np.full(ocean.shape, dz_surface, dtype=float)
+        inside = (mixed_mask > 0.5) & (args.mixed_layer_depth > 0.0) & ocean
+        if stratification_mld is not None:
+            effective_mld[inside] = stratification_mld[inside]
+        else:
+            effective_mld[inside] = float(args.mixed_layer_depth)
+    else:
+        effective_mld = np.full(ocean.shape, dz_surface, dtype=float)
     np.savez_compressed(out_npz,
                         days=np.array(snap_days),
                         max_u=np.array(snap_maxu),
@@ -1328,6 +1340,7 @@ def main():
                         ice_fraction=np.array(snap_ice_fraction),
                         **diagnostics_to_arrays(snap_budget),
                         T_init=T_init,
+                        mixed_layer_depth_applied=effective_mld,
                         wet_mask_z=np.asarray(grid.wet_mask_3d),
                         S_init=S_init,
                         wet_mask=np.asarray(grid.wet_mask),
