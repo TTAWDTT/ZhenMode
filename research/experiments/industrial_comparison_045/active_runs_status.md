@@ -1,8 +1,8 @@
 # Active external/internal comparison runs
 
-Updated: 2026-09-27 22:00 local.
+Updated: 2026-09-27 21:45 local.
 
-Latest progress check: 2026-09-27 22:00 local. MOM6 v12 is still running; the latest ocean.stats point is model day 181.5/365. The consolidated completion watcher is fixed and active.
+Latest progress check: 2026-09-27 21:45 local. MOM6 v12 is still running; the latest ocean.stats point is model day 181.5/365. The completion watcher and gate-triggered cooling_ice launcher are both active.
 
 
 ## Core direct comparison
@@ -60,4 +60,6 @@ Latest progress check: 2026-09-27 22:00 local. MOM6 v12 is still running; the la
 - A consolidated MOM6 v12 completion watcher is active; when the run finishes it
   will score the paired surface and 3D/MLD benchmarks, then run the annual
   climate gate with --require-3d.
+- A second gate-triggered watcher will launch the pre-registered cooling_ice
+  candidate only after the annual gate JSON exists.
 
