@@ -2020,12 +2020,26 @@ def _dynamic_ice_closure(state, p):
     ice = ice * p.ice_mask_2d
 
     # Rebuild the surface heat flux used by the tracer tendency.  Ice weakens
-    # all of it, including the prescribed Q and bulk exchange.
+    # all of it, including prescribed Q, simple bulk exchange, and the full
+    # Stage-G shortwave/longwave/sensible/latent closure.
     insulation = 1.0 / (1.0 + ice / p.ice_insulation_scale_m)
     air_minus_sst = p.T_atm_3d[:, :, 0] - T_sst
     q = (p.Q_heat_2d
          + p.lambda_bulk * air_minus_sst
          + p.coastal_bulk_lambda_2d * air_minus_sst)
+    if getattr(p, "full_bulk", False):
+        sst_k = T_sst + 273.15
+        saturation_vapor_pressure = 611.2 * jnp.exp(
+            17.67 * T_sst / (T_sst + 243.5))
+        q_saturation = (0.622 * saturation_vapor_pressure
+                        / (SEA_LEVEL_PRESSURE_PA
+                           - 0.378 * saturation_vapor_pressure))
+        q = ((1.0 - SURFACE_ALBEDO) * p.downward_shortwave_2d
+             + p.downward_longwave_2d
+             - SURFACE_EMISSIVITY * STEFAN_BOLTZMANN * sst_k ** 4
+             - p.sensible_transfer_2d * (T_sst - p.T_atm_3d[:, :, 0])
+             - p.latent_transfer_2d
+             * (q_saturation - p.specific_humidity_air_2d))
     q = q * insulation * p.wet_mask * p.ice_mask_2d
 
     # Reuse the same gated mixed-layer depth used by the surface heat budget.
