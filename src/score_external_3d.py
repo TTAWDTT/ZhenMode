@@ -38,7 +38,7 @@ def _steady_mean(field: netCDF4.Variable, ds: netCDF4.Dataset,
     if field.ndim != 4:
         raise RuntimeError("expected (time,z,y,x)")
     if field.shape[0] == 0:
-        raise RuntimeError("external output has no time records")
+        raise RuntimeError("external output is incomplete: no time records yet")
     days = _time_days(field, ds)
     keep = _steady_mask(days, steady_days)
     arr = np.asarray(field[keep], dtype=float)

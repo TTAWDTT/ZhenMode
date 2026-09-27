@@ -99,3 +99,12 @@ def test_external_3d_uses_actual_time_coordinates(tmp_path):
         lat_var="lath", lon_var="lonh", wet_var="wet", depth_var="D",
         steady_days=10.0, salt_var="salt")
     assert result["global_3d"]["raw_rmse"] == 0.0
+
+
+def test_external_3d_rejects_missing_time_records():
+    import pytest
+    from score_external_3d import _steady_mean
+    ds = {}
+    field = np.empty((0, 1, 1, 1))
+    with pytest.raises(RuntimeError, match="incomplete"):
+        _steady_mean(field, ds, 10.0)
