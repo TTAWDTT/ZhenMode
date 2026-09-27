@@ -23,3 +23,16 @@ Current direct external model is MOM6 on the matched 0.5-degree slice.
 | stage_f_30d_MOM6 | 1.036 C | 1.123 C | 1.884 C | PASS |
 | stage_f_365d_ocean_solver | 1.547 C | 1.276 C | 1.142 C | PASS |
 | stage_f_365d_MOM6 | pending | pending | pending | running |
+
+
+
+## Contract status
+
+The paired annual Stage-F manifests now pass the standardized contract validator:
+
+- ocean_solver: ocean_solver_stage_f_365d_3d_manifest.json
+- MOM6: mom6_stage_f_dynamic_365d_v12_manifest.json
+
+The MOM6 provenance is explicitly marked not_comparable because the source commit
+was not recorded, so the numerical comparison may proceed but exact code
+reproducibility remains incomplete.
