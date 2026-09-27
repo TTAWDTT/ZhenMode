@@ -893,3 +893,15 @@ ocean_solver_stage_f_365d_3d_mld:
     raw_bias_m: 139.2523
     raw_rmse_m: 655.6671
   interpretation: "The annual Stage-F no-ice control develops a much deeper mixed layer than the WOA initial state, pointing to excessive upper-ocean entrainment/ventilation rather than a shallow-layer problem."
+
+ocean_solver_stage_f_fine_upper_z_30d:
+  status: completed_not_promoted
+  benchmark: "research/experiments/industrial_comparison_045/ocean_solver_stage_f_fine_upper_z_30d_benchmark.json"
+  config: "Stage-F no-ice control with 14 levels redistributed toward the upper ocean"
+  z_levels: "0,-5,-10,-20,-35,-50,-75,-100,-150,-200,-300,-500,-1000,-2000"
+  metrics:
+    global_a2_rmse_c: 1.6986
+    north_atlantic_40_60_raw_rmse_c: 2.1102
+    near_wall_55_60_raw_rmse_c: 1.9703
+    heat_drift_percent: -0.2668
+  interpretation: "Fine upper-ocean z levels are stable but worse than the default Stage-F grid on the 30d gate; do not promote."

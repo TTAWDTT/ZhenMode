@@ -363,3 +363,5 @@ Chronological record of research decisions and actions. Append-only.
 | 250 | 2026-09-27 | benchmark | Added standardized latitude-band x depth 3D metrics to the solver and external 3D scorers. The annual Stage-F no-ice control confirms the dominant cold bias is in 40--20S and 20--40N between 15 and 50m, not only near the 40--60N wall. |
 
 | 251 | 2026-09-27 | diagnostic | Added a standardized MLD bias/RMSE metric to the 3D scorer. The annual Stage-F no-ice control has model MLD 170.8m versus reference 31.5m (bias +139.3m, RMSE 655.7m), so the current solver entrains far deeper than the WOA initial state. |
+
+| 252 | 2026-09-27 | experiment | A 30d Stage-F fine-upper-z vertical-grid probe (0,-5,-10,-20,-35,-50,-75,-100,-150,-200,-300,-500,-1000,-2000m) passed stability but worsened the climate gate to global A2 1.699 C, NA RMSE 2.110 C, near-wall 1.970 C. Do not promote; the default 14-level grid remains better on the current protocol. |
