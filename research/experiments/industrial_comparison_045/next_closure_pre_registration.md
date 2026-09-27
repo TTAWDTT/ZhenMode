@@ -7,6 +7,14 @@ Updated: 2026-09-27. This is a plan, not a promoted result.
 Do not launch this run until the annual MOM6 Stage-F v12 final-90d 3D/MLD
 comparison is complete and scored.
 
+## Redundancy audit
+
+The spatial diagnostic shows that dynamic ice is confined to 60--65N, while the
+100m mixed-layer mask is 40--60N. Because the 60--65N ice cells lie outside the
+mixed-layer band, the pre-registered `cooling_ice` gate is numerically
+equivalent to the already-rejected cooling-season gate in the 40--60N band.
+Do not launch it as a new independent candidate; keep it as a diagnostic only.
+
 ## Candidate
 
 cooling_ice mixed-layer gate:

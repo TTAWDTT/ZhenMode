@@ -106,6 +106,13 @@ closure with a small ice cap, not a broad coupled ice/MLD field. Therefore the c
 explains why the annual candidate can improve some MLD diagnostics while
 still worsening the broader North Atlantic and 3D errors.
 
+## Redundancy audit
+
+Because dynamic ice is confined to 60--65N and the fixed mixed-layer mask is
+40--60N, the pre-registered `cooling_ice` gate is numerically equivalent to the
+already-rejected cooling-season gate in the 40--60N band. It should not be
+launched as a new independent candidate.
+
 ## Next candidate (pre-registered, not launched)
 
 The next candidate is a seasonal/ice-state dependent mixed-layer gate: keep the
