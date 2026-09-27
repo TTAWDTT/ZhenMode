@@ -62,6 +62,8 @@ def make_manifest(npz_path: str | Path | None,
             run_id = npz_path.stem
         npz_text = str(npz_path)
 
+    if commit is None and isinstance(config, dict):
+        commit = config.get('git_commit') or None
     if status is None:
         verdict = metrics.get("verdict") if isinstance(metrics, dict) else None
         status = "completed" if verdict == "PASS" else "not_comparable"

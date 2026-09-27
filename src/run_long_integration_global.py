@@ -25,6 +25,8 @@ Usage:
 """
 import argparse
 import os
+import platform
+import subprocess
 import sys
 import time
 from dataclasses import replace
@@ -104,6 +106,21 @@ ETA_BLOWUP_M = 15.0           # m, divergence watchdog. The grid under
                               # physical spin-up barotropic mode.
     # ── Global FD stable config ──────────────────────────────────────
 LAT_MAX_DEFAULT = 60.0        # truncate poleward (cos=0.5, no metric singularity)
+def _runtime_provenance():
+    try:
+        git = subprocess.run(['git', 'rev-parse', 'HEAD'], capture_output=True, text=True, check=False)
+        commit = git.stdout.strip() if git.returncode == 0 else ''
+        dirty = bool(subprocess.run(['git', 'status', '--porcelain'], capture_output=True, text=True, check=False).stdout.strip())
+    except OSError:
+        commit, dirty = '', False
+    return {
+        'git_commit': commit,
+        'git_dirty': dirty,
+        'python_version': platform.python_version(),
+        'numpy_version': np.__version__,
+        'jax_version': jax.__version__,
+        'jax_devices': [str(d) for d in jax.devices()],
+    }
 NY_DEFAULT = 120              # 1° resolution at lat_max=60 -> 120 rows
 SMOOTH_PASSES_DEFAULT = 30    # bathymetry smoothing (steep topographic PGF)
 MIN_DEPTH_DEFAULT = 100.0     # floor shallow coastal columns (bad WOA extrapolation)
@@ -1334,6 +1351,7 @@ def main():
         'coastal_kappa_h': args.coastal_kappa_h,
         'coastal_kappa_v': args.coastal_kappa_v,
         'init_from': args.init_from or '',
+        **_runtime_provenance(),
     }
     dz_surface = float(abs(np.asarray(grid.z)[0] - np.asarray(grid.z)[1]))
     if args.mixed_layer_depth is not None:
