@@ -54,6 +54,7 @@
 4. 当前已把 cooling_ice 接到自动链路：等 MOM6 annual gate JSON 出现后运行候选，
    然后自动做 surface/3D/MLD 评分和年度 gate。
 5. NEMO 365d Stage-F 已预注册为第二个 structured industrial 对照目标。
+6. 因为 `cooling_ice` 被判定为冗余候选，Stage-G 的下一个主要缺口是完整 bulk forcing：湿度、辐射、降水/蒸发、runoff。
 
 ## 权威文件
 
