@@ -22,8 +22,8 @@
     "status": "comparable"
   },
   "bathymetry": {
-    "source": "ETOPO2022-derived shared topography",
-    "smoothing_passes": 80,
+    "source": "MOM6-derived shared 0.5-degree topography expanded to a 0.1-degree ETOPO twin",
+    "smoothing_passes": 0,
     "minimum_depth_m": 500.0,
     "status": "comparable"
   },
