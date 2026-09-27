@@ -1,8 +1,8 @@
 # Active external/internal comparison runs
 
-Updated: 2026-09-27 23:40 local.
+Updated: 2026-09-27 23:55 local.
 
-Latest progress check: 2026-09-27 23:40 local. MOM6 v12 is still running; the latest ocean.stats point is model day 246.25/365. Stage-G launch readiness now includes a wet-mask/grid guard and a passing 1d full-bulk smoke (commit d439888). The completion watcher is active; the redundant cooling_ice launcher is cancelled. Stage-G full-bulk forcing is implemented but not launched; its 2023 forcing artifact is on the shared 67.9% ocean Stage-F grid, while the current repo-local ETOPO grid is 90.8% ocean.
+Latest progress check: 2026-09-27 23:50 local. MOM6 v12 is still running; the latest ocean.stats point is model day 259.25/365. Stage-G launch readiness now includes a wet-mask/grid guard and passing 1d/10d full-bulk smokes (commit 1222717). The 10d smoke used the shared 67.9% grid with a MOM6-topog-derived ETOPO twin and zero extra smoothing; it is diagnostic-only and does not replace the pre-registered Stage-G launch. The completion watcher is active; the redundant cooling_ice launcher is cancelled. Stage-G full-bulk forcing is implemented but not launched; its 2023 forcing artifact is on the shared 67.9% ocean Stage-F grid, while the current repo-local ETOPO grid is 90.8% ocean.
 
 
 ## Core direct comparison
@@ -57,7 +57,7 @@ Latest progress check: 2026-09-27 23:40 local. MOM6 v12 is still running; the la
 - The paired annual manifests now pass the standardized contract validator, with
   provenance explicitly marked not_comparable because the exact source commits
   were not recorded with the saved outputs.
-- Full test status after Stage-G implementation: 238 passed, 0 skipped.
+- Full test status after Stage-G implementation: 239 passed, 0 skipped.
 - A consolidated MOM6 v12 completion watcher is active; when the run finishes it
   will score the paired surface and 3D/MLD benchmarks, then run the annual
   climate gate with --require-3d.
