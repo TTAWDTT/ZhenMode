@@ -1,8 +1,8 @@
 # Active external/internal comparison runs
 
-Updated: 2026-09-27 21:45 local.
+Updated: 2026-09-27 22:55 local.
 
-Latest progress check: 2026-09-27 21:45 local. MOM6 v12 is still running; the latest ocean.stats point is model day 181.5/365. The completion watcher and gate-triggered cooling_ice launcher are both active.
+Latest progress check: 2026-09-27 22:55 local. MOM6 v12 is still running; the latest ocean.stats point is model day 220.25/365. The completion watcher is active; the redundant cooling_ice launcher is cancelled. Stage-G full-bulk forcing is implemented but not launched.
 
 
 ## Core direct comparison
