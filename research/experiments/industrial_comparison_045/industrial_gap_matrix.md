@@ -16,6 +16,7 @@
 | MOM6 | direct rerun | 30d Stage-F prescribed proxy | 稳定性警告; 因 C 盘满无空间评分 |
 | MOM6 | direct rerun | 30d Stage-F 3D temperature | corrected: ocean_solver `0.861 C`; MOM6 `1.036 C`; surface favors ocean_solver, NA favors MOM6 |
 | ocean_solver | internal | 365d Stage-F MLD20 | A2 `1.406 C`; NA RMSE `1.302 C`; heat drift `-0.276%` |
+| ocean_solver | internal | 365d fixed 100m 40--60N MLD | A2 1.343 C; NA RMSE 1.451 C; near-wall 1.209 C; not promoted |
 | ocean_solver | internal | 30d Stage-I ice/mixed-layer | A2 `1.231 C`; NA RMSE `1.316 C` |
 
 这些数字只代表固定 0.5 度切片，不是 OMIP、预报系统或全球气候模式级结论。
