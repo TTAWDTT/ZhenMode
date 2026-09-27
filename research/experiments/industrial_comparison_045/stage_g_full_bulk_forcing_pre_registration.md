@@ -1,7 +1,7 @@
 # Stage-G full bulk forcing pre-registration
 
 Date: 2026-09-27
-Status: pre_registered, not launched
+Status: pre_registered, implementation ready, not launched
 
 ## Purpose
 
@@ -19,6 +19,13 @@ The first Stage-G loaders are now available:
 
 They are read on the native NCEP grid, cached locally, bilinearly remapped to
 the solver grid, and unit-converted before entering the flux code.
+
+## Implementation status
+
+The solver path and Stage-G run script are ready. The 2023 0.5-degree NCEP
+forcing artifact contains monthly air temperature, specific humidity, downward
+longwave, downward shortwave, precipitation rate, and 10-m wind speed. It is
+not launched until the MOM6 annual v12 gate is scored.
 
 ## Required forcing fields
 
