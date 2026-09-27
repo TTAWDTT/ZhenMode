@@ -1,0 +1,115 @@
+{
+  "model": "MOM6",
+  "run_id": "mom6_stage_f_dynamic_365d_v12",
+  "status": "running",
+  "run_directory": "/root/external_models/mom6_slice_050/p0_stage_f_dynamic_365d_v12",
+  "benchmark_partner": "ocean_solver_stage_f_365d_noice",
+  "reference_npz": "/root/external_models/results/industrial_comparison_045/global_global_industrial_comparison_050_stage_f_365d_3d.npz",
+  "grid": {
+    "type": "shared_050_global_slice",
+    "lat_range": [
+      -65.0,
+      65.0
+    ],
+    "lon_range": [
+      0.0,
+      360.0
+    ],
+    "n_lat": 260,
+    "n_lon": 720,
+    "vertical_levels": 14,
+    "vertical_coordinate": "ZSTAR",
+    "ale_coordinate_config": "FILE:vgrid_050.nc,interfaces=interfaces",
+    "status": "comparable"
+  },
+  "bathymetry": {
+    "source": "ETOPO2022-derived shared topography",
+    "smoothing_passes": 80,
+    "minimum_depth_m": 500.0,
+    "status": "comparable"
+  },
+  "initial_state": {
+    "temperature_salinity": "WOA T/S",
+    "status": "comparable"
+  },
+  "forcing": {
+    "wind": "2023 monthly NCEP R1 10m wind converted to stress",
+    "heat": "2023 monthly NCEP R1 2m air via RESTOREBUOY with live-SST negative feedback",
+    "heat_exchange_constant_m_per_day": 1.701,
+    "heat_exchange_w_m2_k": 80.0,
+    "salt_exchange_constant_m_per_day": 0.0,
+    "radiation": "not used in both runs",
+    "humidity": "not used in both runs",
+    "precipitation": "not used in both runs",
+    "evaporation": "not used in both runs",
+    "runoff": "not used in both runs",
+    "status": "comparable_for_stage_f_noice_contract"
+  },
+  "sea_ice": {
+    "treatment": "none in both ocean_solver no-ice control and MOM6 run",
+    "status": "comparable_for_noice_control"
+  },
+  "duration": {
+    "days": 365.0,
+    "status": "pre_registered"
+  },
+  "scoring": {
+    "reference": "WOA top-level SST on the same grid",
+    "surface_window_days": 90,
+    "three_d_window_days": 90,
+    "masks": [
+      "shared wet_mask intersection",
+      "shared bathymetric vertical depth mask"
+    ],
+    "status": "comparable_if_run_completes"
+  },
+  "provenance": {
+    "mom6_source_commit": "not_recorded",
+    "mom6_source_commit_status": "not_comparable",
+    "compiler": "GNU Fortran 15.2.0",
+    "mpi": "OpenMPI mpirun",
+    "mpi_version": "not_recorded",
+    "scoring_python": "netCDF4 1.7.4; xarray 2026.1.0",
+    "note": "Numerical comparison may proceed, but exact source reproducibility remains incomplete."
+  },
+  "outputs": {
+    "surface_or_3d": "prog.nc",
+    "variables": [
+      "temp",
+      "salt"
+    ],
+    "output_interval_days": 10
+  },
+  "config_files": [
+    "MOM_input",
+    "input.nml",
+    "diag_table"
+  ],
+  "scoring_command": [
+    "python",
+    "src/score_external_3d.py",
+    "--input",
+    "/root/external_models/mom6_slice_050/p0_stage_f_dynamic_365d_v12/prog.nc",
+    "--variable",
+    "temp",
+    "--geometry",
+    "/root/external_models/mom6_slice_050/p0_stage_f_dynamic_365d_v12/ocean_geometry.nc",
+    "--wet-var",
+    "wet",
+    "--lat-var",
+    "lath",
+    "--lon-var",
+    "lonh",
+    "--depth-var",
+    "D",
+    "--salt-variable",
+    "salt",
+    "--reference-npz",
+    "/root/external_models/results/industrial_comparison_045/global_global_industrial_comparison_050_stage_f_365d_3d.npz",
+    "--steady-days",
+    "90",
+    "--out",
+    "research/experiments/industrial_comparison_045/mom6_stage_f_dynamic_365d_v12_3d_benchmark.json"
+  ],
+  "generated_at_utc": "2026-09-27T09:56:21.513243+00:00"
+}
