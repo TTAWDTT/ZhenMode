@@ -16,6 +16,7 @@ from full_bulk_forcing import (
     build_full_bulk_fields,
     net_surface_heat_flux,
     saturation_specific_humidity_kg_kg,
+    validate_full_bulk_forcing_grid,
 )
 from jax_solver_global import JaxStateG, _compute_tracer_tendency, make_solver_global
 
@@ -127,3 +128,16 @@ def test_full_bulk_dynamic_step_updates_surface_forcing():
         T_atm_3d=jnp.full((grid.nx, grid.ny, 1), 20.0),
         full_bulk_fields=full_bulk_fields)
     assert float(jnp.max(warm.T[:, :, 0])) > 20.0
+
+def test_full_bulk_forcing_grid_contract_matches_solver_grid():
+    grid = all_wet_grid(nx=12, ny=8, nz=4)
+    forcing = {
+        "lat": grid.lat,
+        "lon": grid.lon,
+        "wet_mask": np.ones((grid.nx, grid.ny), dtype=bool),
+    }
+    validate_full_bulk_forcing_grid(forcing, grid)
+
+    forcing["wet_mask"] = np.zeros_like(forcing["wet_mask"])
+    with pytest.raises(ValueError, match="wet mask differs"):
+        validate_full_bulk_forcing_grid(forcing, grid)

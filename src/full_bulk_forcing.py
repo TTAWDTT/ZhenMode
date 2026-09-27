@@ -79,6 +79,21 @@ def build_full_bulk_fields(air_temperature_c,
     return arrays
 
 
+def validate_full_bulk_forcing_grid(forcing, grid):
+    """Reject Stage-G forcing that is not on the solver shared grid."""
+    lat = np.asarray(forcing["lat"], dtype=np.float64)
+    lon = np.asarray(forcing["lon"], dtype=np.float64)
+    wet = np.asarray(forcing["wet_mask"], dtype=bool)
+    if lat.shape != np.asarray(grid.lat).shape or lon.shape != np.asarray(grid.lon).shape:
+        raise ValueError("Stage-G lat/lon vector shape differs from solver grid")
+    if not np.allclose(lat, grid.lat, atol=1e-6) or not np.allclose(lon, grid.lon, atol=1e-6):
+        raise ValueError("Stage-G coordinates differ from solver grid")
+    if wet.shape != (grid.nx, grid.ny):
+        raise ValueError("Stage-G wet mask shape differs from solver grid")
+    if not np.array_equal(wet, np.asarray(grid.ocean_mask, dtype=bool)):
+        raise ValueError("Stage-G wet mask differs from solver ocean mask")
+
+
 def net_surface_heat_flux(sst_c, air_temperature_c,
                           specific_humidity_air_kg_kg,
                           downward_longwave_w_m2,

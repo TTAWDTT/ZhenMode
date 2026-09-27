@@ -59,6 +59,7 @@ from full_bulk_forcing import (
     build_full_bulk_fields,
     compute_full_bulk_flux_diagnostics,
     surface_flux_to_arrays,
+    validate_full_bulk_forcing_grid,
 )
 from forcing import (
     BULK_LAMBDA_DEFAULT,
@@ -843,6 +844,7 @@ def main():
         missing = required - set(z.files)
         if missing:
             raise ValueError(f"Stage-G forcing missing fields: {sorted(missing)}")
+        validate_full_bulk_forcing_grid(z, grid)
         T_atm_months = np.asarray(z["air_temperature_c"], dtype=float)
         if T_atm_months.shape != (12, grid.nx, grid.ny):
             raise ValueError("Stage-G air temperature grid mismatch")
