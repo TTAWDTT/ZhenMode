@@ -28,6 +28,16 @@ Every external comparison run must record these fields:
 A missing contract item is reported as `not_comparable`; it must not be silently
 dropped.
 
+## Stage-G full bulk forcing
+
+Stage-G closes the largest remaining physical gap: full surface fluxes. The
+minimum contract adds 2m humidity, downward shortwave/longwave radiation, and
+precipitation/evaporation to the existing wind and 2m-air bulk proxy. Runoff
+is optional but must be explicitly enabled or disabled in both models.
+
+The Stage-G pre-registration is
+`research/experiments/industrial_comparison_045/stage_g_full_bulk_forcing_pre_registration.md`.
+
 ## Runtime provenance contract
 
 For every new ocean_solver run, the NPZ must carry the exact runtime
