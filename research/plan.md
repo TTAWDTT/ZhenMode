@@ -320,7 +320,7 @@ Runner: scripts/run_candidate_baseline.sh
     the freezing point. Unit tests cover the parameter plumbing and the
     salt-flux tendency.
 
-57. **Run the mixed-layer/ice benchmark ladder.** [ACTIVE]
+57. **Run the mixed-layer/ice benchmark ladder.** [COMPLETE 2026-09-27]
     Compare `--mixed-layer-depth 50` and `--ice-salt-flux` against the locked
     `candidate_65n_045_icefloor` using the standardized benchmark protocol.
     Start with a 30d probe, then run a 365d check only if the 30d result is
