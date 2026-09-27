@@ -1,0 +1,72 @@
+{
+  "model": "ocean_solver",
+  "run_id": "industrial_comparison_050_stage_g_30d",
+  "status": "pre_registered",
+  "npz": null,
+  "commit": "c014c32",
+  "metrics": null,
+  "grid": {
+    "type": "shared_050_global_slice",
+    "lat_range": [
+      -65.0,
+      65.0
+    ],
+    "lon_range": [
+      0.0,
+      360.0
+    ],
+    "n_lat": 260,
+    "n_lon": 720,
+    "vertical_levels": 14,
+    "vertical_coordinate": "Z",
+    "status": "comparable"
+  },
+  "bathymetry": {
+    "source": "ETOPO2022-derived shared topography",
+    "smoothing_passes": 80,
+    "minimum_depth_m": 500.0,
+    "status": "comparable"
+  },
+  "initial_state": {
+    "temperature_salinity": "WOA T/S",
+    "status": "comparable"
+  },
+  "forcing": {
+    "wind": "2023 monthly NCEP R1 10m wind converted to stress",
+    "air_temperature": "2023 monthly NCEP R1 2m air temperature",
+    "specific_humidity": "2023 monthly NCEP R1 2m specific humidity",
+    "longwave": "2023 monthly NCEP R1 downward longwave",
+    "shortwave": "2023 monthly NCEP R1 downward shortwave",
+    "precipitation": "2023 monthly NCEP R1 precipitation rate",
+    "evaporation": "computed from live-SST latent heat flux",
+    "runoff": "not_used_in_both_runs",
+    "transfer_coefficient": 0.0013,
+    "salinity_flux": "precipitation minus evaporation",
+    "status": "comparable"
+  },
+  "sea_ice": {
+    "treatment": "none",
+    "status": "comparable"
+  },
+  "duration": {
+    "days": 30,
+    "status": "comparable"
+  },
+  "scoring": {
+    "reference": "WOA top-level SST on the same grid",
+    "surface_window_days": 90,
+    "three_d_window_days": 90,
+    "masks": [
+      "shared wet_mask intersection",
+      "shared bathymetric vertical depth mask"
+    ],
+    "status": "pre_registered"
+  },
+  "provenance": {
+    "solver_commit": "c014c32",
+    "solver_commit_status": "comparable",
+    "forcing_artifact": "data/stage_g/stage_g_forcing_2023_050.npz",
+    "compiler": "to be recorded at run time",
+    "status": "comparable"
+  }
+}
