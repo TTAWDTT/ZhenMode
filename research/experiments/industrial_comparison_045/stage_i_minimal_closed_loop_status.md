@@ -36,7 +36,7 @@ salt flux, and a bounded stability verdict.
 ## Next gate
 
 1. Keep the current 365d Stage-F no-ice control as the baseline.
-2. Finish the fixed 100m 40--60N annual MLD probe now running.
+2. The fixed 100m 40--60N annual MLD probe has completed and failed the annual gate.
 3. Only after that gate, test the same regional closure with dynamic ice in a
    single pre-registered 365d run.
 4. Do not promote any closure unless it improves global A2 without degrading
