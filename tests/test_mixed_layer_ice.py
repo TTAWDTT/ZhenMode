@@ -146,3 +146,13 @@ def test_mixed_layer_cooling_ice_gate_combines_both():
     warm_ice_water = _ice_state(10.0, ice_value=0.25)
     depth = np.asarray(_mixed_layer_depth_with_gate(warm_ice_water, params))
     assert np.allclose(depth, 20.0)
+
+
+def test_mixed_layer_gate_mode_rejects_unknown_mode():
+    params = _params(15.0, cooling_gate=False)._replace(mixed_layer_gate_mode="not_a_mode")
+    try:
+        _mixed_layer_depth_with_gate(_ice_state(10.0, ice_value=0.0), params)
+    except ValueError as exc:
+        assert "not_a_mode" in str(exc)
+    else:
+        raise AssertionError("expected ValueError for unknown gate mode")
