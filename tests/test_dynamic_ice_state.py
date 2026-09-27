@@ -7,7 +7,12 @@ import numpy as np
 from _helpers import all_wet_grid
 
 from config import PhysicsConfig
-from jax_solver_global import JaxStateG, _compute_tracer_tendency, _dynamic_ice_closure, make_solver_global
+from jax_solver_global import (
+    JaxStateG,
+    _compute_tracer_tendency,
+    _dynamic_ice_closure,
+    make_solver_global,
+)
 
 
 def _params(T_atm_value=-20.0, lambda_bulk=80.0, dt=864000.0, ice_mask=None, dynamic_ice=True):

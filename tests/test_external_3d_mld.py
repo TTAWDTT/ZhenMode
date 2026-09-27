@@ -21,14 +21,14 @@ def test_external_3d_scores_mld_when_salt_available(tmp_path):
     )
     nc_path = tmp_path / "prog.nc"
     temp = reference.transpose(2, 1, 0)[None, ...]
-    salt = reference_salt.transpose(2, 1, 0)[None, ...]
     with Dataset(nc_path, "w") as ds:
         for name, size in (("time", 1), ("zl", 2), ("yh", 2), ("xh", 2)):
             ds.createDimension(name, size)
-        for name, values in (("temp", temp), ("salt", temp)):
+        for name, values in (("temp", temp),
+                             ("salt", reference_salt.transpose(2, 1, 0)[None, ...])):
             var = ds.createVariable(
                 name, "f8", ("time", "zl", "yh", "xh"))
-            var[:] = temp
+            var[:] = values
         wet = ds.createVariable("wet", "i1", ("yh", "xh"))
         wet[:] = np.ones((2, 2), dtype=np.int8)
         lath = ds.createVariable("lath", "f8", ("yh",))

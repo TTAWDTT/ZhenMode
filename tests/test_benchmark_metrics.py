@@ -1,7 +1,13 @@
 """Standardized benchmark metric tests."""
 import numpy as np
 
-from benchmark_metrics import cell_area, latitude_band_mld_metrics, mixed_layer_depth, regional_masks, sea_ice_metrics
+from benchmark_metrics import (
+    cell_area,
+    latitude_band_mld_metrics,
+    mixed_layer_depth,
+    regional_masks,
+    sea_ice_metrics,
+)
 
 
 def test_regional_masks_are_reproducible():
@@ -82,7 +88,6 @@ def test_cell_area_is_physical():
 
 
 def test_latitude_band_mld_metrics_separates_bands():
-    from benchmark_metrics import latitude_band_mld_metrics
 
     lat = np.array([-45.0, 30.0, 55.0])
     ocean = np.ones((2, 3), dtype=bool)
