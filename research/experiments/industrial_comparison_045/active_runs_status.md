@@ -37,4 +37,4 @@ Updated: 2026-09-27 12:15 local.
 
 
 
-Note: v10 relaunched 2026-09-27 12:14 local with the exact v8 dynamic-bulk contract and daily temp+salt output. A 1-day salt smoke test passed, so this run enables the standardized MLD metric. It is held by a persistent WSL session and reached 5.25 simulated days in 7.4 wall minutes at 12:21 local, so the expected wall time is roughly 17 hours.
+Note: v10 relaunched 2026-09-27 12:14 local with the exact v8 dynamic-bulk contract and daily temp+salt output. A 1-day salt smoke test passed, so this run enables the standardized MLD metric. It is held by a persistent WSL session; at 12:48 local it had reached about 19.5 simulated days in 34.5 wall minutes, so the remaining wall time is roughly 15 hours.
