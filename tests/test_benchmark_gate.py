@@ -50,6 +50,7 @@ def _run_3d(global_3d=1.5, na_3d=1.2, wall_3d=1.0, mld_bias=100.0, mld_rmse=500.
         "north_atlantic_40_60_3d": {"raw_rmse": na_3d},
         "near_wall_55_60_3d": {"raw_rmse": wall_3d},
         "mld": {"raw_bias_m": mld_bias, "raw_rmse_m": mld_rmse},
+        "depth_mask_applied": True,
     }
 
 
@@ -80,3 +81,17 @@ def test_gate_rejects_3d_and_mld_regression():
                                                   mld_rmse=550.0))
     assert not result["pass"]
     assert not result["checks"]["three_d_complete"]
+
+
+def test_gate_requires_depth_mask_when_3d_is_checked():
+    control = _run_3d()
+    experiment = _run_3d()
+    result = evaluate_gate(_run(), _run(), control_3d=control,
+                           experiment_3d=experiment)
+    assert result["checks"]["depth_mask_applied"]
+
+    experiment["depth_mask_applied"] = False
+    result = evaluate_gate(_run(), _run(), control_3d=control,
+                           experiment_3d=experiment)
+    assert not result["checks"]["depth_mask_applied"]
+    assert not result["pass"]

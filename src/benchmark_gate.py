@@ -89,6 +89,9 @@ def evaluate_gate(control: dict, experiment: dict,
                 check = candidate <= base + tolerance
             three_d_checks[f"mld_{metric}_not_worse"] = check
             details[f"mld_{metric}"] = {"control": base, "experiment": candidate}
+        checks["depth_mask_applied"] = bool(
+            control_3d.get("depth_mask_applied")
+            and experiment_3d.get("depth_mask_applied"))
         checks["three_d_complete"] = all(three_d_checks.values())
         details["three_d"] = {"checks": three_d_checks, **three_d_details}
 
