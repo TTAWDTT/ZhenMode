@@ -8,7 +8,14 @@ from pathlib import Path
 import netCDF4
 import numpy as np
 
-from benchmark_metrics import latitude_depth_metrics, regional_error_metrics, regional_masks
+from benchmark_metrics import (
+    latitude_band_mld_metrics,
+    latitude_depth_metrics,
+    mixed_layer_depth,
+    mixed_layer_depth_metrics,
+    regional_error_metrics,
+    regional_masks,
+)
 from score_external_model import _read_centers, _steady_mask
 
 
@@ -46,7 +53,8 @@ def _vertical_mask(depth: np.ndarray, ocean2d: np.ndarray,
 def score_external_3d(path, *, variable, reference_path, lat_var=None,
                       lon_var=None, wet_var=None, geometry=None,
                       depth_var=None, steady_days=0.0,
-                      replace_land_with_reference=True) -> dict:
+                      replace_land_with_reference=True,
+                      salt_var=None) -> dict:
     ref = np.load(reference_path, allow_pickle=True)
     if variable == "temp":
         reference = np.asarray(ref["T_init"], dtype=float)
@@ -112,6 +120,25 @@ def score_external_3d(path, *, variable, reference_path, lat_var=None,
         mask3d = mask2d[:, :, None] & ocean3d
         result[name + "_3d"] = regional_error_metrics(error, mask3d)
     result["latitude_depth"] = latitude_depth_metrics(error, ocean3d, ref_lat, z)
+    if variable == "temp" and salt_var is not None and salt_var in ds.variables:
+        salt_field = ds[salt_var]
+        salt3d = _steady_mean(salt_field, steady_days)
+        if salt3d.shape == (reference.shape[2], reference.shape[1], reference.shape[0]):
+            salt3d = np.transpose(salt3d, (2, 1, 0))
+        if salt3d.shape != reference.shape:
+            raise RuntimeError(
+                f"salt shape mismatch: {salt3d.shape} vs {reference.shape}")
+        if replace_land_with_reference:
+            salt3d = np.where(ocean3d, salt3d, np.asarray(ref["S_init"], dtype=float))
+        model_mld = mixed_layer_depth(field3d, salt3d, z, ocean=ocean2d)
+        reference_salt = np.asarray(ref["S_init"], dtype=float)
+        reference_mld = mixed_layer_depth(
+            reference, reference_salt, z, ocean=ocean2d)
+        result["salt_variable"] = salt_var
+        result["mld"] = mixed_layer_depth_metrics(
+            model_mld, reference_mld, ocean=ocean2d)
+        result["mld_latitude_bands"] = latitude_band_mld_metrics(
+            model_mld, reference_mld, ref_lat, ocean2d)
     return result
 
 
@@ -126,6 +153,8 @@ def main() -> None:
     p.add_argument("--lon-var", default=None)
     p.add_argument("--depth-var", default=None,
                    help="column depth variable on (lat,lon), e.g. D")
+    p.add_argument("--salt-variable", default=None,
+                   help="optional 3D salinity variable for MLD scoring")
     p.add_argument("--steady-days", type=float, default=10.0)
     p.add_argument("--no-land-fill", action="store_true")
     p.add_argument("--out", default=None)
@@ -136,7 +165,8 @@ def main() -> None:
                                wet_var=args.wet_var, geometry=args.geometry,
                                depth_var=args.depth_var,
                                steady_days=args.steady_days,
-                               replace_land_with_reference=not args.no_land_fill)
+                               replace_land_with_reference=not args.no_land_fill,
+                               salt_var=args.salt_variable)
     out = Path(args.out or Path(args.input).with_name("external_3d_benchmark.json"))
     out.write_text(json.dumps(result, indent=2) + "\n")
     print(json.dumps(result, indent=2))
