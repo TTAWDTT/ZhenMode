@@ -2,7 +2,7 @@
 
 Updated: 2026-09-27 23:58 local.
 
-Latest progress check: 2026-09-27 23:58 local. MOM6 v12 is still running; the latest ocean.stats point is model day 265.75/365. Stage-G launch readiness now includes a wet-mask/grid guard and passing 1d/10d full-bulk and 1d/10d dynamic-ice + fixed-MLD smokes (diagnostic-only). The 10d smoke used the shared 67.9% grid with a MOM6-topog-derived ETOPO twin and zero extra smoothing; it is diagnostic-only and does not replace the pre-registered Stage-G launch. The completion watcher is active; the redundant cooling_ice launcher is cancelled. Stage-G full-bulk forcing is implemented but not launched; its 2023 forcing artifact is on the shared 67.9% ocean Stage-F grid, while the current repo-local ETOPO grid is 90.8% ocean.
+Latest progress check: 2026-09-27 23:58 local. MOM6 v12 is still running; the latest ocean.stats point is model day 265.75/365. Stage-G launch readiness now includes a wet-mask/grid guard and passing 1d/10d full-bulk and 1d/10d dynamic-ice + fixed-MLD smokes (diagnostic-only). A MOM6-topography-to-ETPO-twin helper now auto-generates the shared 67.9% grid for Stage-G; 1d and 10d smokes pass and remain diagnostic-only until the pre-registered Stage-G launch. The completion watcher is active; the redundant cooling_ice launcher is cancelled. Stage-G full-bulk forcing is implemented but not launched; its 2023 forcing artifact is on the shared 67.9% ocean Stage-F grid, while the current repo-local ETOPO grid is 90.8% ocean.
 
 
 ## Core direct comparison
