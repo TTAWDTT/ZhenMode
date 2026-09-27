@@ -1075,3 +1075,8 @@ ocean_solver_stage_f_dyn_ice_band40_65_mld100_lat40_60_coolinggate_365d_v2:
     north_atlantic_40_60_3d_rmse_c: 1.8780
     near_wall_raw_bias_c: 0.6674
   interpretation: "Rejected. Cooling-season-only deep MLD improves near-wall signed bias but worsens annual global, North Atlantic, and 3D temperature error; keep as diagnostic only."
+
+stage_g_full_bulk_1d_smoke:
+  status: completed_diagnostic
+  artifact: scratch/industrial_comparison_045/global_industrial_comparison_050_stage_g_smoke_guard.npz
+  interpretation: "PASS on the shared 67.9% grid with a reconstructed topography; validates the full-bulk path and snapshot diagnostics, not a climate benchmark."
