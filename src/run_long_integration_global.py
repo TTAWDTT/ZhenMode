@@ -1314,7 +1314,7 @@ def main():
                 param: interp_monthly_field(
                     full_bulk_arrays[source], day,
                     blend_days=args.wind_blend_days)
-                for source, param in full_bulk_param_to_source.items()
+                for param, source in full_bulk_param_to_source.items()
             }
             current_air = interp_monthly_field(
                 T_atm_months, day, blend_days=args.wind_blend_days)
