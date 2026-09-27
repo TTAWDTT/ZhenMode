@@ -1053,3 +1053,9 @@ ocean_solver_stage_f_dyn_ice_band40_65_mld100_lat40_60_365d_v2:
     salt_drift_percent: -0.0003600
     ice_fraction: 0.0002518
   interpretation: "Rejected for annual baseline despite large MLD improvement; North Atlantic and 3D temperature metrics worsen."
+
+ocean_solver_stage_f_band_mld_ice_365d_v2_seasonality:
+  status: completed_diagnostic
+  per_snapshot: "research/experiments/industrial_comparison_045/ocean_solver_stage_f_band_mld_ice_365d_v2_per_snapshot_3d.json"
+  table: "research/experiments/industrial_comparison_045/stage_f_365d_band_mld_ice_seasonality_table.md"
+  interpretation: "The candidate improves 3D/MLD through day 180, then degrades North Atlantic and near-wall errors after day 300; the next closure should be seasonal, not another fixed annual scalar."
