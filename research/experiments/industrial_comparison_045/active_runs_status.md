@@ -1,13 +1,13 @@
 # Active external/internal comparison runs
 
-Updated: 2026-09-27 10:15 local.
+Updated: 2026-09-27 12:10 local.
 
 ## Core direct comparison
 
 | Run | Model | Status | Purpose |
 |---|---|---|---|
 | Stage-F exact dynamic bulk 30d | MOM6/ocean_solver | completed | monthly-air dynamic-bulk control |
-| Stage-F exact dynamic bulk 365d v8 | MOM6 local | running | annual exact dynamic-bulk 3D comparison |
+| Stage-F exact dynamic bulk 365d v9 | MOM6 local | running | fresh annual exact dynamic-bulk 3D comparison after v8 was lost; daily temp only |
 | ocean_solver Stage-F 365d no-ice | ocean_solver | completed | internal annual bulk control |
 | ocean_solver Stage-F 365d 3D | ocean_solver | completed | annual 3D snapshot control |
 | ocean_solver Stage-F 365d 3D latitude-depth/MLD | ocean_solver | completed | standardized upper-ocean error diagnostic |
@@ -33,4 +33,8 @@ Updated: 2026-09-27 10:15 local.
 | fixed 100m MLD, 40--60N | regional gain, but annual gate failed |
 | dynamic ice + fixed 100m MLD, 40--60N | not annualized after annual fixed-depth failure |
 | dynamic ice + stratification MLD | completed; 30d 3D diagnostic improves global RMSE, but annual candidate still under test |
+
+
+
+Note: v9 relaunched 2026-09-27 12:02 local with the exact v8 dynamic-bulk contract. The first attempt to reduce diag output to 10-day cadence was rejected by the installed MOM6 diag-table parser, so v9 uses the original daily temp-only contract. Salt MLD is therefore unavailable from this run. It is held by a persistent WSL session and reached 4.75 simulated days in 5.9 wall minutes at 12:10 local.
 
