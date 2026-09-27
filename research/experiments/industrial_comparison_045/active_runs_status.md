@@ -1,8 +1,8 @@
 # Active external/internal comparison runs
 
-Updated: 2026-09-27 19:55 local.
+Updated: 2026-09-27 20:00 local.
 
-Latest progress check: 2026-09-27 19:04 local. MOM6 v12 is still running; the latest log point is model day 104/365 and prog.nc is growing.
+Latest progress check: 2026-09-27 19:04 local. MOM6 v12 is still running; the latest ocean.stats point is model day 110.25/365 and prog.nc is growing.
 
 
 ## Core direct comparison
