@@ -416,3 +416,4 @@ The cooling-season-only fixed-MLD candidate completed but was rejected on the an
 | 286 | 2026-09-27 | implementation | Added the Stage-G full-bulk surface solver path with monthly shortwave, longwave, sensible, latent, precipitation-minus-evaporation, and air-temperature forcing; full suite is 237 passed. |
 | 287 | 2026-09-27 | benchmark | Added a Stage-G wet-mask/grid guard to reject mismatched forcing before launch; full suite is 239 passed. |
 | 288 | 2026-09-27 | diagnostic | A Stage-G 1d smoke with repo-local ETOPO reached the new grid guard and rejected the 67.9% shared forcing against the 90.8% local bathymetry; Stage-G launch remains blocked until the shared bathymetry/grid is restored or rebuilt. |
+| 289 | 2026-09-27 | fix | Fixed Stage-G snapshot flux diagnostics so the 1d full-bulk smoke passes on the shared 67.9% grid (correct bathymetry + wet-mask guard + correct flux key mapping). |
