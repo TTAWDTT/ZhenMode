@@ -19,6 +19,7 @@ Latest progress check: 2026-09-27 21:45 local. MOM6 v12 is still running; the la
 | ocean_solver Stage-F band ice + 100m MLD 365d v2 | ocean_solver local | completed | annual climate gate failed |
 | ocean_solver Stage-F band ice + 100m MLD + cooling gate 365d v2 | ocean_solver local | completed | annual climate gate rejected |
 | ocean_solver Stage-F dyn ice 40--65N + fixed 100m MLD 40--60N cooling_ice gate 365d | ocean_solver planned | pre-registered | not launched until MOM6 annual gate scored |
+| NEMO Stage-F 365d | NEMO | pre-registered | second structured industrial target after MOM6 gate |
 
 ## Recent annual gates
 
@@ -56,7 +57,7 @@ Latest progress check: 2026-09-27 21:45 local. MOM6 v12 is still running; the la
 - The paired annual manifests now pass the standardized contract validator, with
   provenance explicitly marked not_comparable because the exact source commits
   were not recorded with the saved outputs.
-- Full test status after the latest gate change: 134 passed, 98 skipped.
+- Full test status after the latest gate change: 233 passed, 0 skipped.
 - A consolidated MOM6 v12 completion watcher is active; when the run finishes it
   will score the paired surface and 3D/MLD benchmarks, then run the annual
   climate gate with --require-3d.
