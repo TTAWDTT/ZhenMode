@@ -11,6 +11,7 @@ from pathlib import Path
 import sys
 
 import numpy as np
+from types import SimpleNamespace
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
@@ -36,22 +37,38 @@ def main():
     ap.add_argument("--min-depth", type=float, default=500.0)
     ap.add_argument("--remap", choices=("legacy", "area"), default="area")
     ap.add_argument("--cache-dir", default=None)
+    ap.add_argument("--reference-npz", default=None,
+                    help="NPZ with the shared lat/lon/wet_mask grid; "
+                         "recommended for matched comparison runs")
     ap.add_argument("--out", default=str(ROOT / "data" / "stage_g" / "stage_g_forcing.npz"))
     args = ap.parse_args()
 
     nx, ny = global_grid_dims(args.resolution, args.lat_max, remap=args.remap)
     if nx < 4 or ny < 4:
         raise SystemExit(f"grid too coarse: {nx}x{ny}")
-    gcfg = replace(
-        GlobalGridConfig(),
-        nx=nx, ny=ny, resolution=args.resolution, lat_max=args.lat_max,
-    )
-    print(f"building {nx}x{ny} grid ...")
-    grid = make_global_grid(
-        gcfg, DEFAULT_CONFIG.bathymetry_file,
-        smooth_passes=args.smooth_passes, min_depth=args.min_depth,
-        remap=args.remap,
-    )
+    if args.reference_npz:
+        print(f"using shared grid from {args.reference_npz} ...")
+        ref = np.load(args.reference_npz)
+        grid = SimpleNamespace(
+            lat=np.asarray(ref["lat"], dtype=np.float64),
+            lon=np.asarray(ref["lon"], dtype=np.float64),
+            wet_mask=np.asarray(ref["wet_mask"], dtype=np.float64),
+        )
+        if grid.lat.shape != (ny,) or grid.lon.shape != (nx,):
+            raise SystemExit("reference NPZ grid does not match requested resolution")
+        if grid.wet_mask.shape != (nx, ny):
+            raise SystemExit("reference NPZ wet_mask does not match requested resolution")
+    else:
+        gcfg = replace(
+            GlobalGridConfig(),
+            nx=nx, ny=ny, resolution=args.resolution, lat_max=args.lat_max,
+        )
+        print(f"building {nx}x{ny} grid ...")
+        grid = make_global_grid(
+            gcfg, DEFAULT_CONFIG.bathymetry_file,
+            smooth_passes=args.smooth_passes, min_depth=args.min_depth,
+            remap=args.remap,
+        )
     print("loading Stage-G NCEP forcing ...")
     humidity = load_monthly_mean_specific_humidity(
         grid, year=args.year, cache_dir=args.cache_dir)
