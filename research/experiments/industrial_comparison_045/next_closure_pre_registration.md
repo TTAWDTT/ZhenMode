@@ -66,3 +66,7 @@ scripts/run_stage_f_cooling_ice_365d.sh.
 ~~~
 
 Do not run until the blocking MOM6 gate is scored.
+
+The gate-triggered launcher will run this candidate and then score its
+surface, 3D temperature and MLD metrics before applying the same annual
+climate gate. The gate JSON is written only after all three checks complete.
