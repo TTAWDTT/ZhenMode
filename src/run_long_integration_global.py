@@ -428,6 +428,9 @@ def main():
     ap.add_argument("--ice-insulation-scale-m", type=float, default=1.0,
                     help="1m of ice reduces surface exchange by this scale; "
                          "1/(1+h/scale)")
+    ap.add_argument("--dynamic-ice-lat-band", type=float, nargs=2, default=None,
+                    metavar=("LAT_MIN", "LAT_MAX"),
+                    help="restrict --dynamic-ice to an inclusive latitude band")
     ap.add_argument("--air-marine-smooth-passes", type=int, default=0,
                     help="number of wet-cell-only smoothing passes for the "
                          "bulk air-temperature target; 0 keeps the raw target")
@@ -920,7 +923,9 @@ def main():
         ice_freeze_temp_c=args.ice_freeze_temp,
         ice_salt_flux=args.ice_salt_flux,
         dynamic_ice=args.dynamic_ice,
-        ice_insulation_scale_m=args.ice_insulation_scale_m)
+        ice_insulation_scale_m=args.ice_insulation_scale_m,
+        ice_mask=(_lat_band_mask(grid, args.dynamic_ice_lat_band)
+                  if args.dynamic_ice_lat_band else None))
     if seasonal:
         step, init_state_global, _, _params, terms_fn, step_dyn = _ret
     else:
@@ -1292,6 +1297,7 @@ def main():
         'ice_salt_flux': args.ice_salt_flux,
         'dynamic_ice': bool(args.dynamic_ice),
         'ice_insulation_scale_m': args.ice_insulation_scale_m,
+        'dynamic_ice_lat_band': args.dynamic_ice_lat_band,
         'lambda_bulk': lambda_bulk, 'bulk_lambda_mult': args.bulk_lambda_mult,
         'real_air_temp': bool(args.real_air_temp),
         'real_air_temp_monthly': bool(args.real_air_temp_monthly),

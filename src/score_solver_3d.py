@@ -9,9 +9,9 @@ from pathlib import Path
 import numpy as np
 
 from benchmark_metrics import (
+    latitude_band_mld_metrics,
     latitude_depth_metrics,
     mixed_layer_depth,
-    latitude_band_mld_metrics,
     mixed_layer_depth_metrics,
     regional_error_metrics,
     regional_masks,

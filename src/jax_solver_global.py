@@ -717,12 +717,13 @@ FDPhysParams = namedtuple('FDPhysParams', [
     # conductivity insulation, and brine-rejection salinity flux.
     'dynamic_ice',
     'ice_insulation_scale_m',
+    'ice_mask_2d',
 ])
 
 # Keyword-constructed callers that predate nu_nsub/use_scan/freeze_adv_vel/
 # conservative_kv/project_adv_vel/localize_conv/monotone_adv get the legacy
 # behavior instead of a TypeError.
-FDPhysParams.__new__.__defaults__ = (None, False, False, False, False, False, False, False, None, None, None, -1.8, 0.0, False, 1.0)
+FDPhysParams.__new__.__defaults__ = (None, False, False, False, False, False, False, False, None, None, None, -1.8, 0.0, False, 1.0, None)
 
 
 # ── Equation of state ─────────────────────────────────────────────────
@@ -1339,6 +1340,7 @@ def _compute_tracer_tendency(state, p):
         ice_now = jnp.broadcast_to(
             jnp.asarray(state.ice, dtype=state.T.dtype), (p.nx, p.ny))
         ice_insulation = 1.0 / (1.0 + ice_now[:, :, None] / p.ice_insulation_scale_m)
+        ice_insulation = ice_insulation * p.ice_mask_2d[:, :, None]
 
     heat_T = (p.Q_heat_2d[:, :, None] * heat_factor * p.surface_mask
               * ice_insulation)
@@ -1927,6 +1929,7 @@ def _dynamic_ice_closure(state, p):
     T_sst = state.T[:, :, 0]
     ice = jnp.maximum(jnp.broadcast_to(
         jnp.asarray(state.ice, dtype=state.T.dtype), (p.nx, p.ny)), 0.0)
+    ice = ice * p.ice_mask_2d
 
     # Rebuild the surface heat flux used by the tracer tendency.  Ice weakens
     # all of it, including the prescribed Q and bulk exchange.
@@ -1935,7 +1938,7 @@ def _dynamic_ice_closure(state, p):
     q = (p.Q_heat_2d
          + p.lambda_bulk * air_minus_sst
          + p.coastal_bulk_lambda_2d * air_minus_sst)
-    q = q * insulation * p.wet_mask
+    q = q * insulation * p.wet_mask * p.ice_mask_2d
 
     # Reuse the same mixed-layer depth used by the surface heat budget.
     mixed_depth = float(p.mixed_layer_depth_m or 0.0)
@@ -2066,7 +2069,7 @@ def make_solver_global(grid, physics, dt, forcing=None,
                        mixed_layer_depth_m=None, mixed_layer_mask=None,
                        mixed_layer_depth_2d=None,
                        ice_freeze_temp_c=-1.8, ice_salt_flux=0.0,
-                       dynamic_ice=False, ice_insulation_scale_m=1.0,
+                       dynamic_ice=False, ice_insulation_scale_m=1.0, ice_mask=None,
                        S_ref_surf=None, sss_restore_days=0.0,
                        coastal_restore_mask=None, coastal_restore_days=0.0,
                        coastal_bulk_mask=None, coastal_bulk_lambda=0.0,
@@ -2360,6 +2363,9 @@ def make_solver_global(grid, physics, dt, forcing=None,
         ice_salt_flux=float(ice_salt_flux),
         dynamic_ice=bool(dynamic_ice),
         ice_insulation_scale_m=float(ice_insulation_scale_m),
+        ice_mask_2d=(jnp.asarray(ice_mask, dtype=jnp.float64)
+                     if ice_mask is not None
+                     else jnp.ones((nx, ny), dtype=jnp.float64)),
     )
 
     # fp32 cast: params was just built in float64 (numpy defaults); when
