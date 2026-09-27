@@ -1,12 +1,12 @@
 # Current Research Plan
 
-Updated: 2026-09-26
+Updated: 2026-09-27
 
 ## Active priority: external industrial comparison
 
 The active direct industrial comparison is the matched MOM6 0.5-degree slice.
-The 30d Stage-F controls are complete; the annual MOM6 Stage-F dynamic-bulk v7
-run is now the next gate. Keep grid, bathymetry, initial state, forcing,
+The 30d Stage-F controls are complete; the annual MOM6 Stage-F dynamic-bulk v8
+run and the ocean_solver fixed 100m 40--60N MLD annual probe are the active gates. Keep grid, bathymetry, initial state, forcing,
 duration, diagnostics, and stability gates matched.
 
 - `research/experiments/industrial_comparison_045/protocol.md`
