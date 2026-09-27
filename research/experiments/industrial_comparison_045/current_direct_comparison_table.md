@@ -26,6 +26,12 @@ Current direct external model is MOM6 on the matched 0.5-degree slice.
 
 
 
+## Stage-G readiness
+
+Stage-G full-bulk forcing is implemented and launch-ready on the shared 67.9% grid.
+Its 1d/10d smokes pass, but the pre-registered 30d/365d runs remain blocked
+until the MOM6 annual v12 gate is scored.
+
 ## Contract status
 
 All direct-comparison manifests now pass the standardized contract validator:
