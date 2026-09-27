@@ -45,3 +45,5 @@ salt flux, and a bounded stability verdict.
 Future runs now save the solver-effective mixed-layer depth field; the scorer uses it when present instead of falling back to the initial-state MLD.
 
 Latest gate: the fixed 100m 40--60N annual MLD probe passed stability but failed the annual climate gate. The 30d combined dynamic-ice/fixed-depth probe also did not improve the closure; therefore the Stage-I proxy remains a diagnostic, not a promoted production default.
+
+A new standardized 3D MLD metric shows the annual Stage-F no-ice control reaches a mean MLD of 170.8m versus the 31.5m WOA reference, so the next mixed-layer target is excessive entrainment, not another fixed-depth regional band.

@@ -883,3 +883,13 @@ ocean_solver_stage_f_365d_3d_latitude_depth:
   benchmark: "research/experiments/industrial_comparison_045/ocean_solver_stage_f_365d_3d_latitude_depth_benchmark.json"
   scoring_window_days: 90
   key_result: "The dominant annual 3D cold bias is 40--20S and 20--40N at 15--50m, not the 40--60N wall alone."
+
+ocean_solver_stage_f_365d_3d_mld:
+  status: completed_diagnostic
+  benchmark: "research/experiments/industrial_comparison_045/ocean_solver_stage_f_365d_3d_mld_benchmark.json"
+  metrics:
+    mean_model_m: 170.7876
+    mean_reference_m: 31.5353
+    raw_bias_m: 139.2523
+    raw_rmse_m: 655.6671
+  interpretation: "The annual Stage-F no-ice control develops a much deeper mixed layer than the WOA initial state, pointing to excessive upper-ocean entrainment/ventilation rather than a shallow-layer problem."

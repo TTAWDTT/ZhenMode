@@ -361,3 +361,5 @@ Chronological record of research decisions and actions. Append-only.
 | 249 | 2026-09-27 | experiment | The 30d Stage-F dynamic-ice + fixed 100m 40--60N probe passed stability but scored essentially the same as the no-ice fixed-depth probe (global A2 1.562 C, NA RMSE 0.848 C, near-wall RMSE 0.534 C). The fixed-depth annual gate had already failed, so do not annualize the combined probe. |
 
 | 250 | 2026-09-27 | benchmark | Added standardized latitude-band x depth 3D metrics to the solver and external 3D scorers. The annual Stage-F no-ice control confirms the dominant cold bias is in 40--20S and 20--40N between 15 and 50m, not only near the 40--60N wall. |
+
+| 251 | 2026-09-27 | diagnostic | Added a standardized MLD bias/RMSE metric to the 3D scorer. The annual Stage-F no-ice control has model MLD 170.8m versus reference 31.5m (bias +139.3m, RMSE 655.7m), so the current solver entrains far deeper than the WOA initial state. |
