@@ -50,8 +50,8 @@
       },
       "metrics": {
         "global_a2_rmse_c": 1.1148,
-        "global_raw_bias_c": -0.3950,
-        "global_raw_rmse_c": 1.1990,
+        "global_raw_bias_c": -0.395,
+        "global_raw_rmse_c": 1.199,
         "north_atlantic_40_60_raw_rmse_c": 0.5794,
         "near_wall_55_60_raw_bias_c": 0.0536,
         "near_wall_55_60_raw_rmse_c": 0.2179,
@@ -61,5 +61,65 @@
     }
   },
   "comparison_table": "research/experiments/industrial_comparison_045/restore_30d_comparison_table.md",
-  "interpretation": "Both models pass the prescribed SST/SSS restoring stability gate. On this 30d protocol slice, ocean_solver has lower global A2/global bias while MOM6 has slightly better NA RMSE and a comparable near-wall RMSE. This is a prescribed-restoring control and still cannot be used to claim climate-state superiority."
+  "interpretation": "Both models pass the prescribed SST/SSS restoring stability gate. On this 30d protocol slice, ocean_solver has lower global A2/global bias while MOM6 has slightly better NA RMSE and a comparable near-wall RMSE. This is a prescribed-restoring control and still cannot be used to claim climate-state superiority.",
+  "model": "paired_ocean_solver_vs_mom6",
+  "run_id": "ocean_solver_vs_mom6_restore_050_30d",
+  "grid": {
+    "type": "shared_050_global_slice",
+    "lat_range": [
+      -65.0,
+      65.0
+    ],
+    "lon_range": [
+      0.0,
+      360.0
+    ],
+    "n_lat": 260,
+    "n_lon": 720,
+    "vertical_levels": 14,
+    "vertical_coordinate": "ocean_solver z; MOM6 Z* ALE",
+    "status": "comparable"
+  },
+  "bathymetry": {
+    "source": "ETOPO2022-derived shared topography",
+    "smoothing_passes": 80,
+    "minimum_depth_m": 500.0,
+    "status": "comparable"
+  },
+  "initial_state": {
+    "temperature_salinity": "WOA T/S",
+    "status": "comparable"
+  },
+  "forcing": {
+    "wind": "2023 monthly NCEP R1 10m wind converted to stress",
+    "heat": "WOA surface SST restoring, tau=30d over all wet cells",
+    "salt": "30d SSS restoring (both models)",
+    "radiation": "not used",
+    "humidity": "not used",
+    "precipitation": "not used",
+    "evaporation": "not used",
+    "runoff": "not used",
+    "status": "comparable"
+  },
+  "sea_ice": {
+    "treatment": "none; MOM6 FRAZIL=False, ocean_solver dynamic ice off",
+    "status": "comparable"
+  },
+  "duration": {
+    "days": 30.0,
+    "status": "pre_registered"
+  },
+  "scoring": {
+    "reference": "WOA top-level SST on the same grid",
+    "surface_window_days": 10,
+    "masks": [
+      "shared wet_mask intersection"
+    ],
+    "status": "comparable"
+  },
+  "provenance": {
+    "ocean_solver_source_commit": "not_recorded",
+    "mom6_source_commit": "f49a00096df607b48354603e2398e14e189fd62e",
+    "status": "not_comparable"
+  }
 }
