@@ -1340,7 +1340,6 @@ def _compute_tracer_tendency(state, p):
         ice_now = jnp.broadcast_to(
             jnp.asarray(state.ice, dtype=state.T.dtype), (p.nx, p.ny))
         ice_insulation = 1.0 / (1.0 + ice_now[:, :, None] / p.ice_insulation_scale_m)
-        ice_insulation = ice_insulation * p.ice_mask_2d[:, :, None]
 
     heat_T = (p.Q_heat_2d[:, :, None] * heat_factor * p.surface_mask
               * ice_insulation)

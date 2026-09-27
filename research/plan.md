@@ -378,3 +378,9 @@ Runner: scripts/run_candidate_baseline.sh
    score global 3D RMSE, regional 3D, latitude-depth, and MLD metrics against
    the ocean_solver annual no-ice control, then update the direct comparison
    table and gap matrix.
+67. **Gate the 30d band-limited dynamic-ice probe.** [COMPLETE 2026-09-27]
+   Restricting dynamic ice to 40--65N is stable but does not improve global,
+   North Atlantic, or near-wall metrics. It also removes most of the 30d
+   3D/MLD gain from full dynamic ice. Keep it as a diagnostic ablation; the
+   next closure should use separate northern and southern ventilation behavior,
+   not another latitude cut.
