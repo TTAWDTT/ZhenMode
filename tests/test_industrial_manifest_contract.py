@@ -23,3 +23,14 @@ def test_stage_i_manifest_is_contract_ready():
     assert report["contract_pass"] is True
     assert report["missing_sections"] == []
     assert "provenance" in report["not_comparable_sections"]
+
+
+def test_direct_comparison_manifests_are_contract_ready():
+    for name in [
+        "wind_only_30d_manifest.json",
+        "restore_30d_manifest.json",
+        "stage_f_30d_manifest.json",
+    ]:
+        report = validate_contract(json.loads((ROOT / name).read_text(encoding="utf-8")))
+        assert report["contract_pass"] is True, name
+        assert report["missing_sections"] == []
