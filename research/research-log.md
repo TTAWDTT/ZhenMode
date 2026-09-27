@@ -410,3 +410,5 @@ The cooling-season-only fixed-MLD candidate completed but was rejected on the an
 | 282 | 2026-09-27 | ops | Added and armed a gate-triggered watcher that starts the pre-registered cooling_ice run after the MOM6 annual gate JSON is produced. |
 | 283 | 2026-09-27 | diagnostic | Quantified the annual band-ice candidate: ice is confined to 60--65N (68 cells, 6.1% of that sub-band) and the 40--60N fixed MLD covers 90.3% of the 40--65N band, so the candidate is mainly an MLD closure with a small ice cap. |
 | 284 | 2026-09-27 | implementation | Added NCEP 2m specific-humidity and a generic surface-forcing loader for Stage-G humidity/radiation/precipitation inputs; full suite 235 passed. |
+
+| 285 | 2026-09-27 | forcing | Built the Stage-G 2023 NCEP forcing artifact on the shared 0.5-degree grid (`data/stage_g/stage_g_forcing_2023_050.npz`) with specific humidity, downward longwave, downward shortwave, and precipitation. Model launch remains blocked until MOM6 annual v12 is scored. |
