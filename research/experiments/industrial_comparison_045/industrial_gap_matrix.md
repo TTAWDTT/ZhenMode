@@ -10,7 +10,7 @@
 | MOM6 | direct rerun | 30d wind-only | ocean_solver A2 `0.866 C`; MOM6 `1.096 C` |
 | MOM6 | direct rerun | 30d prescribed restore | ocean_solver A2 `0.865 C`; MOM6 `1.115 C` |
 | MOM6 | direct rerun | 365d prescribed restore | ocean_solver A2 `2.245 C`; MOM6 本地重跑中 |
-| MOM6 | direct rerun | 365d Stage-F exact dynamic bulk v10 | ocean_solver annual 3D global RMSE `1.547 C`; MOM6 v11 running with 10-day temp+salt |
+| MOM6 | direct rerun | 365d Stage-F exact dynamic bulk | ocean_solver annual 3D global RMSE `1.547 C`; MOM6 v12 running with 10-day temp+salt |
 | MOM6 | direct rerun | 30d Stage-F exact dynamic bulk | ocean_solver A2 `1.692 C`; MOM6 `1.782 C` |
 | ocean_solver | internal | 30d Stage-F prescribed proxy | FAIL_DRIFT; A2 `5.629 C`; max T `51.35 C` |
 | MOM6 | direct rerun | 30d Stage-F prescribed proxy | 稳定性警告; 因 C 盘满无空间评分 |
@@ -22,6 +22,7 @@
 | ocean_solver | internal | 30d Stage-I ice/mixed-layer | A2 `1.231 C`; NA RMSE `1.316 C` |
 | ocean_solver | internal | 365d Stage-F dynamic ice, no MLD | A2 `1.213 C`; NA RMSE `0.983 C`; not promoted |
 | ocean_solver | internal | 365d Stage-F dynamic ice, 3D | global 3D RMSE `1.543 C`; MLD `288.7 m`; not promoted |
+| ocean_solver | internal | 365d Stage-F band ice + fixed MLD + cooling gate | rejected: A2 `1.315 C`, NA `1.947 C`, 3D `1.574 C`; near-wall bias improves to `+0.667 C` |
 
 这些数字只代表固定 0.5 度切片，不是 OMIP、预报系统或全球气候模式级结论。
 
@@ -47,3 +48,4 @@
 4. **修正后的 30d 3D 对照**：ocean_solver 全域 RMSE `0.861 C`，MOM6 `1.036 C`；MOM6 在 40--60N 与近壁略好。此前“深层暖偏差”主要是 3D scorer 把海底以下 ghost layers 计入了。
 5. **年度动态海冰 3D gate 已失败**：3D RMSE 基本不变（1.543 vs 1.547 C），MLD 反而恶化到 288.7 m，因此不能作为年度基线。
 6. **要超过工业级模式，优先级不是继续调参**，而是：完整 bulk forcing → 365d 对照 → 三维误差 → 并行/速度 → 扩展到更多物理过程。
+7. **在 MOM6 annual v12 final-90d 对照完成前，暂停新的内部 upper-ocean closure 调参。**
