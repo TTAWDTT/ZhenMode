@@ -2,7 +2,7 @@
 
 Updated: 2026-09-27 23:40 local.
 
-Latest progress check: 2026-09-27 23:40 local. MOM6 v12 is still running; the latest ocean.stats point is model day 246.25/365. Stage-G launch readiness now includes a wet-mask/grid guard (commit b4a52a2). The completion watcher is active; the redundant cooling_ice launcher is cancelled. Stage-G full-bulk forcing is implemented but not launched; its 2023 forcing artifact is on the shared 67.9% ocean Stage-F grid.
+Latest progress check: 2026-09-27 23:40 local. MOM6 v12 is still running; the latest ocean.stats point is model day 246.25/365. Stage-G launch readiness now includes a wet-mask/grid guard (commit b4a52a2). The completion watcher is active; the redundant cooling_ice launcher is cancelled. Stage-G full-bulk forcing is implemented but not launched; its 2023 forcing artifact is on the shared 67.9% ocean Stage-F grid, while the current repo-local ETOPO grid is 90.8% ocean.
 
 
 ## Core direct comparison
