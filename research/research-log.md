@@ -414,3 +414,4 @@ The cooling-season-only fixed-MLD candidate completed but was rejected on the an
 | 285 | 2026-09-27 | forcing | Built the Stage-G 2023 NCEP forcing artifact on the shared 0.5-degree grid (`data/stage_g/stage_g_forcing_2023_050.npz`) with specific humidity, downward longwave, downward shortwave, and precipitation. Model launch remains blocked until MOM6 annual v12 is scored. |
 
 | 286 | 2026-09-27 | implementation | Added the Stage-G full-bulk surface solver path with monthly shortwave, longwave, sensible, latent, precipitation-minus-evaporation, and air-temperature forcing; full suite is 237 passed. |
+| 287 | 2026-09-27 | benchmark | Added a Stage-G wet-mask/grid guard to reject mismatched forcing before launch; full suite is 239 passed. |
