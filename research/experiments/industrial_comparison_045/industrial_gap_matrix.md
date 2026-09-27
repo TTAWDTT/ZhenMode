@@ -34,7 +34,7 @@
 | 平流输运 | 可调 tracer advection、monotonic/FCT、上游稳定性 | 已加 FCT/TVD，30d/365d 稳定 | 缺 3D FCT 与更多 tracer | 单独 tracer advection benchmark |
 | 海气通量 | 完整 bulk：T/S/radiation/precip/evap/runoff | 目前只有 wind + dynamic Haney/Bulk heat proxy | 缺湿度和辐射通量 | 补齐 Stage-F forcing 清单 |
 | 海冰 | 成熟热力学+动力学海冰模式 | 最小 ice thickness/growth/melt/insulation/brine loop | 不是海冰模式 | Stage-I 协议已建，但需动态 bulk 365d |
-| 混合层 | KPP/参数化边界层 | 简化混合层与 stratification MLD 诊断 | 需要标准混合层误差指标 | MLD bias/RMSE 对照 |
+| 混合层 | KPP/参数化边界层 | 简化混合层与 stratification MLD 诊断 | 需要更多纬向 MLD band 对照 | MLD bias/RMSE + 40--60N band 对照 |
 | 水团/环流 | 长期 spinup 和 WOA/Argo 水团检验 | 只有 SST 为主，短积分 | 未验证三维环流 | 增加 temperature/salinity 剖面误差 |
 | 可扩展性 | MPI/并行域分解，部分 GPU/加速器 | JAX 可选 scan/compile，单机为主 | 缺多节点 scaling | 补 wall-time 和 scaling test |
 | 可维护性 | 分模块、可测、可复现实验目录 | 有 manifest/scorer/gate/protocol | 尚未成完整用户系统 | 保持 benchmark contract 优先 |
