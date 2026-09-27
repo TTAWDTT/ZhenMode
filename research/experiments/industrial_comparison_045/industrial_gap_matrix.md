@@ -18,6 +18,8 @@
 | ocean_solver | internal | 365d Stage-F MLD20 | A2 `1.406 C`; NA RMSE `1.302 C`; heat drift `-0.276%` |
 | ocean_solver | internal | 365d fixed 100m 40--60N MLD | A2 1.343 C; NA RMSE 1.451 C; near-wall 1.209 C; not promoted |
 | ocean_solver | internal | 30d Stage-I ice/mixed-layer | A2 `1.231 C`; NA RMSE `1.316 C` |
+| ocean_solver | internal | 365d Stage-F dynamic ice, no MLD | A2 `1.213 C`; NA RMSE `0.983 C`; not promoted |
+| ocean_solver | internal | 365d Stage-F dynamic ice, 3D | global 3D RMSE `1.543 C`; MLD `288.7 m`; not promoted |
 
 这些数字只代表固定 0.5 度切片，不是 OMIP、预报系统或全球气候模式级结论。
 
@@ -41,7 +43,11 @@
 2. **Stage-F 是下一个门槛**：只有通过完整 bulk forcing 365d，才比 30d restore 更有说服力。
 3. **最小 ice/mixed-layer 闭环已经稳定**，但仍要和 industrial 模式在同一 forcing 下对比。
 4. **修正后的 30d 3D 对照**：ocean_solver 全域 RMSE `0.861 C`，MOM6 `1.036 C`；MOM6 在 40--60N 与近壁略好。此前“深层暖偏差”主要是 3D scorer 把海底以下 ghost layers 计入了。
-5. **要超过工业级模式，优先级不是继续调参**，而是：完整 bulk forcing → 365d 对照 → 三维误差 → 并行/速度 → 扩展到更多物理过程。
+5. **年度动态海冰 3D gate 已失败**：3D RMSE 基本不变（1.543 vs 1.547 C），MLD 反而恶化到 288.7 m，因此不能作为年度基线。
+6. **要超过工业级模式，优先级不是继续调参**，而是：完整 bulk forcing → 365d 对照 → 三维误差 → 并行/速度 → 扩展到更多物理过程。
+
+
+
 
 
 
