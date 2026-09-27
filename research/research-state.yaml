@@ -966,3 +966,8 @@ ocean_solver_stage_f_dyn_ice_mld_diag_30d_final10d:
     mean_model_mld_m: 68.5629
     mld_raw_rmse_m: 274.1055
   interpretation: "The earlier 0.707C full-ice 3D result was a whole-30d average, not the protocol final-10d gate; do not compare across windows."
+mom6_stage_f_dynamic_365d_v11:
+  status: running
+  run_dir: "/root/external_models/mom6_slice_050/p0_stage_f_dynamic_365d_v11"
+  config: "Stage-F exact dynamic bulk, 10-day temp+salt output, final-90d annual gate"
+  purpose: "Matched annual 3D temperature and MLD comparison against the ocean_solver no-ice control."
