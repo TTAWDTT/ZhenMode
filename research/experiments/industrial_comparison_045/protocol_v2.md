@@ -295,3 +295,7 @@ For annual candidate acceptance, call the gate with the paired 3D/MLD JSON as
 well as the paired surface JSON. The optional --control-3d and
 --experiment-3d inputs add global/NA/near-wall 3D RMSE and MLD bias/RMSE
 checks. If only one 3D file is supplied, the gate is intentionally incomplete.
+
+
+Both the contract validator and the annual gate CLI now exit nonzero on a failed
+check, so they can be used directly as CI or shell-script gates.
