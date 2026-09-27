@@ -69,3 +69,9 @@ completed and is **rejected**: global A2 rises to `1.246 C`, NA RMSE to
 `1.495 C`, global 3D RMSE to `1.559 C`, and NA/near-wall 3D RMSE also worsen.
 MLD bias improves to `+121.2 m` and 40--60N MLD bias to `+17.2 m`, so this is a
 useful diagnostic, but not a promoted baseline.
+
+The 365d cooling-season-only gate for the combined band-ice/fixed-depth probe
+also completed and is **rejected**: global A2 rises to 1.315 C, NA RMSE to
+1.947 C, global 3D RMSE to 1.574 C, and NA 3D RMSE to 1.878 C. Near-wall
+signed bias improves to +0.667 C, but the broader climate and 3D errors
+worsen. The Stage-I proxy therefore remains diagnostic only.
