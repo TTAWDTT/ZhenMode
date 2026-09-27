@@ -1,6 +1,8 @@
 # Active external/internal comparison runs
 
-Updated: 2026-09-27 07:50 local.
+Updated: 2026-09-27 09:40 local.
+
+## Core direct comparison
 
 | Run | Model | Status | Purpose |
 |---|---|---|---|
@@ -8,13 +10,26 @@ Updated: 2026-09-27 07:50 local.
 | Stage-F exact dynamic bulk 365d v8 | MOM6 local | running | annual exact dynamic-bulk 3D comparison |
 | ocean_solver Stage-F 365d no-ice | ocean_solver | completed | internal annual bulk control |
 | ocean_solver Stage-F 365d 3D | ocean_solver | completed | annual 3D snapshot control |
-| ocean_solver Stage-F 30d stratification MLD | ocean_solver | completed | upper-ocean closure probe |
-| ocean_solver Stage-F 365d stratification MLD | ocean_solver | completed | annual upper-ocean gate; not promoted |
-| ocean_solver Stage-F 30d northern-only stratification MLD | ocean_solver | completed | regional upper-ocean probe |
-| ocean_solver Stage-F 365d northern-only stratification MLD | ocean_solver | completed | annual regional gate; not promoted |
-| ocean_solver Stage-F 365d dynamic ice no MLD | ocean_solver | completed | sea-ice ablation; not promoted |
-| ocean_solver Stage-F 30d fixed 100m MLD, 40--60N, no ice | ocean_solver | completed | regional fixed-depth attribution; beats Stage-F 30d no-ice on NA/wall, not global |\n| ocean_solver Stage-F 30d 40--60N stratification MLD, no ice | ocean_solver | completed | stratification MLD probe; worse than fixed-depth probe |
+| ocean_solver Stage-F 365d 3D latitude-depth/MLD | ocean_solver | completed | standardized upper-ocean error diagnostic |
 
-| ocean_solver Stage-F 365d fixed 100m MLD, 40--60N, no ice | ocean_solver | completed | annual gate; not promoted |
+## Recent annual gates
 
-| ocean_solver Stage-F 30d dynamic ice + fixed 100m MLD, 40--60N | ocean_solver | completed | combined Stage-I/MLD diagnostic; not promoted |
+| Run | Status | Verdict |
+|---|---|---|
+| 365d stratification MLD, no ice | completed | not promoted |
+| 365d northern-only stratification MLD, no ice | completed | not promoted |
+| 365d northern-only stratification MLD, dynamic ice | completed | not promoted |
+| 365d dynamic-ice/no-MLD ablation | completed | not promoted |
+| 365d fixed 100m 40--60N MLD, no ice | completed | not promoted |
+| 365d dynamic ice, no MLD, 3D | running | awaiting annual gate |
+
+## Completed 30d diagnostics
+
+| Probe | Result |
+|---|---|
+| fine upper-z vertical grid | rejected; worse than default grid |
+| low scalar mixing | rejected; essentially unchanged |
+| stratification MLD, 40--60N | rejected on 30d regional gate |
+| fixed 100m MLD, 40--60N | regional gain, but annual gate failed |
+| dynamic ice + fixed 100m MLD, 40--60N | not annualized after annual fixed-depth failure |
+| dynamic ice + stratification MLD | completed; 30d 3D diagnostic improves global RMSE, but annual candidate still under test |

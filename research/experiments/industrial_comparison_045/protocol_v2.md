@@ -133,6 +133,20 @@ matched Stage-F 30d/365d bulk control, MOM6 must use the live SST form:
 Keep the run on local Linux storage.  The C: filesystem is full and caused the
 earlier proxy run to lose its final spatial output.
 
+## Standardized 3D latitude-depth and MLD metrics
+
+Any 3D temperature comparison should also report the standardized
+latitude-band x depth matrix produced by the shared scorer. The default bands
+are `60--40S`, `40--20S`, `20--0`, `0--20N`, `20--40N`, and `40--60N`. This
+matrix is the primary diagnostic for separating wall-region errors from broad
+subtropical upper-ocean errors.
+
+When both temperature and salinity are available, the scorer must also report
+mixed-layer-depth bias/RMSE using the same density-threshold definition and the
+same WOA reference field. The 3D MLD metric is diagnostic, not a substitute for
+SST skill; it exists to tell us whether a closure changes ventilation.
+
+
 ## 3D scoring requirement
 
 Any 3D profile comparison must apply the shared bathymetric vertical mask:
