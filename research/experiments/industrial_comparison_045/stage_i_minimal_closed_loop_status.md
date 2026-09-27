@@ -51,3 +51,10 @@ A new standardized 3D MLD metric shows the annual Stage-F no-ice control reaches
 Band breakdown: high latitudes dominate the MLD over-deepening (40--60N +225m, 60--40S +176m), while subtropical bands are too shallow. This is a targeted sea-ice/convective closure signal, not another global scalar mixing issue.
 
 A 30d Stage-F dynamic-ice diagnostic (165 ice cells) reduces the 3D global temperature RMSE to 0.707 C and the MLD bias to +22.6m versus the no-ice Stage-F control, so dynamic ice is a useful 3D upper-ocean diagnostic even when the surface metric is nearly unchanged. The 365d 3D rerun is running.
+
+Annual dynamic-ice/no-MLD 3D rerun is now complete: global 3D RMSE is
+`1.543 C` versus `1.547 C` for the no-ice control, so it does not improve the
+annual 3D field. Global MLD worsens to `288.7 m`. Band diagnostics show
+opposite effects: 40--60N improves to `153.8 m`, while 60--40S worsens to
+`314.9 m`. The Stage-I proxy therefore stays diagnostic; the next closure must
+be band/ice-state dependent rather than another global scalar.
