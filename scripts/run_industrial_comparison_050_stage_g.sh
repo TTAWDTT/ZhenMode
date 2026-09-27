@@ -8,6 +8,7 @@ cd "$(dirname "$0")/.."
 DAYS="${DAYS:-30}"
 SAVE_3D="${SAVE_3D:-false}"
 SAVE_3D_TERMS="${SAVE_3D_TERMS:-false}"
+INIT_FROM="${INIT_FROM:-}"
 TAG="${1:-industrial_comparison_050_stage_g_${DAYS}d}"
 OUT_DIR="${OUT_DIR:-results/industrial_comparison_045}"
 LOG_DIR="${LOG_DIR:-logs/industrial_comparison_045}"
@@ -18,9 +19,7 @@ fi
 if [[ -d "/mnt/c/Users/zhen.luo/ocean_solver/data/woa" && -z "${OCEAN_SOLVER_WOA_DIR:-}" ]]; then
   export OCEAN_SOLVER_WOA_DIR="/mnt/c/Users/zhen.luo/ocean_solver/data/woa"
 fi
-if [[ -z "${OCEAN_SOLVER_BATHYMETRY:-}" ]]; then
-  unset OCEAN_SOLVER_BATHYMETRY
-fi
+export OCEAN_SOLVER_BATHYMETRY="${OCEAN_SOLVER_BATHYMETRY:-/mnt/c/Users/zhen.luo/ocean_solver/data/ETOPO_2022_v1_r3600x1800_surface.nc}"
 STAGE_G_FORCING="${STAGE_G_FORCING:-data/stage_g/stage_g_forcing_2023_050.npz}"
 mkdir -p "${OUT_DIR}" "${LOG_DIR}"
 
@@ -38,6 +37,7 @@ mkdir -p "${OUT_DIR}" "${LOG_DIR}"
   --min-depth 500 --smooth-passes 80 \
   --nu-h 2e6 --dt 1800 \
   --days "${DAYS}" --snap-days "${SNAP_DAYS:-10}" \
+  $( [[ -n "${INIT_FROM}" ]] && echo --init-from "${INIT_FROM}" ) \
   $( [[ "${SAVE_3D}" == "true" ]] && echo --save-3d ) \
   $( [[ "${SAVE_3D_TERMS}" == "true" ]] && echo --save-3d-terms ) \
   --tag "${TAG}" \
