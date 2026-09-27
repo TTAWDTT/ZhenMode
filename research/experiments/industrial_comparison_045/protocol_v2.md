@@ -266,6 +266,7 @@ python src/score_external_3d.py \
   --lat-var lath \
   --lon-var lonh \
   --depth-var D \
+  --salt-variable salt \
   --reference-npz /root/external_models/results/industrial_comparison_045/global_global_industrial_comparison_050_stage_f_365d_3d.npz \
   --steady-days 90 \
   --out research/experiments/industrial_comparison_045/mom6_stage_f_dynamic_365d_3d_benchmark.json
