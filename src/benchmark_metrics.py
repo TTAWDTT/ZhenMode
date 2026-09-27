@@ -134,6 +134,31 @@ def mixed_layer_depth_metrics(model_mld: np.ndarray,
         "mean_reference_m": float(reference_mld[wet].mean()),
     }
 
+def latitude_band_mld_metrics(model_mld: np.ndarray,
+                              reference_mld: np.ndarray,
+                              lat: np.ndarray,
+                              ocean: np.ndarray,
+                              bands: list[tuple[float, float]] | None = None) -> dict:
+    """Standardized latitude-band mixed-layer-depth bias/RMSE.
+
+    This complements the global MLD diagnostic by isolating high-latitude
+    overdeepening from subtropical shallowing.
+    """
+    if bands is None:
+        bands = [(-60.0, -40.0), (-40.0, -20.0), (-20.0, 0.0),
+                 (0.0, 20.0), (20.0, 40.0), (40.0, 60.0)]
+    lat = np.asarray(lat, dtype=float)
+    ocean = np.asarray(ocean, dtype=bool)
+    out: dict[str, dict] = {}
+    for lo, hi in bands:
+        inclusive = (hi >= bands[-1][1])
+        mask = ocean & ((lat >= lo) & (lat <= hi if inclusive else lat < hi))[None, :]
+        if not mask.any():
+            continue
+        out[f"{int(lo)}_{int(hi)}"] = mixed_layer_depth_metrics(
+            model_mld, reference_mld, ocean=mask)
+    return out
+
 def global_pattern_metrics(model_sst: np.ndarray,
                            reference_sst: np.ndarray,
                            ocean: np.ndarray,

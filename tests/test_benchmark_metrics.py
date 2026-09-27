@@ -1,7 +1,7 @@
 """Standardized benchmark metric tests."""
 import numpy as np
 
-from benchmark_metrics import cell_area, mixed_layer_depth, regional_masks, sea_ice_metrics
+from benchmark_metrics import cell_area, latitude_band_mld_metrics, mixed_layer_depth, regional_masks, sea_ice_metrics
 
 
 def test_regional_masks_are_reproducible():
@@ -79,3 +79,18 @@ def test_cell_area_is_physical():
     area = cell_area(lat, lon)
     assert area.shape == (720, 260)
     assert 1.2e9 < float(np.min(area)) < 2.0e9
+
+
+def test_latitude_band_mld_metrics_separates_bands():
+    from benchmark_metrics import latitude_band_mld_metrics
+
+    lat = np.array([-45.0, 30.0, 55.0])
+    ocean = np.ones((2, 3), dtype=bool)
+    model = np.full((2, 3), 20.0)
+    reference = np.full((2, 3), 10.0)
+    result = latitude_band_mld_metrics(model, reference, lat, ocean)
+    assert set(result) == {"-60_-40", "20_40", "40_60"}
+    assert result["-60_-40"]["n"] == 2
+    assert result["20_40"]["n"] == 2
+    assert result["40_60"]["n"] == 2
+    assert result["-60_-40"]["raw_bias_m"] == 10.0

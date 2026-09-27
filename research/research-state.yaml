@@ -846,6 +846,10 @@ ocean_solver_stage_f_dynamic_ice_no_mld_365d_3d:
     mean_mld_m: 288.7093
     mld_bias_m: 257.1740
     mld_rmse_m: 952.6643
+    mld_mean_model_m_60_40s: 314.8881
+    mld_rmse_m_60_40s: 830.5313
+    mld_mean_model_m_40_60n: 153.8220
+    mld_rmse_m_40_60n: 486.3198
   interpretation: "Annual dynamic ice is essentially unchanged in 3D temperature and worsens MLD; do not promote."
 ocean_solver_stage_f_constant_mld_lat40_60_noice_probe_30d:
   status: completed_diagnostic
@@ -922,4 +926,6 @@ ocean_solver_stage_f_lowmix_30d:
     north_atlantic_40_60_raw_rmse_c: 2.0856
     near_wall_55_60_raw_rmse_c: 1.9551
   interpretation: "Lower scalar vertical/convective diffusivity is stable but only marginally changes the 30d Stage-F result; do not promote."
+
+
 

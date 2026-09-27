@@ -11,6 +11,7 @@ import numpy as np
 from benchmark_metrics import (
     latitude_depth_metrics,
     mixed_layer_depth,
+    latitude_band_mld_metrics,
     mixed_layer_depth_metrics,
     regional_error_metrics,
     regional_masks,
@@ -102,6 +103,8 @@ def score_solver_3d(npz_path, snap_path=None, *, snap_dir=None,
     model_mld = mixed_layer_depth(T, S, zlevels, ocean=ocean2d)
     reference_mld = mixed_layer_depth(reference, reference_salt, zlevels, ocean=ocean2d)
     result["mld"] = mixed_layer_depth_metrics(model_mld, reference_mld, ocean=ocean2d)
+    result["mld_latitude_bands"] = latitude_band_mld_metrics(
+        model_mld, reference_mld, lat, ocean2d)
     return result
 
 
@@ -134,4 +137,6 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+
+
 

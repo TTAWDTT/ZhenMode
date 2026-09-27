@@ -12,3 +12,6 @@ Interpretation: the annual dynamic-ice run does not improve the annual 3D
 temperature field and substantially worsens the high-latitude MLD diagnostic.
 Do not promote it as the annual baseline; the remaining industrial comparison
 target is the MOM6 annual 3D score.
+Band-level MLD confirms the mixed effect: 40--60N improves from `247.1 m` to
+`153.8 m`, but 60--40S worsens from `224.6 m` to `314.9 m`. The next closure
+must therefore be band/ice-state dependent, not another global scalar.
