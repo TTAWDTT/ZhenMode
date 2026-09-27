@@ -384,7 +384,14 @@ Runner: scripts/run_candidate_baseline.sh
    The earlier large 3D/MLD gain came from scoring the whole 30d average,
    not the final-10d window. The next closure still needs band/ice-state
    dependence, but not because of this probe.
-68. **Gate the band-ice plus fixed-MLD annual candidate.** [ACTIVE 2026-09-27]
+68. **Gate the band-ice plus fixed-MLD annual candidate.** [REJECTED 2026-09-27]
+   The first 365d check was invalid because it used a different bathymetry.
+   The corrected v2 rerun uses the matching 67.9% ocean bathymetry and passes
+   stability, heat/salt bounds, and near-wall signed bias, but fails the annual
+   climate gate: global A2 rises from 1.204 to 1.246 C, NA RMSE from 0.975 to
+   1.495 C, and global 3D RMSE from 1.547 to 1.559 C. MLD bias improves from
+   +139.3 to +121.2 m and 40--60N MLD bias to +17.2 m. Keep this as a
+   diagnostic only; do not promote another fixed-depth band.
    The 30d probe passed every pre-registered gate. The first 365d check used a
    different bathymetry (90.8% ocean) and is therefore invalid; it is not
    evidence against the candidate. A corrected v2 rerun with the same 67.9%

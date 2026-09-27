@@ -64,3 +64,8 @@ A corrected 30d final-10d probe now combines dynamic ice in 40--65N with a
 `+16.3 m`. The matching 365d final-90d gate is running; promotion still waits
 for that annual check.
 The matching 365d v1 check was invalid because it used a different bathymetry; a corrected v2 rerun is active.
+The corrected 365d v2 annual check for the combined band-ice/fixed-depth probe
+completed and is **rejected**: global A2 rises to `1.246 C`, NA RMSE to
+`1.495 C`, global 3D RMSE to `1.559 C`, and NA/near-wall 3D RMSE also worsen.
+MLD bias improves to `+121.2 m` and 40--60N MLD bias to `+17.2 m`, so this is a
+useful diagnostic, but not a promoted baseline.

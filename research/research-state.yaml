@@ -1029,3 +1029,27 @@ ocean_solver_stage_f_dyn_ice_band40_65_mld100_lat40_60_365d_v2:
   status: running
   config: "Stage-F monthly-air dynamic bulk + dynamic ice 40--65N + fixed 100m MLD 40--60N, corrected 67.9% ocean bathymetry"
   purpose: "Pre-registered annual final-90d 3D/MLD gate for the 30d candidate."
+
+ocean_solver_stage_f_dyn_ice_band40_65_mld100_lat40_60_365d_v2:
+  status: completed_not_promoted
+  benchmark: "research/experiments/industrial_comparison_045/ocean_solver_stage_f_band_mld_ice_365d_v2_benchmark.json"
+  benchmark_3d: "research/experiments/industrial_comparison_045/ocean_solver_stage_f_band_mld_ice_365d_v2_3d_benchmark.json"
+  comparison_table: "research/experiments/industrial_comparison_045/stage_f_365d_band_mld_ice_table.md"
+  gate: "research/experiments/industrial_comparison_045/stage_f_365d_band_mld_ice_v2_gate.json"
+  config: "Stage-F monthly-air dynamic bulk + dynamic ice 40--65N + fixed 100m MLD 40--60N, matching 67.9% ocean bathymetry"
+  scoring_window_days: 90
+  wall_time_min: 34.5
+  metrics:
+    global_a2_rmse_c: 1.2460
+    north_atlantic_40_60_raw_rmse_c: 1.4950
+    near_wall_55_60_raw_rmse_c: 1.2605
+    global_3d_rmse_c: 1.5585
+    north_atlantic_40_60_3d_rmse_c: 1.6265
+    near_wall_55_60_3d_rmse_c: 1.3875
+    mld_raw_bias_m: 121.2455
+    mld_raw_rmse_m: 618.2171
+    mld_raw_bias_m_40_60n: 17.2369
+    mld_raw_rmse_m_40_60n: 152.3942
+    salt_drift_percent: -0.0003600
+    ice_fraction: 0.0002518
+  interpretation: "Rejected for annual baseline despite large MLD improvement; North Atlantic and 3D temperature metrics worsen."

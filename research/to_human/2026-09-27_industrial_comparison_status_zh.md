@@ -1,6 +1,6 @@
 # 工业级对标现状
 
-更新时间：2026-09-27 14:35
+更新时间：2026-09-27 15:20
 
 ## 1. 直接对照
 
@@ -17,15 +17,25 @@
 
 ## 2. 年度内部候选
 
-第一个 band-ice + fixed-MLD 年度检查**无效**：它误用了另一个 bathymetry，
-ocean fraction 是 `90.8%`，而 30d probe 和年度 no-ice control 都是 `67.9%`。
-所以那些很差的 v1 数字不能作为物理结论。已删除 v1 原始输出，并用相同
-bathymetry 启动 v2。现在等 v2 的 final-90d 3D/MLD gate。
+band-ice + fixed-MLD 的有效年度 v2 检查已完成，结论是**拒绝**：
+
+| 指标 | no-ice control | combined probe |
+|---|---:|---:|
+| global A2 | `1.204 C` | `1.246 C` |
+| NA RMSE | `0.975 C` | `1.495 C` |
+| near-wall RMSE | `1.055 C` | `1.260 C` |
+| global 3D RMSE | `1.547 C` | `1.559 C` |
+| NA 3D RMSE | `1.276 C` | `1.626 C` |
+| near-wall 3D RMSE | `1.124 C` | `1.387 C` |
+| MLD bias | `+139.3 m` | `+121.2 m` |
+| 40--60N MLD bias | `+224.6 m` | `+17.2 m` |
+
+MLD 明显改善，但年度温度和三维误差变差，所以不能作为 baseline。
 
 ## 3. 当前判断
 
 1. 当前内部 baseline 仍是 **365d Stage-F no-ice control**。
-2. 不把 30d 候选升为 baseline，也不根据无效的 v1 判它失败。
+2. 固定深度 + 北向动态海冰这一族已被有效年度 gate 拒绝。
 3. 等 MOM6 v11 年度 3D 温度/MLD 完成，再决定是否做第二个工业模式。
 4. 后续物理改进只能是季节依赖 / 冰态依赖，而不是全局标量。
 
@@ -34,4 +44,4 @@ bathymetry 启动 v2。现在等 v2 的 final-90d 3D/MLD gate。
 | run | status |
 |---|---|
 | MOM6 annual Stage-F v11 | running |
-| ocean_solver band-ice + fixed-MLD annual v2 | running |
+| ocean_solver band-ice + fixed-MLD annual v2 | completed; rejected |
