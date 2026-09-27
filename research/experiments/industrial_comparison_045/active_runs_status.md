@@ -1,6 +1,6 @@
 # Active external/internal comparison runs
 
-Updated: 2026-09-27 14:27 local.
+Updated: 2026-09-27 14:35 local.
 
 ## Core direct comparison
 
@@ -11,8 +11,8 @@ Updated: 2026-09-27 14:27 local.
 | ocean_solver Stage-F 365d no-ice | ocean_solver | completed | internal annual bulk control |
 | ocean_solver Stage-F 365d 3D | ocean_solver | completed | annual 3D snapshot control |
 | ocean_solver Stage-F 365d 3D latitude-depth/MLD | ocean_solver | completed | standardized upper-ocean error diagnostic |
-| ocean_solver Stage-F band ice + 100m MLD 30d | ocean_solver | completed | passed 30d gate, later rejected by annual check |
-| ocean_solver Stage-F band ice + 100m MLD 365d v1 | ocean_solver local | completed | annual final-90d 3D/MLD gate failed |
+| ocean_solver Stage-F band ice + 100m MLD 30d | ocean_solver | completed | passed the valid 30d gate |
+| ocean_solver Stage-F band ice + 100m MLD 365d v2 | ocean_solver local | running | corrected-bathymetry annual gate |
 
 ## Recent annual gates
 
@@ -24,7 +24,8 @@ Updated: 2026-09-27 14:27 local.
 | 365d dynamic-ice/no-MLD ablation | completed | not promoted |
 | 365d fixed 100m 40--60N MLD, no ice | completed | not promoted |
 | 365d dynamic ice, no MLD, 3D | completed | not promoted; 3D/MLD gate fails |
-| 365d dynamic ice 40--65N + fixed 100m MLD 40--60N | completed | rejected; climate and salt-drift gates fail |
+| 365d dynamic ice 40--65N + fixed 100m MLD 40--60N v1 | completed | invalid: bathymetry mismatch |
+| 365d dynamic ice 40--65N + fixed 100m MLD 40--60N v2 | running | annual gate pending |
 
 ## Completed 30d diagnostics
 
@@ -34,15 +35,14 @@ Updated: 2026-09-27 14:27 local.
 | low scalar mixing | rejected; essentially unchanged |
 | stratification MLD, 40--60N | rejected on 30d regional gate |
 | fixed 100m MLD, 40--60N | regional gain, but annual gate failed |
-| dynamic ice + fixed 100m MLD, 40--60N | passed the corrected final-10d 30d gate; failed annual climate gate |
+| dynamic ice + fixed 100m MLD, 40--60N | passed the corrected final-10d 30d gate; annual check rerunning |
 | dynamic ice + stratification MLD | rejected on corrected final-10d window |
 | dynamic ice, 40--65N only | final-10d window: equivalent to full dynamic ice; no global/NA gain |
 
 ## Notes
 
-- MOM6 v11 uses the exact dynamic-bulk contract and 10-day temperature/salinity
-  output to support the final-90d 3D and MLD gates while limiting I/O.
-- The annual ocean_solver candidate used the same forcing contract, 30-day 3D
-  snapshots, and final-90d scoring window.
-- Host C: and D: remain nearly full; obsolete WSL-side diagnostic snapshots were
-  removed after their benchmark JSONs were retained.
+- The 30d probe and annual no-ice control both use 67.9% ocean.
+- The first annual candidate used 90.8% ocean from a different bathymetry file
+  and is invalid; v2 uses the matching 67.9% bathymetry.
+- MOM6 v11 uses 10-day temperature/salinity output to support the final-90d 3D
+  and MLD gates while limiting I/O.

@@ -1012,3 +1012,20 @@ ocean_solver_stage_f_dyn_ice_band40_65_mld100_lat40_60_365d:
     salt_drift_percent: -0.1497
     ice_fraction: 0.04931
   interpretation: "Rejected. The 30d gain does not generalize; annual North Atlantic and near-wall temperature fields become unusable."
+
+ocean_solver_stage_f_dyn_ice_band40_65_mld100_lat40_60_365d_v1:
+  status: invalid_bathymetry_mismatch
+  benchmark: "research/experiments/industrial_comparison_045/ocean_solver_stage_f_band_mld_ice_365d_benchmark.json"
+  benchmark_3d: "research/experiments/industrial_comparison_045/ocean_solver_stage_f_band_mld_ice_365d_3d_benchmark.json"
+  gate: "research/experiments/industrial_comparison_045/stage_f_365d_band_mld_ice_gate.json"
+  config: "Invalid audit trail: annual run accidentally used 90.8% ocean bathymetry"
+  metrics:
+    global_a2_rmse_c: 4.7593
+    north_atlantic_40_60_raw_rmse_c: 8.4335
+    global_3d_rmse_c: 4.0421
+  interpretation: "Not comparable to the 67.9% ocean 30d probe or annual no-ice control; do not use as evidence against the candidate."
+
+ocean_solver_stage_f_dyn_ice_band40_65_mld100_lat40_60_365d_v2:
+  status: running
+  config: "Stage-F monthly-air dynamic bulk + dynamic ice 40--65N + fixed 100m MLD 40--60N, corrected 67.9% ocean bathymetry"
+  purpose: "Pre-registered annual final-90d 3D/MLD gate for the 30d candidate."
