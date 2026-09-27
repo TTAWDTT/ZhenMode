@@ -373,3 +373,5 @@ Chronological record of research decisions and actions. Append-only.
 
 | 256 | 2026-09-27 | benchmark | Added standardized latitude-band MLD diagnostics to the 3D scorer and protocol. The annual no-ice control has 40--60N MLD 247.1m and 60--40S MLD 224.6m; the dynamic-ice annual run improves 40--60N to 153.8m but worsens 60--40S to 314.9m, so a band/ice-state dependent closure is required. |
 | 257 | 2026-09-27 | ops | Lost the v8 annual MOM6 run to WSL shutdown. Re-launched the exact dynamic-bulk comparison as v10 with daily temperature and salinity; a 1-day salt smoke test passed, and the persistent WSL session is holding the run. |
+| 258 | 2026-09-27 | experiment | Added a latitude-band gate for dynamic ice and ran a 30d 40--65N probe. It is stable, but unlike the full dynamic-ice diagnostic it does not improve global/NA metrics; the band table records that a future closure needs separate northern and southern ventilation behavior. |
+| 258b | 2026-09-27 | fix | Corrected the band gate so an off-mask cell keeps normal surface exchange; the first probe had accidentally zeroed air-sea flux outside the ice band. |
