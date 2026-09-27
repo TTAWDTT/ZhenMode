@@ -35,3 +35,12 @@ def test_direct_comparison_manifests_are_contract_ready():
         report = validate_contract(json.loads((ROOT / name).read_text(encoding="utf-8")))
         assert report["contract_pass"] is True, name
         assert report["missing_sections"] == []
+
+
+def test_pre_registered_cooling_ice_manifest_records_gate():
+    path = ROOT / "ocean_solver_stage_f_dyn_ice_band40_65_mld100_lat40_60_cooling_ice_gate_365d_manifest.json"
+    manifest = json.loads(path.read_text(encoding="utf-8"))
+    assert manifest["status"] == "pre_registered"
+    assert manifest["config"]["mixed_layer_gate_mode"] == "cooling_ice"
+    assert manifest["metrics"] is None
+    assert manifest["npz"] is None
