@@ -370,3 +370,5 @@ Chronological record of research decisions and actions. Append-only.
 
 | 254 | 2026-09-27 | experiment | Completed the 365d Stage-F dynamic-ice/no-MLD 3D rerun in 28.9 min; it is stable but annual 3D RMSE is essentially unchanged versus the no-ice control (1.543 vs 1.547 C) and MLD worsens to 288.7 m mean. Do not promote. |
 | 255 | 2026-09-27 | comparison | The direct industrial target remains the MOM6 annual v8 3D score; the ocean_solver annual control and standardized latitude-depth/MLD metrics are now ready, while the MOM6 v8 run continues. |
+
+| 256 | 2026-09-27 | benchmark | Added standardized latitude-band MLD diagnostics to the 3D scorer and protocol. The annual no-ice control has 40--60N MLD 247.1m and 60--40S MLD 224.6m; the dynamic-ice annual run improves 40--60N to 153.8m but worsens 60--40S to 314.9m, so a band/ice-state dependent closure is required. |
