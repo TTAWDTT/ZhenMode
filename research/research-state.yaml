@@ -877,3 +877,9 @@ ocean_solver_stage_f_dynamic_ice_constant_mld_lat40_60_probe_30d:
     ice_cells: 22
     max_ice_thickness_m: 3.5937
   interpretation: "Dynamic ice does not change the fixed-depth regional MLD result in 30d; do not annualize."
+
+ocean_solver_stage_f_365d_3d_latitude_depth:
+  status: completed_diagnostic
+  benchmark: "research/experiments/industrial_comparison_045/ocean_solver_stage_f_365d_3d_latitude_depth_benchmark.json"
+  scoring_window_days: 90
+  key_result: "The dominant annual 3D cold bias is 40--20S and 20--40N at 15--50m, not the 40--60N wall alone."
