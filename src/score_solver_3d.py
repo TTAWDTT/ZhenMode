@@ -8,7 +8,13 @@ from pathlib import Path
 
 import numpy as np
 
-from benchmark_metrics import latitude_depth_metrics, regional_error_metrics, regional_masks
+from benchmark_metrics import (
+    latitude_depth_metrics,
+    mixed_layer_depth,
+    mixed_layer_depth_metrics,
+    regional_error_metrics,
+    regional_masks,
+)
 
 
 def _select_snapshot_paths(snap_path, snap_dir=None, steady_days=0.0,
@@ -36,13 +42,17 @@ def score_solver_3d(npz_path, snap_path=None, *, snap_dir=None,
         snap_path, snap_dir=snap_dir, steady_days=steady_days,
         snap_days=snap_days)
     temps = []
+    salts = []
     for path in paths:
         snap = np.load(path, allow_pickle=True)
         if snap.ndim != 4 or snap.shape[0] != 4:
             raise RuntimeError(f"expected snapshot [T,u,v,S] in {path}")
         temps.append(np.asarray(snap[0], dtype=float))
+        salts.append(np.asarray(snap[3], dtype=float))
     T = np.mean(np.stack(temps), axis=0)
+    S = np.mean(np.stack(salts), axis=0)
     reference = np.asarray(z["T_init"], dtype=float)
+    reference_salt = np.asarray(z["S_init"], dtype=float)
     ocean2d = np.asarray(z["wet_mask"], dtype=bool)
     lat = np.asarray(z["lat"], dtype=float)
     lon = np.asarray(z["lon"], dtype=float)
@@ -89,6 +99,9 @@ def score_solver_3d(npz_path, snap_path=None, *, snap_dir=None,
         mask3d = mask2d[:, :, None] & ocean3d
         result[name + "_3d"] = regional_error_metrics(error, mask3d)
     result["latitude_depth"] = latitude_depth_metrics(error, ocean3d, lat, zlevels)
+    model_mld = mixed_layer_depth(T, S, zlevels, ocean=ocean2d)
+    reference_mld = mixed_layer_depth(reference, reference_salt, zlevels, ocean=ocean2d)
+    result["mld"] = mixed_layer_depth_metrics(model_mld, reference_mld, ocean=ocean2d)
     return result
 
 

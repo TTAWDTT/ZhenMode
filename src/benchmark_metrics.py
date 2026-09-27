@@ -112,6 +112,28 @@ def latitude_depth_metrics(error: np.ndarray,
             out[band_key] = band
     return out
 
+
+
+def mixed_layer_depth_metrics(model_mld: np.ndarray,
+                              reference_mld: np.ndarray,
+                              ocean: np.ndarray | None = None) -> dict:
+    """Standardized mixed-layer-depth bias/RMSE on the same wet cells."""
+    model_mld = np.asarray(model_mld, dtype=float)
+    reference_mld = np.asarray(reference_mld, dtype=float)
+    wet = np.isfinite(model_mld) & np.isfinite(reference_mld)
+    if ocean is not None:
+        wet &= np.asarray(ocean, dtype=bool)
+    if not wet.any():
+        return {"n": 0, "raw_bias_m": float("nan"), "raw_rmse_m": float("nan")}
+    diff = model_mld[wet] - reference_mld[wet]
+    return {
+        "n": int(wet.sum()),
+        "raw_bias_m": float(diff.mean()),
+        "raw_rmse_m": float(np.sqrt(np.mean(diff ** 2))),
+        "mean_model_m": float(model_mld[wet].mean()),
+        "mean_reference_m": float(reference_mld[wet].mean()),
+    }
+
 def global_pattern_metrics(model_sst: np.ndarray,
                            reference_sst: np.ndarray,
                            ocean: np.ndarray,
