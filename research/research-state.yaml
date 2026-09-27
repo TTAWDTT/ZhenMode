@@ -399,11 +399,11 @@ legacy_candidate_baseline_070:
 
 external_comparison:
   status: active
-  current_level: stage_f_internal_probe_external_running
+  current_level: stage_f_internal_completed_mom6_annual_running
   primary_external_target: MOM6
   protocol: "research/experiments/industrial_comparison_045/protocol_v2.md"
   gap_matrix: "research/experiments/industrial_comparison_045/industrial_gap_matrix.md"
-  next_stage: "Score MOM6 Stage-F 30d; then annual matched bulk forcing"
+  next_stage: "Score MOM6 Stage-F annual v8 3D; then identify a narrow surpass target"
   stage_f_30d_internal:
     status: completed_not_climate_benchmark
     benchmark: "research/experiments/industrial_comparison_045/ocean_solver_stage_f_30d_benchmark.json"
@@ -926,6 +926,7 @@ ocean_solver_stage_f_lowmix_30d:
     north_atlantic_40_60_raw_rmse_c: 2.0856
     near_wall_55_60_raw_rmse_c: 1.9551
   interpretation: "Lower scalar vertical/convective diffusivity is stable but only marginally changes the 30d Stage-F result; do not promote."
+
 
 
 
