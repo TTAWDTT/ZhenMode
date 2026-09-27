@@ -77,9 +77,9 @@ signed bias improves to +0.667 C, but the broader climate and 3D errors
 worsen. The Stage-I proxy therefore remains diagnostic only.
 
 
-The 30d Stage-I manifest is now contract-ready with explicit comparable/not-comparable
+The 30d and 365d Stage-I manifests are now contract-ready with explicit comparable/not-comparable
 fields. Provenance remains not comparable because the exact source commit was not
-recorded with the saved output.
+recorded with the saved outputs.
 
 
 ## Next candidate (pre-registered, not launched)
