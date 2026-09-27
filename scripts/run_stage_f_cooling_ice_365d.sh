@@ -4,6 +4,11 @@ cd /mnt/c/Users/zhen.luo/ocean_solver
 
 # Pre-registered Stage-F cooling_ice candidate. Do not run until the annual
 # MOM6 v12 final-90d 3D/MLD comparison has been scored.
+GATE=research/experiments/industrial_comparison_045/mom6_stage_f_dynamic_365d_v12_gate.json
+if [ ! -f "$GATE" ]; then
+  echo "Blocking gate not scored yet: $GATE" >&2
+  exit 1
+fi
 /root/jax-gpu/bin/python src/run_long_integration_global.py \
   --mode-split --use-scan --dtype float32 --lat-max 65 --resolution 0.5 \
   --resolution-remap area --seasonal-wind --wind-year 2023 \
