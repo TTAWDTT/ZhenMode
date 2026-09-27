@@ -373,6 +373,8 @@ Runner: scripts/run_candidate_baseline.sh
    dependent rather than another global scalar.
 
 66. **Complete the matched MOM6 annual 3D score.** [ACTIVE]
-   When the Stage-F annual v8 run finishes, score global 3D RMSE, regional
-   3D, latitude-depth, and MLD metrics against the ocean_solver annual
-   no-ice control, then update the direct comparison table and gap matrix.
+   The v8 annual run was lost to WSL shutdown. V10 is the fresh exact
+   dynamic-bulk rerun with daily temperature and salinity. When it finishes,
+   score global 3D RMSE, regional 3D, latitude-depth, and MLD metrics against
+   the ocean_solver annual no-ice control, then update the direct comparison
+   table and gap matrix.
