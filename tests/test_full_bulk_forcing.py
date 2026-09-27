@@ -79,3 +79,51 @@ def test_full_bulk_solver_warms_and_salts_surface():
     assert float(jnp.max(dTdt[:, :, 0])) > 0.0
     assert float(jnp.max(np.abs(dTdt[:, :, 1:]))) == 0.0
     assert float(jnp.min(dSdt[:, :, 0])) > 0.0
+
+def test_full_bulk_dynamic_step_updates_surface_forcing():
+    shape = (12, 8)
+    fields = {
+        "downward_shortwave_w_m2": np.full(shape, 400.0),
+        "downward_longwave_w_m2": np.full(shape, 300.0),
+        "specific_humidity_air_kg_kg": np.full(shape, 0.005),
+        "wind_speed_m_s": np.full(shape, 5.0),
+        "precipitation_rate_kg_m2_s": np.zeros(shape),
+    }
+    grid = all_wet_grid(nx=12, ny=8, nz=4)
+    physics = replace(
+        PhysicsConfig(), nu_h=0.0, nu_bi=0.0, nu_v=0.0,
+        kappa_h=0.0, kappa_v=0.0, kappa_conv=0.0,
+        kappa_gm=0.0, kappa_redi=0.0,
+    )
+    forcing = tuple(np.zeros((grid.nx, grid.ny)) for _ in range(3))
+    _, init_fn, _, _, _, step_dyn = make_solver_global(
+        grid, physics, 60.0, forcing=forcing,
+        T_atm=np.full((grid.nx, grid.ny), 20.0), lambda_bulk=0.0,
+        full_bulk=True,
+        downward_shortwave=np.full((grid.nx, grid.ny), 400.0),
+        downward_longwave=np.full((grid.nx, grid.ny), 300.0),
+        specific_humidity_air=np.full((grid.nx, grid.ny), 0.005),
+        wind_speed=np.full((grid.nx, grid.ny), 5.0),
+        precipitation_rate=np.zeros((grid.nx, grid.ny)),
+        transfer_coefficient=1.3e-3,
+        T_init=np.full((grid.nx, grid.ny, grid.nz), 20.0),
+        S_init=np.full((grid.nx, grid.ny, grid.nz), 35.0),
+        polar_cap_rows=0, polar_cap_taper=0,
+        mode_split=False, dtype="float64", return_params=True,
+        dynamic_forcing=True)
+    state = init_fn(T_init=jnp.full((grid.nx, grid.ny, grid.nz), 20.0),
+                    S_init=jnp.full((grid.nx, grid.ny, grid.nz), 35.0))
+    full_bulk_fields = {
+        "downward_shortwave_2d": jnp.full((grid.nx, grid.ny), 400.0),
+        "downward_longwave_2d": jnp.full((grid.nx, grid.ny), 300.0),
+        "specific_humidity_air_2d": jnp.full((grid.nx, grid.ny), 0.005),
+        "sensible_transfer_2d": jnp.zeros((grid.nx, grid.ny)),
+        "latent_transfer_2d": jnp.zeros((grid.nx, grid.ny)),
+        "precipitation_rate_2d": jnp.zeros((grid.nx, grid.ny)),
+    }
+    warm = step_dyn(
+        state, jnp.zeros((grid.nx, grid.ny)), jnp.zeros((grid.nx, grid.ny)),
+        jnp.zeros((grid.nx, grid.ny)),
+        T_atm_3d=jnp.full((grid.nx, grid.ny, 1), 20.0),
+        full_bulk_fields=full_bulk_fields)
+    assert float(jnp.max(warm.T[:, :, 0])) > 20.0
