@@ -60,8 +60,10 @@ recorded in the manifest.
 ## Shared-grid provenance
 
 The Stage-G launcher now auto-generates a 0.1-degree ETOPO twin from the
-MOM6 0.5-degree `topog_050.nc`. This reproduces the shared 67.9% ocean grid
-without extra smoothing and is validated by the 1d/10d full-bulk smokes.
+MOM6 0.5-degree `topog_050.nc`, and a second helper converts the shared
+MOM6 WOA T/S file into `data/stage_g/stage_g_init_2023_050.npz`. Together
+they remove the dependence on prior Stage-F artifacts and reproduce the
+shared 67.9% ocean grid without extra smoothing.
 
 ## Provenance
 

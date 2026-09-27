@@ -421,3 +421,4 @@ The cooling-season-only fixed-MLD candidate completed but was rejected on the an
 | 291 | 2026-09-27 | diagnostic | Added passing 1d/10d Stage-G dynamic-ice + fixed 100m 40--60N MLD smoke runs; they validate the sea-ice/mixed-layer closure under full-bulk forcing but remain diagnostic-only until the shared bathymetry and pre-registered Stage-G launch are pinned. |
 | 292 | 2026-09-27 | protocol | Added an SMOOTH_PASSES override to the Stage-G launcher so the shared MOM6-topography-derived grid can be reproduced without extra smoothing. |
 | 293 | 2026-09-28 | ops | Added a MOM6-topography-to-ETPO-twin helper and wired it into the Stage-G launcher; a 1d shared-grid smoke passes with 67.9% ocean and zero extra smoothing. |
+| 294 | 2026-09-28 | ops | Added a MOM6-WOA-to-Stage-G init helper; a 1d smoke using the shared WOA-derived init and topography passes. |
