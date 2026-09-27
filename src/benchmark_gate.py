@@ -87,6 +87,7 @@ def evaluate_gate(control: dict, experiment: dict,
             checks["three_d_complete"] = False
             details["mld"] = {"control_present": "mld" in control_3d,
                               "experiment_present": "mld" in experiment_3d}
+            details["three_d"] = three_d_details
             return {"pass": all(checks.values()), "checks": checks,
                     "details": details}
         for name in ["raw_bias_m", "raw_rmse_m"]:
