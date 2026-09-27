@@ -51,3 +51,15 @@
 7. **在 MOM6 annual v12 final-90d 对照完成前，暂停新的内部 upper-ocean closure 调参。**
 8. **年度 paired manifests 已通过 contract validator；provenance 均显式标为 not_comparable，**
    因为保存输出时没有记录精确 source commit。数值对照可以继续，但还不等于完全源码级可复现。
+
+
+## Annual gate status
+
+The two annual band-ice/fixed-MLD candidates are diagnostic-only. They improve
+some MLD scalar, but fail the full climate gate on North Atlantic surface RMSE
+and North Atlantic 3D RMSE. The next candidate is therefore pre-registered as a
+seasonal/ice-state dependent cooling_ice mixed-layer gate, not another global
+scalar. Its manifest is:
+
+ocean_solver_stage_f_dyn_ice_band40_65_mld100_lat40_60_cooling_ice_gate_365d_manifest.json
+
