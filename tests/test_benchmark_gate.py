@@ -31,3 +31,14 @@ def test_gate_rejects_global_worse_and_verdict_failure():
 def test_gate_requires_expected_duration():
     result = evaluate_gate(_run(), _run(days=30.0), expected_days=365.0)
     assert not result["pass"]
+
+
+def test_gate_rejects_positive_near_wall_overshoot():
+    result = evaluate_gate(_run(), _run(global_a2=0.8, na=0.8, wall=1.2))
+    assert not result["pass"]
+    assert not result["checks"]["near_wall_raw_bias_not_worse"]
+
+
+def test_gate_accepts_signed_near_wall_bias_toward_zero():
+    result = evaluate_gate(_run(), _run(global_a2=0.8, na=0.8, wall=0.5))
+    assert result["checks"]["near_wall_raw_bias_not_worse"]

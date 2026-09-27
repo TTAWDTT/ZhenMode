@@ -4,7 +4,7 @@
     "verdict_pass": true,
     "global_a2_rmse_not_worse": false,
     "na_raw_rmse_not_worse": false,
-    "near_wall_raw_bias_not_worse": true,
+    "near_wall_raw_bias_not_worse": false,
     "heat_drift_bounded": true,
     "salt_drift_bounded": false,
     "duration_complete": true

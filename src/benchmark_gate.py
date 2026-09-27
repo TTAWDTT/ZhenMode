@@ -23,7 +23,7 @@ def evaluate_gate(control: dict, experiment: dict,
                   tolerance: float = 1e-6) -> dict:
     """Apply the pre-registered internal candidate gates.
 
-    A smaller negative heat/salt drift is better.  A near-wall negative bias
+    A smaller negative heat/salt drift is better.  A signed near-wall bias
     closer to zero is better, but global A2 and regional RMSE remain the main
     climate gates.
     """
@@ -39,7 +39,9 @@ def evaluate_gate(control: dict, experiment: dict,
         if base is None or candidate is None:
             checks[f"{metric}_not_worse"] = False
         elif metric == "near_wall_raw_bias":
-            checks[f"{metric}_not_worse"] = candidate >= base - tolerance
+            # A signed bias improves by moving toward zero from either side;
+            # reject large positive overshoot as well as unchanged negative bias.
+            checks[f"{metric}_not_worse"] = abs(candidate) <= abs(base) + tolerance
         else:
             checks[f"{metric}_not_worse"] = candidate <= base + tolerance
         details[metric] = {"control": base, "experiment": candidate}
