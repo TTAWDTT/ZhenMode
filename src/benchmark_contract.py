@@ -95,8 +95,11 @@ def main() -> None:
     parser.add_argument("manifest", nargs="+")
     parser.add_argument("--out", default=None)
     args = parser.parse_args()
-    reports = [validate_contract(json.loads(Path(p).read_text(encoding="utf-8")))
-               for p in args.manifest]
+    reports = []
+    for p in args.manifest:
+        report = validate_contract(json.loads(Path(p).read_text(encoding="utf-8")))
+        report["manifest"] = p
+        reports.append(report)
     result = {"contract_pass": all(x["contract_pass"] for x in reports),
               "reports": reports}
     text = json.dumps(result, indent=2)
