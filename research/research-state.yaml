@@ -1059,3 +1059,19 @@ ocean_solver_stage_f_band_mld_ice_365d_v2_seasonality:
   per_snapshot: "research/experiments/industrial_comparison_045/ocean_solver_stage_f_band_mld_ice_365d_v2_per_snapshot_3d.json"
   table: "research/experiments/industrial_comparison_045/stage_f_365d_band_mld_ice_seasonality_table.md"
   interpretation: "The candidate improves 3D/MLD through day 180, then degrades North Atlantic and near-wall errors after day 300; the next closure should be seasonal, not another fixed annual scalar."
+
+
+ocean_solver_stage_f_dyn_ice_band40_65_mld100_lat40_60_coolinggate_365d_v2:
+  status: completed_not_promoted
+  benchmark: "research/experiments/industrial_comparison_045/ocean_solver_stage_f_dyn_ice_band40_65_mld100_lat40_60_coolinggate_365d_v2_benchmark.json"
+  benchmark_3d: "research/experiments/industrial_comparison_045/ocean_solver_stage_f_dyn_ice_band40_65_mld100_lat40_60_coolinggate_365d_v2_3d_benchmark.json"
+  gate: "research/experiments/industrial_comparison_045/stage_f_365d_band_mld_ice_coolinggate_v2_gate.json"
+  config: "Stage-F monthly-air dynamic bulk + dynamic ice 40--65N + fixed 100m MLD 40--60N, cooling-season-only gate"
+  scoring_window_days: 90
+  metrics:
+    global_a2_rmse_c: 1.3152
+    north_atlantic_40_60_raw_rmse_c: 1.9466
+    global_3d_rmse_c: 1.5740
+    north_atlantic_40_60_3d_rmse_c: 1.8780
+    near_wall_raw_bias_c: 0.6674
+  interpretation: "Rejected. Cooling-season-only deep MLD improves near-wall signed bias but worsens annual global, North Atlantic, and 3D temperature error; keep as diagnostic only."

@@ -800,3 +800,8 @@ final-90d 的 candidate-minus-control 差值集中在 40--60N 上层海洋：
 | 100m | +0.651C | 0.856C |
 
 因此下一层改进目标不是继续调深度，而是季节性的上层热容 / 通风闭合。
+
+
+## Cooling-season MLD gate（2026-09-27）
+
+365d cooling-gate candidate completed and passed stability, but failed the annual climate gate. Compared with the no-ice control, global A2 increased from 1.204 C to 1.315 C, North Atlantic RMSE from 0.975 C to 1.947 C, global 3D RMSE from 1.547 C to 1.574 C, and North Atlantic 3D RMSE from 1.276 C to 1.878 C. Near-wall signed bias improved from -0.857 C to +0.667 C, but this did not compensate for the larger surface and 3D errors. Keep it as a diagnostic only; do not promote.

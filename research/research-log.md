@@ -389,3 +389,8 @@ Chronological record of research decisions and actions. Append-only.
 | 269 | 2026-09-27 | diagnostic | Per-day scoring of the valid band-ice/fixed-MLD annual run shows the candidate wins through about day 180 but loses after day 300 in North Atlantic and near-wall 3D temperature. The failure is therefore seasonal, not a uniformly bad constant-depth choice. |
 | 270 | 2026-09-27 | diagnostic | Candidate-minus-control 3D difference in the final-90d window is concentrated in the 40--60N upper ocean: +1.35C at the surface, +1.37C at 5m, and +0.65C at 100m. This supports a seasonal upper-ocean heat-capacity/ventilation target rather than another global scalar. |
 | 271 | 2026-09-27 | experiment | Added the opt-in mixed-layer cooling gate, passed 1d smoke, and launched the 365d Stage-F band-ice/fixed-MLD cooling-gate candidate for the seasonal upper-ocean gate. |
+
+
+## 365d cooling-gate MLD candidate（2026-09-27）
+
+The cooling-season-only fixed-MLD candidate completed but was rejected on the annual gate. Global A2 rose from 1.204 to 1.315 C, North Atlantic RMSE from 0.975 to 1.947 C, global 3D RMSE from 1.547 to 1.574 C, and North Atlantic 3D RMSE from 1.276 to 1.878 C. Near-wall signed bias improved, but not enough. Keep this as a diagnostic only.

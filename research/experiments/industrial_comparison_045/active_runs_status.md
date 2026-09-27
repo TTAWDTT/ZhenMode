@@ -14,7 +14,7 @@ Updated: 2026-09-27 16:40 local.
 | ocean_solver Stage-F 365d 3D latitude-depth/MLD | ocean_solver | completed | standardized upper-ocean error diagnostic |
 | ocean_solver Stage-F band ice + 100m MLD 30d | ocean_solver | completed | passed the valid 30d gate |
 | ocean_solver Stage-F band ice + 100m MLD 365d v2 | ocean_solver local | completed | annual climate gate failed |
-| ocean_solver Stage-F band ice + 100m MLD + cooling gate 365d v2 | ocean_solver local | running | seasonal upper-ocean heat-capacity gate |
+| ocean_solver Stage-F band ice + 100m MLD + cooling gate 365d v2 | ocean_solver local | completed | annual climate gate rejected |
 
 ## Recent annual gates
 

@@ -398,3 +398,7 @@ Runner: scripts/run_candidate_baseline.sh
    versus the no-ice control). Design a seasonally gated 40--60N mixed-layer
    closure that keeps the winter/cooling-season benefit without causing
    late-season warming. Do not add another global scalar.
+
+
+70. **Pause internal closure tuning until MOM6 annual is scored.** [ACTIVE]
+   The cooling-gate candidate was rejected. Do not launch another internal upper-ocean closure until the matched MOM6 annual Stage-F v12 run finishes and the final-90d global/regional/MLD metrics are scored. Update the direct comparison table and industrial gap matrix first; only then design the next closure if the external comparison still motivates it.

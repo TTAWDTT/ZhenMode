@@ -46,3 +46,8 @@ MLD 明显改善，但年度温度和三维误差变差，所以不能作为 bas
 | MOM6 annual Stage-F v11 | running |
 | ocean_solver band-ice + fixed-MLD annual v2 | completed; rejected |
 
+
+
+## 3. Cooling-season MLD gate
+
+365d cooling-gate candidate completed and passed stability, but failed the annual climate gate. Compared with the no-ice control, global A2 increased from 1.204 C to 1.315 C, North Atlantic RMSE from 0.975 C to 1.947 C, global 3D RMSE from 1.547 C to 1.574 C, and North Atlantic 3D RMSE from 1.276 C to 1.878 C. Near-wall signed bias improved from -0.857 C to +0.667 C, but this did not compensate for the larger surface and 3D errors. Keep it as a diagnostic only; do not promote.
