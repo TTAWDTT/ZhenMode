@@ -54,7 +54,12 @@ from air_reanalysis import load_annual_mean_air_temp, load_monthly_mean_air_temp
 from benchmark_metrics import mixed_layer_depth
 from config import DEFAULT_CONFIG, GlobalGridConfig, PhysicsConfig
 from diagnostics import BudgetDiagnostics, compute_budget_diagnostics, diagnostics_to_arrays
-from full_bulk_forcing import build_full_bulk_fields
+from full_bulk_forcing import (
+    SurfaceFluxDiagnostics,
+    build_full_bulk_fields,
+    compute_full_bulk_flux_diagnostics,
+    surface_flux_to_arrays,
+)
 from forcing import (
     BULK_LAMBDA_DEFAULT,
     air_temp_profile,
@@ -1256,6 +1261,7 @@ def main():
     snap_ice_top = []
     snap_ice_fraction = []
     snap_budget: list[BudgetDiagnostics] = []
+    snap_flux: list[SurfaceFluxDiagnostics] = []
     maxT_history = []
     max_u_peak = 0.0
     diverged_at = None
@@ -1293,6 +1299,8 @@ def main():
         # solver. It records the global heat/salt/volume invariants without
         # changing the numerical solution.
         snap_budget.append(compute_budget_diagnostics(state, grid))
+        if full_bulk_arrays is not None:
+            snap_flux.append(compute_full_bulk_flux_diagnostics(state, _params, grid))
         if args.save_3d:
             # 4-field snapshot: T,u,v,S each (nx,ny,nz). eta is NOT stacked —
             # it is 2D while these are 3D, and it is already saved per-frame in
@@ -1484,6 +1492,8 @@ def main():
                         ice_top=np.array(snap_ice_top),
                         ice_fraction=np.array(snap_ice_fraction),
                         **diagnostics_to_arrays(snap_budget),
+                        **(surface_flux_to_arrays(snap_flux)
+                            if full_bulk_arrays is not None else {}),
                         T_init=T_init,
                         mixed_layer_depth_applied=effective_mld,
                         wet_mask_z=np.asarray(grid.wet_mask_3d),

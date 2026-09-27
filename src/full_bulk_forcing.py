@@ -8,6 +8,8 @@ Sign convention for net surface heat is positive into the ocean.
 """
 from __future__ import annotations
 
+from dataclasses import dataclass
+
 import numpy as np
 import jax.numpy as jnp
 
@@ -99,3 +101,76 @@ def net_surface_heat_flux(sst_c, air_temperature_c,
         insulation = 1.0 - jnp.clip(jnp.asarray(sea_ice_fraction), 0.0, 1.0)
         net = net * insulation
     return net
+
+@dataclass(frozen=True)
+class SurfaceFluxDiagnostics:
+    """Ocean-area-weighted mean Stage-G surface fluxes for one snapshot."""
+
+    shortwave_net_w_m2: float
+    longwave_net_w_m2: float
+    sensible_up_w_m2: float
+    latent_up_w_m2: float
+    net_heat_into_ocean_w_m2: float
+    evaporation_rate_kg_m2_s: float
+    precipitation_rate_kg_m2_s: float
+    evap_minus_precip_kg_m2_s: float
+    runoff_kg_m2_s: float
+
+
+def compute_full_bulk_flux_diagnostics(state, params, grid,
+                                       albedo=SURFACE_ALBEDO,
+                                       emissivity=SURFACE_EMISSIVITY):
+    """Return area-weighted Stage-G surface-flux diagnostics.
+
+    This is intentionally NumPy/JAX-array compatible and independent of the
+    solver core, so the runner can add it to snapshots without changing the
+    dynamical core.
+    """
+    if not getattr(params, "full_bulk", False):
+        raise ValueError("full bulk diagnostics require params.full_bulk=True")
+    wet = np.asarray(grid.wet_mask, dtype=np.float64)
+    area = np.asarray(grid.dx_2d, dtype=np.float64) * float(grid.dy)
+    weight = area * wet
+    denom = float(weight.sum())
+    if denom <= 0.0:
+        raise ValueError("total wet surface area is zero")
+
+    sst_c = np.asarray(state.T[:, :, 0], dtype=np.float64)
+    air_c = np.asarray(params.T_atm_3d[:, :, 0], dtype=np.float64)
+    q_air = np.asarray(params.specific_humidity_air_2d, dtype=np.float64)
+    q_sat = saturation_specific_humidity_kg_kg(sst_c)
+    shortwave = (1.0 - albedo) * np.asarray(
+        params.downward_shortwave_2d, dtype=np.float64)
+    outgoing_longwave = emissivity * STEFAN_BOLTZMANN * (sst_c + 273.15) ** 4
+    longwave = (np.asarray(params.downward_longwave_2d, dtype=np.float64)
+                - outgoing_longwave)
+    sensible = np.asarray(params.sensible_transfer_2d,
+                          dtype=np.float64) * (sst_c - air_c)
+    latent = (np.asarray(params.latent_transfer_2d, dtype=np.float64)
+              * (q_sat - q_air))
+    precipitation = np.asarray(params.precipitation_rate_2d,
+                               dtype=np.float64)
+    evaporation = np.maximum(latent, 0.0) / LATENT_HEAT_VAPORIZATION
+    net_heat = shortwave + longwave - sensible - latent
+
+    def mean(field):
+        return float((field * weight).sum() / denom)
+
+    return SurfaceFluxDiagnostics(
+        shortwave_net_w_m2=mean(shortwave),
+        longwave_net_w_m2=mean(longwave),
+        sensible_up_w_m2=mean(sensible),
+        latent_up_w_m2=mean(latent),
+        net_heat_into_ocean_w_m2=mean(net_heat),
+        evaporation_rate_kg_m2_s=mean(evaporation),
+        precipitation_rate_kg_m2_s=mean(precipitation),
+        evap_minus_precip_kg_m2_s=mean(evaporation - precipitation),
+        runoff_kg_m2_s=0.0,
+    )
+
+def surface_flux_to_arrays(rows):
+    """Convert a list of ``SurfaceFluxDiagnostics`` into npz arrays."""
+    return {
+        key: np.array([getattr(row, key) for row in rows], dtype=np.float64)
+        for key in SurfaceFluxDiagnostics.__dataclass_fields__
+    }
