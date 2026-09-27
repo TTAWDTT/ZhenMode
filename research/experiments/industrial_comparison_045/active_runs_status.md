@@ -57,6 +57,6 @@ Latest progress check: 2026-09-27 19:50 local. MOM6 v12 is still running; the la
   provenance explicitly marked not_comparable because the exact source commits
   were not recorded with the saved outputs.
 - Full test status after the latest gate change: 134 passed, 98 skipped.
-- An automatic MOM6 v12 completion watcher is active; it will run the standard
-  final-90d 3D/MLD score when the run finishes.
+- Automatic MOM6 v12 completion watchers are active for both the standard
+  final-90d 3D/MLD score and the paired surface score.
 
