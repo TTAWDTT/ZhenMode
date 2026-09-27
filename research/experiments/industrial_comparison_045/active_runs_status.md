@@ -17,4 +17,4 @@ Updated: 2026-09-27 07:50 local.
 
 | ocean_solver Stage-F 365d fixed 100m MLD, 40--60N, no ice | ocean_solver | completed | annual gate; not promoted |
 
-| ocean_solver Stage-F 30d dynamic ice + fixed 100m MLD, 40--60N | ocean_solver | running | combined Stage-I/MLD diagnostic |
+| ocean_solver Stage-F 30d dynamic ice + fixed 100m MLD, 40--60N | ocean_solver | completed | combined Stage-I/MLD diagnostic; not promoted |

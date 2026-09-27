@@ -863,3 +863,17 @@ ocean_solver_stage_f_constant_mld_lat40_60_noice_365d:
     heat_drift_percent: -0.8541
     salt_drift_percent: -0.0003724
   interpretation: "The 30d regional gain reverses by 365d; it loses to the Stage-F no-ice control on global, North Atlantic, and near-wall metrics."
+
+ocean_solver_stage_f_dynamic_ice_constant_mld_lat40_60_probe_30d:
+  status: completed_not_promoted
+  benchmark: "research/experiments/industrial_comparison_045/ocean_solver_stage_f_dynamic_ice_constant_mld_lat40_60_probe_30d_benchmark.json"
+  config: "Stage-F monthly-air dynamic bulk + dynamic ice + fixed 100m MLD in 40--60N"
+  metrics:
+    global_a2_rmse_c: 1.5617
+    north_atlantic_40_60_raw_rmse_c: 0.8484
+    near_wall_55_60_raw_rmse_c: 0.5335
+    heat_drift_percent: -0.1432
+    salt_drift_percent: -0.0002299
+    ice_cells: 22
+    max_ice_thickness_m: 3.5937
+  interpretation: "Dynamic ice does not change the fixed-depth regional MLD result in 30d; do not annualize."

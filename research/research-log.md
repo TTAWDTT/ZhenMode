@@ -357,3 +357,5 @@ Chronological record of research decisions and actions. Append-only.
 | 247 | 2026-09-27 | experiment | The 365d Stage-F fixed 100m 40--60N no-ice probe passed stability but failed the annual gate: global A2 1.343 C, NA RMSE 1.451 C, near-wall RMSE 1.209 C versus the no-ice control 1.297/0.799/0.788 C. Do not promote. |
 
 | 248 | 2026-09-27 | experiment | Launched a 30d Stage-F dynamic-ice + fixed 100m 40--60N mixed-layer diagnostic to test whether the regional fixed-depth gain can be combined with the Stage-I ice closure before any annual run. |
+
+| 249 | 2026-09-27 | experiment | The 30d Stage-F dynamic-ice + fixed 100m 40--60N probe passed stability but scored essentially the same as the no-ice fixed-depth probe (global A2 1.562 C, NA RMSE 0.848 C, near-wall RMSE 0.534 C). The fixed-depth annual gate had already failed, so do not annualize the combined probe. |
