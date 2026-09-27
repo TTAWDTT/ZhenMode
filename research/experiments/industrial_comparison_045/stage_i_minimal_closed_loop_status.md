@@ -41,3 +41,5 @@ salt flux, and a bounded stability verdict.
    single pre-registered 365d run.
 4. Do not promote any closure unless it improves global A2 without degrading
    North Atlantic/near-wall metrics or stability.
+
+Future runs now save the solver-effective mixed-layer depth field; the scorer uses it when present instead of falling back to the initial-state MLD.
