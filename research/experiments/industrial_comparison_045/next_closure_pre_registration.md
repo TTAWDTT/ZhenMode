@@ -47,6 +47,9 @@ closure, not another global scalar tuning round.
 
 ## Planned command
 
+The same pre-registered command is also saved as
+scripts/run_stage_f_cooling_ice_365d.sh.
+
 ~~~bash
 /root/jax-gpu/bin/python src/run_long_integration_global.py \
   --mode-split --use-scan --dtype float32 --lat-max 65 --resolution 0.5 \
