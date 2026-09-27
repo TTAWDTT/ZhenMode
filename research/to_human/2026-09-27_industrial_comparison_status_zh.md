@@ -1,6 +1,6 @@
 ﻿# 工业级对标现状
 
-更新时间：2026-09-27 20:00
+更新时间：2026-09-27 19:50
 
 ## 1. 直接对照
 
@@ -13,7 +13,7 @@
 | 30d Stage-F | A2 1.692 C | A2 1.782 C | 完成 |
 | 30d Stage-F 3D | 0.861 C | 1.036 C | 完成 |
 | 30d band-ice + fixed-MLD | A2 1.562 C；3D 0.777 C | A2 1.782 C；3D 1.036 C | 30d 通过 |
-| 365d Stage-F 3D | no-ice 1.547 C | v12 running，约 day 110/365 | 年度对照未完成 |
+| 365d Stage-F 3D | no-ice 1.547 C | v12 running，约 day 112/365 | 年度对照未完成 |
 
 ## 2. 年度内部候选
 
@@ -37,6 +37,6 @@
 
 | run | status |
 |---|---|
-| MOM6 annual Stage-F v12 | running，约 day 110/365 |
+| MOM6 annual Stage-F v12 | running，约 day 112/365 |
 | ocean_solver band-ice + fixed-MLD annual v2 | completed; rejected |
 | ocean_solver cooling-gate annual v2 | completed; rejected |

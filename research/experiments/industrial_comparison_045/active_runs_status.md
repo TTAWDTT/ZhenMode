@@ -1,8 +1,8 @@
 # Active external/internal comparison runs
 
-Updated: 2026-09-27 20:00 local.
+Updated: 2026-09-27 19:50 local.
 
-Latest progress check: 2026-09-27 19:04 local. MOM6 v12 is still running; the latest ocean.stats point is model day 110.25/365 and prog.nc is growing.
+Latest progress check: 2026-09-27 19:50 local. MOM6 v12 is still running; the latest ocean.stats point is model day 112.4/365 and prog.nc is growing.
 
 
 ## Core direct comparison
@@ -56,4 +56,7 @@ Latest progress check: 2026-09-27 19:04 local. MOM6 v12 is still running; the la
 - The paired annual manifests now pass the standardized contract validator, with
   provenance explicitly marked not_comparable because the exact source commits
   were not recorded with the saved outputs.
+- Full test status after the latest gate change: 134 passed, 98 skipped.
+- An automatic MOM6 v12 completion watcher is active; it will run the standard
+  final-90d 3D/MLD score when the run finishes.
 
