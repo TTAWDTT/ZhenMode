@@ -1262,6 +1262,14 @@ def main():
     snap_ice_fraction = []
     snap_budget: list[BudgetDiagnostics] = []
     snap_flux: list[SurfaceFluxDiagnostics] = []
+    full_bulk_param_to_source = {
+        "downward_shortwave_2d": "downward_shortwave_w_m2",
+        "downward_longwave_2d": "downward_longwave_w_m2",
+        "specific_humidity_air_2d": "specific_humidity_air_kg_kg",
+        "sensible_transfer_2d": "sensible_transfer_w_m2_k",
+        "latent_transfer_2d": "latent_transfer_w_m2_kgkg",
+        "precipitation_rate_2d": "precipitation_rate_kg_m2_s",
+    }
     maxT_history = []
     max_u_peak = 0.0
     diverged_at = None
@@ -1300,7 +1308,19 @@ def main():
         # changing the numerical solution.
         snap_budget.append(compute_budget_diagnostics(state, grid))
         if full_bulk_arrays is not None:
-            snap_flux.append(compute_full_bulk_flux_diagnostics(state, _params, grid))
+            current_full_bulk = {
+                param: interp_monthly_field(
+                    full_bulk_arrays[source], day,
+                    blend_days=args.wind_blend_days)
+                for source, param in full_bulk_param_to_source.items()
+            }
+            current_air = interp_monthly_field(
+                T_atm_months, day, blend_days=args.wind_blend_days)
+            flux_params = _params._replace(
+                **current_full_bulk,
+                T_atm_3d=current_air[:, :, None])
+            snap_flux.append(compute_full_bulk_flux_diagnostics(
+                state, flux_params, grid))
         if args.save_3d:
             # 4-field snapshot: T,u,v,S each (nx,ny,nz). eta is NOT stacked —
             # it is 2D while these are 3D, and it is already saved per-frame in
