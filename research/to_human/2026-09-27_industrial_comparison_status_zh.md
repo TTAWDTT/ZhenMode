@@ -1,6 +1,6 @@
 # 工业级对标现状
 
-更新时间：2026-09-27
+更新时间：2026-09-27 10:55
 
 ## 1. 和工业级模式的差距
 
@@ -28,6 +28,8 @@ MOM6 在 30d 的 North Atlantic 三维误差略好；年度三维对照是当前
 - final-10d / final-90d 评分窗口；
 - 全球 A2、NA 40--60N、near-wall、heat/salt drift、stability；
 - 3D 必须应用 bathymetric vertical mask；
+- latitude-band x depth 矩阵；
+- `mld_latitude_bands`（ocean_solver 必报；外部模型有盐度时也报）；
 - 外部模型缺项必须标 `not_comparable`。
 
 ## 3. sea-ice / mixed-layer 最小闭环
@@ -44,23 +46,24 @@ MOM6 在 30d 的 North Atlantic 三维误差略好；年度三维对照是当前
 - density-threshold MLD；
 - stability + climate score。
 
-还未闭环：
+最新年度动态海冰 3D gate：
 
-- 没有冰动力学；
-- 没有完整湿度/辐射/降水/径流；
-- 没有匹配的 MOM6 Stage-I；
-- 最新的 40--60N 固定 100m MLD 年度门还没完成。
+- global 3D RMSE `1.543 C`，几乎不变；
+- 全局 MLD 恶化到 `288.7 m`；
+- 但 40--60N MLD 改善到 `153.8 m`，60--40S 恶化到 `314.9 m`。
+
+所以它不是年度 baseline；下一个闭包需要区分 band/ice-state。
 
 ## 4. 当前运行
 
 | run | purpose |
 |---|---|
-| MOM6 annual Stage-F v8 | 完成年度三维工业对照 |
-| ocean_solver annual fixed 100m MLD, 40--60N | 固定深度 MLD 的年度门 |
+| MOM6 annual Stage-F v8 | 年度三维工业对照 |
+| ocean_solver annual no-ice 3D | 已完成，年度对照基准 |
+| ocean_solver annual dynamic ice 3D | 已完成，未升为 baseline |
 
 ## 5. 下一步
 
 1. 等 MOM6 v8 完成，先补齐年度三维对照。
-2. 等 fixed 100m 40--60N 年度门完成；只有超过年度 no-ice control 才讨论 promotion。
-3. 如果 fixed-depth MLD 通过，再做同一个区域的 dynamic-ice + MLD 年度组合。
-4. 才考虑第二个工业模式对照；不要在自设指标上继续盲调。
+2. 年度 score 后再决定是否需要第二个工业模式对照。
+3. 不要继续全局标量调参；下一步只做 band/ice-state 依赖的上层闭包。
