@@ -406,3 +406,4 @@ The cooling-season-only fixed-MLD candidate completed but was rejected on the an
 | 278 | 2026-09-27 | ops | Consolidated the MOM6 annual v12 completion watcher into one process that scores surface and final-90d 3D/MLD, then runs the annual gate with --require-3d. |
 | 279 | 2026-09-27 | docs | Added a Chinese industrial-comparison summary and linked it from docs/README.md. |
 | 280 | 2026-09-27 | ops | Fixed the consolidated MOM6 v12 completion watcher so it uses explicit file paths and LF script text; it is now running and will score surface plus 3D/MLD before the annual gate. |
+| 281 | 2026-09-27 | protocol | Annual run NPZs now record git commit/dirty state, Python/NumPy/JAX versions and devices; manifest creation falls back to the NPZ commit when --commit is omitted. |
