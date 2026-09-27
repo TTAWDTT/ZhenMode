@@ -937,3 +937,32 @@ ocean_solver_stage_f_lowmix_30d:
 
 
 
+ocean_solver_stage_f_dyn_ice_lat40_65_probe_30d:
+  status: completed_not_promoted
+  benchmark: "research/experiments/industrial_comparison_045/ocean_solver_stage_f_dyn_ice_lat40_65_probe_30d_benchmark.json"
+  benchmark_3d: "research/experiments/industrial_comparison_045/ocean_solver_stage_f_dyn_ice_lat40_65_probe_30d_3d_benchmark.json"
+  comparison_table: "research/experiments/industrial_comparison_045/stage_f_30d_dyn_ice_band_table.md"
+  config: "Stage-F monthly-air dynamic bulk + dynamic ice restricted to 40--65N"
+  metrics:
+    global_a2_rmse_c: 1.6892
+    north_atlantic_40_60_raw_rmse_c: 2.0877
+    near_wall_55_60_raw_rmse_c: 1.9576
+    global_3d_rmse_c: 0.8580
+    north_atlantic_40_60_3d_rmse_c: 1.1750
+    near_wall_55_60_3d_rmse_c: 1.1234
+    mean_model_mld_m: 68.5606
+    mld_raw_rmse_m: 274.1033
+    ice_cells: 165
+  interpretation: "On the final-10d window, north-only dynamic ice is essentially equivalent to full dynamic ice and does not beat the no-ice control; do not promote."
+
+ocean_solver_stage_f_dyn_ice_mld_diag_30d_final10d:
+  status: completed_diagnostic
+  benchmark: "research/experiments/industrial_comparison_045/ocean_solver_stage_f_dyn_ice_mld_diag_30d_final10d_3d_benchmark.json"
+  config: "Corrected protocol-window rescore of the existing 30d full dynamic-ice run"
+  metrics:
+    global_3d_rmse_c: 0.8580
+    north_atlantic_40_60_3d_rmse_c: 1.1750
+    near_wall_55_60_3d_rmse_c: 1.1235
+    mean_model_mld_m: 68.5629
+    mld_raw_rmse_m: 274.1055
+  interpretation: "The earlier 0.707C full-ice 3D result was a whole-30d average, not the protocol final-10d gate; do not compare across windows."
