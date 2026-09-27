@@ -12,7 +12,7 @@
 | 30d prescribed restore | A2 `0.865 C` | A2 `1.115 C` | 完成 |
 | 30d Stage-F | A2 `1.692 C` | A2 `1.782 C` | 完成 |
 | 30d Stage-F 3D | `0.861 C` | `1.036 C` | 完成 |
-| 365d Stage-F 3D | `1.547 C` | v10 running with temp+salt | 年度对照未完成 |
+| 365d Stage-F 3D | `1.547 C` | v11 running with 10-day temp+salt | 年度对照未完成 |
 
 结论：小切片上 ocean_solver 已经不是“玩具”，但还不能宣称超过工业级模式。
 MOM6 在 30d 的 North Atlantic 三维误差略好；年度三维对照是当前关键门槛。
@@ -62,12 +62,12 @@ full-ice 0.707C 是整个 30d 平均，不是 final-10d 气候门。
 
 | run | purpose |
 |---|---|
-| MOM6 annual Stage-F v10 | 年度三维工业对照，带 temp+salt |
+| MOM6 annual Stage-F v11 | 年度三维工业对照，10 天间隔 temp+salt |
 | ocean_solver annual no-ice 3D | 已完成，年度对照基准 |
 | ocean_solver annual dynamic ice 3D | 已完成，未升为 baseline |
 
 ## 5. 下一步
 
-1. 等 MOM6 v10 完成，先补齐年度三维对照。
+1. 等 MOM6 v11 完成，先补齐年度三维对照。
 2. 年度 score 后再决定是否需要第二个工业模式对照。
 3. 不要继续全局标量调参；下一步只做 band/ice-state 依赖的上层闭包。
