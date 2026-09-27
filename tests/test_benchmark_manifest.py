@@ -54,3 +54,10 @@ def test_make_manifest_supports_external_model(tmp_path):
                              model="MOM6", config_json=config_path)
     assert manifest["model"] == "MOM6"
     assert manifest["config"]["resolution_deg"] == 0.5
+
+def test_make_manifest_adds_run_id_and_status(tmp_path):
+    npz_path = tmp_path / "candidate_365d.npz"
+    _write_run(npz_path)
+    manifest = make_manifest(npz_path)
+    assert manifest["run_id"] == "candidate_365d"
+    assert manifest["status"] == "completed"

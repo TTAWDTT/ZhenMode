@@ -29,7 +29,9 @@ def make_manifest(npz_path: str | Path,
                   metrics_path: str | Path | None = None,
                   commit: str | None = None,
                   model: str = "ocean_solver",
-                  config_json: str | Path | None = None) -> dict:
+                  config_json: str | Path | None = None,
+                  run_id: str | None = None,
+                  status: str | None = None) -> dict:
     """Build one portable manifest for benchmark reporting."""
     npz_path = Path(npz_path)
     if metrics_path is not None:
@@ -40,8 +42,15 @@ def make_manifest(npz_path: str | Path,
         config = json.loads(Path(config_json).read_text(encoding="utf-8"))
     else:
         config = _load_config(npz_path)
+    if run_id is None:
+        run_id = npz_path.stem
+    if status is None:
+        verdict = metrics.get("verdict") if isinstance(metrics, dict) else None
+        status = "completed" if verdict == "PASS" else "not_comparable"
     return {
         "model": model,
+        "run_id": run_id,
+        "status": status,
         "npz": str(npz_path),
         "commit": commit,
         "config": config,
@@ -61,10 +70,13 @@ def main() -> None:
                         help="model label for external or internal comparisons")
     parser.add_argument("--config-json", default=None,
                         help="JSON config for an external model")
+    parser.add_argument("--run-id", default=None)
+    parser.add_argument("--status", default=None)
     parser.add_argument("--out", required=True)
     args = parser.parse_args()
     manifest = make_manifest(args.npz, args.metrics, args.commit,
-                             model=args.model, config_json=args.config_json)
+                             model=args.model, config_json=args.config_json,
+                             run_id=args.run_id, status=args.status)
     Path(args.out).write_text(json.dumps(manifest, indent=2) + "\n")
     print(json.dumps(manifest, indent=2))
 
