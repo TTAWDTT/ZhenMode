@@ -1,18 +1,20 @@
 # Active external/internal comparison runs
 
-Updated: 2026-09-27 15:17 local.
+Updated: 2026-09-27 16:40 local.
 
 ## Core direct comparison
 
 | Run | Model | Status | Purpose |
 |---|---|---|---|
 | Stage-F exact dynamic bulk 30d | MOM6/ocean_solver | completed | monthly-air dynamic-bulk control |
-| Stage-F exact dynamic bulk 365d v11 | MOM6 local | running | annual exact dynamic-bulk 3D comparison with 10-day temp+salt |
+| Stage-F exact dynamic bulk 365d v11 | MOM6 local | killed before completion | earlier annual direct-comparison attempt |
+| Stage-F exact dynamic bulk 365d v12 | MOM6 local | running | annual exact dynamic-bulk 3D comparison |
 | ocean_solver Stage-F 365d no-ice | ocean_solver | completed | internal annual bulk control |
 | ocean_solver Stage-F 365d 3D | ocean_solver | completed | annual 3D snapshot control |
 | ocean_solver Stage-F 365d 3D latitude-depth/MLD | ocean_solver | completed | standardized upper-ocean error diagnostic |
 | ocean_solver Stage-F band ice + 100m MLD 30d | ocean_solver | completed | passed the valid 30d gate |
 | ocean_solver Stage-F band ice + 100m MLD 365d v2 | ocean_solver local | completed | annual climate gate failed |
+| ocean_solver Stage-F band ice + 100m MLD + cooling gate 365d v1 | ocean_solver local | running | seasonal upper-ocean heat-capacity gate |
 
 ## Recent annual gates
 
@@ -43,5 +45,7 @@ Updated: 2026-09-27 15:17 local.
 
 - The 30d probe and annual no-ice control both use 67.9% ocean; the invalid v1
   used 90.8% ocean from a different bathymetry file.
-- MOM6 v11 uses 10-day temperature/salinity output to support the final-90d 3D
-  and MLD gates while limiting I/O.
+- MOM6 v12 uses the same 365d Stage-F exact dynamic-bulk setup as v11 and saves
+  10-day temperature/salinity output for the final-90d 3D/MLD gate.
+- The active ocean_solver annual candidate is the cooling-gate variant of the
+  band-ice/fixed-MLD run; it is not promoted until the annual gate passes.
