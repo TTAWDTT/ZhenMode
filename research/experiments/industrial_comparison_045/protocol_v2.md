@@ -299,3 +299,7 @@ checks. If only one 3D file is supplied, the gate is intentionally incomplete.
 
 Both the contract validator and the annual gate CLI now exit nonzero on a failed
 check, so they can be used directly as CI or shell-script gates.
+
+
+For annual 3D/MLD gates, pass --require-3d so the gate cannot accidentally
+pass on surface metrics alone.

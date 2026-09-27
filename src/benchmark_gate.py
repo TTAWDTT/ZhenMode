@@ -22,7 +22,8 @@ def evaluate_gate(control: dict, experiment: dict,
                   expected_days: float | None = None,
                   tolerance: float = 1e-6,
                   control_3d: dict | None = None,
-                  experiment_3d: dict | None = None) -> dict:
+                  experiment_3d: dict | None = None,
+                  require_3d: bool = False) -> dict:
     """Apply the pre-registered internal candidate gates.
 
     A smaller negative heat/salt drift is better.  A signed near-wall bias
@@ -64,7 +65,9 @@ def evaluate_gate(control: dict, experiment: dict,
 
     three_d_details = {"control": control_3d, "experiment": experiment_3d}
     if control_3d is None and experiment_3d is None:
-        pass
+        if require_3d:
+            checks["three_d_complete"] = False
+            details["three_d"] = three_d_details
     elif control_3d is None or experiment_3d is None:
         checks["three_d_complete"] = False
         details["three_d"] = three_d_details
@@ -121,6 +124,8 @@ def main() -> None:
                         help="optional 3D/MLD benchmark JSON for the control")
     parser.add_argument("--experiment-3d", default=None,
                         help="optional 3D/MLD benchmark JSON for the experiment")
+    parser.add_argument("--require-3d", action="store_true",
+                        help="fail if paired control/experiment 3D+MLD inputs are absent")
     parser.add_argument("--out", default=None)
     args = parser.parse_args()
     result = evaluate_gate(_load(args.control), _load(args.experiment),
@@ -128,7 +133,8 @@ def main() -> None:
                            control_3d=(None if args.control_3d is None
                                        else _load(args.control_3d)),
                            experiment_3d=(None if args.experiment_3d is None
-                                          else _load(args.experiment_3d)))
+                                          else _load(args.experiment_3d)),
+                           require_3d=args.require_3d)
     text = json.dumps(result, indent=2)
     if args.out:
         Path(args.out).write_text(text + "\n", encoding="utf-8")

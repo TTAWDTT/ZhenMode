@@ -124,3 +124,20 @@ def test_cli_exits_nonzero_on_failed_gate(tmp_path):
         capture_output=True, text=True)
     assert result.returncode != 0
     assert json.loads(result.stdout)["pass"] is False
+
+
+def test_gate_ignores_missing_3d_by_default():
+    result = evaluate_gate(_run(), _run())
+    assert result["pass"]
+
+
+def test_gate_requires_3d_when_requested():
+    result = evaluate_gate(_run(), _run(), require_3d=True)
+    assert not result["pass"]
+    assert not result["checks"]["three_d_complete"]
+
+
+def test_gate_accepts_required_3d_when_supplied():
+    result = evaluate_gate(_run(), _run(), control_3d=_run_3d(),
+                           experiment_3d=_run_3d(), require_3d=True)
+    assert result["pass"]
