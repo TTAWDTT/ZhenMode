@@ -372,3 +372,4 @@ Chronological record of research decisions and actions. Append-only.
 | 255 | 2026-09-27 | comparison | The direct industrial target remains the MOM6 annual v8 3D score; the ocean_solver annual control and standardized latitude-depth/MLD metrics are now ready, while the MOM6 v8 run continues. |
 
 | 256 | 2026-09-27 | benchmark | Added standardized latitude-band MLD diagnostics to the 3D scorer and protocol. The annual no-ice control has 40--60N MLD 247.1m and 60--40S MLD 224.6m; the dynamic-ice annual run improves 40--60N to 153.8m but worsens 60--40S to 314.9m, so a band/ice-state dependent closure is required. |
+| 257 | 2026-09-27 | ops | Lost the v8 annual MOM6 run to WSL shutdown. Re-launched the exact dynamic-bulk comparison as v10 with daily temperature and salinity; a 1-day salt smoke test passed, and the persistent WSL session is holding the run. |
