@@ -402,3 +402,6 @@ The cooling-season-only fixed-MLD candidate completed but was rejected on the an
 | 276 | 2026-09-27 | benchmark | Clarified that an external 3D scorer with zero time records is an incomplete run, not an empty score. Locked the pre-registered cooling_ice manifest and the Stage-I manifests by tests. |
 
 | 277 | 2026-09-27 | benchmark | Added a regression test that scans every industrial-comparison manifest and requires contract_pass. Current sweep is 11/11 manifests contract-ready. |
+
+| 278 | 2026-09-27 | ops | Consolidated the MOM6 annual v12 completion watcher into one process that scores surface and final-90d 3D/MLD, then runs the annual gate with --require-3d. |
+| 279 | 2026-09-27 | docs | Added a Chinese industrial-comparison summary and linked it from docs/README.md. |
