@@ -1,6 +1,6 @@
 # Active external/internal comparison runs
 
-Updated: 2026-09-27 16:40 local.
+Updated: 2026-09-27 18:20 local.
 
 ## Core direct comparison
 
@@ -49,4 +49,7 @@ Updated: 2026-09-27 16:40 local.
   10-day temperature/salinity output for the final-90d 3D/MLD gate.
 - The active ocean_solver annual candidate is the cooling-gate variant of the
   band-ice/fixed-MLD run; it is not promoted until the annual gate passes.
+- The paired annual manifests now pass the standardized contract validator, with
+  provenance explicitly marked not_comparable because the exact source commits
+  were not recorded with the saved outputs.
 

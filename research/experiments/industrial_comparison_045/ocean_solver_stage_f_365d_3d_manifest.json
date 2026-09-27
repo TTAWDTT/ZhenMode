@@ -718,9 +718,9 @@
     "status": "comparable"
   },
   "provenance": {
-    "model_source_commit": "741043d",
-    "model_source_commit_status": "comparable",
+    "model_source_commit": "not_recorded",
+    "model_source_commit_status": "not_comparable",
     "compiler": "Python 3.14; JAX",
-    "status": "comparable"
+    "status": "not_comparable"
   }
 }

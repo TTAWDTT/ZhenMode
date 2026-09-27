@@ -33,6 +33,6 @@ The paired annual Stage-F manifests now pass the standardized contract validator
 - ocean_solver: ocean_solver_stage_f_365d_3d_manifest.json
 - MOM6: mom6_stage_f_dynamic_365d_v12_manifest.json
 
-The MOM6 provenance is explicitly marked not_comparable because the source commit
-was not recorded, so the numerical comparison may proceed but exact code
-reproducibility remains incomplete.
+Both runs have their provenance explicitly marked not_comparable because the exact
+source commits were not recorded with the saved outputs. The numerical comparison
+may proceed, but exact code reproducibility remains incomplete.
