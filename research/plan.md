@@ -379,8 +379,8 @@ Runner: scripts/run_candidate_baseline.sh
    the ocean_solver annual no-ice control, then update the direct comparison
    table and gap matrix.
 67. **Gate the 30d band-limited dynamic-ice probe.** [COMPLETE 2026-09-27]
-   Restricting dynamic ice to 40--65N is stable but does not improve global,
-   North Atlantic, or near-wall metrics. It also removes most of the 30d
-   3D/MLD gain from full dynamic ice. Keep it as a diagnostic ablation; the
-   next closure should use separate northern and southern ventilation behavior,
-   not another latitude cut.
+   On the protocol final-10d window, 40--65N-only dynamic ice is essentially
+   equivalent to full dynamic ice and neither improves the no-ice control.
+   The earlier large 3D/MLD gain came from scoring the whole 30d average,
+   not the final-10d window. The next closure still needs band/ice-state
+   dependence, but not because of this probe.
