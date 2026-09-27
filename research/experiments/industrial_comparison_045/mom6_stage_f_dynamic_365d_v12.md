@@ -26,6 +26,19 @@ When complete, use the standard final-90d window with:
       --steady-days 90 \
       --out research/experiments/industrial_comparison_045/mom6_stage_f_dynamic_365d_v12_3d_benchmark.json
 
+Surface:
+
+    python src/score_external_model.py \
+      --input /root/external_models/mom6_slice_050/p0_stage_f_dynamic_365d_v12/prog.nc \
+      --variable temp --level 0 \
+      --geometry /root/external_models/mom6_slice_050/p0_stage_f_dynamic_365d_v12/ocean_geometry.nc \
+      --wet-var wet --lat-var lath --lon-var lonh \
+      --reference-npz /root/external_models/results/industrial_comparison_045/global_global_industrial_comparison_050_stage_f_365d_3d.npz \
+      --steady-days 90 --model MOM6 --run-id mom6_stage_f_dynamic_365d_v12 \
+      --stats /root/external_models/mom6_slice_050/p0_stage_f_dynamic_365d_v12/ocean.stats.nc \
+      --heat-variable Heat --salt-variable Salt \
+      --out research/experiments/industrial_comparison_045/mom6_stage_f_dynamic_365d_v12_surface_benchmark.json
+
 Do not claim industrial superiority before this annual score exists.
 
 
