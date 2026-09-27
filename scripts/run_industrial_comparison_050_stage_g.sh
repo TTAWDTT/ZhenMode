@@ -9,6 +9,7 @@ DAYS="${DAYS:-30}"
 SAVE_3D="${SAVE_3D:-false}"
 SAVE_3D_TERMS="${SAVE_3D_TERMS:-false}"
 INIT_FROM="${INIT_FROM:-}"
+SMOOTH_PASSES="${SMOOTH_PASSES:-80}"
 TAG="${1:-industrial_comparison_050_stage_g_${DAYS}d}"
 OUT_DIR="${OUT_DIR:-results/industrial_comparison_045}"
 LOG_DIR="${LOG_DIR:-logs/industrial_comparison_045}"
@@ -34,7 +35,7 @@ mkdir -p "${OUT_DIR}" "${LOG_DIR}"
   --kappa-v 1e-6 --kappa-conv 0.01 \
   --kappa-gm 0 \
   --localize-conv --fct-adv --project-adv-vel \
-  --min-depth 500 --smooth-passes 80 \
+  --min-depth 500 --smooth-passes "${SMOOTH_PASSES}" \
   --nu-h 2e6 --dt 1800 \
   --days "${DAYS}" --snap-days "${SNAP_DAYS:-10}" \
   $( [[ -n "${INIT_FROM}" ]] && echo --init-from "${INIT_FROM}" ) \
