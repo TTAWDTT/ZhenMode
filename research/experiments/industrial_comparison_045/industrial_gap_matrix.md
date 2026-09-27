@@ -15,7 +15,7 @@
 | ocean_solver | internal | 30d Stage-F prescribed proxy | FAIL_DRIFT; A2 `5.629 C`; max T `51.35 C` |
 | MOM6 | direct rerun | 30d Stage-F prescribed proxy | 稳定性警告; 因 C 盘满无空间评分 |
 | MOM6 | direct rerun | 30d Stage-F 3D temperature | corrected: ocean_solver `0.861 C`; MOM6 `1.036 C`; surface favors ocean_solver, NA favors MOM6 |
-| ocean_solver | internal | 30d Stage-F band ice + fixed MLD | passed 30d gate: A2 `1.562 C`, NA `0.848 C`, 3D `0.777 C`; annual check running |
+| MOM6/ocean_solver | direct rerun | 30d Stage-F band ice + fixed MLD | ocean_solver A2 `1.562 C`, 3D `0.777 C`; MOM6 A2 `1.782 C`, 3D `1.036 C`; annual check running |
 | ocean_solver | internal | 365d Stage-F MLD20 | A2 `1.406 C`; NA RMSE `1.302 C`; heat drift `-0.276%` |
 | ocean_solver | internal | 365d fixed 100m 40--60N MLD | A2 1.343 C; NA RMSE 1.451 C; near-wall 1.209 C; not promoted |
 | ocean_solver | internal | 30d Stage-I ice/mixed-layer | A2 `1.231 C`; NA RMSE `1.316 C` |
@@ -46,6 +46,7 @@
 4. **修正后的 30d 3D 对照**：ocean_solver 全域 RMSE `0.861 C`，MOM6 `1.036 C`；MOM6 在 40--60N 与近壁略好。此前“深层暖偏差”主要是 3D scorer 把海底以下 ghost layers 计入了。
 5. **年度动态海冰 3D gate 已失败**：3D RMSE 基本不变（1.543 vs 1.547 C），MLD 反而恶化到 288.7 m，因此不能作为年度基线。
 6. **要超过工业级模式，优先级不是继续调参**，而是：完整 bulk forcing → 365d 对照 → 三维误差 → 并行/速度 → 扩展到更多物理过程。
+
 
 
 
