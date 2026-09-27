@@ -18,7 +18,9 @@ fi
 if [[ -d "/mnt/c/Users/zhen.luo/ocean_solver/data/woa" && -z "${OCEAN_SOLVER_WOA_DIR:-}" ]]; then
   export OCEAN_SOLVER_WOA_DIR="/mnt/c/Users/zhen.luo/ocean_solver/data/woa"
 fi
-export OCEAN_SOLVER_BATHYMETRY="${OCEAN_SOLVER_BATHYMETRY:-/mnt/c/Users/zhen.luo/Desktop/ETOPO_2022_v1_r3600x1800_surface.nc}"
+if [[ -z "${OCEAN_SOLVER_BATHYMETRY:-}" ]]; then
+  unset OCEAN_SOLVER_BATHYMETRY
+fi
 STAGE_G_FORCING="${STAGE_G_FORCING:-data/stage_g/stage_g_forcing_2023_050.npz}"
 mkdir -p "${OUT_DIR}" "${LOG_DIR}"
 
