@@ -18,6 +18,7 @@ Latest progress check: 2026-09-27 19:04 local. MOM6 v12 is still running; the la
 | ocean_solver Stage-F band ice + 100m MLD 30d | ocean_solver | completed | passed the valid 30d gate |
 | ocean_solver Stage-F band ice + 100m MLD 365d v2 | ocean_solver local | completed | annual climate gate failed |
 | ocean_solver Stage-F band ice + 100m MLD + cooling gate 365d v2 | ocean_solver local | completed | annual climate gate rejected |
+| ocean_solver Stage-F dyn ice 40--65N + fixed 100m MLD 40--60N cooling_ice gate 365d | ocean_solver planned | pre-registered | not launched until MOM6 annual gate scored |
 
 ## Recent annual gates
 
