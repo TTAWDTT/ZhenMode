@@ -61,3 +61,26 @@ def test_make_manifest_adds_run_id_and_status(tmp_path):
     manifest = make_manifest(npz_path)
     assert manifest["run_id"] == "candidate_365d"
     assert manifest["status"] == "completed"
+
+
+def test_make_manifest_supports_pre_registered_no_npz(tmp_path):
+    config_path = tmp_path / "config.json"
+    config_path.write_text(json.dumps({"days": 365.0}), encoding="utf-8")
+    manifest = make_manifest(None, config_json=config_path,
+                             run_id="candidate_365d", status="pre_registered")
+    assert manifest["npz"] is None
+    assert manifest["metrics"] is None
+    assert manifest["config"]["days"] == 365.0
+    assert manifest["status"] == "pre_registered"
+
+
+def test_pre_registered_requires_config_and_run_id(tmp_path):
+    config_path = tmp_path / "config.json"
+    config_path.write_text(json.dumps({"days": 365.0}), encoding="utf-8")
+    try:
+        make_manifest(None, config_json=config_path,
+                      status="pre_registered")
+    except ValueError as exc:
+        assert "--run-id" in str(exc)
+    else:
+        raise AssertionError("expected ValueError for missing run_id")
