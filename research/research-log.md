@@ -423,3 +423,4 @@ The cooling-season-only fixed-MLD candidate completed but was rejected on the an
 | 293 | 2026-09-28 | ops | Added a MOM6-topography-to-ETPO-twin helper and wired it into the Stage-G launcher; a 1d shared-grid smoke passes with 67.9% ocean and zero extra smoothing. |
 | 294 | 2026-09-28 | ops | Added a MOM6-WOA-to-Stage-G init helper; a 1d smoke using the shared WOA-derived init and topography passes. |
 | 295 | 2026-09-28 | ops | Stage-G launcher now auto-builds shared topography and init artifacts; a 1d self-contained smoke passes. |
+| 296 | 2026-09-28 | protocol | Added a Stage-G dynamic-ice + fixed-MLD pre-registration and contract-ready 30d/365d manifests; launch remains blocked behind the no-ice Stage-G control and MOM6 annual gate. |
