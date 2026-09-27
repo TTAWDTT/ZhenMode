@@ -65,13 +65,12 @@ def test_solver_accepts_mixed_layer_depth():
         polar_cap_rows=0, polar_cap_taper=0,
         mode_split=False, dtype='float64', return_params=True)
     assert params.mixed_layer_depth_m == 50.0
-import jax.numpy as jnp
-import numpy as np
-
-from _helpers import all_wet_grid
-from config import PhysicsConfig
 from dataclasses import replace
 
+import jax.numpy as jnp
+from _helpers import all_wet_grid
+
+from config import PhysicsConfig
 from jax_solver_global import JaxStateG, _mixed_layer_depth_with_gate, make_solver_global
 
 

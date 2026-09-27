@@ -1,6 +1,6 @@
 """Tests for the standardized benchmark contract validator."""
-from pathlib import Path
 import json
+from pathlib import Path
 
 from benchmark_contract import validate_contract
 

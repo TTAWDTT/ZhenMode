@@ -77,12 +77,12 @@ def test_external_3d_uses_actual_time_coordinates(tmp_path):
         time.units = "days since 2023-01-01"
         time[:] = np.array([0.0, 360.0])
         temp = ds.createVariable("temp", "f8", ("time", "zl", "yh", "xh"))
-        temp[:] = temp_values = np.stack([
+        temp[:] = np.stack([
             reference.transpose(2, 1, 0) + 80.0,
             reference.transpose(2, 1, 0),
         ], axis=0)
         salt = ds.createVariable("salt", "f8", ("time", "zl", "yh", "xh"))
-        salt[:] = salt_values = np.stack([
+        salt[:] = np.stack([
             reference_salt.transpose(2, 1, 0),
             reference_salt.transpose(2, 1, 0),
         ], axis=0)
@@ -103,6 +103,7 @@ def test_external_3d_uses_actual_time_coordinates(tmp_path):
 
 def test_external_3d_rejects_missing_time_records():
     import pytest
+
     from score_external_3d import _steady_mean
     ds = {}
     field = np.empty((0, 1, 1, 1))
