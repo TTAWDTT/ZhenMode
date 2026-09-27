@@ -79,6 +79,13 @@ def evaluate_gate(control: dict, experiment: dict,
             candidate = float(experiment_3d[section]["raw_rmse"])
             three_d_checks[f"{name}_not_worse"] = candidate <= base + tolerance
             details[f"{name}"] = {"control": base, "experiment": candidate}
+        if "mld" not in control_3d or "mld" not in experiment_3d:
+            checks["mld_present"] = False
+            checks["three_d_complete"] = False
+            details["mld"] = {"control_present": "mld" in control_3d,
+                              "experiment_present": "mld" in experiment_3d}
+            return {"pass": all(checks.values()), "checks": checks,
+                    "details": details}
         for name in ["raw_bias_m", "raw_rmse_m"]:
             base = float(control_3d["mld"][name])
             candidate = float(experiment_3d["mld"][name])

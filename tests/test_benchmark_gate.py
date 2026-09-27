@@ -95,3 +95,14 @@ def test_gate_requires_depth_mask_when_3d_is_checked():
                            experiment_3d=experiment)
     assert not result["checks"]["depth_mask_applied"]
     assert not result["pass"]
+
+
+def test_gate_rejects_missing_mld_in_3d_input():
+    control = _run_3d()
+    experiment = _run_3d()
+    experiment.pop("mld")
+    result = evaluate_gate(_run(), _run(), control_3d=control,
+                           experiment_3d=experiment)
+    assert not result["pass"]
+    assert not result["checks"]["mld_present"]
+    assert not result["checks"]["three_d_complete"]
