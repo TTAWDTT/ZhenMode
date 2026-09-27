@@ -1,0 +1,36 @@
+{
+  "pass": true,
+  "checks": {
+    "verdict_pass": true,
+    "global_a2_rmse_not_worse": true,
+    "na_raw_rmse_not_worse": true,
+    "near_wall_raw_bias_not_worse": true,
+    "heat_drift_bounded": true,
+    "salt_drift_bounded": true,
+    "duration_complete": true
+  },
+  "details": {
+    "global_a2_rmse": {
+      "control": 1.691541129453307,
+      "experiment": 1.5616509062059358
+    },
+    "na_raw_rmse": {
+      "control": 2.087857849380057,
+      "experiment": 0.8483821033680635
+    },
+    "near_wall_raw_bias": {
+      "control": -1.8720415298656115,
+      "experiment": -0.4712372342367851
+    },
+    "heat_drift": {
+      "control": -0.1838217376321318,
+      "experiment": -0.14315138996992735,
+      "limit_percent": 0.3676434752642636
+    },
+    "salt_drift": {
+      "control": -0.00020866957663604821,
+      "experiment": -0.00023013761732783197,
+      "limit_percent": 0.00041733915327209643
+    }
+  }
+}

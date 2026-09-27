@@ -58,3 +58,8 @@ annual 3D field. Global MLD worsens to `288.7 m`. Band diagnostics show
 opposite effects: 40--60N improves to `153.8 m`, while 60--40S worsens to
 `314.9 m`. The Stage-I proxy therefore stays diagnostic; the next closure must
 be band/ice-state dependent rather than another global scalar.
+A corrected 30d final-10d probe now combines dynamic ice in 40--65N with a
+100m mixed-layer in 40--60N. It passes the 30d gate and improves global A2 to
+`1.562 C`, NA RMSE to `0.848 C`, global 3D RMSE to `0.777 C`, and MLD bias to
+`+16.3 m`. The matching 365d final-90d gate is running; promotion still waits
+for that annual check.
