@@ -8,6 +8,18 @@ Status: pre_registered, not launched
 Close the largest physical-process gap versus industrial ocean models: move from
 wind plus a live-SST bulk heat proxy to a full surface flux contract.
 
+## Confirmed NCEP R1 sources
+
+The first Stage-G loaders are now available:
+
+- 2m specific humidity: `shum.2m.mon.mean.nc`, g/kg -> kg/kg;
+- downward longwave radiation: `dlwrf.sfc.mon.mean.nc`, W/m2;
+- downward shortwave radiation: `dswrf.sfc.mon.mean.nc`, W/m2;
+- precipitation rate: `prate.sfc.mon.mean.nc`, kg/m2/s.
+
+They are read on the native NCEP grid, cached locally, bilinearly remapped to
+the solver grid, and unit-converted before entering the flux code.
+
 ## Required forcing fields
 
 1. 2m air temperature (already used);
