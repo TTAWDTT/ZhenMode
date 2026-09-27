@@ -40,6 +40,8 @@ mkdir -p "${OUT_DIR}" "${LOG_DIR}"
   --dynamic-ice --dynamic-ice-lat-band "${ICE_LAT_MIN}" "${ICE_LAT_MAX}" \
   --mixed-layer-depth "${MLD_DEPTH}" \
   --mixed-layer-lat-band "${MLD_LAT_MIN}" "${MLD_LAT_MAX}" \
+  --mixed-layer-mode "${MLD_MODE:-constant}" \
+  $( [[ "${MLD_COOLING_GATE:-false}" == "true" ]] && echo --mixed-layer-cooling-gate ) \
   --days "${DAYS}" --snap-days "${SNAP_DAYS:-10}" \
   $( [[ "${SAVE_3D}" == "true" ]] && echo --save-3d ) \
   $( [[ "${SAVE_3D_TERMS}" == "true" ]] && echo --save-3d-terms ) \

@@ -718,12 +718,16 @@ FDPhysParams = namedtuple('FDPhysParams', [
     'dynamic_ice',
     'ice_insulation_scale_m',
     'ice_mask_2d',
+    # Optional cooling-only gate: use the mixed-layer depth only when the
+    # atmosphere is colder than the live SST.  This keeps deep winter mixing
+    # while avoiding an artificial summer heat reservoir.
+    "mixed_layer_cooling_gate",
 ])
 
 # Keyword-constructed callers that predate nu_nsub/use_scan/freeze_adv_vel/
 # conservative_kv/project_adv_vel/localize_conv/monotone_adv get the legacy
 # behavior instead of a TypeError.
-FDPhysParams.__new__.__defaults__ = (None, False, False, False, False, False, False, False, None, None, None, -1.8, 0.0, False, 1.0, None)
+FDPhysParams.__new__.__defaults__ = (None, False, False, False, False, False, False, False, None, None, None, -1.8, 0.0, False, 1.0, None, False)
 
 
 # ── Equation of state ─────────────────────────────────────────────────
@@ -1317,23 +1321,7 @@ def _compute_tracer_tendency(state, p):
     # The default keeps the legacy bit-exact 5 m surface-node treatment.  When
     # a mixed-layer depth is supplied, the same flux is spread over that slab,
     # which is the minimal heat-capacity closure for a well-mixed layer.
-    mixed_depth = float(p.mixed_layer_depth_m or 0.0)
-    # A spatially restricted mixed-layer mask lets a high-lat/polar closure
-    # improve regional bias without globally changing the surface heat capacity.
-    # A stratification-derived 2D depth replaces the constant depth only inside
-    # that mask; land still falls through to the legacy surface-cell treatment.
-    if getattr(p, 'mixed_layer_depth_2d', None) is not None:
-        constant_depth = jnp.where(
-            p.mixed_layer_mask_2d > 0.5, mixed_depth, float(p.dz_surface))
-        constant_depth = constant_depth[:, :, None]
-        effective_depth = jnp.where(
-            (p.mixed_layer_mask_2d[:, :, None] > 0.5)
-            & (mixed_depth > 0.0),
-            p.mixed_layer_depth_2d[:, :, None], constant_depth)
-    else:
-        effective_depth = jnp.where((p.mixed_layer_mask_2d[:, :, None] > 0.5)
-                                    & (mixed_depth > 0.0),
-                                    mixed_depth, float(p.dz_surface))
+    effective_depth = _mixed_layer_depth_with_gate(state, p)
     heat_factor = 1.0 / (RHO_0 * C_P * effective_depth)
     ice_insulation = jnp.ones_like(state.T[:, :, 0:1])
     if getattr(p, 'dynamic_ice', False):
@@ -1908,6 +1896,23 @@ def nu_nsub_for_2d_cfl(nu_h, dt, dx_2d, dy, margin=0.25):
                                * (inv_dx2_max + inv_dy2) / margin)))
 
 
+def _mixed_layer_depth_with_gate(state, p):
+    """Return the 3D effective mixed-layer depth with the optional cooling gate."""
+    mixed_depth = float(p.mixed_layer_depth_m or 0.0)
+    if getattr(p, "mixed_layer_depth_2d", None) is not None:
+        effective_depth = jnp.where(
+            (p.mixed_layer_mask_2d > 0.5) & (mixed_depth > 0.0),
+            p.mixed_layer_depth_2d, float(p.dz_surface))
+    else:
+        effective_depth = jnp.where(
+            (p.mixed_layer_mask_2d > 0.5) & (mixed_depth > 0.0),
+            mixed_depth, float(p.dz_surface))
+    if getattr(p, "mixed_layer_cooling_gate", False):
+        cooling = (p.T_atm_3d[:, :, 0] - state.T[:, :, 0]) < 0.0
+        effective_depth = jnp.where(cooling, effective_depth, float(p.dz_surface))
+    return effective_depth
+
+
 def _dynamic_ice_closure(state, p):
     """Advance the minimal stateful ice closure after one dynamics step.
 
@@ -2067,6 +2072,7 @@ def make_solver_global(grid, physics, dt, forcing=None,
                        T_atm=None, lambda_bulk=0.0,
                        mixed_layer_depth_m=None, mixed_layer_mask=None,
                        mixed_layer_depth_2d=None,
+                       mixed_layer_cooling_gate=False,
                        ice_freeze_temp_c=-1.8, ice_salt_flux=0.0,
                        dynamic_ice=False, ice_insulation_scale_m=1.0, ice_mask=None,
                        S_ref_surf=None, sss_restore_days=0.0,
@@ -2360,6 +2366,7 @@ def make_solver_global(grid, physics, dt, forcing=None,
                               if mixed_layer_depth_2d is not None else None),
         ice_freeze_temp_c=float(ice_freeze_temp_c),
         ice_salt_flux=float(ice_salt_flux),
+        mixed_layer_cooling_gate=bool(mixed_layer_cooling_gate),
         dynamic_ice=bool(dynamic_ice),
         ice_insulation_scale_m=float(ice_insulation_scale_m),
         ice_mask_2d=(jnp.asarray(ice_mask, dtype=jnp.float64)
@@ -2602,3 +2609,4 @@ if __name__ == "__main__":
         all_pass = False
     print()
     print("ALL PASS" if all_pass else "SOME FAILED")
+

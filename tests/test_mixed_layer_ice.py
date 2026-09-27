@@ -65,3 +65,52 @@ def test_solver_accepts_mixed_layer_depth():
         polar_cap_rows=0, polar_cap_taper=0,
         mode_split=False, dtype='float64', return_params=True)
     assert params.mixed_layer_depth_m == 50.0
+import jax.numpy as jnp
+import numpy as np
+
+from _helpers import all_wet_grid
+from config import PhysicsConfig
+from dataclasses import replace
+
+from jax_solver_global import JaxStateG, _mixed_layer_depth_with_gate, make_solver_global
+
+
+def _params(T_atm_value, cooling_gate=True):
+    grid = all_wet_grid(nx=8, ny=8, nz=4)
+    physics = replace(PhysicsConfig(), nu_h=0.0, nu_bi=0.0,
+                      nu_v=0.0, kappa_h=0.0, kappa_v=0.0,
+                      kappa_conv=0.0, kappa_gm=0.0, kappa_redi=0.0)
+    forcing = tuple(np.zeros((8, 8)) for _ in range(3))
+    _, _, _, params, _ = make_solver_global(
+        grid, physics, 60.0, forcing=forcing,
+        T_atm=np.full((8, 8), T_atm_value), lambda_bulk=1.0,
+        mixed_layer_depth_m=20.0,
+        mixed_layer_cooling_gate=cooling_gate,
+        polar_cap_rows=0, polar_cap_taper=0,
+        mode_split=False, dtype='float64', return_params=True)
+    return params
+
+
+def _state(T_value):
+    return JaxStateG(jnp.zeros((8, 8, 4)), jnp.zeros((8, 8, 4)),
+                     jnp.full((8, 8, 4), T_value), jnp.full((8, 8, 4), 35.0),
+                     jnp.zeros((8, 8)), jnp.zeros((8, 8)))
+
+
+def test_mixed_layer_cooling_gate_keeps_deep_cooling():
+    params = _params(T_atm_value=5.0, cooling_gate=True)
+    depth = np.asarray(_mixed_layer_depth_with_gate(_state(10.0), params))
+    assert np.allclose(depth, 20.0)
+
+
+def test_mixed_layer_cooling_gate_falls_back_when_warming():
+    params = _params(T_atm_value=15.0, cooling_gate=True)
+    depth = np.asarray(_mixed_layer_depth_with_gate(_state(10.0), params))
+    assert np.allclose(depth, params.dz_surface)
+
+
+def test_mixed_layer_cooling_gate_off_keeps_depth():
+    params = _params(T_atm_value=15.0, cooling_gate=False)
+    depth = np.asarray(_mixed_layer_depth_with_gate(_state(10.0), params))
+    assert np.allclose(depth, 20.0)
+
