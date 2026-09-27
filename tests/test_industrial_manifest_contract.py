@@ -30,6 +30,7 @@ def test_direct_comparison_manifests_are_contract_ready():
         "wind_only_30d_manifest.json",
         "restore_30d_manifest.json",
         "stage_f_30d_manifest.json",
+        "ocean_solver_stage_f_dyn_ice_band40_65_mld100_lat40_60_cooling_ice_gate_365d_manifest.json",
     ]:
         report = validate_contract(json.loads((ROOT / name).read_text(encoding="utf-8")))
         assert report["contract_pass"] is True, name
