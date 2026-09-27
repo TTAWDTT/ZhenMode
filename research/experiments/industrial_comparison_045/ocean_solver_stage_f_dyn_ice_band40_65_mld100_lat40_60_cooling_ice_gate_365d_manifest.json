@@ -1,0 +1,132 @@
+{
+  "model": "ocean_solver",
+  "run_id": "ocean_solver_stage_f_dyn_ice_band40_65_mld100_lat40_60_cooling_ice_gate_365d",
+  "status": "pre_registered",
+  "npz": null,
+  "commit": null,
+  "config": {
+    "days": 365.0,
+    "snap_days": 30.0,
+    "lat_max": 65.0,
+    "ny": 260,
+    "nx": 720,
+    "nz": 14,
+    "resolution": 0.5,
+    "resolution_remap": "area",
+    "z_levels": "",
+    "dt": 1800.0,
+    "dtype": "float32",
+    "nu_h": 2000000.0,
+    "nu_bi": 12500000000000.0,
+    "kappa_v": 1e-06,
+    "kappa_conv": 0.01,
+    "kappa_gm": 0.0,
+    "kappa_redi": 0.0,
+    "mode_split": true,
+    "dt_bt": 75.0,
+    "n_subcyc": 24,
+    "nu_nsub": null,
+    "use_scan": true,
+    "freeze_adv_vel": false,
+    "conservative_kv": false,
+    "project_adv_vel": true,
+    "localize_conv": true,
+    "monotone_adv": false,
+    "fct_adv": true,
+    "mixed_layer_depth_m": 100.0,
+    "mixed_layer_mode": "constant",
+    "mixed_layer_lat_band": [
+      40.0,
+      60.0
+    ],
+    "mixed_layer_gate_mode": "cooling_ice",
+    "ice_freeze_temp": -1.8,
+    "ice_salt_flux": 0.0,
+    "dynamic_ice": true,
+    "dynamic_ice_lat_band": [
+      40.0,
+      65.0
+    ],
+    "ice_insulation_scale_m": 1.0,
+    "lambda_bulk": 80.0,
+    "real_air_temp": false,
+    "real_air_temp_monthly": true,
+    "seasonal_wind": true,
+    "wind_year": 2023,
+    "wind_jit": false,
+    "wind_blend_days": 5.0,
+    "sss_restore_days": 0.0,
+    "sponge_days": 0.0,
+    "polar_cap_rows": 2,
+    "polar_cap_taper": 3,
+    "eta_relax_days": 0.0,
+    "smooth_passes": 80,
+    "min_depth": 500.0,
+    "coastal_restore_days": 0.0,
+    "global_sst_restore_days": 0.0,
+    "init_from": ""
+  },
+  "metrics": null,
+  "grid": {
+    "type": "shared_050_global_slice",
+    "lat_range": [
+      -65.0,
+      65.0
+    ],
+    "lon_range": [
+      0.0,
+      360.0
+    ],
+    "n_lat": 260,
+    "n_lon": 720,
+    "vertical_levels": 14,
+    "vertical_coordinate": "z",
+    "status": "comparable"
+  },
+  "bathymetry": {
+    "source": "ETOPO2022-derived shared topography",
+    "smoothing_passes": 80,
+    "minimum_depth_m": 500.0,
+    "status": "comparable"
+  },
+  "initial_state": {
+    "temperature_salinity": "WOA T/S",
+    "status": "comparable"
+  },
+  "forcing": {
+    "wind": "2023 monthly NCEP R1 10m wind converted to stress",
+    "heat": "2023 monthly NCEP R1 2m air via live-SST bulk proxy",
+    "heat_exchange_w_m2_k": 80.0,
+    "salt_exchange_constant_m_per_day": 0.0,
+    "radiation": "not used",
+    "humidity": "not used",
+    "precipitation": "not used",
+    "evaporation": "not used",
+    "runoff": "not used",
+    "status": "comparable"
+  },
+  "sea_ice": {
+    "treatment": "dynamic ice 40--65N; fixed 100m mixed-layer 40--60N with cooling_ice gate",
+    "status": "comparable"
+  },
+  "duration": {
+    "days": 365.0,
+    "status": "pre_registered"
+  },
+  "scoring": {
+    "reference": "WOA top-level SST on the same grid",
+    "surface_window_days": 90,
+    "three_d_window_days": 90,
+    "masks": [
+      "shared wet_mask intersection",
+      "shared bathymetric vertical depth mask"
+    ],
+    "status": "comparable"
+  },
+  "provenance": {
+    "model_source_commit": "not_recorded",
+    "model_source_commit_status": "not_comparable",
+    "compiler": "Python; JAX",
+    "status": "not_comparable"
+  }
+}
