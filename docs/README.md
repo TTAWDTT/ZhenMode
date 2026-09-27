@@ -18,6 +18,7 @@
 | [`resolution_cfl_limits.md`](resolution_cfl_limits.md) | 分辨率标度：实测 CFL 上限与 `dt_bt`/`nu_h`/`nu_bi` 的 `dx^1/2/4` 自动缩放。 |
 | [`hydrostatic_primitive_equations.md`](hydrostatic_primitive_equations.md) | 静力原始方程组的中文讲解（物理背景，与实现无关）。 |
 | [`repositioning_memo_zh.md`](repositioning_memo_zh.md) | 项目定位声明：从"逼近真实观测"回到"稳定快速的海洋模式"。 |
+| [industrial_comparison_zh.md](industrial_comparison_zh.md) | 工业级对照简报：直接对照、差距矩阵与下一步门槛。 |
 | [`spinup_plan_zh.md`](spinup_plan_zh.md) | 平衡态加速自旋升方案（把模式推到准平衡气候态）。 |
 
 ## 已归档 / Archived
