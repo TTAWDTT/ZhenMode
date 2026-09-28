@@ -1,6 +1,17 @@
 # Current Research Plan
 
-Updated: 2026-09-26
+Updated: 2026-09-28
+
+## Current authority: full industrial alignment
+
+The complete active objective and acceptance requirements are preserved in
+`docs/industrial_alignment_roadmap_zh.md`. Historical narrow slices below are
+research steps, not a redefinition of success. Historical surface/ice and
+comparison scores predate corrected kernels and must not qualify current code.
+Registered scalar diffusion gates have passed; the next foundation is
+`research/experiments/actual_stage_budgets/protocol.md`. Real-forcing century
+runs, independent climate/forecast skill, full geometry/physics, fair GPU and
+distributed scaling, and whole-model differentiability remain required.
 
 ## Active priority: external industrial comparison
 
@@ -343,5 +354,4 @@ Runner: scripts/run_candidate_baseline.sh
     `-0.1443 C`. It passes the 30d stability and benchmark gates. Promote the
     closure to the 365d A/B check, but do not promote it as production default
     until that check repeats.
-
 
