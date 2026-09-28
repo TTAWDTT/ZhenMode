@@ -87,7 +87,8 @@ windows (`area_weighted_angular_box_v2`), not equal-cell/index-window scores.
 Comparison rejects different metric versions, domains or reference fields;
 archived scores are not silently upgraded. Initial-reference and endpoint
 content-change diagnostics are NOT independent climate or closed-budget
-evidence. See the [scoring protocol](docs/benchmark_protocol_zh.md) and
+evidence. Current full suite passes598 tests; this is not climate qualification.
+See the [scoring protocol](docs/benchmark_protocol_zh.md) and
 [century/climate acceptance requirements](docs/century_climate_acceptance_zh.md).
 
 When enabling `--project-adv-vel`, set and verify `--projection-niter`,

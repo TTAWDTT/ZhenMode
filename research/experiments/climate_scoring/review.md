@@ -46,10 +46,12 @@ candidate is falsely claimed rescored or improved by this change.
 
 ## Full-validation state and remaining requirements
 
-Specific full-suite61319/PID38224 is running; launch hashes are saved in
-`climate_scoring_full_start_hashes.json`, and the wrapper will capture/check
-end hashes, exit code and time in `climate_scoring_full_result.json`.
-Do not infer completion from the adjacent suite. Ruff/diff and YAML pass.
+Specific full-suite61319/PID38224 completes exit0:598 passed,18 NetCDF/NumPy
+deprecation warnings,430.04s (wrapper435.737s). Actual launch/end source/test
+hashes agree, saved in `climate_scoring_full_start_hashes.json` and
+`climate_scoring_full_end_hashes.json`; exit/timing/hash result is
+`climate_scoring_full_result.json`. This is final-source complete suite,
+not inferred from the adjacent suite. Ruff/diff, YAML and38 local links pass.
 
 Separately, all eight existing actual paired100x60s references and independent
 LAST-step aggregate audits now pass, with9 corruptions rejected. Their hashed

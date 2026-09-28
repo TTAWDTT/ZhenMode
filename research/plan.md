@@ -11,11 +11,12 @@ or century qualification. Actual rain/source momentum witness still FAILS.
 While that process was live and its hashed files protected, OMIP/Xarray research
 and protocols4ae565c/540bee9 precede shared scoring correctioncbfbb0b. New wet-area
 and coordinate angular metrics reject mixed definitions/domains/references;
-66 adjacent tests pass, full-suite61319 is live. Initialization references,
+66 adjacent tests pass; specific full-suite61319 completes exit0 with598 passed,
+18 deprecation warnings and unchanged launch/end source hashes. Initialization references,
 record-count averages and endpoint inventory percentages remain diagnostics,
 not independent climate, time-bounds means or closed budgets. Complete acceptance
 requirements are in `docs/century_climate_acceptance_zh.md`.
-After final validation, resume ACTUAL nonlinear momentum/source/moving kinetic-
+Resume ACTUAL nonlinear momentum/source/moving kinetic-
 buoyancy derivation and production migration; this necessary scoring correction
 is not an easier substitute for completing the full industrial objective.
 Earlier pending entries below are chronological milestone observations.

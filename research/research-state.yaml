@@ -1103,7 +1103,12 @@ industrial_alignment_20260928:
     metric_definition: area_weighted_angular_box_v2
     adjacent_tests_passed: 66
     adjacent_tests_log: "results/industrial_alignment/climate_scoring_final_66.log"
-    full_suite_status: running_specific_handle_61319
+    full_suite_status: passed_specific_handle_61319
+    full_suite_passed: 598
+    full_suite_deprecation_warnings: 18
+    full_suite_seconds: 430.04
+    full_suite_launch_end_source_hashes_match: true
+    full_suite_result: "results/industrial_alignment/climate_scoring_full_result.json"
     full_suite_log: "results/industrial_alignment/climate_scoring_full_tests.log"
     actual_area_when_provided_else_labelled_inferred_edges: true
     filter: wet_area_angular_box_half_width_2_degrees_not_constant_km
@@ -1113,5 +1118,5 @@ industrial_alignment_20260928:
     endpoint_content_change_is_closed_budget: false
     century_acceptance_requirements: "docs/century_climate_acceptance_zh.md"
     century_climate_forecast_gpu_full_adjoint_pass: false
-  next: "Specific eight100-step process76252/PID28884 and independent host39846 completed:8 runtime/last-step aggregate audits PASS plus9 corruptions rejected, each6000s only. Shared v2 wet-area/angular scoring corrects misleading equal-cell/index scores and rejects mixed versions/domains/references;66 adjacent checks pass, specific full-suite61319 pending. Finish that same validation handle, then ACTUAL nonlinear momentum/source/moving kinetic-buoyancy work and production cutover, not arbitrary Mdot or KE repair. Actual rain witness still FAILS zero-incoming-momentum contract despite zero frozen work. Complete EOS/real sources/mixing/ice and every global topology, century/sensitivity, independent climate/forecast, fair GPU/distributed, whole-model adjoint/learning and engineering requirement. No final industrial qualification yet."
+  next: "Specific eight100-step process76252/PID28884 and independent host39846 completed:8 runtime/last-step aggregate audits PASS plus9 corruptions rejected, each6000s only. Shared v2 wet-area/angular scoring corrects misleading equal-cell/index scores and rejects mixed versions/domains/references;66 adjacent and598 full tests pass, specific61319 exit0 and launch/end hashes unchanged. Resume ACTUAL nonlinear momentum/source/moving kinetic-buoyancy work and production cutover, not arbitrary Mdot or KE repair. Actual rain witness still FAILS zero-incoming-momentum contract despite zero frozen work. Complete EOS/real sources/mixing/ice and every global topology, century/sensitivity, independent climate/forecast, fair GPU/distributed, whole-model adjoint/learning and engineering requirement. No final industrial qualification yet."
   unresolved: ["whole-model budgets", "volume/free-surface consistency", "partial cells/global topology", "complete real physical forcing", "independent climate/forecast skill", "fair GPU/distributed cost", "whole-model adjoint and constrained learning"]
