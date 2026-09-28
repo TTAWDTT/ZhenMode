@@ -529,6 +529,8 @@ def main():
                     help="CG relative tolerance, floored at 32*dtype epsilon")
     ap.add_argument("--projection-preconditioner", choices=["none", "jacobi"], default="none",
                     help="native wet-face Poisson preconditioner (default none)")
+    ap.add_argument("--projection-max-refinements", type=int, choices=[0, 1, 2], default=2,
+                    help="bounded actual-transport correction passes (default 2; 0 disables)")
     ap.add_argument("--localize-conv", action="store_true",
                     help="gate convective adjustment PER-INTERFACE (mix only "
                          "across unstable interfaces) instead of the historical "
@@ -917,6 +919,7 @@ def main():
         projection_niter=args.projection_niter,
         projection_rtol=args.projection_rtol,
         projection_preconditioner=args.projection_preconditioner,
+        projection_max_refinements=args.projection_max_refinements,
         localize_conv=args.localize_conv,
         monotone_adv=args.monotone_adv,
         fct_adv=args.fct_adv,

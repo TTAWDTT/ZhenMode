@@ -5,6 +5,7 @@ import json
 import subprocess
 import sys
 import time
+import types
 from pathlib import Path
 
 import jax
@@ -15,15 +16,20 @@ ROOT = Path(__file__).resolve().parents[3]
 sys.path[:0] = [str(ROOT / "src"), str(ROOT / "scripts")]
 
 from config import DEFAULT_CONFIG, G_EARTH
-from jax_solver_global import (
-    _column_divergence,
-    _gradient_conservative_3d,
-    _project_column_divergence,
-    _vertical_transport_iface,
-    make_solver_global,
-    projection_config,
-)
 from verify_debug_integration import make_smoke_fixture
+
+FROZEN_KERNEL = "8e51726"
+FROZEN_SOURCE = subprocess.check_output(["git", "show", f"{FROZEN_KERNEL}:src/jax_solver_global.py"], cwd=ROOT)
+frozen = types.ModuleType("frozen_residual_control")
+frozen.__file__ = str(ROOT / "src/jax_solver_global.py")
+sys.modules[frozen.__name__] = frozen
+exec(compile(FROZEN_SOURCE, frozen.__file__, "exec"), frozen.__dict__)
+_column_divergence = frozen._column_divergence
+_gradient_conservative_3d = frozen._gradient_conservative_3d
+_project_column_divergence = frozen._project_column_divergence
+_vertical_transport_iface = frozen._vertical_transport_iface
+make_solver_global = frozen.make_solver_global
+projection_config = frozen.projection_config
 
 
 def pressure_problem(params):
@@ -134,6 +140,8 @@ def main():
                   "git_status": subprocess.check_output(["git", "status", "--porcelain"], cwd=ROOT, text=True).splitlines(),
                   "source_sha256": {str(path.relative_to(ROOT)): hashlib.sha256(path.read_bytes()).hexdigest() for path in sources},
                   "manifest_sha256": {str(path.relative_to(ROOT)): hashlib.sha256(path.read_bytes()).hexdigest() for path in manifests},
+                  "frozen_kernel": FROZEN_KERNEL,
+                  "frozen_kernel_sha256": hashlib.sha256(FROZEN_SOURCE).hexdigest(),
                   "bathymetry_sha256": hashlib.sha256(Path(args.bathy).read_bytes()).hexdigest(),
                   "jax_version": jax.__version__, "backend": jax.default_backend()}}
 

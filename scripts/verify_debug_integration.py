@@ -58,6 +58,7 @@ def main():
     parser.add_argument("--projection-niter", type=int, default=None)
     parser.add_argument("--projection-rtol", type=float, default=None)
     parser.add_argument("--projection-preconditioner", choices=["none", "jacobi"], default="none")
+    parser.add_argument("--projection-max-refinements", type=int, choices=[0, 1, 2], default=2)
     parser.add_argument("--cases", nargs="+", choices=["baseline", "mixed", "ice", "coastal"],
                         default=["baseline", "mixed", "ice", "coastal"])
     parser.add_argument("--bathy", default=DEFAULT_CONFIG.bathymetry_file)
@@ -108,6 +109,7 @@ def main():
             conservative_kv=True, localize_conv=True, project_adv_vel=True, fct_adv=True,
             projection_niter=args.projection_niter, projection_rtol=args.projection_rtol,
             projection_preconditioner=args.projection_preconditioner,
+            projection_max_refinements=args.projection_max_refinements,
             mixed_layer_depth_m=20. if case in {"mixed", "ice"} else None,
             dynamic_ice=case == "ice", coastal_kappa_h_mask=coast_mask,
             coastal_kappa_h=500. if coast_mask is not None else 0., return_params=True)

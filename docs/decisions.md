@@ -864,3 +864,33 @@ Registered research, gates and reproducible experiment:
 [`projection convergence protocol`](../research/experiments/projection_convergence/protocol.md).
 Actual evidence and failure boundaries:
 [`projection convergence review`](../research/experiments/projection_convergence/review.md).
+
+## D36 — Check actual transport and bound residual correction
+
+Float32 JAX CG can stop on a recursive residual below its requested tolerance
+while the true b-Apsi residual is approximately 14 times larger. On two frozen
+real-grid failure predictors the public solve and an independently instrumented
+recurrence agree exactly; the discrepancy is measured, not assumed from CG's
+return. A separate smooth-pressure masked regression fails the unchanged native
+5e-5 transport gate at 1.129e-4 without correction.
+
+The projection now checks actual reverse-cumsum top transport and performs at
+most `projection_max_refinements` additional velocity corrections, default 2.
+The internal trigger is max(1e-10,32*eps); it is not a guaranteed final tolerance.
+Correction solves retain the original RHS L2-based absolute stopping floor,
+rather than pursuing an arbitrarily small relative residual on a floating-point
+noise RHS in a semidefinite system. The no-floor negative control amplifies the
+native residual to 0.281/0.113 and is retained, not promoted.
+
+State/pressure precision, B/G3, wet faces, physical sources and tracer updates
+are unchanged. No regularization, global-mean deletion, top-flux removal or
+silent whole-model float64 conversion is used. Effective bound, trigger and
+absolute-floor scale are recorded with immutable configuration. A bound of 0
+reproduces the old unrefined solve. Legacy none/150 is still not globally
+qualified: bounded correction does not make an arbitrary low cap safe.
+
+Fixed-input comparison and 45 direct projection tests support the correction;
+full trajectory, resolution and physical-volume qualification remain separate.
+Registered gates, retained failures and implementation scope:
+[`residual control protocol`](../research/experiments/projection_residual_control/protocol.md),
+[`residual control review`](../research/experiments/projection_residual_control/review.md).
