@@ -9,8 +9,10 @@ from cgrid_momentum import (
     coriolis_tendency,
     hydrostatic_pressure_force,
     linear_momentum_surface_step,
+    momentum_geometry,
     rotate_coriolis,
 )
+from config import OMEGA
 from finite_volume import ExtensiveState, build_geometry, surface_volume
 
 jax.config.update("jax_enable_x64", True)
@@ -35,6 +37,59 @@ def _reference_average(geometry, volume, coefficients):
     top[..., 0] = geometry.thickness[..., 0] - height[..., 0]
     center = top + .5 * height
     return coefficients[0] + coefficients[1] * center + coefficients[2] * (center ** 2 + height ** 2 / 12.)
+
+
+def _rotation_oracle(geometry, volume, coriolis):
+    area = np.asarray(geometry.area)
+    height = np.asarray(volume) / area[..., None]
+    top = np.broadcast_to(geometry.interfaces[:-1], height.shape).copy()
+    top[..., 0] = geometry.thickness[..., 0] - height[..., 0]
+    bottom = top + height
+    latitude = np.asarray(geometry.latitude_edges)
+    middle = .5 * (latitude[:-1] + latitude[1:])
+    south_area = area * ((np.sin(middle) - np.sin(latitude[:-1])) / (np.sin(latitude[1:]) - np.sin(latitude[:-1])))[None, :]
+    north_area = area - south_area
+    shape = height.shape
+    east_top, east_bottom = np.zeros(shape), np.zeros(shape)
+    north_top, north_bottom = np.zeros(shape), np.zeros(shape)
+    east_mass, north_mass = np.zeros(shape), np.zeros(shape)
+    for position in np.ndindex(shape):
+        longitude_index, latitude_index, layer_index = position
+        adjacent_east = ((longitude_index + 1) % shape[0], latitude_index, layer_index)
+        if geometry.thickness[position] > 0. and geometry.thickness[adjacent_east] > 0.:
+            east_top[position] = max(top[position], top[adjacent_east])
+            east_bottom[position] = min(bottom[position], bottom[adjacent_east])
+            east_mass[position] = .5 * (area[position[:2]] + area[adjacent_east[:2]]) * max(east_bottom[position] - east_top[position], 0.)
+        if latitude_index + 1 < shape[1]:
+            adjacent_north = (longitude_index, latitude_index + 1, layer_index)
+            if geometry.thickness[position] > 0. and geometry.thickness[adjacent_north] > 0.:
+                north_top[position] = max(top[position], top[adjacent_north])
+                north_bottom[position] = min(bottom[position], bottom[adjacent_north])
+                north_mass[position] = (north_area[position[:2]] + south_area[adjacent_north[:2]]) * max(north_bottom[position] - north_top[position], 0.)
+    size = int(np.prod(shape))
+    matrix = np.zeros((2 * size, 2 * size))
+    prescribed = None if coriolis is None else np.broadcast_to(coriolis, area.shape)
+    for position in np.ndindex(shape):
+        longitude_index, latitude_index, layer_index = position
+        for east_index in ((longitude_index - 1) % shape[0], longitude_index):
+            east_position = (east_index, latitude_index, layer_index)
+            if east_mass[east_position] == 0.:
+                continue
+            for north_index, quadrant_area, boundary in (
+                    (latitude_index - 1, .5 * south_area[position[:2]], latitude[latitude_index]),
+                    (latitude_index, .5 * north_area[position[:2]], latitude[latitude_index + 1])):
+                north_position = (longitude_index, north_index, layer_index)
+                if north_index < 0 or north_mass[north_position] == 0.:
+                    continue
+                common = max(min(east_bottom[east_position], north_bottom[north_position])
+                             - max(east_top[east_position], north_top[north_position]), 0.)
+                coriolis_mean = OMEGA * (np.sin(middle[latitude_index]) + np.sin(boundary)) if prescribed is None else prescribed[position[:2]]
+                coupling = quadrant_area * common * coriolis_mean
+                east_flat = np.ravel_multi_index(east_position, shape)
+                north_flat = np.ravel_multi_index(north_position, shape)
+                matrix[east_flat, size + north_flat] += coupling / east_mass[east_position]
+                matrix[size + north_flat, east_flat] -= coupling / north_mass[north_position]
+    return east_mass, north_mass, matrix
 
 
 @pytest.mark.parametrize("coefficients", [np.array([1., .01, 0.]), np.array([1., .01, .00002])])
@@ -123,8 +178,7 @@ def test_coriolis_weighted_work_and_midpoint_rotation_energy(dtype, tolerance):
     force_east, force_north = coriolis_tendency(geometry, east, north, coriolis=.001)
     clean_east = np.nan_to_num(np.asarray(east, dtype=np.float64))
     clean_north = np.nan_to_num(np.asarray(north, dtype=np.float64))
-    east_weight = geometry.east_area * geometry.east_distance[..., None]
-    north_weight = geometry.north_area * geometry.north_distance[..., None]
+    east_weight, north_weight, unused_matrix = _rotation_oracle(geometry, volume, .001)
     work = np.sum(east_weight * clean_east * force_east) + np.sum(north_weight * clean_north * force_north)
     scale = np.sum(np.abs(east_weight * clean_east * force_east)) + np.sum(np.abs(north_weight * clean_north * force_north))
     assert abs(work) <= 1e-12 * scale
@@ -140,21 +194,7 @@ def test_rotation_matches_independent_dense_physical_velocity_system():
                               [0., 10., 50.], np.full((4, 3), 50.))
     shape = geometry.thickness.shape
     size = int(np.prod(shape))
-    east_weight = geometry.east_area * geometry.east_distance[..., None]
-    north_weight = geometry.north_area * geometry.north_distance[..., None]
-    matrix = np.zeros((2 * size, 2 * size))
-    for origin in np.ndindex(shape):
-        if east_weight[origin] == 0.:
-            continue
-        origin_flat = np.ravel_multi_index(origin, shape)
-        for longitude in (origin[0], (origin[0] + 1) % shape[0]):
-            for latitude in (origin[1], origin[1] - 1):
-                destination = (longitude, latitude, origin[2])
-                if latitude < 0 or north_weight[destination] == 0.:
-                    continue
-                destination_flat = np.ravel_multi_index(destination, shape)
-                matrix[origin_flat, size + destination_flat] += .25 * .15 * np.sqrt(north_weight[destination] / east_weight[origin])
-                matrix[size + destination_flat, origin_flat] -= .25 * .15 * np.sqrt(east_weight[origin] / north_weight[destination])
+    east_weight, north_weight, matrix = _rotation_oracle(geometry, geometry.area[..., None] * geometry.thickness, .15)
     random = np.random.default_rng(943)
     east = np.where(east_weight > 0., random.normal(size=shape), 0.)
     north = np.where(north_weight > 0., random.normal(size=shape), 0.)
@@ -207,6 +247,95 @@ def test_partial_faces_uniform_velocity_common_depth_not_neighbor_mass(orientati
         actual = acceleration[2:6, 2:4, 2]
         expected = -.002
     np.testing.assert_allclose(actual, expected, rtol=1e-8, atol=0.)
+
+
+@pytest.mark.parametrize("coriolis", [None, .001, "variable"])
+@pytest.mark.parametrize("dtype", [jnp.float64, jnp.float32])
+def test_physical_duals_moving_overlaps_match_independent_quadrant_oracle(coriolis, dtype):
+    depth = np.array([[50., 9., 4., 50.], [23., 50., 0., 15.], [7., 29., 50., 2.],
+                      [50., 50., 13., 50.], [16., 50., 50., 50.]])
+    geometry = build_geometry([0., 37., 131., 206., 298., 360.], [-60., -27., -3., 15., 56.], [0., 7., 21., 50.], depth)
+    random = np.random.default_rng(949)
+    eta = jnp.asarray(random.uniform(-.1, .1, depth.shape) * (depth > 0.))
+    volume = surface_volume(geometry, eta)
+    parameter = random.uniform(-.001, .001, depth.shape) if isinstance(coriolis, str) else coriolis
+    east_weight, north_weight, matrix = _rotation_oracle(geometry, volume, parameter)
+    east = jnp.asarray(np.where(east_weight > 0., random.normal(size=volume.shape), np.nan), dtype)
+    north = jnp.asarray(np.where(north_weight > 0., random.normal(size=volume.shape), np.nan), dtype)
+    faces = jax.jit(momentum_geometry)(geometry, volume)
+    assert bool(faces.valid)
+    np.testing.assert_allclose(faces.east_volume, east_weight, rtol=1e-12, atol=1e-12)
+    np.testing.assert_allclose(faces.north_volume, north_weight, rtol=1e-12, atol=1e-12)
+    actual_east, actual_north = coriolis_tendency(geometry, east, north, parameter, volume=volume)
+    initial = np.r_[np.nan_to_num(np.asarray(east)).ravel(), np.nan_to_num(np.asarray(north)).ravel()]
+    expected = matrix @ initial
+    np.testing.assert_allclose(np.r_[np.asarray(actual_east).ravel(), np.asarray(actual_north).ravel()], expected, rtol=1e-12, atol=1e-12)
+    rotated = rotate_coriolis(geometry, east, north, 600., parameter, volume=volume)
+    assert bool(rotated.valid)
+    before = np.sum(east_weight * np.nan_to_num(np.asarray(east, dtype=np.float64)) ** 2
+                    + north_weight * np.nan_to_num(np.asarray(north, dtype=np.float64)) ** 2)
+    after = np.sum(east_weight * np.asarray(rotated.east_velocity, dtype=np.float64) ** 2
+                   + north_weight * np.asarray(rotated.north_velocity, dtype=np.float64) ** 2)
+    assert abs(after - before) / before <= (2e-6 if dtype == jnp.float32 else 1e-12)
+
+
+def test_common_overlap_tendency_bound_follows_geometry_not_force_clipping():
+    geometry, volume = _fixture()
+    random = np.random.default_rng(950)
+    east = jnp.asarray(random.normal(size=volume.shape))
+    north = jnp.asarray(random.normal(size=volume.shape))
+    acceleration_east, acceleration_north = coriolis_tendency(geometry, east, north, .001)
+    assert np.max(np.abs(acceleration_east)) <= .001 * np.max(np.abs(north)) * (1. + 1e-12)
+    assert np.max(np.abs(acceleration_north)) <= .001 * np.max(np.abs(east)) * (1. + 1e-12)
+
+
+@pytest.mark.parametrize("invalid", ["nan", "deep", "dry", "dtype", "shape"])
+def test_rotation_physical_volume_invalid_inputs_reject_or_return_invalid(invalid):
+    geometry, volume = _fixture()
+    zero = jnp.zeros_like(volume)
+    if invalid == "nan":
+        volume = volume.at[0, 0, 0].set(jnp.nan)
+    elif invalid == "deep":
+        volume = volume.at[0, 0, 1].multiply(1.01)
+    elif invalid == "dry":
+        volume = volume.at[9, 1, 0].set(1.)
+    elif invalid == "dtype":
+        volume = volume.astype(jnp.float32)
+    else:
+        volume = volume[..., :-1]
+    if invalid in ("dtype", "shape"):
+        with pytest.raises(ValueError):
+            rotate_coriolis(geometry, zero, zero, 60., volume=volume)
+    else:
+        assert not bool(momentum_geometry(geometry, volume).valid)
+        assert not bool(rotate_coriolis(geometry, zero, zero, 60., volume=volume).valid)
+
+
+def test_moving_volume_rotation_local_derivatives_including_dry_cells():
+    geometry, unused_volume = _fixture()
+    random = np.random.default_rng(951)
+    wet = geometry.thickness[..., 0] > 0.
+    eta = jnp.asarray(random.uniform(-.1, .1, wet.shape) * wet)
+    direction = jnp.asarray(random.normal(size=wet.shape) * wet)
+    east = jnp.asarray(.01 * random.normal(size=geometry.thickness.shape))
+    north = jnp.asarray(.01 * random.normal(size=geometry.thickness.shape))
+    cotangent = jnp.asarray(random.normal(size=geometry.thickness.shape + (2,)))
+
+    def rotation(surface):
+        volume = surface_volume(geometry, surface)
+        result = rotate_coriolis(geometry, east, north, 60., .001, volume=volume)
+        return jnp.stack((result.east_velocity, result.north_velocity), axis=-1)
+
+    _, derivative = jax.jvp(rotation, (eta,), (direction,))
+    epsilon = 1e-3
+    difference = (rotation(eta + epsilon * direction) - rotation(eta - epsilon * direction)) / (2. * epsilon)
+    assert np.all(np.isfinite(derivative))
+    assert np.linalg.norm(derivative - difference) / np.linalg.norm(derivative) <= 1e-6
+    _, pullback = jax.vjp(rotation, eta)
+    forward = float(jnp.vdot(cotangent, derivative))
+    reverse = float(jnp.vdot(pullback(cotangent)[0], direction))
+    assert np.isfinite(reverse)
+    assert abs(forward - reverse) <= 1e-12 * max(abs(forward), abs(reverse))
 
 
 @pytest.mark.parametrize("dtype", [jnp.float64, jnp.float32])

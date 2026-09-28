@@ -30,6 +30,22 @@ class PressureForce(NamedTuple):
     valid: jnp.ndarray
 
 
+class MomentumGeometry(NamedTuple):
+    top: jnp.ndarray
+    height: jnp.ndarray
+    east_area: jnp.ndarray
+    north_area: jnp.ndarray
+    east_top: jnp.ndarray
+    east_bottom: jnp.ndarray
+    north_top: jnp.ndarray
+    north_bottom: jnp.ndarray
+    east_volume: jnp.ndarray
+    north_volume: jnp.ndarray
+    south_half_area: jnp.ndarray
+    north_half_area: jnp.ndarray
+    valid: jnp.ndarray
+
+
 class RotationResult(NamedTuple):
     east_velocity: jnp.ndarray
     north_velocity: jnp.ndarray
@@ -55,6 +71,52 @@ class MomentumResult(NamedTuple):
     valid: jnp.ndarray
 
 
+def momentum_geometry(geometry, volume=None):
+    """Exact wet half-cell rectangles and shared physical face intervals.
+
+    Latitude halves use spherical areas; velocities are zero outside their
+    open-face wet interval. Only the top cell may move in this fixed-z stage.
+    This defines the rotation mass, not full nonlinear dual-mass continuity.
+    """
+    if not jax.config.jax_enable_x64:
+        raise ValueError("physical momentum geometry requires explicit JAX X64")
+    for field in (geometry.area, geometry.thickness, geometry.interfaces, geometry.latitude_edges):
+        if jnp.asarray(field).dtype != jnp.float64:
+            raise ValueError("physical momentum geometry requires64 geometry dtype")
+    area, base_height = jnp.asarray(geometry.area), jnp.asarray(geometry.thickness)
+    volume = area[..., None] * base_height if volume is None else jnp.asarray(volume)
+    if volume.shape != base_height.shape or volume.dtype != jnp.float64:
+        raise ValueError("momentum volume must match physical cells with64 dtype")
+    height = volume / area[..., None]
+    eta = height[..., 0] - base_height[..., 0]
+    top = jnp.broadcast_to(jnp.asarray(geometry.interfaces[:-1]), height.shape).at[..., 0].set(-eta)
+    bottom = top + height
+    latitude = jnp.asarray(geometry.latitude_edges)
+    middle = .5 * (latitude[:-1] + latitude[1:])
+    south_fraction = (jnp.sin(middle) - jnp.sin(latitude[:-1])) / (jnp.sin(latitude[1:]) - jnp.sin(latitude[:-1]))
+    south_half = area * south_fraction[None, :]
+    north_half = area - south_half
+    face_areas, face_tops, face_bottoms, face_heights = [], [], [], []
+    for axis, base_area in enumerate((geometry.east_area, geometry.north_area)):
+        shared_top = jnp.maximum(top, _neighbor(top, axis, 1))
+        shared_bottom = jnp.minimum(bottom, _neighbor(bottom, axis, 1))
+        common = jnp.maximum(shared_bottom - shared_top, 0.)
+        base_common = jnp.minimum(base_height, _neighbor(base_height, axis, 1))
+        opened = jnp.asarray(base_area) > 0.
+        face_areas.append(jnp.where(opened, jnp.asarray(base_area) * common / jnp.where(base_common > 0., base_common, 1.), 0.))
+        face_tops.append(shared_top)
+        face_bottoms.append(shared_bottom)
+        face_heights.append(jnp.where(opened, common, 0.))
+    east_volume = .5 * (area + _neighbor(area, 0, 1))[..., None] * face_heights[0]
+    north_volume = (north_half + _neighbor(south_half, 1, 1))[..., None] * face_heights[1]
+    lower_error = jnp.max(jnp.abs(height[..., 1:] - base_height[..., 1:]) / jnp.maximum(base_height[..., 1:], 1.), initial=0.)
+    valid = (jnp.all(jnp.isfinite(volume)) & jnp.all(jnp.where(base_height > 0., volume > 0., volume == 0.))
+             & (lower_error <= 1e-12) & jnp.all(jnp.isfinite(east_volume)) & jnp.all(jnp.isfinite(north_volume))
+             & jnp.all(east_volume >= 0.) & jnp.all(north_volume >= 0.))
+    return MomentumGeometry(top, height, *face_areas, face_tops[0], face_bottoms[0], face_tops[1], face_bottoms[1],
+                            east_volume, north_volume, south_half, north_half, valid)
+
+
 def hydrostatic_pressure_force(geometry, volume, density_anomaly, reference=None,
                                gravity=9.81, rho0=1025.):
     """Analytic pressure averages on the SAME physical wet depth on both sides.
@@ -78,12 +140,11 @@ def hydrostatic_pressure_force(geometry, volume, density_anomaly, reference=None
     if coefficients.shape != (3,) or gravity.ndim != 0 or rho0.ndim != 0:
         raise ValueError("reference needs three coefficients; gravity/rho0 must be scalar")
     base_height = jnp.asarray(geometry.thickness, jnp.float64)
-    area = jnp.asarray(geometry.area, jnp.float64)
     wet = base_height > 0.
-    height = volume / area[..., None]
+    faces = momentum_geometry(geometry, volume)
+    height, top = faces.height, faces.top
     eta = height[..., 0] - base_height[..., 0]
-    top = jnp.broadcast_to(jnp.asarray(geometry.interfaces[:-1]), shape).at[..., 0].set(-eta)
-    bottom, center = top + height, top + .5 * height
+    center = top + .5 * height
     reference_mean = coefficients[0] + coefficients[1] * center + coefficients[2] * (center ** 2 + height ** 2 / 12.)
     density = jnp.where(wet, density, 0.)
     residual = jnp.where(wet, density - reference_mean, 0.)
@@ -108,13 +169,9 @@ def hydrostatic_pressure_force(geometry, volume, density_anomaly, reference=None
                                           + cell_slope * (start ** 2 + start * end + end ** 2) / 6.)
 
     forces, face_areas = [], []
-    for axis, (base_face_area, distance) in enumerate(((geometry.east_area, geometry.east_distance),
-                                                       (geometry.north_area, geometry.north_distance))):
-        interval_top = jnp.maximum(top, _neighbor(top, axis, 1))
-        interval_bottom = jnp.minimum(bottom, _neighbor(bottom, axis, 1))
-        common_height = jnp.maximum(interval_bottom - interval_top, 0.)
-        base_common = jnp.minimum(base_height, _neighbor(base_height, axis, 1))
-        face_area = jnp.asarray(base_face_area, jnp.float64) * common_height / jnp.where(base_common > 0., base_common, 1.)
+    for axis, (face_area, interval_top, interval_bottom, distance) in enumerate(
+            ((faces.east_area, faces.east_top, faces.east_bottom, geometry.east_distance),
+             (faces.north_area, faces.north_top, faces.north_bottom, geometry.north_distance))):
         pressure_left = pressure_average(interval_top, interval_bottom, top, height, residual, slope, pressure_top) + reference_load[..., None]
         pressure_right = pressure_average(interval_top, interval_bottom, _neighbor(top, axis, 1),
                                           _neighbor(height, axis, 1), _neighbor(residual, axis, 1),
@@ -122,18 +179,16 @@ def hydrostatic_pressure_force(geometry, volume, density_anomaly, reference=None
         force = jnp.where(face_area > 0., -(pressure_right - pressure_left) / (rho0 * jnp.asarray(distance)[..., None]), 0.)
         forces.append(force)
         face_areas.append(face_area)
-    lower_error = jnp.max(jnp.abs(height[..., 1:] - base_height[..., 1:]) / jnp.maximum(base_height[..., 1:], 1.), initial=0.)
-    valid = (jnp.all(jnp.isfinite(volume)) & jnp.all(jnp.isfinite(density))
+    valid = (faces.valid & jnp.all(jnp.isfinite(density))
              & jnp.all(jnp.isfinite(coefficients)) & jnp.isfinite(gravity) & (gravity >= 0.)
-             & jnp.isfinite(rho0) & (rho0 > 0.) & (lower_error <= 1e-12)
-             & jnp.all(jnp.where(wet, volume > 0., volume == 0.))
+             & jnp.isfinite(rho0) & (rho0 > 0.)
              & jnp.all(jnp.where(wet, rho0 + density > 0., True))
              & jnp.all(jnp.isfinite(forces[0])) & jnp.all(jnp.isfinite(forces[1]))
              & jnp.all(jnp.isfinite(face_areas[0])) & jnp.all(jnp.isfinite(face_areas[1])))
     return PressureForce(*forces, *face_areas, valid)
 
 
-def _rotation_system(geometry, east_velocity, north_velocity, coriolis):
+def _rotation_system(geometry, east_velocity, north_velocity, coriolis, volume=None):
     if not jax.config.jax_enable_x64:
         raise ValueError("weighted rotation requires explicit JAX X64 arithmetic")
     east_velocity, north_velocity = jnp.asarray(east_velocity), jnp.asarray(north_velocity)
@@ -141,64 +196,76 @@ def _rotation_system(geometry, east_velocity, north_velocity, coriolis):
         raise ValueError("layer face velocities must match physical cells")
     if east_velocity.dtype not in (jnp.float32, jnp.float64) or north_velocity.dtype != east_velocity.dtype:
         raise ValueError("layer face velocities must share float32/64 dtype")
-    east_weight = jnp.asarray(geometry.east_area, jnp.float64) * jnp.asarray(geometry.east_distance)[..., None]
-    north_weight = jnp.asarray(geometry.north_area, jnp.float64) * jnp.asarray(geometry.north_distance)[..., None]
+    faces = momentum_geometry(geometry, volume)
+    east_weight, north_weight = faces.east_volume, faces.north_volume
     east_open, north_open = east_weight > 0., north_weight > 0.
-    root_east, root_north = jnp.sqrt(jnp.maximum(east_weight, 0.)), jnp.sqrt(jnp.maximum(north_weight, 0.))
+    root_east = jnp.where(east_open, jnp.sqrt(jnp.where(east_open, east_weight, 1.)), 0.)
+    root_north = jnp.where(north_open, jnp.sqrt(jnp.where(north_open, north_weight, 1.)), 0.)
     clean_east = jnp.where(east_open, east_velocity.astype(jnp.float64), 0.)
     clean_north = jnp.where(north_open, north_velocity.astype(jnp.float64), 0.)
     if coriolis is None:
         latitude = jnp.asarray(geometry.latitude_edges, jnp.float64)
         centers = .5 * (latitude[:-1] + latitude[1:])
-        center_f = jnp.broadcast_to(2. * OMEGA * jnp.sin(centers)[None, :], geometry.area.shape)
-        north_f = jnp.broadcast_to(2. * OMEGA * jnp.sin(latitude[1:])[None, :], geometry.area.shape)
-        south_f = jnp.broadcast_to(2. * OMEGA * jnp.sin(latitude[:-1])[None, :], geometry.area.shape)
+        upper = jnp.broadcast_to(OMEGA * (jnp.sin(centers) + jnp.sin(latitude[1:]))[None, :], geometry.area.shape)
+        lower = jnp.broadcast_to(OMEGA * (jnp.sin(centers) + jnp.sin(latitude[:-1]))[None, :], geometry.area.shape)
     else:
         center_f = jnp.asarray(coriolis, jnp.float64)
         if center_f.ndim == 0:
             center_f = jnp.full(geometry.area.shape, center_f)
         if center_f.shape != geometry.area.shape:
             raise ValueError("Coriolis must be scalar or horizontal cell field")
-        following_f = jnp.concatenate((center_f[:, 1:], center_f[:, -1:]), axis=1)
-        previous_f = jnp.concatenate((center_f[:, :1], center_f[:, :-1]), axis=1)
-        north_f, south_f = .5 * (center_f + following_f), .5 * (center_f + previous_f)
-    upper, lower = .5 * (center_f + north_f)[..., None], .5 * (center_f + south_f)[..., None]
+        upper, lower = center_f, center_f
+    coefficients = []
+    for longitude, latitude_shift, half_area, coriolis_mean in (
+            (0, 0, faces.north_half_area, upper), (1, 0, _neighbor(faces.north_half_area, 0, 1), _neighbor(upper, 0, 1)),
+            (0, -1, faces.south_half_area, lower), (1, -1, _neighbor(faces.south_half_area, 0, 1), _neighbor(lower, 0, 1))):
+        neighbor_top, neighbor_bottom, neighbor_root = faces.north_top, faces.north_bottom, root_north
+        if longitude:
+            neighbor_top, neighbor_bottom, neighbor_root = (_neighbor(field, 0, 1) for field in (neighbor_top, neighbor_bottom, neighbor_root))
+        if latitude_shift:
+            neighbor_top, neighbor_bottom, neighbor_root = (_neighbor(field, 1, -1) for field in (neighbor_top, neighbor_bottom, neighbor_root))
+        common_height = jnp.maximum(jnp.minimum(faces.east_bottom, neighbor_bottom) - jnp.maximum(faces.east_top, neighbor_top), 0.)
+        pair_open = east_open & (neighbor_root > 0.)
+        denominator = jnp.where(pair_open, root_east * neighbor_root, 1.)
+        coefficients.append(jnp.where(pair_open, .5 * half_area[..., None] * coriolis_mean[..., None] * common_height / denominator, 0.))
+    upper_west, upper_east, lower_west, lower_east = coefficients
 
     def cross(north):
         north = jnp.where(north_open, north, 0.)
         south = _neighbor(north, 1, -1)
-        return jnp.where(east_open, .25 * (upper * (north + _neighbor(north, 0, 1))
-                                          + lower * (south + _neighbor(south, 0, 1))), 0.)
+        return jnp.where(east_open, upper_west * north + upper_east * _neighbor(north, 0, 1)
+                         + lower_west * south + lower_east * _neighbor(south, 0, 1), 0.)
 
     def transpose(east):
         east = jnp.where(east_open, east, 0.)
-        upper_pair = upper * (east + _neighbor(east, 0, -1))
-        lower_pair = _neighbor(lower * (east + _neighbor(east, 0, -1)), 1, 1)
-        return jnp.where(north_open, .25 * (upper_pair + lower_pair), 0.)
+        upper_pair = upper_west * east + _neighbor(upper_east * east, 0, -1)
+        lower_pair = _neighbor(lower_west * east + _neighbor(lower_east * east, 0, -1), 1, 1)
+        return jnp.where(north_open, upper_pair + lower_pair, 0.)
 
-    valid = (jnp.all(jnp.isfinite(clean_east)) & jnp.all(jnp.isfinite(clean_north))
+    valid = (faces.valid & jnp.all(jnp.isfinite(clean_east)) & jnp.all(jnp.isfinite(clean_north))
              & jnp.all(jnp.isfinite(east_weight)) & jnp.all(jnp.isfinite(north_weight))
-             & jnp.all(east_weight >= 0.) & jnp.all(north_weight >= 0.) & jnp.all(jnp.isfinite(center_f)))
+             & jnp.all(east_weight >= 0.) & jnp.all(north_weight >= 0.)
+             & jnp.all(jnp.isfinite(upper)) & jnp.all(jnp.isfinite(lower)))
     return root_east, root_north, clean_east, clean_north, cross, transpose, valid
 
 
-def coriolis_tendency(geometry, east_velocity, north_velocity, coriolis=None):
-    """Weighted-skew four-face rotation; returned tendencies use64 guard math."""
-    root_east, root_north, east, north, cross, transpose, unused_valid = _rotation_system(geometry, east_velocity, north_velocity, coriolis)
+def coriolis_tendency(geometry, east_velocity, north_velocity, coriolis=None, volume=None):
+    """Physical rectangle-overlap rotation; returned tendencies use64 guard math."""
+    root_east, root_north, east, north, cross, transpose, unused_valid = _rotation_system(geometry, east_velocity, north_velocity, coriolis, volume)
     return (cross(root_north * north) / jnp.where(root_east > 0., root_east, 1.),
             -transpose(root_east * east) / jnp.where(root_north > 0., root_north, 1.))
 
 
-def rotate_coriolis(geometry, east_velocity, north_velocity, dt, coriolis=None, maxiter=100):
+def rotate_coriolis(geometry, east_velocity, north_velocity, dt, coriolis=None, maxiter=100, volume=None):
     """Implicit midpoint rotation, independently checked residual/weighted energy.
 
-    W=face area*center distance is the stated discrete energy quadrature, not
-    a claim of exact dual-cell volume.32 velocity storage is explicit; arithmetic
-    and solve are64. No regularization or dissipative correction is applied.
+    Energy uses actual wet half-cell rectangle volumes, not face area*distance
+    or a square-root neighbor-mass interpolation.32 velocity storage is explicit;
+    arithmetic/solve are64. No damping or force clipping is applied.
     """
     if not isinstance(maxiter, int) or isinstance(maxiter, bool) or maxiter < 1:
         raise ValueError("rotation maxiter must be a positive static integer")
-    root_east, root_north, east, north, cross, transpose, valid = _rotation_system(geometry, east_velocity, north_velocity, coriolis)
+    root_east, root_north, east, north, cross, transpose, valid = _rotation_system(geometry, east_velocity, north_velocity, coriolis, volume)
     dt = jnp.asarray(dt, jnp.float64)
     if dt.ndim != 0:
         raise ValueError("rotation dt must be scalar")
@@ -247,7 +314,7 @@ def linear_momentum_surface_step(geometry, state, density_anomaly, dt, nsub,
     pressure = hydrostatic_pressure_force(geometry, state.inventory.volume, density_anomaly,
                                            reference, density_gravity, rho0)
     active = geometry._replace(east_area=pressure.east_area, north_area=pressure.north_area)
-    first = rotate_coriolis(active, state.east_velocity, state.north_velocity, .5 * dt, coriolis)
+    first = rotate_coriolis(geometry, state.east_velocity, state.north_velocity, .5 * dt, coriolis, volume=state.inventory.volume)
     areas = (pressure.east_area, pressure.north_area)
     total_areas = tuple(jnp.sum(area, axis=-1) for area in areas)
     velocities = (first.east_velocity.astype(jnp.float64), first.north_velocity.astype(jnp.float64))
@@ -272,7 +339,7 @@ def linear_momentum_surface_step(geometry, state, density_anomaly, dt, nsub,
     endpoint_layers = tuple(jnp.where(area > 0., velocity + dt * deviation + (endpoint - initial_mean)[..., None], 0.).astype(state.east_velocity.dtype)
                             for area, velocity, deviation, endpoint, initial_mean
                             in zip(areas, velocities, deviations, (barotropic.east_velocity, barotropic.north_velocity), mean_velocities))
-    second = rotate_coriolis(active, *endpoint_layers, .5 * dt, coriolis)
+    second = rotate_coriolis(geometry, *endpoint_layers, .5 * dt, coriolis, volume=state.inventory.volume)
     final_eta = _physical_surface_height(geometry, transport.state.volume)
     surface_error = jnp.max(jnp.abs(final_eta - barotropic.eta))
     surface_tolerance = 1e-12 + 1e-12 * jnp.maximum(jnp.max(jnp.abs(eta)), jnp.max(jnp.abs(barotropic.eta)))
