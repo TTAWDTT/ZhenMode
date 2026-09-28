@@ -19,41 +19,45 @@ from config import DEFAULT_CONFIG, GlobalGridConfig
 from finite_volume import ExtensiveState, _physical_surface_height, build_geometry, surface_volume
 from grid import global_grid_dims, make_global_grid
 from wet_fluxes import evaluate_wet_flux
+from physical_velocity import evaluate_physical_velocity
 
 jax.config.update("jax_enable_x64", True)
 
 METRICS = ("pressure_max_m_s2", "rotation_energy_relative", "rotation_solve_relative",
            "surface_error_m", "surface_gate_m", "outflow_fraction", "gravity_cfl_bound",
            "speed_max_m_s", "layer_shear_max_m_s", "constant_error", "bound_excursion",
-           "lower_height_relative_error", "eta_max_m", "wet_trace_bottom_relative", "dual_commutation_relative")
+        "lower_height_relative_error", "eta_max_m", "wet_trace_bottom_relative", "dual_commutation_relative",
+        "physical_bulk_continuity_relative")
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--bathy", default=DEFAULT_CONFIG.bathymetry_file)
-    parser.add_argument("--out", default="results/industrial_alignment/cgrid_metric_dual_reference.json")
+    parser.add_argument("--out", default="results/industrial_alignment/cgrid_physical_velocity_reference.json")
     args = parser.parse_args()
     output = ROOT / args.out
     if output.exists():
         raise FileExistsError("retain previous evidence; choose a new --out")
     output.parent.mkdir(parents=True, exist_ok=True)
     sources = [ROOT / "src" / name for name in ("finite_volume.py", "bounded_transport.py", "barotropic_transport.py",
-                                               "cgrid_momentum.py", "wet_fluxes.py", "grid.py", "config.py")]
+                                               "cgrid_momentum.py", "wet_fluxes.py", "physical_velocity.py", "grid.py", "config.py")]
     sources += [Path(__file__), Path(__file__).with_name("protocol.md"), Path(__file__).with_name("selection.md"),
                 Path(__file__).with_name("overlap_protocol.md"),
                 Path(__file__).with_name("pressure_work_protocol.md"),
                 Path(__file__).with_name("dual_mass_protocol.md"),
                 Path(__file__).with_name("wet_trace_protocol.md"),
                 Path(__file__).with_name("metric_dual_protocol.md"),
+                Path(__file__).with_name("physical_velocity_protocol.md"),
                 ROOT / "tests/test_cgrid_hydrostatic_momentum.py", ROOT / "tests/test_cgrid_pressure_work.py",
                 ROOT / "tests/test_momentum_shared_flux.py", ROOT / "tests/test_wet_flux_reconstruction.py",
-                ROOT / "tests/test_wet_flux_metrics.py"]
+                ROOT / "tests/test_wet_flux_metrics.py", ROOT / "tests/test_physical_velocity.py"]
     report = {"scope": "frozen_pressure_linear_3d_momentum_active_density_fct_not_full_ocean",
               "rotation_formulation": "physical_wet_dual_rectangles_and_common_overlap",
               "pressure_formulation": "shared_face_force_over_physical_dual_mass",
               "transport_flux_contract": "actual_matched_layer_fluxes_from_fast_substep_mean",
               "wet_trace_contract": "latitude_arc_wet_traces_paired_interior_flux_frozen_geometry_not_velocity",
               "dual_transport_contract": "all_wet_half_prisms_metric_integrated_q_not_force_mass_or_nonlinear_momentum",
+              "physical_velocity_contract": "mean_q_frozen_eulerian_lift_signed_top_boundary_source_not_full_ale",
               "status": "running", "reference_coefficients": [1., 1e-3, 1e-7],
               "provenance": {"git_head": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip(),
                              "git_status": subprocess.check_output(["git", "status", "--porcelain"], cwd=ROOT, text=True).splitlines(),
@@ -118,7 +122,7 @@ def main():
                                          1e-12 + 1e-12 * eta_scale, result.transport.max_outflow_fraction,
                                          result.barotropic.gravity_cfl_bound, speed, shear, constant, jnp.maximum(excursion, 0.), lower_error,
                                          jnp.max(jnp.abs(eta_after)), result.flux_reconstruction.bottom_closure_relative,
-                                         result.dual_transport.commutation_relative])
+                                         result.dual_transport.commutation_relative, result.physical_velocity.bulk_continuity_relative])
                     flags = jnp.array([result.valid, result.pressure.valid, result.barotropic.valid, result.transport.valid])
                     reconstruction = result.flux_reconstruction
                     top_point = evaluate_wet_flux(reconstruction, .37, .61, reconstruction.top)
@@ -126,7 +130,10 @@ def main():
                     middle_point = evaluate_wet_flux(reconstruction, .37, .61, reconstruction.top + .38123 * reconstruction.height)
                     trace_points = (top_point.vertical, bottom_point.vertical, middle_point.east_per_depth,
                                     middle_point.north_per_depth, middle_point.vertical)
-                    return final, metrics, flags, result.fluxes, result.barotropic.mean_east, result.barotropic.mean_north, reconstruction, trace_points, result.dual_transport
+                    physical_points = tuple(evaluate_physical_velocity(result.physical_velocity, .37, .61, depth)
+                                            for depth in (reconstruction.top, reconstruction.top + reconstruction.height,
+                                                          reconstruction.top + .38123 * reconstruction.height))
+                    return final, metrics, flags, result.fluxes, result.barotropic.mean_east, result.barotropic.mean_north, reconstruction, trace_points, result.dual_transport, result.physical_velocity, physical_points
 
                 run = {"geometry": label, "velocity_dtype": dtype_name, "disturbed": disturbed,
                        "inventory_dtype": "float64", "dt_seconds": 60., "barotropic_substeps": 4,
@@ -136,13 +143,14 @@ def main():
                 state = initial
                 for iteration in range(100):
                     previous_volume = state.inventory.volume
-                    candidate, metric_array, flags, actual_fluxes, mean_east, mean_north, reconstruction, trace_points, dual = step(state)
+                    candidate, metric_array, flags, actual_fluxes, mean_east, mean_north, reconstruction, trace_points, dual, physical, physical_points = step(state)
                     values, accepted = np.asarray(metric_array), np.asarray(flags)
                     row = {name: float(value) if np.isfinite(value) else None for name, value in zip(METRICS, values)}
                     row["stage_valid"] = accepted.tolist()
                     row["step"] = iteration + 1
                     row["wet_trace_valid"] = bool(reconstruction.valid)
                     row["dual_transport_valid"] = bool(dual.valid)
+                    row["physical_velocity_valid"] = bool(physical.valid)
                     energy_gate = 2e-6 if dtype_name == "float32" else 1e-12
                     passed = (np.all(np.isfinite(values)) and np.all(accepted)
                               and row["surface_error_m"] <= row["surface_gate_m"]
@@ -151,6 +159,7 @@ def main():
                               and row["lower_height_relative_error"] <= 1e-12
                               and row["wet_trace_valid"] and row["wet_trace_bottom_relative"] <= 1e-12 + 64. * np.finfo(np.float64).eps
                               and row["dual_transport_valid"] and row["dual_commutation_relative"] <= 1e-12 + 64. * np.finfo(np.float64).eps
+                              and row["physical_velocity_valid"] and row["physical_bulk_continuity_relative"] <= 1e-12 + 64. * np.finfo(np.float64).eps
                               and (disturbed or row["pressure_max_m_s2"] <= 1e-12))
                     run["history"].append(row)
                     if not passed:
@@ -171,6 +180,9 @@ def main():
                 shear = max(row["layer_shear_max_m_s"] or 0. for row in run["history"])
                 passed = run["completed_steps"] == 100 and np.all(budget <= 1e-12) and (not disturbed or (activity > 1e-9 and shear > 0.))
                 snapshot = output.with_name(f"{output.stem}_{label}_{dtype_name}_{int(disturbed)}.npz")
+                physical_fields = {f"last_physical_{location}_{name}": np.asarray(field)
+                                   for location, point in zip(("top", "bottom", "middle"), physical_points)
+                                   for name, field in zip(point._fields, point)}
                 np.savez(snapshot, initial_volume=np.asarray(volume), initial_content=initial_content,
                          final_volume=final_volume, final_content=final_content,
                          initial_east_velocity=np.asarray(initial.east_velocity), initial_north_velocity=np.asarray(initial.north_velocity),
@@ -189,8 +201,12 @@ def main():
                          last_dual_east_east_flux=np.asarray(dual.east_fluxes.east), last_dual_east_north_flux=np.asarray(dual.east_fluxes.north),
                          last_dual_east_vertical_flux=np.asarray(dual.east_fluxes.vertical), last_dual_north_east_flux=np.asarray(dual.north_fluxes.east),
                          last_dual_north_north_flux=np.asarray(dual.north_fluxes.north), last_dual_north_vertical_flux=np.asarray(dual.north_fluxes.vertical),
+                         last_physical_area=np.asarray(physical.area), last_physical_meridional_width=np.asarray(physical.meridional_area_width),
+                         last_physical_zonal_arc=np.asarray(physical.zonal_arc), last_physical_surface_downward=np.asarray(physical.surface_downward),
+                         last_physical_source_speed=np.asarray(physical.source_speed), last_physical_absolute_lift=np.asarray(physical.absolute_lift),
+                         last_volume_source=np.zeros_like(np.asarray(previous_volume)),
                          physical_depth=grid.depth, area=geometry.area, thickness=geometry.thickness, interfaces=interfaces,
-                         longitude_edges=lon_edges, latitude_edges=lat_edges, reference_coefficients=np.asarray(coefficients))
+                         longitude_edges=lon_edges, latitude_edges=lat_edges, reference_coefficients=np.asarray(coefficients), **physical_fields)
                 run.update(status="PASS" if passed else "FAIL", content_budget_relative=budget.tolist(),
                            volume_budget_delta_m3=delta_volume, volume_budget_equivalent_surface_m=delta_volume / np.sum(geometry.area[np.asarray(wet[..., 0])]),
                            maximum_speed_m_s=activity, maximum_shear_m_s=shear,
