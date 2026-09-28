@@ -625,5 +625,16 @@ industrial_alignment_20260928:
     masked_new_budget_ratios: [5.273e-18, -1.302e-18]
     spherical_refinement_ratios: [4.116, 4.054]
     smoke: "Real ETOPO, synthetic forcing, four 1-day and four nonzero-biharmonic 7-day runs passed."
-  next: "Actual-stage heat/salt/volume source ledger and independent closure, then the remaining full roadmap gates."
+  actual_stage_audit:
+    status: observability_passed_conservation_not_qualified
+    protocol_commit: "32d09bd"
+    review: "research/experiments/actual_stage_budgets/review.md"
+    regression_tests: 27
+    latest_full_tests_passed: 298
+    one_day_cases: ["baseline", "mixed_layer_dynamic_ice"]
+    forcing: synthetic_not_climate_validation
+    unresolved_fixed_node_enthalpy_J: [-2.082634e21, -2.095824e21]
+    implicated_stage: nonlinear
+    conservation_pass: false
+  next: "Actual nonlinear process attribution and free-surface/tracer-volume consistency; production cumulative I/O, then the remaining full roadmap gates."
   unresolved: ["whole-model budgets", "volume/free-surface consistency", "partial cells/global topology", "complete real physical forcing", "independent climate/forecast skill", "fair GPU/distributed cost", "whole-model adjoint and constrained learning"]

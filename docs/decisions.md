@@ -748,3 +748,32 @@ synthetically forced seven-day runs also pass with nonzero scalar biharmonic.
 This does not prove full-model budgets, real-forcing climate skill or a century
 of reliability. Protocol, reproducible analysis and limits are recorded in
 [`diffusion review`](../research/experiments/conservative_tracer_diffusion/review.md).
+
+## D32 — Record actual stages and sources; bookkeeping is not conservation
+
+Snapshot tendencies are not the time integral of the actual RK/Strang process.
+The optional `stage_budgets.make_budget_step(params)` executes the same core with
+a trace-local recorder. It separates linear diffusion, explicit sponge, nonlinear
+RK, free surface, polar cap/masks and dynamic ice. Surface sources are integrated
+at both actual RK evaluations, each with dt/2; ice heat is counted only in the
+ice operator when that mode disables dynamical heat. Runtime forcing/air targets
+are shared by the core and recorder, not read from an outdated closure.
+
+There are two independent residuals: endpoint change minus recorded stage changes
+checks bookkeeping; endpoint change minus declared external/restoring inputs
+checks the source budget. Internal diffusion, polar filtering and nonlinear
+transport are not automatically declared external sources. Signed and absolute
+per-step residual sums are both available, so cancellation cannot hide activity.
+Artificial diffusion heating and sub-update-quantum float32 input remain visible
+as unexplained residuals rather than triggering a mean correction.
+
+The metric is explicitly a fixed-node water/ice enthalpy proxy, nominal water
+salt mass, and separate eta displacement volume. It does not include a proper
+moving-layer tracer inventory or a full ice salt/freshwater reservoir. The new
+real-ETOPO one-day audit locates order 2e21 J of unexplained enthalpy change in
+the nonlinear stage even though stability passes. It is not marked conservation
+PASS. Resolving the free-surface/volume compatibility and process attribution is
+the next investigation, not something to erase with a diagnostic offset.
+
+Protocol and evidence:
+[`actual-stage budget review`](../research/experiments/actual_stage_budgets/review.md).
