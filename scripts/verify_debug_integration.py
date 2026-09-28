@@ -19,6 +19,7 @@ from diagnostics import compute_budget_diagnostics
 from grid import global_grid_dims, land_distance_from_land_mask, make_global_grid
 from jax_solver_global import make_solver_global
 from run_long_integration_global import ETA_BLOWUP_M, MAX_U_BOUND
+from stage_budgets import METRIC_NAMES, SOURCE_NAMES, STAGE_NAMES, empty_budget, make_budget_step
 
 
 def main():
@@ -27,6 +28,7 @@ def main():
     parser.add_argument("--resolution", type=float, default=2.)
     parser.add_argument("--dt", type=float, default=600.)
     parser.add_argument("--kappa-bi", type=float, default=0.)
+    parser.add_argument("--audit-budget", action="store_true")
     parser.add_argument("--dtype", choices=["float32", "float64"], default="float32")
     parser.add_argument("--cases", nargs="+", choices=["baseline", "mixed", "ice", "coastal"],
                         default=["baseline", "mixed", "ice", "coastal"])
@@ -80,28 +82,37 @@ def main():
         if case == "coastal":
             distance = land_distance_from_land_mask(grid.land_mask)
             coast_mask = grid.ocean_mask & (distance <= 3.)
-        step, initialize, _ = make_solver_global(
+        step, initialize, _, params, _ = make_solver_global(
             grid, physics, args.dt, forcing=forcing, T_atm=atmosphere, lambda_bulk=80.,
             T_init=initial_temperature, S_init=initial_salinity,
             mode_split=True, dt_bt=50., nu_nsub='cfl', use_scan=True, dtype=args.dtype,
             conservative_kv=True, localize_conv=True, project_adv_vel=True, fct_adv=True,
             mixed_layer_depth_m=20. if case in {"mixed", "ice"} else None,
             dynamic_ice=case == "ice", coastal_kappa_h_mask=coast_mask,
-            coastal_kappa_h=500. if coast_mask is not None else 0.)
+            coastal_kappa_h=500. if coast_mask is not None else 0., return_params=True)
         state = initialize(T_init=initial_temperature, S_init=initial_salinity)
+        audited_step = make_budget_step(params) if args.audit_budget else None
+        zero_budget = empty_budget()
+        accumulated_budget = {name: np.zeros_like(np.asarray(values)) for name, values in zero_budget.items()}
 
         @jax.jit
         def advance(current, count):
             def monitored_step(index, carry):
-                previous, peak_velocity, peak_eta, finite = carry
-                updated = step(previous)
+                previous, peak_velocity, peak_eta, finite, totals = carry
+                if args.audit_budget:
+                    updated, ledger = audited_step(previous)
+                    totals = {name: totals[name] + ledger[name] for name in totals}
+                else:
+                    updated = step(previous)
                 velocity = jnp.maximum(jnp.max(jnp.abs(updated.u)), jnp.max(jnp.abs(updated.v)))
                 eta = jnp.max(jnp.abs(updated.eta))
                 state_finite = jnp.all(jnp.stack([jnp.all(jnp.isfinite(field)) for field in updated]))
-                return updated, jnp.maximum(peak_velocity, velocity), jnp.maximum(peak_eta, eta), finite & state_finite
+                if args.audit_budget:
+                    state_finite = state_finite & jnp.all(jnp.stack([jnp.all(jnp.isfinite(values)) for values in ledger.values()]))
+                return updated, jnp.maximum(peak_velocity, velocity), jnp.maximum(peak_eta, eta), finite & state_finite, totals
 
             return jax.lax.fori_loop(0, count, monitored_step, (current, jnp.asarray(0., dtype=current.T.dtype),
-                                                              jnp.asarray(0., dtype=current.T.dtype), jnp.asarray(True)))
+                                                              jnp.asarray(0., dtype=current.T.dtype), jnp.asarray(True), zero_budget))
 
         started = time.perf_counter()
         records = []
@@ -111,8 +122,11 @@ def main():
         results.append(result)
         while completed < total_steps:
             count = min(batch_steps, total_steps - completed)
-            state, peak_velocity, peak_eta, finite = advance(state, count)
+            state, peak_velocity, peak_eta, finite, ledger = advance(state, count)
             state.T.block_until_ready()
+            if args.audit_budget:
+                for name, values in ledger.items():
+                    accumulated_budget[name] += np.asarray(values)
             completed += count
             maximum_velocity = float(jnp.maximum(jnp.max(jnp.abs(state.u)), jnp.max(jnp.abs(state.v))))
             maximum_eta = float(jnp.max(jnp.abs(state.eta)))
@@ -120,6 +134,10 @@ def main():
             record = {"day": completed * args.dt / 86400., "max_velocity": maximum_velocity,
                       "max_eta": maximum_eta, "max_ice": float(jnp.max(state.ice)), "finite": bool(finite),
                       "batch_peak_velocity": float(peak_velocity), "batch_peak_eta": float(peak_eta)}
+            if args.audit_budget:
+                record["budget_residual"] = np.asarray(ledger["budget_residual"]).tolist()
+                record["absolute_budget_residual"] = np.asarray(ledger["absolute_budget_residual"]).tolist()
+                record["decomposition_residual"] = np.asarray(ledger["decomposition_residual"]).tolist()
             records.append(record)
             print(json.dumps({"case": case, **record}), flush=True)
             save_report()
@@ -128,6 +146,10 @@ def main():
         result.update(status="complete" if passed else "failed", stability_pass=bool(passed), steps=completed,
                       wall_seconds=time.perf_counter() - started,
                       final_budget=compute_budget_diagnostics(state, grid).as_dict())
+        if args.audit_budget:
+            result["stage_budget"] = {"metrics": METRIC_NAMES, "stages": STAGE_NAMES, "sources": SOURCE_NAMES,
+                                      "scope": "fixed_node_proxy_not_complete_moving_volume_budget",
+                                      "values": {name: values.tolist() for name, values in accumulated_budget.items()}}
         save_report()
     report["status"] = "complete" if all(result["stability_pass"] for result in results) else "failed"
     save_report()

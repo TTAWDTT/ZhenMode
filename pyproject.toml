@@ -38,6 +38,7 @@ py-modules = [
     "wind_reanalysis",
     "air_reanalysis",
     "diagnostics",
+    "stage_budgets",
     "woa_data",
     "benchmark_metrics",
     "benchmark_gate",

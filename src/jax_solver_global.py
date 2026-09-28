@@ -1307,7 +1307,7 @@ def _surface_heat_weights(p):
     return overlap / (wet_depth * p.dz_node)
 
 
-def _compute_tracer_tendency(state, p):
+def _compute_tracer_tendency(state, p, budget=None):
     """dT/dt, dS/dt (FD, land-masked). Includes bulk air-sea heat flux.
 
     Vertical advection is SUBCYCLED adv_nsub times when adv_nsub > 1 (frozen
@@ -1407,6 +1407,8 @@ def _compute_tracer_tendency(state, p):
     # Land: tracers held (no tendency over land).
     dTdt = dTdt * p.wet_mask_z
     dSdt = dSdt * p.wet_mask_z
+    if budget is not None:
+        budget.surface_sources((heat_T, bulk_T, coastal_bulk_T, rest_T, rest_S, ice_salt))
     return dTdt, dSdt
 
 
@@ -1589,7 +1591,7 @@ def _free_surface_step_fd(eta, u, v, p, F_rho_x=None, F_rho_y=None, dt_half=None
     return eta_new, u_new, v_new
 
 
-def _linear_half_step(state, p, dt_half):
+def _linear_half_step(state, p, dt_half, budget=None):
     """Linear half-step: FD diffusion + 2D Coriolis + free surface (or not, split).
 
     The FD linear step is explicit horizontal+vertical diffusion (CFL-safe at 1 deg),
@@ -1647,6 +1649,10 @@ def _linear_half_step(state, p, dt_half):
     T = T * p.wet_mask_z + state.T * (1.0 - p.wet_mask_z)
     S = S * p.wet_mask_z + state.S * (1.0 - p.wet_mask_z)
 
+    if budget is not None:
+        diffusion_state = JaxStateG(u, v, T, S, state.eta, state.ice)
+        budget.stage("linear_diffusion", state, diffusion_state)
+
     # Lateral sponge (Rayleigh damping): exponential decay, no damping CFL.
     # Applied in the linear half-step so Strang splitting gives total sponge time
     # = dt per full step. Absorbs the wind-driven barotropic energy that
@@ -1663,6 +1669,11 @@ def _linear_half_step(state, p, dt_half):
     T = p.T_clim_3d + (T - p.T_clim_3d) * decay
     S = p.S_clim_3d + (S - p.S_clim_3d) * decay
 
+    if budget is not None:
+        sponge_state = JaxStateG(u, v, T, S, state.eta, state.ice)
+        budget.stage("sponge", diffusion_state, sponge_state)
+        budget.sponge_sources(diffusion_state, decay)
+
     # Coriolis rotation (2D f-field, exact)
     u, v = _coriolis_rotation_2d(u, v, p.f, dt_half)
 
@@ -1675,12 +1686,15 @@ def _linear_half_step(state, p, dt_half):
         return JaxStateG(u, v, T, S, state.eta, state.ice)
     F_rho_x, F_rho_y = _compute_bt_rho_pgf(state, p)
     eta, u, v = _free_surface_step_fd(state.eta, u, v, p, F_rho_x, F_rho_y, dt_half)
-    return JaxStateG(u, v, T, S, eta, state.ice)
+    updated = JaxStateG(u, v, T, S, eta, state.ice)
+    if budget is not None:
+        budget.stage("free_surface", sponge_state, updated)
+    return updated
 
 
 # ── Nonlinear explicit step (forward-backward RK2, FD) ─────────────
 
-def _compute_tracer_residual(state, p):
+def _compute_tracer_residual(state, p, budget=None):
     """Tracer tendency minus the linear diffusion (handled by the linear step).
 
     The Strang split L(dt/2).N(dt).L(dt/2) handles ALL linear dissipation
@@ -1691,7 +1705,7 @@ def _compute_tracer_residual(state, p):
     it must not appear here at all -- a term here would be re-applied by N(dt) and
     cancel the L-step damping exactly (-dt/2 + dt - dt/2 = 0), a silent no-op. (D9)
     """
-    dTdt, dSdt = _compute_tracer_tendency(state, p)
+    dTdt, dSdt = _compute_tracer_tendency(state, p, budget=budget)
     dTdt = dTdt - _horizontal_tracer_diffusion(state.T, p)
     dSdt = dSdt - _horizontal_tracer_diffusion(state.S, p)
     dTdt = dTdt - _vertical_diffusion(state.T, _effective_kappa_v(p), p)
@@ -1757,14 +1771,14 @@ def _compute_momentum_residual(state, p):
     return dudt, dvdt
 
 
-def _explicit_full_step(state, p, dt):
+def _explicit_full_step(state, p, dt, budget=None):
     """Forward-backward RK2 for nonlinear tendencies (FD).
 
     Tracers updated first (old velocity), then momentum uses predicted T
     for the baroclinic PGF — shifts internal-wave eigenvalues left of the
     imaginary axis for neutral stability.
     """
-    dT1, dS1 = _compute_tracer_residual(state, p)
+    dT1, dS1 = _compute_tracer_residual(state, p, budget=budget)
     T_pred = state.T + dT1 * dt
     S_pred = state.S + dS1 * dt
     state_T = JaxStateG(state.u, state.v, T_pred, S_pred, state.eta, state.ice)
@@ -1809,7 +1823,7 @@ def _explicit_full_step(state, p, dt):
             u_adv, v_adv = u_pred, v_pred
         state_pred = JaxStateG(u_adv, v_adv, T_pred, S_pred, state.eta, state.ice)
 
-    dT2, dS2 = _compute_tracer_residual(state_pred, p)
+    dT2, dS2 = _compute_tracer_residual(state_pred, p, budget=budget)
     T_new = state.T + 0.5 * (dT1 + dT2) * dt
     S_new = state.S + 0.5 * (dS1 + dS2) * dt
     state_T_new = JaxStateG(state.u, state.v, T_new, S_new, state.eta, state.ice)
@@ -1929,7 +1943,7 @@ def nu_nsub_for_2d_cfl(nu_h, dt, dx_2d, dy, margin=0.25):
                                * (inv_dx2_max + inv_dy2) / margin)))
 
 
-def _dynamic_ice_closure(state, p):
+def _dynamic_ice_closure(state, p, budget=None):
     """Advance the minimal stateful ice closure after one dynamics step.
 
     This opt-in first-order surface operator applies atmospheric heat once.
@@ -1980,11 +1994,13 @@ def _dynamic_ice_closure(state, p):
                    * (ice_new - ice)[:, :, None] * weights)
     T = jnp.where(p.wet_mask_z > 0.5, temperature, state.T)
     S = jnp.where(p.wet_mask_z > 0.5, state.S + salt_change, state.S)
+    if budget is not None:
+        budget.ice_sources(q, ice_new - ice, rho_ice, ice_salt_diff)
     return JaxStateG(state.u, state.v, T, S, state.eta,
                      ice_new * p.wet_mask)
 
 
-def _step_impl(state, p):
+def _step_impl(state, p, budget=None):
     """Strang splitting: L(dt/2) -> N(dt) -> L(dt/2).
 
     mode_split=True: identical L/N/L baroclinic core, but the linear half-steps
@@ -2002,9 +2018,13 @@ def _step_impl(state, p):
     # huge gradient, seeding an exponentially-growing spurious PGF.
     land_u, land_v = state.u, state.v
     land_T, land_S = state.T, state.S
-    state = _linear_half_step(state, p, dt_half)
-    state = _explicit_full_step(state, p, p.dt)
-    state = _linear_half_step(state, p, dt_half)
+    state = _linear_half_step(state, p, dt_half, budget=budget)
+    nonlinear_start = state
+    state = _explicit_full_step(state, p, p.dt, budget=budget)
+    if budget is not None:
+        budget.stage("nonlinear", nonlinear_start, state)
+    state = _linear_half_step(state, p, dt_half, budget=budget)
+    barotropic_start = state
 
     # ── mode split: barotropic subcycle (free surface + nu_h) ──
     # Runs AFTER the L/N/L core on the un-masked final 3D state (before the
@@ -2037,6 +2057,8 @@ def _step_impl(state, p):
         delta_vbt = (vbt - vbt0)[:, :, None]
         state = JaxStateG(state.u + delta_ubt, state.v + delta_vbt,
                           state.T, state.S, eta, state.ice)
+        if budget is not None:
+            budget.stage("free_surface", barotropic_start, state)
 
     # 3D polar-cap filter: zonally average the cap rows of u,v,T,S to kill
     # the cos(lat)->0 metric singularity in the diffusion/advection operators.
@@ -2055,8 +2077,13 @@ def _step_impl(state, p):
     # stencils in _d_dy/_laplacian_h (zero normal gradient), this is the full
     # closed-boundary condition that replaces the unstable one-sided stencil.
     v = v * p.interior_mask_z
-    state = JaxStateG(u, v, T, S, state.eta, state.ice)
-    return _dynamic_ice_closure(state, p)
+    masked = JaxStateG(u, v, T, S, state.eta, state.ice)
+    if budget is not None:
+        budget.stage("polar_cap_and_masks", state, masked)
+    updated = _dynamic_ice_closure(masked, p, budget=budget)
+    if budget is not None:
+        budget.stage("dynamic_ice", masked, updated)
+    return updated
 
 
 # ── Public API ──────────────────────────────────────────────────────
