@@ -956,7 +956,7 @@ def _limited_tracer_slope(tracer, wet, axis):
             * wet * previous_wet * following_wet)
 
 
-def _advection_scalar(T, u, v, Fz_in, p):
+def _advection_scalar(T, u, v, Fz_in, p, return_boundary=False):
     """3D FLUX-FORM scalar advection (FD, land-masked, NOT dealiased).
 
     Flux form (-div(uT)) rather than advective form: the two differ by +T*div(u), a
@@ -1072,7 +1072,10 @@ def _advection_scalar(T, u, v, Fz_in, p):
     div_y = (Fy - Fy_up) * p.inv_dy / p.cos_lat[None, :, None]
     div_z = (dn - up) / p.dz_node
     adv_T = -(div_x + div_y + div_z)
-    return adv_T * p.wet_mask_z
+    tendency = adv_T * p.wet_mask_z
+    if return_boundary:
+        return tendency, Fz_top[..., 0]
+    return tendency
 
 
 def _compute_momentum_tendency(state, p):
@@ -1327,14 +1330,27 @@ def _compute_tracer_tendency(state, p, budget=None):
 
         def _adv_sub(carry):
             tT, tS = carry
-            aT = _advection_scalar(tT, state.u, state.v, Fz, p)
-            aS = _advection_scalar(tS, state.u, state.v, Fz, p)
-            return (tT + aT * dts, tS + aS * dts), (aT, aS)
+            if budget is not None:
+                aT, top_T = _advection_scalar(tT, state.u, state.v, Fz, p, return_boundary=True)
+                aS, top_S = _advection_scalar(tS, state.u, state.v, Fz, p, return_boundary=True)
+                terms = (aT, aS, top_T, top_S)
+            else:
+                aT = _advection_scalar(tT, state.u, state.v, Fz, p)
+                aS = _advection_scalar(tS, state.u, state.v, Fz, p)
+                terms = (aT, aS)
+            return (tT + aT * dts, tS + aS * dts), terms
 
-        _, (adv_T, adv_S) = _subcycle(_adv_sub, (state.T, state.S), n_a, p)
+        _, terms = _subcycle(_adv_sub, (state.T, state.S), n_a, p)
+        adv_T, adv_S = terms[:2]
+        if budget is not None:
+            top_T, top_S = terms[2:]
     else:
-        adv_T = _advection_scalar(state.T, state.u, state.v, Fz, p)
-        adv_S = _advection_scalar(state.S, state.u, state.v, Fz, p)
+        if budget is not None:
+            adv_T, top_T = _advection_scalar(state.T, state.u, state.v, Fz, p, return_boundary=True)
+            adv_S, top_S = _advection_scalar(state.S, state.u, state.v, Fz, p, return_boundary=True)
+        else:
+            adv_T = _advection_scalar(state.T, state.u, state.v, Fz, p)
+            adv_S = _advection_scalar(state.S, state.u, state.v, Fz, p)
 
     diff_h_T = _horizontal_tracer_diffusion(state.T, p)
     diff_h_S = _horizontal_tracer_diffusion(state.S, p)
@@ -1409,6 +1425,8 @@ def _compute_tracer_tendency(state, p, budget=None):
     dSdt = dSdt * p.wet_mask_z
     if budget is not None:
         budget.surface_sources((heat_T, bulk_T, coastal_bulk_T, rest_T, rest_S, ice_salt))
+        budget.nonlinear_terms(((adv_T, adv_S), (conv_T, conv_S), (gm_T, gm_S), (redi_T, redi_S)))
+        budget.advection_boundary_fluxes(top_T, top_S)
     return dTdt, dSdt
 
 

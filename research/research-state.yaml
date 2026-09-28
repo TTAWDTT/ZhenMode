@@ -636,5 +636,16 @@ industrial_alignment_20260928:
     unresolved_fixed_node_enthalpy_J: [-2.082634e21, -2.095824e21]
     implicated_stage: nonlinear
     conservation_pass: false
-  next: "Actual nonlinear process attribution and free-surface/tracer-volume consistency; production cumulative I/O, then the remaining full roadmap gates."
+  nonlinear_process_audit:
+    status: top_transport_attributed_moving_volume_not_closed
+    protocol_commit: "77a4215"
+    review: "research/experiments/nonlinear_process_budgets/review.md"
+    regression_tests: 16
+    latest_full_tests_passed: 314
+    frozen_kernel_state_comparison: "fb322c6; all six fields have zero maximum difference in four masked float32/float64 ice/no-ice cases"
+    one_day_top_heat_transport_J: [-2.082634403e21, -2.095823988e21]
+    remaining_heat_after_linearized_surface_inventory_J: [1.996794974e21, 2.029398312e21]
+    conservation_pass: false
+    separate_convection_suspect: "kappa and dt both divided by conv_nsub; physical coefficient fidelity not yet verified"
+  next: "Reconcile free-surface/cell-volume and tracer transport time levels; independently reproduce convective coefficient fidelity, production cumulative I/O, then all remaining full-roadmap gates."
   unresolved: ["whole-model budgets", "volume/free-surface consistency", "partial cells/global topology", "complete real physical forcing", "independent climate/forecast skill", "fair GPU/distributed cost", "whole-model adjoint and constrained learning"]

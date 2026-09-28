@@ -8,12 +8,14 @@ The complete active objective and acceptance requirements are preserved in
 `docs/industrial_alignment_roadmap_zh.md`. Historical narrow slices below are
 research steps, not a redefinition of success. Historical surface/ice and
 comparison scores predate corrected kernels and must not qualify current code.
-Registered scalar diffusion gates have passed; the next foundation is
-`research/experiments/actual_stage_budgets/protocol.md`. Real-forcing century
+Registered scalar diffusion gates have passed. The actual-stage audit exposes
+an unresolved nonlinear budget rather than proving conservation; the active
+foundation is `research/experiments/nonlinear_process_budgets/protocol.md`.
+Real-forcing century
 runs, independent climate/forecast skill, full geometry/physics, fair GPU and
 distributed scaling, and whole-model differentiability remain required.
 
-## Active priority: external industrial comparison
+## Historical priority: external industrial comparison
 
 The current annual candidate is not directly comparable with mature ocean
 models. The next major step is a same-protocol slice against one mature model,
@@ -354,4 +356,3 @@ Runner: scripts/run_candidate_baseline.sh
     `-0.1443 C`. It passes the 30d stability and benchmark gates. Promote the
     closure to the 365d A/B check, but do not promote it as production default
     until that check repeats.
-

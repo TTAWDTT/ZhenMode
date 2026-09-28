@@ -15,6 +15,7 @@ STAGE_NAMES = ("linear_diffusion", "sponge", "nonlinear", "free_surface",
                "polar_cap_and_masks", "dynamic_ice")
 SOURCE_NAMES = ("prescribed_heat", "bulk_heat", "coastal_bulk_heat", "temperature_restore",
                 "salinity_restore", "prescribed_brine", "sponge", "ice_atmosphere_heat", "ice_brine")
+NONLINEAR_PROCESS_NAMES = ("advection", "convection", "gm", "redi")
 
 
 def empty_budget():
@@ -26,7 +27,15 @@ def empty_budget():
             "budget_residual": jnp.zeros(3, dtype=jnp.float64),
             "absolute_decomposition_residual": jnp.zeros(3, dtype=jnp.float64),
             "absolute_budget_residual": jnp.zeros(3, dtype=jnp.float64),
-            "change_scale": jnp.zeros(3, dtype=jnp.float64)}
+            "change_scale": jnp.zeros(3, dtype=jnp.float64),
+            "nonlinear_process_changes": jnp.zeros((len(NONLINEAR_PROCESS_NAMES), 3), dtype=jnp.float64),
+            "nonlinear_process_scale": jnp.zeros(3, dtype=jnp.float64),
+            "advection_boundary_changes": jnp.zeros(3, dtype=jnp.float64),
+            "advection_boundary_residual": jnp.zeros(3, dtype=jnp.float64),
+            "absolute_advection_boundary_residual": jnp.zeros(3, dtype=jnp.float64),
+            "nonlinear_accounting_residual": jnp.zeros(3, dtype=jnp.float64),
+            "absolute_nonlinear_accounting_residual": jnp.zeros(3, dtype=jnp.float64),
+            "surface_displacement_tracer_change": jnp.zeros(3, dtype=jnp.float64)}
 
 
 class _StageRecorder:
@@ -40,6 +49,9 @@ class _StageRecorder:
         self.stages = {name: jnp.zeros(3, dtype=jnp.float64) for name in STAGE_NAMES}
         self.sources = {name: jnp.zeros(3, dtype=jnp.float64) for name in SOURCE_NAMES}
         self.change_scale = jnp.zeros(3, dtype=jnp.float64)
+        self.processes = {name: jnp.zeros(3, dtype=jnp.float64) for name in NONLINEAR_PROCESS_NAMES}
+        self.process_scale = jnp.zeros(3, dtype=jnp.float64)
+        self.advection_boundary = jnp.zeros(3, dtype=jnp.float64)
 
     def difference(self, before, after):
         heat = RHO_0 * C_P * (jnp.asarray(after.T, dtype=jnp.float64) - jnp.asarray(before.T, dtype=jnp.float64)) * self.volume
@@ -66,6 +78,31 @@ class _StageRecorder:
             amount = jnp.sum(jnp.asarray(tendency, dtype=jnp.float64) * self.volume) * factor * interval
             self.sources[SOURCE_NAMES[index]] = self.sources[SOURCE_NAMES[index]].at[component].add(amount)
 
+    def nonlinear_terms(self, tendencies):
+        interval = self.params.dt / 2.
+        for name, (temperature, salinity) in zip(NONLINEAR_PROCESS_NAMES, tendencies, strict=True):
+            heat = RHO_0 * C_P * interval * jnp.asarray(temperature, dtype=jnp.float64) * self.volume
+            salt = RHO_0 / 1000. * interval * jnp.asarray(salinity, dtype=jnp.float64) * self.volume
+            self.processes[name] = self.processes[name] + jnp.stack((jnp.sum(heat), jnp.sum(salt), jnp.asarray(0.)))
+            self.process_scale = self.process_scale + jnp.stack((jnp.sum(jnp.abs(heat)),
+                                                                jnp.sum(jnp.abs(salt)), jnp.asarray(0.)))
+
+    def advection_boundary_fluxes(self, temperature_flux, salinity_flux):
+        interval = self.params.dt / 2.
+        heat = RHO_0 * C_P * interval * jnp.sum(jnp.asarray(temperature_flux, dtype=jnp.float64) * self.surface_area)
+        salt = RHO_0 / 1000. * interval * jnp.sum(jnp.asarray(salinity_flux, dtype=jnp.float64) * self.surface_area)
+        self.advection_boundary = self.advection_boundary + jnp.stack((heat, salt, jnp.asarray(0.)))
+
+    def surface_displacement_change(self, before, after):
+        eta_before = jnp.asarray(before.eta, dtype=jnp.float64)
+        eta_after = jnp.asarray(after.eta, dtype=jnp.float64)
+        temperature = (eta_after * jnp.asarray(after.T[..., 0], dtype=jnp.float64)
+                       - eta_before * jnp.asarray(before.T[..., 0], dtype=jnp.float64))
+        salinity = (eta_after * jnp.asarray(after.S[..., 0], dtype=jnp.float64)
+                    - eta_before * jnp.asarray(before.S[..., 0], dtype=jnp.float64))
+        return jnp.stack((RHO_0 * C_P * jnp.sum(temperature * self.surface_area),
+                          RHO_0 / 1000. * jnp.sum(salinity * self.surface_area), jnp.asarray(0.)))
+
     def sponge_sources(self, before, decay):
         fraction = 1. - jnp.asarray(decay, dtype=jnp.float64)
         temperature = (jnp.asarray(self.params.T_clim_3d, dtype=jnp.float64)
@@ -89,11 +126,21 @@ class _StageRecorder:
         sources = jnp.stack([self.sources[name] for name in SOURCE_NAMES])
         decomposition_residual = observed - jnp.sum(stages, axis=0)
         budget_residual = observed - jnp.sum(sources, axis=0)
+        processes = jnp.stack([self.processes[name] for name in NONLINEAR_PROCESS_NAMES])
+        boundary_residual = self.processes["advection"] - self.advection_boundary
+        nonlinear_residual = self.stages["nonlinear"] - jnp.sum(sources[:6], axis=0) - jnp.sum(processes, axis=0)
         return {"observed_change": observed, "stage_changes": stages, "source_inputs": sources,
                 "decomposition_residual": decomposition_residual,
                 "budget_residual": budget_residual,
                 "absolute_decomposition_residual": jnp.abs(decomposition_residual),
-                "absolute_budget_residual": jnp.abs(budget_residual), "change_scale": self.change_scale}
+                "absolute_budget_residual": jnp.abs(budget_residual), "change_scale": self.change_scale,
+                "nonlinear_process_changes": processes, "nonlinear_process_scale": self.process_scale,
+                "advection_boundary_changes": self.advection_boundary,
+                "advection_boundary_residual": boundary_residual,
+                "absolute_advection_boundary_residual": jnp.abs(boundary_residual),
+                "nonlinear_accounting_residual": nonlinear_residual,
+                "absolute_nonlinear_accounting_residual": jnp.abs(nonlinear_residual),
+                "surface_displacement_tracer_change": self.surface_displacement_change(before, after)}
 
 
 def make_budget_step(params):
@@ -101,7 +148,8 @@ def make_budget_step(params):
 
     Runtime forcing is (tau_x, tau_y, Q_heat); atmosphere has the solver's
     (nx, ny, 1) shape. Both are applied to the actual core and its source audit.
-    Tables use METRIC_NAMES, STAGE_NAMES and SOURCE_NAMES, all in extensive units.
+    Tables use METRIC_NAMES, STAGE_NAMES, SOURCE_NAMES and NONLINEAR_PROCESS_NAMES.
+    Internal transport and linearized eta*C inventory are diagnostics, not sources.
     No conservation PASS is manufactured from the stage decomposition identity.
     """
     @jax.jit

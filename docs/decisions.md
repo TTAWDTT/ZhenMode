@@ -777,3 +777,26 @@ the next investigation, not something to erase with a diagnostic offset.
 
 Protocol and evidence:
 [`actual-stage budget review`](../research/experiments/actual_stage_budgets/review.md).
+
+## D33 — Attribute actual top transport; eta*C is not a conservation repair
+
+The read-only process table records actual RK/substep means for advection,
+convection, GM and Redi. The scalar operator optionally returns its actual top
+flux, averaged alongside tendencies when subcycled. Internal fluxes are not
+added to the external source table. Signed and absolute per-step accounting
+residuals are retained separately from the original source-budget residual.
+
+In the registered real-ETOPO synthetic-forcing one-day baseline/ice cases, the
+actual top heat transport explains the order 2e21 J fixed-node enthalpy gap;
+the remaining difference is order 4e8 J. This diagnoses a reference-domain
+boundary transport, not a new external heat source or a century drift estimate.
+The separate linearized surface inventory A*eta*C does not close the budget:
+adding it leaves approximately +2e21 J. Neither deleting the top term nor
+offsetting the diagnostic stock reconciles the continuity/tracer update.
+
+The next physical change must align cell volume and tracer/free-surface fluxes
+at the actual time levels. Existing GM/Redi and convection implementations are
+observed, not certified physically correct. The frozen fb322c6 comparison has
+zero state differences in four masked float32/float64 ice/no-ice fixtures.
+Registered protocol, independent checks and interpretation limits:
+[`nonlinear process review`](../research/experiments/nonlinear_process_budgets/review.md).

@@ -19,7 +19,14 @@ from diagnostics import compute_budget_diagnostics
 from grid import global_grid_dims, land_distance_from_land_mask, make_global_grid
 from jax_solver_global import make_solver_global
 from run_long_integration_global import ETA_BLOWUP_M, MAX_U_BOUND
-from stage_budgets import METRIC_NAMES, SOURCE_NAMES, STAGE_NAMES, empty_budget, make_budget_step
+from stage_budgets import (
+    METRIC_NAMES,
+    NONLINEAR_PROCESS_NAMES,
+    SOURCE_NAMES,
+    STAGE_NAMES,
+    empty_budget,
+    make_budget_step,
+)
 
 
 def main():
@@ -138,6 +145,8 @@ def main():
                 record["budget_residual"] = np.asarray(ledger["budget_residual"]).tolist()
                 record["absolute_budget_residual"] = np.asarray(ledger["absolute_budget_residual"]).tolist()
                 record["decomposition_residual"] = np.asarray(ledger["decomposition_residual"]).tolist()
+                record["advection_boundary_residual"] = np.asarray(ledger["advection_boundary_residual"]).tolist()
+                record["nonlinear_accounting_residual"] = np.asarray(ledger["nonlinear_accounting_residual"]).tolist()
             records.append(record)
             print(json.dumps({"case": case, **record}), flush=True)
             save_report()
@@ -148,6 +157,7 @@ def main():
                       final_budget=compute_budget_diagnostics(state, grid).as_dict())
         if args.audit_budget:
             result["stage_budget"] = {"metrics": METRIC_NAMES, "stages": STAGE_NAMES, "sources": SOURCE_NAMES,
+                                      "nonlinear_processes": NONLINEAR_PROCESS_NAMES,
                                       "scope": "fixed_node_proxy_not_complete_moving_volume_budget",
                                       "values": {name: values.tolist() for name, values in accumulated_budget.items()}}
         save_report()

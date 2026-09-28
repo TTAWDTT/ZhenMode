@@ -22,8 +22,9 @@ from test_horizontal_tracer_diffusion import _parameters
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--out", default="results/industrial_alignment/stage_compatibility.json")
+    parser.add_argument("--ref", default="d9ffce9")
     args = parser.parse_args()
-    source = subprocess.check_output(["git", "show", "d9ffce9:src/jax_solver_global.py"],
+    source = subprocess.check_output(["git", "show", f"{args.ref}:src/jax_solver_global.py"],
                                      cwd=ROOT, text=True, encoding="utf-8")
     old = types.ModuleType("pre_budget_solver")
     old.__file__ = str(ROOT / "src/jax_solver_global.py")
@@ -56,7 +57,7 @@ def main():
             results.append({"dtype": np.dtype(dtype).name, "dynamic_ice": ice,
                             "maximum_absolute_errors": maximum_errors})
     report = {"scope": "read_only_instrumentation_compatibility_not_climate_qualification",
-              "frozen_kernel": "d9ffce9", "results": results,
+              "frozen_kernel": args.ref, "results": results,
               "source_sha256": {str(path.relative_to(ROOT)): hashlib.sha256(path.read_bytes()).hexdigest()
                                 for path in [ROOT / "src/jax_solver_global.py", ROOT / "src/stage_budgets.py",
                                              ROOT / "tests/test_horizontal_tracer_diffusion.py", Path(__file__).resolve()]}}
