@@ -10,7 +10,7 @@ equations on a lat-lon grid, written in JAX.
 | Solver core | `src/jax_solver_global.py` |
 | Driver (CLI) | `src/run_long_integration_global.py` |
 | Tests | `tests/` |
-| Design rationale | `docs/decisions.md` (D1-D37) + `docs/README.md` |
+| Design rationale | `docs/decisions.md` (D1-D38) + `docs/README.md` |
 
 Everything else is support: data loaders (`src/forcing.py`,
 `src/wind_reanalysis.py`, `src/woa_data.py`), grid/bathymetry
@@ -19,11 +19,13 @@ utilities, plus two clearly-marked side directories —
 `archive/regional/` (a retired regional spectral solver) and `docs/archive/`
 (historical work logs). Neither is imported by the main line.
 
-Physical migration components `src/finite_volume.py` and
-`src/barotropic_transport.py` implement true cell contents and shared
-time-mean transports (D37). They are not yet wired into the production driver;
-their real-grid component matrix is 6/8, with float32 boundedness still failing.
-See the [component review](research/experiments/extensive_transport/review.md).
+Physical migration components `src/finite_volume.py`, `src/barotropic_transport.py`
+and `src/bounded_transport.py` implement true cell contents, shared time-mean Q
+and multidimensional extensive FCT (D37-D38). They are not yet wired into the
+production driver. Explicit64 inventories with64/32 momentum pass eight short
+real-grid component groups; original same-dtype donor still passes only6/8.
+This does not qualify full3D dynamics, century/climate or GPU performance.
+See the [bounded component review](research/experiments/bounded_extensive_transport/review.md).
 
 ## Features
 
@@ -150,7 +152,7 @@ ocean-solver/
 
 Index: [`docs/README.md`](docs/README.md). The mainline set:
 
-- [`docs/decisions.md`](docs/decisions.md) — **why the solver looks like this** (D1-D37)
+- [`docs/decisions.md`](docs/decisions.md) — **why the solver looks like this** (D1-D38)
 - [`docs/solver_technical_report_zh.md`](docs/solver_technical_report_zh.md) — solver technical report
 - [`docs/resolution_cfl_limits.md`](docs/resolution_cfl_limits.md) — resolution limits and the CFL fix
 - [`docs/deep-heat-poisoning-root-cause.md`](docs/deep-heat-poisoning-root-cause.md) — the column heat-leak root cause

@@ -754,5 +754,39 @@ industrial_alignment_20260928:
     current_source_hashes_verified: true
     production_cutover: false
     whole_model_conservation_pass: false
-  next: "Research finite-precision volume/content boundedness and higher-order shared fluxes, then C-grid 3D momentum and well-balanced partial-cell pressure; migrate actual production sources/ice, inventories, initialization and checkpoint semantics. Physical core components exist but their full reference matrix is FAIL, and the old mainline remains unqualified. Quantify convective coefficient fidelity and every remaining full-roadmap gate; no century/climate/industrial qualification yet."
+  bounded_extensive_transport:
+    status: explicit_inventory64_centered_fct_eight_component_groups_passed_production_unmigrated
+    protocol_commit: "8803e73"
+    precision_selection_commit: "71fc1c9"
+    implementation_commit: "2b9d632"
+    review: "research/experiments/bounded_extensive_transport/review.md"
+    direct_tests_passed: 17
+    latest_full_tests_passed: 409
+    old_warnings: 23
+    precision_control_cases: 12
+    native32_patterned_bound_excursion: 9.911659e-5
+    arithmetic64_with32_storage_repairs_bound: false
+    single_inventory_promotion_repairs_bound: false
+    reference_groups_passed: 8
+    steps_per_group: 100
+    dt_seconds: 60.
+    barotropic_substeps: 4
+    inventory_dtype: float64
+    momentum_dtype: [float64, float32]
+    maximum_surface_identity_mixed: 2.000e-7
+    worst_content_budget_relative: 5.029504e-14
+    maximum_absolute_final_bound_excursion: 3.268497e-13
+    volume_budget_delta_m3_range: [-4.228515625, 3.26416015625]
+    cosine_L2_errors: [0.007342957151, 0.002177976873, 0.000660276018]
+    cosine_refinement_ratios: [3.371457816, 3.298585462]
+    asymptotic_second_order_proven: false
+    retained_current_same_dtype_donor_groups_passed: 6
+    frozen_original_surface_failures_reproduced: true
+    snapshot_inventory_gates_independently_verified: true
+    verifier_negative_metadata_controls: 5
+    isolated_installed_fct_step: passed
+    mms: ALL_PASS_ratio_4.30
+    production_cutover: false
+    century_climate_gpu_full_adjoint_pass: false
+  next: "Implement actual C-grid 3D momentum and well-balanced/common-depth partial-cell pressure, researching and registering the next physical gates before edits; migrate production sources/ice/mixing, inventories, initialization and checkpoint semantics. New explicit64 bounded transport component matrix passes but old mainline remains unqualified; do not preserve an unused alternative core indefinitely. Quantify convective coefficient fidelity and every full-roadmap gate; no century/climate/industrial qualification yet."
   unresolved: ["whole-model budgets", "volume/free-surface consistency", "partial cells/global topology", "complete real physical forcing", "independent climate/forecast skill", "fair GPU/distributed cost", "whole-model adjoint and constrained learning"]

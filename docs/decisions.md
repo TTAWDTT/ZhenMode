@@ -932,3 +932,38 @@ Research, precommitted gates and retained failures:
 [`physical transport protocol`](../research/experiments/extensive_transport/protocol.md),
 [`precision follow-up`](../research/experiments/extensive_transport/precision_protocol.md),
 [`component review`](../research/experiments/extensive_transport/review.md).
+
+## D38 — Explicit inventory precision and all-direction shared FCT
+
+Frozen prescribed-Q controls distinguish arithmetic precision from stored V/N.
+Arithmetic64 with32 storage and promotion of only one inventory still violate
+the unchanged bound; both64 inventories and two32 expansions pass this fixture.
+Choose explicit V/N64 with eta/velocity32 permitted, not whole-state promotion.
+Two32 expansions save no inventory bytes and still reconstruct in64. The
+increased inventory memory and64 work are not a GPU performance qualification.
+
+`bounded_transport` reconstructs metric-weighted linear face concentrations,
+then limits shared antidiffusive amounts with positive/negative capacities
+collected over all six faces. Concentration capacities multiply NEW volume.
+Horizontal cell widths differ from center distances; vertical reconstruction
+uses current V/A. Closed neighbors cannot provide dry extrema or ghost slopes.
+Explicit sources can extend bounds to the forced low state, not silently refill
+content. SSPRK2 convexly averages BOTH V and N with frozen Q/sources and rejects
+invalid intermediate stages. No final clamp, mean repair or bathymetry floor.
+
+Same-dtype donor remains the reference default. Explicit inventory64 and
+centered_fct select the new coupled component. Seventeen direct tests include
+an independent scalar-loop oracle and local derivative checks. Cosine L2 ratios
+3.37/3.30 pass the preregistered3.2 gate but measured orders1.75/1.72 do not prove
+asymptotic2.00 or second-order coupled dynamics. Eight real-grid100-step groups
+pass with hashed inventory snapshots; current same-dtype donor still fails two
+patterned32 groups. Original frozen surface failures remain reproducible.
+
+These are migration components, not a qualified production ocean. Next integrate
+C-grid3D momentum and well-balanced pressure plus actual sources/ice/mixing and
+explicit initialization/restart semantics. Legacy budgets, century, independent
+climate/forecast, GPU/distributed and whole-model adjoint remain unqualified.
+Research, precision choice, unchanged gates and result scope:
+[`bounded transport protocol`](../research/experiments/bounded_extensive_transport/protocol.md),
+[`method selection`](../research/experiments/bounded_extensive_transport/selection.md),
+[`bounded transport review`](../research/experiments/bounded_extensive_transport/review.md).

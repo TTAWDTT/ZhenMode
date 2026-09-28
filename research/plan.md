@@ -26,7 +26,14 @@ approximately 2e21 J production fixed-node heat proxy gap. Next research finite-
 precision content/volume bounds and higher-order shared fluxes, then C-grid 3D
 momentum/well-balanced partial-cell pressure and explicit physical source/ice,
 initialization and checkpoint cutover. Do not leave an unused qualified
-prototype or label the old mainline physically repaired. Final tests: 392 pass.
+prototype or label the old mainline physically repaired. That phase had392 tests.
+The subsequent explicit inventory64/centered-FCT component now passes8/8 of the
+same100-step groups; native same-dtype donor remains6/8, not relabeled PASS.
+Seventeen new independent tests and409 full-suite tests pass. Cosine ratios
+3.37/3.30 pass the registered gate but measured orders1.75/1.72 are not a strict
+asymptotic2.00 demonstration. See bounded_extensive_transport/review.md. The next
+implementation must advance C-grid3D momentum/well-balanced partial-cell pressure
+and actual production coupling, not extend a separate unused reference forever.
 Research and code mapping are recorded in
 `research/literature/volume_transport_consistency_20260928.md`. Existing 2-degree
 reports actually use 66 latitude rows, not the previously mistyped 65; the
