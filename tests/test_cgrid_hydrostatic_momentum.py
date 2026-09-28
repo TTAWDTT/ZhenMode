@@ -186,6 +186,29 @@ def test_uniform_interior_coriolis_has_correct_sign_and_consistency():
     np.testing.assert_allclose(acceleration_north[:, 1:-2], -.002, rtol=1e-8)
 
 
+@pytest.mark.parametrize("orientation", ["east", "north"])
+def test_partial_faces_uniform_velocity_common_depth_not_neighbor_mass(orientation):
+    depth = np.full((8, 8), 50.)
+    if orientation == "east":
+        depth[3, :] = 21.
+    else:
+        depth[:, 3] = 21.
+    geometry = build_geometry(np.linspace(0., 360., 9), np.linspace(-.001, .001, 9),
+                              [0., 5., 20., 50.], depth)
+    zero = jnp.zeros(geometry.thickness.shape)
+    if orientation == "east":
+        north = jnp.where(geometry.north_area > 0., 2., 0.)
+        acceleration, unused = coriolis_tendency(geometry, zero, north, coriolis=.001)
+        actual = acceleration[2:4, 2:6, 2]
+        expected = .002
+    else:
+        east = jnp.where(geometry.east_area > 0., 2., 0.)
+        unused, acceleration = coriolis_tendency(geometry, east, zero, coriolis=.001)
+        actual = acceleration[2:6, 2:4, 2]
+        expected = -.002
+    np.testing.assert_allclose(actual, expected, rtol=1e-8, atol=0.)
+
+
 @pytest.mark.parametrize("dtype", [jnp.float64, jnp.float32])
 def test_actual_layer_pressure_coupling_mean_and_shear_force_counted_once(dtype):
     geometry, volume = _fixture(stair=False)
