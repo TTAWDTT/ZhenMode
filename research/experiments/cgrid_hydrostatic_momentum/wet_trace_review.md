@@ -67,7 +67,7 @@ Configured/research lint passed. No damping, geometry source or force repair.
 - python research/experiments/cgrid_hydrostatic_momentum/run_reference.py
 - python research/experiments/cgrid_hydrostatic_momentum/verify_reference.py --report results/industrial_alignment/cgrid_wet_trace_reference.json --negative-controls
 - python research/experiments/cgrid_hydrostatic_momentum/verify_wet_trace_reference.py --negative-controls
-- python -m pytest tests/test_wet_flux_reconstruction.py tests/test_cgrid_momentum.py tests/test_cgrid_pressure_work.py tests/test_momentum_shared_flux.py -q
+- python -m pytest tests/test_wet_flux_reconstruction.py tests/test_cgrid_hydrostatic_momentum.py tests/test_cgrid_pressure_work.py tests/test_momentum_shared_flux.py -q
 - python -m pytest tests/ -q
 
 Artifacts under results/industrial_alignment: cgrid_wet_trace_reference.json

@@ -25,13 +25,13 @@ jax.config.update("jax_enable_x64", True)
 METRICS = ("pressure_max_m_s2", "rotation_energy_relative", "rotation_solve_relative",
            "surface_error_m", "surface_gate_m", "outflow_fraction", "gravity_cfl_bound",
            "speed_max_m_s", "layer_shear_max_m_s", "constant_error", "bound_excursion",
-           "lower_height_relative_error", "eta_max_m", "wet_trace_bottom_relative")
+           "lower_height_relative_error", "eta_max_m", "wet_trace_bottom_relative", "dual_commutation_relative")
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--bathy", default=DEFAULT_CONFIG.bathymetry_file)
-    parser.add_argument("--out", default="results/industrial_alignment/cgrid_wet_trace_reference.json")
+    parser.add_argument("--out", default="results/industrial_alignment/cgrid_metric_dual_reference.json")
     args = parser.parse_args()
     output = ROOT / args.out
     if output.exists():
@@ -44,13 +44,16 @@ def main():
                 Path(__file__).with_name("pressure_work_protocol.md"),
                 Path(__file__).with_name("dual_mass_protocol.md"),
                 Path(__file__).with_name("wet_trace_protocol.md"),
+                Path(__file__).with_name("metric_dual_protocol.md"),
                 ROOT / "tests/test_cgrid_hydrostatic_momentum.py", ROOT / "tests/test_cgrid_pressure_work.py",
-                ROOT / "tests/test_momentum_shared_flux.py", ROOT / "tests/test_wet_flux_reconstruction.py"]
+                ROOT / "tests/test_momentum_shared_flux.py", ROOT / "tests/test_wet_flux_reconstruction.py",
+                ROOT / "tests/test_wet_flux_metrics.py"]
     report = {"scope": "frozen_pressure_linear_3d_momentum_active_density_fct_not_full_ocean",
               "rotation_formulation": "physical_wet_dual_rectangles_and_common_overlap",
               "pressure_formulation": "shared_face_force_over_physical_dual_mass",
               "transport_flux_contract": "actual_matched_layer_fluxes_from_fast_substep_mean",
-              "wet_trace_contract": "shared_wet_intervals_enriched_vertical_primitive_frozen_geometry_not_velocity",
+              "wet_trace_contract": "latitude_arc_wet_traces_paired_interior_flux_frozen_geometry_not_velocity",
+              "dual_transport_contract": "all_wet_half_prisms_metric_integrated_q_not_force_mass_or_nonlinear_momentum",
               "status": "running", "reference_coefficients": [1., 1e-3, 1e-7],
               "provenance": {"git_head": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip(),
                              "git_status": subprocess.check_output(["git", "status", "--porcelain"], cwd=ROOT, text=True).splitlines(),
@@ -114,7 +117,8 @@ def main():
                     metrics = jnp.array([pressure_max, result.rotation_error, result.rotation_residual, result.surface_error,
                                          1e-12 + 1e-12 * eta_scale, result.transport.max_outflow_fraction,
                                          result.barotropic.gravity_cfl_bound, speed, shear, constant, jnp.maximum(excursion, 0.), lower_error,
-                                         jnp.max(jnp.abs(eta_after)), result.flux_reconstruction.bottom_closure_relative])
+                                         jnp.max(jnp.abs(eta_after)), result.flux_reconstruction.bottom_closure_relative,
+                                         result.dual_transport.commutation_relative])
                     flags = jnp.array([result.valid, result.pressure.valid, result.barotropic.valid, result.transport.valid])
                     reconstruction = result.flux_reconstruction
                     top_point = evaluate_wet_flux(reconstruction, .37, .61, reconstruction.top)
@@ -122,7 +126,7 @@ def main():
                     middle_point = evaluate_wet_flux(reconstruction, .37, .61, reconstruction.top + .38123 * reconstruction.height)
                     trace_points = (top_point.vertical, bottom_point.vertical, middle_point.east_per_depth,
                                     middle_point.north_per_depth, middle_point.vertical)
-                    return final, metrics, flags, result.fluxes, result.barotropic.mean_east, result.barotropic.mean_north, reconstruction, trace_points
+                    return final, metrics, flags, result.fluxes, result.barotropic.mean_east, result.barotropic.mean_north, reconstruction, trace_points, result.dual_transport
 
                 run = {"geometry": label, "velocity_dtype": dtype_name, "disturbed": disturbed,
                        "inventory_dtype": "float64", "dt_seconds": 60., "barotropic_substeps": 4,
@@ -132,12 +136,13 @@ def main():
                 state = initial
                 for iteration in range(100):
                     previous_volume = state.inventory.volume
-                    candidate, metric_array, flags, actual_fluxes, mean_east, mean_north, reconstruction, trace_points = step(state)
+                    candidate, metric_array, flags, actual_fluxes, mean_east, mean_north, reconstruction, trace_points, dual = step(state)
                     values, accepted = np.asarray(metric_array), np.asarray(flags)
                     row = {name: float(value) if np.isfinite(value) else None for name, value in zip(METRICS, values)}
                     row["stage_valid"] = accepted.tolist()
                     row["step"] = iteration + 1
                     row["wet_trace_valid"] = bool(reconstruction.valid)
+                    row["dual_transport_valid"] = bool(dual.valid)
                     energy_gate = 2e-6 if dtype_name == "float32" else 1e-12
                     passed = (np.all(np.isfinite(values)) and np.all(accepted)
                               and row["surface_error_m"] <= row["surface_gate_m"]
@@ -145,6 +150,7 @@ def main():
                               and row["constant_error"] <= 1e-12 and row["bound_excursion"] <= 1e-12
                               and row["lower_height_relative_error"] <= 1e-12
                               and row["wet_trace_valid"] and row["wet_trace_bottom_relative"] <= 1e-12 + 64. * np.finfo(np.float64).eps
+                              and row["dual_transport_valid"] and row["dual_commutation_relative"] <= 1e-12 + 64. * np.finfo(np.float64).eps
                               and (disturbed or row["pressure_max_m_s2"] <= 1e-12))
                     run["history"].append(row)
                     if not passed:
@@ -178,6 +184,11 @@ def main():
                          last_trace_evaluated_top=np.asarray(trace_points[0]), last_trace_evaluated_bottom=np.asarray(trace_points[1]),
                          last_trace_evaluated_middle_east=np.asarray(trace_points[2]), last_trace_evaluated_middle_north=np.asarray(trace_points[3]),
                          last_trace_evaluated_middle_vertical=np.asarray(trace_points[4]),
+                         last_trace_south_latitude=np.asarray(reconstruction.south_latitude), last_trace_north_latitude=np.asarray(reconstruction.north_latitude),
+                         last_dual_east_volume=np.asarray(dual.east_volume), last_dual_north_volume=np.asarray(dual.north_volume),
+                         last_dual_east_east_flux=np.asarray(dual.east_fluxes.east), last_dual_east_north_flux=np.asarray(dual.east_fluxes.north),
+                         last_dual_east_vertical_flux=np.asarray(dual.east_fluxes.vertical), last_dual_north_east_flux=np.asarray(dual.north_fluxes.east),
+                         last_dual_north_north_flux=np.asarray(dual.north_fluxes.north), last_dual_north_vertical_flux=np.asarray(dual.north_fluxes.vertical),
                          physical_depth=grid.depth, area=geometry.area, thickness=geometry.thickness, interfaces=interfaces,
                          longitude_edges=lon_edges, latitude_edges=lat_edges, reference_coefficients=np.asarray(coefficients))
                 run.update(status="PASS" if passed else "FAIL", content_budget_relative=budget.tolist(),

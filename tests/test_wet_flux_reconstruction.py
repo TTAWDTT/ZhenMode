@@ -27,8 +27,8 @@ def _fixture(partial=True, moving=True):
 
 @pytest.mark.parametrize("partial,moving", [(True, True), (True, False), (False, True), (False, False)])
 def test_actual_wet_side_intervals_integrate_flux_and_forbid_wall_spreading(partial, moving):
-    unused_geometry, unused_volume, faces, fluxes = _fixture(partial, moving)
-    reconstruction = jax.jit(reconstruct_wet_fluxes)(faces, fluxes)
+    geometry, unused_volume, faces, fluxes = _fixture(partial, moving)
+    reconstruction = jax.jit(reconstruct_wet_fluxes)(geometry, faces, fluxes)
     assert bool(reconstruction.valid)
     density, side_top, side_bottom = map(np.asarray, (reconstruction.side_density, reconstruction.side_top, reconstruction.side_bottom))
     east, north = np.asarray(fluxes.east), np.asarray(fluxes.north)
@@ -55,6 +55,10 @@ def test_actual_wet_side_intervals_integrate_flux_and_forbid_wall_spreading(part
                 latitude = 0. if side == 2 else 1. if side == 3 else .57
                 point = evaluate_wet_flux(reconstruction, longitude, latitude, query)
                 observed = (point.east_per_depth if side < 2 else point.north_per_depth)[position]
+                if side < 2:
+                    south, north = geometry.latitude_edges[position[1]:position[1] + 2]
+                    phi = np.arcsin(np.sin(south) + latitude * (np.sin(north) - np.sin(south)))
+                    observed = observed * (north - south) * np.cos(phi) / (np.sin(north) - np.sin(south))
                 np.testing.assert_allclose(observed * interval_width, actual_flux, rtol=1e-12, atol=1e-8)
             wall_sample = None
             if start > cell_top[position] + 1e-10:
@@ -73,8 +77,8 @@ def test_actual_wet_side_intervals_integrate_flux_and_forbid_wall_spreading(part
 
 
 def test_vertical_primitive_endpoints_and_independent_derivative_divergence():
-    unused_geometry, unused_volume, faces, fluxes = _fixture()
-    reconstruction = reconstruct_wet_fluxes(faces, fluxes)
+    geometry, unused_volume, faces, fluxes = _fixture()
+    reconstruction = reconstruct_wet_fluxes(geometry, faces, fluxes)
     top = evaluate_wet_flux(reconstruction, .37, .61, faces.top)
     bottom = evaluate_wet_flux(reconstruction, .37, .61, faces.top + faces.height)
     np.testing.assert_allclose(top.vertical, fluxes.vertical[..., :-1], rtol=1e-12, atol=1e-8)
@@ -95,20 +99,26 @@ def test_vertical_primitive_endpoints_and_independent_derivative_divergence():
     assert np.all(np.abs(np.asarray(finite_difference - vertical_derivative)[wet]) <= 1e-6 * np.asarray(scale)[wet] + 1e-8)
 
 
-def test_full_wet_uniform_height_reduces_to_mapped_rt0():
-    unused_geometry, unused_volume, faces, fluxes = _fixture(False, False)
-    reconstruction = reconstruct_wet_fluxes(faces, fluxes)
+def test_full_wet_uniform_height_retains_vertical_rt0_with_paired_latitude_metric():
+    geometry, unused_volume, faces, fluxes = _fixture(False, False)
+    reconstruction = reconstruct_wet_fluxes(geometry, faces, fluxes)
     depth = faces.top + .41 * faces.height
     point = evaluate_wet_flux(reconstruction, .37, .61, depth)
     side = reconstruction.side_density
-    np.testing.assert_allclose(point.east_per_depth, .63 * side[..., 0] + .37 * side[..., 1], rtol=1e-12, atol=1e-8)
-    np.testing.assert_allclose(point.north_per_depth, .39 * side[..., 2] + .61 * side[..., 3], rtol=1e-12, atol=1e-8)
+    latitude = geometry.latitude_edges
+    sine_width = np.diff(np.sin(latitude))[None, :, None]
+    width = np.diff(latitude)[None, :, None]
+    phi = np.arcsin(np.sin(latitude[:-1])[None, :, None] + .61 * sine_width)
+    weight = sine_width / (width * np.cos(phi))
+    primitive = (phi - latitude[:-1][None, :, None]) / width
+    np.testing.assert_allclose(point.east_per_depth, weight * (.63 * side[..., 0] + .37 * side[..., 1]), rtol=1e-12, atol=1e-8)
+    np.testing.assert_allclose(point.north_per_depth, .39 * side[..., 2] + .61 * side[..., 3] + (side[..., 1] - side[..., 0]) * (.61 - primitive), rtol=1e-12, atol=1e-8)
     np.testing.assert_allclose(point.vertical, .59 * fluxes.vertical[..., :-1] + .41 * fluxes.vertical[..., 1:], rtol=1e-12, atol=1e-8)
 
 
 @pytest.mark.parametrize("fault", ["closed", "nonfinite", "material", "interval"])
 def test_invalid_flux_or_geometry_is_not_repaired_into_acceptance(fault):
-    unused_geometry, unused_volume, faces, fluxes = _fixture()
+    geometry, unused_volume, faces, fluxes = _fixture()
     if fault == "closed":
         fluxes = fluxes._replace(north=fluxes.north.at[0, -1, 0].set(1.))
     elif fault == "nonfinite":
@@ -117,17 +127,17 @@ def test_invalid_flux_or_geometry_is_not_repaired_into_acceptance(fault):
         fluxes = fluxes._replace(vertical=fluxes.vertical.at[0, 0, 0].set(1.))
     else:
         faces = faces._replace(east_top=faces.east_top.at[0, 0, 0].set(-100.))
-    result = jax.jit(reconstruct_wet_fluxes)(faces, fluxes)
+    result = jax.jit(reconstruct_wet_fluxes)(geometry, faces, fluxes)
     assert not bool(result.valid)
 
 
 def test_shape_precision_and_query_validity_are_explicit():
-    unused_geometry, unused_volume, faces, fluxes = _fixture()
+    geometry, unused_volume, faces, fluxes = _fixture()
     with pytest.raises(ValueError, match="64"):
-        reconstruct_wet_fluxes(faces, fluxes._replace(east=fluxes.east.astype(jnp.float32)))
+        reconstruct_wet_fluxes(geometry, faces, fluxes._replace(east=fluxes.east.astype(jnp.float32)))
     with pytest.raises(ValueError, match="shape"):
-        reconstruct_wet_fluxes(faces, fluxes._replace(north=fluxes.north[:, :-1]))
-    result = reconstruct_wet_fluxes(faces, fluxes)
+        reconstruct_wet_fluxes(geometry, faces, fluxes._replace(north=fluxes.north[:, :-1]))
+    result = reconstruct_wet_fluxes(geometry, faces, fluxes)
     for longitude, latitude, depth in ((-.1, .5, faces.top), (.5, 1.1, faces.top), (.5, .5, faces.top - 1.), (.5, .5, faces.top + jnp.nan)):
         assert not np.any(evaluate_wet_flux(result, longitude, latitude, depth).valid)
     samples = jnp.stack((faces.top + .21 * faces.height, faces.top + .73 * faces.height), axis=-1)
