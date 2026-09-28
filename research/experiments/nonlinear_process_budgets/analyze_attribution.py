@@ -48,6 +48,11 @@ def main():
             "surface_displacement_tracer_change": surface.tolist(),
             "linearized_surface_inventory_residual_not_physical_closure": (residual + surface).tolist(),
         })
+        if "projection_transport_norm_squared" in values:
+            norms = values["projection_transport_norm_squared"]
+            summaries[-1]["projection_transport_norm_squared"] = norms.tolist()
+            summaries[-1]["native_projection_relative_area_l2_residual"] = (
+                float(np.sqrt(norms[1] / norms[0])) if norms[0] > 0. else None)
     output = {"scope": "process_attribution_not_moving_volume_conservation_or_climate_qualification",
               "input": str(input_path), "input_sha256": hashlib.sha256(input_path.read_bytes()).hexdigest(),
               "runtime_source_hashes_match": True, "cases": summaries}

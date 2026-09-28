@@ -250,12 +250,7 @@ def _column_divergence(u, v, p):
     advection budget uses, so a zero here is exactly the discretely
     divergence-free condition the tracer flux operator needs. (D13)
     """
-    wm = p.wet_mask_z
-    integrand = jnp.stack(
-        [_divergence_conservative(u[..., k] * wm[..., k],
-                                  v[..., k] * wm[..., k], p)
-         for k in range(p.nz)], axis=-1)
-    return jnp.sum(integrand * p.dz_node, axis=-1) * p.wet_mask
+    return jnp.sum(_divergence_h(u, v, p) * p.dz_node, axis=-1) * p.wet_mask
 
 
 def _project_column_divergence(u, v, p, dt, n_iter=None):
@@ -264,7 +259,9 @@ def _project_column_divergence(u, v, p, dt, n_iter=None):
     The Euler correction (u, v) -= dt*g*grad(psi) of a surface-pressure potential
     that solves the area-weighted Poisson problem with the EXACT column divergence
     (not a constant-H 2D one, which leaves ~40% of the residual at coastlines).
-    Fixed CG iteration count for predictable per-step cost. (D13)
+    The 3D wet-face gradient is the volume-weighted negative adjoint of that
+    constraint; a broadcast 2D gradient is not equivalent at bottom steps.
+    CG stops at a dtype-aware tolerance or the fixed iteration cap. (D34)
     """
     if n_iter is None:
         n_iter = int(os.environ.get("OCEAN_PAV_NITER", "150"))
@@ -272,19 +269,18 @@ def _project_column_divergence(u, v, p, dt, n_iter=None):
     wm = p.wet_mask
     area = p.dx_2d * p.dy * wm
     col_div = _column_divergence(u, v, p)
-    rhs = (col_div / (dt * g)) * area
+    rhs = -(col_div / (dt * g)) * area
 
     def _matvec(psi):
-        gx, gy = _gradient_conservative(psi, p)
-        u3 = gx[:, :, None] * p.wet_mask_z
-        v3 = gy[:, :, None] * p.wet_mask_z
-        return _column_divergence(u3, v3, p) * area
+        gx, gy = _gradient_conservative_3d(psi[:, :, None], p)
+        return -_column_divergence(gx, gy, p) * area
 
-    psi, _ = jax.scipy.sparse.linalg.cg(_matvec, rhs, tol=0.0,
+    tolerance = max(1e-12, 32. * jnp.finfo(u.dtype).eps)
+    psi, _ = jax.scipy.sparse.linalg.cg(_matvec, rhs, tol=tolerance,
                                         maxiter=n_iter)
-    gx, gy = _gradient_conservative(psi, p)
-    u_corr = u - (dt * g) * gx[:, :, None] * p.wet_mask_z
-    v_corr = v - (dt * g) * gy[:, :, None] * p.wet_mask_z
+    gx, gy = _gradient_conservative_3d(psi[:, :, None], p)
+    u_corr = u - (dt * g) * gx
+    v_corr = v - (dt * g) * gy
     return u_corr, v_corr
 
 
@@ -1837,6 +1833,8 @@ def _explicit_full_step(state, p, dt, budget=None):
         # Fz_top = Fz[0]*T[0] conserves column heat. No-op when off. (D13)
         if p.project_adv_vel:
             u_adv, v_adv = _project_column_divergence(u_pred, v_pred, p, dt)
+            if budget is not None:
+                budget.column_projection(u_pred, v_pred, u_adv, v_adv)
         else:
             u_adv, v_adv = u_pred, v_pred
         state_pred = JaxStateG(u_adv, v_adv, T_pred, S_pred, state.eta, state.ice)

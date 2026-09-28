@@ -10,7 +10,9 @@ research steps, not a redefinition of success. Historical surface/ice and
 comparison scores predate corrected kernels and must not qualify current code.
 Registered scalar diffusion gates have passed. The actual-stage audit exposes
 an unresolved nonlinear budget rather than proving conservation; the active
-foundation is `research/experiments/nonlinear_process_budgets/protocol.md`.
+foundation is `research/experiments/column_projection_consistency/protocol.md`.
+Native wet-face projection algebra is corrected, but real-grid convergence is
+still insufficient and the full moving-volume/transport time coupling is absent.
 Real-forcing century
 runs, independent climate/forecast skill, full geometry/physics, fair GPU and
 distributed scaling, and whole-model differentiability remain required.

@@ -9,6 +9,8 @@
 [`实际阶段复核`](../research/experiments/actual_stage_budgets/review.md)。
 最新只读非线性过程归因、顶面输运恒等式及未闭合海面库存见
 [`过程复核`](../research/experiments/nonlinear_process_budgets/review.md)。
+之后真正湿面列投影的物理修复、330 项测试及尚不充分的真实地形收敛见
+[`列投影复核`](../research/experiments/column_projection_consistency/review.md)。
 
 起点是 `bb7ba23`。本轮针对新加入的混合层、动态海冰、局地扩散、
 TVD/MUSCL 输运，以及重启和外部模式评分，先复现缺陷，再修复和验证。

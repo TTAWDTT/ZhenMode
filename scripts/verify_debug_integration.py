@@ -147,6 +147,7 @@ def main():
                 record["decomposition_residual"] = np.asarray(ledger["decomposition_residual"]).tolist()
                 record["advection_boundary_residual"] = np.asarray(ledger["advection_boundary_residual"]).tolist()
                 record["nonlinear_accounting_residual"] = np.asarray(ledger["nonlinear_accounting_residual"]).tolist()
+                record["projection_transport_norm_squared"] = np.asarray(ledger["projection_transport_norm_squared"]).tolist()
             records.append(record)
             print(json.dumps({"case": case, **record}), flush=True)
             save_report()
@@ -158,6 +159,7 @@ def main():
         if args.audit_budget:
             result["stage_budget"] = {"metrics": METRIC_NAMES, "stages": STAGE_NAMES, "sources": SOURCE_NAMES,
                                       "nonlinear_processes": NONLINEAR_PROCESS_NAMES,
+                                      "projection_transport_norm_squared_units": "m4/s2; area-weighted before/after sums",
                                       "scope": "fixed_node_proxy_not_complete_moving_volume_budget",
                                       "values": {name: values.tolist() for name, values in accumulated_budget.items()}}
         save_report()

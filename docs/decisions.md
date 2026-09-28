@@ -216,9 +216,9 @@ CFL while acting on the shear.
 
 The raw stage-2 predictor `u_pred = u + du1*dt` has `col_div(u_pred) = O(dt)`,
 because the barotropic subcycle projects only the FINAL u — after the tracer
-stage. The flux-form column leak `-Σ AREA·Fz[0]·T[0]` is therefore exactly O(dt)
+stage. The flux-form column leak `+Σ AREA·Fz[0]·T[0]` is therefore exactly O(dt)
 and monotonic (+63 ZJ/yr over 200 yr, a surface->abyss dipole).
-`project_adv_vel=True` applies the 2D Euler velocity increment
+The historical `project_adv_vel=True` implementation applied the 2D Euler velocity increment
 `-dt·g·∇(eta_proj)`, with `eta_proj` solving the area-weighted Poisson problem
 `∇·(H∇eta_proj) = col_div_h(u_pred)`; the residual is O(dt²). It removes ~93-99%
 of the one-step interior heat change (-1123 ZJ/yr -> ~0).
@@ -227,16 +227,15 @@ of the one-step interior heat change (-1123 ZJ/yr -> ~0).
 the tracer stage-2 velocity at the old (u, v), making the tracer RK2 consistent
 with the momentum RK2 (both stages old-velocity).
 
-`_project_column_divergence` uses the EXACT column divergence (the per-layer
-masked `_divergence_conservative` summed with `dz_node`), not a constant-H 2D
-divergence: the layer masking makes the two differ by ~40% at coastlines, and
-that residual is what the closure exists to remove. The CG solves the
-area-weighted Poisson problem
-`Div_col(Grad_conservative(psi)) = col_div_h(u,v)/(dt*g)` for a surface-pressure
-potential, then applies `(u,v) -= dt*g*grad(psi)`. The iteration count is fixed
-rather than a tolerance loop, for predictable per-step cost: the stage-2 leak
-saturates at -40 ZJ/yr (from -2238) for `n_iter >= 120`, so 150 is past the knee
-and the corrected field's column divergence sits at the CG residual (~1e-11).
+The historical projection summed surface-mask `_divergence_conservative` over
+masked layer velocities and called that the exact column constraint. D34
+corrects this claim: multiplying dry velocities by zero does not close dry
+bottom faces, and the broadcast 2D gradient is not the native constraint's
+wet-volume adjoint. Earlier measurements of a 150-iteration knee are historical,
+not proof of native transport convergence on current production geometry.
+The true top transport is `+Σ AREA*Fz[0]*T[0]` for downward-positive Fz;
+neither freezing nor projecting one RK velocity reconciles moving cell volume
+and time-averaged barotropic transport by itself.
 
 ## D14 — Face-gated horizontal gradients for advection
 
@@ -800,3 +799,28 @@ observed, not certified physically correct. The frozen fb322c6 comparison has
 zero state differences in four masked float32/float64 ice/no-ice fixtures.
 Registered protocol, independent checks and interpretation limits:
 [`nonlinear process review`](../research/experiments/nonlinear_process_budgets/review.md).
+
+## D34 — Project the native wet-face constraint with its volume adjoint
+
+`_column_divergence` now integrates the actual 3D wet-face `_divergence_h` with
+dz_node, matching the continuity diagnostic's top Fz. The pressure correction
+and Poisson use the same 3D wet-face gradient. `-A*B*G3` is symmetric positive
+on the compatible non-null subspace; constant/dry/grid null modes still exist.
+Only replacing B while retaining a broadcast 2D gradient is not sufficient.
+
+CG now has a dtype-aware stopping tolerance and an iteration cap. With the old
+zero tolerance, 1000 iterations can amplify roundoff or produce nonfinite output
+even in full-wet fixtures where 150 iterations were already accurate. The new
+direct gates verify native continuity, adjointness, energy, dry sentinel
+immunity, constants, zero RHS, float32 and a compatible-problem JVP.
+
+Actual stage-2 transport before/after is monitored without changing state or
+external sources. Local 150-cap residuals improve from approximately 6-7% to
+order 1e-10 in masked fixtures. However, the real-ETOPO one-day audit still has
+approximately 1.46% cumulative native projection residual and order 2e21 J
+fixed-node enthalpy imbalance. The algebraic repair is not production solver,
+moving-volume, century or climate qualification. Convergence/iteration
+provenance and physical transport/volume time coupling remain necessary.
+
+Protocol, failure reproduction, frozen comparison and actual evidence:
+[`column projection review`](../research/experiments/column_projection_consistency/review.md).

@@ -647,5 +647,21 @@ industrial_alignment_20260928:
     remaining_heat_after_linearized_surface_inventory_J: [1.996794974e21, 2.029398312e21]
     conservation_pass: false
     separate_convection_suspect: "kappa and dt both divided by conv_nsub; physical coefficient fidelity not yet verified"
-  next: "Reconcile free-surface/cell-volume and tracer transport time levels; independently reproduce convective coefficient fidelity, production cumulative I/O, then all remaining full-roadmap gates."
+  native_column_projection:
+    status: algebra_corrected_production_convergence_not_qualified
+    protocol_commit: "11b5609"
+    review: "research/experiments/column_projection_consistency/review.md"
+    initial_failed_tests: 7
+    regression_tests: 16
+    latest_full_tests_passed: 330
+    masked_old_constraint_relative_linf_error: [0.3123, 0.3562, 0.6964]
+    masked_old_150_native_area_l2_residual: [0.05889, 0.06649, 0.07160]
+    masked_corrected_150_native_area_l2_residual: [8.986e-11, 1.578e-10, 2.090e-10]
+    one_day_real_grid_projection_residual_ratio: [0.014638, 0.014628]
+    one_day_fixed_node_enthalpy_residual_J: [-2.028493073e21, -2.043024553e21]
+    additional_float32_one_day_stability: passed_not_conservation
+    float32_eta_volume_residual_m3: [-3.501705e8, -3.306940e8]
+    float32_nonlinear_accounting_heat_residual_J: [-1.876769e18, -1.878697e18]
+    conservation_pass: false
+  next: "Register/verify real-grid convergence and iteration provenance; reconcile free-surface/cell-volume and transport time levels, quantify mixed-precision inventory error, convective coefficient fidelity and all remaining full-roadmap gates."
   unresolved: ["whole-model budgets", "volume/free-surface consistency", "partial cells/global topology", "complete real physical forcing", "independent climate/forecast skill", "fair GPU/distributed cost", "whole-model adjoint and constrained learning"]

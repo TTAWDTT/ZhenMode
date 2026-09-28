@@ -8,7 +8,7 @@ import jax
 import jax.numpy as jnp
 
 from config import C_P, RHO_0
-from jax_solver_global import _step_impl
+from jax_solver_global import _step_impl, _vertical_transport_iface
 
 METRIC_NAMES = ("fixed_node_water_ice_enthalpy_J", "water_salt_kg", "eta_volume_m3")
 STAGE_NAMES = ("linear_diffusion", "sponge", "nonlinear", "free_surface",
@@ -35,7 +35,8 @@ def empty_budget():
             "absolute_advection_boundary_residual": jnp.zeros(3, dtype=jnp.float64),
             "nonlinear_accounting_residual": jnp.zeros(3, dtype=jnp.float64),
             "absolute_nonlinear_accounting_residual": jnp.zeros(3, dtype=jnp.float64),
-            "surface_displacement_tracer_change": jnp.zeros(3, dtype=jnp.float64)}
+            "surface_displacement_tracer_change": jnp.zeros(3, dtype=jnp.float64),
+            "projection_transport_norm_squared": jnp.zeros(2, dtype=jnp.float64)}
 
 
 class _StageRecorder:
@@ -52,6 +53,7 @@ class _StageRecorder:
         self.processes = {name: jnp.zeros(3, dtype=jnp.float64) for name in NONLINEAR_PROCESS_NAMES}
         self.process_scale = jnp.zeros(3, dtype=jnp.float64)
         self.advection_boundary = jnp.zeros(3, dtype=jnp.float64)
+        self.projection_norm_squared = jnp.zeros(2, dtype=jnp.float64)
 
     def difference(self, before, after):
         heat = RHO_0 * C_P * (jnp.asarray(after.T, dtype=jnp.float64) - jnp.asarray(before.T, dtype=jnp.float64)) * self.volume
@@ -92,6 +94,12 @@ class _StageRecorder:
         heat = RHO_0 * C_P * interval * jnp.sum(jnp.asarray(temperature_flux, dtype=jnp.float64) * self.surface_area)
         salt = RHO_0 / 1000. * interval * jnp.sum(jnp.asarray(salinity_flux, dtype=jnp.float64) * self.surface_area)
         self.advection_boundary = self.advection_boundary + jnp.stack((heat, salt, jnp.asarray(0.)))
+
+    def column_projection(self, velocity_x, velocity_y, corrected_x, corrected_y):
+        before = jnp.asarray(_vertical_transport_iface(velocity_x, velocity_y, self.params)[..., 0], dtype=jnp.float64)
+        after = jnp.asarray(_vertical_transport_iface(corrected_x, corrected_y, self.params)[..., 0], dtype=jnp.float64)
+        self.projection_norm_squared = self.projection_norm_squared + jnp.stack((
+            jnp.sum(before ** 2 * self.surface_area), jnp.sum(after ** 2 * self.surface_area)))
 
     def surface_displacement_change(self, before, after):
         eta_before = jnp.asarray(before.eta, dtype=jnp.float64)
@@ -140,7 +148,8 @@ class _StageRecorder:
                 "absolute_advection_boundary_residual": jnp.abs(boundary_residual),
                 "nonlinear_accounting_residual": nonlinear_residual,
                 "absolute_nonlinear_accounting_residual": jnp.abs(nonlinear_residual),
-                "surface_displacement_tracer_change": self.surface_displacement_change(before, after)}
+                "surface_displacement_tracer_change": self.surface_displacement_change(before, after),
+                "projection_transport_norm_squared": self.projection_norm_squared}
 
 
 def make_budget_step(params):
