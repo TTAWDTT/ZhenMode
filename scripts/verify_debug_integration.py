@@ -17,16 +17,34 @@ import numpy as np
 from config import DEFAULT_CONFIG, GlobalGridConfig, PhysicsConfig
 from diagnostics import compute_budget_diagnostics
 from grid import global_grid_dims, land_distance_from_land_mask, make_global_grid
-from jax_solver_global import make_solver_global
+from jax_solver_global import make_solver_global, projection_config
 from run_long_integration_global import ETA_BLOWUP_M, MAX_U_BOUND
 from stage_budgets import (
     METRIC_NAMES,
     NONLINEAR_PROCESS_NAMES,
     SOURCE_NAMES,
     STAGE_NAMES,
+    accumulate_budget,
     empty_budget,
     make_budget_step,
 )
+
+
+def make_smoke_fixture(resolution, bathymetry, kappa_bi):
+    """Shared real-grid, explicitly synthetic-forcing numerical fixture."""
+    nx, ny = global_grid_dims(resolution, 65., remap="area")
+    config = replace(GlobalGridConfig(), resolution=resolution, lat_max=65., nx=nx, ny=ny)
+    grid = make_global_grid(config, bathymetry, smooth_passes=80, min_depth=500., remap="area")
+    latitude = np.radians(grid.lat)[None, :]
+    sst = np.broadcast_to(np.maximum(-1.8, 26. - 40. * np.sin(latitude) ** 2), (nx, ny))
+    initial_temperature = 2. + (sst[:, :, None] - 2.) * np.exp(grid.z[None, None, :] / 500.)
+    initial_salinity = np.full_like(initial_temperature, 35.)
+    atmosphere = sst - 5.
+    forcing = (np.broadcast_to(0.05 * np.cos(3. * latitude), (nx, ny)),
+               np.zeros((nx, ny)), np.zeros((nx, ny)))
+    physics = replace(PhysicsConfig(), nu_h=2e6, nu_bi=0., kappa_bi=kappa_bi,
+                      kappa_v=1e-6, kappa_conv=0.01, kappa_gm=0., kappa_redi=0.)
+    return grid, physics, initial_temperature, initial_salinity, atmosphere, forcing
 
 
 def main():
@@ -37,6 +55,9 @@ def main():
     parser.add_argument("--kappa-bi", type=float, default=0.)
     parser.add_argument("--audit-budget", action="store_true")
     parser.add_argument("--dtype", choices=["float32", "float64"], default="float32")
+    parser.add_argument("--projection-niter", type=int, default=None)
+    parser.add_argument("--projection-rtol", type=float, default=None)
+    parser.add_argument("--projection-preconditioner", choices=["none", "jacobi"], default="none")
     parser.add_argument("--cases", nargs="+", choices=["baseline", "mixed", "ice", "coastal"],
                         default=["baseline", "mixed", "ice", "coastal"])
     parser.add_argument("--bathy", default=DEFAULT_CONFIG.bathymetry_file)
@@ -46,18 +67,9 @@ def main():
         parser.error("days, dt and resolution must be finite and positive")
     if not np.isfinite(args.kappa_bi) or args.kappa_bi < 0.:
         parser.error("kappa-bi must be finite and nonnegative")
-    nx, ny = global_grid_dims(args.resolution, 65., remap="area")
-    config = replace(GlobalGridConfig(), resolution=args.resolution, lat_max=65., nx=nx, ny=ny)
-    grid = make_global_grid(config, args.bathy, smooth_passes=80, min_depth=500., remap="area")
-    latitude = np.radians(grid.lat)[None, :]
-    sst = np.broadcast_to(np.maximum(-1.8, 26. - 40. * np.sin(latitude) ** 2), (nx, ny))
-    initial_temperature = 2. + (sst[:, :, None] - 2.) * np.exp(grid.z[None, None, :] / 500.)
-    initial_salinity = np.full_like(initial_temperature, 35.)
-    atmosphere = sst - 5.
-    forcing = (np.broadcast_to(0.05 * np.cos(3. * latitude), (nx, ny)),
-               np.zeros((nx, ny)), np.zeros((nx, ny)))
-    physics = replace(PhysicsConfig(), nu_h=2e6, nu_bi=0., kappa_bi=args.kappa_bi,
-                      kappa_v=1e-6, kappa_conv=0.01, kappa_gm=0., kappa_redi=0.)
+    grid, physics, initial_temperature, initial_salinity, atmosphere, forcing = make_smoke_fixture(
+        args.resolution, args.bathy, args.kappa_bi)
+    nx, ny = grid.nx, grid.ny
     total_steps = int(np.ceil(args.days * 86400. / args.dt))
     batch_steps = max(1, int(21600. / args.dt))
     results = []
@@ -94,6 +106,8 @@ def main():
             T_init=initial_temperature, S_init=initial_salinity,
             mode_split=True, dt_bt=50., nu_nsub='cfl', use_scan=True, dtype=args.dtype,
             conservative_kv=True, localize_conv=True, project_adv_vel=True, fct_adv=True,
+            projection_niter=args.projection_niter, projection_rtol=args.projection_rtol,
+            projection_preconditioner=args.projection_preconditioner,
             mixed_layer_depth_m=20. if case in {"mixed", "ice"} else None,
             dynamic_ice=case == "ice", coastal_kappa_h_mask=coast_mask,
             coastal_kappa_h=500. if coast_mask is not None else 0., return_params=True)
@@ -108,7 +122,7 @@ def main():
                 previous, peak_velocity, peak_eta, finite, totals = carry
                 if args.audit_budget:
                     updated, ledger = audited_step(previous)
-                    totals = {name: totals[name] + ledger[name] for name in totals}
+                    totals = accumulate_budget(totals, ledger)
                 else:
                     updated = step(previous)
                 velocity = jnp.maximum(jnp.max(jnp.abs(updated.u)), jnp.max(jnp.abs(updated.v)))
@@ -125,7 +139,8 @@ def main():
         records = []
         completed = 0
         passed = True
-        result = {"case": case, "status": "running", "records": records}
+        result = {"case": case, "status": "running", "records": records,
+                  "column_projection": projection_config(params)}
         results.append(result)
         while completed < total_steps:
             count = min(batch_steps, total_steps - completed)
@@ -133,7 +148,10 @@ def main():
             state.T.block_until_ready()
             if args.audit_budget:
                 for name, values in ledger.items():
-                    accumulated_budget[name] += np.asarray(values)
+                    if name == "projection_relative_residual_max":
+                        accumulated_budget[name] = np.maximum(accumulated_budget[name], np.asarray(values))
+                    else:
+                        accumulated_budget[name] += np.asarray(values)
             completed += count
             maximum_velocity = float(jnp.maximum(jnp.max(jnp.abs(state.u)), jnp.max(jnp.abs(state.v))))
             maximum_eta = float(jnp.max(jnp.abs(state.eta)))
@@ -148,6 +166,7 @@ def main():
                 record["advection_boundary_residual"] = np.asarray(ledger["advection_boundary_residual"]).tolist()
                 record["nonlinear_accounting_residual"] = np.asarray(ledger["nonlinear_accounting_residual"]).tolist()
                 record["projection_transport_norm_squared"] = np.asarray(ledger["projection_transport_norm_squared"]).tolist()
+                record["projection_relative_residual_max"] = float(ledger["projection_relative_residual_max"])
             records.append(record)
             print(json.dumps({"case": case, **record}), flush=True)
             save_report()

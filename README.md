@@ -10,7 +10,7 @@ equations on a lat-lon grid, written in JAX.
 | Solver core | `src/jax_solver_global.py` |
 | Driver (CLI) | `src/run_long_integration_global.py` |
 | Tests | `tests/` |
-| Design rationale | `docs/decisions.md` (D1-D34) + `docs/README.md` |
+| Design rationale | `docs/decisions.md` (D1-D35) + `docs/README.md` |
 
 Everything else is support: data loaders (`src/forcing.py`,
 `src/wind_reanalysis.py`, `src/woa_data.py`), grid/bathymetry
@@ -47,6 +47,11 @@ Mixed-layer heat deposition and dynamic ice are opt-in prototypes. Recent
 budget, boundary, checkpoint, packaging and scoring fixes are documented in
 [`docs/debug_validation_zh.md`](docs/debug_validation_zh.md), including the
 validation limits. Numerical stability is not climate or forecast skill.
+
+When enabling `--project-adv-vel`, set and verify `--projection-niter`,
+`--projection-rtol` and `--projection-preconditioner`. Effective settings are
+saved in run provenance. Legacy none/150 is not a convergence guarantee;
+Jacobi/600 passes the registered frozen 2-degree predictor tests, not all grids.
 
 ## Requirements
 
@@ -133,7 +138,7 @@ ocean-solver/
 
 Index: [`docs/README.md`](docs/README.md). The mainline set:
 
-- [`docs/decisions.md`](docs/decisions.md) — **why the solver looks like this** (D1-D34)
+- [`docs/decisions.md`](docs/decisions.md) — **why the solver looks like this** (D1-D35)
 - [`docs/solver_technical_report_zh.md`](docs/solver_technical_report_zh.md) — solver technical report
 - [`docs/resolution_cfl_limits.md`](docs/resolution_cfl_limits.md) — resolution limits and the CFL fix
 - [`docs/deep-heat-poisoning-root-cause.md`](docs/deep-heat-poisoning-root-cause.md) — the column heat-leak root cause

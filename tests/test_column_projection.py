@@ -52,8 +52,10 @@ def test_native_column_constraint_has_volume_weighted_negative_adjoint(land):
 
 
 @pytest.mark.parametrize("land", [False, True])
-def test_projection_removes_native_transport_without_increasing_energy(land):
+@pytest.mark.parametrize("preconditioner", ["none", "jacobi"])
+def test_projection_removes_native_transport_without_increasing_energy(land, preconditioner):
     _, params, volume = _parameters(65., land=land)
+    params = params._replace(projection_preconditioner=preconditioner)
     velocity_x, velocity_y = _velocities(params)
     corrected_x, corrected_y = jax.jit(lambda velocity_x, velocity_y: _project_column_divergence(
         velocity_x, velocity_y, params, params.dt, n_iter=1000))(velocity_x, velocity_y)

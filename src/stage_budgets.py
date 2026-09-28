@@ -19,7 +19,7 @@ NONLINEAR_PROCESS_NAMES = ("advection", "convection", "gm", "redi")
 
 
 def empty_budget():
-    """Additive zero for device-side interval accumulation; not a closure claim."""
+    """Zero for interval accumulation with accumulate_budget; not a closure claim."""
     return {"observed_change": jnp.zeros(3, dtype=jnp.float64),
             "stage_changes": jnp.zeros((len(STAGE_NAMES), 3), dtype=jnp.float64),
             "source_inputs": jnp.zeros((len(SOURCE_NAMES), 3), dtype=jnp.float64),
@@ -36,7 +36,15 @@ def empty_budget():
             "nonlinear_accounting_residual": jnp.zeros(3, dtype=jnp.float64),
             "absolute_nonlinear_accounting_residual": jnp.zeros(3, dtype=jnp.float64),
             "surface_displacement_tracer_change": jnp.zeros(3, dtype=jnp.float64),
-            "projection_transport_norm_squared": jnp.zeros(2, dtype=jnp.float64)}
+            "projection_transport_norm_squared": jnp.zeros(2, dtype=jnp.float64),
+            "projection_relative_residual_max": jnp.asarray(0., dtype=jnp.float64)}
+
+
+def accumulate_budget(totals, interval):
+    """Sum inventories and squared norms, but preserve the worst residual ratio."""
+    return {name: (jnp.maximum(totals[name], interval[name])
+                   if name == "projection_relative_residual_max" else totals[name] + interval[name])
+            for name in totals}
 
 
 class _StageRecorder:
@@ -54,6 +62,7 @@ class _StageRecorder:
         self.process_scale = jnp.zeros(3, dtype=jnp.float64)
         self.advection_boundary = jnp.zeros(3, dtype=jnp.float64)
         self.projection_norm_squared = jnp.zeros(2, dtype=jnp.float64)
+        self.projection_relative_residual_max = jnp.asarray(0., dtype=jnp.float64)
 
     def difference(self, before, after):
         heat = RHO_0 * C_P * (jnp.asarray(after.T, dtype=jnp.float64) - jnp.asarray(before.T, dtype=jnp.float64)) * self.volume
@@ -98,8 +107,12 @@ class _StageRecorder:
     def column_projection(self, velocity_x, velocity_y, corrected_x, corrected_y):
         before = jnp.asarray(_vertical_transport_iface(velocity_x, velocity_y, self.params)[..., 0], dtype=jnp.float64)
         after = jnp.asarray(_vertical_transport_iface(corrected_x, corrected_y, self.params)[..., 0], dtype=jnp.float64)
-        self.projection_norm_squared = self.projection_norm_squared + jnp.stack((
-            jnp.sum(before ** 2 * self.surface_area), jnp.sum(after ** 2 * self.surface_area)))
+        norms = jnp.stack((jnp.sum(before ** 2 * self.surface_area),
+                           jnp.sum(after ** 2 * self.surface_area)))
+        self.projection_norm_squared = self.projection_norm_squared + norms
+        relative = jnp.where(norms[0] > 0., jnp.sqrt(norms[1] / jnp.where(norms[0] > 0., norms[0], 1.)),
+                             jnp.where(norms[1] == 0., 0., jnp.inf))
+        self.projection_relative_residual_max = jnp.maximum(self.projection_relative_residual_max, relative)
 
     def surface_displacement_change(self, before, after):
         eta_before = jnp.asarray(before.eta, dtype=jnp.float64)
@@ -149,7 +162,8 @@ class _StageRecorder:
                 "nonlinear_accounting_residual": nonlinear_residual,
                 "absolute_nonlinear_accounting_residual": jnp.abs(nonlinear_residual),
                 "surface_displacement_tracer_change": self.surface_displacement_change(before, after),
-                "projection_transport_norm_squared": self.projection_norm_squared}
+                "projection_transport_norm_squared": self.projection_norm_squared,
+                "projection_relative_residual_max": self.projection_relative_residual_max}
 
 
 def make_budget_step(params):

@@ -53,6 +53,10 @@ def main():
             summaries[-1]["projection_transport_norm_squared"] = norms.tolist()
             summaries[-1]["native_projection_relative_area_l2_residual"] = (
                 float(np.sqrt(norms[1] / norms[0])) if norms[0] > 0. else None)
+        if "projection_relative_residual_max" in values:
+            summaries[-1]["native_projection_worst_step_relative_area_l2_residual"] = (
+                float(values["projection_relative_residual_max"])
+                if values["projection_transport_norm_squared"][0] > 0. else None)
     output = {"scope": "process_attribution_not_moving_volume_conservation_or_climate_qualification",
               "input": str(input_path), "input_sha256": hashlib.sha256(input_path.read_bytes()).hexdigest(),
               "runtime_source_hashes_match": True, "cases": summaries}

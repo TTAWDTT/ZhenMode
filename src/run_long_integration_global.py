@@ -59,7 +59,7 @@ from forcing import (
     ocean_zonal_mean,
 )
 from grid import global_grid_dims, land_distance_from_land_mask, make_global_grid
-from jax_solver_global import JaxStateG, make_solver_global
+from jax_solver_global import JaxStateG, make_solver_global, projection_config
 from wind_reanalysis import real_wind_forcing
 from woa_data import get_initial_fields
 
@@ -521,8 +521,14 @@ def main():
                     help="use interface-flux vertical diffusion (default off)")
     ap.add_argument("--project-adv-vel", action="store_true",
                     help="project the RK2 stage-2 tracer velocity onto the "
-                         "column-divergence-free space (removes the O(dt) "
-                         "interior heat leak; default off)")
+                         "native column-divergence-free space; convergence and "
+                         "moving-volume budget must be checked separately; default off")
+    ap.add_argument("--projection-niter", type=int, default=None,
+                    help="CG cap; explicit value overrides OCEAN_PAV_NITER (default 150)")
+    ap.add_argument("--projection-rtol", type=float, default=None,
+                    help="CG relative tolerance, floored at 32*dtype epsilon")
+    ap.add_argument("--projection-preconditioner", choices=["none", "jacobi"], default="none",
+                    help="native wet-face Poisson preconditioner (default none)")
     ap.add_argument("--localize-conv", action="store_true",
                     help="gate convective adjustment PER-INTERFACE (mix only "
                          "across unstable interfaces) instead of the historical "
@@ -908,6 +914,9 @@ def main():
         freeze_adv_vel=args.freeze_adv_vel,
         conservative_kv=args.conservative_kv,
         project_adv_vel=args.project_adv_vel,
+        projection_niter=args.projection_niter,
+        projection_rtol=args.projection_rtol,
+        projection_preconditioner=args.projection_preconditioner,
         localize_conv=args.localize_conv,
         monotone_adv=args.monotone_adv,
         fct_adv=args.fct_adv,
@@ -1245,6 +1254,7 @@ def main():
         'freeze_adv_vel': args.freeze_adv_vel,
         'conservative_kv': args.conservative_kv,
         'project_adv_vel': args.project_adv_vel,
+        'column_projection': projection_config(_params),
         'localize_conv': args.localize_conv,
         'monotone_adv': args.monotone_adv,
         'fct_adv': args.fct_adv,

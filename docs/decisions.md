@@ -824,3 +824,37 @@ provenance and physical transport/volume time coupling remain necessary.
 
 Protocol, failure reproduction, frozen comparison and actual evidence:
 [`column projection review`](../research/experiments/column_projection_consistency/review.md).
+
+## D35 — Immutable projection settings and native Jacobi; measure convergence
+
+The iteration cap, effective relative tolerance and preconditioner are explicit
+factory/CLI settings. The legacy OCEAN_PAV_NITER is resolved once at construction,
+not inside a JIT trace; an explicit cap takes precedence. Invalid settings fail
+construction. `projection_config(params)` records effective settings and cap
+origin, including the dtype tolerance floor. Legacy defaults remain none/150;
+they are not a production convergence qualification.
+
+Jacobi uses the exact diagonal of the existing native -A*B*G3 operator, validated
+against independent unit-basis matrix assembly. Only the Krylov preconditioner
+changes: no diagonal is added to the physical matrix and no source/mean or tracer
+is altered. Zero diagonal rows receive unit inverse scaling. The diagonal is
+precomputed with the grid and reused, rather than rebuilt inside each iteration.
+
+The read-only ledger records both cumulative before/after squared transport
+norms and the worst individual projection residual ratio. Accumulation must use
+`stage_budgets.accumulate_budget`: squared norms and inventories add, but maxima
+must use max, not sum. A successful CG return or a small interval-average residual
+does not certify every step. Local Jacobi JVP/VJP checks rely on converged solves,
+not on differentiation through an unconverged iteration cap.
+
+In 96 solves on 12 frozen cce8f87 real-grid stage-2 predictors, none/150 and
+jacobi/150 fail the registered native transport gates. Jacobi/300 also fails
+two float64 samples; the threshold is not relaxed. Both none/600 and jacobi/600
+pass the sampled float64/32 gates, with Jacobi reducing median CPU solve time at
+the same accuracy. This is one 2-degree, truncated, smoothed-bathymetry fixture,
+not a universal cap recommendation, GPU speedup, physical budget, century or
+climate result. Full-step convergence and moving-volume/time consistency must
+still be checked.
+
+Registered research, gates and reproducible experiment:
+[`projection convergence protocol`](../research/experiments/projection_convergence/protocol.md).

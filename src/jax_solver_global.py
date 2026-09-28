@@ -253,6 +253,39 @@ def _column_divergence(u, v, p):
     return jnp.sum(_divergence_h(u, v, p) * p.dz_node, axis=-1) * p.wet_mask
 
 
+def _column_projection_diagonal(p):
+    """Exact diagonal of -A*B*G3, including closed wet faces and walls."""
+    wet = p.wet_mask_z
+    positive_x = wet * jnp.roll(wet, -1, axis=0)
+    negative_x = wet * jnp.roll(wet, 1, axis=0)
+    diagonal_x = 0.25 * p.inv_dx[..., :1] ** 2 * (
+        (positive_x - negative_x) ** 2 + positive_x ** 2 + negative_x ** 2)
+    if p.nx <= 2:
+        diagonal_x = jnp.zeros_like(wet)
+    cosine = p.cos_lat[None, :, None]
+    cosine_north = jnp.roll(cosine, -1, axis=1)
+    cosine_south = jnp.roll(cosine, 1, axis=1)
+    positive_y = (wet * jnp.roll(wet, -1, axis=1)).at[:, -1, :].set(0.)
+    negative_y = (wet * jnp.roll(wet, 1, axis=1)).at[:, 0, :].set(0.)
+    positive_y = positive_y * 0.5 * (cosine + cosine_north)
+    negative_y = negative_y * 0.5 * (cosine + cosine_south)
+    diagonal_y = 0.25 * p.inv_dy ** 2 * (
+        (positive_y - negative_y) ** 2 / cosine ** 2
+        + positive_y ** 2 / (cosine * cosine_north)
+        + negative_y ** 2 / (cosine * cosine_south))
+    area = p.dx_2d * p.dy * p.wet_mask
+    return area * jnp.sum((diagonal_x + diagonal_y) * p.dz_node, axis=-1)
+
+
+def projection_config(params):
+    """Effective immutable solve settings for machine-readable provenance."""
+    tolerance = max(params.projection_rtol or 1e-12,
+                    32. * float(jnp.finfo(params.wet_mask_z.dtype).eps))
+    return {"enabled": bool(params.project_adv_vel), "niter": params.projection_niter,
+            "rtol": tolerance, "preconditioner": params.projection_preconditioner,
+            "niter_source": params.projection_niter_source}
+
+
 def _project_column_divergence(u, v, p, dt, n_iter=None):
     """Return (u, v) with the column-integrated horizontal divergence removed.
 
@@ -264,7 +297,7 @@ def _project_column_divergence(u, v, p, dt, n_iter=None):
     CG stops at a dtype-aware tolerance or the fixed iteration cap. (D34)
     """
     if n_iter is None:
-        n_iter = int(os.environ.get("OCEAN_PAV_NITER", "150"))
+        n_iter = p.projection_niter
     g = G_EARTH
     wm = p.wet_mask
     area = p.dx_2d * p.dy * wm
@@ -275,9 +308,17 @@ def _project_column_divergence(u, v, p, dt, n_iter=None):
         gx, gy = _gradient_conservative_3d(psi[:, :, None], p)
         return -_column_divergence(gx, gy, p) * area
 
-    tolerance = max(1e-12, 32. * jnp.finfo(u.dtype).eps)
+    tolerance = max(p.projection_rtol or 1e-12, 32. * jnp.finfo(u.dtype).eps)
+    preconditioner = None
+    if p.projection_preconditioner == "jacobi":
+        inverse_diagonal = p.projection_inv_diagonal
+        if inverse_diagonal is None:
+            diagonal = _column_projection_diagonal(p)
+            inverse_diagonal = 1. / jnp.where(diagonal > 0., diagonal, 1.)
+        def preconditioner(residual):
+            return residual * inverse_diagonal
     psi, _ = jax.scipy.sparse.linalg.cg(_matvec, rhs, tol=tolerance,
-                                        maxiter=n_iter)
+                                        maxiter=n_iter, M=preconditioner)
     gx, gy = _gradient_conservative_3d(psi[:, :, None], p)
     u_corr = u - (dt * g) * gx
     v_corr = v - (dt * g) * gy
@@ -746,12 +787,17 @@ FDPhysParams = namedtuple('FDPhysParams', [
     # conductivity insulation, and brine-rejection salinity flux.
     'dynamic_ice',
     'ice_insulation_scale_m',
+    'projection_niter',
+    'projection_rtol',
+    'projection_preconditioner',
+    'projection_inv_diagonal',
+    'projection_niter_source',
 ])
 
 # Keyword-constructed callers that predate nu_nsub/use_scan/freeze_adv_vel/
 # conservative_kv/project_adv_vel/localize_conv/monotone_adv get the legacy
 # behavior instead of a TypeError.
-FDPhysParams.__new__.__defaults__ = (None, False, False, False, False, False, False, False, None, None, None, -1.8, 0.0, False, 1.0)
+FDPhysParams.__new__.__defaults__ = (None, False, False, False, False, False, False, False, None, None, None, -1.8, 0.0, False, 1.0, 150, None, 'none', None, 'default')
 
 
 # ── Equation of state ─────────────────────────────────────────────────
@@ -2125,7 +2171,8 @@ def make_solver_global(grid, physics, dt, forcing=None,
                        dtype='float64', use_scan=False, freeze_adv_vel=False,
                        conservative_kv=False, project_adv_vel=False,
                        localize_conv=False, monotone_adv=False,
-                       fct_adv=False):
+                       fct_adv=False, projection_niter=None,
+                       projection_rtol=None, projection_preconditioner='none'):
     """Create a JIT-compiled global FD ocean solver.
 
     Key properties:
@@ -2146,12 +2193,32 @@ def make_solver_global(grid, physics, dt, forcing=None,
         the biggest kernel-time lever); default 'float64' = bit-exact.
       - use_scan=True runs the barotropic subcycle as lax.scan (numerically
         identical, smaller XLA graph / fewer host launches).
+      - projection_niter overrides OCEAN_PAV_NITER, resolved once at construction.
+        projection_rtol has a dtype floor; optional Jacobi scales the exact native
+        Poisson diagonal. A cap is not a convergence or conservation guarantee.
       - monotone_adv=True switches horizontal tracer face values to first-order
         donor-cell (upwind). ``fct_adv=True`` instead uses a local bounded
         centered face value; it takes precedence over monotone_adv.
     """
     base = make_fd_params(grid)
     nx, ny, nz = base.nx, base.ny, base.nz
+    if projection_niter is None:
+        legacy_cap = os.environ.get('OCEAN_PAV_NITER')
+        projection_niter_source = 'default' if legacy_cap is None else 'environment:OCEAN_PAV_NITER'
+        try:
+            projection_niter = 150 if legacy_cap is None else int(legacy_cap)
+        except ValueError as error:
+            raise ValueError('projection_niter environment value must be an integer') from error
+    else:
+        projection_niter_source = 'explicit'
+    if isinstance(projection_niter, (bool, np.bool_)) or not isinstance(projection_niter, (int, np.integer)) or projection_niter <= 0:
+        raise ValueError('projection_niter must be a positive integer')
+    if projection_rtol is not None and (not np.isfinite(projection_rtol) or projection_rtol <= 0.):
+        raise ValueError('projection_rtol must be finite and positive')
+    if projection_preconditioner not in {'none', 'jacobi'}:
+        raise ValueError('projection_preconditioner must be none or jacobi')
+    projection_dtype = jnp.float32 if dtype == 'float32' else jnp.float64
+    projection_rtol = max(float(projection_rtol or 1e-12), 32. * float(jnp.finfo(projection_dtype).eps))
     if mixed_layer_depth_m is not None:
         if not np.isfinite(mixed_layer_depth_m) or mixed_layer_depth_m < 0.:
             raise ValueError("mixed_layer_depth_m must be finite and nonnegative")
@@ -2412,7 +2479,16 @@ def make_solver_global(grid, physics, dt, forcing=None,
         ice_salt_flux=float(ice_salt_flux),
         dynamic_ice=bool(dynamic_ice),
         ice_insulation_scale_m=float(ice_insulation_scale_m),
+        projection_niter=int(projection_niter),
+        projection_rtol=projection_rtol,
+        projection_preconditioner=projection_preconditioner,
+        projection_inv_diagonal=None,
+        projection_niter_source=projection_niter_source,
     )
+
+    if projection_preconditioner == 'jacobi':
+        diagonal = _column_projection_diagonal(params)
+        params = params._replace(projection_inv_diagonal=1. / jnp.where(diagonal > 0., diagonal, 1.))
 
     # fp32 cast: params was just built in float64 (numpy defaults); when
     # computing in float32 every array field must be cast too, or XLA inserts
