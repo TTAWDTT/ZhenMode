@@ -84,10 +84,24 @@ do not add arbitrary Mdot or post-hoc KE repair instead of actual advection.
 
 ## Required next work
 
-Record starting eta, rerun final-source tests/installed step and NEW eight-case
-real evidence with independent last-step mass/C/B, momentum/Q/work/cast/moving
-mass and inventory corruptions. Old FV reference is a historical baseline.
-Then ACTUAL nonlinear momentum/moving kinetic-buoyancy exchange and ACTUAL
+The NEW eight-case process76252/PID28884 completes exit0 without restart.
+ALL eight100x60s/BT4 cases pass at clean runtime1802e36 and unchanged
+manifest source hashes. Independent host handle39846 completes exit0,
+verifying all eight LAST-step mass/C/B, momentum/Q/work/cast/moving mass and
+inventory aggregates plus recorded accepted histories;9 corruptions reject.
+Maximum independent momentum relative7.0833172701e-15 and energy-work
+relative1.0062833443e-16. Report SHA256 is
+`9ae61eba993bdfa0753121f4278dd694c2a5b1e74739a96a12b74e93bab03ff9`.
+Runtime maximum speed0.0111289043m/s; these are short linear references,
+NOT every-fast-substep replay, physical source closure or century climate.
+Reports: `cgrid_paired_dynamics_eta_reference.json` and
+`cgrid_paired_dynamics_eta_reference_host.json` under
+`results/industrial_alignment`. Earlier pending descriptions above are
+chronological observations, not the current state. Original unqualified
+near-rest evidence and actual source-contract failure remain retained.
+
+Old FV reference is a historical baseline. Next ACTUAL nonlinear
+momentum/moving kinetic-buoyancy exchange and ACTUAL
 initialization/restart/driver migration; finish EOS/real sources/mixing/ice.
 Global topology, century/sensitivity, independent climate/forecast, fair
 GPU/distributed, whole adjoint/learning and engineering remain required.

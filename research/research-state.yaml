@@ -1036,7 +1036,7 @@ industrial_alignment_20260928:
     production_cutover: false
     century_climate_forecast_gpu_full_adjoint_pass: false
   cgrid_paired_dynamics:
-    status: actual_coupled_step_committed_independent_real_qualification_pending
+    status: actual_frozen_coupled_step_real_reference_qualified_not_nonlinear_or_production
     protocol_commit: "f136f6f"
     increment_protocol_commit: "ab125d9"
     dynamics_commit: "6fb6c88"
@@ -1056,7 +1056,14 @@ industrial_alignment_20260928:
     one_step_negative_controls_rejected: 9
     final_source_reference_requested_steps_per_group: 100
     final_source_reference_report: "results/industrial_alignment/cgrid_paired_dynamics_eta_reference.json"
-    final_source_reference_status: running_not_qualified
+    final_source_reference_status: passed_runtime_and_independent_last_step_aggregate
+    final_source_reference_groups_passed: 8
+    final_source_reference_seconds_per_group: 6000
+    final_source_reference_host_report: "results/industrial_alignment/cgrid_paired_dynamics_eta_reference_host.json"
+    final_source_reference_sha256: "9ae61eba993bdfa0753121f4278dd694c2a5b1e74739a96a12b74e93bab03ff9"
+    final_source_reference_host_max_momentum_relative: 7.0833172701336155e-15
+    final_source_reference_host_max_energy_work_relative: 1.0062833442925811e-16
+    final_source_reference_negative_controls_rejected: 9
     full_tests_before_eta_recording: 573
     old_warnings: 23
     full_tests_before_eta_recording_seconds: 673.50
@@ -1088,5 +1095,23 @@ industrial_alignment_20260928:
     wall_reaction_force_qualified: false
     production_cutover: false
     century_climate_forecast_gpu_full_adjoint_pass: false
-  next: "Finish the specific live eight100-step reference and independent actual eta/mass/C/B/mean-Q/work/inventory audit without duplicating a live process.574 final-source tests and eight1-step host audits pass; this is NOT century or nonlinear qualification. Preregistered actual rain/source witness FAILS zero-incoming-momentum contract despite zero frozen work, so derive ACTUAL nonlinear momentum, source-carried momentum and moving kinetic/buoyancy/mixing work together; no arbitrary Mdot damping or global KE repair. Then ACTUAL production initialization/checkpoint/driver cutover. Complete EOS/real sources/mixing/ice and every global topology, century/sensitivity, independent climate/forecast, fair GPU/distributed, whole-model adjoint/learning and engineering requirement. No final industrial qualification yet."
+  climate_spatial_scoring:
+    status: implemented_shared_spatial_correction_not_climate_qualification
+    protocol_commit: "4ae565c"
+    reference_protocol_commit: "540bee9"
+    implementation_commit: "cbfbb0b"
+    metric_definition: area_weighted_angular_box_v2
+    adjacent_tests_passed: 66
+    adjacent_tests_log: "results/industrial_alignment/climate_scoring_final_66.log"
+    full_suite_status: running_specific_handle_61319
+    full_suite_log: "results/industrial_alignment/climate_scoring_full_tests.log"
+    actual_area_when_provided_else_labelled_inferred_edges: true
+    filter: wet_area_angular_box_half_width_2_degrees_not_constant_km
+    incomparable_metric_domain_reference_gates_reject: true
+    initialization_reference_is_independent_validation: false
+    current_time_average_is_bounds_weighted: false
+    endpoint_content_change_is_closed_budget: false
+    century_acceptance_requirements: "docs/century_climate_acceptance_zh.md"
+    century_climate_forecast_gpu_full_adjoint_pass: false
+  next: "Specific eight100-step process76252/PID28884 and independent host39846 completed:8 runtime/last-step aggregate audits PASS plus9 corruptions rejected, each6000s only. Shared v2 wet-area/angular scoring corrects misleading equal-cell/index scores and rejects mixed versions/domains/references;66 adjacent checks pass, specific full-suite61319 pending. Finish that same validation handle, then ACTUAL nonlinear momentum/source/moving kinetic-buoyancy work and production cutover, not arbitrary Mdot or KE repair. Actual rain witness still FAILS zero-incoming-momentum contract despite zero frozen work. Complete EOS/real sources/mixing/ice and every global topology, century/sensitivity, independent climate/forecast, fair GPU/distributed, whole-model adjoint/learning and engineering requirement. No final industrial qualification yet."
   unresolved: ["whole-model budgets", "volume/free-surface consistency", "partial cells/global topology", "complete real physical forcing", "independent climate/forecast skill", "fair GPU/distributed cost", "whole-model adjoint and constrained learning"]

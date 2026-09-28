@@ -41,8 +41,10 @@ Kinematic half-prism mass is not silently substituted into force equations.
 Current paired step passes34 direct/80 adjacent checks and eight ONE-STEP
 real-grid host audits with9 deliberate corruptions rejected. Actual eta0
 recording fixes the original near-rest evidence gap without changing field
-gates. Final-source full suite passes574 tests; eight100-step references
-remain pending. A NEW zero-incoming-momentum rain witness fails physical
+gates. Paired-kernel full suite passes574 tests; all eight100-step references
+now pass runtime and independent LAST-step aggregate audits, rejecting9
+corruptions (each case6000s, not century or every-substep qualification).
+A NEW zero-incoming-momentum rain witness fails physical
 source closure despite zero frozen work; it is not hidden or promoted.
 Frozen/cast/moving-mass work are distinct; actual nonlinear
 dynamics/buoyancy and driver cutover remain required. Century/climate/forecast/
@@ -79,6 +81,14 @@ Mixed-layer heat deposition and dynamic ice are opt-in prototypes. Recent
 budget, boundary, checkpoint, packaging and scoring fixes are documented in
 [`docs/debug_validation_zh.md`](docs/debug_validation_zh.md), including the
 validation limits. Numerical stability is not climate or forecast skill.
+
+Shared SST scoring now uses wet-area weights and coordinate-based angular
+windows (`area_weighted_angular_box_v2`), not equal-cell/index-window scores.
+Comparison rejects different metric versions, domains or reference fields;
+archived scores are not silently upgraded. Initial-reference and endpoint
+content-change diagnostics are NOT independent climate or closed-budget
+evidence. See the [scoring protocol](docs/benchmark_protocol_zh.md) and
+[century/climate acceptance requirements](docs/century_climate_acceptance_zh.md).
 
 When enabling `--project-adv-vel`, set and verify `--projection-niter`,
 `--projection-rtol`, `--projection-preconditioner` and

@@ -4,6 +4,22 @@ Updated: 2026-09-29
 
 ## Current authority: full industrial alignment
 
+Latest qualification: specific paired-reference76252/PID28884 completes all
+eight100x60s groups; independent host39846 passes all eight last-step aggregates
+and9 corruptions reject. This is frozen linear6000s pergroup, NOT full nonlinear
+or century qualification. Actual rain/source momentum witness still FAILS.
+While that process was live and its hashed files protected, OMIP/Xarray research
+and protocols4ae565c/540bee9 precede shared scoring correctioncbfbb0b. New wet-area
+and coordinate angular metrics reject mixed definitions/domains/references;
+66 adjacent tests pass, full-suite61319 is live. Initialization references,
+record-count averages and endpoint inventory percentages remain diagnostics,
+not independent climate, time-bounds means or closed budgets. Complete acceptance
+requirements are in `docs/century_climate_acceptance_zh.md`.
+After final validation, resume ACTUAL nonlinear momentum/source/moving kinetic-
+buoyancy derivation and production migration; this necessary scoring correction
+is not an easier substitute for completing the full industrial objective.
+Earlier pending entries below are chronological milestone observations.
+
 Latest actual paired-dynamics milestone2026-09-29: protocolf136f6f,
 increment addendumab125d9 and core6fb6c88. Mixed physical-field mass and
 planetary rotation pair with B/B^T and simultaneous midpoint layer/surface
