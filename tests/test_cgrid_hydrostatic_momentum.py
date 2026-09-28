@@ -116,7 +116,9 @@ def test_nonzero_pressure_signal_agrees_with_common_face_integral():
     assert bool(result.valid)
     common_height = np.minimum(geometry.thickness, np.roll(geometry.thickness, -1, axis=0))
     common_midpoint = geometry.interfaces[:-1] + .5 * common_height
-    expected = -9.81 * (np.roll(anomaly, -1, axis=0) - anomaly) * common_midpoint / (1025. * geometry.east_distance[..., None])
+    dual_area = .5 * (geometry.area + np.roll(geometry.area, -1, axis=0))
+    mass = dual_area[..., None] * common_height
+    expected = -9.81 * geometry.east_area * (np.roll(anomaly, -1, axis=0) - anomaly) * common_midpoint / (1025. * np.where(mass > 0., mass, 1.))
     expected = np.where(geometry.east_area > 0., expected, 0.)
     np.testing.assert_allclose(result.east, expected, rtol=1e-12, atol=1e-14)
     assert np.max(np.abs(result.east)) > 1e-9
@@ -134,7 +136,10 @@ def test_moving_top_geometry_and_reference_surface_load_are_not_discarded():
         return coefficients[0] * depth + .5 * coefficients[1] * depth ** 2 + coefficients[2] * depth ** 3 / 3.
 
     load = -9.81 * primitive(-clean_eta)
-    expected = -(np.roll(load, -1, axis=0) - load)[..., None] / (1025. * geometry.east_distance[..., None])
+    latitude = geometry.latitude_edges
+    face_length = 6.371e6 * np.diff(latitude)[None, :]
+    dual_area = .5 * (geometry.area + np.roll(geometry.area, -1, axis=0))
+    expected = -face_length[..., None] * (np.roll(load, -1, axis=0) - load)[..., None] / (1025. * dual_area[..., None])
     expected = np.where(geometry.east_area > 0., expected, 0.)
     np.testing.assert_allclose(result.east, expected, rtol=1e-12, atol=1e-14)
     common_top = np.maximum(-clean_eta, -np.roll(clean_eta, -1, axis=0))

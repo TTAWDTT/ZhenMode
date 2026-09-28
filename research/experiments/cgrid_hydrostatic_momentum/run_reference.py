@@ -30,7 +30,7 @@ METRICS = ("pressure_max_m_s2", "rotation_energy_relative", "rotation_solve_rela
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--bathy", default=DEFAULT_CONFIG.bathymetry_file)
-    parser.add_argument("--out", default="results/industrial_alignment/cgrid_momentum_overlap_reference.json")
+    parser.add_argument("--out", default="results/industrial_alignment/cgrid_momentum_mass_reference.json")
     args = parser.parse_args()
     output = ROOT / args.out
     if output.exists():
@@ -40,9 +40,11 @@ def main():
                                                "cgrid_momentum.py", "grid.py", "config.py")]
     sources += [Path(__file__), Path(__file__).with_name("protocol.md"), Path(__file__).with_name("selection.md"),
                 Path(__file__).with_name("overlap_protocol.md"),
-                ROOT / "tests/test_cgrid_hydrostatic_momentum.py"]
+                Path(__file__).with_name("pressure_work_protocol.md"),
+                ROOT / "tests/test_cgrid_hydrostatic_momentum.py", ROOT / "tests/test_cgrid_pressure_work.py"]
     report = {"scope": "frozen_pressure_linear_3d_momentum_active_density_fct_not_full_ocean",
               "rotation_formulation": "physical_wet_dual_rectangles_and_common_overlap",
+              "pressure_formulation": "shared_face_force_over_physical_dual_mass",
               "status": "running", "reference_coefficients": [1., 1e-3, 1e-7],
               "provenance": {"git_head": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip(),
                              "git_status": subprocess.check_output(["git", "status", "--porcelain"], cwd=ROOT, text=True).splitlines(),

@@ -15,9 +15,47 @@ import numpy as np
 
 from barotropic_transport import subcycle_barotropic
 from cgrid_momentum import momentum_geometry
+from cgrid_momentum import hydrostatic_pressure_force
+from config import R_EARTH
 from finite_volume import _physical_surface_height, build_geometry, horizontal_divergence, surface_volume
 
 jax.config.update("jax_enable_x64", True)
+
+
+def spatial_mms():
+    errors = []
+    for nx, ny in ((24, 12), (48, 24), (96, 48)):
+        longitude = np.linspace(0., 2. * np.pi, nx + 1)
+        latitude = np.linspace(-np.pi / 3., np.pi / 3., ny + 1)
+        geometry = build_geometry(np.degrees(longitude), np.degrees(latitude), [0., 7., 21., 50.], np.full((nx, ny), 50.))
+        middle = .5 * (latitude[:-1] + latitude[1:])
+        phase = .5 * (longitude[:-1] + longitude[1:])
+        lon_average = np.diff(np.sin(longitude)) / np.diff(longitude)
+        lat_average = np.diff(.5 * latitude + .25 * np.sin(2. * latitude)) / np.diff(np.sin(latitude))
+        scalar = lon_average[:, None] * lat_average[None, :]
+        analytic = (9.81 / R_EARTH * np.broadcast_to(np.sin(longitude[1:])[:, None], (nx, ny)),
+                    9.81 / R_EARTH * np.cos(phase)[:, None] * np.sin(latitude[1:])[None, :])
+        east_dual = geometry.area
+        north_dual = np.broadcast_to(R_EARTH ** 2 * (2. * np.pi / nx) * np.diff(np.sin(middle), append=np.sin(middle[-1]))[None, :], (nx, ny))
+        zero = jnp.zeros((nx, ny))
+        volume = surface_volume(geometry, zero)
+        pressure = hydrostatic_pressure_force(geometry, volume, jnp.asarray(np.broadcast_to(scalar[..., None], volume.shape)))
+        fast = subcycle_barotropic(geometry, jnp.asarray(scalar), zero, zero, 1., 1)
+        row = {"nx": nx, "ny": ny, "valid": bool(pressure.valid) and bool(fast.valid)}
+        for label, observed, expected, weights in (
+                ("fast", (fast.east_velocity, fast.north_velocity), analytic, (east_dual, north_dual)),
+                ("hydrostatic", (pressure.east, pressure.north),
+                 tuple(value[..., None] * np.array([3.5, 14., 35.5]) / 1025. for value in analytic),
+                 tuple(dual[..., None] * np.array([7., 14., 29.]) for dual in (east_dual, north_dual)))):
+            row[label + "_relative_rms"] = [float(np.sqrt(np.sum(weight * (np.asarray(actual) - exact) ** 2) / np.sum(weight * exact ** 2)))
+                                             for weight, actual, exact in zip(weights, observed, expected)]
+        errors.append(row)
+    ratios = {label: (np.array([row[label + "_relative_rms"] for row in errors[:-1]])
+                      / np.array([row[label + "_relative_rms"] for row in errors[1:]])).tolist()
+              for label in ("fast", "hydrostatic")}
+    return {"scope": "regular_smooth_pressure_not_irregular_or_full_dynamics_order", "errors": errors,
+            "ratios": ratios, "ratio_gate": 3.5,
+            "pass": all(row["valid"] for row in errors) and all(np.all(np.asarray(value) >= 3.5) for value in ratios.values())}
 
 
 def main():
@@ -72,8 +110,10 @@ def main():
     sources = [ROOT / "src" / name for name in ("finite_volume.py", "cgrid_momentum.py", "barotropic_transport.py", "config.py")]
     sources += [Path(__file__), Path(__file__).with_name("pressure_work_protocol.md"), Path(__file__).with_name("overlap_protocol.md")]
     actual = [row for row in rows if row["method"] == "actual_current_fast_gradient"]
+    mms = spatial_mms()
     report = {"scope": "frozen_geometry_gravity_continuity_work_not_full_buoyancy_or_temporal_energy",
-              "status": "PASS" if all(row["pass"] and row["gravity_response_valid"] for row in actual) else "FAIL",
+              "status": "PASS" if all(row["pass"] and row["gravity_response_valid"] for row in actual) and mms["pass"] else "FAIL",
+              "spatial_mms": mms,
               "rows": rows, "git_head": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip(),
               "source_sha256": {path.relative_to(ROOT).as_posix(): hashlib.sha256(path.read_bytes()).hexdigest() for path in sources},
               "jax_version": jax.__version__, "backend": jax.default_backend()}

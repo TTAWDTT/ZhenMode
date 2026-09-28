@@ -32,6 +32,15 @@ class ExtensiveState(NamedTuple):
     content: jnp.ndarray
 
 
+class HorizontalMomentumGeometry(NamedTuple):
+    south_half_area: jnp.ndarray
+    north_half_area: jnp.ndarray
+    east_dual_area: jnp.ndarray
+    north_dual_area: jnp.ndarray
+    east_face_length: jnp.ndarray
+    north_face_length: jnp.ndarray
+
+
 class VolumeFluxes(NamedTuple):
     east: jnp.ndarray
     north: jnp.ndarray
@@ -109,6 +118,27 @@ def surface_volume(geometry, eta):
     area = jnp.asarray(geometry.area, dtype=eta.dtype)
     volume = jnp.asarray(geometry.thickness, dtype=eta.dtype) * area[..., None]
     return volume.at[..., 0].add(area * eta)
+
+
+def horizontal_momentum_geometry(geometry):
+    """Spherical half-cell rectangles and physical shared-face lengths.
+
+    Pressure uses face_length/dual_area, the mass-adjoint of shared-Q
+    divergence. Scalar reconstruction still uses actual center distances.
+    These horizontal measures are independent of moving wet face heights.
+    """
+    area = jnp.asarray(geometry.area)
+    latitude = jnp.asarray(geometry.latitude_edges, area.dtype)
+    middle = .5 * (latitude[:-1] + latitude[1:])
+    fraction = (jnp.sin(middle) - jnp.sin(latitude[:-1])) / (jnp.sin(latitude[1:]) - jnp.sin(latitude[:-1]))
+    south_half = area * fraction[None, :]
+    north_half = area - south_half
+    east_dual = .5 * (area + jnp.roll(area, -1, axis=0))
+    adjacent_south = jnp.concatenate((south_half[:, 1:], south_half[:, -1:]), axis=1)
+    north_dual = north_half + adjacent_south
+    east_length = jnp.asarray(geometry.north_width, area.dtype)
+    north_length = jnp.asarray(geometry.east_width, area.dtype) * (jnp.cos(latitude[1:]) / jnp.cos(middle))[None, :]
+    return HorizontalMomentumGeometry(south_half, north_half, east_dual, north_dual, east_length, north_length)
 
 
 def _physical_surface_height(geometry, volume):

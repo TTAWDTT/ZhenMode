@@ -18,6 +18,7 @@ from finite_volume import (
     TransportResult,
     _physical_surface_height,
     closed_surface_fluxes,
+    horizontal_momentum_geometry,
     match_column_transport,
 )
 
@@ -91,11 +92,7 @@ def momentum_geometry(geometry, volume=None):
     eta = height[..., 0] - base_height[..., 0]
     top = jnp.broadcast_to(jnp.asarray(geometry.interfaces[:-1]), height.shape).at[..., 0].set(-eta)
     bottom = top + height
-    latitude = jnp.asarray(geometry.latitude_edges)
-    middle = .5 * (latitude[:-1] + latitude[1:])
-    south_fraction = (jnp.sin(middle) - jnp.sin(latitude[:-1])) / (jnp.sin(latitude[1:]) - jnp.sin(latitude[:-1]))
-    south_half = area * south_fraction[None, :]
-    north_half = area - south_half
+    horizontal = horizontal_momentum_geometry(geometry)
     face_areas, face_tops, face_bottoms, face_heights = [], [], [], []
     for axis, base_area in enumerate((geometry.east_area, geometry.north_area)):
         shared_top = jnp.maximum(top, _neighbor(top, axis, 1))
@@ -107,20 +104,21 @@ def momentum_geometry(geometry, volume=None):
         face_tops.append(shared_top)
         face_bottoms.append(shared_bottom)
         face_heights.append(jnp.where(opened, common, 0.))
-    east_volume = .5 * (area + _neighbor(area, 0, 1))[..., None] * face_heights[0]
-    north_volume = (north_half + _neighbor(south_half, 1, 1))[..., None] * face_heights[1]
+    east_volume = horizontal.east_dual_area[..., None] * face_heights[0]
+    north_volume = horizontal.north_dual_area[..., None] * face_heights[1]
     lower_error = jnp.max(jnp.abs(height[..., 1:] - base_height[..., 1:]) / jnp.maximum(base_height[..., 1:], 1.), initial=0.)
     valid = (jnp.all(jnp.isfinite(volume)) & jnp.all(jnp.where(base_height > 0., volume > 0., volume == 0.))
              & (lower_error <= 1e-12) & jnp.all(jnp.isfinite(east_volume)) & jnp.all(jnp.isfinite(north_volume))
              & jnp.all(east_volume >= 0.) & jnp.all(north_volume >= 0.))
     return MomentumGeometry(top, height, *face_areas, face_tops[0], face_bottoms[0], face_tops[1], face_bottoms[1],
-                            east_volume, north_volume, south_half, north_half, valid)
+                            east_volume, north_volume, horizontal.south_half_area, horizontal.north_half_area, valid)
 
 
 def hydrostatic_pressure_force(geometry, volume, density_anomaly, reference=None,
                                gravity=9.81, rho0=1025.):
     """Analytic pressure averages on the SAME physical wet depth on both sides.
 
+    Contact force divides by physical wet momentum mass, not point distance.
     Density anomaly is a cell mean in kg/m3. reference is global coefficients
     of a+b*z+c*z^2 in positive-down z; its exact cell means are subtracted for
     reconstruction, but its physical surface load is restored. Geometry,
@@ -169,14 +167,14 @@ def hydrostatic_pressure_force(geometry, volume, density_anomaly, reference=None
                                           + cell_slope * (start ** 2 + start * end + end ** 2) / 6.)
 
     forces, face_areas = [], []
-    for axis, (face_area, interval_top, interval_bottom, distance) in enumerate(
-            ((faces.east_area, faces.east_top, faces.east_bottom, geometry.east_distance),
-             (faces.north_area, faces.north_top, faces.north_bottom, geometry.north_distance))):
+    for axis, (face_area, interval_top, interval_bottom, mass) in enumerate(
+            ((faces.east_area, faces.east_top, faces.east_bottom, faces.east_volume),
+             (faces.north_area, faces.north_top, faces.north_bottom, faces.north_volume))):
         pressure_left = pressure_average(interval_top, interval_bottom, top, height, residual, slope, pressure_top) + reference_load[..., None]
         pressure_right = pressure_average(interval_top, interval_bottom, _neighbor(top, axis, 1),
                                           _neighbor(height, axis, 1), _neighbor(residual, axis, 1),
                                           _neighbor(slope, axis, 1), _neighbor(pressure_top, axis, 1)) + _neighbor(reference_load, axis, 1)[..., None]
-        force = jnp.where(face_area > 0., -(pressure_right - pressure_left) / (rho0 * jnp.asarray(distance)[..., None]), 0.)
+        force = jnp.where(face_area > 0., -face_area * (pressure_right - pressure_left) / (rho0 * jnp.where(mass > 0., mass, 1.)), 0.)
         forces.append(force)
         face_areas.append(face_area)
     valid = (faces.valid & jnp.all(jnp.isfinite(density))

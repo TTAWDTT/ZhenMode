@@ -22,12 +22,15 @@ def verify(report):
         raise ValueError("unexpected reference scope")
     if report.get("rotation_formulation") != "physical_wet_dual_rectangles_and_common_overlap":
         raise ValueError("physical rotation formulation not qualified by this verifier")
+    if report.get("pressure_formulation") != "shared_face_force_over_physical_dual_mass":
+        raise ValueError("physical pressure formulation not qualified by this verifier")
     if report["status"] != "PASS" or len(report["runs"]) != 8:
         raise ValueError("eight reference groups have not passed")
     required = {f"src/{name}" for name in ("finite_volume.py", "bounded_transport.py", "barotropic_transport.py",
                                          "cgrid_momentum.py", "grid.py", "config.py")}
-    required |= {f"research/experiments/cgrid_hydrostatic_momentum/{name}" for name in ("run_reference.py", "protocol.md", "selection.md", "overlap_protocol.md")}
+    required |= {f"research/experiments/cgrid_hydrostatic_momentum/{name}" for name in ("run_reference.py", "protocol.md", "selection.md", "overlap_protocol.md", "pressure_work_protocol.md")}
     required.add("tests/test_cgrid_hydrostatic_momentum.py")
+    required.add("tests/test_cgrid_pressure_work.py")
     manifest = report["provenance"]["source_sha256"]
     if not required.issubset(manifest):
         raise ValueError("incomplete runtime source manifest")
@@ -123,7 +126,7 @@ def verify(report):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--report", default="results/industrial_alignment/cgrid_momentum_overlap_reference.json")
+    parser.add_argument("--report", default="results/industrial_alignment/cgrid_momentum_mass_reference.json")
     parser.add_argument("--negative-controls", action="store_true")
     args = parser.parse_args()
     report = json.loads((ROOT / args.report).read_text(encoding="utf-8"))

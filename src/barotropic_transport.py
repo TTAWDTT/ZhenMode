@@ -15,6 +15,7 @@ from finite_volume import (
     advance_contents,
     closed_surface_fluxes,
     horizontal_divergence,
+    horizontal_momentum_geometry,
     match_column_transport,
 )
 
@@ -41,6 +42,7 @@ def subcycle_barotropic(geometry, eta, east_velocity, north_velocity, dt_sub, ns
                        east_acceleration=None, north_acceleration=None):
     """Forward-backward wave steps and mean of Q actually used in eta.
 
+    Gravity uses physical face_length/dual_area, paired with shared-Q work.
     A sufficient Gershgorin wave bound is dt_sub^2*g*max(diagonal)<=2.
     Material-top thickness must stay positive. No state or timestep repair.
     nsub is a static positive integer for JIT callers.
@@ -56,8 +58,9 @@ def subcycle_barotropic(geometry, eta, east_velocity, north_velocity, dt_sub, ns
     area = jnp.asarray(geometry.area, eta.dtype)
     east_area = jnp.sum(jnp.asarray(geometry.east_area, eta.dtype), axis=-1)
     north_area = jnp.sum(jnp.asarray(geometry.north_area, eta.dtype), axis=-1)
-    east_distance = jnp.asarray(geometry.east_distance, eta.dtype)
-    north_distance = jnp.asarray(geometry.north_distance, eta.dtype)
+    horizontal = horizontal_momentum_geometry(geometry)
+    east_metric = jnp.asarray(horizontal.east_face_length / horizontal.east_dual_area, eta.dtype)
+    north_metric = jnp.asarray(horizontal.north_face_length / horizontal.north_dual_area, eta.dtype)
     wet = jnp.asarray(geometry.thickness[..., 0]) > 0.
     top_height = jnp.asarray(geometry.thickness[..., 0], eta.dtype)
     dt_sub, gravity, drag = (jnp.asarray(value, eta.dtype) for value in (dt_sub, gravity, drag))
@@ -74,7 +77,7 @@ def subcycle_barotropic(geometry, eta, east_velocity, north_velocity, dt_sub, ns
     force_north = jnp.where(north_area > 0., force_north, 0.)
     east = jnp.where(east_area > 0., jnp.asarray(east_velocity, eta.dtype), 0.)
     north = jnp.where(north_area > 0., jnp.asarray(north_velocity, eta.dtype), 0.)
-    east_stiffness, north_stiffness = east_area / east_distance, north_area / north_distance
+    east_stiffness, north_stiffness = east_area * east_metric, north_area * north_metric
     south_stiffness = jnp.concatenate((jnp.zeros_like(north_stiffness[:, :1]), north_stiffness[:, :-1]), axis=1)
     diagonal = (east_stiffness + jnp.roll(east_stiffness, 1, axis=0) + north_stiffness + south_stiffness) / area
     cfl_bound = dt_sub ** 2 * gravity * jnp.max(diagonal)
@@ -89,9 +92,9 @@ def subcycle_barotropic(geometry, eta, east_velocity, north_velocity, dt_sub, ns
         height, velocity_east, velocity_north, sum_east, sum_north, valid = carry
         flux_east, flux_north = east_area * velocity_east, north_area * velocity_north
         new_height = height + dt_sub * (source - horizontal_divergence(flux_east, flux_north)) / area
-        east_gradient = (jnp.roll(new_height, -1, axis=0) - new_height) / east_distance
+        east_gradient = (jnp.roll(new_height, -1, axis=0) - new_height) * east_metric
         north_neighbor = jnp.concatenate((new_height[:, 1:], new_height[:, -1:]), axis=1)
-        north_gradient = (north_neighbor - new_height) / north_distance
+        north_gradient = (north_neighbor - new_height) * north_metric
         new_east = jnp.where(east_area > 0., (velocity_east - dt_sub * gravity * east_gradient + dt_sub * force_east) / (1. + dt_sub * drag), 0.)
         new_north = jnp.where(north_area > 0., (velocity_north - dt_sub * gravity * north_gradient + dt_sub * force_north) / (1. + dt_sub * drag), 0.)
         valid = (valid & jnp.all(jnp.isfinite(new_height)) & jnp.all(jnp.isfinite(new_east))
