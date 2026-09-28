@@ -44,3 +44,61 @@ does NOT prove full buoyancy work, dual-mass time evolution, nonlinear advection
 FB's temporal energy behavior or full-mode energy conservation. They remain
 required, along with EOS/real sources/mixing/ice/restart and the entire industrial
 roadmap. Never use the short test as century/climate/forecast qualification.
+
+## Repair selection and accuracy gates, registered BEFORE implementation
+
+Previous goal turn supplied the century/climate explanation and inspected new
+evidence but did not change implementation; revalidate it as no implementation
+progress. Full455 regressions finished successfully. The independently measured
+regular/irregular gravity work residuals are0.001343973494/0.003075742265 of
+absolute power, FAIL against1e-12; the unchanged algebraic controls are below
+4.1e-17. Preserve those original artifacts and the repaired-overlap eight cases.
+
+Research actual [MITgcm surface-gradient source](https://github.com/MITgcm/MITgcm/blob/master/model/src/calc_grad_phi_surf.F)
+and [horizontal areas](https://mitgcm.readthedocs.io/en/latest/algorithm/horiz-grid.html),
+plus [MOM6 finite-volume pressure](https://mom6.readthedocs.io/en/main/api/generated/modules/mom_pressureforce_fv.html).
+MITgcm uses center-distance gradients; this is not proof of compatibility with
+OUR exact spherical rectangle masses. MOM6 integrates finite-volume pressure,
+but its vertical coordinate/EOS differs; do not claim verbatim transplantation.
+
+Choose the mass-adjoint of OUR shared-Q divergence: layer acceleration is
+minus contact area times the same-depth pressure difference divided by rho0
+times the physical momentum volume. The fast acceleration uses the same
+horizontal ratio L_face/A_dual. Factor exact spherical south/north half areas,
+east/north dual areas and face lengths once in finite_volume; rotation geometry,
+hydrostatic contact force and barotropic pressure/CFL must share it. Keep actual
+point center distances and scalar reconstruction widths unchanged: changing
+those to make pressure pass would corrupt the tracer operator. Do not introduce
+a legacy-gradient default or fix only the linear3D caller while leaving the
+public fast-wave component mismatched. No state correction, artificial damping,
+mass redefinition, precision promotion or relaxed existing gate is permitted.
+
+Before core edits add regressions for the same two work cases; random work on
+irregular partial/land/moving-top geometries; common-depth pressure integrals
+divided by independently integrated half-cell rectangle mass; constant-density
+surface-load equality with the actual fast gradient; unchanged thin-face
+Coriolis and constant-tracer/source/surface identities. Gates are1e-12 for64
+power/force identities, existing2e-6 for32 stored momentum,1e-6 FD/JVP and1e-12
+JVP/VJP. Independent expectations must not call the new geometry helper.
+
+Spatial accuracy is a separate preregistered gate. Use regular24x12,48x24,96x48
+longitude-global grids over latitude+/-60 and constant50m depth with interfaces
+[0,7,21,50]. Represent cos(lambda)*cos(phi) as exact scalar cell means under
+spherical area, not point samples. Compare fast accelerations to analytic
+g*sin(lambda_face)/R and g*cos(lambda_center)*sin(phi_face)/R. For hydrostatic
+density equal to these cell means and eta0, multiply each analytic acceleration
+by the common layer midpoint/rho0. Use physical-dual-area/volume weighted RMS
+errors separately for east/north; EACH of the two2:1 ratios must be>=3.5.
+Closed-wall faces are omitted because their prescribed velocity is zero, not
+the unconstrained analytic velocity. No claim of arbitrary irregular-grid
+second-order accuracy follows from this regular smooth MMS. Save measured
+errors/ratios regardless of PASS/FAIL and retain previous point-distance force
+expectations explicitly as historical tests of a different quadrature.
+
+Then repeat the unchanged thin-face probe, pressure-work diagnostic, direct
+adjacent/full suites, isolated installation and the same eight real inputs at
+the repaired source hashes. The old physical-mass/pressure mismatch remains
+reproducible in the committed pre-repair code. Full buoyancy-energy exchange,
+moving dual-mass continuity, nonlinear momentum, actual thermodynamics/sources,
+polar topology, production cutover and the whole industrial roadmap remain
+requirements, not exclusions from the final goal.
