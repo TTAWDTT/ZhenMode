@@ -23,6 +23,8 @@ class FiniteVolumeGeometry(NamedTuple):
     north_distance: np.ndarray
     east_width: np.ndarray
     north_width: np.ndarray
+    interfaces: np.ndarray
+    latitude_edges: np.ndarray
 
 
 class ExtensiveState(NamedTuple):
@@ -90,7 +92,8 @@ def build_geometry(longitude_edges, latitude_edges, interfaces, depth, radius=R_
     east_width = radius * delta_lon[:, None] * np.cos(centers_lat)[None, :]
     north_width = np.broadcast_to(radius * delta_lat[None, :], expected_shape).copy()
     return FiniteVolumeGeometry(area, thickness, center_depth, east_area,
-                                north_area, east_distance, north_distance, east_width, north_width)
+                                north_area, east_distance, north_distance, east_width, north_width,
+                                levels, latitude_rad)
 
 
 def surface_volume(geometry, eta):
