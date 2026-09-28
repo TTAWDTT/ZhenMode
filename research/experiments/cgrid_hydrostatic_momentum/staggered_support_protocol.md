@@ -16,12 +16,12 @@ and eight independently audited linear references, not nonlinear physics.
 - [Actual MITgcm r-star code](https://github.com/MITgcm/MITgcm/blob/master/model/src/calc_r_star.F):
   staggered height averages accompany whole-column coordinate changes. Reject
   copying one average into fixed-z inventory without coordinate/pressure work.
-- [Quirion et al. cut-cell capacities](https://arxiv.org/html/2211.10698),
+- [Quiros Rodriguez et al. cut-cell capacities](https://arxiv.org/html/2211.10698),
   sections2.2--2.3,3--4: naive interpolated geometry can destroy even first-order
   boundary accuracy. Additional staggered volume/surface capacities and boundary
   values are needed. The study is stationary Cartesian incompressible geometry;
   it does NOT qualify our spherical moving surface or nonlinear time coupling.
-- [Pal et al. mass-momentum-consistent VOF](https://arxiv.org/pdf/1811.12327),
+- [Arrufat et al. mass-momentum-consistent VOF](https://arxiv.org/pdf/1811.12327),
   section3.4/Algorithm1: staggered fractions come from the primary reconstruction;
   independently evolved shifted geometries can drift apart. Its two-phase
   Cartesian/interface machinery is NOT a ready ocean implementation.
@@ -53,6 +53,17 @@ north-component east/vertical Q as exact spherical half sums. Its flux at a
 primary latitude center is b_j*Q_south+a_j*Q_north. Both physical wall fluxes
 are zero; north duals number ny+1, including both walls. This construction
 must satisfy div_dual Q_dual=L(div_primary Q) LOCALLY. Sources use the same L.
+
+Important pre-diagnosis physical limit: plain cell-wise RT0 only matches the
+INTEGRATED primary face Q. On a stepped bottom it spreads a nonzero Q across
+the full primary face height, including a wall wedge. Register its rejected
+wall-flux magnitude abs(Q)*(1-H_contact/H_primary) from BOTH sides. It must
+not be promoted to a valid wall condition merely because integrated dual
+mass closes. A trace-compatible enriched reconstruction would restrict each
+boundary trace to actual shared intervals and provide an internal vertical
+correction for its divergence; that enriched reconstruction is NOT supplied
+by this offline diagnostic. Record unqualified wall/velocity reconstruction
+explicitly rather than claiming a production representation has been chosen.
 
 ## Inputs, independent gates and mandatory force coupling
 
