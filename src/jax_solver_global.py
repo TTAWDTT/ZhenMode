@@ -400,12 +400,16 @@ def _horizontal_diffusion_flux(tracer, diffusivity, p):
 
 
 def _horizontal_tracer_diffusion(tracer, p):
-    """Keep legacy constant diffusion; enhanced bands use a conservative flux."""
+    """Conservative wet-face diffusion for background and enhanced coefficients."""
     diffusivity = p.kappa_h + p.coastal_kappa_h_2d[:, :, None]
-    return jax.lax.cond(
-        jnp.any(p.coastal_kappa_h_2d != 0.),
-        lambda field: _horizontal_diffusion_flux(field, diffusivity, p),
-        lambda field: p.kappa_h * _laplacian_h(field, p), tracer)
+    return _horizontal_diffusion_flux(tracer, diffusivity, p)
+
+
+def _horizontal_biharmonic_tracer(tracer, p):
+    """Square the self-adjoint wet-face Laplacian; negative sign dissipates."""
+    unit_diffusivity = jnp.ones_like(p.coastal_kappa_h_2d)[:, :, None]
+    laplacian = _horizontal_diffusion_flux(tracer, unit_diffusivity, p)
+    return _horizontal_diffusion_flux(laplacian, unit_diffusivity, p)
 
 
 def _biharmonic_h(u, p):
@@ -1626,8 +1630,8 @@ def _linear_half_step(state, p, dt_half):
         u = u - p.nu_bi * _biharmonic_h(state.u, p) * dt_half
         v = v - p.nu_bi * _biharmonic_h(state.v, p) * dt_half
     if p.kappa_bi > 0.0:
-        T = T - p.kappa_bi * _biharmonic_h(state.T, p) * dt_half
-        S = S - p.kappa_bi * _biharmonic_h(state.S, p) * dt_half
+        T = T - p.kappa_bi * _horizontal_biharmonic_tracer(state.T, p) * dt_half
+        S = S - p.kappa_bi * _horizontal_biharmonic_tracer(state.S, p) * dt_half
     u = u + p.nu_v * _d2_dz2(state.u, p) * dt_half
     v = v + p.nu_v * _d2_dz2(state.v, p) * dt_half
     T = T + _vertical_diffusion(state.T, _effective_kappa_v(p), p) * dt_half

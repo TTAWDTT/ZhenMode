@@ -26,6 +26,7 @@ def main():
     parser.add_argument("--days", type=float, default=1.)
     parser.add_argument("--resolution", type=float, default=2.)
     parser.add_argument("--dt", type=float, default=600.)
+    parser.add_argument("--kappa-bi", type=float, default=0.)
     parser.add_argument("--dtype", choices=["float32", "float64"], default="float32")
     parser.add_argument("--cases", nargs="+", choices=["baseline", "mixed", "ice", "coastal"],
                         default=["baseline", "mixed", "ice", "coastal"])
@@ -34,6 +35,8 @@ def main():
     args = parser.parse_args()
     if not all(np.isfinite(value) and value > 0. for value in (args.days, args.dt, args.resolution)):
         parser.error("days, dt and resolution must be finite and positive")
+    if not np.isfinite(args.kappa_bi) or args.kappa_bi < 0.:
+        parser.error("kappa-bi must be finite and nonnegative")
     nx, ny = global_grid_dims(args.resolution, 65., remap="area")
     config = replace(GlobalGridConfig(), resolution=args.resolution, lat_max=65., nx=nx, ny=ny)
     grid = make_global_grid(config, args.bathy, smooth_passes=80, min_depth=500., remap="area")
@@ -44,7 +47,7 @@ def main():
     atmosphere = sst - 5.
     forcing = (np.broadcast_to(0.05 * np.cos(3. * latitude), (nx, ny)),
                np.zeros((nx, ny)), np.zeros((nx, ny)))
-    physics = replace(PhysicsConfig(), nu_h=2e6, nu_bi=0., kappa_bi=0.,
+    physics = replace(PhysicsConfig(), nu_h=2e6, nu_bi=0., kappa_bi=args.kappa_bi,
                       kappa_v=1e-6, kappa_conv=0.01, kappa_gm=0., kappa_redi=0.)
     total_steps = int(np.ceil(args.days * 86400. / args.dt))
     batch_steps = max(1, int(21600. / args.dt))
