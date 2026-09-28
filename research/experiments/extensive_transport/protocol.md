@@ -77,6 +77,17 @@ The initial missing-module test failure will be retained before implementing
 the new component. Direct expected geometry, loop-based flux budgets, source
 totals and substep reference are independent of the implementation.
 
+Execution contract clarified before real-grid runs: V is the primary state;
+eta for the next step is diagnosed from its top-cell volume, rather than
+maintaining a second, independently rounded volume state. Both the returned
+barotropic eta and the incoming diagnosed eta still face the unchanged local
+identity gate, with no offset/refill added. Step reductions apply only to
+registered outflow/wave CFL failures, never to improve budget/precision scores.
+The extra flux JVP initially used a perturbation too small relative to Earth-
+scale volumes (derivative norm 3.94e-9, finite-difference cancellation error
+8.94e-13). Its direction is rescaled to the native flux magnitude, away from
+sign changes; the <=1e-6 derivative gate is unchanged.
+
 ## Mainline migration, still required
 
 The new modules are core components for migration, not a production flag that

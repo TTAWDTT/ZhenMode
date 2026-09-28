@@ -1,0 +1,133 @@
+"""C-grid substep transport and cell-content coupling for physical migration.
+
+The gravity-wave reference uses static face geometry and omits full 3D
+momentum/Coriolis/physics. It is not a qualified ocean production driver.
+"""
+from typing import NamedTuple
+
+import jax
+import jax.numpy as jnp
+
+from finite_volume import (
+    TransportResult,
+    advance_contents,
+    closed_surface_fluxes,
+    horizontal_divergence,
+    match_column_transport,
+)
+
+
+class BarotropicResult(NamedTuple):
+    eta: jnp.ndarray
+    east_velocity: jnp.ndarray
+    north_velocity: jnp.ndarray
+    mean_east: jnp.ndarray
+    mean_north: jnp.ndarray
+    gravity_cfl_bound: jnp.ndarray
+    valid: jnp.ndarray
+
+
+class CoupledResult(NamedTuple):
+    barotropic: BarotropicResult
+    transport: TransportResult
+    surface_error: jnp.ndarray
+    valid: jnp.ndarray
+
+
+def subcycle_barotropic(geometry, eta, east_velocity, north_velocity, dt_sub, nsub,
+                       gravity=9.81, drag=0., volume_source=None):
+    """Forward-backward wave steps and mean of Q actually used in eta.
+
+    A sufficient Gershgorin wave bound is dt_sub^2*g*max(diagonal)<=2.
+    Material-top thickness must stay positive. No state or timestep repair.
+    nsub is a static positive integer for JIT callers.
+    """
+    if not isinstance(nsub, int) or isinstance(nsub, bool) or nsub < 1:
+        raise ValueError("nsub must be a positive static integer")
+    eta = jnp.asarray(eta)
+    shape = geometry.area.shape
+    if eta.shape != shape or east_velocity.shape != shape or north_velocity.shape != shape:
+        raise ValueError("barotropic state shapes must match horizontal cells")
+    if not jnp.issubdtype(eta.dtype, jnp.floating):
+        raise ValueError("eta must have floating dtype")
+    area = jnp.asarray(geometry.area, eta.dtype)
+    east_area = jnp.sum(jnp.asarray(geometry.east_area, eta.dtype), axis=-1)
+    north_area = jnp.sum(jnp.asarray(geometry.north_area, eta.dtype), axis=-1)
+    east_distance = jnp.asarray(geometry.east_distance, eta.dtype)
+    north_distance = jnp.asarray(geometry.north_distance, eta.dtype)
+    wet = jnp.asarray(geometry.thickness[..., 0]) > 0.
+    top_height = jnp.asarray(geometry.thickness[..., 0], eta.dtype)
+    dt_sub, gravity, drag = (jnp.asarray(value, eta.dtype) for value in (dt_sub, gravity, drag))
+    if any(value.ndim != 0 for value in (dt_sub, gravity, drag)):
+        raise ValueError("dt_sub, gravity and drag must be scalars")
+    source = jnp.zeros_like(eta) if volume_source is None else jnp.asarray(volume_source, eta.dtype)
+    if source.shape != shape:
+        raise ValueError("barotropic volume source must match horizontal cells")
+    east = jnp.where(east_area > 0., jnp.asarray(east_velocity, eta.dtype), 0.)
+    north = jnp.where(north_area > 0., jnp.asarray(north_velocity, eta.dtype), 0.)
+    east_stiffness, north_stiffness = east_area / east_distance, north_area / north_distance
+    south_stiffness = jnp.concatenate((jnp.zeros_like(north_stiffness[:, :1]), north_stiffness[:, :-1]), axis=1)
+    diagonal = (east_stiffness + jnp.roll(east_stiffness, 1, axis=0) + north_stiffness + south_stiffness) / area
+    cfl_bound = dt_sub ** 2 * gravity * jnp.max(diagonal)
+    initial_valid = (jnp.isfinite(dt_sub) & (dt_sub > 0.) & jnp.isfinite(gravity) & (gravity >= 0.)
+                     & jnp.isfinite(drag) & (drag >= 0.) & (cfl_bound <= 2.)
+                     & jnp.all(jnp.isfinite(eta)) & jnp.all(jnp.isfinite(east)) & jnp.all(jnp.isfinite(north))
+                     & jnp.all(jnp.isfinite(source)) & jnp.all(jnp.where(wet, True, source == 0.))
+                     & jnp.all(jnp.where(wet, top_height + eta > 0., eta == 0.)))
+
+    def advance(carry, unused):
+        height, velocity_east, velocity_north, sum_east, sum_north, valid = carry
+        flux_east, flux_north = east_area * velocity_east, north_area * velocity_north
+        new_height = height + dt_sub * (source - horizontal_divergence(flux_east, flux_north)) / area
+        east_gradient = (jnp.roll(new_height, -1, axis=0) - new_height) / east_distance
+        north_neighbor = jnp.concatenate((new_height[:, 1:], new_height[:, -1:]), axis=1)
+        north_gradient = (north_neighbor - new_height) / north_distance
+        new_east = jnp.where(east_area > 0., (velocity_east - dt_sub * gravity * east_gradient) / (1. + dt_sub * drag), 0.)
+        new_north = jnp.where(north_area > 0., (velocity_north - dt_sub * gravity * north_gradient) / (1. + dt_sub * drag), 0.)
+        valid = (valid & jnp.all(jnp.isfinite(new_height)) & jnp.all(jnp.isfinite(new_east))
+                 & jnp.all(jnp.isfinite(new_north)) & jnp.all(jnp.where(wet, top_height + new_height > 0., new_height == 0.)))
+        return (new_height, new_east, new_north, sum_east + flux_east, sum_north + flux_north, valid), None
+
+    initial = (eta, east, north, jnp.zeros_like(eta), jnp.zeros_like(eta), initial_valid)
+    (eta, east, north, sum_east, sum_north, valid), _ = jax.lax.scan(advance, initial, None, length=nsub)
+    return BarotropicResult(eta, east, north, sum_east / nsub, sum_north / nsub, cfl_bound, valid)
+
+
+def coupled_surface_step(geometry, state, eta, east_velocity, north_velocity,
+                         layer_east_velocity, layer_north_velocity, dt_sub, nsub,
+                         gravity=9.81, drag=0., volume_source=None, content_source=None):
+    """Share actual substep mean Q between eta, layer volumes and V*C.
+
+    Only top-layer sources are permitted in this fixed-z moving-top coupling.
+    Low-level results must pass valid before accepting the next state.
+    """
+    eta, east_velocity, north_velocity, layer_east_velocity, layer_north_velocity = (
+        jnp.asarray(field) for field in (eta, east_velocity, north_velocity,
+                                        layer_east_velocity, layer_north_velocity)
+    )
+    if any(field.dtype != state.volume.dtype for field in (eta, east_velocity, north_velocity,
+                                                           layer_east_velocity, layer_north_velocity)):
+        raise ValueError("coupled scalar and face states must share the volume dtype")
+    source = jnp.zeros_like(state.volume) if volume_source is None else jnp.asarray(volume_source, state.volume.dtype)
+    if source.shape != state.volume.shape:
+        raise ValueError("volume source must match cells")
+    barotropic = subcycle_barotropic(geometry, eta, east_velocity, north_velocity,
+                                    dt_sub, nsub, gravity, drag, source[..., 0])
+    east = match_column_transport(geometry.east_area, layer_east_velocity, barotropic.mean_east)
+    north = match_column_transport(geometry.north_area, layer_north_velocity, barotropic.mean_north)
+    fluxes = closed_surface_fluxes(east.flux, north.flux)
+    transport = advance_contents(geometry, state, fluxes, dt_sub * nsub, source, content_source)
+    area = jnp.asarray(geometry.area, state.volume.dtype)
+    height = jnp.asarray(geometry.thickness[..., 0], state.volume.dtype)
+    initial_eta = state.volume[..., 0] / area - height
+    content_eta = transport.state.volume[..., 0] / area - height
+    scale = jnp.maximum(jnp.asarray(1e-8, state.volume.dtype), jnp.maximum(jnp.max(jnp.abs(eta)), jnp.max(jnp.abs(barotropic.eta - eta))))
+    surface_error = jnp.maximum(jnp.max(jnp.abs(content_eta - barotropic.eta)), jnp.max(jnp.abs(initial_eta - eta))) / scale
+    tolerance = jnp.where(jnp.finfo(state.volume.dtype).eps > 1e-10, 2e-6, 1e-12)
+    lower_volume = jnp.asarray(geometry.thickness[..., 1:], state.volume.dtype) * area[..., None]
+    lower_scale = jnp.maximum(lower_volume, 1.)
+    lower_error = jnp.max(jnp.abs(state.volume[..., 1:] - lower_volume) / lower_scale, initial=0.)
+    valid = (barotropic.valid & east.valid & north.valid & transport.valid
+             & (surface_error <= tolerance) & (lower_error <= tolerance)
+             & jnp.all(source[..., 1:] == 0.))
+    return CoupledResult(barotropic, transport, surface_error, valid)
