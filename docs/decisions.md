@@ -1152,3 +1152,28 @@ cutover, century/climate/forecast/GPU/whole-adjoint or industrial completion.
 [`Protocol`](../research/experiments/cgrid_hydrostatic_momentum/physical_velocity_protocol.md),
 [`coordinate addendum`](../research/experiments/cgrid_hydrostatic_momentum/physical_velocity_coordinate_addendum.md),
 [`review`](../research/experiments/cgrid_hydrostatic_momentum/physical_velocity_review.md).
+
+## D46 — Pair the selected kinetic norm with actual force and time equations
+
+Protocolf136f6f chooses the physical wet-contact field horizontal L2 norm,
+without retroactively invalidating FV quadratures. Core6fb6c88 integrates
+mixed mass/planetary rotation, pairs column B and pressure B^T, and advances
+layers/surface simultaneously by midpoint. Non-diagonal M requires a newly
+derived block solve, not old diagonal mobility; recover the old hydrostatic
+FORCE before using new mass. SAME midpoint Q drives actual bounded V/N.
+
+Addendumab125d9 preserves a small-force failure before increment stopping
+control with BOTH true residuals.33 direct tests and installed active step
+pass; full/eight-case qualification is pending. Frozen/cast/moving-mass work
+are DISTINCT, not whole nonlinear conservation. First near-rest host work
+audit FAILS; original partial evidence stays UNQUALIFIED. Addendumf6551fc
+registers actual eta0/independent representation validation before changes.
+No force, energy, source, field or continuity gate is weakened.
+
+Actual nonlinear/wall/buoyancy dynamics, production cutover and ALL industrial
+roadmap requirements remain necessary; local PASS is not century success.
+
+[`Protocol`](../research/experiments/cgrid_hydrostatic_momentum/paired_dynamics_protocol.md),
+[`increment addendum`](../research/experiments/cgrid_hydrostatic_momentum/paired_increment_addendum.md),
+[`eta addendum`](../research/experiments/cgrid_hydrostatic_momentum/paired_initial_eta_addendum.md),
+[`review`](../research/experiments/cgrid_hydrostatic_momentum/paired_dynamics_review.md).

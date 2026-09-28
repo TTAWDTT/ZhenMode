@@ -1035,5 +1035,38 @@ industrial_alignment_20260928:
     nonlinear_momentum_implemented: false
     production_cutover: false
     century_climate_forecast_gpu_full_adjoint_pass: false
-  next: "Actual frozen mean-Q physical fluid/grid/relative frames and independent kinetic selection are now qualified. Choose the kinetic norm explicitly and derive matched mass/pressure/rotation/wall forces plus fast/layer and moving source/time coupling TOGETHER; do not blindly promote kinematic half-prism mass or reuse diagonal C=sum(S^2/M) for a coupled field-L2 mass. Then implement ACTUAL nonlinear momentum and kinetic/buoyancy exchange and ACTUAL production cutover, not an indefinite unused prototype. Complete EOS/real sources/mixing/ice and ACTUAL initialization/checkpoint/driver migration; preserve global topology, century/sensitivity, independent climate/forecast, fair GPU/distributed, whole-model adjoint/learning and engineering roadmap. No final industrial qualification yet."
+  cgrid_paired_dynamics:
+    status: actual_coupled_step_committed_independent_real_qualification_pending
+    protocol_commit: "f136f6f"
+    increment_protocol_commit: "ab125d9"
+    dynamics_commit: "6fb6c88"
+    eta_protocol_commit: "f6551fc"
+    eta_recording_commit: "782cd63"
+    review: "research/experiments/cgrid_hydrostatic_momentum/paired_dynamics_review.md"
+    kinetic_norm: physical_wet_contact_horizontal_field_L2_with_mixed_terms
+    time_scheme: simultaneous_midpoint_mass_rotation_pressure_surface_mean_q
+    original_force_failure_magnitude: 0.02723581
+    both_increment_and_endpoint_true_residuals_checked: true
+    direct_tests_before_eta_recording: 33
+    final_source_adjacent_tests_passed: 80
+    full_tests_before_eta_recording: 573
+    old_warnings: 23
+    full_tests_before_eta_recording_seconds: 673.50
+    final_source_full_suite: pending
+    original_real_report: "results/industrial_alignment/cgrid_paired_dynamics_reference.json"
+    original_real_report_qualified: false
+    original_reference_process_intentionally_stopped: 33232
+    original_near_rest_host_energy_relative_failure: 0.007064013170804541
+    actual_initial_eta_recorded: true
+    geometry_floor_only_not_energy_gate: true
+    mean_eta_global_nullspace_checked: true
+    legacy_mms: ALL_PASS_ratio_4.30
+    installed_pre_eta_actual_step: passed
+    frozen_energy_work_separate_from_cast_and_moving_mass: true
+    nonlinear_momentum_implemented: false
+    moving_mass_buoyancy_energy_qualified: false
+    wall_reaction_force_qualified: false
+    production_cutover: false
+    century_climate_forecast_gpu_full_adjoint_pass: false
+  next: "Qualify corrected actual paired dynamics with final-source regressions and eight real-grid trajectories plus independent actual eta/mass/C/B/mean-Q/work/inventory audits. Norm and frozen fast/layer coupling are now IMPLEMENTED, not a pending read-only selection. Then implement ACTUAL nonlinear momentum and moving kinetic/buoyancy exchange and ACTUAL production initialization/checkpoint/driver cutover; do not proliferate unused prototypes or blindly reuse old diagonal mobility. Complete EOS/real sources/mixing/ice and every global topology, century/sensitivity, independent climate/forecast, fair GPU/distributed, whole-model adjoint/learning and engineering requirement. No final industrial qualification yet."
   unresolved: ["whole-model budgets", "volume/free-surface consistency", "partial cells/global topology", "complete real physical forcing", "independent climate/forecast skill", "fair GPU/distributed cost", "whole-model adjoint and constrained learning"]

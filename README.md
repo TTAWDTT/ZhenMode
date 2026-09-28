@@ -10,7 +10,7 @@ equations on a lat-lon grid, written in JAX.
 | Solver core | `src/jax_solver_global.py` |
 | Driver (CLI) | `src/run_long_integration_global.py` |
 | Tests | `tests/` |
-| Design rationale | `docs/decisions.md` (D1-D45) + `docs/README.md` |
+| Design rationale | `docs/decisions.md` (D1-D46) + `docs/README.md` |
 
 Everything else is support: data loaders (`src/forcing.py`,
 `src/wind_reanalysis.py`, `src/woa_data.py`), grid/bathymetry
@@ -26,17 +26,22 @@ physical cell inventories/shared mean Q (`finite_volume.py`, `barotropic_transpo
 -> extensive FCT (`bounded_transport.py`)
 -> wet-contact pressure/linear layer momentum (`cgrid_momentum.py`)
 -> wet/dual fluxes and physical fluid/grid velocity (`wet_fluxes.py`, `physical_velocity.py`).
-These components are coupled in the actual LINEAR reference step, not yet in
-the production driver (D37-D45). Inventories/Q/geometry are64; momentum is64/32.
+-> paired kinetic mass/rotation/pressure/surface dynamics (`paired_dynamics.py`).
+These components advance the actual LINEAR migration reference, not yet in
+the production driver (D37-D46). Inventories/Q/geometry are64; momentum is64/32.
 
 540 regressions,131 adjacent tests, eight real-grid100x60s linear references,
 installed active step and independent last-snapshot audits pass.34 deliberate
 corruptions reject; prior failed interpretations/evidence are retained.
 The physical field uses actual MEAN Q on frozen geometry, not endpoint velocity.
 Kinematic half-prism mass is not silently substituted into force equations.
-Matched kinetic forces/fast/time coupling, actual nonlinear dynamics and driver
-cutover remain required; century/climate/forecast/GPU/full-adjoint claims remain
-unqualified. See the [current evidence and limits](research/experiments/cgrid_hydrostatic_momentum/physical_velocity_review.md);
+The new paired midpoint step passes33 direct checks; final-source full and
+eight-case independent qualification remain pending after a near-rest eta0
+recording gap. Frozen/cast/moving-mass work are distinct; actual nonlinear
+dynamics/buoyancy and driver cutover remain required. Century/climate/forecast/
+GPU/full-adjoint claims remain unqualified.
+See the [current dynamics evidence](research/experiments/cgrid_hydrostatic_momentum/paired_dynamics_review.md)
+and [prior physical-frame evidence](research/experiments/cgrid_hydrostatic_momentum/physical_velocity_review.md);
 historical stages and failures remain in the decision log and linked reviews.
 
 ## Features

@@ -4,6 +4,22 @@ Updated: 2026-09-29
 
 ## Current authority: full industrial alignment
 
+Latest actual paired-dynamics milestone2026-09-29: protocolf136f6f,
+increment addendumab125d9 and core6fb6c88. Mixed physical-field mass and
+planetary rotation pair with B/B^T and simultaneous midpoint layer/surface
+dynamics; SAME actual mean Q advances V/N.33 direct and installed active
+step pass; legacy MMS4.30. First real rest100x60s passes runtime but FAILS
+independent near-rest work evidence, so partial report remains UNQUALIFIED
+and PID33232 is intentionally stopped. Addendumf6551fc preregisters exact
+starting-eta recording/independent geometry and global mean checks. No gate
+relaxation or state repair. Pre-eta full-suite handle42215 completes:573 pass,
+23 old warnings,673.50s with unchanged source hashes. Exact eta recording
+782cd63 passes80 final-source adjacent tests; final full/eight-case pending.
+See `research/experiments/cgrid_hydrostatic_momentum/paired_dynamics_review.md`.
+Qualify the corrected actual coupled reference, then ACTUAL nonlinear
+momentum/moving kinetic-buoyancy exchange and production cutover; do not
+return to indefinite read-only prototypes or shrink the full industrial goal.
+
 Latest actual physical-frame milestone2026-09-29: protocol9a7fa6b, corec08754d,
 coordinate evidence fix6bd7f50. Actual linear step returns/checks physical
 east/north/down, grid and relative frames from SAME mean Q/source.42 new,
