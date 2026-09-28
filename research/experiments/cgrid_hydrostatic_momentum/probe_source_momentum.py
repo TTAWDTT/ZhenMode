@@ -27,6 +27,10 @@ def main():
     output = ROOT / args.out
     if output.exists():
         raise FileExistsError("retain previous witness; choose new output")
+    sources = [Path(__file__), Path(__file__).with_name("nonlinear_source_witness.md")]
+    sources.extend(ROOT / "src" / name for name in ("paired_dynamics.py", "cgrid_momentum.py", "finite_volume.py", "bounded_transport.py"))
+    hashes = {path.relative_to(ROOT).as_posix(): hashlib.sha256(path.read_bytes()).hexdigest() for path in sources}
+    head = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip()
     longitude = np.array([0., 37., 131., 206., 298., 360.])
     latitude = np.array([-60., -27., -3., 15., 56.])
     radius, initial_speed, rain, dt = 2.1e6, .1, 1e-6, 600.
@@ -57,11 +61,10 @@ def main():
     floor = 64. * np.finfo(float).eps * (abs(kinetic0) + abs(kinetic1))
     if abs(kinetic1 - kinetic0 - recorded) > 1e-11 * abs(recorded) + floor:
         raise ValueError("independent moving energy witness disagrees")
-    sources = [Path(__file__), Path(__file__).with_name("nonlinear_source_witness.md")]
-    sources.extend(ROOT / "src" / name for name in ("paired_dynamics.py", "cgrid_momentum.py", "finite_volume.py", "bounded_transport.py"))
+    unchanged = all(hashlib.sha256((ROOT / name).read_bytes()).hexdigest() == value for name, value in hashes.items())
     record = {"scope": "new_zero_incoming_momentum_source_contract_not_frozen_reference_qualification",
-              "provenance": {"git_head": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip(),
-                             "source_sha256": {path.relative_to(ROOT).as_posix(): hashlib.sha256(path.read_bytes()).hexdigest() for path in sources}},
+              "provenance": {"git_head_at_launch": head, "source_sha256_at_launch": hashes,
+                             "source_hashes_unchanged_at_end": unchanged},
               "inputs": {"longitude_edges": longitude.tolist(), "latitude_edges": latitude.tolist(), "radius_m": radius,
                          "uniform_depth_m": 50., "interfaces_m": [0., 7., 21., 50.], "rain_m_s": rain, "dt_s": dt,
                          "initial_east_speed_m_s": initial_speed, "incoming_east_speed_m_s": 0.},
@@ -75,7 +78,7 @@ def main():
               "independent_kinetic_change_per_rho0": float(kinetic1 - kinetic0), "recorded_moving_mass_energy_per_rho0": recorded}
     output.write_text(json.dumps(record, indent=2, allow_nan=False) + "\n", encoding="utf-8")
     print(json.dumps(record, indent=2), flush=True)
-    if record["source_momentum_qualification"] != "FAIL" or not record["runtime_frozen_valid"]:
+    if not unchanged or record["source_momentum_qualification"] != "FAIL" or not record["runtime_frozen_valid"]:
         raise SystemExit("registered counterexample not reproduced")
 
 
