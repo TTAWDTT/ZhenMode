@@ -10,7 +10,7 @@ equations on a lat-lon grid, written in JAX.
 | Solver core | `src/jax_solver_global.py` |
 | Driver (CLI) | `src/run_long_integration_global.py` |
 | Tests | `tests/` |
-| Design rationale | `docs/decisions.md` (D1-D43) + `docs/README.md` |
+| Design rationale | `docs/decisions.md` (D1-D44) + `docs/README.md` |
 
 Everything else is support: data loaders (`src/forcing.py`,
 `src/wind_reanalysis.py`, `src/woa_data.py`), grid/bathymetry
@@ -50,6 +50,14 @@ corruptions. Four small source/precision fixtures retain bitwise states.
 Mapped traces are not physical point velocities or nonlinear momentum;
 metric/dual mass/force/time pairing and production migration remain pending.
 See the [wet-trace review](research/experiments/cgrid_hydrostatic_momentum/wet_trace_review.md).
+
+Latitude-arc weighting and a paired interior flux now preserve constant
+physical longitude-normal speed and dual mass commutation (D44). Actual step
+returns/checks full half-prism transport, not a second reconstructed endpoint Q.
+89 adjacent/498 full tests, eight short references and independent metric/dual
+audits pass, with19 corruptions rejected. These kinematic masses are NOT silently
+substituted for existing force masses; nonlinear/wall/time/production work
+remains incomplete. See the [metric/dual review](research/experiments/cgrid_hydrostatic_momentum/metric_dual_review.md).
 
 ## Features
 

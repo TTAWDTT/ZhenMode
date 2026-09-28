@@ -1094,3 +1094,29 @@ migration remain required; no century/climate/forecast/GPU/whole-adjoint claim.
 Protocol and evidence:
 [`wet-trace protocol`](../research/experiments/cgrid_hydrostatic_momentum/wet_trace_protocol.md),
 [`wet-trace review`](../research/experiments/cgrid_hydrostatic_momentum/wet_trace_review.md).
+
+## D44 — Pair physical latitude-arc traces with actual half-prism Q
+
+Protocola3cad34, implementation4113bcc. Two constant physical normal-U
+counterexamples reject the old constant-area trace interpretation, with first
+sample about20.1percent relative error; prior mapped-Q contract was narrower.
+Arc weight w and matching north interior bubble preserve same contact Q,
+blocked-wall traces, vertical primitive and mapped divergence. Changing qx
+alone or pairing new bubble with old area-split transverse Q is rejected.
+
+Actual step now returns/checks full half-prism kinematic masses and paired
+dual Q from SAME primary Q; both outer wall halves included. North transverse
+east Q uses arc halves; mass/vertical Q use spherical area halves.89 final-source
+adjacent regressions, SAME eight real100x60s groups and independent last
+primary/metric/dual snapshots pass;9+10 corruptions reject. Four small frozen
+fixtures retain bitwise state, MMS and installed step pass. Full-suite handle
+completed exit0:498 tests,23 existing warnings,514.28s. No force/mass or state-source swap.
+
+This is NOT nonlinear momentum, physical wall/velocity/KE basis, moving time
+coupling or production migration. Existing D40/D41 force masses remain distinct
+from new kinematic mass. Pole endpoints reject explicitly, not cosine-floored;
+global topology remains required. Choose matched physical basis, forces,
+rotation and fast/time coupling before actual nonlinear/production cutover.
+Protocol and evidence:
+[`metric/dual protocol`](../research/experiments/cgrid_hydrostatic_momentum/metric_dual_protocol.md),
+[`metric/dual review`](../research/experiments/cgrid_hydrostatic_momentum/metric_dual_review.md).

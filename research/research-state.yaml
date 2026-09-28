@@ -958,5 +958,41 @@ industrial_alignment_20260928:
     nonlinear_momentum_implemented: false
     production_cutover: false
     century_climate_forecast_gpu_full_adjoint_pass: false
-  next: "Frozen actual wet-contact traces are implemented; resolve latitude-metric physical reconstruction and matched dual Q, velocity support, geometric capacities and wall reactions. Choose matched physical mass/force/pressure/rotation and C=sum(S^2/M) fast/layer pairing plus moving time coupling TOGETHER, then implement ACTUAL nonlinear momentum and kinetic/buoyancy exchange. Complete EOS/real sources/mixing/ice and ACTUAL initialization/checkpoint/driver migration; no indefinite unused prototype. Preserve global topology, century/sensitivity, independent climate/forecast, fair GPU/distributed, whole-model adjoint/learning and engineering roadmap. No final industrial qualification yet."
+  cgrid_latitude_metric_and_actual_dual_transport:
+    status: actual_spatial_metric_and_dual_q_pass_not_nonlinear_momentum
+    protocol_commit: "a3cad34"
+    implementation_commit: "4113bcc"
+    review: "research/experiments/cgrid_hydrostatic_momentum/metric_dual_review.md"
+    old_constant_physical_u_failures: 2
+    first_sample_old_normal_u_relative_error: 0.20133448
+    new_tests: 15
+    final_source_adjacent_tests_passed: 89
+    full_tests_status: passed
+    full_tests_passed: 498
+    old_warnings: 23
+    full_tests_seconds: 514.28
+    full_tests_log: "results/industrial_alignment/metric_dual_full_tests.log"
+    reference_groups_passed: 8
+    steps_per_group: 100
+    dt_seconds: 60.
+    barotropic_substeps: 4
+    reference_runtime_git_clean: true
+    independent_scope: last_inventory_geometry_actual_q_metric_trace_and_dual_flux_not_every_step_replay
+    inventory_q_negative_controls: 9
+    wet_trace_negative_controls: 5
+    metric_dual_negative_controls: 5
+    maximum_recorded_dual_commutation_relative: 4.432293e-16
+    maximum_recorded_bottom_closure_relative: 6.347202e-16
+    worst_content_budget_relative: 4.952833e-18
+    exact_state_fixture_groups: 4
+    exact_state_fields: [volume, content, east_velocity, north_velocity]
+    legacy_mms: ALL_PASS_ratio_4.30
+    isolated_installed_actual_metric_dual_step: passed
+    kinematic_mass_substituted_into_forces: false
+    full_physical_velocity_wall_kinetic_basis_qualified: false
+    moving_time_coupling_qualified: false
+    nonlinear_momentum_implemented: false
+    production_cutover: false
+    century_climate_forecast_gpu_full_adjoint_pass: false
+  next: "Actual wet-contact metric traces and paired dual Q are implemented. Define full physical wet/closed velocity, wall reactions and kinetic mass/basis; do not copy kinematic half-prism mass into force equations by convenience. Choose matched physical mass/force/pressure/rotation and fast/layer pairing plus moving source/time coupling TOGETHER; diagonal C=sum(S^2/M) cannot be reused for a coupled non-diagonal kinetic mass without a new derivation. Then implement ACTUAL nonlinear momentum and kinetic/buoyancy exchange. Complete EOS/real sources/mixing/ice and ACTUAL initialization/checkpoint/driver migration; no indefinite unused prototype. Preserve global topology, century/sensitivity, independent climate/forecast, fair GPU/distributed, whole-model adjoint/learning and engineering roadmap. No final industrial qualification yet."
   unresolved: ["whole-model budgets", "volume/free-surface consistency", "partial cells/global topology", "complete real physical forcing", "independent climate/forecast skill", "fair GPU/distributed cost", "whole-model adjoint and constrained learning"]

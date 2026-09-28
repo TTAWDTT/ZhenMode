@@ -4,6 +4,21 @@ Updated: 2026-09-29
 
 ## Current authority: full industrial alignment
 
+Latest metric/spatial milestone2026-09-29:4113bcc replaces constant-area
+longitude traces by latitude-arc weights with paired interior north correction;
+actual linear step returns/checks full half-prism mass and dual Q from SAME
+primary Q. Two physical constant-U witnesses first fail old code.89 final-source
+adjacent regressions, SAME eight real100x60s groups and host metric/dual plus
+inventory audits pass;19 corruptions reject. Four small fixtures keep exact
+states, MMS and installed active step pass;498 full tests/23 old warnings pass.
+See `research/experiments/cgrid_hydrostatic_momentum/metric_dual_review.md`.
+Full half-prism kinematic mass is NOT substituted into current force masses.
+Next physical velocity/wall/kinetic representation and paired force/rotation/
+fast/moving-time/source coupling for ACTUAL nonlinear momentum and driver
+migration; full industrial scope and every unresolved gate remain intact.
+If the physical kinetic basis requires a coupled non-diagonal mass, re-derive
+the fast projection rather than reuse the diagonal C=sum(S^2/M) formula.
+
 Latest actual-path milestone2026-09-29:d7e24b9 implements shared-Q traces
 restricted to true wet contacts and a divergence-compatible vertical primitive,
 returned and checked by the ACTUAL linear step.13 new/74 adjacent/483 full
