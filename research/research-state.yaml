@@ -994,5 +994,46 @@ industrial_alignment_20260928:
     nonlinear_momentum_implemented: false
     production_cutover: false
     century_climate_forecast_gpu_full_adjoint_pass: false
-  next: "Actual wet-contact metric traces and paired dual Q are implemented. Define full physical wet/closed velocity, wall reactions and kinetic mass/basis; do not copy kinematic half-prism mass into force equations by convenience. Choose matched physical mass/force/pressure/rotation and fast/layer pairing plus moving source/time coupling TOGETHER; diagonal C=sum(S^2/M) cannot be reused for a coupled non-diagonal kinetic mass without a new derivation. Then implement ACTUAL nonlinear momentum and kinetic/buoyancy exchange. Complete EOS/real sources/mixing/ice and ACTUAL initialization/checkpoint/driver migration; no indefinite unused prototype. Preserve global topology, century/sensitivity, independent climate/forecast, fair GPU/distributed, whole-model adjoint/learning and engineering roadmap. No final industrial qualification yet."
+  cgrid_physical_mean_q_velocity:
+    status: frozen_actual_physical_frame_and_kinetic_selection_evidence_not_nonlinear_dynamics
+    protocol_commit: "9a7fa6b"
+    implementation_commit: "c08754d"
+    coordinate_protocol_commit: "be5e2f3"
+    qualified_reference_commit: "6bd7f50"
+    review: "research/experiments/cgrid_hydrostatic_momentum/physical_velocity_review.md"
+    rejected_initial_endpoint_report: "results/industrial_alignment/cgrid_physical_velocity_reference.json"
+    original_interpretation_failures: 2
+    new_tests: 42
+    final_source_adjacent_tests_passed: 131
+    full_tests_passed: 540
+    old_warnings: 23
+    full_tests_seconds: 409.92
+    full_tests_log: "results/industrial_alignment/physical_velocity_full_tests.log"
+    reference_report: "results/industrial_alignment/cgrid_physical_velocity_coordinate_reference.json"
+    reference_groups_passed: 8
+    steps_per_group: 100
+    dt_seconds: 60.
+    barotropic_substeps: 4
+    reference_runtime_git_clean: true
+    independent_scope: last_actual_mean_q_coordinates_geometry_and_physical_frame_not_every_step_replay
+    inventory_q_negative_controls: 9
+    wet_dual_negative_controls: 10
+    physical_frame_negative_controls: 15
+    recorded_lower_bulk_continuity_relative: 0.
+    actual_kinetic_reference_groups_passed: 8
+    kinetic_report: "results/industrial_alignment/physical_kinetic_actual_eight.json"
+    kinetic_proxy_comparison_uses_endpoint_velocities: false
+    symmetric_psd_gram_with_mixed_terms: true
+    actual_field_kinetic_mass_promoted_into_forces: false
+    exact_state_fixture_groups: 4
+    exact_state_fields: [volume, content, east_velocity, north_velocity]
+    legacy_mms: ALL_PASS_ratio_4.30
+    isolated_installed_actual_physical_step: passed
+    all_validation_processes_terminal: true
+    moving_time_coupling_qualified: false
+    wall_reaction_force_qualified: false
+    nonlinear_momentum_implemented: false
+    production_cutover: false
+    century_climate_forecast_gpu_full_adjoint_pass: false
+  next: "Actual frozen mean-Q physical fluid/grid/relative frames and independent kinetic selection are now qualified. Choose the kinetic norm explicitly and derive matched mass/pressure/rotation/wall forces plus fast/layer and moving source/time coupling TOGETHER; do not blindly promote kinematic half-prism mass or reuse diagonal C=sum(S^2/M) for a coupled field-L2 mass. Then implement ACTUAL nonlinear momentum and kinetic/buoyancy exchange and ACTUAL production cutover, not an indefinite unused prototype. Complete EOS/real sources/mixing/ice and ACTUAL initialization/checkpoint/driver migration; preserve global topology, century/sensitivity, independent climate/forecast, fair GPU/distributed, whole-model adjoint/learning and engineering roadmap. No final industrial qualification yet."
   unresolved: ["whole-model budgets", "volume/free-surface consistency", "partial cells/global topology", "complete real physical forcing", "independent climate/forecast skill", "fair GPU/distributed cost", "whole-model adjoint and constrained learning"]

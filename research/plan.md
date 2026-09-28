@@ -4,6 +4,19 @@ Updated: 2026-09-29
 
 ## Current authority: full industrial alignment
 
+Latest actual physical-frame milestone2026-09-29: protocol9a7fa6b, corec08754d,
+coordinate evidence fix6bd7f50. Actual linear step returns/checks physical
+east/north/down, grid and relative frames from SAME mean Q/source.42 new,
+131 final-source adjacent and540 full tests pass; SAME eight100x60s real cases,
+last host inventory/wet/dual/physical and actual-Q kinetic audits pass.34
+corruptions reject. First endpoint/kinetic failures remain retained. Four
+small fixtures retain exact states; MMS and installed active step pass.
+See `research/experiments/cgrid_hydrostatic_momentum/physical_velocity_review.md`.
+Next choose the kinetic norm and derive matching mass/pressure/rotation/wall
+and fast/moving-time/source equations, then implement ACTUAL nonlinear
+momentum and production migration. No blind diagonal mobility/mass swap,
+indefinite unused prototype or narrowing of the complete industrial goal.
+
 Latest metric/spatial milestone2026-09-29:4113bcc replaces constant-area
 longitude traces by latitude-arc weights with paired interior north correction;
 actual linear step returns/checks full half-prism mass and dual Q from SAME
@@ -126,7 +139,7 @@ duration, diagnostics, and stability gates. Details:
 Locked diagnostic baseline: candidate_65n_07_gm0
 Runner: scripts/run_candidate_baseline.sh
 
-## Ordered next steps
+## Historical plan entries (superseded by current authority above)
 1. **Reproduce the candidate baseline.** [COMPLETE 2026-09-22]
    Run one 365d integration with `candidate_65n_07_gm0`.
    Confirm global A2 RMSE is near the previous `1.336 C` and the North

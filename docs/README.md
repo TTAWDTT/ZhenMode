@@ -12,7 +12,7 @@
 
 | 文档 | 作用 |
 | --- | --- |
-| [`decisions.md`](decisions.md) | **决策日志（D1–D44）**。为什么求解器长这样：诊断出的失效、定案的测量、被否掉的方案。代码里只留一两行不变量，按 D 编号指回这里。 |
+| [`decisions.md`](decisions.md) | **决策日志（D1–D45）**。为什么求解器长这样：诊断出的失效、定案的测量、被否掉的方案。代码里只留一两行不变量，按 D 编号指回这里。 |
 | [`debug_validation_zh.md`](debug_validation_zh.md) | 本轮混合层、海冰、输运、重启、评分与安装修复；回归和积分的证据，以及尚未验证的边界。 |
 | [`industrial_alignment_roadmap_zh.md`](industrial_alignment_roadmap_zh.md) | 持续对齐并超越成熟模式的完整验收矩阵、文献依据、逐轮研究/实现规则与未完成项。 |
 | [`solver_technical_report_zh.md`](solver_technical_report_zh.md) | 求解器技术报告：方程、离散、时间积分、模块结构。 |

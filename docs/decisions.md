@@ -1120,3 +1120,35 @@ rotation and fast/time coupling before actual nonlinear/production cutover.
 Protocol and evidence:
 [`metric/dual protocol`](../research/experiments/cgrid_hydrostatic_momentum/metric_dual_protocol.md),
 [`metric/dual review`](../research/experiments/cgrid_hydrostatic_momentum/metric_dual_review.md).
+
+## D45 — Distinguish actual fluid velocity from material mean-Q transport
+
+Protocol9a7fa6b, corec08754d, runtime-coordinate addendumbe5e2f3 and evidence
+fix6bd7f50. Two naive qz/A surface witnesses FAIL before the physical API.
+Mapped qz was correctly scoped as transport; this does not prove an old driver
+velocity bug. New physical east/north/down and grid/relative frames use SAME
+actual Q, spherical metrics and signed top source, with lower incompressibility
+and all physical normal contacts checked in actual linear-step acceptance.
+
+42 direct,131 final-source adjacent and540 full regressions pass;23 old warnings.
+Four immutable-baseline small fixtures retain all16 state fields exactly.
+MMS4.30 and isolated installed active step pass. SAME eight6000s linear groups
+at clean6bd7f50 and independent last inventory/wet/dual/physical audits pass;
+34 deliberate corruptions reject. Initial endpoint records fail the host audit
+because reassociated coordinates cross discontinuous support; save actual
+compiled query depths and independently validate geometry, without changing
+field gates, widening support, clipping coordinates or altering Q/state.
+
+Independent physical-component integrals reject a missing1/cos(phi) in the
+kinetic probe and validate symmetric PSD Gram actions with nonzero mixed terms.
+Actual disturbed mean-Q fields differ from same-coefficient common-wet and
+half-prism diagonal proxies; no retrospective old discrete-norm bug is claimed.
+Choose the norm explicitly and derive its mass/pressure/rotation/wall/fast/time
+pairing before actual nonlinear momentum. Non-diagonal mass needs a newly
+derived projection, not the old diagonal mobility formula. Frozen mean-Q field
+evidence is NOT full ALE/GCL, endpoint velocity, energy exchange, production
+cutover, century/climate/forecast/GPU/whole-adjoint or industrial completion.
+
+[`Protocol`](../research/experiments/cgrid_hydrostatic_momentum/physical_velocity_protocol.md),
+[`coordinate addendum`](../research/experiments/cgrid_hydrostatic_momentum/physical_velocity_coordinate_addendum.md),
+[`review`](../research/experiments/cgrid_hydrostatic_momentum/physical_velocity_review.md).

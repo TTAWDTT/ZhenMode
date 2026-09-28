@@ -10,7 +10,7 @@ equations on a lat-lon grid, written in JAX.
 | Solver core | `src/jax_solver_global.py` |
 | Driver (CLI) | `src/run_long_integration_global.py` |
 | Tests | `tests/` |
-| Design rationale | `docs/decisions.md` (D1-D44) + `docs/README.md` |
+| Design rationale | `docs/decisions.md` (D1-D45) + `docs/README.md` |
 
 Everything else is support: data loaders (`src/forcing.py`,
 `src/wind_reanalysis.py`, `src/woa_data.py`), grid/bathymetry
@@ -19,45 +19,25 @@ utilities, plus two clearly-marked side directories —
 `archive/regional/` (a retired regional spectral solver) and `docs/archive/`
 (historical work logs). Neither is imported by the main line.
 
-Physical migration components `src/finite_volume.py`, `src/barotropic_transport.py`
-and `src/bounded_transport.py` implement true cell contents, shared time-mean Q
-and multidimensional extensive FCT (D37-D38). They are not yet wired into the
-production driver. Explicit64 inventories with64/32 momentum pass eight short
-real-grid component groups; original same-dtype donor still passes only6/8.
-This does not qualify full3D dynamics, century/climate or GPU performance.
-See the [bounded component review](research/experiments/bounded_extensive_transport/review.md).
+## Production and Migration Status
 
-`src/cgrid_momentum.py` adds common-depth pressure and active linear layer
-momentum coupling (D39-D41). The original3.24-fold thin-face Coriolis error and
-subsequent physical pressure/continuity work mismatch are repaired, with their
-FAIL evidence retained. Exact wet rectangle overlap and mass-adjoint contact/
-surface pressure pass independent force, work, smooth spatial refinement and
-eight short real-grid references. Nonlinear moving dual-mass dynamics, full
-buoyancy-energy closure and production cutover remain incomplete.
-See the [physical-mass repair review](research/experiments/cgrid_hydrostatic_momentum/mass_review.md).
+The CLI still runs the legacy FD core above. The migration path is:
+physical cell inventories/shared mean Q (`finite_volume.py`, `barotropic_transport.py`)
+-> extensive FCT (`bounded_transport.py`)
+-> wet-contact pressure/linear layer momentum (`cgrid_momentum.py`)
+-> wet/dual fluxes and physical fluid/grid velocity (`wet_fluxes.py`, `physical_velocity.py`).
+These components are coupled in the actual LINEAR reference step, not yet in
+the production driver (D37-D45). Inventories/Q/geometry are64; momentum is64/32.
 
-The linear step now returns the actual shared layer Q already used by V/N (D42).
-Independent local-volume checks of the same eight short references pass;
-470 regressions pass. A localized-rain witness nevertheless rejects ordinary
-MAC mass/flux averages on the current moving common-wet support. This is a
-failed proposed nonlinear mapping, not an implemented nonlinear operator.
-See the [moving-dual review](research/experiments/cgrid_hydrostatic_momentum/dual_mass_review.md).
-
-`src/wet_fluxes.py` now reconstructs actual shared Q on wet contact intervals
-and enters actual linear-step acceptance (D43).483 regressions and the same
-eight short references pass; independent last-snapshot audits reject14
-corruptions. Four small source/precision fixtures retain bitwise states.
-Mapped traces are not physical point velocities or nonlinear momentum;
-metric/dual mass/force/time pairing and production migration remain pending.
-See the [wet-trace review](research/experiments/cgrid_hydrostatic_momentum/wet_trace_review.md).
-
-Latitude-arc weighting and a paired interior flux now preserve constant
-physical longitude-normal speed and dual mass commutation (D44). Actual step
-returns/checks full half-prism transport, not a second reconstructed endpoint Q.
-89 adjacent/498 full tests, eight short references and independent metric/dual
-audits pass, with19 corruptions rejected. These kinematic masses are NOT silently
-substituted for existing force masses; nonlinear/wall/time/production work
-remains incomplete. See the [metric/dual review](research/experiments/cgrid_hydrostatic_momentum/metric_dual_review.md).
+540 regressions,131 adjacent tests, eight real-grid100x60s linear references,
+installed active step and independent last-snapshot audits pass.34 deliberate
+corruptions reject; prior failed interpretations/evidence are retained.
+The physical field uses actual MEAN Q on frozen geometry, not endpoint velocity.
+Kinematic half-prism mass is not silently substituted into force equations.
+Matched kinetic forces/fast/time coupling, actual nonlinear dynamics and driver
+cutover remain required; century/climate/forecast/GPU/full-adjoint claims remain
+unqualified. See the [current evidence and limits](research/experiments/cgrid_hydrostatic_momentum/physical_velocity_review.md);
+historical stages and failures remain in the decision log and linked reviews.
 
 ## Features
 
