@@ -93,7 +93,7 @@ def compute_budget_diagnostics(state, grid, rho0=RHO_0, cp=C_P) -> BudgetDiagnos
     mean_S_top = float((S_top * surface_area).sum() / surface_area_total)
 
     heat_content = float((rho0 * cp * T * volume).sum())
-    salt_content = float((rho0 * S * volume).sum())
+    salt_content = float((rho0 * (S / 1000.0) * volume).sum())
     mean_depth = total_volume / float(area.sum())
 
     return BudgetDiagnostics(

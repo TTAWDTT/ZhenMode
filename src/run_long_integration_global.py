@@ -309,6 +309,32 @@ def _lat_band_mask(grid, band):
             & (grid.lat[None, :] <= lat_max)).astype(float)
 
 
+def _save_checkpoint(path, state, grid, cur_step, n_3d_snaps):
+    fields = {name: np.asarray(getattr(state, name), dtype=np.float64)
+              for name in state._fields}
+    fields["ice"] = np.broadcast_to(fields["ice"], (grid.nx, grid.ny))
+    np.savez_compressed(path, **fields, cur_step=cur_step,
+                        grid_nx=grid.nx, grid_ny=grid.ny, grid_nz=grid.nz,
+                        n_3d_snaps=n_3d_snaps)
+
+
+def _load_checkpoint_state(checkpoint, grid, dtype, dynamic_ice=False):
+    dimensions = tuple(int(checkpoint[f"grid_{axis}"]) for axis in ("nx", "ny", "nz"))
+    if dimensions != (grid.nx, grid.ny, grid.nz):
+        raise ValueError("grid size mismatch with checkpoint")
+    if dynamic_ice and "ice" not in checkpoint:
+        raise ValueError("dynamic ice restart requires checkpoint ice thickness")
+    fields = {name: jnp.asarray(checkpoint[name], dtype=dtype)
+              for name in JaxStateG._fields if name != "ice"}
+    fields["ice"] = jnp.asarray(checkpoint["ice"] if "ice" in checkpoint
+                                else np.zeros((grid.nx, grid.ny)), dtype=dtype)
+    for name, field in fields.items():
+        expected = dimensions[:2] if name in {"eta", "ice"} else dimensions
+        if field.shape != expected:
+            raise ValueError(f"checkpoint {name} shape {field.shape} differs from {expected}")
+    return JaxStateG(**fields)
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--days", type=float, default=365.0)
@@ -958,19 +984,9 @@ def main():
     start_step = 0
     n_3d_snaps = 0
     if args.restart_from:
-        ck = np.load(args.restart_from, allow_pickle=True)
-        assert int(ck["grid_nx"]) == grid.nx and int(ck["grid_ny"]) == grid.ny \
-            and int(ck["grid_nz"]) == grid.nz, "grid size mismatch with checkpoint"
-        state = JaxStateG(
-            u=jnp.array(ck["u"], dtype=state_dtype),
-            v=jnp.array(ck["v"], dtype=state_dtype),
-            T=jnp.array(ck["T"], dtype=state_dtype),
-            S=jnp.array(ck["S"], dtype=state_dtype),
-            eta=jnp.array(ck["eta"], dtype=state_dtype),
-            ice=(jnp.array(ck["ice"], dtype=state_dtype)
-                 if "ice" in ck else jnp.zeros((grid.nx, grid.ny),
-                                               dtype=state_dtype)))
-        start_step = int(ck["cur_step"])
+        with np.load(args.restart_from, allow_pickle=True) as checkpoint:
+            state = _load_checkpoint_state(checkpoint, grid, state_dtype, args.dynamic_ice)
+            start_step = int(checkpoint["cur_step"])
         assert start_step % n_snap == 0, "checkpoint must land on a snap boundary"
         # Re-align snapshot bookkeeping with what already exists on disk.
         n_prev_snaps = start_step // n_snap
@@ -1163,15 +1179,7 @@ def main():
         max_u_peak = max(max_u_peak, maxu)
         if (args.checkpoint_days > 0 and cur % n_ckpt == 0
                 and cur < n_total and cur > start_step):
-            np.savez_compressed(
-                ckpt_path,
-                u=np.asarray(state.u, dtype=np.float64),
-                v=np.asarray(state.v, dtype=np.float64),
-                T=np.asarray(state.T, dtype=np.float64),
-                S=np.asarray(state.S, dtype=np.float64),
-                eta=np.asarray(state.eta, dtype=np.float64), cur_step=cur,
-                grid_nx=grid.nx, grid_ny=grid.ny, grid_nz=grid.nz,
-                n_3d_snaps=n_3d_snaps)
+            _save_checkpoint(ckpt_path, state, grid, cur, n_3d_snaps)
             print(f"  [ckpt] saved {ckpt_path} at step {cur}", flush=True)
         if not state_is_finite(state):
             diverged_at = cur * args.dt / 86400.0
@@ -1221,6 +1229,7 @@ def main():
     # the run unreproducible from its own output.
     config_dict = {
         'days': args.days, 'snap_days': args.snap_days,
+        'diagnostics_schema_version': 2,
         'lat_max': args.lat_max, 'ny': grid.ny, 'nx': grid.nx, 'nz': grid.nz,
         'resolution': float(gcfg.resolution),
         'resolution_remap': args.resolution_remap,
@@ -1284,6 +1293,8 @@ def main():
                         ice_top=np.array(snap_ice_top),
                         ice_fraction=np.array(snap_ice_fraction),
                         **diagnostics_to_arrays(snap_budget),
+                        diagnostics_schema_version=2,
+                        salt_content_units="kg",
                         T_init=T_init,
                         S_init=S_init,
                         wet_mask=np.asarray(grid.wet_mask),
