@@ -4,18 +4,22 @@ Updated: 2026-09-29
 
 ## Current authority: full industrial alignment
 
-Latest physical milestone2026-09-29: common-depth pressure and actual linear3D
-momentum/shared-Q coupling implemented at41ccecd;31 direct/440 whole-suite tests,
-MMS and isolated installed active step pass. Eight real-grid100x60s references
-pass inventory/energy gates. HOWEVER a separately preregistered thin-partial-face
-rotation witness produces3.2386 times the physical Coriolis acceleration despite
-energy preservation. Overall physical momentum qualification is FAIL. See
-`research/experiments/cgrid_hydrostatic_momentum/review.md`. Next research/repair
-actual cross-face wet overlap and momentum dual-volume consistency, including
-moving top geometry; re-run direct and real gates before nonlinear momentum and
-actual production source/initialization/checkpoint cutover. Do not preserve this
-wrong-physics energy-compatible operator as a final solution or use a century
-run to obscure it. Whole industrial roadmap and all unresolved goals remain.
+Latest physical milestone2026-09-29: repaired actual partial-face Coriolis with
+physical wet-quadrant overlap atf26d686, then repaired hydrostatic/PUBLIC fast
+pressure as the physical-mass adjoint of shared-Q divergence at9a2f219. Retain
+original3.24 acceleration amplification and0.00134/0.00308 pressure-work FAIL.
+Thin force matches at2.22e-16 relative; work closes near4e-17 without damping;
+smooth regular pressure MMS ratios3.88--4.00. Same eight real100x60s cases pass
+at clean9a2f219 with independently verified snapshots/hashes/negative controls.
+11 new force/AD tests,466 full regressions with23 existing warnings, legacy MMS
+and isolated installed active step pass; full-suite log is
+results/industrial_alignment/cgrid_pressure_mass_full_tests.log.
+See `research/experiments/cgrid_hydrostatic_momentum/mass_review.md`. Next derive
+and implement actual scalar-Q/moving-dual-mass nonlinear momentum and buoyancy
+energy pairing, then complete real EOS/sources/mixing/ice and actual production
+initialization/checkpoint/driver cutover. Fixed linear references are NOT full
+physical momentum qualification or a reason to leave an unused alternative
+kernel indefinitely. Whole industrial roadmap and all unresolved goals remain.
 
 The complete active objective and acceptance requirements are preserved in
 `docs/industrial_alignment_roadmap_zh.md`. Historical narrow slices below are

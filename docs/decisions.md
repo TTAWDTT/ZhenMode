@@ -999,3 +999,48 @@ Research, retained solver controls, real references and physical failure:
 [`solver/input selection`](../research/experiments/cgrid_hydrostatic_momentum/selection.md),
 [`partial rotation protocol`](../research/experiments/cgrid_hydrostatic_momentum/partial_rotation_protocol.md),
 [`momentum review`](../research/experiments/cgrid_hydrostatic_momentum/review.md).
+
+## D40 — Physical wet momentum rectangles and shared Coriolis overlap
+
+D39's skew sqrt(W) interpolation is physically inconsistent on thin faces.
+Integrate each u/v pair on its actual common wet quadrant; use exact spherical
+half-cell areas and physical momentum volumes, not square-root neighbor-mass
+scaling. Prescribed f is cellwise constant; Earth f integrates each half-band.
+The normalized cross matrix and its exact transpose preserve midpoint energy
+without force clipping or extra damping. Geometry/mass uses actual initial V
+and remains frozen within this linear macrostep. New energy quadrature differs
+from the historical D39 definition; original failures/results remain retained.
+
+An independent host quadrant oracle, moving-top/land/partial64/32 cases and
+the original thin-face physical acceleration pass unchanged gates.46 direct/
+455 full tests and the same eight real references pass at this stage. The
+original3.24 amplification is reproduced from frozenf6bb886. This does not
+close pressure/continuity work, nonlinear dual-mass dynamics or production.
+Protocol and repair evidence:
+[`physical overlap protocol`](../research/experiments/cgrid_hydrostatic_momentum/overlap_protocol.md),
+[`physical-mass review`](../research/experiments/cgrid_hydrostatic_momentum/mass_review.md).
+
+## D41 — Pressure as the physical-mass adjoint of shared-Q divergence
+
+Exact spherical dual volume generally differs from face_area*point_distance.
+After D40, actual regular/irregular gravity work residuals0.001344/0.003076
+FAIL against1e-12 while offline contact/mass controls close near4e-17.
+Retain original FAIL; repair both hydrostatic and PUBLIC fast-wave gradients.
+
+Contact acceleration is -face_area*delta(P)/(rho0*physical_dual_volume), fast
+gravity is -g*face_length/dual_area*delta(eta). Factor horizontal half/dual areas
+and lengths once; rotation, pressure and gravity/CFL share them. Keep scalar
+center distances/reconstruction widths unchanged. No state repair, extra
+damping, shifted gate, mass reinterpretation or special legacy-gradient path.
+
+Before core edits7 new regressions fail. After repair, physical work residuals
+close to3.016e-17/4.087e-17; independently represented smooth spherical MMS
+ratios3.878--3.996 pass the preregistered3.5.11 direct pressure/AD cases,466 full
+regressions and same eight real-grid100x60s references pass at clean9a2f219; inventory snapshots and
+five verifier negative controls pass. Spatial smooth regular pressure accuracy
+is not arbitrary-cut-cell or full coupled order. Frozen geometry/linear stage
+does not prove full buoyancy energy, time-varying dual continuity, nonlinear
+momentum, production migration, century/climate/forecast or full adjoint/GPU.
+Protocol and complete scope/evidence:
+[`pressure work protocol`](../research/experiments/cgrid_hydrostatic_momentum/pressure_work_protocol.md),
+[`physical-mass review`](../research/experiments/cgrid_hydrostatic_momentum/mass_review.md).

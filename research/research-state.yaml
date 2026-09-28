@@ -788,7 +788,7 @@ industrial_alignment_20260928:
     mms: ALL_PASS_ratio_4.30
     production_cutover: false
     century_climate_gpu_full_adjoint_pass: false
-  cgrid_hydrostatic_momentum:
+  cgrid_hydrostatic_momentum_pre_overlap:
     status: physical_partial_face_rotation_failed_despite_eight_linear_references
     protocol_commit: "047aed7"
     solver_input_selection_commit: "6a67a99"
@@ -825,5 +825,54 @@ industrial_alignment_20260928:
     full_physical_momentum_qualification: false
     production_cutover: false
     century_climate_gpu_full_adjoint_pass: false
-  next: "Research and repair physical cross-face wet overlap/momentum dual-volume consistency: the new sqrt(W) rotation amplifies thin-face Coriolis by3.24 despite energy preservation. Keep the preregistered1e-8 analytic gate and retain FAIL; no force clipping, damping, masked shallow cells or relaxed thresholds. Re-run direct/real momentum gates, then integrate actual nonlinear momentum, production sources/ice/mixing, initialization and checkpoint semantics. Complete the entire industrial roadmap; no century/climate/forecast/GPU/full-adjoint qualification yet."
+  cgrid_physical_overlap:
+    status: registered_physical_rotation_gates_pass_not_full_momentum
+    protocol_commit: "b55a130"
+    implementation_commit: "f26d686"
+    direct_tests_passed: 46
+    full_tests_passed: 455
+    old_warnings: 23
+    reference_groups_passed: 8
+    original_thin_face_failure_retained: true
+    physical_thin_face_relative_error: 2.220446e-16
+    relative_gate: 1.0e-8
+    changed_energy_definition: physical_wet_half_cell_rectangles
+    nonlinear_moving_dual_mass_qualified: false
+  cgrid_physical_pressure_work:
+    status: registered_frozen_pressure_work_and_regular_spatial_accuracy_pass
+    protocol_commit: "62d9b8d"
+    failure_and_accuracy_selection_commit: "fcd9761"
+    implementation_commit: "9a2f219"
+    review: "research/experiments/cgrid_hydrostatic_momentum/mass_review.md"
+    original_relative_work_failures: [0.001343973494, 0.003075742265]
+    repaired_relative_work_errors: [3.015855e-17, 4.087068e-17]
+    unchanged_relative_work_gate: 1.0e-12
+    spatial_east_ratios: [3.986720, 3.996385]
+    spatial_north_ratios: [3.878089, 3.935178]
+    preregistered_spatial_ratio_gate: 3.5
+    direct_pressure_tests_passed: 11
+    full_tests_passed: 466
+    old_warnings: 23
+    full_tests_log: "results/industrial_alignment/cgrid_pressure_mass_full_tests.log"
+    reference_groups_passed: 8
+    steps_per_group: 100
+    dt_seconds: 60.
+    barotropic_substeps: 4
+    inventory_pressure_fast_dtype: float64
+    layer_velocity_dtype: [float64, float32]
+    reference_runtime_git_clean: true
+    runtime_source_and_snapshot_hashes_verified: true
+    verifier_negative_controls: 5
+    worst_content_budget_relative: 4.953230e-18
+    volume_budget_delta_m3_range: [-0.00537109375, 0.0130615234375]
+    maximum_surface_identity_error_m: 5.412337e-16
+    maximum_bound_excursion: 2.344791e-13
+    maximum_stored_rotation_energy_error: 2.183385e-9
+    legacy_mms: ALL_PASS_ratio_4.30
+    isolated_installed_active_step: passed
+    full_buoyancy_energy_qualified: false
+    nonlinear_moving_dual_mass_qualified: false
+    production_cutover: false
+    century_climate_forecast_gpu_full_adjoint_pass: false
+  next: "Derive and implement actual shared scalar-Q to moving wet momentum-dual mass/flux continuity and nonlinear momentum/kinetic-buoyancy energy pairing; preserve partial-face and pressure gates without force/mass repair. Mature regular MAC flux averages are not automatically valid for spherical min-height wet supports. Complete EOS/real sources/mixing/ice, nonlinear split coupling and ACTUAL production initialization/checkpoint/driver migration; no indefinite unused prototype. Then the unchanged global topology, century/sensitivity, independent climate/forecast, fair GPU/distributed, whole-model adjoint/learning and engineering roadmap. No final industrial qualification yet."
   unresolved: ["whole-model budgets", "volume/free-surface consistency", "partial cells/global topology", "complete real physical forcing", "independent climate/forecast skill", "fair GPU/distributed cost", "whole-model adjoint and constrained learning"]

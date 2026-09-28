@@ -10,7 +10,7 @@ equations on a lat-lon grid, written in JAX.
 | Solver core | `src/jax_solver_global.py` |
 | Driver (CLI) | `src/run_long_integration_global.py` |
 | Tests | `tests/` |
-| Design rationale | `docs/decisions.md` (D1-D39) + `docs/README.md` |
+| Design rationale | `docs/decisions.md` (D1-D41) + `docs/README.md` |
 
 Everything else is support: data loaders (`src/forcing.py`,
 `src/wind_reanalysis.py`, `src/woa_data.py`), grid/bathymetry
@@ -28,11 +28,13 @@ This does not qualify full3D dynamics, century/climate or GPU performance.
 See the [bounded component review](research/experiments/bounded_extensive_transport/review.md).
 
 `src/cgrid_momentum.py` adds common-depth pressure and active linear layer
-momentum coupling (D39). Eight short real-grid references pass their stated
-inventory/energy gates, but an independent partial-face Coriolis witness fails:
-acceleration is3.24 times the analytic value despite energy preservation.
-Physical momentum qualification and production cutover remain incomplete.
-See the [momentum review](research/experiments/cgrid_hydrostatic_momentum/review.md).
+momentum coupling (D39-D41). The original3.24-fold thin-face Coriolis error and
+subsequent physical pressure/continuity work mismatch are repaired, with their
+FAIL evidence retained. Exact wet rectangle overlap and mass-adjoint contact/
+surface pressure pass independent force, work, smooth spatial refinement and
+eight short real-grid references. Nonlinear moving dual-mass dynamics, full
+buoyancy-energy closure and production cutover remain incomplete.
+See the [physical-mass repair review](research/experiments/cgrid_hydrostatic_momentum/mass_review.md).
 
 ## Features
 
