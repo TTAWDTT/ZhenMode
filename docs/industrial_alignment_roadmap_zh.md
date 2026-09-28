@@ -126,6 +126,16 @@ MMS及独立安装通过。下一步库存精度与高阶共享通量，再完�
 
 ## 核心来源
 
+同日共享通量接口现已返回实际进入V/N的Q；470项回归、MMS及隔离安装
+通过，同八组短参照的末步局部V/Q、柱输运、边界、库存及哈希独立复核
+通过，九项反证拒绝。但[移动对偶质量复核](../research/experiments/cgrid_hydrostatic_momentum/dual_mass_review.md)
+否定了把普通MAC半格公式直接套到共同湿深度支持上的方案：局地降雨
+时两侧共同湿质量不变，套用公式却预测约1.45e12/4.14e12m3增量。
+均匀降雨和标量/运动学对照均通过；这是待实现方案的FAIL，不是已经
+完成的非线性求解器失效。必须选定实际移动动量支持及共享边界通量，
+同步处理压力、旋转和快慢模态匹配，不能用几何交换代数当人为源项。
+旧生产驱动仍未迁移，完整百年、气候/预报及其他目标均不变且未完成。
+
 - [MOM6 tracer budget closure](https://mom6-analysiscookbook.readthedocs.io/en/latest/notebooks/Closing_tracer_budgets.html)：按广延示踪剂含量逐项闭合，原生/重映射诊断不能混淆。
 - [MOM6 horizontal diffusion](https://mom6.readthedocs.io/en/main/api/generated/pages/Horizontal_Diffusion.html)：面通量、层厚匹配和极值控制；不是本项目二维背景扩散的逐行移植。
 - [MITgcm algorithm](https://mitgcm.readthedocs.io/en/latest/algorithm/algorithm.html)：有限体积、几何/自由面与示踪剂守恒兼容性。

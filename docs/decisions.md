@@ -1044,3 +1044,28 @@ momentum, production migration, century/climate/forecast or full adjoint/GPU.
 Protocol and complete scope/evidence:
 [`pressure work protocol`](../research/experiments/cgrid_hydrostatic_momentum/pressure_work_protocol.md),
 [`physical-mass review`](../research/experiments/cgrid_hydrostatic_momentum/mass_review.md).
+
+## D42 — Return actual shared Q; reject unmatched moving-dual mass
+
+The linear step already uses matched layer Q from the fast substep mean for
+V/N. Return that SAME immutable VolumeFluxes in MomentumResult, rather than
+rebuilding Q from endpoint velocity/new geometry. No arithmetic or state
+repair changes. Four missing-API regressions fail before implementation;
+61 adjacent cases and470 whole-suite tests pass afterward. The same eight
+real100x60s references pass at clean0eb56ed. Independent last-step local V/Q,
+column-Q, boundaries, inventories and hashes pass; nine negative controls reject.
+This verifier is not an independent replay of every intermediate step.
+
+Registered ordinary-MAC half-primary mass mapping FAILS for isolated rain on
+both regular and irregular/partial/land grids. Actual common-wet dual mass
+does not grow when only one side's sea surface rises; ordinary mapping
+predicts about1.45e12/4.14e12m3. Uniform-rain and scalar-source controls pass.
+The exact delta(beta*V) product including moving support explains the change,
+with explicit64-eps stored-inventory rounding floors. That algebra is NOT a
+physical momentum source or conservative nonlinear flux implementation.
+Retain the hypothesis FAIL; research actual moving supports/capacities and
+paired flux, pressure, rotation and fast projection before nonlinear migration.
+Production remains legacy; no century/climate/forecast/GPU/full-adjoint claim.
+Protocol and evidence:
+[`shared-Q/dual-mass protocol`](../research/experiments/cgrid_hydrostatic_momentum/dual_mass_protocol.md),
+[`moving-dual review`](../research/experiments/cgrid_hydrostatic_momentum/dual_mass_review.md).

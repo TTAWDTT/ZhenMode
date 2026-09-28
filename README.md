@@ -10,7 +10,7 @@ equations on a lat-lon grid, written in JAX.
 | Solver core | `src/jax_solver_global.py` |
 | Driver (CLI) | `src/run_long_integration_global.py` |
 | Tests | `tests/` |
-| Design rationale | `docs/decisions.md` (D1-D41) + `docs/README.md` |
+| Design rationale | `docs/decisions.md` (D1-D42) + `docs/README.md` |
 
 Everything else is support: data loaders (`src/forcing.py`,
 `src/wind_reanalysis.py`, `src/woa_data.py`), grid/bathymetry
@@ -35,6 +35,13 @@ surface pressure pass independent force, work, smooth spatial refinement and
 eight short real-grid references. Nonlinear moving dual-mass dynamics, full
 buoyancy-energy closure and production cutover remain incomplete.
 See the [physical-mass repair review](research/experiments/cgrid_hydrostatic_momentum/mass_review.md).
+
+The linear step now returns the actual shared layer Q already used by V/N (D42).
+Independent local-volume checks of the same eight short references pass;
+470 regressions pass. A localized-rain witness nevertheless rejects ordinary
+MAC mass/flux averages on the current moving common-wet support. This is a
+failed proposed nonlinear mapping, not an implemented nonlinear operator.
+See the [moving-dual review](research/experiments/cgrid_hydrostatic_momentum/dual_mass_review.md).
 
 ## Features
 

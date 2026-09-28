@@ -4,6 +4,19 @@ Updated: 2026-09-29
 
 ## Current authority: full industrial alignment
 
+Latest coupling milestone2026-09-29:0eb56ed returns the SAME actual layer Q
+used by V/N. Four new API/source regressions,61 adjacent and470 full tests
+pass; MMS and isolated installation pass. Same eight real100x60s cases pass
+with independently verified last local V/Q, column mean Q, boundaries,
+inventory/source/snapshot hashes and nine verifier negative controls. See
+`research/experiments/cgrid_hydrostatic_momentum/dual_mass_review.md`.
+Registered ordinary-MAC mapping on moving common-wet masses FAILS under
+isolated rain on both grids while scalar/kinematic controls pass. Do not
+turn support-exchange algebra into a fake momentum source. Select physical
+moving staggered support and matched dual flux, pressure, rotation and fast
+projection before actual nonlinear/production migration; no claim from short
+linear references or from the green suite. Complete roadmap remains active.
+
 Latest physical milestone2026-09-29: repaired actual partial-face Coriolis with
 physical wet-quadrant overlap atf26d686, then repaired hydrostatic/PUBLIC fast
 pressure as the physical-mass adjoint of shared-Q divergence at9a2f219. Retain

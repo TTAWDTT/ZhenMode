@@ -874,5 +874,34 @@ industrial_alignment_20260928:
     nonlinear_moving_dual_mass_qualified: false
     production_cutover: false
     century_climate_forecast_gpu_full_adjoint_pass: false
-  next: "Derive and implement actual shared scalar-Q to moving wet momentum-dual mass/flux continuity and nonlinear momentum/kinetic-buoyancy energy pairing; preserve partial-face and pressure gates without force/mass repair. Mature regular MAC flux averages are not automatically valid for spherical min-height wet supports. Complete EOS/real sources/mixing/ice, nonlinear split coupling and ACTUAL production initialization/checkpoint/driver migration; no indefinite unused prototype. Then the unchanged global topology, century/sensitivity, independent climate/forecast, fair GPU/distributed, whole-model adjoint/learning and engineering roadmap. No final industrial qualification yet."
+  cgrid_shared_flux_and_moving_dual_mass:
+    status: actual_shared_flux_verified_ordinary_mac_moving_support_hypothesis_failed
+    protocol_commit: "32a2548"
+    implementation_commit: "0eb56ed"
+    review: "research/experiments/cgrid_hydrostatic_momentum/dual_mass_review.md"
+    new_direct_tests_passed: 4
+    adjacent_direct_tests_passed: 61
+    full_tests_passed: 470
+    old_warnings: 23
+    full_tests_log: "results/industrial_alignment/cgrid_shared_flux_full_tests.log"
+    reference_groups_passed: 8
+    steps_per_group: 100
+    dt_seconds: 60.
+    barotropic_substeps: 4
+    inventory_shared_flux_dtype: float64
+    layer_velocity_dtype: [float64, float32]
+    independently_verified_scope: final_inventory_geometry_and_last_local_flux_snapshot_not_every_step
+    verifier_negative_controls: 9
+    retained_moving_dual_diagnostic_status: FAIL
+    diagnostic_positive_controls_pass: true
+    diagnostic_groups: 4
+    isolated_source_ordinary_mac_relative_residual: [1., 1.]
+    isolated_source_actual_common_wet_mass_change_m3: 0.
+    independent_geometry_exchange_negative_controls: 8
+    legacy_mms: ALL_PASS_ratio_4.30
+    isolated_installed_actual_shared_flux_step: passed
+    nonlinear_momentum_implemented: false
+    production_cutover: false
+    century_climate_forecast_gpu_full_adjoint_pass: false
+  next: "Ordinary-MAC transplantation is now falsified on actual moving min-height wet supports. Research/select physically specified moving staggered supports/capacities and matched shared-Q dual flux, pressure, rotation and fast/layer projection TOGETHER; do not inject support-exchange algebra as a momentum source. Implement nonlinear momentum and kinetic/buoyancy pairing, EOS/real sources/mixing/ice and ACTUAL production initialization/checkpoint/driver migration; no indefinite unused prototype. Preserve complete global topology, century/sensitivity, independent climate/forecast, fair GPU/distributed, whole-model adjoint/learning and engineering roadmap. No final industrial qualification yet."
   unresolved: ["whole-model budgets", "volume/free-surface consistency", "partial cells/global topology", "complete real physical forcing", "independent climate/forecast skill", "fair GPU/distributed cost", "whole-model adjoint and constrained learning"]
