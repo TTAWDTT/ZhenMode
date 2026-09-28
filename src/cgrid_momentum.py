@@ -22,6 +22,7 @@ from finite_volume import (
     horizontal_momentum_geometry,
     match_column_transport,
 )
+from wet_fluxes import WetFluxReconstruction, reconstruct_wet_fluxes
 
 
 class PressureForce(NamedTuple):
@@ -68,6 +69,7 @@ class MomentumResult(NamedTuple):
     barotropic: BarotropicResult
     transport: TransportResult
     fluxes: VolumeFluxes
+    flux_reconstruction: WetFluxReconstruction
     rotation_error: jnp.ndarray
     rotation_residual: jnp.ndarray
     surface_error: jnp.ndarray
@@ -335,6 +337,7 @@ def linear_momentum_surface_step(geometry, state, density_anomaly, dt, nsub,
     matched = tuple(match_column_transport(area, layer, mean)
                     for area, layer, mean in zip(areas, midpoint_layers, (barotropic.mean_east, barotropic.mean_north)))
     fluxes = closed_surface_fluxes(matched[0].flux, matched[1].flux)
+    flux_reconstruction = reconstruct_wet_fluxes(momentum_geometry(geometry, state.inventory.volume), fluxes)
     transport = advance_bounded_contents(active, state.inventory, fluxes, dt, volume_source, content_source)
     endpoint_layers = tuple(jnp.where(area > 0., velocity + dt * deviation + (endpoint - initial_mean)[..., None], 0.).astype(state.east_velocity.dtype)
                             for area, velocity, deviation, endpoint, initial_mean
@@ -343,10 +346,10 @@ def linear_momentum_surface_step(geometry, state, density_anomaly, dt, nsub,
     final_eta = _physical_surface_height(geometry, transport.state.volume)
     surface_error = jnp.max(jnp.abs(final_eta - barotropic.eta))
     surface_tolerance = 1e-12 + 1e-12 * jnp.maximum(jnp.max(jnp.abs(eta)), jnp.max(jnp.abs(barotropic.eta)))
-    valid = (pressure.valid & first.valid & second.valid & barotropic.valid & transport.valid
+    valid = (pressure.valid & first.valid & second.valid & barotropic.valid & transport.valid & flux_reconstruction.valid
              & matched[0].valid & matched[1].valid & (surface_error <= surface_tolerance)
              & jnp.all(source[..., 1:] == 0.))
     final_state = LayerState(transport.state, second.east_velocity, second.north_velocity)
-    return MomentumResult(final_state, pressure, barotropic, transport, fluxes,
+    return MomentumResult(final_state, pressure, barotropic, transport, fluxes, flux_reconstruction,
                            jnp.maximum(first.energy_relative_change, second.energy_relative_change),
                            jnp.maximum(first.solve_relative_residual, second.solve_relative_residual), surface_error, valid)
