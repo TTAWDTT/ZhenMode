@@ -379,6 +379,35 @@ def _laplacian_h(u, p):
     return d2u_dx2 + d2u_dy2 + corr
 
 
+def _horizontal_diffusion_flux(tracer, diffusivity, p):
+    """Wet-face variable-coefficient diffusion with closed latitude walls."""
+    wet = p.wet_mask_z
+    zonal_flux = (0.5 * (diffusivity + jnp.roll(diffusivity, -1, axis=0))
+                  * (jnp.roll(tracer, -1, axis=0) - tracer) * p.inv_dx
+                  * wet * jnp.roll(wet, -1, axis=0))
+    padding = [(0, 0), (0, 1), (0, 0)]
+    next_tracer = jnp.pad(tracer, padding, mode='edge')[:, 1:, :]
+    next_diffusivity = jnp.pad(diffusivity, padding, mode='edge')[:, 1:, :]
+    next_wet = jnp.pad(wet, padding, mode='edge')[:, 1:, :]
+    cos_face = 0.5 * (p.cos_lat + jnp.roll(p.cos_lat, -1))
+    meridional_flux = (0.5 * (diffusivity + next_diffusivity)
+                       * (next_tracer - tracer) * p.inv_dy
+                       * wet * next_wet * cos_face[None, :, None])
+    meridional_flux = meridional_flux.at[:, -1, :].set(0.)
+    incoming_y = jnp.roll(meridional_flux, 1, axis=1).at[:, 0, :].set(0.)
+    return ((zonal_flux - jnp.roll(zonal_flux, 1, axis=0)) * p.inv_dx
+            + (meridional_flux - incoming_y) * p.inv_dy / p.cos_lat[None, :, None])
+
+
+def _horizontal_tracer_diffusion(tracer, p):
+    """Keep legacy constant diffusion; enhanced bands use a conservative flux."""
+    diffusivity = p.kappa_h + p.coastal_kappa_h_2d[:, :, None]
+    return jax.lax.cond(
+        jnp.any(p.coastal_kappa_h_2d != 0.),
+        lambda field: _horizontal_diffusion_flux(field, diffusivity, p),
+        lambda field: p.kappa_h * _laplacian_h(field, p), tracer)
+
+
 def _biharmonic_h(u, p):
     """Biharmonic grad^4 u = grad^2(grad^2 u), two face-gated Laplacians.
 
@@ -906,6 +935,23 @@ def _advection_flux_form(u, v, w, p):
     return adv_u * p.wet_mask_z, adv_v * p.wet_mask_z
 
 
+def _limited_tracer_slope(tracer, wet, axis):
+    """Minmod reconstruction using only wet neighbours and physical boundaries."""
+    if axis == 1:
+        padding = [(0, 0), (1, 1), (0, 0)]
+        padded = jnp.pad(tracer, padding, mode='edge')
+        padded_wet = jnp.pad(wet, padding, mode='edge')
+        previous, following = padded[:, :-2], padded[:, 2:]
+        previous_wet, following_wet = padded_wet[:, :-2], padded_wet[:, 2:]
+    else:
+        previous, following = jnp.roll(tracer, 1, axis=axis), jnp.roll(tracer, -1, axis=axis)
+        previous_wet, following_wet = jnp.roll(wet, 1, axis=axis), jnp.roll(wet, -1, axis=axis)
+    left_delta, right_delta = tracer - previous, following - tracer
+    signs = jnp.sign(left_delta) + jnp.sign(right_delta)
+    return (0.5 * signs * jnp.minimum(jnp.abs(left_delta), jnp.abs(right_delta))
+            * wet * previous_wet * following_wet)
+
+
 def _advection_scalar(T, u, v, Fz_in, p):
     """3D FLUX-FORM scalar advection (FD, land-masked, NOT dealiased).
 
@@ -941,13 +987,7 @@ def _advection_scalar(T, u, v, Fz_in, p):
         # This is a compact local limiter, not a full Zalesak 3D FCT, but it is
         # flux-form, conservative, and removes the centered scheme's overshoot at
         # a sharp front while remaining second-order in smooth regions.
-        def _minmod(a, b):
-            s = jnp.sign(a) + jnp.sign(b)
-            return jnp.where(s != 0.0,
-                             0.5 * s * jnp.minimum(jnp.abs(a), jnp.abs(b)),
-                             0.0)
-        slope_x = _minmod(T - jnp.roll(T, 1, axis=0),
-                          jnp.roll(T, -1, axis=0) - T)
+        slope_x = _limited_tracer_slope(T, wm, axis=0)
         Tx_face = jnp.where(
             ux_face >= 0.0,
             T + 0.5 * slope_x,
@@ -973,13 +1013,7 @@ def _advection_scalar(T, u, v, Fz_in, p):
         # Same TVD/MUSCL limiter as x, but on the padded row. The last face is
         # closed explicitly below, so the edge-padded value cannot enter the
         # budget.
-        def _minmod_y(a, b):
-            s = jnp.sign(a) + jnp.sign(b)
-            return jnp.where(s != 0.0,
-                             0.5 * s * jnp.minimum(jnp.abs(a), jnp.abs(b)),
-                             0.0)
-        slope_y = _minmod_y(T - jnp.roll(T, 1, axis=1),
-                            jnp.roll(T, -1, axis=1) - T)
+        slope_y = _limited_tracer_slope(T, wm, axis=1)
         slope_y_pad = jnp.pad(slope_y, pad, mode='edge')
         Ty_face = jnp.where(
             vy_face >= 0.0,
@@ -1243,8 +1277,7 @@ def _tracer_terms(state, p):
     """
     Fz = _vertical_transport_iface(state.u, state.v, p)
     adv_T = _advection_scalar(state.T, state.u, state.v, Fz, p)
-    kappa_h_eff = p.kappa_h + p.coastal_kappa_h_2d[:, :, None]
-    diff_h_T = kappa_h_eff * _laplacian_h(state.T, p)
+    diff_h_T = _horizontal_tracer_diffusion(state.T, p)
     diff_v_T = _vertical_diffusion(state.T, _effective_kappa_v(p), p)
 
     conv_mask_3d, unstable_iface = _convective_mask(state, p)
@@ -1254,6 +1287,20 @@ def _tracer_terms(state, p):
     gm_T, _, redi_T, _ = _isopycnal_closure(state, p)
     terms = [adv_T, diff_h_T, diff_v_T, conv_T, gm_T, redi_T]
     return jnp.stack([t * p.wet_mask_z for t in terms], axis=0)
+
+
+def _surface_heat_weights(p):
+    """Per-node heat deposition; sum(weights * wet node thickness) is one."""
+    mixed_depth = float(p.mixed_layer_depth_m or 0.)
+    if mixed_depth <= 0. and p.mixed_layer_depth_2d is None:
+        return p.surface_mask * p.wet_mask_z / p.dz_surface
+    requested_depth = (p.mixed_layer_depth_2d if p.mixed_layer_depth_2d is not None
+                       else jnp.full_like(p.wet_mask, mixed_depth))
+    depth = jnp.where(p.mixed_layer_mask_2d > 0.5, requested_depth, p.dz_surface)
+    layer_top = jnp.cumsum(p.dz_node, axis=-1) - p.dz_node
+    overlap = jnp.clip(depth[:, :, None] - layer_top, 0., p.dz_node) * p.wet_mask_z
+    wet_depth = jnp.maximum(jnp.sum(overlap, axis=-1, keepdims=True), 1e-12)
+    return overlap / (wet_depth * p.dz_node)
 
 
 def _compute_tracer_tendency(state, p):
@@ -1285,9 +1332,8 @@ def _compute_tracer_tendency(state, p):
         adv_T = _advection_scalar(state.T, state.u, state.v, Fz, p)
         adv_S = _advection_scalar(state.S, state.u, state.v, Fz, p)
 
-    kappa_h_eff = p.kappa_h + p.coastal_kappa_h_2d[:, :, None]
-    diff_h_T = kappa_h_eff * _laplacian_h(state.T, p)
-    diff_h_S = kappa_h_eff * _laplacian_h(state.S, p)
+    diff_h_T = _horizontal_tracer_diffusion(state.T, p)
+    diff_h_S = _horizontal_tracer_diffusion(state.S, p)
     diff_v_T = _vertical_diffusion(state.T, _effective_kappa_v(p), p)
     diff_v_S = _vertical_diffusion(state.S, _effective_kappa_v(p), p)
 
@@ -1313,44 +1359,18 @@ def _compute_tracer_tendency(state, p):
         conv_T = _conv_flux_tendency(state.T, conv_mask_3d, p.kappa_conv, p, iface_gate)
         conv_S = _conv_flux_tendency(state.S, conv_mask_3d, p.kappa_conv, p, iface_gate)
 
-    # The default keeps the legacy bit-exact 5 m surface-node treatment.  When
-    # a mixed-layer depth is supplied, the same flux is spread over that slab,
-    # which is the minimal heat-capacity closure for a well-mixed layer.
-    mixed_depth = float(p.mixed_layer_depth_m or 0.0)
-    # A spatially restricted mixed-layer mask lets a high-lat/polar closure
-    # improve regional bias without globally changing the surface heat capacity.
-    # A stratification-derived 2D depth replaces the constant depth only inside
-    # that mask; land still falls through to the legacy surface-cell treatment.
-    if getattr(p, 'mixed_layer_depth_2d', None) is not None:
-        constant_depth = jnp.where(
-            p.mixed_layer_mask_2d > 0.5, mixed_depth, float(p.dz_surface))
-        constant_depth = constant_depth[:, :, None]
-        effective_depth = jnp.where(
-            (p.mixed_layer_mask_2d[:, :, None] > 0.5)
-            & (mixed_depth > 0.0),
-            p.mixed_layer_depth_2d[:, :, None], constant_depth)
-    else:
-        effective_depth = jnp.where((p.mixed_layer_mask_2d[:, :, None] > 0.5)
-                                    & (mixed_depth > 0.0),
-                                    mixed_depth, float(p.dz_surface))
-    heat_factor = 1.0 / (RHO_0 * C_P * effective_depth)
-    ice_insulation = jnp.ones_like(state.T[:, :, 0:1])
-    if getattr(p, 'dynamic_ice', False):
-        ice_now = jnp.broadcast_to(
-            jnp.asarray(state.ice, dtype=state.T.dtype), (p.nx, p.ny))
-        ice_insulation = 1.0 / (1.0 + ice_now[:, :, None] / p.ice_insulation_scale_m)
-
-    heat_T = (p.Q_heat_2d[:, :, None] * heat_factor * p.surface_mask
-              * ice_insulation)
+    heat_factor = _surface_heat_weights(p) / (RHO_0 * C_P)
+    heat_T = p.Q_heat_2d[:, :, None] * heat_factor
     # Bulk air-sea heat flux (Haney/Barnier): genuine SST negative feedback.
     bulk_T = (p.lambda_bulk * (p.T_atm_3d - state.T[:, :, 0:1])
-              * heat_factor * p.surface_mask)
+              * heat_factor)
     coastal_bulk_T = (p.coastal_bulk_lambda_2d[:, :, None]
                       * (p.T_atm_3d - state.T[:, :, 0:1])
-                      * heat_factor * p.surface_mask)
+                      * heat_factor)
     if getattr(p, 'dynamic_ice', False):
-        bulk_T = bulk_T * ice_insulation
-        coastal_bulk_T = coastal_bulk_T * ice_insulation
+        heat_T = jnp.zeros_like(heat_T)
+        bulk_T = jnp.zeros_like(bulk_T)
+        coastal_bulk_T = jnp.zeros_like(coastal_bulk_T)
 
     # Surface salinity restoring (Haney): equivalent salt flux relaxing SSS
     # to climatology with timescale tau = 1/restore_coef_S. Same form as the
@@ -1597,9 +1617,8 @@ def _linear_half_step(state, p, dt_half):
     else:
         u = state.u + p.nu_h * _laplacian_h(state.u, p) * dt_half
         v = state.v + p.nu_h * _laplacian_h(state.v, p) * dt_half
-    kappa_h_eff = p.kappa_h + p.coastal_kappa_h_2d[:, :, None]
-    T = state.T + kappa_h_eff * _laplacian_h(state.T, p) * dt_half
-    S = state.S + kappa_h_eff * _laplacian_h(state.S, p) * dt_half
+    T = state.T + _horizontal_tracer_diffusion(state.T, p) * dt_half
+    S = state.S + _horizontal_tracer_diffusion(state.S, p) * dt_half
     # Scale-selective biharmonic (nabla^4): damps grid-scale modes far more than
     # large-scale ones. Explicit forward-Euler; CFL nu_bi*dt/dx^4 < ~0.05.
     # docs/resolution_cfl_limits.md has the dx^4 auto-scaling.
@@ -1669,9 +1688,8 @@ def _compute_tracer_residual(state, p):
     cancel the L-step damping exactly (-dt/2 + dt - dt/2 = 0), a silent no-op. (D9)
     """
     dTdt, dSdt = _compute_tracer_tendency(state, p)
-    kappa_h_eff = p.kappa_h + p.coastal_kappa_h_2d[:, :, None]
-    dTdt = dTdt - kappa_h_eff * _laplacian_h(state.T, p)
-    dSdt = dSdt - kappa_h_eff * _laplacian_h(state.S, p)
+    dTdt = dTdt - _horizontal_tracer_diffusion(state.T, p)
+    dSdt = dSdt - _horizontal_tracer_diffusion(state.S, p)
     dTdt = dTdt - _vertical_diffusion(state.T, _effective_kappa_v(p), p)
     dSdt = dSdt - _vertical_diffusion(state.S, _effective_kappa_v(p), p)
     return dTdt, dSdt
@@ -1910,11 +1928,11 @@ def nu_nsub_for_2d_cfl(nu_h, dt, dx_2d, dy, margin=0.25):
 def _dynamic_ice_closure(state, p):
     """Advance the minimal stateful ice closure after one dynamics step.
 
-    This is an operator-split prototype: the ice state carries thickness, but
-    not velocity or a separate vertical thermodynamic column.  Growth/melt use
-    the surface heat imbalance and latent heat; ice conducts the surface flux
-    with a one-parameter insulation proxy.  Brine rejection is applied to the
-    mixed-layer/surface node.  The closure is off unless ``dynamic_ice`` is set.
+    This opt-in first-order surface operator applies atmospheric heat once.
+    Water sensible heat minus ice latent heat is conserved through phase change.
+    Existing ice exchanges heat at the surface node; excess melt energy and
+    open-water flux are distributed over the wet mixed-layer overlap. There is
+    no ice dynamics, entrainment or resolved ice thermodynamic column.
     """
     if not getattr(p, 'dynamic_ice', False):
         return state
@@ -1928,8 +1946,6 @@ def _dynamic_ice_closure(state, p):
     ice = jnp.maximum(jnp.broadcast_to(
         jnp.asarray(state.ice, dtype=state.T.dtype), (p.nx, p.ny)), 0.0)
 
-    # Rebuild the surface heat flux used by the tracer tendency.  Ice weakens
-    # all of it, including the prescribed Q and bulk exchange.
     insulation = 1.0 / (1.0 + ice / p.ice_insulation_scale_m)
     air_minus_sst = p.T_atm_3d[:, :, 0] - T_sst
     q = (p.Q_heat_2d
@@ -1937,49 +1953,29 @@ def _dynamic_ice_closure(state, p):
          + p.coastal_bulk_lambda_2d * air_minus_sst)
     q = q * insulation * p.wet_mask
 
-    # Reuse the same mixed-layer depth used by the surface heat budget.
-    mixed_depth = float(p.mixed_layer_depth_m or 0.0)
-    if getattr(p, 'mixed_layer_depth_2d', None) is not None:
-        effective_depth = jnp.where(
-            (p.mixed_layer_mask_2d > 0.5) & (mixed_depth > 0.0),
-            p.mixed_layer_depth_2d, float(p.dz_surface))
-    else:
-        effective_depth = jnp.where(
-            (p.mixed_layer_mask_2d > 0.5) & (mixed_depth > 0.0),
-            mixed_depth, float(p.dz_surface))
-    heat_capacity = RHO_0 * C_P * effective_depth
-    T_projected = T_sst + q * dt / heat_capacity
+    weights = _surface_heat_weights(p)
+    heat_capacity = RHO_0 * C_P * p.dz_surface
+    energy = q * dt
+    projected = state.T + energy[:, :, None] * weights / (RHO_0 * C_P)
+    freeze_deficit = heat_capacity * jnp.maximum(
+        p.ice_freeze_temp_c - projected[:, :, 0], 0.)
+    open_ice = freeze_deficit / (rho_ice * latent_heat)
+    open_temperature = projected.at[:, :, 0].set(
+        jnp.maximum(projected[:, :, 0], p.ice_freeze_temp_c))
 
-    # For open water, the sub-freezing deficit becomes ice.  For existing ice,
-    # cooling thickens ice and warming melts it.
-    latent_from_flux = jnp.abs(q) * dt / (rho_ice * latent_heat)
-    latent_from_deficit = (heat_capacity
-                           * jnp.maximum(p.ice_freeze_temp_c - T_projected, 0.0)
-                           / (rho_ice * latent_heat))
-    grows_new = ((q < 0.0) & (ice <= 0.0)
-                 & (T_projected < p.ice_freeze_temp_c))
-    grows_existing = (q < 0.0) & (ice > 0.0)
-    melts = (q > 0.0) & (ice > 0.0)
-    latent_change = jnp.where(
-        grows_new, latent_from_deficit,
-        jnp.where(grows_existing | melts, latent_from_flux, 0.0))
-
-    ice_new = jnp.where(grows_new | grows_existing,
-                        ice + latent_change,
-                        jnp.where(melts,
-                                  jnp.maximum(0.0, ice - latent_change),
-                                  ice))
-    salt_flux = (rho_ice * ice_salt_diff * latent_change
-                 / (RHO_0 * effective_depth))
-    salt_change = jnp.where(grows_existing | grows_new, salt_flux,
-                            -salt_flux)
-    active = grows_new | grows_existing | melts
-    T_new_surface = jnp.where(active, p.ice_freeze_temp_c, T_sst)
-    S_new_surface = state.S[:, :, 0] + salt_change
-    T = state.T.at[:, :, 0].set(jnp.where(
-        active & (p.wet_mask > 0.5), T_new_surface, T_sst))
-    S = state.S.at[:, :, 0].set(jnp.where(
-        active & (p.wet_mask > 0.5), S_new_surface, state.S[:, :, 0]))
+    enthalpy = (heat_capacity * (T_sst - p.ice_freeze_temp_c)
+                - rho_ice * latent_heat * ice + energy)
+    existing_ice = jnp.maximum(-enthalpy, 0.) / (rho_ice * latent_heat)
+    existing_temperature = state.T.at[:, :, 0].set(p.ice_freeze_temp_c)
+    existing_temperature = (existing_temperature
+                             + jnp.maximum(enthalpy, 0.)[:, :, None]
+                             * weights / (RHO_0 * C_P))
+    ice_new = jnp.where(ice > 0., existing_ice, open_ice) * p.wet_mask
+    temperature = jnp.where((ice > 0.)[:, :, None], existing_temperature, open_temperature)
+    salt_change = (rho_ice * ice_salt_diff / RHO_0
+                   * (ice_new - ice)[:, :, None] * weights)
+    T = jnp.where(p.wet_mask_z > 0.5, temperature, state.T)
+    S = jnp.where(p.wet_mask_z > 0.5, state.S + salt_change, state.S)
     return JaxStateG(state.u, state.v, T, S, state.eta,
                      ice_new * p.wet_mask)
 
@@ -2109,6 +2105,15 @@ def make_solver_global(grid, physics, dt, forcing=None,
     """
     base = make_fd_params(grid)
     nx, ny, nz = base.nx, base.ny, base.nz
+    if mixed_layer_depth_m is not None:
+        if not np.isfinite(mixed_layer_depth_m) or mixed_layer_depth_m < 0.:
+            raise ValueError("mixed_layer_depth_m must be finite and nonnegative")
+    if mixed_layer_depth_2d is not None:
+        depths = np.asarray(mixed_layer_depth_2d)
+        if depths.shape != (nx, ny) or not np.all(np.isfinite(depths) & (depths > 0.)):
+            raise ValueError("mixed_layer_depth_2d must have grid shape and positive finite depths")
+    if dynamic_ice and (not np.isfinite(ice_insulation_scale_m) or ice_insulation_scale_m <= 0.):
+        raise ValueError("ice_insulation_scale_m must be finite and positive")
 
     if forcing is None:
         tau_x_2d = jnp.zeros((nx, ny))
