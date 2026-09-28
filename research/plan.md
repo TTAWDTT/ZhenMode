@@ -15,12 +15,18 @@ actual one-day per-step gates (float64/32 at 2 degrees, float32 at 1 degree,
 baseline/ice); 359 full-suite tests pass. Legacy none/150 is not qualified.
 Recursive versus true CG residual separation and unsafe no-floor corrections
 are retained in `research/experiments/projection_residual_control/review.md`.
-The next foundation is
-`research/experiments/volume_transport_consistency/protocol.md`: independent
-geometry and actual barotropic time-average counterexamples are reproduced,
-not repaired. Preserve the approximately 2e21 J fixed-node heat proxy gap;
-define true cell volumes, open-face thickness, h*C/free-surface time levels,
-pressure/source/ice and restart migration before changing physical updates.
+The geometry/time-average witnesses now lead to implemented physical migration
+components, not another read-only proxy. `finite_volume` and
+`barotropic_transport` implement true partial-cell contents and shared actual
+substep Q. The production driver has NOT migrated. Registered real-grid linear
+wave/transport reference groups are 6/8: guard-precision surface diagnosis passes
+the unchanged identity gates, but nonuniform float32 bounds still fail. See
+`research/experiments/extensive_transport/review.md`; retain overall FAIL and the
+approximately 2e21 J production fixed-node heat proxy gap. Next research finite-
+precision content/volume bounds and higher-order shared fluxes, then C-grid 3D
+momentum/well-balanced partial-cell pressure and explicit physical source/ice,
+initialization and checkpoint cutover. Do not leave an unused qualified
+prototype or label the old mainline physically repaired. Final tests: 392 pass.
 Research and code mapping are recorded in
 `research/literature/volume_transport_consistency_20260928.md`. Existing 2-degree
 reports actually use 66 latitude rows, not the previously mistyped 65; the

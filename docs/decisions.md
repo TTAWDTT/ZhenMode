@@ -899,3 +899,36 @@ differentiability are not qualified by those successes.
 Registered gates, retained failures and implementation scope:
 [`residual control protocol`](../research/experiments/projection_residual_control/protocol.md),
 [`residual control review`](../research/experiments/projection_residual_control/review.md).
+
+## D37 — Physical volumes and shared barotropic/tracer transport
+
+Node proxy, trapezoidal barotropic weights and wet pressure interfaces do not
+describe the same physical water column. A 50m column has 67.5m proxy thickness;
+final barotropic velocity cannot replace the actual substep mean driving eta.
+Neither a global correction nor adding linearized eta*C repairs this.
+
+`finite_volume` and `barotropic_transport` are core migration components:
+explicit spherical edges, physical partial cells and intersecting wet faces,
+primary V and N=V*C, shared Q, explicit water/content sources, material top/bottom,
+and layer-Q matching to the actual C-grid substep mean. Invalid CFL, depletion,
+dry sources/content and closed-face flux reject. Existing node initialization
+and checkpoints cannot be silently relabeled as cell means/face velocities.
+The production driver is not cut over yet.
+
+The first real-grid float32 surface check fails around 4.3e-6. Independent
+reproduction separates stored-volume quantization from V/A-h rounding. Surface
+diagnosis now uses explicit float64 division/subtraction, returns original dtype
+and requires X64 without changing global JAX settings. This is mixed arithmetic,
+not pure float32 or whole-state promotion. The original 2e-6 gate is unchanged.
+
+Eight 100-step real-ETOPO linear-wave/transport reference groups complete after
+this fix; six qualify. All surface/content-budget gates pass, but two nonuniform
+float32 groups fail the unchanged absolute boundedness gate, with salinity
+excursions up to 2.33e-5. Retain overall FAIL. Donor is a low-order foundation,
+not the final climate scheme; these references omit full momentum/physics.
+Mainline migration, whole-model conservation and the full roadmap remain open.
+
+Research, precommitted gates and retained failures:
+[`physical transport protocol`](../research/experiments/extensive_transport/protocol.md),
+[`precision follow-up`](../research/experiments/extensive_transport/precision_protocol.md),
+[`component review`](../research/experiments/extensive_transport/review.md).

@@ -724,5 +724,35 @@ industrial_alignment_20260928:
     real_2deg_node_proxy_column_depth_error_5_95_percentiles_m: [-900.974349, 924.668275]
     real_2deg_node_proxy_volume_relative_difference: 0.01349908
     conservation_pass: false
-  next: "Design/register true finite-volume geometry, open-face thickness and h*C/free-surface/barotropic time-average coupling with explicit initialization and restart migration; implement the independently confirmed missing identities, not only pressure convergence. Quantify whole-state inventory precision, convective coefficient fidelity and every remaining full-roadmap gate; no century/climate/industrial qualification yet."
+  extensive_transport:
+    status: physical_components_6_of_8_reference_groups_passed_float32_bounds_failed_production_unmigrated
+    protocol_commit: "7f9a52c"
+    component_commit: "1d04acf"
+    precision_protocol_commit: "6f5b89e"
+    surface_guard_commit: "cb38ba7"
+    review: "research/experiments/extensive_transport/review.md"
+    direct_tests_passed: 33
+    pre_guard_full_tests_passed: 389
+    latest_full_tests_passed: 392
+    mms: ALL_PASS_ratio_4.30
+    installed_module_imports: passed_isolated_python
+    reference_groups: 8
+    qualified_reference_groups: 6
+    steps_per_group: 100
+    dt_seconds: 60.
+    real_grid_shape: [180, 66, 14]
+    physical_geometry: "exact spherical areas; partial layers to 8000m; material top/bottom; layer Q matches actual barotropic mean"
+    physics_scope: "linear gravity waves and synthetic two-tracer transport only; not full ocean momentum/forcing"
+    state_precision: "float64 or float32 V/N/eta/velocity storage; explicit float64 surface ratio arithmetic; X64 required"
+    original_float32_surface_failure: [4.246825e-6, 4.395836e-6]
+    corrected_float32_surface_maximum: [1.573215e-6, 1.556849e-6]
+    unchanged_float32_surface_gate: 2.0e-6
+    worst_float64_content_budget_relative_error: 2.930862e-14
+    worst_float32_content_budget_relative_error: 3.073009e-8
+    float32_nonuniform_salinity_undershoot: [2.331714e-5, 2.166751e-5]
+    unchanged_float32_absolute_bound_gate: 2.0e-6
+    current_source_hashes_verified: true
+    production_cutover: false
+    whole_model_conservation_pass: false
+  next: "Research finite-precision volume/content boundedness and higher-order shared fluxes, then C-grid 3D momentum and well-balanced partial-cell pressure; migrate actual production sources/ice, inventories, initialization and checkpoint semantics. Physical core components exist but their full reference matrix is FAIL, and the old mainline remains unqualified. Quantify convective coefficient fidelity and every remaining full-roadmap gate; no century/climate/industrial qualification yet."
   unresolved: ["whole-model budgets", "volume/free-surface consistency", "partial cells/global topology", "complete real physical forcing", "independent climate/forecast skill", "fair GPU/distributed cost", "whole-model adjoint and constrained learning"]
