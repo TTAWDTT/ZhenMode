@@ -609,3 +609,21 @@ wind_only_050:
     mpi_ranks: 4
     verdict: PASS
   comparability: "wind-forced dynamic control only; not a climate benchmark"
+
+industrial_alignment_20260928:
+  status: active_not_industrial_qualified
+  objective: "Autonomously align with and exceed industrial models; research before every major action."
+  roadmap: "docs/industrial_alignment_roadmap_zh.md"
+  historical_evidence_boundary: "Earlier scores and model comparisons predate corrected surface, runtime and diffusion kernels; retain as historical evidence, not current qualification."
+  scalar_diffusion:
+    status: registered_local_gates_passed
+    protocol_commits: ["5a0b6b0", "ef62d56"]
+    review: "research/experiments/conservative_tracer_diffusion/review.md"
+    regression_tests: 36
+    full_tests_passed: 271
+    masked_old_budget_ratios: [-6.898e-6, -1.970e-6]
+    masked_new_budget_ratios: [5.273e-18, -1.302e-18]
+    spherical_refinement_ratios: [4.116, 4.054]
+    smoke: "Real ETOPO, synthetic forcing, four 1-day and four nonzero-biharmonic 7-day runs passed."
+  next: "Actual-stage heat/salt/volume source ledger and independent closure, then the remaining full roadmap gates."
+  unresolved: ["whole-model budgets", "volume/free-surface consistency", "partial cells/global topology", "complete real physical forcing", "independent climate/forecast skill", "fair GPU/distributed cost", "whole-model adjoint and constrained learning"]

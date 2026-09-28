@@ -295,3 +295,8 @@ Chronological record of research decisions and actions. Append-only.
 
 
 | 212 | 2026-09-26 | audit | Rescored the 30d monthly dynamic-ice benchmark on the standard final-10d window. It gives global A2/NA RMSE 1.231/1.316 C, not the earlier full-window 0.956/0.874 C. Ice still improves the Stage-F no-ice control, but the improvement is smaller than initially inferred. |
+
+| 213 | 2026-09-28 | research | Registered the full industrial-alignment acceptance matrix using MOM6, MITgcm, NEMO and OMIP primary sources; retained century, independent skill, GPU/distributed and adjoint requirements. |
+| 214 | 2026-09-28 | protocol | Precommitted default scalar diffusion budget/accuracy gates in 5a0b6b0 and the nonzero-biharmonic real-topography stress matrix in ef62d56. |
+| 215 | 2026-09-28 | fix | Default scalar Laplacian and biharmonic now use conservative wet-face exchanges; 18 initial failures became passes, with 36 direct regressions and 271 full-suite tests passing. Masked budget ratios improve from order 1e-6 to order 1e-18 without a mean correction. |
+| 216 | 2026-09-28 | validation | Four real-ETOPO synthetic-forcing 1-day runs and four nonzero-biharmonic 7-day runs completed; kernel hashes checked. This is short numerical evidence, not whole-model budget, century or climate qualification. |

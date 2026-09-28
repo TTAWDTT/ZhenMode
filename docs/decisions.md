@@ -697,8 +697,8 @@ An enhanced coastal diffusivity cannot multiply the cell Laplacian pointwise:
 the background plus enhanced coefficient is averaged onto wet faces, and the
 flux divergence uses the spherical face cosine and closed latitude boundaries.
 Area/node-thickness weighted heat changes cancel to roundoff, including land and
-meridional gradients. The disabled-band path retains legacy constant diffusion;
-this decision does not claim that all historical operators share the new proof.
+meridional gradients. At this decision's original implementation the disabled
+band retained legacy constant diffusion; D31 supersedes that remaining path.
 
 ## D30 — Runtime and scores must preserve evidence, not manufacture PASS
 
@@ -720,3 +720,31 @@ compatibility, not asserted to be physically equal across resolutions.
 Tests, isolated wheel startup and integration settings/results are recorded in
 [`debug_validation_zh.md`](debug_validation_zh.md). Historical experiments are
 not retroactively relabelled as runs of the corrected model.
+
+## D31 — Default scalar diffusion must conserve too; square its flux operator
+
+The default constant-coefficient scalar Laplacian still used the expanded
+spherical metric form from the momentum operator. Its meridional metric term
+did not telescope under wet area/node-volume weights and could read dry
+neighbours even though the second differences were face-gated. Squaring that
+operator for scalar biharmonic diffusion inherited the defect. In the registered
+24x32x4 random-field fixture with land and dry bottom steps, net/absolute
+weighted tendency was -6.898e-6 for the old Laplacian and -1.970e-6 for its
+biharmonic. These are isolated-operator tests, not real climate drift estimates.
+
+All temperature/salinity background and coastal diffusion now share the wet-face
+flux operator. Scalar biharmonic uses its constant-unit-coefficient square:
+`-kappa_bi*D1(D1(C))`. D1 is self-adjoint and nonpositive in the wet-volume
+inner product, so the negative square conserves content and dissipates variance.
+No global mean correction is applied. Biharmonic does not guarantee monotonicity;
+its explicit half-step needs `kappa_bi*dt_half*abs(lambda_max(D1))**2 <= 2`.
+Momentum diffusion is unchanged and needs a separate spherical-vector audit.
+
+In the same masked fixture, the new signed ratios are 5.273e-18 and -1.302e-18.
+Tests cover constants, closed faces, self-adjointness, variance, complete linear
+half-steps, spherical accuracy and a tangent finite-difference check. The scalar
+manufactured-solution refinement ratios are 4.116 and 4.054. Four real-ETOPO,
+synthetically forced seven-day runs also pass with nonzero scalar biharmonic.
+This does not prove full-model budgets, real-forcing climate skill or a century
+of reliability. Protocol, reproducible analysis and limits are recorded in
+[`diffusion review`](../research/experiments/conservative_tracer_diffusion/review.md).
