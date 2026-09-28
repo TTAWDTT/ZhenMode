@@ -59,7 +59,10 @@ comparisons remain historical internal diagnostics with that explicit scope;
 legacy-versus-v2 cannot pass using coincidentally similar numbers. A v2 PASS
 still means internal comparison only, NOT century or climate certification.
 Report-table rows identify the metric definition so a mixed table is not silently
-interpreted as a like-for-like ranking.
+interpreted as a like-for-like ranking. Before adding the comparison guard,
+also require identical reference values on the scored wet domain, recorded as
+a separate reference SHA256. Matching domains alone cannot prevent comparison
+of scores computed against different observational/reference fields.
 
 ## Remaining qualification requirements
 
