@@ -33,6 +33,7 @@ py-modules = [
     "config",
     "grid",
     "finite_volume",
+    "bounded_transport",
     "barotropic_transport",
     "jax_solver_global",
     "run_long_integration_global",

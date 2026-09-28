@@ -8,6 +8,7 @@ from typing import NamedTuple
 import jax
 import jax.numpy as jnp
 
+from bounded_transport import advance_bounded_contents
 from finite_volume import (
     TransportResult,
     _physical_surface_height,
@@ -96,19 +97,32 @@ def subcycle_barotropic(geometry, eta, east_velocity, north_velocity, dt_sub, ns
 
 def coupled_surface_step(geometry, state, eta, east_velocity, north_velocity,
                          layer_east_velocity, layer_north_velocity, dt_sub, nsub,
-                         gravity=9.81, drag=0., volume_source=None, content_source=None):
+                         gravity=9.81, drag=0., volume_source=None, content_source=None,
+                         inventory_precision=None, transport_scheme="donor"):
     """Share actual substep mean Q between eta, layer volumes and V*C.
 
     Only top-layer sources are permitted in this fixed-z moving-top coupling.
     Low-level results must pass valid before accepting the next state.
+    Explicit inventory_precision='float64' permits eta/velocities32 with V/N64;
+    otherwise all state dtypes must match. No automatic inventory promotion.
+    centered_fct selects the registered higher-order candidate, not production.
     """
     eta, east_velocity, north_velocity, layer_east_velocity, layer_north_velocity = (
         jnp.asarray(field) for field in (eta, east_velocity, north_velocity,
                                         layer_east_velocity, layer_north_velocity)
     )
-    if any(field.dtype != state.volume.dtype for field in (eta, east_velocity, north_velocity,
-                                                           layer_east_velocity, layer_north_velocity)):
-        raise ValueError("coupled scalar and face states must share the volume dtype")
+    if inventory_precision not in (None, "float64"):
+        raise ValueError("inventory_precision must be None or explicit float64")
+    momentum_fields = (eta, east_velocity, north_velocity, layer_east_velocity, layer_north_velocity)
+    if inventory_precision is None:
+        if any(field.dtype != state.volume.dtype for field in momentum_fields):
+            raise ValueError("coupled scalar and face states must share the volume dtype")
+    elif (state.volume.dtype != jnp.float64 or state.content.dtype != jnp.float64
+          or eta.dtype not in (jnp.float32, jnp.float64)
+          or any(field.dtype != eta.dtype for field in momentum_fields)):
+        raise ValueError("explicit float64 inventory requires V/N64 and a shared float32/64 momentum dtype")
+    if transport_scheme not in ("donor", "centered_fct"):
+        raise ValueError("transport_scheme must be donor or centered_fct")
     source = jnp.zeros_like(state.volume) if volume_source is None else jnp.asarray(volume_source, state.volume.dtype)
     if source.shape != state.volume.shape:
         raise ValueError("volume source must match cells")
@@ -117,13 +131,14 @@ def coupled_surface_step(geometry, state, eta, east_velocity, north_velocity,
     east = match_column_transport(geometry.east_area, layer_east_velocity, barotropic.mean_east)
     north = match_column_transport(geometry.north_area, layer_north_velocity, barotropic.mean_north)
     fluxes = closed_surface_fluxes(east.flux, north.flux)
-    transport = advance_contents(geometry, state, fluxes, dt_sub * nsub, source, content_source)
+    advance = advance_contents if transport_scheme == "donor" else advance_bounded_contents
+    transport = advance(geometry, state, fluxes, dt_sub * nsub, volume_source, content_source)
     area = jnp.asarray(geometry.area, state.volume.dtype)
     initial_eta = _physical_surface_height(geometry, state.volume)
     content_eta = _physical_surface_height(geometry, transport.state.volume)
     scale = jnp.maximum(jnp.asarray(1e-8, state.volume.dtype), jnp.maximum(jnp.max(jnp.abs(eta)), jnp.max(jnp.abs(barotropic.eta - eta))))
     surface_error = jnp.maximum(jnp.max(jnp.abs(content_eta - barotropic.eta)), jnp.max(jnp.abs(initial_eta - eta))) / scale
-    tolerance = jnp.where(jnp.finfo(state.volume.dtype).eps > 1e-10, 2e-6, 1e-12)
+    tolerance = jnp.where(jnp.finfo(eta.dtype).eps > 1e-10, 2e-6, 1e-12)
     lower_volume = jnp.asarray(geometry.thickness[..., 1:], state.volume.dtype) * area[..., None]
     lower_scale = jnp.maximum(lower_volume, 1.)
     lower_error = jnp.max(jnp.abs(state.volume[..., 1:] - lower_volume) / lower_scale, initial=0.)
