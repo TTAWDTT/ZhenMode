@@ -10,7 +10,7 @@ equations on a lat-lon grid, written in JAX.
 | Solver core | `src/jax_solver_global.py` |
 | Driver (CLI) | `src/run_long_integration_global.py` |
 | Tests | `tests/` |
-| Design rationale | `docs/decisions.md` (D1-D27) + `docs/README.md` |
+| Design rationale | `docs/decisions.md` (D1-D30) + `docs/README.md` |
 
 Everything else is support: data loaders (`src/forcing.py`,
 `src/wind_reanalysis.py`, `src/woa_data.py`), grid/bathymetry
@@ -32,7 +32,7 @@ utilities, plus two clearly-marked side directories —
   `--project-adv-vel` projects the stage-2 velocity column-divergence-free
   to close the column heat budget; `--monotone-adv` switches horizontal
   tracer fluxes to donor-cell (default is centered); `--fct-adv` enables an
-  experimental TVD/MUSCL flux-limited horizontal transport (bounded, but not
+  experimental TVD/MUSCL flux-limited horizontal transport (limited, but not
   yet a full Zalesak 3D FCT limiter)
 - **Vertical mixing**: GM/Redi skew-flux (`--kappa-gm`, `--kappa-redi`),
   eddy viscosity (`--nu-h`), biharmonic (`--nu-bi`), convective adjustment
@@ -40,8 +40,13 @@ utilities, plus two clearly-marked side directories —
 - **Forcing**: NCEP/NCAR R1 reanalysis wind (`src/wind_reanalysis.py`),
   bulk air-sea heat flux, seasonal wind cycle (`--seasonal-wind`),
   WOA2023 initial fields (`src/woa_data.py`)
-- **Grid**: real ETOPO2022 bathymetry with smoothing and a `--min-depth`
-  floor
+- **Grid**: real ETOPO2022 bathymetry with smoothing; `--min-depth`
+  excludes shallower ocean cells
+
+Mixed-layer heat deposition and dynamic ice are opt-in prototypes. Recent
+budget, boundary, checkpoint, packaging and scoring fixes are documented in
+[`docs/debug_validation_zh.md`](docs/debug_validation_zh.md), including the
+validation limits. Numerical stability is not climate or forecast skill.
 
 ## Requirements
 
@@ -78,7 +83,7 @@ only for the test suite):
 
 ```bash
 python scripts/make_synthetic_bathymetry.py   # -> data/ETOPO_..._surface.nc.npz
-python -m pytest tests/ -q                    # 138 tests, none skipped
+python -m pytest tests/ -q
 ```
 
 ## Resolution

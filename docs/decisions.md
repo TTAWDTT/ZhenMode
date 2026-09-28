@@ -596,12 +596,15 @@ box edge so the relaxation itself cannot seed a PGF cliff at the boundary.
 
 ## D24 — Surface boundary conditions: bulk heat flux and salinity restoring
 
-Both surface fluxes are applied to the TOP NODE only, through `surface_mask`, and
+By default both surface fluxes are applied to the TOP NODE only, through `surface_mask`, and
 both are divided by the top cell's heat capacity. `heat_factor =
 1/(RHO_0*C_P*dz_surface)` turns a surface heat flux [W/m^2] into a tendency on
 the surface node; the bulk flux is the Haney/Barnier form
 `lambda_bulk*(T_atm - T[0])*heat_factor*surface_mask`, a genuine SST negative
 feedback.
+
+The optional mixed-layer and dynamic-ice heat paths supersede this top-node-only
+treatment; see D28 for their wet-node energy accounting.
 
 Surface salinity restoring is the same shape with a TRUE salt flux (psu/s, no
 `heat_factor`, because salinity has no `rho*cp`):
@@ -663,3 +666,57 @@ consistent with the face velocity. This is not yet a full Zalesak multidimension
 FCT limiter, but it is a cheap, local, bounded-flux step in that direction and
 keeps the same flux-form telescoping. It takes precedence over `--monotone-adv`.
 
+Reconstruction must not read across the closed latitude walls or a dry neighbour:
+latitude slopes use edge padding, longitude remains periodic, and a minmod
+slope requires all three stencil points to be wet. Flux masks alone do not
+prevent a land sentinel from corrupting a slope on a different, open wet face.
+
+## D28 — Optional surface heat: account for wet volume and ice latent heat
+
+Replacing the top-node thickness by a mixed-layer depth in the heat denominator
+without warming deeper nodes loses energy. With a 5 m node, a 20 m mixed layer
+retained only one quarter of a prescribed heat flux. Instead, deposit heat in
+proportion to the overlap of the requested mixed layer and each wet node volume,
+normalized by the actual wet overlap. The sum of tendency times node thickness
+must recover the input flux divided by rho*cp, including shallow columns and
+spatial mixed-layer masks. This is heat deposition, not a new entrainment model.
+
+For opt-in dynamic ice, disable prescribed/bulk/coastal-bulk heat in the dynamics
+tendency and apply it exactly once in the subsequent first-order surface operator.
+Track water sensible heat minus ice latent heat. Actual ice-thickness change sets
+the brine/melt salt source; complete melt returns excess energy to the wet water
+column instead of pinning SST and discarding it. The closure remains a surface
+node phase-change prototype, not resolved sea-ice dynamics or a complete mixed
+layer thermodynamic model. Isolated energy budgets, full-step application and
+checkpoint restart are covered by `tests/test_surface_energy.py`.
+
+## D29 — Spatial tracer diffusivity belongs inside a face flux
+
+An enhanced coastal diffusivity cannot multiply the cell Laplacian pointwise:
+`k(x,y)*lap(T)` does not telescope where k varies. With an enabled coastal band,
+the background plus enhanced coefficient is averaged onto wet faces, and the
+flux divergence uses the spherical face cosine and closed latitude boundaries.
+Area/node-thickness weighted heat changes cancel to roundoff, including land and
+meridional gradients. The disabled-band path retains legacy constant diffusion;
+this decision does not claim that all historical operators share the new proof.
+
+## D30 — Runtime and scores must preserve evidence, not manufacture PASS
+
+Checkpoints contain all six state fields. Dynamic-ice restart requires an ice
+field rather than silently manufacturing zero thickness. Salt mass diagnostics
+use salinity/1000; new NPZ outputs declare schema 2 and kg units. Ice enthalpy
+change alone is not a heat closure residual: without integrated external heat
+input, residual fields are unavailable, not zero.
+
+External/MOM6 scoring shares one implementation. CF time units and calendars
+determine the day axis; absent units or invalid ordering are errors. The scoring
+PASS checks finite SST error and complete reference wet coverage, not climate
+skill or full model stability. Candidate gates reject missing/nonfinite budgets,
+and compare absolute wall bias so crossing from a small cold bias into a large
+warm bias cannot count as improvement. Undefined percentage drift is unavailable,
+not zero. Existing cell-based A2 smoothing is preserved for historical protocol
+compatibility, not asserted to be physically equal across resolutions.
+
+Tests, isolated wheel startup and integration settings/results are recorded in
+[`debug_validation_zh.md`](debug_validation_zh.md). Historical experiments are
+not retroactively relabelled as runs of the corrected model.
