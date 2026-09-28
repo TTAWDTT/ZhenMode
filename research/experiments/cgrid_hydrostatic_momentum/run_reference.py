@@ -30,7 +30,7 @@ METRICS = ("pressure_max_m_s2", "rotation_energy_relative", "rotation_solve_rela
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--bathy", default=DEFAULT_CONFIG.bathymetry_file)
-    parser.add_argument("--out", default="results/industrial_alignment/cgrid_momentum_mass_reference.json")
+    parser.add_argument("--out", default="results/industrial_alignment/cgrid_momentum_flux_reference.json")
     args = parser.parse_args()
     output = ROOT / args.out
     if output.exists():
@@ -41,10 +41,13 @@ def main():
     sources += [Path(__file__), Path(__file__).with_name("protocol.md"), Path(__file__).with_name("selection.md"),
                 Path(__file__).with_name("overlap_protocol.md"),
                 Path(__file__).with_name("pressure_work_protocol.md"),
-                ROOT / "tests/test_cgrid_hydrostatic_momentum.py", ROOT / "tests/test_cgrid_pressure_work.py"]
+                Path(__file__).with_name("dual_mass_protocol.md"),
+                ROOT / "tests/test_cgrid_hydrostatic_momentum.py", ROOT / "tests/test_cgrid_pressure_work.py",
+                ROOT / "tests/test_momentum_shared_flux.py"]
     report = {"scope": "frozen_pressure_linear_3d_momentum_active_density_fct_not_full_ocean",
               "rotation_formulation": "physical_wet_dual_rectangles_and_common_overlap",
               "pressure_formulation": "shared_face_force_over_physical_dual_mass",
+              "transport_flux_contract": "actual_matched_layer_fluxes_from_fast_substep_mean",
               "status": "running", "reference_coefficients": [1., 1e-3, 1e-7],
               "provenance": {"git_head": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip(),
                              "git_status": subprocess.check_output(["git", "status", "--porcelain"], cwd=ROOT, text=True).splitlines(),
@@ -110,7 +113,7 @@ def main():
                                          result.barotropic.gravity_cfl_bound, speed, shear, constant, jnp.maximum(excursion, 0.), lower_error,
                                          jnp.max(jnp.abs(eta_after))])
                     flags = jnp.array([result.valid, result.pressure.valid, result.barotropic.valid, result.transport.valid])
-                    return final, metrics, flags
+                    return final, metrics, flags, result.fluxes, result.barotropic.mean_east, result.barotropic.mean_north
 
                 run = {"geometry": label, "velocity_dtype": dtype_name, "disturbed": disturbed,
                        "inventory_dtype": "float64", "dt_seconds": 60., "barotropic_substeps": 4,
@@ -119,7 +122,8 @@ def main():
                 save()
                 state = initial
                 for iteration in range(100):
-                    candidate, metric_array, flags = step(state)
+                    previous_volume = state.inventory.volume
+                    candidate, metric_array, flags, actual_fluxes, mean_east, mean_north = step(state)
                     values, accepted = np.asarray(metric_array), np.asarray(flags)
                     row = {name: float(value) if np.isfinite(value) else None for name, value in zip(METRICS, values)}
                     row["stage_valid"] = accepted.tolist()
@@ -154,6 +158,9 @@ def main():
                          final_volume=final_volume, final_content=final_content,
                          initial_east_velocity=np.asarray(initial.east_velocity), initial_north_velocity=np.asarray(initial.north_velocity),
                          final_east_velocity=np.asarray(state.east_velocity), final_north_velocity=np.asarray(state.north_velocity),
+                         last_previous_volume=np.asarray(previous_volume), last_east_flux=np.asarray(actual_fluxes.east),
+                         last_north_flux=np.asarray(actual_fluxes.north), last_vertical_flux=np.asarray(actual_fluxes.vertical),
+                         last_fast_mean_east=np.asarray(mean_east), last_fast_mean_north=np.asarray(mean_north),
                          physical_depth=grid.depth, area=geometry.area, thickness=geometry.thickness, interfaces=interfaces,
                          longitude_edges=lon_edges, latitude_edges=lat_edges, reference_coefficients=np.asarray(coefficients))
                 run.update(status="PASS" if passed else "FAIL", content_budget_relative=budget.tolist(),

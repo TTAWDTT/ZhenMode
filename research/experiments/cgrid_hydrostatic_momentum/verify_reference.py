@@ -24,13 +24,16 @@ def verify(report):
         raise ValueError("physical rotation formulation not qualified by this verifier")
     if report.get("pressure_formulation") != "shared_face_force_over_physical_dual_mass":
         raise ValueError("physical pressure formulation not qualified by this verifier")
+    if report.get("transport_flux_contract") != "actual_matched_layer_fluxes_from_fast_substep_mean":
+        raise ValueError("actual shared-flux contract absent")
     if report["status"] != "PASS" or len(report["runs"]) != 8:
         raise ValueError("eight reference groups have not passed")
     required = {f"src/{name}" for name in ("finite_volume.py", "bounded_transport.py", "barotropic_transport.py",
                                          "cgrid_momentum.py", "grid.py", "config.py")}
-    required |= {f"research/experiments/cgrid_hydrostatic_momentum/{name}" for name in ("run_reference.py", "protocol.md", "selection.md", "overlap_protocol.md", "pressure_work_protocol.md")}
+    required |= {f"research/experiments/cgrid_hydrostatic_momentum/{name}" for name in ("run_reference.py", "protocol.md", "selection.md", "overlap_protocol.md", "pressure_work_protocol.md", "dual_mass_protocol.md")}
     required.add("tests/test_cgrid_hydrostatic_momentum.py")
     required.add("tests/test_cgrid_pressure_work.py")
+    required.add("tests/test_momentum_shared_flux.py")
     manifest = report["provenance"]["source_sha256"]
     if not required.issubset(manifest):
         raise ValueError("incomplete runtime source manifest")
@@ -78,6 +81,7 @@ def verify(report):
             arrays = (initial_volume, final_volume, initial_content, final_content)
             if any(field.dtype != np.float64 or not np.all(np.isfinite(field)) for field in arrays):
                 raise ValueError("inventory precision or finiteness failed")
+            flux_check = verify_local_flux_increment(data, final_volume, run["dt_seconds"])
             interfaces, depth, area = data["interfaces"], data["physical_depth"], data["area"]
             expected_area = 6.371e6 ** 2 * np.radians(np.diff(data["longitude_edges"]))[:, None] * np.diff(np.sin(np.radians(data["latitude_edges"])))[None, :]
             height = np.maximum(np.minimum(depth[..., None] - interfaces[:-1], np.diff(interfaces)), 0.)
@@ -118,20 +122,56 @@ def verify(report):
             volume_delta = float(np.sum(final_volume - initial_volume))
             np.testing.assert_allclose(volume_delta, run["volume_budget_delta_m3"], rtol=1e-12, atol=1e-12)
             np.testing.assert_allclose(budgets, run["content_budget_relative"], rtol=1e-12, atol=1e-30)
-            verified.append({"group": group, "content_budget_relative": budgets.tolist(), "volume_delta_m3": volume_delta})
+            verified.append({"group": group, "content_budget_relative": budgets.tolist(), "volume_delta_m3": volume_delta,
+                             "last_local_volume_flux_check": flux_check})
     if groups != expected_groups:
         raise ValueError("missing reference group")
     return verified
 
 
+def verify_local_flux_increment(data, final_volume, dt):
+    previous = data["last_previous_volume"]
+    east, north, vertical = (data[f"last_{direction}_flux"] for direction in ("east", "north", "vertical"))
+    shape = final_volume.shape
+    if (previous.shape != shape or east.shape != shape or north.shape != shape
+            or vertical.shape != shape[:-1] + (shape[-1] + 1,)):
+        raise ValueError("actual volume/flux snapshot shape changed")
+    if any(field.dtype != np.float64 or not np.all(np.isfinite(field)) for field in (previous, east, north, vertical)):
+        raise ValueError("actual volume/flux snapshot dtype or finiteness failed")
+    if np.any(north[:, -1] != 0.) or np.any(vertical[..., 0] != 0.) or np.any(vertical[..., -1] != 0.):
+        raise ValueError("actual transport crosses material boundary")
+    height = data["thickness"]
+    east_open = (height > 0.) & (np.roll(height, -1, axis=0) > 0.)
+    north_open = (height > 0.) & (np.concatenate((height[:, 1:], np.zeros_like(height[:, :1])), axis=1) > 0.)
+    if np.any(east[~east_open] != 0.) or np.any(north[~north_open] != 0.):
+        raise ValueError("actual transport crosses closed face")
+    divergence = east - np.roll(east, 1, axis=0) + north
+    divergence[:, 1:] -= north[:, :-1]
+    divergence += vertical[..., 1:] - vertical[..., :-1]
+    predicted = -dt * divergence
+    observed = final_volume - previous
+    floor = 64. * np.finfo(np.float64).eps * np.maximum(np.abs(final_volume), np.abs(previous))
+    tolerance = 1e-12 * np.abs(predicted) + floor
+    residual = np.abs(observed - predicted)
+    if np.any(residual > tolerance):
+        raise ValueError("actual shared Q does not close local stored V change")
+    for component, flux in (("east", east), ("north", north)):
+        target = data[f"last_fast_mean_{component}"]
+        if target.shape != shape[:-1] or target.dtype != np.float64 or not np.all(np.isfinite(target)):
+            raise ValueError("actual fast mean shape, precision or finiteness failed")
+        np.testing.assert_allclose(np.sum(flux, axis=-1), target, rtol=1e-12, atol=1e-6)
+    return {"maximum_residual_m3": float(np.max(residual)), "rounding_floor_max_m3": float(np.max(floor)),
+            "maximum_tolerance_fraction": float(np.max(residual / np.where(tolerance > 0., tolerance, 1.)))}
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--report", default="results/industrial_alignment/cgrid_momentum_mass_reference.json")
+    parser.add_argument("--report", default="results/industrial_alignment/cgrid_momentum_flux_reference.json")
     parser.add_argument("--negative-controls", action="store_true")
     args = parser.parse_args()
     report = json.loads((ROOT / args.report).read_text(encoding="utf-8"))
     verified = verify(report)
-    print(json.dumps({"scope": "inventory_and_geometry_snapshots_plus_recorded_stage_gates_not_independent_step_replay",
+    print(json.dumps({"scope": "inventory_geometry_and_last_local_flux_snapshots_plus_recorded_gates_not_independent_all_steps",
                       "verifier_sha256": hashlib.sha256(Path(__file__).read_bytes()).hexdigest(), "verified": verified}, indent=2))
     if args.negative_controls:
         for label in ("duration", "dtype", "stage", "snapshot", "duplicate"):
@@ -152,6 +192,26 @@ def main():
                 print(f"negative {label}: rejected ({error})")
             else:
                 raise ValueError(f"negative control accepted: {label}")
+        first = report["runs"][0]
+        with np.load(_path(first["snapshot_path"])) as stored:
+            original = {name: stored[name] for name in stored.files}
+        for label in ("primal_change", "column_target", "closed_boundary", "flux_dtype"):
+            altered = {name: value.copy() for name, value in original.items()}
+            if label == "primal_change":
+                position = tuple(np.argwhere(altered["last_previous_volume"] > 0.)[0])
+                altered["last_previous_volume"][position] += 1e6
+            elif label == "column_target":
+                altered["last_fast_mean_east"] += 1.
+            elif label == "closed_boundary":
+                altered["last_north_flux"][0, -1, 0] = 1.
+            else:
+                altered["last_east_flux"] = altered["last_east_flux"].astype(np.float32)
+            try:
+                verify_local_flux_increment(altered, altered["final_volume"], first["dt_seconds"])
+            except (ValueError, AssertionError) as error:
+                print(f"negative local flux {label}: rejected ({error})")
+            else:
+                raise ValueError(f"negative local flux control accepted: {label}")
 
 
 if __name__ == "__main__":

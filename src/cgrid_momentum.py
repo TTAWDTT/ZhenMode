@@ -16,6 +16,7 @@ from config import OMEGA
 from finite_volume import (
     ExtensiveState,
     TransportResult,
+    VolumeFluxes,
     _physical_surface_height,
     closed_surface_fluxes,
     horizontal_momentum_geometry,
@@ -66,6 +67,7 @@ class MomentumResult(NamedTuple):
     pressure: PressureForce
     barotropic: BarotropicResult
     transport: TransportResult
+    fluxes: VolumeFluxes
     rotation_error: jnp.ndarray
     rotation_residual: jnp.ndarray
     surface_error: jnp.ndarray
@@ -345,6 +347,6 @@ def linear_momentum_surface_step(geometry, state, density_anomaly, dt, nsub,
              & matched[0].valid & matched[1].valid & (surface_error <= surface_tolerance)
              & jnp.all(source[..., 1:] == 0.))
     final_state = LayerState(transport.state, second.east_velocity, second.north_velocity)
-    return MomentumResult(final_state, pressure, barotropic, transport,
+    return MomentumResult(final_state, pressure, barotropic, transport, fluxes,
                            jnp.maximum(first.energy_relative_change, second.energy_relative_change),
                            jnp.maximum(first.solve_relative_residual, second.solve_relative_residual), surface_error, valid)
