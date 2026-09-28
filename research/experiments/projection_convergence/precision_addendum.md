@@ -8,7 +8,7 @@
 
 - [JAX CG](https://docs.jax.dev/en/latest/_autosummary/jax.scipy.sparse.linalg.cg.html)：
   停止范数针对线性矩阵残差，不能替代实际速度修正的原生输运残差。
-- [JAX 数值精度](https://docs.jax.dev/en/latest/faq.html#why-is-my-jit-compiled-function-returning-a-different-result-than-my-op-by-op-function)：
+- [JAX 数值精度](https://docs.jax.dev/en/latest/faq.html#jit-changes-the-exact-numerics-of-outputs)：
   低精度计算、融合与消去会影响结果；必须测量实际计算，不能把
   float32 账本缺口自动解释为“可忽略舍入”。
 - [MITgcm 非线性自由面](https://mitgcm.readthedocs.io/en/latest/algorithm/nonlinear-freesurf.html)：
@@ -29,3 +29,21 @@
    温盐的 Fz 也使用该运算。任何改变数值实现须另注册后验证。
 4. 实验只读捕获，不改强迫、温盐、物理算子、门槛或源表。投影
    精度解释不代替移动体积/时层修复、百年、气候及整模式梯度验收。
+
+## 捕获反证与方法澄清（追加于重跑前）
+
+首次尝试因多输出 materialization 不保持逐位状态而停止：首步温度
+最大差 1.90735e-6 K，其余速度/海面差约 1e-10。这是捕获方法的
+反证，保留失败；不能放宽原生投影的 5e-5 门槛，也不能宣称这个
+多输出编译图等于原批量图。
+
+后续状态推进使用未添加捕获输出的原账本单步求解器；另行对同一个
+步前状态捕获右端，记录两图每步状态差与两种残差。捕获快照只用于
+固定右端算术比较，不用其返回状态继续推进。该单步图仍不是原
+fori_loop 批量图的逐位重演，结论必须注明；原完整积分的超标仍是
+主验收证据，不被新轨迹替代。
+
+float64 解用同一真实网格重建一致的双精度度量，而非把舍入过的
+float32 度量直接提升精度后假定其矩阵仍严格对称。另以“原 float32
+度量提升到 float64”仅计算参考输运，分开度量量化与输运算术影响。
+所有输出、状态差、原超标与快照限定都保存，不能把复核改称零扰动。
