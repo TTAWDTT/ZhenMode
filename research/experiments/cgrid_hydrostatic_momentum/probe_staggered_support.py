@@ -36,7 +36,7 @@ def dual_flux(east, north_flux, vertical, component, south, north):
         return tuple(dual_map(field, component, south, north) for field in (east, north_full, vertical))
     shape = (1, len(south), 1)
     center_flux = north.reshape(shape) * north_full[:, :-1] + south.reshape(shape) * north_full[:, 1:]
-    return dual_map(east, component, south, north), center_flux, dual_map(vertical, component, south, north)
+    return dual_map(east, component, south, north), np.pad(center_flux, ((0, 0), (1, 1), (0, 0))), dual_map(vertical, component, south, north)
 
 
 def divergence(east, north_full, vertical):
@@ -108,10 +108,11 @@ def column_pairing(mass, contact, component):
     uniform = transport / np.where(np.sum(contact, axis=-1) > 0., np.sum(contact, axis=-1), 1.)
     old_cross = np.sum(mass * uniform[..., None] * (velocity - uniform[..., None]), axis=-1)
     old_relative = np.abs(old_cross) / np.where(energy > 0., energy, 1.)
-    head = np.sin(np.arange(mass.shape[0])[:, None] * .5 + np.arange(mass.shape[1])[None, :] * .8)
+    primary_rows = mass.shape[1] - int(component == "north")
+    head = np.sin(np.arange(mass.shape[0])[:, None] * .5 + np.arange(primary_rows)[None, :] * .8)
     head_difference = np.roll(head, -1, axis=0) - head if component == "east" else np.diff(head, axis=1)
     if component == "north":
-        head_difference = np.pad(head_difference[:, :-1], ((0, 0), (1, 1)))
+        head_difference = np.pad(head_difference, ((0, 0), (1, 1)))
     layer_force = -mode * head_difference[..., None]
     actual_transport_force = np.sum(contact * layer_force, axis=-1)
     expected_transport_force = -mobility * head_difference
