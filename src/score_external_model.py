@@ -7,12 +7,13 @@ from __future__ import annotations
 
 import json
 from argparse import ArgumentParser
+from contextlib import ExitStack
 from pathlib import Path
 
 import netCDF4
 import numpy as np
 
-from benchmark_metrics import score_snapshot
+from benchmark_metrics import _relative_drift, score_snapshot
 
 
 def _read_1d(ds: netCDF4.Dataset, name: str | None, fallback: np.ndarray | None = None,
@@ -29,9 +30,20 @@ def _steady_mask(days: np.ndarray, steady_days: float) -> np.ndarray:
     return np.asarray(days >= days[-1] - steady_days, dtype=bool)
 
 
-def _relative_drift(series: np.ndarray) -> float:
-    a, b = float(np.asarray(series)[0]), float(np.asarray(series)[-1])
-    return float(100.0 * (b - a) / abs(a)) if a else 0.0
+def _time_days(variable) -> np.ndarray:
+    units = getattr(variable, "units", None)
+    if not units:
+        raise ValueError("time coordinate must declare CF units")
+    values = np.asarray(np.ma.filled(variable[:], np.nan), dtype=float)
+    if values.ndim != 1 or not values.size or not np.all(np.isfinite(values)):
+        raise ValueError("time coordinate must be nonempty, finite and one-dimensional")
+    calendar = getattr(variable, "calendar", "standard")
+    origin = netCDF4.num2date(0.0, units=units, calendar=calendar)
+    dates = netCDF4.num2date(values, units=units, calendar=calendar)
+    days = np.asarray([(date - origin).total_seconds() / 86400.0 for date in dates])
+    if np.any(np.diff(days) <= 0):
+        raise ValueError("time coordinate must be strictly increasing")
+    return days
 
 
 def score_external_field(path: str | Path, *, variable: str,
@@ -46,59 +58,67 @@ def score_external_field(path: str | Path, *, variable: str,
     supplies the variable and mask names so the same code can score MOM6, a
     NEMO-style file, or an interpolated external-model NPZ-like slice.
     """
-    ref = np.load(reference_path, allow_pickle=True)
-    reference = np.asarray(ref["T_init"], dtype=float)[:, :, 0]
-    ref_ocean = np.asarray(ref["wet_mask"], dtype=bool)
-    ref_lat = np.asarray(ref["lat"], dtype=float)
-    ref_lon = np.asarray(ref["lon"], dtype=float)
-
-    ds = netCDF4.Dataset(path)
-    geometry = netCDF4.Dataset(geometry) if geometry is not None else ds
-
-    lat = _read_1d(geometry, lat_var, ref_lat, "lat")
-    lon = _read_1d(geometry, lon_var, ref_lon, "lon")
-    if lat.shape != ref_lat.shape or lon.shape != ref_lon.shape:
-        raise RuntimeError(f"coordinate mismatch: external {lat.shape}, reference {ref_lat.shape}")
-    if not np.allclose(ref_lat, lat, atol=1e-6) or not np.allclose(ref_lon, lon, atol=1e-6):
-        raise RuntimeError("external-model grid centers differ from reference")
-
-    field = ds[variable]
-    if "time" in field.dimensions:
-        time_var = next((name for name in ds.variables
-                         if "time" in ds[name].dimensions and ds[name].ndim == 1), None)
-        days = np.asarray(ds[time_var][:], dtype=float) if time_var else np.arange(field.shape[0], dtype=float)
-        keep = _steady_mask(days, steady_days)
-        slices = [keep if i == 0 else slice(None) for i in range(field.ndim)]
-    else:
-        days = np.asarray([], dtype=float)
-        keep = np.ones((1,), dtype=bool)
-        slices = [slice(None)] * field.ndim
-    arr = np.asarray(field[tuple(slices)], dtype=float)
-    if field.ndim == 3:
-        sst = np.mean(arr, axis=0)
-    elif field.ndim == 4:
-        sst = np.mean(arr[:, int(level), :, :], axis=0)
-    elif field.ndim == 2:
-        sst = arr
-    else:
-        raise RuntimeError(f"unsupported field rank {field.ndim}; expected 2D, 3D or (time,z,y,x)")
-
-    if replace_land_with_reference and sst.T.shape == reference.shape:
+    with np.load(reference_path, allow_pickle=True) as ref:
+        reference = np.asarray(ref["T_init"], dtype=float)[:, :, 0]
+        ref_ocean = np.asarray(ref["wet_mask"], dtype=bool)
+        ref_lat = np.asarray(ref["lat"], dtype=float)
+        ref_lon = np.asarray(ref["lon"], dtype=float)
+    with ExitStack() as stack:
+        dataset = stack.enter_context(netCDF4.Dataset(path))
+        geometry_dataset = (stack.enter_context(netCDF4.Dataset(geometry))
+                            if geometry is not None else dataset)
+        lat = _read_1d(geometry_dataset, lat_var, ref_lat, "lat")
+        lon = _read_1d(geometry_dataset, lon_var, ref_lon, "lon")
+        if lat.shape != ref_lat.shape or lon.shape != ref_lon.shape:
+            raise RuntimeError(f"coordinate mismatch: external {lat.shape}, reference {ref_lat.shape}")
+        if not np.allclose(ref_lat, lat, atol=1e-6) or not np.allclose(ref_lon, lon, atol=1e-6):
+            raise RuntimeError("external-model grid centers differ from reference")
+        field = dataset[variable]
+        if "time" in field.dimensions:
+            if field.dimensions[0] != "time" or "time" not in dataset.variables:
+                raise ValueError("expected a leading time dimension with a time coordinate")
+            days = _time_days(dataset["time"])
+            keep = _steady_mask(days, steady_days)
+            slices = (keep,) + (slice(None),) * (field.ndim - 1)
+        else:
+            days = np.asarray([], dtype=float)
+            keep = np.ones((1,), dtype=bool)
+            slices = (slice(None),) * field.ndim
+        arr = np.asarray(np.ma.filled(field[slices], np.nan), dtype=float)
+        if field.ndim == 3 and "time" in field.dimensions:
+            sst = np.mean(arr, axis=0)
+        elif field.ndim == 4 and "time" in field.dimensions:
+            sst = np.mean(arr[:, int(level), :, :], axis=0)
+        elif field.ndim == 2:
+            sst = arr
+        else:
+            raise RuntimeError(f"unsupported field dimensions {field.dimensions}")
+        wet = (np.asarray(geometry_dataset[wet_var][:], dtype=bool).T
+               if wet_var is not None else ref_ocean)
+    if sst.T.shape == reference.shape:
         sst = sst.T
     elif sst.shape == reference.shape:
         pass
     else:
         raise RuntimeError(f"field shape mismatch: {sst.shape} vs reference {reference.shape}")
 
-    wet = (np.asarray(geometry[wet_var][:], dtype=bool).T
-           if wet_var is not None
-           else ref_ocean)
+    if wet.shape != ref_ocean.shape:
+        raise RuntimeError("external-model wet mask shape differs from reference")
     ocean = ref_ocean & wet
-    sst = np.where(ocean, sst, reference)
+    if replace_land_with_reference:
+        sst = np.where(ocean, sst, reference)
     result = score_snapshot(sst, reference, ocean, ref_lat, ref_lon)
-    result["verdict"] = "PASS" if np.isfinite(result["global"]["raw_rmse"]) else "FAIL"
+    reference_count = int(ref_ocean.sum())
+    scored_count = int(ocean.sum())
+    result["coverage_fraction"] = scored_count / reference_count if reference_count else 0.0
+    result["coverage_complete"] = scored_count == reference_count and reference_count > 0
+    result["verdict"] = ("PASS" if result["coverage_complete"]
+                         and np.isfinite(result["global"]["raw_rmse"]) else "FAIL")
+    result["verdict_scope"] = "finite_sst_and_complete_reference_coverage"
     result["days_end"] = float(days[-1]) if days.size else None
     result["time_records"] = int(days.size)
+    result["time_first"] = float(days[0]) if days.size else None
+    result["time_last"] = float(days[-1]) if days.size else None
     result["steady_window_days"] = ([float(days[keep][0]), float(days[-1])]
                                     if days.size > 1 else [None, None])
     result["n_model_wet"] = int(wet.sum())
@@ -148,5 +168,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-

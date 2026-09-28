@@ -275,10 +275,10 @@ def score_npz(path: str | os.PathLike,
 
 
 def _relative_drift(series: np.ndarray) -> float:
-    series = np.asarray(series, dtype=float)
-    a = float(series[0])
-    b = float(series[-1])
-    return float(100.0 * (b - a) / abs(a)) if a else 0.0
+    values = np.asarray(np.ma.filled(series, np.nan), dtype=float)
+    if values.ndim != 1 or values.size < 2 or not np.all(np.isfinite(values)) or values[0] == 0.:
+        return float("nan")
+    return float(100.0 * (values[-1] - values[0]) / abs(values[0]))
 
 
 def score_3d_snapshot(snapshot: np.ndarray, z: np.ndarray,
@@ -317,4 +317,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

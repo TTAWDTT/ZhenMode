@@ -79,3 +79,13 @@ def test_cell_area_is_physical():
     area = cell_area(lat, lon)
     assert area.shape == (720, 260)
     assert 1.2e9 < float(np.min(area)) < 2.0e9
+
+
+def test_internal_and_external_budget_drift_share_validation():
+    from benchmark_metrics import _relative_drift
+    from score_external_model import _relative_drift as external_drift
+
+    assert external_drift is _relative_drift
+    assert np.isnan(_relative_drift(np.array([0., 1.])))
+    assert np.isnan(_relative_drift(np.array([1., np.nan, 2.])))
+    assert _relative_drift(np.array([100., 110.])) == 10.

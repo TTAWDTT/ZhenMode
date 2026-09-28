@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 from pathlib import Path
 
 
@@ -18,43 +19,57 @@ def _metric(data: dict, name: str):
     return data.get(name)
 
 
+def _finite(value):
+    try:
+        return value is not None and math.isfinite(float(value))
+    except (TypeError, ValueError):
+        return False
+
+
 def evaluate_gate(control: dict, experiment: dict,
                   expected_days: float | None = None,
                   tolerance: float = 1e-6) -> dict:
     """Apply the pre-registered internal candidate gates.
 
-    A smaller negative heat/salt drift is better.  A near-wall negative bias
-    closer to zero is better, but global A2 and regional RMSE remain the main
-    climate gates.
+    Missing or non-finite metrics fail closed. Bias is compared by magnitude;
+    global A2 and regional RMSE remain the main climate gates.
     """
     checks: dict[str, bool] = {}
     details: dict[str, dict] = {}
+    if not _finite(tolerance) or tolerance < 0:
+        raise ValueError("tolerance must be finite and nonnegative")
 
     checks["verdict_pass"] = (control.get("verdict") == "PASS"
                               and experiment.get("verdict") == "PASS")
+    checks["coverage_complete"] = all(
+        data.get("coverage_complete", True) is True
+        for data in (control, experiment))
 
     for metric in ["global_a2_rmse", "na_raw_rmse", "near_wall_raw_bias"]:
         base = _metric(control, metric)
         candidate = _metric(experiment, metric)
-        if base is None or candidate is None:
+        if not _finite(base) or not _finite(candidate):
             checks[f"{metric}_not_worse"] = False
         elif metric == "near_wall_raw_bias":
-            checks[f"{metric}_not_worse"] = candidate >= base - tolerance
+            checks[f"{metric}_not_worse"] = abs(float(candidate)) <= abs(float(base)) + tolerance
         else:
-            checks[f"{metric}_not_worse"] = candidate <= base + tolerance
+            checks[f"{metric}_not_worse"] = 0.0 <= float(candidate) <= float(base) + tolerance
         details[metric] = {"control": base, "experiment": candidate}
 
     for metric in ["heat_drift", "salt_drift"]:
         base = _metric(control, metric)
         candidate = _metric(experiment, metric)
-        limit = max(abs(float(base or 0.0)), 1e-6) * 2.0
-        checks[f"{metric}_bounded"] = abs(float(candidate or 0.0)) <= limit
+        limit = max(abs(float(base)), 1e-6) * 2.0 if _finite(base) else None
+        checks[f"{metric}_bounded"] = (
+            limit is not None and _finite(candidate) and abs(float(candidate)) <= limit)
         details[metric] = {"control": base, "experiment": candidate,
                            "limit_percent": limit}
 
     if expected_days is not None:
-        checks["duration_complete"] = float(
-            experiment.get("days_end") or 0.0) >= float(expected_days)
+        if not _finite(expected_days) or expected_days <= 0:
+            raise ValueError("expected_days must be finite and positive")
+        duration = experiment.get("days_end")
+        checks["duration_complete"] = _finite(duration) and float(duration) >= expected_days
     else:
         checks["duration_complete"] = True
 
