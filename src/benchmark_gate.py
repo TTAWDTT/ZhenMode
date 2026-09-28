@@ -26,6 +26,13 @@ def _finite(value):
         return False
 
 
+def _matching_hash(control, experiment, field):
+    first, second = control.get(field), experiment.get(field)
+    return (isinstance(first, str) and len(first) == 64
+            and all(character in "0123456789abcdef" for character in first)
+            and first == second)
+
+
 def evaluate_gate(control: dict, experiment: dict,
                   expected_days: float | None = None,
                   tolerance: float = 1e-6) -> dict:
@@ -44,6 +51,15 @@ def evaluate_gate(control: dict, experiment: dict,
     checks["coverage_complete"] = all(
         data.get("coverage_complete", True) is True
         for data in (control, experiment))
+    definitions = [data.get("metric_definition", "legacy_equal_cell_index_box_v1")
+                   for data in (control, experiment)]
+    checks["metric_definition_matches"] = definitions[0] == definitions[1] and definitions[0] in {
+        "legacy_equal_cell_index_box_v1", "area_weighted_angular_box_v2"}
+    legacy_comparison = definitions == ["legacy_equal_cell_index_box_v1"] * 2
+    checks["comparison_domain_matches"] = (
+        legacy_comparison or _matching_hash(control, experiment, "comparison_domain_sha256"))
+    checks["comparison_reference_matches"] = (
+        legacy_comparison or _matching_hash(control, experiment, "comparison_reference_sha256"))
 
     for metric in ["global_a2_rmse", "na_raw_rmse", "near_wall_raw_bias"]:
         base = _metric(control, metric)
@@ -74,6 +90,8 @@ def evaluate_gate(control: dict, experiment: dict,
         checks["duration_complete"] = True
 
     return {"pass": all(checks.values()), "checks": checks,
+            "metric_definition": definitions[0],
+            "qualification_scope": "internal_sst_comparison_not_century_or_independent_climate",
             "details": details}
 
 

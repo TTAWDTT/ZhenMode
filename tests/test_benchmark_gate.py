@@ -57,3 +57,37 @@ def test_gate_rejects_bias_overshooting_into_warm_error():
 def test_gate_rejects_incomplete_coverage():
     candidate = dict(_run(), coverage_complete=False)
     assert not evaluate_gate(_run(), candidate)["pass"]
+
+
+def test_gate_rejects_legacy_and_area_weighted_score_mixture():
+    candidate = dict(_run(), metric_definition="area_weighted_angular_box_v2",
+                     comparison_domain_sha256="a" * 64)
+    assert not evaluate_gate(_run(), candidate)["pass"]
+    assert not evaluate_gate(candidate, _run())["pass"]
+
+
+@pytest.mark.parametrize("domain", [None, "", "b" * 64])
+def test_v2_gate_rejects_missing_or_different_domain(domain):
+    control = dict(_run(), metric_definition="area_weighted_angular_box_v2",
+                   comparison_domain_sha256="a" * 64,
+                   comparison_reference_sha256="c" * 64)
+    candidate = dict(control, comparison_domain_sha256=domain)
+    assert not evaluate_gate(control, candidate)["pass"]
+
+
+def test_v2_comparison_pass_is_not_climate_qualification():
+    control = dict(_run(), metric_definition="area_weighted_angular_box_v2",
+                   comparison_domain_sha256="a" * 64,
+                   comparison_reference_sha256="c" * 64)
+    result = evaluate_gate(control, control)
+    assert result["pass"]
+    assert result["qualification_scope"] == "internal_sst_comparison_not_century_or_independent_climate"
+
+
+@pytest.mark.parametrize("reference", [None, "", "d" * 64])
+def test_v2_gate_rejects_missing_or_different_reference(reference):
+    control = dict(_run(), metric_definition="area_weighted_angular_box_v2",
+                   comparison_domain_sha256="a" * 64,
+                   comparison_reference_sha256="c" * 64)
+    candidate = dict(control, comparison_reference_sha256=reference)
+    assert not evaluate_gate(control, candidate)["pass"]

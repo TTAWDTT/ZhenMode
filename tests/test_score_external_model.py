@@ -189,3 +189,24 @@ def test_mom6_cli_uses_normalized_shared_time_window(tmp_path, monkeypatch, caps
     assert capsys.readouterr().out
 
 
+def test_external_score_uses_provided_shared_area_without_independence_claim(tmp_path):
+    reference_path = tmp_path / "reference.npz"
+    model_path = tmp_path / "model.nc"
+    _write_reference(reference_path)
+    with np.load(reference_path) as saved:
+        payload = {name: saved[name] for name in saved.files}
+    area = np.arange(1., 10.).reshape(3, 3)
+    np.savez(reference_path, **payload, cell_area_m2=area)
+    values = np.arange(18.).reshape(2, 3, 3) + 20.
+    _write_external(model_path, values, payload["lat"], payload["lon"],
+                    wet_mask=payload["wet_mask"].T)
+    result = score_external_field(model_path, variable="sst", reference_path=reference_path,
+                                  wet_var="wet_mask")
+    error = values.mean(axis=0).T - 20.
+    ocean = payload["wet_mask"]
+    assert result["global"]["raw_bias"] == pytest.approx(np.average(error[ocean], weights=area[ocean]))
+    assert result["global"]["raw_rmse"] == pytest.approx(np.sqrt(np.average(error[ocean] ** 2, weights=area[ocean])))
+    assert result["metric_definition"] == "area_weighted_angular_box_v2"
+    assert result["area_source"] == "provided_cell_area"
+    assert result["reference_role"] == "shared_initialization_field_not_independent_validation"
+

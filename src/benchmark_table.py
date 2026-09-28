@@ -18,6 +18,7 @@ def load_metric(path: str | Path, label: str | None = None) -> dict:
         "label": _label(path, label),
         "path": str(path),
         "verdict": data.get("verdict", "MISSING"),
+        "metric_definition": data.get("metric_definition", "legacy_equal_cell_index_box_v1"),
         "days_end": data.get("days_end", ""),
         "global_a2_rmse": data.get("global_a2_rmse_c"),
         "na_raw_rmse": data.get("north_atlantic_40_60", {}).get("raw_rmse"),
@@ -32,12 +33,12 @@ def load_metric(path: str | Path, label: str | None = None) -> dict:
 
 def markdown_table(rows: list[dict]) -> str:
     """Render rows as a compact benchmark comparison table."""
-    headers = ["run", "verdict", "days", "global A2", "NA RMSE",
+    headers = ["run", "metric definition", "verdict", "days", "global A2", "NA RMSE",
                "near-wall RMSE", "global bias", "heat drift", "salt drift"]
-    fields = ["label", "verdict", "days_end", "global_a2_rmse", "na_raw_rmse",
+    fields = ["label", "metric_definition", "verdict", "days_end", "global_a2_rmse", "na_raw_rmse",
               "near_wall_raw_rmse", "raw_bias", "heat_drift", "salt_drift"]
     lines = ["| " + " | ".join(headers) + " |",
-             "|---|---:|---:|---:|---:|---:|---:|---:|---:|"]
+             "|---|---|---:|---:|---:|---:|---:|---:|---:|---:|"]
     for row in rows:
         cells = []
         for field in fields:
@@ -74,5 +75,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-
 

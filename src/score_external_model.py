@@ -63,6 +63,7 @@ def score_external_field(path: str | Path, *, variable: str,
         ref_ocean = np.asarray(ref["wet_mask"], dtype=bool)
         ref_lat = np.asarray(ref["lat"], dtype=float)
         ref_lon = np.asarray(ref["lon"], dtype=float)
+        ref_area = np.asarray(ref["cell_area_m2"], dtype=float) if "cell_area_m2" in ref else None
     with ExitStack() as stack:
         dataset = stack.enter_context(netCDF4.Dataset(path))
         geometry_dataset = (stack.enter_context(netCDF4.Dataset(geometry))
@@ -107,11 +108,15 @@ def score_external_field(path: str | Path, *, variable: str,
     ocean = ref_ocean & wet
     if replace_land_with_reference:
         sst = np.where(ocean, sst, reference)
-    result = score_snapshot(sst, reference, ocean, ref_lat, ref_lon)
+    result = score_snapshot(sst, reference, ocean, ref_lat, ref_lon, area=ref_area)
+    finite_coverage = result["coverage_complete"]
     reference_count = int(ref_ocean.sum())
     scored_count = int(ocean.sum())
     result["coverage_fraction"] = scored_count / reference_count if reference_count else 0.0
-    result["coverage_complete"] = scored_count == reference_count and reference_count > 0
+    result["coverage_complete"] = bool(finite_coverage and scored_count == reference_count and reference_count > 0)
+    result["reference_role"] = "shared_initialization_field_not_independent_validation"
+    result["temporal_averaging"] = "arithmetic_saved_records_not_time_bounds_weighted"
+    result["budget_drift_scope"] = "endpoint_content_change_not_budget_residual"
     result["verdict"] = ("PASS" if result["coverage_complete"]
                          and np.isfinite(result["global"]["raw_rmse"]) else "FAIL")
     result["verdict_scope"] = "finite_sst_and_complete_reference_coverage"
