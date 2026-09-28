@@ -88,9 +88,18 @@ def audit(data, dt=60.):
     uncast = (data["uncast_east_velocity"], data["uncast_north_velocity"])
     stored = (data["final_east_velocity"].astype(np.float64), data["final_north_velocity"].astype(np.float64))
     mean = tuple(data[name] / np.where(area > 0., area, 1.) for name, area in zip(("mean_east_flux", "mean_north_flux"), areas))
-    eta0 = data["previous_volume"][..., 0] / data["area"] - data["thickness"][..., 0]
+    host_height = data["previous_volume"][..., 0] / data["area"]
+    host_eta = host_height - data["thickness"][..., 0]
+    eta0 = data["initial_eta"]
+    coordinate_floor = 64. * np.finfo(float).eps * (np.abs(host_height) + np.abs(data["thickness"][..., 0]))
+    if np.any(np.abs(eta0 - host_eta) > coordinate_floor):
+        raise ValueError("actual starting eta geometry representation")
     eta1 = data["surface_eta"]
     mean_eta = data["mean_eta"]
+    surface_gate = 1e-12 + 1e-12 * max(np.max(np.abs(eta0)), np.max(np.abs(eta1)))
+    mean_eta_error = abs(np.sum(data["area"] * (mean_eta - eta0))) / np.sum(data["area"])
+    if mean_eta_error > surface_gate:
+        raise ValueError("zero-source global substep-mean eta")
     force = (data["force_east"], data["force_north"])
     for velocity in (previous, uncast, stored, mean):
         if any(np.any(field[area == 0.] != 0.) for field, area in zip(velocity, areas)):
@@ -108,11 +117,11 @@ def audit(data, dt=60.):
         raise ValueError(f"aggregate midpoint momentum: {momentum_residual} > {momentum_gate}")
     horizontal = data["mean_east_flux"] - adjacent(data["mean_east_flux"], 0, -1) + data["mean_north_flux"] - adjacent(data["mean_north_flux"], 1, -1)
     surface_error = np.max(np.abs(eta1 - eta0 + dt * np.sum(horizontal, axis=-1) / data["area"]))
-    if surface_error > 1e-12 + 1e-12 * max(np.max(np.abs(eta0)), np.max(np.abs(eta1))):
+    if surface_error > surface_gate:
         raise ValueError("aggregate midpoint surface/Q equation")
     net = horizontal + data["vertical_flux"][..., 1:] - data["vertical_flux"][..., :-1]
     volume_error = np.max(np.abs((data["final_volume"] - data["previous_volume"] + dt * net) / data["area"][..., None]))
-    if volume_error > 1e-12 + 1e-12 * max(np.max(np.abs(eta0)), np.max(np.abs(eta1))):
+    if volume_error > surface_gate:
         raise ValueError("actual inventory shared Q")
     initial_energy = kinetic(mass, previous, areas) + .5 * 9.81 * np.sum(data["area"] * eta0 ** 2)
     final_energy = kinetic(mass, uncast, areas) + .5 * 9.81 * np.sum(data["area"] * eta1 ** 2)
@@ -131,7 +140,9 @@ def audit(data, dt=60.):
     content_budget = np.abs(np.sum(data["final_content"] - data["initial_content"], axis=(0, 1, 2))) / np.sum(np.abs(data["initial_content"]), axis=(0, 1, 2))
     if np.max(content_budget) > 1e-12:
         raise ValueError("independent content inventory")
-    return {"momentum_relative": float(momentum_residual / scale if scale > 0. else 0.),
+    return {"starting_eta_geometry_error_m": float(np.max(np.abs(eta0 - host_eta))),
+            "mean_eta_global_error_m": float(mean_eta_error),
+            "momentum_relative": float(momentum_residual / scale if scale > 0. else 0.),
             "surface_error_m": float(surface_error), "volume_equation_error_m": float(volume_error),
             "energy_work_relative": float(abs(energy_residual) / energy_scale if energy_scale > 0. else 0.),
             "cast_work_per_rho0": float(cast_work), "moving_mass_energy_per_rho0": float(moving_work)}
@@ -143,22 +154,49 @@ def verify(path, negative=False):
         raise ValueError("paired report not complete/qualified")
     if report["kinetic_norm"] != "physical_wet_contact_horizontal_field_L2" or report["time_scheme"] != "simultaneous_implicit_midpoint_rotation_pressure_surface_mean_q":
         raise ValueError("paired method contract")
+    provenance = report["provenance"]
+    if provenance["git_status"]:
+        raise ValueError("paired reference did not start at clean revision")
+    if any(hashlib.sha256((ROOT / name).read_bytes()).hexdigest() != value for name, value in provenance["source_sha256"].items()):
+        raise ValueError("current source differs from paired runtime manifest")
+    input_report = ROOT / provenance["input_report"]
+    if hashlib.sha256(input_report.read_bytes()).hexdigest() != provenance["input_report_sha256"]:
+        raise ValueError("paired real input report hash")
+    combinations = {(run["geometry"], run["velocity_dtype"], run["disturbed"]) for run in report["runs"]}
+    expected_combinations = {(geometry, dtype, disturbed) for geometry in ("prior_smoothed", "unsmoothed")
+                             for dtype in ("float64", "float32") for disturbed in (False, True)}
+    if combinations != expected_combinations:
+        raise ValueError("paired real group coverage")
     evidence, negatives = [], []
     for run in report["runs"]:
         endpoint = ROOT / run["snapshot_path"]
         if hashlib.sha256(endpoint.read_bytes()).hexdigest() != run["snapshot_sha256"]:
             raise ValueError("paired snapshot hash")
-        if run["status"] != "PASS" or run["completed_steps"] != run["requested_steps"] or any(not row["accepted"] for row in run["history"]):
+        if run["status"] != "PASS" or run["completed_steps"] != run["requested_steps"] or len(run["history"]) != run["completed_steps"] or any(not row["accepted"] for row in run["history"]):
             raise ValueError("paired recorded history not qualified")
+        immutable_input = ROOT / run["input_snapshot"]
+        if hashlib.sha256(immutable_input.read_bytes()).hexdigest() != run["input_snapshot_sha256"]:
+            raise ValueError("paired immutable real input hash")
+        for index, row in enumerate(run["history"]):
+            if row["step"] != index + 1 or any(value is None or not np.isfinite(value) for name, value in row.items() if name not in ("step", "accepted")):
+                raise ValueError("paired finite ordered history")
+            limits = {"solve_relative": 1e-12, "frozen_energy_work_relative": 1e-11,
+                      "surface_error_m": 1e-12 + 1e-12 * row["eta_max_m"], "outflow_fraction": 1. + 1e-12,
+                      "wet_bottom_relative": 1e-12 + 64. * np.finfo(float).eps,
+                      "dual_commutation_relative": 1e-12 + 64. * np.finfo(float).eps,
+                      "bulk_continuity_relative": 1e-12 + 64. * np.finfo(float).eps,
+                      "constant_error": 1e-12, "bound_excursion": 1e-12}
+            if any(not 0. <= row[name] <= limit for name, limit in limits.items()):
+                raise ValueError("paired recorded gate violation")
         with np.load(endpoint, allow_pickle=False) as snapshot:
             data = {name: snapshot[name] for name in snapshot.files}
         if any(not np.all(np.isfinite(array)) for array in data.values()):
             raise ValueError("nonfinite paired snapshot")
         evidence.append({"geometry": run["geometry"], "dtype": run["velocity_dtype"], "disturbed": run["disturbed"], **audit(data)})
         if negative and run["disturbed"] and run["velocity_dtype"] == "float64" and not negatives:
-            for name in ("uncast_east_velocity", "mean_east_flux", "mean_eta", "force_east", "final_volume", "final_content", "external_work", "latitude_edges"):
+            for name in ("uncast_east_velocity", "mean_east_flux", "initial_eta", "mean_eta", "force_east", "final_volume", "final_content", "external_work", "latitude_edges"):
                 corrupted = {key: value.copy() for key, value in data.items()}
-                corrupted[name] = corrupted[name] * 1.01 if name != "mean_eta" else corrupted[name] + .01
+                corrupted[name] = corrupted[name] + .01 if name in ("mean_eta", "initial_eta") else corrupted[name] * 1.01
                 try:
                     audit(corrupted)
                 except ValueError:

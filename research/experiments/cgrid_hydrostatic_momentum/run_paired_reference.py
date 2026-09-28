@@ -43,6 +43,7 @@ def main():
                                                "paired_dynamics.py", "wet_fluxes.py", "physical_velocity.py", "config.py")]
     sources.extend((Path(__file__), Path(__file__).with_name("paired_dynamics_protocol.md"),
                     Path(__file__).with_name("paired_increment_addendum.md"),
+                    Path(__file__).with_name("paired_initial_eta_addendum.md"),
                     Path(__file__).with_name("verify_paired_reference.py"),
                     Path(__file__).with_name("analyze_physical_kinetic.py"),
                     ROOT / "tests/test_paired_dynamics.py"))
@@ -136,7 +137,7 @@ def main():
                   "final_east_velocity": state.east_velocity, "final_north_velocity": state.north_velocity,
                   "uncast_east_velocity": result.surface.uncast_velocity.east, "uncast_north_velocity": result.surface.uncast_velocity.north,
                   "mean_east_flux": result.fluxes.east, "mean_north_flux": result.fluxes.north, "vertical_flux": result.fluxes.vertical,
-                  "mean_eta": result.surface.mean_eta, "surface_eta": result.surface.eta,
+                  "mean_eta": result.surface.mean_eta, "surface_eta": result.surface.eta, "initial_eta": result.surface.initial_eta,
                   "force_east": result.held_force.east, "force_north": result.held_force.north,
                   "external_work": result.surface.external_work, "cast_work": result.surface.cast_work,
                   "moving_mass_energy_change": result.moving_mass_energy_change}

@@ -49,6 +49,7 @@ class PairedOperators(NamedTuple):
 class PairedSurfaceResult(NamedTuple):
     velocity: VelocityPair
     eta: jnp.ndarray
+    initial_eta: jnp.ndarray
     mean_east: jnp.ndarray
     mean_north: jnp.ndarray
     mean_eta: jnp.ndarray
@@ -279,7 +280,7 @@ def advance_paired_surface(operators, eta, velocity, dt, nsub, gravity=9.81,
     stored = VelocityPair(*(jnp.where(mask, field, 0.).astype(velocity.east.dtype) for mask, field in zip(opened, physical_final)))
     cast_work = kinetic_energy(operators, VelocityPair(*(field.astype(jnp.float64) for field in stored))) - kinetic_energy(operators, physical_final)
     valid = valid & jnp.isfinite(energy_relative) & (energy_relative <= 1e-11)
-    return PairedSurfaceResult(stored, final_eta, east_mean, north_mean, eta_mean, physical_final,
+    return PairedSurfaceResult(stored, final_eta, eta, east_mean, north_mean, eta_mean, physical_final,
                                residual, change, work, energy_residual, energy_relative, cast_work, valid)
 
 

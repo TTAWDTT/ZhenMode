@@ -251,6 +251,15 @@ def test_rest_has_no_spurious_solver_motion_or_work():
     assert float(result.energy_work_residual) == 0.
 
 
+def test_actual_starting_eta_is_recorded_not_reconstructed_from_q():
+    geometry, volume, eta = fixture()
+    operators = paired_operators(geometry, volume)
+    velocity = VelocityPair(jnp.zeros_like(volume), jnp.zeros_like(volume))
+    result = jax.jit(lambda surface: advance_paired_surface(operators, surface, velocity, 60., 4))(jnp.asarray(eta))
+    np.testing.assert_array_equal(result.initial_eta, eta)
+    assert np.max(np.abs(np.asarray(result.eta) - eta)) > 1e-9
+
+
 @pytest.mark.parametrize("defect", ["area", "latitude", "radius", "pole", "nan_frequency"])
 def test_invalid_physical_metrics_and_rotation_reject(defect):
     geometry, volume, unused_eta = fixture()
