@@ -37,6 +37,7 @@ py-modules = [
     "cgrid_momentum",
     "wet_fluxes",
     "physical_velocity",
+    "paired_dynamics",
     "barotropic_transport",
     "jax_solver_global",
     "run_long_integration_global",
