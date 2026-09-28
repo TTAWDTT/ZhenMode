@@ -10,7 +10,7 @@ equations on a lat-lon grid, written in JAX.
 | Solver core | `src/jax_solver_global.py` |
 | Driver (CLI) | `src/run_long_integration_global.py` |
 | Tests | `tests/` |
-| Design rationale | `docs/decisions.md` (D1-D42) + `docs/README.md` |
+| Design rationale | `docs/decisions.md` (D1-D43) + `docs/README.md` |
 
 Everything else is support: data loaders (`src/forcing.py`,
 `src/wind_reanalysis.py`, `src/woa_data.py`), grid/bathymetry
@@ -42,6 +42,14 @@ Independent local-volume checks of the same eight short references pass;
 MAC mass/flux averages on the current moving common-wet support. This is a
 failed proposed nonlinear mapping, not an implemented nonlinear operator.
 See the [moving-dual review](research/experiments/cgrid_hydrostatic_momentum/dual_mass_review.md).
+
+`src/wet_fluxes.py` now reconstructs actual shared Q on wet contact intervals
+and enters actual linear-step acceptance (D43).483 regressions and the same
+eight short references pass; independent last-snapshot audits reject14
+corruptions. Four small source/precision fixtures retain bitwise states.
+Mapped traces are not physical point velocities or nonlinear momentum;
+metric/dual mass/force/time pairing and production migration remain pending.
+See the [wet-trace review](research/experiments/cgrid_hydrostatic_momentum/wet_trace_review.md).
 
 ## Features
 

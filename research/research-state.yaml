@@ -926,5 +926,37 @@ industrial_alignment_20260928:
     nonlinear_momentum_implemented: false
     production_cutover: false
     century_climate_forecast_gpu_full_adjoint_pass: false
-  next: "Resolve true wet-contact enriched flux/velocity reconstruction, geometric boundary capacities and wall reactions; plain RT0 face spreading is rejected even though half-prism mass algebra closes. Choose matched physical mass/force/pressure/rotation and C=sum(S^2/M) fast/layer pairing plus moving time coupling TOGETHER, then implement ACTUAL nonlinear momentum and kinetic/buoyancy exchange. Complete EOS/real sources/mixing/ice and ACTUAL initialization/checkpoint/driver migration; no indefinite unused prototype. Preserve global topology, century/sensitivity, independent climate/forecast, fair GPU/distributed, whole-model adjoint/learning and engineering roadmap. No final industrial qualification yet."
+  cgrid_wet_contact_trace:
+    status: actual_frozen_spatial_trace_pass_not_point_velocity_or_nonlinear_momentum
+    protocol_commit: "3a91aed"
+    implementation_commit: "d7e24b9"
+    review: "research/experiments/cgrid_hydrostatic_momentum/wet_trace_review.md"
+    new_direct_tests_passed: 13
+    adjacent_direct_tests_passed: 74
+    full_tests_passed: 483
+    old_warnings: 23
+    full_tests_log: "results/industrial_alignment/wet_trace_full_tests.log"
+    reference_groups_passed: 8
+    steps_per_group: 100
+    dt_seconds: 60.
+    barotropic_substeps: 4
+    reference_runtime_git_clean: true
+    independent_scope: last_inventory_geometry_actual_q_and_wet_trace_not_every_step_replay
+    inventory_q_negative_controls: 9
+    wet_trace_negative_controls: 5
+    maximum_recorded_bottom_closure_relative: 6.347202e-16
+    worst_content_budget_relative: 4.952833e-18
+    volume_budget_delta_m3_range: [-0.00537109375, 0.01318359375]
+    frozen_baseline_git_blob_commit: "3a91aed"
+    exact_state_fixture_groups: 4
+    exact_state_fields: [volume, content, east_velocity, north_velocity]
+    initial_late_baseline_manifest_qualified: false
+    all_real_trajectories_bitwise_unchanged_claimed: false
+    legacy_mms: ALL_PASS_ratio_4.30
+    isolated_installed_actual_wet_trace_step: passed
+    physical_point_velocity_qualified: false
+    nonlinear_momentum_implemented: false
+    production_cutover: false
+    century_climate_forecast_gpu_full_adjoint_pass: false
+  next: "Frozen actual wet-contact traces are implemented; resolve latitude-metric physical reconstruction and matched dual Q, velocity support, geometric capacities and wall reactions. Choose matched physical mass/force/pressure/rotation and C=sum(S^2/M) fast/layer pairing plus moving time coupling TOGETHER, then implement ACTUAL nonlinear momentum and kinetic/buoyancy exchange. Complete EOS/real sources/mixing/ice and ACTUAL initialization/checkpoint/driver migration; no indefinite unused prototype. Preserve global topology, century/sensitivity, independent climate/forecast, fair GPU/distributed, whole-model adjoint/learning and engineering roadmap. No final industrial qualification yet."
   unresolved: ["whole-model budgets", "volume/free-surface consistency", "partial cells/global topology", "complete real physical forcing", "independent climate/forecast skill", "fair GPU/distributed cost", "whole-model adjoint and constrained learning"]

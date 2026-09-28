@@ -1069,3 +1069,28 @@ Production remains legacy; no century/climate/forecast/GPU/full-adjoint claim.
 Protocol and evidence:
 [`shared-Q/dual-mass protocol`](../research/experiments/cgrid_hydrostatic_momentum/dual_mass_protocol.md),
 [`moving-dual review`](../research/experiments/cgrid_hydrostatic_momentum/dual_mass_review.md).
+
+## D43 — Reconstruct actual shared Q only on wet contact traces
+
+Protocol3a91aed, implementationd7e24b9. Reconstruct SAME actual64 layer Q
+on W/E/S/N wet intervals; clipped vertical primitives match interface Q and
+mapped cell divergence without extending normal flux through blocked wedges.
+Return reconstruction from actual linear step and include validity in its
+acceptance. Current force, geometry, state arithmetic and sources unchanged.
+These are face-integrated mapped fluxes, NOT physical point velocities or a
+nonlinear moving momentum discretization. Constant area-coordinate transverse
+trace requires metric/dual-flux research before physical velocity promotion.
+
+13 direct/74 adjacent and483 full regressions pass; MMS and installed actual
+step pass. At cleand7e24b9 SAME eight real100x60s references pass. Independent
+last inventory/local-Q and wet-trace audits reject9+5 corruptions; recorded
+intermediate flags are not independent all-step replay. Four source/precision
+fixtures have bitwise V/N/u/v against immutable3a91aed source blobs; do not
+extend this assertion to all real references, whose JIT roundoff can differ.
+An initial end-of-process baseline manifest was rejected because it could
+hash edited rather than loaded code. Retain it and the initial JIT bool failure.
+Full physical support/forces/time coupling, nonlinear momentum and production
+migration remain required; no century/climate/forecast/GPU/whole-adjoint claim.
+Protocol and evidence:
+[`wet-trace protocol`](../research/experiments/cgrid_hydrostatic_momentum/wet_trace_protocol.md),
+[`wet-trace review`](../research/experiments/cgrid_hydrostatic_momentum/wet_trace_review.md).

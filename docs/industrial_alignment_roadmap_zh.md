@@ -143,6 +143,16 @@ MMS及独立安装通过。下一步库存精度与高阶共享通量，再完�
 只换质量。下一项是实际湿面通量/速度支持、墙反力和移动时层配对，再
 实现非线性动量及实际驱动切换；本选型不是新的生产积分或完成证明。
 
+随后[实际湿接触通量重建](../research/experiments/cgrid_hydrostatic_momentum/wet_trace_review.md)
+已接入实际线性步的返回与验收：法向通量只在共同湿区存在，分段垂向原函数
+同时匹配顶底通量与单元散度。483项全量、MMS、隔离安装及同八组短参照
+通过；末步库存/实际Q与湿面独立复核拒绝9+5项破坏。四组小网格源/精度
+对照与不可变旧Git源码逐位一致，不宣称全部真实轨迹逐位相同。初次迟采集
+源码哈希的基准来源不合格，已保留并改用实际执行的旧Git对象重测。
+当前是冻结几何的映射通量，不是物理点速度或非线性动量；下一步纬度度量、
+实际双网格Q、质量/力/快模态及移动时层同步配对。生产迁移与百年、独立
+气候/预报、GPU/分布式、全伴随和其他完整目标仍未完成。
+
 - [MOM6 tracer budget closure](https://mom6-analysiscookbook.readthedocs.io/en/latest/notebooks/Closing_tracer_budgets.html)：按广延示踪剂含量逐项闭合，原生/重映射诊断不能混淆。
 - [MOM6 horizontal diffusion](https://mom6.readthedocs.io/en/main/api/generated/pages/Horizontal_Diffusion.html)：面通量、层厚匹配和极值控制；不是本项目二维背景扩散的逐行移植。
 - [MITgcm algorithm](https://mitgcm.readthedocs.io/en/latest/algorithm/algorithm.html)：有限体积、几何/自由面与示踪剂守恒兼容性。

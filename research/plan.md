@@ -4,6 +4,18 @@ Updated: 2026-09-29
 
 ## Current authority: full industrial alignment
 
+Latest actual-path milestone2026-09-29:d7e24b9 implements shared-Q traces
+restricted to true wet contacts and a divergence-compatible vertical primitive,
+returned and checked by the ACTUAL linear step.13 new/74 adjacent/483 full
+tests, MMS, isolated installed step and SAME eight real100x60s references pass.
+Independent last-snapshot audits reject9 inventory/Q plus5 wet corruptions.
+Four small source/precision fixtures have bitwise states against immutable
+3a91aed blobs; the first late source manifest is rejected and retained.
+See `research/experiments/cgrid_hydrostatic_momentum/wet_trace_review.md`.
+Frozen mapped trace is NOT point velocity or nonlinear momentum. Next metric
+physical reconstruction and paired dual Q, mass/force/fast/time coupling, then
+actual nonlinear momentum and production cutover; full industrial scope intact.
+
 Latest representation selection2026-09-29: precommittedc6aae95/1b129ef,
 offline clean3768060 tests complete wet half-prisms on ALL four rain and eight
 actual real-Q snapshots. Kinematic mass/dual-flux and paired column mobility
