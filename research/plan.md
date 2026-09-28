@@ -4,6 +4,18 @@ Updated: 2026-09-29
 
 ## Current authority: full industrial alignment
 
+Latest representation selection2026-09-29: precommittedc6aae95/1b129ef,
+offline clean3768060 tests complete wet half-prisms on ALL four rain and eight
+actual real-Q snapshots. Kinematic mass/dual-flux and paired column mobility
+pass, including25 direct and12 independent matrix negative controls. Plain
+RT0 trace extension into blocked bottom wedges is explicitly rejected; this
+is hypothetical extrapolation, not actual core wall leakage. New support
+cannot reuse old uniform column mode or old fast capacity. See
+`research/experiments/cgrid_hydrostatic_momentum/staggered_support_review.md`.
+Before actual nonlinear migration, construct trace-compatible wet-boundary
+flux/velocity support and wall reactions with matched forces and moving time
+coupling; kinematic/algebraic evidence does not qualify physical accuracy.
+
 Latest coupling milestone2026-09-29:0eb56ed returns the SAME actual layer Q
 used by V/N. Four new API/source regressions,61 adjacent and470 full tests
 pass; MMS and isolated installation pass. Same eight real100x60s cases pass

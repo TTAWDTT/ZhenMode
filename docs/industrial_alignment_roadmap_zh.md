@@ -136,6 +136,13 @@ MMS及独立安装通过。下一步库存精度与高阶共享通量，再完�
 同步处理压力、旋转和快慢模态匹配，不能用几何交换代数当人为源项。
 旧生产驱动仍未迁移，完整百年、气候/预报及其他目标均不变且未完成。
 
+随后[完整湿半格支持选型](../research/experiments/cgrid_hydrostatic_momentum/staggered_support_review.md)
+在全部四组降雨及八组实际Q快照上通过局部质量/通量及离线柱能量匹配，
+但简单RT0均摊会把通量延拓进阶梯底墙，物理重建明确未获证；这不是
+实际核心通量漏墙的结论。新支持还要求同步改变快模态柱迁移率，不能
+只换质量。下一项是实际湿面通量/速度支持、墙反力和移动时层配对，再
+实现非线性动量及实际驱动切换；本选型不是新的生产积分或完成证明。
+
 - [MOM6 tracer budget closure](https://mom6-analysiscookbook.readthedocs.io/en/latest/notebooks/Closing_tracer_budgets.html)：按广延示踪剂含量逐项闭合，原生/重映射诊断不能混淆。
 - [MOM6 horizontal diffusion](https://mom6.readthedocs.io/en/main/api/generated/pages/Horizontal_Diffusion.html)：面通量、层厚匹配和极值控制；不是本项目二维背景扩散的逐行移植。
 - [MITgcm algorithm](https://mitgcm.readthedocs.io/en/latest/algorithm/algorithm.html)：有限体积、几何/自由面与示踪剂守恒兼容性。
