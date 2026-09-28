@@ -1049,6 +1049,14 @@ industrial_alignment_20260928:
     both_increment_and_endpoint_true_residuals_checked: true
     direct_tests_before_eta_recording: 33
     final_source_adjacent_tests_passed: 80
+    final_source_direct_tests_passed: 34
+    final_source_one_step_real_groups_passed: 8
+    one_step_report: "results/industrial_alignment/cgrid_paired_dynamics_eta_smoke.json"
+    one_step_independent_report: "results/industrial_alignment/cgrid_paired_dynamics_eta_smoke_host.json"
+    one_step_negative_controls_rejected: 9
+    final_source_reference_requested_steps_per_group: 100
+    final_source_reference_report: "results/industrial_alignment/cgrid_paired_dynamics_eta_reference.json"
+    final_source_reference_status: running_not_qualified
     full_tests_before_eta_recording: 573
     old_warnings: 23
     full_tests_before_eta_recording_seconds: 673.50
@@ -1062,6 +1070,7 @@ industrial_alignment_20260928:
     mean_eta_global_nullspace_checked: true
     legacy_mms: ALL_PASS_ratio_4.30
     installed_pre_eta_actual_step: passed
+    installed_final_source_actual_eta_step: passed
     frozen_energy_work_separate_from_cast_and_moving_mass: true
     nonlinear_momentum_implemented: false
     moving_mass_buoyancy_energy_qualified: false

@@ -21,23 +21,28 @@ utilities, plus two clearly-marked side directories —
 
 ## Production and Migration Status
 
-The CLI still runs the legacy FD core above. The migration path is:
-physical cell inventories/shared mean Q (`finite_volume.py`, `barotropic_transport.py`)
--> extensive FCT (`bounded_transport.py`)
--> wet-contact pressure/linear layer momentum (`cgrid_momentum.py`)
--> wet/dual fluxes and physical fluid/grid velocity (`wet_fluxes.py`, `physical_velocity.py`).
--> paired kinetic mass/rotation/pressure/surface dynamics (`paired_dynamics.py`).
-These components advance the actual LINEAR migration reference, not yet in
-the production driver (D37-D46). Inventories/Q/geometry are64; momentum is64/32.
+The CLI still runs the legacy FD core above. The current migration entry is
+`paired_dynamics.paired_momentum_surface_step`:
+physical geometry/inventories (`finite_volume.py`)
+-> wet-contact pressure FORCE (`cgrid_momentum.py`) and coupled kinetic
+mass/rotation/pressure/surface midpoint (`paired_dynamics.py`)
+-> SAME actual mean Q and extensive FCT (`bounded_transport.py`)
+-> wet/dual Q and physical fluid/grid velocity (`wet_fluxes.py`, `physical_velocity.py`).
+This actual LINEAR step is not yet in the production driver (D37-D46).
+The former split-linear reference is historical, not another production mainline.
+Inventories/Q/geometry are64; momentum is64/32.
 
-540 regressions,131 adjacent tests, eight real-grid100x60s linear references,
+The PRIOR physical-frame stage has540 regressions,131 adjacent tests and
+eight real-grid100x60s linear references;
 installed active step and independent last-snapshot audits pass.34 deliberate
 corruptions reject; prior failed interpretations/evidence are retained.
 The physical field uses actual MEAN Q on frozen geometry, not endpoint velocity.
 Kinematic half-prism mass is not silently substituted into force equations.
-The new paired midpoint step passes33 direct checks; final-source full and
-eight-case independent qualification remain pending after a near-rest eta0
-recording gap. Frozen/cast/moving-mass work are distinct; actual nonlinear
+Current paired step passes34 direct/80 adjacent checks and eight ONE-STEP
+real-grid host audits with9 deliberate corruptions rejected. Actual eta0
+recording fixes the original near-rest evidence gap without changing field
+gates. Final-source full suite and eight100-step references remain pending.
+Frozen/cast/moving-mass work are distinct; actual nonlinear
 dynamics/buoyancy and driver cutover remain required. Century/climate/forecast/
 GPU/full-adjoint claims remain unqualified.
 See the [current dynamics evidence](research/experiments/cgrid_hydrostatic_momentum/paired_dynamics_review.md)

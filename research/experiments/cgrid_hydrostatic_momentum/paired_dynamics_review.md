@@ -46,6 +46,20 @@ This is PRE-eta source, not final-source qualification. Eta-recording core
 782cd63 then passes80 adjacent tests in59.16s. Final full/eight-case evidence
 is still pending; no finished process is falsely described as live.
 
+Final-source one-step smoke at clean1802e36 uses ALL eight immutable real-grid
+inputs with ACTUAL new dynamics. Runtime and independent host audits pass;
+9 momentum/Q/eta-geometry/eta-nullspace/force/V/N/work/metric corruptions reject.
+Maximum independent momentum relative3.1085101e-15 and energy5.0355504e-16.
+This is eight60s steps, NOT eight6000s histories or climate qualification.
+Final isolated installed782cd63 active step also passes outside src; initial
+eta is64 and same-Q/inventory64 with momentum32. New full/100-step processes
+are pending; original unqualified partial evidence is retained.
+
+Actual nonlinear/moving-energy research now notes that cubic/piecewise
+Hamiltonian time coupling cannot inherit frozen quadratic midpoint's energy
+identity. See `research/literature/nonlinear_paired_energy_20260929.md`;
+do not add arbitrary Mdot or post-hoc KE repair instead of actual advection.
+
 ## Required next work
 
 Record starting eta, rerun final-source tests/installed step and NEW eight-case

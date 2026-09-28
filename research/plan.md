@@ -15,6 +15,13 @@ starting-eta recording/independent geometry and global mean checks. No gate
 relaxation or state repair. Pre-eta full-suite handle42215 completes:573 pass,
 23 old warnings,673.50s with unchanged source hashes. Exact eta recording
 782cd63 passes80 final-source adjacent tests; final full/eight-case pending.
+Eight ONE-STEP real-grid runtime and independent host audits pass and reject9
+corruptions; maximum momentum3.11e-15/energy5.04e-16. New eight100-step and
+final full-suite processes remain pending. This is not century/production proof.
+Final installed active eta64/Q64/inventory64/momentum32 step passes. Nonlinear
+moving-mass/buoyancy primary research is registered in
+`research/literature/nonlinear_paired_energy_20260929.md`; frozen quadratic
+midpoint cannot be blindly extended to a cubic piecewise moving Hamiltonian.
 See `research/experiments/cgrid_hydrostatic_momentum/paired_dynamics_review.md`.
 Qualify the corrected actual coupled reference, then ACTUAL nonlinear
 momentum/moving kinetic-buoyancy exchange and production cutover; do not
