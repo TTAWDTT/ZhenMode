@@ -41,7 +41,9 @@ Kinematic half-prism mass is not silently substituted into force equations.
 Current paired step passes34 direct/80 adjacent checks and eight ONE-STEP
 real-grid host audits with9 deliberate corruptions rejected. Actual eta0
 recording fixes the original near-rest evidence gap without changing field
-gates. Final-source full suite and eight100-step references remain pending.
+gates. Final-source full suite passes574 tests; eight100-step references
+remain pending. A NEW zero-incoming-momentum rain witness fails physical
+source closure despite zero frozen work; it is not hidden or promoted.
 Frozen/cast/moving-mass work are distinct; actual nonlinear
 dynamics/buoyancy and driver cutover remain required. Century/climate/forecast/
 GPU/full-adjoint claims remain unqualified.

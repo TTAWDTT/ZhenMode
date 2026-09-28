@@ -1060,7 +1060,18 @@ industrial_alignment_20260928:
     full_tests_before_eta_recording: 573
     old_warnings: 23
     full_tests_before_eta_recording_seconds: 673.50
-    final_source_full_suite: pending
+    final_source_full_suite: passed
+    final_source_full_tests_passed: 574
+    final_source_full_tests_seconds: 863.58
+    final_source_full_launch_end_hashes_match: true
+    final_source_full_tests_log: "results/industrial_alignment/paired_dynamics_final_full_tests.log"
+    physical_source_momentum_witness: new_contract_FAIL_not_frozen_kernel_bug_claim
+    source_witness_protocol_commit: "9259164"
+    pinned_source_witness_script_commit: "f52737a"
+    source_witness_report: "results/industrial_alignment/paired_source_momentum_pinned.json"
+    source_axial_relative_change: 1.2e-5
+    source_assumed_incoming_horizontal_velocity_m_s: 0.
+    source_frozen_work_relative: 0.
     original_real_report: "results/industrial_alignment/cgrid_paired_dynamics_reference.json"
     original_real_report_qualified: false
     original_reference_process_intentionally_stopped: 33232
@@ -1077,5 +1088,5 @@ industrial_alignment_20260928:
     wall_reaction_force_qualified: false
     production_cutover: false
     century_climate_forecast_gpu_full_adjoint_pass: false
-  next: "Qualify corrected actual paired dynamics with final-source regressions and eight real-grid trajectories plus independent actual eta/mass/C/B/mean-Q/work/inventory audits. Norm and frozen fast/layer coupling are now IMPLEMENTED, not a pending read-only selection. Then implement ACTUAL nonlinear momentum and moving kinetic/buoyancy exchange and ACTUAL production initialization/checkpoint/driver cutover; do not proliferate unused prototypes or blindly reuse old diagonal mobility. Complete EOS/real sources/mixing/ice and every global topology, century/sensitivity, independent climate/forecast, fair GPU/distributed, whole-model adjoint/learning and engineering requirement. No final industrial qualification yet."
+  next: "Finish the specific live eight100-step reference and independent actual eta/mass/C/B/mean-Q/work/inventory audit without duplicating a live process.574 final-source tests and eight1-step host audits pass; this is NOT century or nonlinear qualification. Preregistered actual rain/source witness FAILS zero-incoming-momentum contract despite zero frozen work, so derive ACTUAL nonlinear momentum, source-carried momentum and moving kinetic/buoyancy/mixing work together; no arbitrary Mdot damping or global KE repair. Then ACTUAL production initialization/checkpoint/driver cutover. Complete EOS/real sources/mixing/ice and every global topology, century/sensitivity, independent climate/forecast, fair GPU/distributed, whole-model adjoint/learning and engineering requirement. No final industrial qualification yet."
   unresolved: ["whole-model budgets", "volume/free-surface consistency", "partial cells/global topology", "complete real physical forcing", "independent climate/forecast skill", "fair GPU/distributed cost", "whole-model adjoint and constrained learning"]

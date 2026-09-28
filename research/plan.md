@@ -18,6 +18,12 @@ relaxation or state repair. Pre-eta full-suite handle42215 completes:573 pass,
 Eight ONE-STEP real-grid runtime and independent host audits pass and reject9
 corruptions; maximum momentum3.11e-15/energy5.04e-16. New eight100-step and
 final full-suite processes remain pending. This is not century/production proof.
+Subsequent final full-suite handle91137 completes574 pass/23 old warnings,
+863.58s, unchanged ADAC8C8C/4418BBA4 launch/end source hashes. Two new100-step64
+cases and host audits pass, remaining groups pending. Preregistered actual
+rain/source witness9259164 has axial relative gain1.2e-5 despite zero frozen
+work under assumed zero incoming momentum; pinned f52737a report is the
+authority. Nonlinear/source/moving kinetic-buoyancy coupling remains REQUIRED.
 Final installed active eta64/Q64/inventory64/momentum32 step passes. Nonlinear
 moving-mass/buoyancy primary research is registered in
 `research/literature/nonlinear_paired_energy_20260929.md`; frozen quadratic

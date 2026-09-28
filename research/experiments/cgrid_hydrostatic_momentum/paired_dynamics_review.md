@@ -55,6 +55,28 @@ Final isolated installed782cd63 active step also passes outside src; initial
 eta is64 and same-Q/inventory64 with momentum32. New full/100-step processes
 are pending; original unqualified partial evidence is retained.
 
+Final full-suite handle91137 completes exit0:574 passed,23 old warnings,
+863.58s. Launch/end hashes match ADAC8C8C(core)/4418BBA4(test). Installed final
+step, ruff/diff/YAML and60 changed-document local links pass. Of the NEW
+100-step cases, the first64 rest and disturbed histories/independent last-step
+audits pass; others remain pending, not assumed passed. Near-rest host work
+relative is now1.2204098e-17 without relaxing its gate; geometry eta difference
+7.46e-16m is independently checked, not repaired. Disturbed moving-M work
+at its last step is-111.4006 perrho0, still NOT claimed as nonlinear closure.
+
+Preregistered source witness9259164 is reproduced by actual current kernel.
+Launch/end-pinned report `paired_source_momentum_pinned.json` records uniform
+rain1e-6m/s for600s, assumed zero incoming horizontal momentum, f/g/force0.
+Frozen work residual iszero, BUT actual axial momentum rises1.2e-5 relative;
+top speed stays0.1 instead of isolated-source-conserving0.0999914293m/s.
+Independent kinetic gain1.40904723e8 perrho0 agrees with reported moving-M
+energy within its explicit cancellation floor. This is a NEW physical source
+contract FAIL, not a retrospective failure of declared frozen equations.
+An incoming momentum/source and mixing-work model is required. Do not fix
+this by arbitrary Mdot damping or post-hoc global rescaling. First late-only
+hash witness is not authoritative; pinned f52737a script confirms unchanged
+launch/end sources and explicit uniform endpoint speed before analytical L.
+
 Actual nonlinear/moving-energy research now notes that cubic/piecewise
 Hamiltonian time coupling cannot inherit frozen quadratic midpoint's energy
 identity. See `research/literature/nonlinear_paired_energy_20260929.md`;
