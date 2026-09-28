@@ -90,7 +90,7 @@ def contact_areas(volume, area, thickness, interfaces, longitude_edges, latitude
     return (east, north), (east_height, north_height), height
 
 
-def column_pairing(mass, contact, component):
+def column_pairing(mass, contact, component, common_mass):
     level = np.arange(mass.shape[-1])[None, None, :]
     phase = np.arange(mass.shape[0])[:, None, None] * .7 + np.arange(mass.shape[1])[None, :, None] * .3
     velocity = np.where(contact > 0., .04 * np.cos(phase) + .013 * level, 0.)
@@ -106,8 +106,12 @@ def column_pairing(mass, contact, component):
     orthogonal = check(cross, np.zeros_like(cross), cross_scale + energy, 64. * EPS * energy)
     decomposition = check(energy, split_energy, energy + split_energy, 64. * EPS * energy)
     uniform = transport / np.where(np.sum(contact, axis=-1) > 0., np.sum(contact, axis=-1), 1.)
-    old_cross = np.sum(mass * uniform[..., None] * (velocity - uniform[..., None]), axis=-1)
+    uniform_fast = np.where(contact > 0., uniform[..., None], 0.)
+    old_cross = np.sum(mass * uniform_fast * (velocity - uniform_fast), axis=-1)
     old_relative = np.abs(old_cross) / np.where(energy > 0., energy, 1.)
+    old_mobility = np.sum(contact ** 2 / np.where(common_mass > 0., common_mass, 1.), axis=-1)
+    mobility_scale = old_mobility + mobility
+    mobility_difference = np.abs(old_mobility - mobility) / np.where(mobility_scale > 0., mobility_scale, 1.)
     primary_rows = mass.shape[1] - int(component == "north")
     head = np.sin(np.arange(mass.shape[0])[:, None] * .5 + np.arange(primary_rows)[None, :] * .8)
     head_difference = np.roll(head, -1, axis=0) - head if component == "east" else np.diff(head, axis=1)
@@ -126,6 +130,7 @@ def column_pairing(mass, contact, component):
     return {"orthogonality": orthogonal, "kinetic_decomposition": decomposition,
             "transport_force": force_check, "conjugate_pressure_work": work_check,
             "old_uniform_mode_maximum_energy_cross_relative": float(np.max(old_relative)),
+            "old_fast_capacity_maximum_symmetric_relative_difference": float(np.max(mobility_difference)),
             "mobility_minimum_open_m": float(np.min(mobility[mobility > 0.])) if np.any(mobility > 0.) else 0.}
 
 
@@ -140,6 +145,10 @@ def audit(data, dt, label):
     oracle_old = physical_oracle(old_volume, area, data["longitude_edges"], data["latitude_edges"])
     oracle_new = physical_oracle(final_volume, area, data["longitude_edges"], data["latitude_edges"])
     contacts, contact_height, height = contact_areas(old_volume, area, data["thickness"], data["interfaces"], data["longitude_edges"], data["latitude_edges"])
+    common_east_mass = .5 * (area + np.roll(area, -1, axis=0))[..., None] * contact_height[0]
+    common_north_mass = np.zeros_like(contacts[1])
+    common_north_mass[:, 1:-1] = (area[:, :-1] * north[None, :-1] + area[:, 1:] * south[None, 1:])[..., None] * contact_height[1]
+    common_masses = common_east_mass, common_north_mass
     directions, rejected_corruptions = {}, 0
     for position, component in enumerate(("east", "north")):
         old_mass, final_mass = (dual_map(field, component, south, north) for field in (old_volume, final_volume))
@@ -161,7 +170,7 @@ def audit(data, dt, label):
         rejected_corruptions += 1
         directions[component] = {"geometry_oracle_pass": True, "all_dual_stock_fraction": float(np.sum(old_mass) / np.sum(old_volume)),
                                  "flux_commutation": commutation, "actual_mass_increment": mass_check,
-                                 "column_pairing": column_pairing(old_mass, contacts[position], component)}
+                                 "column_pairing": column_pairing(old_mass, contacts[position], component, common_masses[position])}
     east_fraction_left = contact_height[0] / np.where(height > 0., height, 1.)
     east_fraction_right = contact_height[0] / np.where(np.roll(height, -1, axis=0) > 0., np.roll(height, -1, axis=0), 1.)
     north_fraction_lower = contact_height[1] / np.where(height[:, :-1] > 0., height[:, :-1], 1.)
