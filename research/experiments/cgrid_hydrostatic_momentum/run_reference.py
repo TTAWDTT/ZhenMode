@@ -33,7 +33,7 @@ METRICS = ("pressure_max_m_s2", "rotation_energy_relative", "rotation_solve_rela
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--bathy", default=DEFAULT_CONFIG.bathymetry_file)
-    parser.add_argument("--out", default="results/industrial_alignment/cgrid_physical_velocity_reference.json")
+    parser.add_argument("--out", default="results/industrial_alignment/cgrid_physical_velocity_coordinate_reference.json")
     args = parser.parse_args()
     output = ROOT / args.out
     if output.exists():
@@ -48,6 +48,7 @@ def main():
                 Path(__file__).with_name("wet_trace_protocol.md"),
                 Path(__file__).with_name("metric_dual_protocol.md"),
                 Path(__file__).with_name("physical_velocity_protocol.md"),
+                Path(__file__).with_name("physical_velocity_coordinate_addendum.md"),
                 ROOT / "tests/test_cgrid_hydrostatic_momentum.py", ROOT / "tests/test_cgrid_pressure_work.py",
                 ROOT / "tests/test_momentum_shared_flux.py", ROOT / "tests/test_wet_flux_reconstruction.py",
                 ROOT / "tests/test_wet_flux_metrics.py", ROOT / "tests/test_physical_velocity.py"]
@@ -58,6 +59,7 @@ def main():
               "wet_trace_contract": "latitude_arc_wet_traces_paired_interior_flux_frozen_geometry_not_velocity",
               "dual_transport_contract": "all_wet_half_prisms_metric_integrated_q_not_force_mass_or_nonlinear_momentum",
               "physical_velocity_contract": "mean_q_frozen_eulerian_lift_signed_top_boundary_source_not_full_ale",
+              "physical_point_coordinates": "actual_compiled_depth_arrays_independently_geometry_checked_not_host_reassociated",
               "status": "running", "reference_coefficients": [1., 1e-3, 1e-7],
               "provenance": {"git_head": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip(),
                              "git_status": subprocess.check_output(["git", "status", "--porcelain"], cwd=ROOT, text=True).splitlines(),
@@ -130,10 +132,11 @@ def main():
                     middle_point = evaluate_wet_flux(reconstruction, .37, .61, reconstruction.top + .38123 * reconstruction.height)
                     trace_points = (top_point.vertical, bottom_point.vertical, middle_point.east_per_depth,
                                     middle_point.north_per_depth, middle_point.vertical)
+                    physical_depths = (reconstruction.top, reconstruction.top + reconstruction.height,
+                                       reconstruction.top + .38123 * reconstruction.height)
                     physical_points = tuple(evaluate_physical_velocity(result.physical_velocity, .37, .61, depth)
-                                            for depth in (reconstruction.top, reconstruction.top + reconstruction.height,
-                                                          reconstruction.top + .38123 * reconstruction.height))
-                    return final, metrics, flags, result.fluxes, result.barotropic.mean_east, result.barotropic.mean_north, reconstruction, trace_points, result.dual_transport, result.physical_velocity, physical_points
+                                            for depth in physical_depths)
+                    return final, metrics, flags, result.fluxes, result.barotropic.mean_east, result.barotropic.mean_north, reconstruction, trace_points, result.dual_transport, result.physical_velocity, physical_points, physical_depths
 
                 run = {"geometry": label, "velocity_dtype": dtype_name, "disturbed": disturbed,
                        "inventory_dtype": "float64", "dt_seconds": 60., "barotropic_substeps": 4,
@@ -143,7 +146,7 @@ def main():
                 state = initial
                 for iteration in range(100):
                     previous_volume = state.inventory.volume
-                    candidate, metric_array, flags, actual_fluxes, mean_east, mean_north, reconstruction, trace_points, dual, physical, physical_points = step(state)
+                    candidate, metric_array, flags, actual_fluxes, mean_east, mean_north, reconstruction, trace_points, dual, physical, physical_points, physical_depths = step(state)
                     values, accepted = np.asarray(metric_array), np.asarray(flags)
                     row = {name: float(value) if np.isfinite(value) else None for name, value in zip(METRICS, values)}
                     row["stage_valid"] = accepted.tolist()
@@ -183,6 +186,8 @@ def main():
                 physical_fields = {f"last_physical_{location}_{name}": np.asarray(field)
                                    for location, point in zip(("top", "bottom", "middle"), physical_points)
                                    for name, field in zip(point._fields, point)}
+                physical_fields.update({f"last_physical_{location}_depth": np.asarray(depth)
+                                        for location, depth in zip(("top", "bottom", "middle"), physical_depths)})
                 np.savez(snapshot, initial_volume=np.asarray(volume), initial_content=initial_content,
                          final_volume=final_volume, final_content=final_content,
                          initial_east_velocity=np.asarray(initial.east_velocity), initial_north_velocity=np.asarray(initial.north_velocity),

@@ -78,18 +78,24 @@ def verify_physical(data, dt):
     primitive_latitude = (phi - latitude[:-1][None, :, None]) / delta_lat[None, :, None]
     worst = 0.
     for location, alpha in (("top", 0.), ("bottom", 1.), ("middle", .38123)):
-        depth = top + alpha * height
+        expected_depth = top + alpha * height
+        depth = data[f"last_physical_{location}_depth"]
+        coordinate_floor = 64. * np.finfo(np.float64).eps * (np.abs(top) + height)
+        if (depth.shape != height.shape or depth.dtype != np.float64 or not np.all(np.isfinite(depth))
+                or np.any(np.abs(depth - expected_depth) > coordinate_floor)):
+            raise ValueError("physical query coordinates do not match independently reconstructed geometry")
+        fraction_depth = (depth - data["last_trace_cell_top"]) / np.where(data["last_trace_cell_height"] > 0., data["last_trace_cell_height"], 1.)
         traces = np.where((depth[..., None] >= side_top) & (depth[..., None] <= side_bottom) & (side_bottom > side_top), density, 0.)
         primitives = density * np.clip(depth[..., None] - side_top, 0., side_bottom - side_top)
-        mapped_vertical = (vertical[..., :-1] + alpha * net - primitives[..., 1] + primitives[..., 0]
+        mapped_vertical = (vertical[..., :-1] + fraction_depth * net - primitives[..., 1] + primitives[..., 0]
                            - primitives[..., 3] + primitives[..., 2])
         east_velocity = ((1. - longitude) * traces[..., 0] + longitude * traces[..., 1]) / (radius * delta_lat[None, :, None])
         north_velocity = ((1. - fraction) * traces[..., 2] + fraction * traces[..., 3]
                           + (traces[..., 1] - traces[..., 0]) * (fraction - primitive_latitude)) / (radius * delta_lon[:, None, None] * np.cos(phi))
         fields = {"east": east_velocity, "north": north_velocity,
-                  "downward": mapped_vertical / area[..., None] + lift * (1. - alpha),
-                  "grid_downward": surface * (1. - alpha),
-                  "relative_downward": mapped_vertical / area[..., None] + source_speed * (1. - alpha),
+                  "downward": mapped_vertical / area[..., None] + lift * (1. - fraction_depth),
+                  "grid_downward": surface * (1. - fraction_depth),
+                  "relative_downward": mapped_vertical / area[..., None] + source_speed * (1. - fraction_depth),
                   "divergence": net / (safe_height * area[..., None]) - lift / safe_height}
         velocity_scale = (np.sum(np.abs(traces), axis=-1) / np.minimum(radius * delta_lat[None, :, None], radius * delta_lon[:, None, None] * np.cos(phi))
                           + (np.abs(vertical[..., :-1]) + scale_flux + np.abs(source)) / area[..., None])
@@ -119,8 +125,11 @@ def verify_physical(data, dt):
 def verify_physical_report(report):
     if report.get("physical_velocity_contract") != CONTRACT:
         raise ValueError("physical velocity contract absent")
+    if report.get("physical_point_coordinates") != "actual_compiled_depth_arrays_independently_geometry_checked_not_host_reassociated":
+        raise ValueError("actual runtime point coordinate contract absent")
     required = {"src/physical_velocity.py", "tests/test_physical_velocity.py",
-                "research/experiments/cgrid_hydrostatic_momentum/physical_velocity_protocol.md"}
+                "research/experiments/cgrid_hydrostatic_momentum/physical_velocity_protocol.md",
+                "research/experiments/cgrid_hydrostatic_momentum/physical_velocity_coordinate_addendum.md"}
     if not required.issubset(report["provenance"]["source_sha256"]):
         raise ValueError("physical frame runtime manifest absent")
     result = verify_wet(report)
@@ -155,7 +164,8 @@ def main():
         for field in ("last_physical_area", "last_physical_meridional_width", "last_physical_zonal_arc",
                       "last_volume_source", "last_physical_absolute_lift", "last_physical_surface_downward",
                       "last_physical_top_downward", "last_physical_middle_relative_downward",
-                      "last_physical_middle_grid_downward", "last_physical_middle_divergence", "last_physical_middle_valid"):
+                      "last_physical_middle_grid_downward", "last_physical_middle_divergence", "last_physical_middle_valid",
+                      "last_physical_top_depth", "last_physical_bottom_depth", "last_physical_middle_depth"):
             changed = {name: value.copy() for name, value in original.items()}
             if field.endswith("valid"):
                 changed[field] = ~changed[field]

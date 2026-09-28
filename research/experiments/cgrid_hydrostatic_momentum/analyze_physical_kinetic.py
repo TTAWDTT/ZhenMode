@@ -191,9 +191,7 @@ def snapshot_ke(data, order=96):
     east_area = radius[..., None] * dphi[None, :, None] * side_h[..., 1]
     north_area = radius[..., None] * dlon[:, None, None] * np.cos(lat[None, 1:, None]) * side_h[..., 3]
     u_east = np.divide(east_q, east_area, out=np.zeros_like(east_q), where=east_area > 0.)
-    north_q_faces = np.zeros_like(north_area)
-    north_q_faces[:, 1:] = north_q
-    v_north = np.divide(north_q_faces, north_area, out=np.zeros_like(north_area), where=north_area > 0.)
+    v_north = np.divide(north_q, north_area, out=np.zeros_like(north_area), where=north_area > 0.)
     next_area = np.roll(area, -1, axis=0)
     common_east_mass = .5 * (area + next_area)[..., None] * side_h[..., 1]
     mid_lat = .5 * (lat[:-1] + lat[1:])
