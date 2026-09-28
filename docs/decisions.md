@@ -853,8 +853,14 @@ two float64 samples; the threshold is not relaxed. Both none/600 and jacobi/600
 pass the sampled float64/32 gates, with Jacobi reducing median CPU solve time at
 the same accuracy. This is one 2-degree, truncated, smoothed-bathymetry fixture,
 not a universal cap recommendation, GPU speedup, physical budget, century or
-climate result. Full-step convergence and moving-volume/time consistency must
-still be checked.
+climate result. The subsequent full one-day float64 cases meet the per-step
+projection gate, but float32 peaks of 5.43e-5/5.41e-5 fail the registered 5e-5
+gate despite passing the cumulative norm. Even converged float64 projection
+reduces the fixed-node heat gap by only about 0.028%; physical volume/time
+consistency remains absent. Do not extrapolate sampled solve gates to a full
+trajectory or confuse proxy-budget attribution with physical conservation.
 
 Registered research, gates and reproducible experiment:
 [`projection convergence protocol`](../research/experiments/projection_convergence/protocol.md).
+Actual evidence and failure boundaries:
+[`projection convergence review`](../research/experiments/projection_convergence/review.md).

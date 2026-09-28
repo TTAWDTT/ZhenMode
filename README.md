@@ -51,7 +51,9 @@ validation limits. Numerical stability is not climate or forecast skill.
 When enabling `--project-adv-vel`, set and verify `--projection-niter`,
 `--projection-rtol` and `--projection-preconditioner`. Effective settings are
 saved in run provenance. Legacy none/150 is not a convergence guarantee;
-Jacobi/600 passes the registered frozen 2-degree predictor tests, not all grids.
+Jacobi/600 passes the frozen 2-degree predictor tests and float64 one-day
+per-step gates; float32 full-step peaks still fail. This is not whole-model
+conservation, all-grid convergence or century qualification (D35).
 
 ## Requirements
 

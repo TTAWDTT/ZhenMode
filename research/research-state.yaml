@@ -663,5 +663,31 @@ industrial_alignment_20260928:
     float32_eta_volume_residual_m3: [-3.501705e8, -3.306940e8]
     float32_nonlinear_accounting_heat_residual_J: [-1.876769e18, -1.878697e18]
     conservation_pass: false
-  next: "Register/verify real-grid convergence and iteration provenance; reconcile free-surface/cell-volume and transport time levels, quantify mixed-precision inventory error, convective coefficient fidelity and all remaining full-roadmap gates."
+  projection_convergence:
+    status: float64_one_day_gate_passed_float32_worst_step_failed_not_conservation
+    protocol_commit: "0bdc47d"
+    implementation_commit: "02a385b"
+    precision_protocol_commits: ["e72a3ed", "2e74ba7"]
+    review: "research/experiments/projection_convergence/review.md"
+    latest_full_tests_passed: 350
+    fixed_predictors: 12
+    fixed_rhs_solves: 96
+    selected_configuration: "Jacobi/600, explicit provenance; legacy default none/150 is not qualified"
+    float64_actual_worst_step_relative_residual: [1.088623e-12, 1.091782e-12]
+    float32_actual_worst_step_relative_residual: [5.429311e-5, 5.411247e-5]
+    unchanged_float32_gate: 5.0e-5
+    float64_fixed_node_enthalpy_residual_J: [-2.027929320e21, -2.042456600e21]
+    float32_eta_volume_residual_m3: [-3.334187e8, -3.416929e8]
+    conservation_pass: false
+    capture_boundary: "Materializing internal outputs changes float32 compilation by about one temperature ULP; snapshots are not bitwise batch replay and cannot replace original gate failures"
+    precision_probe:
+      status: fixed_rhs_solver_path_implicated_not_whole_model_precision_qualified
+      reference_single_step_failure_counts: [18, 17]
+      worst_reference_steps: [13, 9]
+      original_snapshot_native_residual: [5.482235e-5, 5.520260e-5]
+      float64_solve_quantized_state_native_residual: [3.034089e-7, 2.129804e-7]
+      transport_metric_quantization_norm: [2.14958e-8, 1.94760e-8]
+      capture_bitwise_state_preserving: false
+    volume_research: "research/literature/volume_transport_consistency_20260928.md"
+  next: "Research/register true-residual control, refinement or mixed-precision projection to address the float32 solver-path failure without relaxing gates; reconcile real cell volume, wet-face geometry and barotropic time-average transport with h*C at matched time levels; quantify whole-state inventory precision, convective coefficient fidelity and all remaining full-roadmap gates."
   unresolved: ["whole-model budgets", "volume/free-surface consistency", "partial cells/global topology", "complete real physical forcing", "independent climate/forecast skill", "fair GPU/distributed cost", "whole-model adjoint and constrained learning"]

@@ -10,9 +10,14 @@ research steps, not a redefinition of success. Historical surface/ice and
 comparison scores predate corrected kernels and must not qualify current code.
 Registered scalar diffusion gates have passed. The actual-stage audit exposes
 an unresolved nonlinear budget rather than proving conservation; the active
-foundation is `research/experiments/column_projection_consistency/protocol.md`.
-Native wet-face projection algebra is corrected, but real-grid convergence is
-still insufficient and the full moving-volume/transport time coupling is absent.
+foundation is `research/experiments/projection_convergence/protocol.md`.
+Native wet-face projection algebra is corrected and Jacobi/600 meets the
+float64 real-grid one-day per-step gate. Float32 peaks still fail the unchanged
+gate despite passing sampled/cumulative checks; the fixed-node heat gap barely
+changes even with a converged solve. Preserve the failures and investigate
+precision under the registered addendum. Full moving-volume/transport time
+coupling remains absent; research and code mapping are recorded in
+`research/literature/volume_transport_consistency_20260928.md`.
 Real-forcing century
 runs, independent climate/forecast skill, full geometry/physics, fair GPU and
 distributed scaling, and whole-model differentiability remain required.
