@@ -16,7 +16,7 @@ import numpy as np
 
 from barotropic_transport import coupled_surface_step
 from config import DEFAULT_CONFIG, GlobalGridConfig
-from finite_volume import ExtensiveState, build_geometry, surface_volume
+from finite_volume import ExtensiveState, build_geometry, surface_height, surface_volume
 from grid import global_grid_dims, make_global_grid
 
 jax.config.update("jax_enable_x64", True)
@@ -25,12 +25,13 @@ jax.config.update("jax_enable_x64", True)
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--bathy", default=DEFAULT_CONFIG.bathymetry_file)
-    parser.add_argument("--out", default="results/industrial_alignment/extensive_transport_reference.json")
+    parser.add_argument("--out", default="results/industrial_alignment/extensive_transport_stable_surface.json")
     args = parser.parse_args()
     output = ROOT / args.out
     output.parent.mkdir(parents=True, exist_ok=True)
     sources = [ROOT / "src" / name for name in ("finite_volume.py", "barotropic_transport.py", "grid.py", "config.py")]
     sources += [Path(__file__).resolve(), Path(__file__).with_name("protocol.md"), ROOT / "tests/test_extensive_transport.py"]
+    sources += [Path(__file__).with_name("precision_protocol.md")]
     report = {"scope": "physical_transport_and_linear_wave_reference_not_full_ocean_or_climate",
               "status": "running", "provenance": {
                   "git_head": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip(),
@@ -73,7 +74,7 @@ def main():
                 for dt in (60., 10., 1.):
                     eta_requested = jnp.asarray(np.broadcast_to(.2 * np.cos(phase), (nx, ny)) * grid.ocean_mask, dtype)
                     initial_volume = surface_volume(device_geometry, eta_requested)
-                    eta = initial_volume[..., 0] / device_geometry.area - device_geometry.thickness[..., 0]
+                    eta = surface_height(device_geometry, initial_volume)
                     concentration = np.ones(volume.shape + (2,)) * [12., 35.]
                     if not constant:
                         concentration[..., 0] += np.sin(phase)[..., None] * np.exp(-geometry.center_depth / 500.)
@@ -97,6 +98,7 @@ def main():
                            "dt_seconds": dt, "barotropic_substeps": 4, "requested_steps": 100,
                            "status": "running", "maximum_surface_identity_error": 0.,
                            "maximum_outflow_fraction": 0., "maximum_gravity_cfl_bound": 0.,
+                           "surface_diagnosis_arithmetic": "float64_division_subtraction_returning_state_dtype",
                            "eta_representation": "derived_from_primary_top_volume_not_independent_redundant_state"}
                     report["runs"].append(run)
                     for index in range(100):
@@ -111,7 +113,7 @@ def main():
                                        transport_valid=bool(result.transport.valid))
                             break
                         state = result.transport.state
-                        eta = state.volume[..., 0] / device_geometry.area - device_geometry.thickness[..., 0]
+                        eta = surface_height(device_geometry, state.volume)
                         east, north = result.barotropic.east_velocity, result.barotropic.north_velocity
                         run["completed_steps"] = index + 1
                     final_content = np.asarray(state.content, dtype=np.float64)

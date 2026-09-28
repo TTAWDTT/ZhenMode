@@ -10,6 +10,7 @@ import jax.numpy as jnp
 
 from finite_volume import (
     TransportResult,
+    _physical_surface_height,
     advance_contents,
     closed_surface_fluxes,
     horizontal_divergence,
@@ -118,9 +119,8 @@ def coupled_surface_step(geometry, state, eta, east_velocity, north_velocity,
     fluxes = closed_surface_fluxes(east.flux, north.flux)
     transport = advance_contents(geometry, state, fluxes, dt_sub * nsub, source, content_source)
     area = jnp.asarray(geometry.area, state.volume.dtype)
-    height = jnp.asarray(geometry.thickness[..., 0], state.volume.dtype)
-    initial_eta = state.volume[..., 0] / area - height
-    content_eta = transport.state.volume[..., 0] / area - height
+    initial_eta = _physical_surface_height(geometry, state.volume)
+    content_eta = _physical_surface_height(geometry, transport.state.volume)
     scale = jnp.maximum(jnp.asarray(1e-8, state.volume.dtype), jnp.maximum(jnp.max(jnp.abs(eta)), jnp.max(jnp.abs(barotropic.eta - eta))))
     surface_error = jnp.maximum(jnp.max(jnp.abs(content_eta - barotropic.eta)), jnp.max(jnp.abs(initial_eta - eta))) / scale
     tolerance = jnp.where(jnp.finfo(state.volume.dtype).eps > 1e-10, 2e-6, 1e-12)

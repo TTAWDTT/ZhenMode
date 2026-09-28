@@ -14,6 +14,7 @@ from finite_volume import (
     closed_surface_fluxes,
     horizontal_divergence,
     match_column_transport,
+    surface_height,
     surface_volume,
 )
 
@@ -302,3 +303,51 @@ def test_coupled_explicit_top_sources_and_inconsistent_state():
                                         layer_zero, layer_zero, 10., 4).valid)
     assert not bool(coupled_surface_step(geometry, state, jnp.asarray(eta) + .01, zero, zero,
                                         layer_zero, layer_zero, 10., 4).valid)
+
+
+def test_float32_surface_identity_on_data_free_earth_scale_grid():
+    nx, ny = 180, 66
+    depth = np.full((nx, ny), 50.)
+    depth[30:60, 10:25] = 15.
+    depth[80:90, 40:50] = 0.
+    geometry = build_geometry(np.linspace(0., 360., nx + 1),
+                              np.linspace(-66., 66., ny + 1), [0., 5., 20., 50.], depth)
+    geometry = jax.tree_util.tree_map(lambda value: jnp.asarray(value, jnp.float32), geometry)
+    phase = 2. * np.pi * np.arange(nx)[:, None] / nx
+    requested = jnp.asarray(np.broadcast_to(.2 * np.cos(phase), (nx, ny)) * (depth > 0.), jnp.float32)
+    volume = surface_volume(geometry, requested)
+    physical_eta = (np.asarray(volume[..., 0], dtype=np.float64) / np.asarray(geometry.area, dtype=np.float64)
+                    - np.asarray(geometry.thickness[..., 0], dtype=np.float64)).astype(np.float32)
+    state = ExtensiveState(volume, volume[..., None] * jnp.asarray([12., 35.], jnp.float32))
+    east = jnp.asarray(np.broadcast_to(.02 * np.sin(phase), (nx, ny)), jnp.float32)
+    north = jnp.zeros_like(east)
+    layer_zero = jnp.zeros_like(volume)
+    result = jax.jit(lambda: coupled_surface_step(geometry, state, jnp.asarray(physical_eta), east,
+                                                north, layer_zero, layer_zero, 15., 4))()
+    assert bool(result.barotropic.valid)
+    assert bool(result.transport.valid)
+    assert float(result.surface_error) <= 2e-6
+    assert bool(result.valid)
+
+
+def test_surface_height_matches_independent_physical_ratio_and_keeps_dtype():
+    geometry = _geometry()
+    state, _ = _state(geometry, jnp.float32)
+    actual = surface_height(geometry, state.volume)
+    area = np.asarray(geometry.area, dtype=np.float32).astype(np.float64)
+    height = np.asarray(geometry.thickness[..., 0], dtype=np.float32).astype(np.float64)
+    expected = (np.asarray(state.volume[..., 0], dtype=np.float64) / area - height).astype(np.float32)
+    assert actual.dtype == jnp.float32
+    np.testing.assert_array_equal(actual, expected)
+    with jax.enable_x64(False):
+        with pytest.raises(ValueError, match="X64"):
+            surface_height(geometry, state.volume)
+
+
+def test_integer_surface_or_face_velocity_is_rejected():
+    geometry = _geometry()
+    with pytest.raises(ValueError, match="floating"):
+        surface_volume(geometry, jnp.zeros(geometry.area.shape, dtype=jnp.int32))
+    with pytest.raises(ValueError, match="floating"):
+        match_column_transport(geometry.east_area, jnp.zeros(geometry.thickness.shape, dtype=jnp.int32),
+                               jnp.zeros(geometry.area.shape))

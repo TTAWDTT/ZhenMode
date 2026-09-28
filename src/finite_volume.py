@@ -6,6 +6,7 @@ the legacy collocated/node states. See D37 and the extensive-transport protocol.
 """
 from typing import NamedTuple
 
+import jax
 import jax.numpy as jnp
 import numpy as np
 
@@ -94,11 +95,36 @@ def surface_volume(geometry, eta):
     Eta must be zero over land. Negative/depleted wet volume is not clipped.
     """
     eta = jnp.asarray(eta)
+    if not jnp.issubdtype(eta.dtype, jnp.floating):
+        raise ValueError("eta must have floating dtype")
     if eta.shape != geometry.area.shape:
         raise ValueError("eta shape must match horizontal cells")
     area = jnp.asarray(geometry.area, dtype=eta.dtype)
     volume = jnp.asarray(geometry.thickness, dtype=eta.dtype) * area[..., None]
     return volume.at[..., 0].add(area * eta)
+
+
+def _physical_surface_height(geometry, volume):
+    """Diagnose the physical ratio of stored V and effective stored area in64.
+
+    X64 is required, not enabled globally here. State storage is unchanged;
+    the mixed arithmetic avoids losing eta bits in V/A-h before pressure and
+    acceptance checks. It cannot recover bits already lost in V storage.
+    """
+    volume = jnp.asarray(volume)
+    if volume.shape != geometry.thickness.shape or not jnp.issubdtype(volume.dtype, jnp.floating):
+        raise ValueError("volume must match cells with floating dtype")
+    if not jax.config.jax_enable_x64:
+        raise ValueError("physical surface diagnosis requires JAX X64 arithmetic enabled explicitly")
+    area = jnp.asarray(geometry.area, dtype=volume.dtype).astype(jnp.float64)
+    top_height = jnp.asarray(geometry.thickness[..., 0], dtype=volume.dtype).astype(jnp.float64)
+    return volume[..., 0].astype(jnp.float64) / area - top_height
+
+
+def surface_height(geometry, volume):
+    """Eta from primary V, using explicit mixed arithmetic and original dtype."""
+    volume = jnp.asarray(volume)
+    return _physical_surface_height(geometry, volume).astype(volume.dtype)
 
 
 def horizontal_divergence(east, north):
