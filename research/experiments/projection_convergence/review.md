@@ -27,7 +27,7 @@ warnings；ruff、diff-check、MMS ALL PASS，经向收敛比仍为 4.30。
 python research/experiments/projection_convergence/analyze_convergence.py
 ```
 
-真实 ETOPO、合成初值/强迫、2°、180x65x14、±65°、80 次平滑、500m
+真实 ETOPO、合成初值/强迫、2°、180x66x14、中心±65°、80 次平滑、500m
 最小深度、dt600/dt_bt50、kappa_bi2e14。冻结旧内核/none150 演化基线
 与动态冰，float64/32，在第 1、72、144 步取同一个真实 stage-2 预测
 速度；共 12 份原始 NPZ，输入 SHA256 保存在原始 JSON。首步只读
@@ -137,3 +137,8 @@ SHA256 均保存于 `projection_precision.json`，来源哈希已逐项核对。
 网格/分辨率泛化、失败闭合的生产收敛门槛、真正
 单元体积与 h*C/正压时间平均输运、混合精度、对流系数、完整物理、
 真实强迫百年、独立气候/预报、GPU/分布式及全模式梯度仍需验收。
+
+2026-09-29范围勘误：此前文字把ny误写为65；原JSON和12份NPZ
+均为66。中心筛选abs(lat)<=65°在2°格网上含两端中心，整格边缘
+到±66°。旧协议的65行文字不删改，实际只验证了66行夹具；
+这不是一次新的65行实验。详见[几何复核](../volume_transport_consistency/review.md)。

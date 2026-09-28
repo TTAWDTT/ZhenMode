@@ -889,8 +889,13 @@ absolute-floor scale are recorded with immutable configuration. A bound of 0
 reproduces the old unrefined solve. Legacy none/150 is still not globally
 qualified: bounded correction does not make an arbitrary low cap safe.
 
-Fixed-input comparison and 45 direct projection tests support the correction;
-full trajectory, resolution and physical-volume qualification remain separate.
+Fixed-input comparison, 45 direct projection tests and 359 full-suite tests
+support the correction. Six actual one-day trajectories pass the unchanged
+per-step gate: float64/32 at 2 degrees and float32 at 1 degree, baseline/ice.
+Float32 peaks are approximately 4.1--4.3e-6 versus the old 5.4e-5 failures.
+All runtime hashes were checked. The approximately 2e21 J fixed-node heat proxy
+gap persists; physical volume/time coupling, other grids and whole-model
+differentiability are not qualified by those successes.
 Registered gates, retained failures and implementation scope:
 [`residual control protocol`](../research/experiments/projection_residual_control/protocol.md),
 [`residual control review`](../research/experiments/projection_residual_control/review.md).

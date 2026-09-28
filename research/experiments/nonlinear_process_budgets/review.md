@@ -34,7 +34,7 @@ python scripts/verify_debug_integration.py --days 1 --cases baseline ice --dtype
 python research/experiments/nonlinear_process_budgets/analyze_attribution.py
 ```
 
-真实 ETOPO、合成初值/强迫；180x65x14、2°、纬度 ±65°，80 次地形平滑、
+真实 ETOPO、合成初值/强迫；180x66x14、2°、中心纬度 ±65°，80 次地形平滑、
 500 m 最小深度；dt600/dt_bt50、mode split、float64。基线与动态冰各
 144 步稳定；速度峰值约 0.6041 m/s，海面高度峰值约 0.9836 m。
 所有 6 小时保存的速度/海面峰值与上一轮一日审计之差为 0。

@@ -44,7 +44,7 @@ eta 位移体积变化另列。它们不是完整可变厚度、真实淡水、�
 python scripts/verify_debug_integration.py --days 1 --cases baseline ice --dtype float64 --kappa-bi 2e14 --audit-budget --out results/industrial_alignment/actual_stage_budgets_1d.json
 ```
 
-真实 ETOPO、解析合成初值/风/气温；2°、180×65×14、纬度 ±65°，
+真实 ETOPO、解析合成初值/风/气温；2°、180×66×14、中心纬度 ±65°，
 80 次地形平滑、500 m 最小深度；外步 600 s、正压 50 s；其余设置
 沿用已记录的守恒扩散压力测试。两组各完成 144 步，全部状态有限，
 速度峰值约 0.6041 m/s、海面峰值约 0.9836 m，稳定门禁通过。

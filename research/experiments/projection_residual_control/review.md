@@ -1,6 +1,7 @@
-# 残差控制：递推偏差已定位，完整轨迹验收待完成
+# 残差控制：六条完整短轨迹通过，物理体积预算仍未闭合
 
-日期：2026-09-28。协议先提交于 `3804066`，冻结数值内核 `8e51726`。
+更新：2026-09-29。协议先提交于 `3804066`，冻结比较内核 `8e51726`，
+修正数值内核 `2042ce1`。
 本文件记录阶段证据，不是百年、气候或完整体积守恒认证。
 
 ## 固定输入与因果分解
@@ -36,7 +37,8 @@
 float64 每个候选均 6/6 通过，最坏约 1.067e-12。所有表中 PASS
 还要求有限、状态 dtype 不变、湿动能满足原门槛。没有放宽既有
 1e-9/5e-5 门槛。相同输入下高精度参照约 0.4--0.5 秒，32 位速度
-修正约 0.16--0.17 秒，但这不是全模式或 GPU 的速度结论。
+修正约 0.16--0.17 秒；有短时并发合成探索，计时仅用于诊断成本，
+不是隔离硬件的性能验收，也不是全模式或 GPU 的速度结论。
 
 关键负对照：二次求解不保留原 RHS 的绝对停止下限时，两个最坏
 快照的原生残差放大至 0.281/0.113；动能较单次投影后的值增加，
@@ -62,9 +64,59 @@ float32 修正分支的局部 JVP/有限差分和 VJP 双线性一致性、关�
 伴随或所有反向右端均收敛。旧 none/150 的全局生产资格不能因修正
 存在而自动成立。
 
-## 后续必需证据
+## 六条真实完整积分：原门槛通过
 
-2° 基线/冰 × float64/32 ×1日、1° 基线/冰 float32 ×1日，逐步最坏
-原生残差及来源哈希；全量测试、lint、MMS；再判断默认升级。
-随后回到体积与自由面/正压子步平均输运时层，固定节点热代理缺口
-不因投影局部通过而闭合。完整工业级路线保持不变。
+```bash
+python scripts/verify_debug_integration.py --days 1 --cases baseline ice --dtype float64 --kappa-bi 2e14 --audit-budget --projection-niter 600 --projection-preconditioner jacobi --out results/industrial_alignment/projection_refined_float64_2deg_1d.json
+```
+
+另以float32运行2°，再以float32/--resolution 1运行1°。所有配置的
+max_refinements=2，有效触发与停止尺度都在原JSON中。各144步；
+使用实际完整批量图，不依赖捕获图推进或几个采样的平均值。
+
+| 精度/分辨率/组 | 最坏单步原生比 | 累计原生L2比 | 原注册投影门槛 |
+| --- | ---: | ---: | --- |
+| float64/2°/基线 | 1.089e-12 | 9.927e-13 | PASS |
+| float64/2°/冰 | 1.091e-12 | 9.926e-13 | PASS |
+| float32/2°/基线 | 4.318e-6 | 3.781e-6 | PASS |
+| float32/2°/冰 | 4.322e-6 | 3.805e-6 | PASS |
+| float32/1°/基线 | 4.150e-6 | 3.648e-6 | PASS |
+| float32/1°/冰 | 4.141e-6 | 3.638e-6 | PASS |
+
+float32的2°最坏值从旧5.429e-5/5.411e-5降至上述值，没有放宽
+5e-5。内部触发目标3.815e-6不是最终必达承诺；部分步骤略高于它
+但仍通过原应用门槛。所有六条短轨迹稳定，速度峰值约0.605m/s，
+海面峰值约1.123m。尚无float64/1°完整积分或更细网格资格证据。
+
+全量359 passed、23个既有warnings，ruff与MMS ALL PASS，收敛比
+4.30；CLI显示并传递新增有界修正开关。所有运行数值源码仍为
+`2042ce1`内容；中途提交只增加调研/反证工具，没有热改数值内核。
+分析逐项核对当前全部运行源码与地形SHA256、步数、配置和最大值
+聚合，结果在 `projection_refined_actual_summary.json`；固定输入
+试验源码还与8e51726/3804066/08921b5归档内容逐项核对。
+
+```bash
+python research/experiments/projection_residual_control/analyze_actual.py
+python research/experiments/nonlinear_process_budgets/analyze_attribution.py --input results/industrial_alignment/projection_refined_float32_1deg_1d.json --out results/industrial_alignment/projection_refined_float32_1deg_attribution.json
+```
+
+全部原始JSON/NPZ/日志位于本地忽略的results/industrial_alignment，
+协议、源工具和复核文本入Git；不假称这些原始大文件已提交。
+
+## 物理缺口与准确范围
+
+2°的float64固定节点热代理残差仍为-2.028e21/-2.042e21J，顶面
+输运几乎完全解释此代理变化，但加线性化海面库存仍留下
++2.052e21/+2.083e21J，不能称作真正守恒。float32同样保留库存/
+记账精度问题，1°残差约-2.108e21/-2.123e21J，未因压力求解通过
+而被认证；动态冰的水盐库存也仍需物理闭合。
+
+实际2°网格180x66x14、中心±65°、整格至±66°；1°为360x130x14、
+整格至±65°，不能当作完全同域的空间收敛实验。原JSON和NPZ始终
+记录正确形状；已公开更正此前ny=65的文字，保留旧注册偏差说明。
+
+Legacy none/150仍不升级为通用安全默认；当前通过的是明确配置、
+网格和短轨迹，不是任何参数下的生产承诺。下一优先项是已量化的
+[体积与时间平均输运不一致](../volume_transport_consistency/review.md)，
+不是继续围绕CG调分数。真实强迫百年、独立气候/预报、完整物理/
+几何、GPU/分布式、全模式伴随及工程交付的完整目标继续保持。

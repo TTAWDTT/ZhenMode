@@ -1,6 +1,6 @@
 # Current Research Plan
 
-Updated: 2026-09-28
+Updated: 2026-09-29
 
 ## Current authority: full industrial alignment
 
@@ -9,15 +9,22 @@ The complete active objective and acceptance requirements are preserved in
 research steps, not a redefinition of success. Historical surface/ice and
 comparison scores predate corrected kernels and must not qualify current code.
 Registered scalar diffusion gates have passed. The actual-stage audit exposes
-an unresolved nonlinear budget rather than proving conservation; the active
-foundation is `research/experiments/projection_convergence/protocol.md`.
-Native wet-face projection algebra is corrected and Jacobi/600 meets the
-float64 real-grid one-day per-step gate. Float32 peaks still fail the unchanged
-gate despite passing sampled/cumulative checks; the fixed-node heat gap barely
-changes even with a converged solve. Preserve the failures and investigate
-precision under the registered addendum. Full moving-volume/transport time
-coupling remains absent; research and code mapping are recorded in
-`research/literature/volume_transport_consistency_20260928.md`.
+an unresolved nonlinear budget rather than proving conservation. Native
+wet-face projection and bounded original-RHS residual correction now pass six
+actual one-day per-step gates (float64/32 at 2 degrees, float32 at 1 degree,
+baseline/ice); 359 full-suite tests pass. Legacy none/150 is not qualified.
+Recursive versus true CG residual separation and unsafe no-floor corrections
+are retained in `research/experiments/projection_residual_control/review.md`.
+The next foundation is
+`research/experiments/volume_transport_consistency/protocol.md`: independent
+geometry and actual barotropic time-average counterexamples are reproduced,
+not repaired. Preserve the approximately 2e21 J fixed-node heat proxy gap;
+define true cell volumes, open-face thickness, h*C/free-surface time levels,
+pressure/source/ice and restart migration before changing physical updates.
+Research and code mapping are recorded in
+`research/literature/volume_transport_consistency_20260928.md`. Existing 2-degree
+reports actually use 66 latitude rows, not the previously mistyped 65; the
+1-degree domain differs, so this is not a same-domain convergence claim.
 Real-forcing century
 runs, independent climate/forecast skill, full geometry/physics, fair GPU and
 distributed scaling, and whole-model differentiability remain required.

@@ -10,7 +10,7 @@ equations on a lat-lon grid, written in JAX.
 | Solver core | `src/jax_solver_global.py` |
 | Driver (CLI) | `src/run_long_integration_global.py` |
 | Tests | `tests/` |
-| Design rationale | `docs/decisions.md` (D1-D35) + `docs/README.md` |
+| Design rationale | `docs/decisions.md` (D1-D36) + `docs/README.md` |
 
 Everything else is support: data loaders (`src/forcing.py`,
 `src/wind_reanalysis.py`, `src/woa_data.py`), grid/bathymetry
@@ -21,8 +21,8 @@ utilities, plus two clearly-marked side directories —
 
 ## Features
 
-- **Domain**: global lat-lon, default lat +/-60 deg (`--lat-max`), 1 deg
-  default resolution
+- **Domain**: longitude-global lat-lon, truncated at default latitude
+  +/-60 deg (`--lat-max`), 1 deg default resolution; not full polar coverage
 - **Numerics**: conservative finite-difference horizontal operators
   (divergence/gradient are exact adjoints, spherical `cos(lat)` mass
   weighting); the barotropic mode is sub-cycled under a split-explicit
@@ -30,7 +30,7 @@ utilities, plus two clearly-marked side directories —
 - **Time stepping**: RK2 with a JIT-compiled, `lax.scan`-based inner loop
 - **Advection**: flux-form tracer advection on the rigid-lid surface term;
   `--project-adv-vel` projects the stage-2 velocity column-divergence-free
-  to close the column heat budget; `--monotone-adv` switches horizontal
+  but does not close the whole-step heat/volume budget; `--monotone-adv` switches horizontal
   tracer fluxes to donor-cell (default is centered); `--fct-adv` enables an
   experimental TVD/MUSCL flux-limited horizontal transport (limited, but not
   yet a full Zalesak 3D FCT limiter)
@@ -49,11 +49,15 @@ budget, boundary, checkpoint, packaging and scoring fixes are documented in
 validation limits. Numerical stability is not climate or forecast skill.
 
 When enabling `--project-adv-vel`, set and verify `--projection-niter`,
-`--projection-rtol` and `--projection-preconditioner`. Effective settings are
-saved in run provenance. Legacy none/150 is not a convergence guarantee;
-Jacobi/600 passes the frozen 2-degree predictor tests and float64 one-day
-per-step gates; float32 full-step peaks still fail. This is not whole-model
-conservation, all-grid convergence or century qualification (D35).
+`--projection-rtol`, `--projection-preconditioner` and
+`--projection-max-refinements`. Effective settings are saved in run provenance.
+CG's recursive residual can underestimate the actual residual; bounded native
+transport correction now retains an original-RHS absolute stopping floor.
+Legacy none/150 remains unqualified. See the
+[actual residual review](research/experiments/projection_residual_control/review.md)
+for measured gates and failures, not a universal configuration recommendation.
+This is not whole-model conservation, all-grid convergence or century
+qualification (D35-D36).
 
 ## Requirements
 

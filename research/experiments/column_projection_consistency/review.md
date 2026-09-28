@@ -50,7 +50,7 @@ python scripts/verify_debug_integration.py --days 1 --cases baseline ice --dtype
 python research/experiments/nonlinear_process_budgets/analyze_attribution.py --input results/industrial_alignment/column_projection_1d.json --out results/industrial_alignment/column_projection_attribution.json
 ```
 
-真实 ETOPO、合成初值/强迫、2°、180x65x14、±65°，80 次平滑、500 m
+真实 ETOPO、合成初值/强迫、2°、180x66x14、中心±65°，80 次平滑、500 m
 最小深度，dt600/dt_bt50；基线和动态冰各 144 步有限稳定。峰值速度
 约 0.6043 m/s、海面 0.9834 m，冰组最大保存冰厚 0.02412 m。
 本轮命令未指定 `OCEAN_PAV_NITER`；当前环境检查未设置该开关，代码

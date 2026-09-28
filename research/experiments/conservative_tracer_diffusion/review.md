@@ -45,7 +45,7 @@ python scripts/verify_debug_integration.py --days 7 --kappa-bi 2e14 --out result
 ```
 
 真实 ETOPO；解析合成初值、风和大气温度，非 WOA/NCEP。网格 2°、
-180×65×14、纬度 ±65°，地形平滑 80 次且屏蔽浅于 500 m 的区域；
+180×66×14、中心纬度 ±65°，地形平滑 80 次且屏蔽浅于 500 m 的区域；
 外步 600 s、正压子步 50 s、float32、mode split、scan、2D CFL
 动量黏性子循环、保守垂向扩散、局地对流、输运速度投影和 TVD/MUSCL。
 GM/Redi 和动量 biharmonic 关闭；七日温盐 biharmonic 固定 2e14 m4/s。

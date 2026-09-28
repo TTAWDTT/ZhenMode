@@ -689,5 +689,40 @@ industrial_alignment_20260928:
       transport_metric_quantization_norm: [2.14958e-8, 1.94760e-8]
       capture_bitwise_state_preserving: false
     volume_research: "research/literature/volume_transport_consistency_20260928.md"
-  next: "Research/register true-residual control, refinement or mixed-precision projection to address the float32 solver-path failure without relaxing gates; reconcile real cell volume, wet-face geometry and barotropic time-average transport with h*C at matched time levels; quantify whole-state inventory precision, convective coefficient fidelity and all remaining full-roadmap gates."
+  projection_residual_control:
+    status: six_actual_short_trajectory_projection_gates_passed_not_conservation
+    protocol_commit: "3804066"
+    implementation_commit: "2042ce1"
+    review: "research/experiments/projection_residual_control/review.md"
+    fixed_inputs: 14
+    fixed_rhs_solves: 86
+    direct_projection_tests: 45
+    latest_full_tests_passed: 359
+    recursive_residual_at_failed_predictors: [3.647447e-6, 3.571851e-6]
+    true_matrix_residual_at_same_predictors: [4.957070e-5, 4.993181e-5]
+    unsafe_no_absolute_floor_native_residual: [0.280783, 0.112927]
+    configuration: "Jacobi/600; maximum 2 native-transport corrections; original RHS L2 absolute stopping floor; no whole-state precision change"
+    float64_2deg_actual_worst_step: [1.089357e-12, 1.091198e-12]
+    float32_2deg_actual_worst_step: [4.318464e-6, 4.321725e-6]
+    float32_1deg_actual_worst_step: [4.149746e-6, 4.141430e-6]
+    runtime_source_hashes_verified: true
+    conservation_pass: false
+    default_scope: "Legacy none/150 remains unqualified; these actual cases are explicitly configured"
+  volume_transport_invariants:
+    status: independent_missing_invariants_reproduced_not_repaired
+    protocol_commit: "c3c47dd"
+    tool_commit: "82e9ce0"
+    review: "research/experiments/volume_transport_consistency/review.md"
+    full_wet_physical_depth_m: 50.
+    full_wet_node_proxy_depth_m: 67.5
+    sheared_full_wet_column_vs_barotropic_relative_error: 0.487805
+    sheared_stair_column_vs_barotropic_relative_error: 0.657422
+    actual_substep_mean_continuity_residual: 1.481133e-14
+    endpoint_instead_of_mean_continuity_error: 0.00594796
+    real_2deg_grid: [180, 66, 14]
+    previous_text_shape_error: "JSON/NPZ always recorded 66 rows; old text said 65. Retained protocol discrepancy; centers +/-65, full-cell edges +/-66."
+    real_2deg_node_proxy_column_depth_error_5_95_percentiles_m: [-900.974349, 924.668275]
+    real_2deg_node_proxy_volume_relative_difference: 0.01349908
+    conservation_pass: false
+  next: "Design/register true finite-volume geometry, open-face thickness and h*C/free-surface/barotropic time-average coupling with explicit initialization and restart migration; implement the independently confirmed missing identities, not only pressure convergence. Quantify whole-state inventory precision, convective coefficient fidelity and every remaining full-roadmap gate; no century/climate/industrial qualification yet."
   unresolved: ["whole-model budgets", "volume/free-surface consistency", "partial cells/global topology", "complete real physical forcing", "independent climate/forecast skill", "fair GPU/distributed cost", "whole-model adjoint and constrained learning"]
