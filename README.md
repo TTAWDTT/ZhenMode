@@ -10,7 +10,7 @@ equations on a lat-lon grid, written in JAX.
 | Solver core | `src/jax_solver_global.py` |
 | Driver (CLI) | `src/run_long_integration_global.py` |
 | Tests | `tests/` |
-| Design rationale | `docs/decisions.md` (D1-D38) + `docs/README.md` |
+| Design rationale | `docs/decisions.md` (D1-D39) + `docs/README.md` |
 
 Everything else is support: data loaders (`src/forcing.py`,
 `src/wind_reanalysis.py`, `src/woa_data.py`), grid/bathymetry
@@ -26,6 +26,13 @@ production driver. Explicit64 inventories with64/32 momentum pass eight short
 real-grid component groups; original same-dtype donor still passes only6/8.
 This does not qualify full3D dynamics, century/climate or GPU performance.
 See the [bounded component review](research/experiments/bounded_extensive_transport/review.md).
+
+`src/cgrid_momentum.py` adds common-depth pressure and active linear layer
+momentum coupling (D39). Eight short real-grid references pass their stated
+inventory/energy gates, but an independent partial-face Coriolis witness fails:
+acceleration is3.24 times the analytic value despite energy preservation.
+Physical momentum qualification and production cutover remain incomplete.
+See the [momentum review](research/experiments/cgrid_hydrostatic_momentum/review.md).
 
 ## Features
 

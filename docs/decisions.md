@@ -967,3 +967,35 @@ Research, precision choice, unchanged gates and result scope:
 [`bounded transport protocol`](../research/experiments/bounded_extensive_transport/protocol.md),
 [`method selection`](../research/experiments/bounded_extensive_transport/selection.md),
 [`bounded transport review`](../research/experiments/bounded_extensive_transport/review.md).
+
+## D39 — Common-depth pressure and active linear momentum, with a physical FAIL
+
+Physical interfaces support analytic hydrostatic averages on the same wet depth,
+including partial cells/moving tops. Exact represented polynomial reference
+cell means are subtracted for reconstruction and their surface load is restored;
+this is not filtering physical density or claiming an arbitrary nonlinear EOS.
+Pressure's face-area mean enters fast momentum once; deviations drive layer
+shear, and existing shared fast mean Q advances V/N. The driver is not migrated.
+
+Weighted implicit rotation initially failed its VJP while forward residual,
+energy and FD passed. Same-matrix controls require BOTH zero CG starting guess
+and zero absolute tolerance: JAX's implicit transpose otherwise captures primal
+scales inappropriate for its RHS. Keep relative tol1e-13, independent true
+residual/floor and energy gates.31 direct/440 whole-suite tests and isolated
+installed active momentum step pass. Eight real-grid100x60s references pass
+registered inventory/pressure/energy gates with hashed snapshots; no century,
+whole-model conservation, full EOS or nonlinear-momentum qualification.
+
+Additional precommitted physical partial-face witness FAILS: with north velocity
+2m/s throughout a1m east face next to30m faces and f0.001/s, expected acceleration
+0.002m/s2 becomes0.006477m/s2. Rotation still preserves the chosen energy. The
+sqrt(W) interpolation's0.5*(1+sqrt(30)) amplification proves skew symmetry and
+dense algebra agreement are not sufficient physical consistency. Repair actual
+cross-face wet overlap/dual momentum volumes before nonlinear/production cutover;
+do not clip the force, damp it, remove shallow cells or relax the gate.
+
+Research, retained solver controls, real references and physical failure:
+[`momentum protocol`](../research/experiments/cgrid_hydrostatic_momentum/protocol.md),
+[`solver/input selection`](../research/experiments/cgrid_hydrostatic_momentum/selection.md),
+[`partial rotation protocol`](../research/experiments/cgrid_hydrostatic_momentum/partial_rotation_protocol.md),
+[`momentum review`](../research/experiments/cgrid_hydrostatic_momentum/review.md).

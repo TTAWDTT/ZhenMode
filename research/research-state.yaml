@@ -751,7 +751,7 @@ industrial_alignment_20260928:
     worst_float32_content_budget_relative_error: 3.073009e-8
     float32_nonuniform_salinity_undershoot: [2.331714e-5, 2.166751e-5]
     unchanged_float32_absolute_bound_gate: 2.0e-6
-    current_source_hashes_verified: true
+    source_hashes_verified_at_reference_commit: cb38ba7
     production_cutover: false
     whole_model_conservation_pass: false
   bounded_extensive_transport:
@@ -788,5 +788,42 @@ industrial_alignment_20260928:
     mms: ALL_PASS_ratio_4.30
     production_cutover: false
     century_climate_gpu_full_adjoint_pass: false
-  next: "Implement actual C-grid 3D momentum and well-balanced/common-depth partial-cell pressure, researching and registering the next physical gates before edits; migrate production sources/ice/mixing, inventories, initialization and checkpoint semantics. New explicit64 bounded transport component matrix passes but old mainline remains unqualified; do not preserve an unused alternative core indefinitely. Quantify convective coefficient fidelity and every full-roadmap gate; no century/climate/industrial qualification yet."
+  cgrid_hydrostatic_momentum:
+    status: physical_partial_face_rotation_failed_despite_eight_linear_references
+    protocol_commit: "047aed7"
+    solver_input_selection_commit: "6a67a99"
+    implementation_commit: "41ccecd"
+    partial_face_protocol_commit: "0481332"
+    review: "research/experiments/cgrid_hydrostatic_momentum/review.md"
+    direct_tests_passed: 31
+    adjacent_direct_tests_passed: 81
+    latest_full_tests_passed: 440
+    old_warnings: 23
+    reference_groups_passed: 8
+    steps_per_group: 100
+    dt_seconds: 60.
+    barotropic_substeps: 4
+    inventory_pressure_fast_dtype: float64
+    layer_velocity_dtype: [float64, float32]
+    worst_content_budget_relative: 8.750697e-18
+    volume_budget_delta_m3_range: [-0.012939453125, 0.000457763671875]
+    maximum_surface_identity_error_m: 5.412337e-16
+    maximum_bound_excursion: 2.344791e-13
+    reference_runtime_source_and_snapshot_hashes_verified: true
+    verifier_negative_controls: 5
+    retained_original_rotation_vjp_dot_error: 0.2858719181
+    corrected_rotation_vjp_dot_error: 2.520578e-15
+    absolute_tolerance_only_repairs_adjoint: false
+    partial_coriolis_expected_m_s2: 0.002
+    partial_coriolis_measured_m_s2: 0.006477225575
+    partial_coriolis_relative_error: 2.238612788
+    partial_coriolis_relative_gate: 1.0e-8
+    partial_coriolis_rotation_energy_error: 8.448034e-16
+    partial_coriolis_physical_consistency_pass: false
+    mms: ALL_PASS_ratio_4.30
+    isolated_installed_active_momentum_step: passed
+    full_physical_momentum_qualification: false
+    production_cutover: false
+    century_climate_gpu_full_adjoint_pass: false
+  next: "Research and repair physical cross-face wet overlap/momentum dual-volume consistency: the new sqrt(W) rotation amplifies thin-face Coriolis by3.24 despite energy preservation. Keep the preregistered1e-8 analytic gate and retain FAIL; no force clipping, damping, masked shallow cells or relaxed thresholds. Re-run direct/real momentum gates, then integrate actual nonlinear momentum, production sources/ice/mixing, initialization and checkpoint semantics. Complete the entire industrial roadmap; no century/climate/forecast/GPU/full-adjoint qualification yet."
   unresolved: ["whole-model budgets", "volume/free-surface consistency", "partial cells/global topology", "complete real physical forcing", "independent climate/forecast skill", "fair GPU/distributed cost", "whole-model adjoint and constrained learning"]

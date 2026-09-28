@@ -4,6 +4,19 @@ Updated: 2026-09-29
 
 ## Current authority: full industrial alignment
 
+Latest physical milestone2026-09-29: common-depth pressure and actual linear3D
+momentum/shared-Q coupling implemented at41ccecd;31 direct/440 whole-suite tests,
+MMS and isolated installed active step pass. Eight real-grid100x60s references
+pass inventory/energy gates. HOWEVER a separately preregistered thin-partial-face
+rotation witness produces3.2386 times the physical Coriolis acceleration despite
+energy preservation. Overall physical momentum qualification is FAIL. See
+`research/experiments/cgrid_hydrostatic_momentum/review.md`. Next research/repair
+actual cross-face wet overlap and momentum dual-volume consistency, including
+moving top geometry; re-run direct and real gates before nonlinear momentum and
+actual production source/initialization/checkpoint cutover. Do not preserve this
+wrong-physics energy-compatible operator as a final solution or use a century
+run to obscure it. Whole industrial roadmap and all unresolved goals remain.
+
 The complete active objective and acceptance requirements are preserved in
 `docs/industrial_alignment_roadmap_zh.md`. Historical narrow slices below are
 research steps, not a redefinition of success. Historical surface/ice and
