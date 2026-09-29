@@ -35,8 +35,11 @@ passes isolated full-step gravity and wind/linear-drag time gates; diffusion,
 coupled forcing, filters and complete moving heat/salt inventories remain open.
 Versioned strict production restart and CUDA candidate restart are implemented;
 they do not establish long-window climate/forecast accuracy. Real WOA/NCEP
-fixed-January candidate runs complete 30 days under numerical stop limits, not
+fixed-January candidate runs at 1/2 degrees, halved timestep, and opt-in 2-degree
+ice complete 30 days under numerical stop limits, not
 physical-budget or forecast-skill qualification.
+Float32 passes local transport/stop gates but has material cumulative salt and
+volume-budget sensitivity; it is not qualified for century delivery.
 The [GPU environment and backend validation](docs/gpu_runtime_zh.md) likewise
 do not establish industrial-model superiority or century reliability.
 
