@@ -49,13 +49,19 @@ def make_smoke_fixture(resolution, bathymetry, kappa_bi):
     return grid, physics, initial_temperature, initial_salinity, atmosphere, forcing
 
 
-def make_monitored_advance(step, zero_budget, audited=False):
+def make_monitored_advance(step, zero_budget, audited=False, transport_tolerances=None):
     """Stop on the first rejected step; never book its state or ledger as accepted.
 
-    Failure codes: 1 non-finite state, 2 non-finite budget, 3 velocity, 4 eta.
+    Failure codes: 1 non-finite state, 2 non-finite budget, 3 velocity, 4 eta,
+    5 continuity, 6 tracer/fast transport. Optional tolerances require auditing.
     An invalid incoming state has zero attempts. Peaks include rejected values.
     Returned state and totals contain only accepted steps; rejected data is separate.
     """
+    if transport_tolerances is not None:
+        if not audited or len(transport_tolerances) != 2 or not all(
+                np.isfinite(value) and value > 0. for value in transport_tolerances):
+            raise ValueError("transport_tolerances require auditing and two finite positive limits")
+
     def classify(state, ledger):
         velocity = jnp.maximum(jnp.max(jnp.abs(state.u)), jnp.max(jnp.abs(state.v)))
         eta = jnp.max(jnp.abs(state.eta))
@@ -63,6 +69,12 @@ def make_monitored_advance(step, zero_budget, audited=False):
         finite_ledger = jnp.all(jnp.stack([jnp.all(jnp.isfinite(values)) for values in ledger.values()]))
         failure = jnp.where(~finite_state, 1, jnp.where(~finite_ledger, 2,
                             jnp.where(velocity >= MAX_U_BOUND, 3, jnp.where(eta >= ETA_BLOWUP_M, 4, 0))))
+        if transport_tolerances is not None:
+            continuity, matching = transport_tolerances
+            metrics = ledger["transport_consistency_max"]
+            transport_failure = jnp.where(jnp.abs(metrics[0]) > continuity, 5,
+                                          jnp.where(jnp.abs(metrics[2]) > matching, 6, 0))
+            failure = jnp.where(failure == 0, transport_failure, failure)
         return velocity, eta, finite_state & finite_ledger, failure
 
     @jax.jit

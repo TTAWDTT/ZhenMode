@@ -124,6 +124,33 @@ def test_healthy_actual_candidate_matches_unmonitored_steps_and_ledgers():
         np.testing.assert_array_equal(totals[name], actual[4][name])
 
 
+@pytest.mark.parametrize("metric,reason", [(0, 5), (2, 6)])
+def test_transport_limits_stop_at_first_bad_actual_ledger_without_altering_it(metric, reason):
+    def step(state):
+        ledger = empty_budget()
+        ledger["transport_consistency_max"] = ledger["transport_consistency_max"].at[metric].set(
+            (state.T[0, 0, 0] - 15.) * 1e-6)
+        ledger["observed_change"] = jnp.array([1., 0., 0.])
+        return state._replace(T=state.T + 1.), ledger
+
+    actual = make_monitored_advance(step, empty_budget(), audited=True,
+                                    transport_tolerances=(1e-6, 1e-6))(_state(), 30)
+    assert int(actual[5]) == 2 and int(actual[6]) == 3 and int(actual[7]) == reason
+    np.testing.assert_array_equal(actual[0].T, 17.)
+    np.testing.assert_array_equal(actual[8].T, 18.)
+    assert float(actual[4]["transport_consistency_max"][metric]) == 1e-6
+    assert float(actual[9]["transport_consistency_max"][metric]) == 2e-6
+    np.testing.assert_array_equal(actual[4]["observed_change"], [2., 0., 0.])
+
+
+@pytest.mark.parametrize("limits,audited", [((1e-6, 1e-6), False), ((0., 1.), True),
+                                          ((1., np.nan), True), ((1., np.inf), True), ((1.,), True)])
+def test_transport_limits_reject_unaudited_or_invalid_contracts(limits, audited):
+    with pytest.raises(ValueError, match="transport_tolerances"):
+        make_monitored_advance(lambda state: state, empty_budget(), audited=audited,
+                               transport_tolerances=limits)
+
+
 @pytest.mark.parametrize("fault", [None, "lon", "wet_mask_z", "T_initial", "S_initial"])
 def test_real_initial_fixture_fails_closed_on_wrong_geometry_shape_or_nan(tmp_path, fault):
     from test_legacy_process_time import _candidate
