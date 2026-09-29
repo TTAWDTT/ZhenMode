@@ -123,6 +123,18 @@ ocean-solver --days 365 --dt 3600 \
 `ocean-solver` and `python src/run_long_integration_global.py` are the same
 entry point.
 
+`--checkpoint-days` writes versioned, atomic full-state restarts; its cadence
+must be an integer multiple of `--snap-days`. `--restart-from` verifies actual
+grid/parameters/forcing, source hashes, dtype and backend, and restores the
+absolute step, diagnostic history and real 3D output counter. Checkpoints keep
+the compute dtype; analysis snapshots remain float64. Retained 3D/term files
+must exist unchanged; boundary snapshots are not rewritten. Old state-only
+files require explicit migration and are **not** accepted as verified restarts.
+Use their original frozen code for historical continuation rather than silently
+claiming a new algorithm continues the same validated trajectory.
+Production diagnostics remain snapshot inventories, not a per-step closed
+physical flux ledger. See the [restart and pressure evidence](docs/legacy_core_repair_status_zh.md).
+
 Bathymetry and WOA/Wind data are **not** in the repository. Point the solver
 at the ETOPO2022 relief file with the `OCEAN_SOLVER_BATHYMETRY` environment
 variable, or drop it in `data/`. Without it, grid construction fails with a

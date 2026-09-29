@@ -87,14 +87,16 @@ def test_full_step_applies_surface_heat_only_once_with_ice():
 
 
 def test_ice_checkpoint_restart_matches_continuous_steps(tmp_path):
-    from run_long_integration_global import _load_checkpoint_state, _save_checkpoint
+    from restart_contract import load_restart, make_restart_contract, save_restart
 
-    grid, _, state, step = _setup(heat=-100., ice=True)
+    grid, params, state, step = _setup(heat=-100., ice=True)
     first = step(state)
     path = tmp_path / "checkpoint.npz"
-    _save_checkpoint(path, first, grid, 1, 0)
-    with np.load(path) as saved:
-        restart = _load_checkpoint_state(saved, grid, first.T.dtype, dynamic_ice=True)
+    contract = make_restart_contract(grid, params, dtype=first.T.dtype, forcing={},
+                                     controls={}, code_paths={}, execution={"backend": "cpu"})
+    save_restart(path, first, contract, step=1, counters={}, cumulative={}, history={})
+    saved = load_restart(path, contract)
+    restart = JaxStateG(**{name: jnp.asarray(value) for name, value in saved.state.items()})
     continuous = step(first)
     resumed = step(restart)
     for name in first._fields:

@@ -28,6 +28,7 @@ import os
 import sys
 import time
 from dataclasses import replace
+from pathlib import Path
 
 try:
     sys.stdout.reconfigure(line_buffering=True)
@@ -60,6 +61,7 @@ from forcing import (
 )
 from grid import global_grid_dims, land_distance_from_land_mask, make_global_grid
 from jax_solver_global import JaxStateG, make_solver_global, projection_config
+from restart_contract import file_sha256, load_restart, make_restart_contract, save_restart
 from wind_reanalysis import real_wind_forcing
 from woa_data import get_initial_fields
 
@@ -309,30 +311,57 @@ def _lat_band_mask(grid, band):
             & (grid.lat[None, :] <= lat_max)).astype(float)
 
 
-def _save_checkpoint(path, state, grid, cur_step, n_3d_snaps):
-    fields = {name: np.asarray(getattr(state, name), dtype=np.float64)
-              for name in state._fields}
-    fields["ice"] = np.broadcast_to(fields["ice"], (grid.nx, grid.ny))
-    np.savez_compressed(path, **fields, cur_step=cur_step,
-                        grid_nx=grid.nx, grid_ny=grid.ny, grid_nz=grid.nz,
-                        n_3d_snaps=n_3d_snaps)
+SNAPSHOT_SCALARS = ("days", "max_u", "max_T", "max_eta", "ssh_std", "ke", "ice_fraction")
+SNAPSHOT_FIELDS = ("eta", "T_top", "ice_top")
 
 
-def _load_checkpoint_state(checkpoint, grid, dtype, dynamic_ice=False):
-    dimensions = tuple(int(checkpoint[f"grid_{axis}"]) for axis in ("nx", "ny", "nz"))
-    if dimensions != (grid.nx, grid.ny, grid.nz):
-        raise ValueError("grid size mismatch with checkpoint")
-    if dynamic_ice and "ice" not in checkpoint:
-        raise ValueError("dynamic ice restart requires checkpoint ice thickness")
-    fields = {name: jnp.asarray(checkpoint[name], dtype=dtype)
-              for name in JaxStateG._fields if name != "ice"}
-    fields["ice"] = jnp.asarray(checkpoint["ice"] if "ice" in checkpoint
-                                else np.zeros((grid.nx, grid.ny)), dtype=dtype)
-    for name, field in fields.items():
-        expected = dimensions[:2] if name in {"eta", "ice"} else dimensions
-        if field.shape != expected:
-            raise ValueError(f"checkpoint {name} shape {field.shape} differs from {expected}")
-    return JaxStateG(**fields)
+def _validate_restart_history(record, grid, n_snap, dt, save_3d, save_terms, output_dirs):
+    """A production continuation restores all diagnostics and verifies retained files."""
+    if record.step % n_snap:
+        raise ValueError("restart must land on a snapshot boundary")
+    count = record.step // n_snap + 1
+    budget_names = tuple(BudgetDiagnostics.__dataclass_fields__)
+    expected = set(SNAPSHOT_SCALARS + SNAPSHOT_FIELDS + budget_names)
+    if set(record.history) != expected:
+        raise ValueError("restart snapshot/diagnostic history fields mismatch")
+    for name, values in record.history.items():
+        shape = (count, grid.nx, grid.ny) if name in SNAPSHOT_FIELDS else (count,)
+        if values.shape != shape:
+            raise ValueError(f"restart history {name} shape differs from the snapshot timeline")
+    days = np.arange(count) * n_snap * dt / 86400.
+    if not np.array_equal(record.history["days"], days):
+        raise ValueError("restart history days differ from the absolute snapshot timeline")
+    expected_count = count if save_3d else 0
+    if record.counters != {"n_3d_snaps": expected_count}:
+        raise ValueError("restart actual 3D output counter mismatch")
+    if set(record.cumulative) != {"max_u_peak"} or record.cumulative["max_u_peak"].shape != ():
+        raise ValueError("restart production statistics mismatch")
+    peak = max(record.history["max_u"][1:], default=0.)
+    if float(record.cumulative["max_u_peak"]) != peak:
+        raise ValueError("restart historical velocity peak mismatch")
+    for field, state_field in (("eta", "eta"), ("T_top", "T"), ("ice_top", "ice")):
+        current = record.state[state_field]
+        if state_field == "T":
+            current = current[..., 0]
+        if not np.array_equal(record.history[field][-1], current):
+            raise ValueError(f"restart final snapshot {field} differs from state")
+    expected_outputs = {f"3d/snap_{index:05d}.npy" for index in range(expected_count)}
+    if save_terms:
+        expected_outputs.update(f"terms/terms_{index:05d}.npy" for index in range(expected_count))
+    if set(record.outputs) != expected_outputs:
+        raise ValueError("restart output manifest differs from the actual counters")
+    for relative_path, digest in record.outputs.items():
+        category, filename = relative_path.split("/")
+        path = Path(output_dirs[category]) / filename
+        if not path.is_file() or file_sha256(path) != digest:
+            raise ValueError(f"restart retained snapshot is missing or changed: {path}")
+
+
+def _save_snapshot_file(path, array, outputs, relative_path):
+    with open(path, "xb") as stream:
+        np.save(stream, array)
+    if outputs is not None:
+        outputs[relative_path] = file_sha256(path)
 
 
 def main():
@@ -584,9 +613,9 @@ def main():
                     help="save full state checkpoint every N days (0 = off); "
                          "enables --restart-from resume after container kill")
     ap.add_argument("--restart-from", default=None,
-                    help="checkpoint npz to resume from (produced by "
-                         "--checkpoint-days); integration continues from the "
-                         "saved step, prior snapshots stay valid")
+                    help="versioned checkpoint from --checkpoint-days; requires identical "
+                         "code/effective parameters/grid/forcing/dtype/backend, restores "
+                         "absolute time and histories; old state-only files need migration")
     args = ap.parse_args()
 
     tag = args.tag or f"g{int(args.days)}d"
@@ -978,39 +1007,53 @@ def main():
 
     state = init_state_global(T_init=jnp.array(T_init), S_init=jnp.array(S_init))
 
-    # Compute dtype for checkpoint round-trips: fp32 runs keep the device
-    # state in fp32 (I/O casts to float64 at the npz boundary, so checkpoint
-    # files stay grid-version-agnostic and readable by float64 runs).
-    state_dtype = _fdtype
-
     n_total = int(round(args.days * 86400.0 / args.dt))
     if args.max_steps > 0:
         n_total = min(n_total, args.max_steps)
     n_snap = max(1, int(round(args.snap_days * 86400.0 / args.dt)))
 
-    # ── Checkpoint resume: restore u,v,T,S,eta and fast-forward the snapshot
-    # counters so existing snap_*.npy files and npz table rows stay aligned.
-    # Seasonal-wind phase is a pure function of the step index, so restoring
-    # (u,v,T,S,eta) at a snap boundary is bit-consistent with an unbroken run.
     ckpt_path = os.path.join(args.out_dir, f"ckpt_{tag}.npz")
+    checkpoint_contract = None
+    restored = None
+    output_manifest = {}
+    if args.restart_from or args.checkpoint_days > 0:
+        source_dir = Path(__file__).resolve().parent
+        source_names = ("run_long_integration_global", "jax_solver_global", "restart_contract",
+                        "config", "grid", "diagnostics", "forcing", "wind_reanalysis",
+                        "air_reanalysis", "woa_data", "benchmark_metrics", "mixed_layer_ice")
+        checkpoint_contract = make_restart_contract(
+            grid, _params, dtype=args.dtype,
+            forcing={"initial_T": T_init, "initial_S": S_init, "baked": forcing_baked,
+                     "wind_months": wind_months, "air_months": T_atm_months},
+            controls={"calendar": "repeating_360_day_30_day_months", "seasonal": seasonal,
+                      "wind_blend_days": args.wind_blend_days, "wind_jit": args.wind_jit,
+                      "n_snap": n_snap, "save_3d": args.save_3d,
+                      "save_3d_terms": args.save_3d_terms,
+                      "budget_kind": "snapshot_inventory_only_no_flux_ledger"},
+            code_paths={name: source_dir / f"{name}.py" for name in source_names},
+            execution={"python": sys.version, "jax": jax.__version__, "numpy": np.__version__,
+                       "backend": jax.default_backend(),
+                       "device_kind": jax.devices()[0].device_kind})
     start_step = 0
     n_3d_snaps = 0
     if args.restart_from:
-        with np.load(args.restart_from, allow_pickle=True) as checkpoint:
-            state = _load_checkpoint_state(checkpoint, grid, state_dtype, args.dynamic_ice)
-            start_step = int(checkpoint["cur_step"])
-        assert start_step % n_snap == 0, "checkpoint must land on a snap boundary"
-        # Re-align snapshot bookkeeping with what already exists on disk.
-        n_prev_snaps = start_step // n_snap
-        n_3d_snaps = n_prev_snaps
+        restored = load_restart(args.restart_from, checkpoint_contract)
+        _validate_restart_history(restored, grid, n_snap, args.dt, args.save_3d, args.save_3d_terms,
+                                  {"3d": three_d_dir, "terms": three_d_terms_dir})
+        state = JaxStateG(**{name: jnp.asarray(value) for name, value in restored.state.items()})
+        start_step = restored.step
+        if start_step > n_total:
+            raise ValueError("restart step exceeds the requested final step")
+        n_3d_snaps = restored.counters["n_3d_snaps"]
+        output_manifest = dict(restored.outputs)
         print(f"RESUME from {args.restart_from}: step {start_step} "
               f"(day {start_step * args.dt / 86400.0:.1f}), "
-              f"{n_prev_snaps} prior snapshots kept")
+              f"{len(restored.history['days'])} diagnostic rows restored, "
+              f"{n_3d_snaps} verified 3D snapshots kept")
     if args.checkpoint_days > 0:
         n_ckpt = max(1, int(round(args.checkpoint_days * 86400.0 / args.dt)))
-        if args.restart_from:
-            assert n_ckpt % n_snap == 0 or args.checkpoint_days <= args.snap_days, \
-                "checkpoint cadence must align with snap cadence on resume"
+        if n_ckpt % n_snap:
+            raise ValueError("checkpoint cadence must be an integer multiple of snapshot cadence")
 
     # ── Header ──
     header = []
@@ -1041,7 +1084,7 @@ def main():
                       f"monotone_adv={args.monotone_adv}  "
                       f"fct_adv={args.fct_adv}")
     if args.dtype != "float64":
-        header.append(f"DTYPE: {args.dtype} (compute; I/O stays float64)")
+        header.append(f"DTYPE: {args.dtype} (compute/checkpoint; snapshots float64)")
     if args.bulk_lambda_mult != 1.0:
         header.append(f"distorted physics: bulk-lambda x{args.bulk_lambda_mult:g} "
                       f"(accelerated-spinup phase A)")
@@ -1106,6 +1149,22 @@ def main():
     snap_budget: list[BudgetDiagnostics] = []
     maxT_history = []
     max_u_peak = 0.0
+    if restored is not None:
+        snap_days = list(restored.history["days"])
+        snap_maxu = list(restored.history["max_u"])
+        snap_maxT = list(restored.history["max_T"])
+        snap_maxeta = list(restored.history["max_eta"])
+        snap_sshstd = list(restored.history["ssh_std"])
+        snap_ke = list(restored.history["ke"])
+        snap_eta = list(restored.history["eta"])
+        snap_T_top = list(restored.history["T_top"])
+        snap_ice_top = list(restored.history["ice_top"])
+        snap_ice_fraction = list(restored.history["ice_fraction"])
+        snap_budget = [BudgetDiagnostics(**{name: restored.history[name][index]
+                                          for name in BudgetDiagnostics.__dataclass_fields__})
+                       for index in range(len(snap_days))]
+        maxT_history = list(snap_maxT)
+        max_u_peak = float(restored.cumulative["max_u_peak"])
     diverged_at = None
     diverge_reason = ""
     cur = 0
@@ -1151,7 +1210,10 @@ def main():
                 f64(state.v).copy(),
                 f64(state.S).copy(),
             ], axis=0)
-            np.save(os.path.join(three_d_dir, f"snap_{n_3d_snaps:05d}.npy"), snap3d)
+            filename = f"snap_{n_3d_snaps:05d}.npy"
+            _save_snapshot_file(os.path.join(three_d_dir, filename), snap3d,
+                                output_manifest if checkpoint_contract is not None else None,
+                                f"3d/{filename}")
             del snap3d
             if args.save_3d_terms:
                 # Per-term dT/dt decomposition at this snap: [adv, diff_h,
@@ -1160,8 +1222,10 @@ def main():
                 # surface-only; the deep runaway attribution only needs these).
                 tstack = np.asarray(terms_fn(state), dtype=np.float64) \
                     if args.dtype == "float32" else np.asarray(terms_fn(state))
-                np.save(os.path.join(three_d_terms_dir,
-                                     f"terms_{n_3d_snaps:05d}.npy"), tstack)
+                filename = f"terms_{n_3d_snaps:05d}.npy"
+                _save_snapshot_file(os.path.join(three_d_terms_dir, filename), tstack,
+                                    output_manifest if checkpoint_contract is not None else None,
+                                    f"terms/{filename}")
                 del tstack
             n_3d_snaps += 1
             # Give the XLA async dispatch queue a chance to drain and free its
@@ -1175,10 +1239,10 @@ def main():
               f"{maxeta:9.3f} {sshstd:9.4f} {ke:12.4e} {nan:6d}", flush=True)
         return maxu, maxT, maxeta, nan
 
-    # Resume path: record the boundary row too, so the table has the day-0-of-
-    # this-era state and the 3D snap index stays aligned with day (i*snap_days).
-    maxu, maxT, maxeta, nan = snapshot(0) if not args.restart_from \
-        else snapshot(start_step)
+    if restored is None:
+        maxu, maxT, maxeta, nan = snapshot(0)
+    else:
+        maxu, maxT, maxeta, nan = snap_maxu[-1], snap_maxT[-1], snap_maxeta[-1], 0
 
     cur = start_step
 
@@ -1189,10 +1253,6 @@ def main():
             cur += 1
         maxu, maxT, maxeta, nan = snapshot(cur)
         max_u_peak = max(max_u_peak, maxu)
-        if (args.checkpoint_days > 0 and cur % n_ckpt == 0
-                and cur < n_total and cur > start_step):
-            _save_checkpoint(ckpt_path, state, grid, cur, n_3d_snaps)
-            print(f"  [ckpt] saved {ckpt_path} at step {cur}", flush=True)
         if not state_is_finite(state):
             diverged_at = cur * args.dt / 86400.0
             diverge_reason = "non-finite field (NaN/Inf)"
@@ -1205,6 +1265,17 @@ def main():
             diverged_at = cur * args.dt / 86400.0
             diverge_reason = f"|eta| {maxeta:.2f} > watchdog {ETA_BLOWUP_M}"
             break
+        if (args.checkpoint_days > 0 and cur % n_ckpt == 0
+                and cur < n_total and cur > start_step):
+            history = {"days": snap_days, "max_u": snap_maxu, "max_T": snap_maxT,
+                       "max_eta": snap_maxeta, "ssh_std": snap_sshstd, "ke": snap_ke,
+                       "eta": snap_eta, "T_top": snap_T_top, "ice_top": snap_ice_top,
+                       "ice_fraction": snap_ice_fraction, **diagnostics_to_arrays(snap_budget)}
+            save_restart(ckpt_path, state, checkpoint_contract, step=cur,
+                         counters={"n_3d_snaps": n_3d_snaps},
+                         cumulative={"max_u_peak": max_u_peak}, history=history,
+                         outputs=output_manifest)
+            print(f"  [ckpt] saved verified restart {ckpt_path} at step {cur}", flush=True)
 
     wall = time.time() - t0
 
@@ -1242,6 +1313,7 @@ def main():
     config_dict = {
         'days': args.days, 'snap_days': args.snap_days,
         'diagnostics_schema_version': 2,
+        'restart_schema_version': 1,
         'lat_max': args.lat_max, 'ny': grid.ny, 'nx': grid.nx, 'nz': grid.nz,
         'resolution': float(gcfg.resolution),
         'resolution_remap': args.resolution_remap,
