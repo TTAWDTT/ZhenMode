@@ -496,7 +496,7 @@ MMS、ruff 和 `git diff --check` 通过；完整回归 **750 passed / 18 条既
 
 实际盘点发现本机 RTX 4060 Laptop（8188 MiB，驱动 616.56）及 WSL2 Ubuntu 24.04。
 原 Windows conda 的 JAX 仍只有 CPU；不能因此推断整台设备没有可用 GPU。
-正在独立 Linux venv 中安装与 CPU 同版的 JAX 0.11.2 CUDA13、NumPy/SciPy/netCDF4，
+已在独立 Linux venv 中安装与 CPU 同版的 JAX 0.11.2 CUDA13、NumPy/SciPy/netCDF4，
 不修改原 conda、不安装 Linux NVIDIA 驱动。可复用的 Linux/WSL conda 定义在
 `environment-gpu.yml`；当前实际使用的是 venv，不能冒充已经运行该 conda 环境。
 
@@ -504,3 +504,26 @@ MMS、ruff 和 `git diff --check` 通过；完整回归 **750 passed / 18 条既
 不支持 NVIDIA JAX 后端，WSL2 支持仍标为实验性。先注册并强制实际 CUDA 后端，
 避免静默回退 CPU；初次 GPU 验收只做原 FD 局部检查和同输入 float64 一天重放。
 完整回归并发期间不计算公平加速比，不声称多 GPU、百年 AD 或工业模式性能已超过。
+
+实际 CUDA 的 23 项局部检查通过（250.97 s），含实际三步 AD，不是仅设备枚举。
+WSL CPU 与 CUDA 各完成同输入 float64 一天、144 步并逐步有限。
+第一次独立工厂构造的严格参数逐位门槛未过：`dz_norm` 最多差 `2.776e−17`，
+`projection_inv_diagonal` 差 `4.337e−19`。这是派生常量的设备末位差异，
+不能把它抹去或直接宣布所有参数逐位相同。原始 GPU 报告/失败日志均保留。
+
+随后不改算法或容差，而把冻结 CPU 的全部有效常量在步进前装入 GPU，
+实际 GPU 参数/初态回读逐位相同，使用原 `_step_impl`、实际审计与首失败监视重放。
+六末态字段最大差异分别：u `3.123e−14 m/s`、v `2.193e−14 m/s`、T `3.642e−14 K`、
+S `2.984e−13 psu`、eta `2.205e−13 m`、ice 0，均通过预注册的
+`1e−9*(1+reference_max_abs)` 限。不是在步后修正状态或预算。
+参考热余项的 CPU/GPU 差为 `3.495e−12 W/m²`，但两者本身仍约 `−186.442 W/m²`，
+故**后端相容通过，物理库存不因此通过**。
+
+冻结参数 GPU 重放记录 trace/lower+compile 合计 18.606 s，实际受监视批执行和批间统计
+4.102 s；不是独立重复采样的纯 kernel 吞吐、正式加速比或百年工时估计。
+环境实际文件放在 D 盘 `.venv/gpu-wsl/`，保留原 Linux 入口符号链接；原 conda 未动。
+操作只迁移已验证且无人使用的新建环境，没有删除其他缓存或停止 WSL。
+细节见 [GPU 环境与边界](gpu_runtime_zh.md)。对应清单有 `GPU_contract.json`、
+设备/包版本清单、23 项日志、两种原始工厂报告、严格失败、
+`GPU_frozen_1d.json` 和 `GPU_comparison.json`。未验收 float32、多 GPU、生产重启、
+百年、独立气候/预报或 MOM6 优势。

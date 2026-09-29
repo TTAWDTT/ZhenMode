@@ -17,57 +17,32 @@ Everything else is support: data loaders (`src/forcing.py`,
 (`src/grid.py`), configuration (`src/config.py`), scoring and fetching
 utilities, plus two clearly-marked side directories —
 `archive/regional/` (a retired regional spectral solver) and `docs/archive/`
-(historical work logs). Neither is imported by the main line.
+(historical work logs). Neither is imported by the main line. FV/C-grid experiment
+modules in `src/` are research references, not dependencies of the production driver.
 
 ## Production and Migration Status
 
-The CLI still runs the legacy FD core above. The current migration candidate is
-`nonlinear_dynamics.nonlinear_momentum_surface_step`:
-physical geometry/inventories (`finite_volume.py`)
--> held wet-contact pressure FORCE (`cgrid_momentum.py`), conservative 3-D
-dual momentum and simultaneously coupled moving surface (`nonlinear_dynamics.py`)
--> SAME actual mean Q and extensive FCT (`bounded_transport.py`)
--> actual metric dual Q (`wet_fluxes.py`).
-Its kinetic norm is explicitly FV half-prism dual, NOT reconstructed physical L2.
-Physical-field diagnostics remain separate and require convergence qualification.
-The paired-L2/split-linear steps are historical references, not other production mainlines.
-The candidate is not yet in the production driver (D37-D46).
-Inventories/Q/geometry are64; momentum is64/32.
+The production CLI retains the original FD defaults. The active repair path
+stays inside that same core: opt-in static nodal geometry -> actual barotropic
+mean transport -> accepted tracer stages -> gated process-time repairs.
+Candidates are selected explicitly in the API/smoke runner, not silently promoted
+to production. See the [original-core repair plan](docs/legacy_core_repair_plan_zh.md)
+and [registered results, compatibility and remaining failures](docs/legacy_core_repair_status_zh.md).
 
-The new actual nonlinear candidate passes28 direct source/impulse/work/rejection
-and time/metric refinement tests. Rain/evaporation momentum, explicit incoming
-velocity, central/upwind 3-D flux, wall reaction and cast work are accounted for.
-Eight new real-grid600s cases retain overall FAIL: four disturbed trajectories
-pass, four near-rest cases lose tiny solved eta during volume storage and fail
-the strict energy gate. Independent disturbed impulse/work/reaction audits
-pass and reject11 corruptions; this is not eight-case qualification.
-The final-source full suite passes626 tests (18 existing deprecation warnings),
-with matching launch/end source hashes; isolated installed source stepping passes.
-held pressure work does NOT close buoyancy/EOS conversion. No production,
-century, climate, forecast, GPU/distributed or complete adjoint claim follows.
-See the [registered nonlinear method](research/experiments/cgrid_hydrostatic_momentum/nonlinear_dual_protocol.md).
-See the [actual nonlinear evidence and retained failure](research/experiments/cgrid_hydrostatic_momentum/nonlinear_dual_review.md).
+Independent local geometry, transport, rotation, convection and nonlinear time
+checks do not qualify the whole model. Full-step gravity and wind/linear-drag
+coupling still have first-order errors; complete moving heat/salt inventories,
+versioned production restart and long-window climate/forecast validation remain open.
+Real WOA/NCEP fixed-month one-day runs are numerical smoke, not forecast skill.
+The [GPU environment and backend validation](docs/gpu_runtime_zh.md) likewise
+do not establish industrial-model superiority or century reliability.
 
-The PRIOR physical-frame stage has540 regressions,131 adjacent tests and
-eight real-grid100x60s linear references;
-installed active step and independent last-snapshot audits pass.34 deliberate
-corruptions reject; prior failed interpretations/evidence are retained.
-The physical field uses actual MEAN Q on frozen geometry, not endpoint velocity.
-Kinematic half-prism mass is not silently substituted into force equations.
-Current paired step passes34 direct/80 adjacent checks and eight ONE-STEP
-real-grid host audits with9 deliberate corruptions rejected. Actual eta0
-recording fixes the original near-rest evidence gap without changing field
-gates. Paired-kernel full suite passes574 tests; all eight100-step references
-now pass runtime and independent LAST-step aggregate audits, rejecting9
-corruptions (each case6000s, not century or every-substep qualification).
-A NEW zero-incoming-momentum rain witness fails the HISTORICAL frozen path's
-physical source closure despite zero frozen work; it is retained, not promoted.
-Frozen/cast/moving-mass work are distinct; actual nonlinear
-dynamics/buoyancy and driver cutover remain required. Century/climate/forecast/
-GPU/full-adjoint claims remain unqualified.
-See the [current dynamics evidence](research/experiments/cgrid_hydrostatic_momentum/paired_dynamics_review.md)
-and [prior physical-frame evidence](research/experiments/cgrid_hydrostatic_momentum/physical_velocity_review.md);
-historical stages and failures remain in the decision log and linked reviews.
+FV/C-grid work is a separate research-only alternative, not the current
+production migration target. Its previous failed gates are retained in the
+[nonlinear research evidence](research/experiments/cgrid_hydrostatic_momentum/nonlinear_dual_review.md)
+and [paired/physical-frame history](research/experiments/cgrid_hydrostatic_momentum/paired_dynamics_review.md).
+Those results must not be attributed to the original FD method or treated as
+proof that replacing it is necessary.
 
 ## Features
 
@@ -77,7 +52,8 @@ historical stages and failures remain in the decision log and linked reviews.
   (divergence/gradient are exact adjoints, spherical `cos(lat)` mass
   weighting); the barotropic mode is sub-cycled under a split-explicit
   scheme (`--mode-split`)
-- **Time stepping**: RK2 with a JIT-compiled, `lax.scan`-based inner loop
+- **Time stepping**: split process updates and a JIT-compiled, `lax.scan`-based
+  inner loop; local RK stages do not imply second-order accuracy of the full step
 - **Advection**: flux-form tracer advection on the rigid-lid surface term;
   `--project-adv-vel` projects the stage-2 velocity column-divergence-free
   but does not close the whole-step heat/volume budget; `--monotone-adv` switches horizontal
@@ -103,7 +79,8 @@ windows (`area_weighted_angular_box_v2`), not equal-cell/index-window scores.
 Comparison rejects different metric versions, domains or reference fields;
 archived scores are not silently upgraded. Initial-reference and endpoint
 content-change diagnostics are NOT independent climate or closed-budget
-evidence. Current full suite passes626 tests; this is not climate qualification.
+evidence. Current regression results are recorded in the repair status above;
+test counts are not climate qualification.
 See the [scoring protocol](docs/benchmark_protocol_zh.md) and
 [century/climate acceptance requirements](docs/century_climate_acceptance_zh.md).
 
@@ -124,6 +101,9 @@ qualification (D35-D36).
 - NumPy, SciPy, netCDF4
 - JAX (GPU strongly recommended for production runs)
 
+For Linux/WSL CUDA setup, see [the GPU runtime guide](docs/gpu_runtime_zh.md)
+and `environment-gpu.yml`; native Windows JAX is CPU-only.
+
 ## Quick Start
 
 ```bash
@@ -131,7 +111,8 @@ pip install -e ".[dev]"          # installs the `ocean-solver` console script
 
 python scripts/run_tests.py      # pytest suite (data-dependent tests skip)
 
-# Global production run: mode split at dt=3600 -- 24 barotropic subcycles of
+# Example legacy CLI command, NOT one-year qualification or a general safe dt:
+# mode split at dt=3600 -- 24 barotropic subcycles of
 # 150 s. Without --mode-split the explicit free surface caps dt at 60 s.
 ocean-solver --days 365 --dt 3600 \
   --mode-split --use-scan --seasonal-wind --wind-year 2023 \
@@ -163,7 +144,9 @@ source grid. Add `--resolution-remap area` to build a conservative
 spherical-area remapped grid at arbitrary positive spacings (e.g. 0.37 deg).
 The time-step-sensitive physics parameters (`dt_bt`, `nu_h`, `nu_bi`) are
 auto-scaled by the power of `dx` their CFL demands (`dx^1`, `dx^2`, `dx^4`),
-so a finer grid stays stable without hand-tuning. At `--resolution 1.0` (or
+but this does not guarantee whole-model stability on a finer grid: vertical,
+advective, tracer and geometry-dependent bounds still need validation.
+At `--resolution 1.0` (or
 with no `--resolution`) the scaling is a no-op, preserving the 1 deg
 defaults bit-for-bit.
 
