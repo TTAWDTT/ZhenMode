@@ -199,6 +199,25 @@ def _subcycle_plan(rate, lower_thickness, duration, reference_count, params, max
     return SubcyclePlan(required, count, supported)
 
 
+def _checkpointed_material_scan(advance, initial, maximum):
+    """Preserve ordered updates while bounding reverse-mode carry history."""
+    stride = 8
+
+    @jax.checkpoint
+    def block(carry, block_index):
+        def inner(current, offset):
+            index = block_index * stride + offset
+            updated = jax.lax.cond(index < maximum, lambda values: advance(values, index)[0],
+                                   lambda values: values, current)
+            return updated, None
+
+        updated, _ = jax.lax.scan(inner, carry, jnp.arange(stride))
+        return updated, None
+
+    final, _ = jax.lax.scan(block, initial, jnp.arange((maximum + stride - 1) // stride))
+    return final
+
+
 def _linear_material_subcycle(state, params, duration, maximum):
     """Bounded differentiable scan; only tracer mixing is subcycled here."""
     rate = _linear_row_rate(params)
@@ -221,7 +240,7 @@ def _linear_material_subcycle(state, params, duration, maximum):
     def advance(carry, index):
         return jax.lax.cond(plan.supported & (index < plan.count), integrate, lambda current: current, carry), None
 
-    final, _ = jax.lax.scan(advance, (content, zero, zero), jnp.arange(maximum))
+    final = _checkpointed_material_scan(advance, (content, zero, zero), maximum)
     updated = _concentrations(final[0], state.eta, state, params)
     momentum = _linear_half_step(state, params, duration)
     updated = updated._replace(u=momentum.u, v=momentum.v)
@@ -334,7 +353,7 @@ def _material_tracer_step(state, params, faces, *, subcycle_plan=None, max_subcy
             return jax.lax.cond(subcycle_plan.supported & (index < subcycle_plan.count),
                                 integrate, lambda operands: operands[0], (carry, index)), None
 
-        final, _ = jax.lax.scan(bounded_advance, initial, jnp.arange(max_subcycles))
+        final = _checkpointed_material_scan(bounded_advance, initial, max_subcycles)
     else:
         final, _ = jax.lax.scan(advance, initial, xs=None, length=subcycles)
     content, eta, rhs, absolute_rhs, sources, advection, convection, maxima, minimum = final

@@ -49,6 +49,9 @@ from actual thickness, transport, mixing and source-feedback stiffness; the
 frozen 2-degree float64 no-cap January run completes 1/7/30 days with independently
 audited moving stocks and unchanged dt, coefficients and stop limits. This does
 not qualify seasonal, century, climate, forecast or unsupported physics.
+Checkpoint blocks bound reverse-mode history without changing the physical
+subcycle cap. The actual-grid gradient checks still fail when perturbations
+cross hard convection gates; finite adjoints alone do not qualify learning.
 Float32 passes local transport/stop gates but has material cumulative salt and
 volume-budget sensitivity; it is not qualified for century delivery.
 The [GPU environment and backend validation](docs/gpu_runtime_zh.md) likewise
