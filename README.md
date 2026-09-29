@@ -52,6 +52,12 @@ not qualify seasonal, century, climate, forecast or unsupported physics.
 Checkpoint blocks bound reverse-mode history without changing the physical
 subcycle cap. The actual-grid gradient checks still fail when perturbations
 cross hard convection gates; finite adjoints alone do not qualify learning.
+Explicit `momentum_diffusion_scheme="joint_heun_v1"` with `actual_geometry_v2`
+jointly stages the retained viscosity operators instead of adding separately
+bounded old-state terms. Independent modal/time checks and a fresh same-input
+2-degree 30-day stock/restart audit pass. The default component scheme remains
+unchanged and its archived combined-viscosity counterexample remains a failure.
+This opt-in time repair does not prove full momentum energy or climate accuracy.
 Float32 passes local transport/stop gates but has material cumulative salt and
 volume-budget sensitivity; it is not qualified for century delivery.
 The [GPU environment and backend validation](docs/gpu_runtime_zh.md) likewise

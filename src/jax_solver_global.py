@@ -1856,12 +1856,13 @@ def _rotate_baroclinic_shear(velocity_x, velocity_y, params, duration):
             velocity_y + (rotated_y - shear_y) * params.wet_mask_z)
 
 
-def _linear_half_step(state, p, dt_half, budget=None):
+def _linear_half_step(state, p, dt_half, budget=None, *, momentum_diffusion=None):
     """Linear half-step: FD diffusion + 2D Coriolis + free surface (or not, split).
 
-    The FD linear step is explicit horizontal+vertical diffusion (CFL-safe at 1 deg),
-    exact per-gridpoint Coriolis rotation on the 2D f-field, and -- monolithic only --
-    an explicit forward-Euler free surface with CFL dt < dx/sqrt(gH). (D22)
+    The default retains component-wise explicit diffusion; component CFL limits
+    alone do not bound their combined update. An opt-in diffusion callback acts
+    before masking, damping and rotation. The monolithic free surface remains
+    forward Euler with CFL dt < dx/sqrt(gH). (D22)
     """
     # Explicit diffusion (horizontal Laplacian + vertical d2/dz2). nu_h CANNOT
     # be applied at dt_half in one explicit shot (nu_h*dt_half/dy^2 = 0.73 >
@@ -1871,7 +1872,9 @@ def _linear_half_step(state, p, dt_half, budget=None):
     # subcycled (nu_sub_cyc substeps of dt_half/nu_sub_cyc, CFL 0.06 each) --
     # the same fixed-operator subcycling pattern as conv_nsub. Monolithic
     # dt=60-300 keeps the single-shot form (CFL-safe). (D12)
-    if p.mode_split and p.n_subcyc > 0:
+    if momentum_diffusion is not None:
+        u, v = momentum_diffusion(state, p, dt_half)
+    elif p.mode_split and p.n_subcyc > 0:
         # Subcycle count sized by the 0.5*LHS FTCS criterion. Legacy sizing
         # (nu_nsub=None) reuses n_subcyc; nu_nsub right-sizes it from the actual
         # metric worst case: nu_h*dt/(n*dy_min^2) <= 0.5 (see make_solver_global).
@@ -1893,14 +1896,15 @@ def _linear_half_step(state, p, dt_half, budget=None):
     # Scale-selective biharmonic (nabla^4): damps grid-scale modes far more than
     # large-scale ones. Explicit forward-Euler; CFL nu_bi*dt/dx^4 < ~0.05.
     # docs/resolution_cfl_limits.md has the dx^4 auto-scaling.
-    if p.nu_bi > 0.0:
+    if p.nu_bi > 0.0 and momentum_diffusion is None:
         u = u - p.nu_bi * _biharmonic_h(state.u, p) * dt_half
         v = v - p.nu_bi * _biharmonic_h(state.v, p) * dt_half
     if p.kappa_bi > 0.0:
         T = T - p.kappa_bi * _horizontal_biharmonic_tracer(state.T, p) * dt_half
         S = S - p.kappa_bi * _horizontal_biharmonic_tracer(state.S, p) * dt_half
-    u = u + _vertical_momentum_diffusion(state.u, p) * dt_half
-    v = v + _vertical_momentum_diffusion(state.v, p) * dt_half
+    if momentum_diffusion is None:
+        u = u + _vertical_momentum_diffusion(state.u, p) * dt_half
+        v = v + _vertical_momentum_diffusion(state.v, p) * dt_half
     T = T + _vertical_diffusion(state.T, _effective_kappa_v(p), p) * dt_half
     S = S + _vertical_diffusion(state.S, _effective_kappa_v(p), p) * dt_half
     # Mask: no diffusion updates over land or below seafloor (ghost water). Hold

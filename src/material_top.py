@@ -11,9 +11,10 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
-from config import C_P, RHO_0
+from config import C_P, OMEGA, R_EARTH, RHO_0
 from jax_solver_global import (
     _barotropic_subcycle_transport,
+    _biharmonic_h,
     _compute_tracer_tendency,
     _convective_mask,
     _d2_dz2_flux,
@@ -22,10 +23,12 @@ from jax_solver_global import (
     _face_transport_divergence,
     _horizontal_biharmonic_tracer,
     _horizontal_tracer_diffusion,
+    _laplacian_h,
     _linear_bottom_drag_step,
     _linear_half_step,
     _match_layer_face_transports,
     _surface_heat_weights,
+    _vertical_momentum_diffusion,
     _vertical_transport_iface,
 )
 from restart_contract import make_restart_contract
@@ -38,6 +41,7 @@ CONTINUITY_TOLERANCE_M = 1e-10
 FACE_TOLERANCE_M2_PER_S = 1e-9
 CFL_LIMIT = 0.5
 SUBCYCLE_SCHEMES = ("reference_static_v1", "actual_geometry_v2")
+MOMENTUM_DIFFUSION_SCHEMES = ("legacy_component_v1", "joint_heun_v1")
 
 
 class SubcyclePlan(NamedTuple):
@@ -93,6 +97,13 @@ def _validate_subcycle_policy(scheme, maximum):
         raise ValueError("unknown material subcycle scheme")
     if isinstance(maximum, bool) or not isinstance(maximum, int) or maximum < 1:
         raise ValueError("material max_subcycles must be a positive integer")
+
+
+def _validate_momentum_policy(scheme, subcycle_scheme):
+    if scheme not in MOMENTUM_DIFFUSION_SCHEMES:
+        raise ValueError("unknown material momentum diffusion scheme")
+    if scheme == "joint_heun_v1" and subcycle_scheme != "actual_geometry_v2":
+        raise ValueError("joint momentum diffusion requires actual_geometry_v2")
 
 
 def material_thickness(eta, params):
@@ -174,7 +185,7 @@ def _fraction(rate, eta, duration, params):
                              duration * rate / jnp.where(thickness > 0., thickness, 1.), 0.))
 
 
-def _linear_material_step(state, params, duration):
+def _linear_material_step(state, params, duration, *, momentum_diffusion=None):
     content = _contents(state, params)
     first = _linear_rhs(state, params)
     predicted = _concentrations(content + duration * first, state.eta, state, params)
@@ -182,7 +193,7 @@ def _linear_material_step(state, params, duration):
     change = .5 * duration * (first + second)
     absolute_change = .5 * duration * (jnp.abs(first) + jnp.abs(second))
     updated = _concentrations(content + change, state.eta, state, params)
-    momentum = _linear_half_step(state, params, duration)
+    momentum = _linear_half_step(state, params, duration, momentum_diffusion=momentum_diffusion)
     updated = updated._replace(u=momentum.u, v=momentum.v)
     return updated, change, absolute_change, _fraction(_linear_row_rate(params), state.eta, duration, params)
 
@@ -218,7 +229,56 @@ def _checkpointed_material_scan(advance, initial, maximum):
     return final
 
 
-def _linear_material_subcycle(state, params, duration, maximum):
+def _momentum_diffusion_norm_bound(params):
+    """Absolute row-sum bound of the retained reference-momentum operators."""
+    wet = params.wet_mask_z
+    east = wet * jnp.roll(wet, -1, axis=0)
+    north = (wet * jnp.roll(wet, -1, axis=1)).at[:, -1].set(0.)
+    south = jnp.roll(north, 1, axis=1).at[:, 0].set(0.)
+    horizontal = 2. * ((east + jnp.roll(east, 1, axis=0)) * params.inv_dx2
+                       + (north + south) * params.inv_dy2)
+    metric = jnp.abs(params.f[0] / (2. * OMEGA * params.cos_lat * R_EARTH)) * params.inv_dy
+    horizontal_norm = jnp.max(horizontal + metric[None, :, None])
+    vertical = _vertical_row_rate(params.nu_v, wet[..., :-1] * wet[..., 1:], params)
+    vertical_norm = 2. * jnp.max(vertical / params.dz_node)
+    return params.nu_h * horizontal_norm + vertical_norm + params.nu_bi * horizontal_norm ** 2
+
+
+def _momentum_diffusion_plan(params, duration, maximum):
+    rate = jnp.full_like(params.wet_mask_z, .5 * _momentum_diffusion_norm_bound(params))
+    plan = _subcycle_plan(rate, jnp.ones_like(rate), duration, 1, params, maximum)
+    fraction = jnp.where(plan.supported, duration * jnp.max(rate) / jnp.maximum(plan.count, 1), 0.)
+    return plan, fraction
+
+
+def _joint_momentum_diffusion(state, params, duration, maximum):
+    """Joint Heun stages; unsupported schedules execute no viscosity updates."""
+    plan, _ = _momentum_diffusion_plan(params, duration, maximum)
+    subduration = duration / jnp.maximum(plan.count, 1)
+    wet = params.wet_mask_z > 0.
+
+    def tendency(velocity):
+        return (params.nu_h * _laplacian_h(velocity, params)
+                + _vertical_momentum_diffusion(velocity, params)
+                - params.nu_bi * _biharmonic_h(velocity, params)) * params.wet_mask_z
+
+    @jax.checkpoint
+    def integrate(velocities):
+        first = tuple(tendency(velocity) for velocity in velocities)
+        predicted = tuple(jnp.where(wet, velocity + subduration * rhs, velocity)
+                          for velocity, rhs in zip(velocities, first, strict=True))
+        second = tuple(tendency(velocity) for velocity in predicted)
+        return tuple(jnp.where(wet, velocity + .5 * subduration * (rhs_1 + rhs_2), velocity)
+                     for velocity, rhs_1, rhs_2 in zip(velocities, first, second, strict=True))
+
+    def advance(velocities, index):
+        return jax.lax.cond(plan.supported & (index < plan.count), integrate,
+                            lambda current: current, velocities), None
+
+    return _checkpointed_material_scan(advance, (state.u, state.v), maximum)
+
+
+def _linear_material_subcycle(state, params, duration, maximum, *, momentum_diffusion=None):
     """Bounded differentiable scan; only tracer mixing is subcycled here."""
     rate = _linear_row_rate(params)
     plan = _subcycle_plan(rate, material_thickness(state.eta, params), duration, 1, params, maximum)
@@ -242,7 +302,7 @@ def _linear_material_subcycle(state, params, duration, maximum):
 
     final = _checkpointed_material_scan(advance, (content, zero, zero), maximum)
     updated = _concentrations(final[0], state.eta, state, params)
-    momentum = _linear_half_step(state, params, duration)
+    momentum = _linear_half_step(state, params, duration, momentum_diffusion=momentum_diffusion)
     updated = updated._replace(u=momentum.u, v=momentum.v)
     fraction = jnp.where(plan.supported, _fraction(rate, state.eta, subduration, params), 0.)
     return updated, final[1], final[2], fraction, plan
@@ -360,7 +420,8 @@ def _material_tracer_step(state, params, faces, *, subcycle_plan=None, max_subcy
     return _concentrations(content, eta, state, params), rhs, absolute_rhs, sources, advection, convection, maxima, minimum
 
 
-def _material_step(state, params, subcycle_scheme="reference_static_v1", max_subcycles=128):
+def _material_step(state, params, subcycle_scheme="reference_static_v1", max_subcycles=128,
+                   momentum_diffusion_scheme="legacy_component_v1"):
     for name, value in state._asdict().items():
         if value.dtype != jnp.float64:
             raise ValueError(f"{INVENTORY_SCHEME} requires float64 {name}")
@@ -369,13 +430,18 @@ def _material_step(state, params, subcycle_scheme="reference_static_v1", max_sub
             raise ValueError("material state shapes must match the frozen FD grid")
     duration = params.dt / 2.
     scheduled = subcycle_scheme == "actual_geometry_v2"
+    momentum_diffusion = None
+    if momentum_diffusion_scheme == "joint_heun_v1":
+        def momentum_diffusion(current, values, interval):
+            return _joint_momentum_diffusion(current, values, interval, max_subcycles)
     start = _linear_bottom_drag_step(state, params, duration)
     if scheduled:
-        first, linear_rhs_1, absolute_1, fraction_1, linear_plan_1 = _linear_material_subcycle(start, params, duration, max_subcycles)
+        first, linear_rhs_1, absolute_1, fraction_1, linear_plan_1 = _linear_material_subcycle(
+            start, params, duration, max_subcycles, momentum_diffusion=momentum_diffusion)
     else:
         first, linear_rhs_1, absolute_1, fraction_1 = _linear_material_step(start, params, duration)
     nonlinear_predictor = _explicit_full_step(first, params, params.dt)
-    predictor = _linear_half_step(nonlinear_predictor, params, duration)
+    predictor = _linear_half_step(nonlinear_predictor, params, duration, momentum_diffusion=momentum_diffusion)
     dynamical, column_faces, filter_change = _barotropic_subcycle_transport(predictor, params)
     velocity_x = .5 * (first.u + nonlinear_predictor.u)
     velocity_y = .5 * (first.v + nonlinear_predictor.v)
@@ -385,7 +451,8 @@ def _material_step(state, params, subcycle_scheme="reference_static_v1", max_sub
         first, params, faces, subcycle_plan=nonlinear_plan, max_subcycles=max_subcycles,
         endpoint_eta=dynamical.eta if scheduled else None)
     if scheduled:
-        end, linear_rhs_2, absolute_2, fraction_2, linear_plan_2 = _linear_material_subcycle(middle, params, duration, max_subcycles)
+        end, linear_rhs_2, absolute_2, fraction_2, linear_plan_2 = _linear_material_subcycle(
+            middle, params, duration, max_subcycles, momentum_diffusion=momentum_diffusion)
     else:
         end, linear_rhs_2, absolute_2, fraction_2 = _linear_material_step(middle, params, duration)
     attempted = dynamical._replace(T=end.T, S=end.S)
@@ -426,6 +493,12 @@ def _material_step(state, params, subcycle_scheme="reference_static_v1", max_sub
             checks[f"{name}_required_subcycles"] = plan.required
             checks[f"{name}_active_subcycles"] = plan.count
             checks[f"{name}_schedule_supported"] = plan.supported
+    if momentum_diffusion is not None:
+        momentum_plan, momentum_fraction = _momentum_diffusion_plan(params, duration, max_subcycles)
+        checks["momentum_diffusion_fraction_max"] = momentum_fraction
+        checks["momentum_required_subcycles"] = momentum_plan.required
+        checks["momentum_active_subcycles"] = momentum_plan.count
+        checks["momentum_schedule_supported"] = momentum_plan.supported
     finite = jnp.all(jnp.stack([jnp.all(jnp.isfinite(value)) for value in jax.tree.leaves((attempted, checks, budget))]))
     valid = (finite & (minimum > 0.) & (fractions[0] <= CFL_LIMIT) & (fractions[1] <= CFL_LIMIT)
              & (checks["linear_diffusion_fraction_max"] <= CFL_LIMIT)
@@ -437,15 +510,19 @@ def _material_step(state, params, subcycle_scheme="reference_static_v1", max_sub
     if scheduled:
         valid = (valid & linear_plan_1.supported & nonlinear_plan.supported & linear_plan_2.supported
                  & (checks["nonlinear_combined_fraction_max"] <= CFL_LIMIT))
+    if momentum_diffusion is not None:
+        valid = valid & momentum_plan.supported & (momentum_fraction <= CFL_LIMIT)
     checks["finite"] = finite
     selected = jax.tree.map(lambda new, old: jnp.where(valid, new, old), attempted, state)
     return MaterialTopResult(selected, attempted, valid, checks, budget)
 
 
-def make_material_top_step(params, *, subcycle_scheme="reference_static_v1", max_subcycles=128):
+def make_material_top_step(params, *, subcycle_scheme="reference_static_v1", max_subcycles=128,
+                           momentum_diffusion_scheme="legacy_component_v1"):
     """Build an explicit checked candidate; callers must stop at first rejection."""
     _validate_params(params)
     _validate_subcycle_policy(subcycle_scheme, max_subcycles)
+    _validate_momentum_policy(momentum_diffusion_scheme, subcycle_scheme)
 
     @jax.jit
     def step(state, forcing=None, atmosphere=None):
@@ -459,22 +536,26 @@ def make_material_top_step(params, *, subcycle_scheme="reference_static_v1", max
             if atmosphere.dtype != jnp.float64 or atmosphere.shape != params.T_atm_3d.shape:
                 raise ValueError("material atmosphere requires the frozen float64 field shape")
             current = current._replace(T_atm_3d=atmosphere)
-        return _material_step(state, current, subcycle_scheme, max_subcycles)
+        return _material_step(state, current, subcycle_scheme, max_subcycles, momentum_diffusion_scheme)
 
     return step
 
 
 def make_material_top_restart_contract(grid, params, *, forcing, controls, execution,
-                                       subcycle_scheme="reference_static_v1", max_subcycles=128):
+                                       subcycle_scheme="reference_static_v1", max_subcycles=128,
+                                       momentum_diffusion_scheme="legacy_component_v1"):
     """Separate stock semantics and source hashes; no old-contract continuation."""
     _validate_params(params)
     _validate_subcycle_policy(subcycle_scheme, max_subcycles)
+    _validate_momentum_policy(momentum_diffusion_scheme, subcycle_scheme)
     controls = dict(controls)
-    if any(name in controls for name in ("tracer_inventory_scheme", "material_subcycle_scheme", "material_max_subcycles")):
+    if any(name in controls for name in ("tracer_inventory_scheme", "material_subcycle_scheme", "material_max_subcycles",
+                                         "material_momentum_diffusion_scheme")):
         raise ValueError("inventory scheme is frozen by the material restart factory")
     controls["tracer_inventory_scheme"] = INVENTORY_SCHEME
     controls["material_subcycle_scheme"] = subcycle_scheme
     controls["material_max_subcycles"] = max_subcycles
+    controls["material_momentum_diffusion_scheme"] = momentum_diffusion_scheme
     source_directory = Path(__file__).resolve().parent
     contract = make_restart_contract(
         grid, params, dtype="float64", forcing=forcing, controls=controls,
