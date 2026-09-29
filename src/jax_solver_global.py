@@ -885,12 +885,13 @@ FDPhysParams = namedtuple('FDPhysParams', [
     'projection_max_refinements',
     'column_geometry',
     'match_barotropic_transport',
+    'process_time_scheme',
 ])
 
 # Keyword-constructed callers that predate nu_nsub/use_scan/freeze_adv_vel/
 # conservative_kv/project_adv_vel/localize_conv/monotone_adv get the legacy
 # behavior instead of a TypeError.
-FDPhysParams.__new__.__defaults__ = (None, False, False, False, False, False, False, False, None, None, None, -1.8, 0.0, False, 1.0, 150, None, 'none', None, 'default', 2, 'legacy', False)
+FDPhysParams.__new__.__defaults__ = (None, False, False, False, False, False, False, False, None, None, None, -1.8, 0.0, False, 1.0, 150, None, 'none', None, 'default', 2, 'legacy', False, 'legacy')
 
 
 # ── Equation of state ─────────────────────────────────────────────────
@@ -1518,15 +1519,13 @@ def _compute_tracer_tendency(state, p, budget=None, face_transport=None):
     diff_v_T = _vertical_diffusion(state.T, _effective_kappa_v(p), p)
     diff_v_S = _vertical_diffusion(state.S, _effective_kappa_v(p), p)
 
-    # Convective adjustment: the kappa_conv CFL at dt=3600 s on the thin surface
-    # layer is 1.8 >> 0.5, so the operator is subcycled conv_nsub times with
-    # kappa_conv/conv_nsub each. The mask stays frozen over the baroclinic step.
-    # (D10)
+    # The legacy subcycle scales both kappa and time. The candidate retains the
+    # physical kappa and divides time only; neither path proves RK order. (D10)
     conv_mask_3d, unstable_iface = _convective_mask(state, p)
     iface_gate = unstable_iface if p.localize_conv else None
     n_c = int(p.conv_nsub)
     if n_c > 1:
-        kappa_c = p.kappa_conv / n_c
+        kappa_c = p.kappa_conv if p.process_time_scheme == 'consistent_split_v1' else p.kappa_conv / n_c
         h_c = p.dt / n_c
 
         def _conv_sub(carry):
@@ -1751,16 +1750,24 @@ def _free_surface_step_fd(eta, u, v, p, F_rho_x=None, F_rho_y=None, dt_half=None
     v_star = vbt + dt_half * (-G_EARTH * grad_eta_y + F_y)
     # Semi-implicit barotropic Coriolis. The shallow-water momentum eqn is
     #   du/dt - f*v = -g*grad(eta) + F ;  dv/dt + f*u = -g*grad(eta) + F
-    # Treating Coriolis implicitly (unconditionally stable, energy-neutral):
+    # Legacy backward Euler is stable but damps kinetic energy:
     #   u_new = (u_star + f*dt*v_star) / (1+(f*dt)^2)
     #   v_new = (v_star - f*dt*u_star) / (1+(f*dt)^2)
     # Without it the barotropic PGF has no geostrophic balance: it drives a
     # convergent ubt that grows eta monotonically. This is the barotropic
     # analogue of the 3D rotation in _linear_half_step. (D22)
-    fd = p.f * dt_half                 # (nx, ny)
-    denom = 1.0 + fd * fd
-    ubt_new = (u_star + fd * v_star) / denom
-    vbt_new = (v_star - fd * u_star) / denom
+    if p.process_time_scheme == 'consistent_split_v1':
+        half_rotation = p.f * (dt_half / 2.)
+        right_x = u_star + half_rotation * vbt
+        right_y = v_star - half_rotation * ubt
+        denominator = 1. + half_rotation * half_rotation
+        ubt_new = (right_x + half_rotation * right_y) / denominator
+        vbt_new = (right_y - half_rotation * right_x) / denominator
+    else:
+        fd = p.f * dt_half
+        denom = 1.0 + fd * fd
+        ubt_new = (u_star + fd * v_star) / denom
+        vbt_new = (v_star - fd * u_star) / denom
     ubt_new = ubt_new * drag
     vbt_new = vbt_new * drag
 
@@ -1787,6 +1794,16 @@ def _free_surface_step_fd(eta, u, v, p, F_rho_x=None, F_rho_y=None, dt_half=None
     # the projected 3D v too, consistent with _step_impl's final mask.
     v_new = v_new * p.interior_mask_z
     return eta_new, u_new, v_new
+
+
+def _rotate_baroclinic_shear(velocity_x, velocity_y, params, duration):
+    """Rotate only the wet-depth anomaly; the fast mode rotates its own mean."""
+    mean_x, mean_y = _barotropic_velocity(velocity_x, velocity_y, params)
+    shear_x = (velocity_x - mean_x[..., None]) * params.wet_mask_z
+    shear_y = (velocity_y - mean_y[..., None]) * params.wet_mask_z
+    rotated_x, rotated_y = _coriolis_rotation_2d(shear_x, shear_y, params.f, duration)
+    return (velocity_x + (rotated_x - shear_x) * params.wet_mask_z,
+            velocity_y + (rotated_y - shear_y) * params.wet_mask_z)
 
 
 def _linear_half_step(state, p, dt_half, budget=None):
@@ -1873,7 +1890,10 @@ def _linear_half_step(state, p, dt_half, budget=None):
         budget.sponge_sources(diffusion_state, decay)
 
     # Coriolis rotation (2D f-field, exact)
-    u, v = _coriolis_rotation_2d(u, v, p.f, dt_half)
+    if p.process_time_scheme == 'consistent_split_v1':
+        u, v = _rotate_baroclinic_shear(u, v, p, dt_half)
+    else:
+        u, v = _coriolis_rotation_2d(u, v, p.f, dt_half)
 
     # Semi-implicit free surface (with density barotropic PGF). mode_split: the
     # free surface runs ONCE per baroclinic step in _step_impl's barotropic
@@ -2397,7 +2417,7 @@ def make_solver_global(grid, physics, dt, forcing=None,
                        fct_adv=False, projection_niter=None,
                        projection_rtol=None, projection_preconditioner='none',
                        projection_max_refinements=2, column_geometry='legacy',
-                       match_barotropic_transport=False):
+                       match_barotropic_transport=False, process_time_scheme='legacy'):
     """Create a JIT-compiled global FD ocean solver.
 
     Key properties:
@@ -2438,10 +2458,19 @@ def make_solver_global(grid, physics, dt, forcing=None,
         barotropic time mean. No source is counted twice. Retains static nodal
         thickness and the original surface tracer flux; no exact moving-volume
         heat/salt conservation, full temporal order or speedup is claimed.
+      - process_time_scheme='consistent_split_v1' is an opt-in M3 candidate:
+        convection subcycles retain physical kappa; slow rotation acts only on
+        shear, and fast mean rotation uses implicit midpoint. Requires M2.
+        The forward-backward gravity update and other process time errors remain;
+        this is not a claim of second-order accuracy for the complete step.
     """
     base = make_fd_params(grid, column_geometry=column_geometry)
     if match_barotropic_transport and (not mode_split or column_geometry != 'nodal_dual_v1'):
         raise ValueError("match_barotropic_transport requires mode_split=True and column_geometry='nodal_dual_v1'")
+    if process_time_scheme not in ('legacy', 'consistent_split_v1'):
+        raise ValueError("unknown process_time_scheme")
+    if process_time_scheme == 'consistent_split_v1' and not match_barotropic_transport:
+        raise ValueError("consistent_split_v1 requires match_barotropic_transport=True")
     if column_geometry == 'nodal_dual_v1':
         if not conservative_kv or not localize_conv:
             raise ValueError("nodal_dual_v1 requires conservative_kv=True and localize_conv=True")
@@ -2752,6 +2781,7 @@ def make_solver_global(grid, physics, dt, forcing=None,
         projection_max_refinements=int(projection_max_refinements),
         column_geometry=column_geometry,
         match_barotropic_transport=bool(match_barotropic_transport),
+        process_time_scheme=process_time_scheme,
     )
 
     if projection_preconditioner == 'jacobi':

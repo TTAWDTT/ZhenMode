@@ -59,6 +59,7 @@ def main():
     parser.add_argument("--dtype", choices=["float32", "float64"], default="float32")
     parser.add_argument("--column-geometry", choices=["legacy", "nodal_dual_v1"], default="legacy")
     parser.add_argument("--match-barotropic-transport", action="store_true")
+    parser.add_argument("--process-time-scheme", choices=["legacy", "consistent_split_v1"], default="legacy")
     parser.add_argument("--projection-niter", type=int, default=None)
     parser.add_argument("--projection-rtol", type=float, default=None)
     parser.add_argument("--projection-preconditioner", choices=["none", "jacobi"], default="none")
@@ -74,6 +75,8 @@ def main():
         parser.error("kappa-bi must be finite and nonnegative")
     if args.match_barotropic_transport and args.column_geometry != "nodal_dual_v1":
         parser.error("--match-barotropic-transport requires --column-geometry nodal_dual_v1")
+    if args.process_time_scheme == "consistent_split_v1" and not args.match_barotropic_transport:
+        parser.error("--process-time-scheme consistent_split_v1 requires --match-barotropic-transport")
     grid, physics, initial_temperature, initial_salinity, atmosphere, forcing = make_smoke_fixture(
         args.resolution, args.bathy, args.kappa_bi)
     nx, ny = grid.nx, grid.ny
@@ -119,7 +122,8 @@ def main():
             mixed_layer_depth_m=20. if case in {"mixed", "ice"} else None,
             dynamic_ice=case == "ice", coastal_kappa_h_mask=coast_mask,
             coastal_kappa_h=500. if coast_mask is not None else 0., return_params=True,
-            column_geometry=args.column_geometry, match_barotropic_transport=args.match_barotropic_transport)
+            column_geometry=args.column_geometry, match_barotropic_transport=args.match_barotropic_transport,
+            process_time_scheme=args.process_time_scheme)
         state = initialize(T_init=initial_temperature, S_init=initial_salinity)
         audited_step = make_budget_step(params) if args.audit_budget else None
         zero_budget = empty_budget()
