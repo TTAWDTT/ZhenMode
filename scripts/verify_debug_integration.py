@@ -125,7 +125,7 @@ def main():
     parser.add_argument("--dtype", choices=["float32", "float64"], default="float32")
     parser.add_argument("--column-geometry", choices=["legacy", "nodal_dual_v1"], default="legacy")
     parser.add_argument("--match-barotropic-transport", action="store_true")
-    parser.add_argument("--process-time-scheme", choices=["legacy", "consistent_split_v1"], default="legacy")
+    parser.add_argument("--process-time-scheme", choices=["legacy", "consistent_split_v1", "subcycled_rk2_v2"], default="legacy")
     parser.add_argument("--initial-from", default=None,
                         help="validated T_initial/S_initial with exact lon/lat/z/wet_mask_z; otherwise synthetic")
     parser.add_argument("--ncep-month", type=int, default=None,
@@ -145,8 +145,8 @@ def main():
         parser.error("kappa-bi must be finite and nonnegative")
     if args.match_barotropic_transport and args.column_geometry != "nodal_dual_v1":
         parser.error("--match-barotropic-transport requires --column-geometry nodal_dual_v1")
-    if args.process_time_scheme == "consistent_split_v1" and not args.match_barotropic_transport:
-        parser.error("--process-time-scheme consistent_split_v1 requires --match-barotropic-transport")
+    if args.process_time_scheme != "legacy" and not args.match_barotropic_transport:
+        parser.error(f"--process-time-scheme {args.process_time_scheme} requires --match-barotropic-transport")
     if args.ncep_month is not None and args.ncep_month < 0:
         parser.error("--ncep-month must be an explicit nonnegative month index")
     grid, physics, initial_temperature, initial_salinity, atmosphere, forcing = make_smoke_fixture(

@@ -1469,7 +1469,7 @@ def _surface_heat_weights(p):
     return overlap / (wet_depth * p.dz_node)
 
 
-def _compute_tracer_tendency(state, p, budget=None, face_transport=None):
+def _compute_tracer_tendency(state, p, budget=None, face_transport=None, return_terms=False):
     """dT/dt, dS/dt (FD, land-masked). Includes bulk air-sea heat flux.
 
     Vertical advection is SUBCYCLED adv_nsub times when adv_nsub > 1 (frozen
@@ -1479,6 +1479,7 @@ def _compute_tracer_tendency(state, p, budget=None, face_transport=None):
     diffusion, surface fluxes, GM/Redi skew flux and convective adjustment are all
     inside their explicit bounds at dt=3600 and stay evaluated ONCE. (D16)
     """
+    measure_terms = budget is not None or return_terms
     Fz = _vertical_transport_iface(state.u, state.v, p, face_transport=face_transport)
     if budget is not None and p.column_geometry == 'nodal_dual_v1':
         budget.tracer_transport(face_transport if face_transport is not None
@@ -1492,7 +1493,7 @@ def _compute_tracer_tendency(state, p, budget=None, face_transport=None):
 
         def _adv_sub(carry):
             tT, tS = carry
-            if budget is not None:
+            if measure_terms:
                 aT, top_T = _advection_scalar(tT, state.u, state.v, Fz, p, return_boundary=True, face_transport=face_transport)
                 aS, top_S = _advection_scalar(tS, state.u, state.v, Fz, p, return_boundary=True, face_transport=face_transport)
                 terms = (aT, aS, top_T, top_S)
@@ -1504,10 +1505,10 @@ def _compute_tracer_tendency(state, p, budget=None, face_transport=None):
 
         _, terms = _subcycle(_adv_sub, (state.T, state.S), n_a, p)
         adv_T, adv_S = terms[:2]
-        if budget is not None:
+        if measure_terms:
             top_T, top_S = terms[2:]
     else:
-        if budget is not None:
+        if measure_terms:
             adv_T, top_T = _advection_scalar(state.T, state.u, state.v, Fz, p, return_boundary=True, face_transport=face_transport)
             adv_S, top_S = _advection_scalar(state.S, state.u, state.v, Fz, p, return_boundary=True, face_transport=face_transport)
         else:
@@ -1525,7 +1526,7 @@ def _compute_tracer_tendency(state, p, budget=None, face_transport=None):
     iface_gate = unstable_iface if p.localize_conv else None
     n_c = int(p.conv_nsub)
     if n_c > 1:
-        kappa_c = p.kappa_conv if p.process_time_scheme == 'consistent_split_v1' else p.kappa_conv / n_c
+        kappa_c = p.kappa_conv if p.process_time_scheme != 'legacy' else p.kappa_conv / n_c
         h_c = p.dt / n_c
 
         def _conv_sub(carry):
@@ -1587,6 +1588,10 @@ def _compute_tracer_tendency(state, p, budget=None, face_transport=None):
         budget.surface_sources((heat_T, bulk_T, coastal_bulk_T, rest_T, rest_S, ice_salt))
         budget.nonlinear_terms(((adv_T, adv_S), (conv_T, conv_S), (gm_T, gm_S), (redi_T, redi_S)))
         budget.advection_boundary_fluxes(top_T, top_S)
+    if return_terms:
+        processes = ((adv_T, adv_S), (conv_T, conv_S), (gm_T, gm_S), (redi_T, redi_S))
+        return dTdt, dSdt, ((heat_T, bulk_T, coastal_bulk_T, rest_T, rest_S, ice_salt),
+                            processes, top_T, top_S, jax.tree.map(jnp.abs, processes))
     return dTdt, dSdt
 
 
@@ -1756,7 +1761,7 @@ def _free_surface_step_fd(eta, u, v, p, F_rho_x=None, F_rho_y=None, dt_half=None
     # Without it the barotropic PGF has no geostrophic balance: it drives a
     # convergent ubt that grows eta monotonically. This is the barotropic
     # analogue of the 3D rotation in _linear_half_step. (D22)
-    if p.process_time_scheme == 'consistent_split_v1':
+    if p.process_time_scheme != 'legacy':
         half_rotation = p.f * (dt_half / 2.)
         right_x = u_star + half_rotation * vbt
         right_y = v_star - half_rotation * ubt
@@ -1890,7 +1895,7 @@ def _linear_half_step(state, p, dt_half, budget=None):
         budget.sponge_sources(diffusion_state, decay)
 
     # Coriolis rotation (2D f-field, exact)
-    if p.process_time_scheme == 'consistent_split_v1':
+    if p.process_time_scheme != 'legacy':
         u, v = _rotate_baroclinic_shear(u, v, p, dt_half)
     else:
         u, v = _coriolis_rotation_2d(u, v, p.f, dt_half)
@@ -1912,7 +1917,7 @@ def _linear_half_step(state, p, dt_half, budget=None):
 
 # ── Nonlinear explicit step (forward-backward RK2, FD) ─────────────
 
-def _compute_tracer_residual(state, p, budget=None, face_transport=None):
+def _compute_tracer_residual(state, p, budget=None, face_transport=None, return_terms=False):
     """Tracer tendency minus the linear diffusion (handled by the linear step).
 
     The Strang split L(dt/2).N(dt).L(dt/2) handles ALL linear dissipation
@@ -1923,12 +1928,14 @@ def _compute_tracer_residual(state, p, budget=None, face_transport=None):
     it must not appear here at all -- a term here would be re-applied by N(dt) and
     cancel the L-step damping exactly (-dt/2 + dt - dt/2 = 0), a silent no-op. (D9)
     """
-    dTdt, dSdt = _compute_tracer_tendency(state, p, budget=budget, face_transport=face_transport)
+    result = _compute_tracer_tendency(state, p, budget=budget, face_transport=face_transport,
+                                      return_terms=return_terms)
+    dTdt, dSdt = result[:2]
     dTdt = dTdt - _horizontal_tracer_diffusion(state.T, p)
     dSdt = dSdt - _horizontal_tracer_diffusion(state.S, p)
     dTdt = dTdt - _vertical_diffusion(state.T, _effective_kappa_v(p), p)
     dSdt = dSdt - _vertical_diffusion(state.S, _effective_kappa_v(p), p)
-    return dTdt, dSdt
+    return (dTdt, dSdt, result[2]) if return_terms else (dTdt, dSdt)
 
 
 def _compute_momentum_residual(state, p):
@@ -1993,6 +2000,58 @@ def _compute_momentum_residual(state, p):
     return dudt, dvdt
 
 
+def _tracer_rk_subcycle(state, params, face_transport=None, budget=None):
+    """Heun substeps of the instantaneous nonlinear RHS, with actual RK weights."""
+    subcycles = max(int(params.adv_nsub), int(params.conv_nsub))
+    subparams = params._replace(dt=params.dt / subcycles, adv_nsub=1, conv_nsub=1)
+
+    def advance(current):
+        temperature, salinity = current
+        stage = state._replace(T=temperature, S=salinity)
+        first = _compute_tracer_residual(stage, subparams, face_transport=face_transport,
+                                         return_terms=budget is not None)
+        predicted = stage._replace(T=temperature + subparams.dt * first[0],
+                                    S=salinity + subparams.dt * first[1])
+        second = _compute_tracer_residual(predicted, subparams, face_transport=face_transport,
+                                          return_terms=budget is not None)
+        updated = (temperature + 0.5 * subparams.dt * (first[0] + second[0]),
+                   salinity + 0.5 * subparams.dt * (first[1] + second[1]))
+        terms = (jax.tree.map(lambda start, end: 0.5 * (start + end), first[2], second[2])
+                 if budget is not None else None)
+        return updated, terms
+
+    (temperature, salinity), terms = _subcycle(advance, (state.T, state.S), subcycles, params)
+    if budget is not None:
+        budget.tracer_transport(face_transport if face_transport is not None
+                                else _layer_face_transports(state.u, state.v, params), weight=1.)
+        budget.surface_sources(terms[0], duration=params.dt)
+        budget.nonlinear_terms(terms[1], duration=params.dt, absolute_tendencies=terms[4])
+        budget.advection_boundary_fluxes(terms[2], terms[3], duration=params.dt)
+    return state._replace(T=temperature, S=salinity)
+
+
+def _nonlinear_predictor_rk2(state, params, duration, budget=None):
+    """Two actual momentum stages; accepted tracer transport is replayed later."""
+    tracer = _tracer_rk_subcycle(state, params._replace(dt=duration), budget=budget)
+    first_x, first_y = _compute_momentum_residual(state, params)
+    implicit_drag = params.mode_split and params.bottom_friction == 'linear'
+    bottom = params.bottom_mask * params.wet_mask_z
+    if implicit_drag:
+        first_x = first_x + params.r_bot * state.u * bottom
+        first_y = first_y + params.r_bot * state.v * bottom
+    predicted = tracer._replace(u=state.u + duration * first_x, v=state.v + duration * first_y)
+    second_x, second_y = _compute_momentum_residual(predicted, params)
+    if implicit_drag:
+        second_x = second_x + params.r_bot * predicted.u * bottom
+        second_y = second_y + params.r_bot * predicted.v * bottom
+    velocity_x = state.u + 0.5 * duration * (first_x + second_x)
+    velocity_y = state.v + 0.5 * duration * (first_y + second_y)
+    if implicit_drag:
+        decay = jnp.exp(-params.r_bot * duration * bottom)
+        velocity_x, velocity_y = velocity_x * decay, velocity_y * decay
+    return tracer._replace(u=velocity_x, v=velocity_y)
+
+
 def _explicit_full_step(state, p, dt, budget=None):
     """Forward-backward RK2 for nonlinear tendencies (FD).
 
@@ -2000,6 +2059,8 @@ def _explicit_full_step(state, p, dt, budget=None):
     for the baroclinic PGF — shifts internal-wave eigenvalues left of the
     imaginary axis for neutral stability.
     """
+    if p.process_time_scheme == 'subcycled_rk2_v2':
+        return _nonlinear_predictor_rk2(state, p, dt, budget=budget)
     dT1, dS1 = _compute_tracer_residual(state, p, budget=budget)
     T_pred = state.T + dT1 * dt
     S_pred = state.S + dS1 * dt
@@ -2266,7 +2327,7 @@ def _barotropic_subcycle_transport(state, params):
     return updated, column_transport, filter_change
 
 
-def _tracer_step_with_transport(state, params, column_transport, budget=None):
+def _tracer_step_with_transport(state, params, column_transport, budget=None, advection_velocity=None):
     """Replay only the accepted tracer stages with the actual fast-mode mean.
 
     Both RK stages and every advection substep share matched open-layer faces.
@@ -2274,7 +2335,10 @@ def _tracer_step_with_transport(state, params, column_transport, budget=None):
     sources are not booked. This is a lagged predictor/corrector, not a claim of
     second-order coupled momentum or a moving-volume inventory formulation.
     """
-    faces = _match_layer_face_transports(state.u, state.v, column_transport, params)
+    velocity_x, velocity_y = (state.u, state.v) if advection_velocity is None else advection_velocity
+    faces = _match_layer_face_transports(velocity_x, velocity_y, column_transport, params)
+    if params.process_time_scheme == 'subcycled_rk2_v2':
+        return _tracer_rk_subcycle(state, params, face_transport=faces, budget=budget)
     temperature_1, salinity_1 = _compute_tracer_residual(state, params, budget=budget, face_transport=faces)
     predicted = state._replace(T=state.T + params.dt * temperature_1,
                                S=state.S + params.dt * salinity_1)
@@ -2306,6 +2370,7 @@ def _step_impl(state, p, budget=None):
     nonlinear_start = state
     predictor_budget = None if p.match_barotropic_transport else budget
     state = _explicit_full_step(state, p, p.dt, budget=predictor_budget)
+    nonlinear_end = state
     if predictor_budget is not None:
         budget.stage("nonlinear", nonlinear_start, state)
     state = _linear_half_step(state, p, dt_half, budget=predictor_budget)
@@ -2321,7 +2386,11 @@ def _step_impl(state, p, budget=None):
             budget.stage("free_surface", barotropic_start, state)
             budget.barotropic_transport(barotropic_start.eta, state.eta, column_transport, filter_change)
         if p.match_barotropic_transport:
-            tracer_state = _tracer_step_with_transport(nonlinear_start, p, column_transport, budget=budget)
+            advection_velocity = ((0.5 * (nonlinear_start.u + nonlinear_end.u),
+                                   0.5 * (nonlinear_start.v + nonlinear_end.v))
+                                  if p.process_time_scheme == 'subcycled_rk2_v2' else None)
+            tracer_state = _tracer_step_with_transport(nonlinear_start, p, column_transport, budget=budget,
+                                                      advection_velocity=advection_velocity)
             if budget is not None:
                 budget.stage("nonlinear", nonlinear_start, tracer_state)
             tracer_state = _linear_half_step(tracer_state, p, dt_half, budget=budget)
@@ -2463,14 +2532,18 @@ def make_solver_global(grid, physics, dt, forcing=None,
         shear, and fast mean rotation uses implicit midpoint. Requires M2.
         The forward-backward gravity update and other process time errors remain;
         this is not a claim of second-order accuracy for the complete step.
+      - process_time_scheme='subcycled_rk2_v2' additionally uses actual Heun
+        nonlinear tracer substeps, predictor-velocity momentum stages and
+        midpoint slow shear for matched tracer faces. Linear and gravity
+        splitting errors remain; no whole-model second-order claim is made.
     """
     base = make_fd_params(grid, column_geometry=column_geometry)
     if match_barotropic_transport and (not mode_split or column_geometry != 'nodal_dual_v1'):
         raise ValueError("match_barotropic_transport requires mode_split=True and column_geometry='nodal_dual_v1'")
-    if process_time_scheme not in ('legacy', 'consistent_split_v1'):
+    if process_time_scheme not in ('legacy', 'consistent_split_v1', 'subcycled_rk2_v2'):
         raise ValueError("unknown process_time_scheme")
-    if process_time_scheme == 'consistent_split_v1' and not match_barotropic_transport:
-        raise ValueError("consistent_split_v1 requires match_barotropic_transport=True")
+    if process_time_scheme != 'legacy' and not match_barotropic_transport:
+        raise ValueError(f"{process_time_scheme} requires match_barotropic_transport=True")
     if column_geometry == 'nodal_dual_v1':
         if not conservative_kv or not localize_conv:
             raise ValueError("nodal_dual_v1 requires conservative_kv=True and localize_conv=True")

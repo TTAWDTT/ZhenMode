@@ -79,8 +79,8 @@ class _StageRecorder:
         self.transport_audited_steps = jnp.asarray(0., dtype=jnp.float64)
         self.prefilter_faces = None
 
-    def tracer_transport(self, layer_transport):
-        self.tracer_face_mean = tuple(total + 0.5 * jnp.sum(flux, axis=-1)
+    def tracer_transport(self, layer_transport, weight=0.5):
+        self.tracer_face_mean = tuple(total + weight * jnp.sum(flux, axis=-1)
                                       for total, flux in zip(self.tracer_face_mean, layer_transport, strict=True))
 
     def barotropic_transport(self, eta_before, eta_after, face_mean, filter_change):
@@ -120,25 +120,33 @@ class _StageRecorder:
         self.stages[name] = self.stages[name] + change
         self.change_scale = self.change_scale + scale
 
-    def surface_sources(self, tendencies):
-        interval = self.params.dt / 2.
+    def surface_sources(self, tendencies, duration=None):
+        interval = self.params.dt / 2. if duration is None else duration
         for index, tendency in enumerate(tendencies):
             factor = RHO_0 * C_P if index < 4 else RHO_0 / 1000.
             component = 0 if index < 4 else 1
             amount = jnp.sum(jnp.asarray(tendency, dtype=jnp.float64) * self.volume) * factor * interval
             self.sources[SOURCE_NAMES[index]] = self.sources[SOURCE_NAMES[index]].at[component].add(amount)
 
-    def nonlinear_terms(self, tendencies):
-        interval = self.params.dt / 2.
-        for name, (temperature, salinity) in zip(NONLINEAR_PROCESS_NAMES, tendencies, strict=True):
+    def nonlinear_terms(self, tendencies, duration=None, absolute_tendencies=None):
+        interval = self.params.dt / 2. if duration is None else duration
+        if absolute_tendencies is None:
+            absolute_tendencies = jax.tree.map(jnp.abs, tendencies)
+        for name, (temperature, salinity), (absolute_temperature, absolute_salinity) in zip(
+                NONLINEAR_PROCESS_NAMES, tendencies, absolute_tendencies, strict=True):
             heat = RHO_0 * C_P * interval * jnp.asarray(temperature, dtype=jnp.float64) * self.volume
             salt = RHO_0 / 1000. * interval * jnp.asarray(salinity, dtype=jnp.float64) * self.volume
             self.processes[name] = self.processes[name] + jnp.stack((jnp.sum(heat), jnp.sum(salt), jnp.asarray(0.)))
-            self.process_scale = self.process_scale + jnp.stack((jnp.sum(jnp.abs(heat)),
-                                                                jnp.sum(jnp.abs(salt)), jnp.asarray(0.)))
+            if duration is None:
+                scale_heat, scale_salt = jnp.abs(heat), jnp.abs(salt)
+            else:
+                scale_heat = RHO_0 * C_P * interval * absolute_temperature * self.volume
+                scale_salt = RHO_0 / 1000. * interval * absolute_salinity * self.volume
+            self.process_scale = self.process_scale + jnp.stack((jnp.sum(scale_heat),
+                                                                jnp.sum(scale_salt), jnp.asarray(0.)))
 
-    def advection_boundary_fluxes(self, temperature_flux, salinity_flux):
-        interval = self.params.dt / 2.
+    def advection_boundary_fluxes(self, temperature_flux, salinity_flux, duration=None):
+        interval = self.params.dt / 2. if duration is None else duration
         heat = RHO_0 * C_P * interval * jnp.sum(jnp.asarray(temperature_flux, dtype=jnp.float64) * self.surface_area)
         salt = RHO_0 / 1000. * interval * jnp.sum(jnp.asarray(salinity_flux, dtype=jnp.float64) * self.surface_area)
         self.advection_boundary = self.advection_boundary + jnp.stack((heat, salt, jnp.asarray(0.)))
