@@ -429,10 +429,11 @@ def _laplacian_h(u, p):
         grad^2 u = 1/cos(phi) d/dphi(cos(phi) du/dphi) + 1/cos^2(phi) d2u/dlam2
                  = d2u/dy2 - (tan(phi)/R) du/dy + (1/cos^2(phi)) d2u/dx2
 
-    Both second differences are FACE-GATED (open iff both cells wet) and the lat one
-    uses the mirror ghost cell of _d_dy, so the Laplacian sees a flat profile across
-    a closed face instead of the mask step. (D5)
+    The nodal candidate uses closed wet-face cosine fluxes. The legacy branch
+    retains its expanded metric correction for production compatibility. (D5)
     """
+    if getattr(p, 'column_geometry', 'legacy') == 'nodal_dual_v1':
+        return _horizontal_diffusion_flux(u, jnp.ones_like(p.coastal_kappa_h_2d)[:, :, None], p)
     # ∂²u/∂x²: FACE-GATED conservative form (open iff BOTH cells wet). The bare
     # central stencil reads the mask step at the coast, where ghost nodes hold
     # the T_ref sentinel, and the spike/dipole it produces drifts whole coastal
@@ -495,11 +496,7 @@ def _horizontal_biharmonic_tracer(tracer, p):
 
 
 def _biharmonic_h(u, p):
-    """Biharmonic grad^4 u = grad^2(grad^2 u), two face-gated Laplacians.
-
-    The gate keeps the mask-step halo out of the inner Laplacian, so it cannot seed
-    the outer one. (D5)
-    """
+    """Square the geometry-specific horizontal Laplacian. (D5)"""
     return _laplacian_h(_laplacian_h(u, p), p)
 
 

@@ -53,11 +53,15 @@ Checkpoint blocks bound reverse-mode history without changing the physical
 subcycle cap. The actual-grid gradient checks still fail when perturbations
 cross hard convection gates; finite adjoints alone do not qualify learning.
 Explicit `momentum_diffusion_scheme="joint_heun_v1"` with `actual_geometry_v2`
-jointly stages the retained viscosity operators instead of adding separately
-bounded old-state terms. Independent modal/time checks and a fresh same-input
-2-degree 30-day stock/restart audit pass. The default component scheme remains
-unchanged and its archived combined-viscosity counterexample remains a failure.
-This opt-in time repair does not prove full momentum energy or climate accuracy.
+jointly stages viscosity instead of adding separately bounded old-state terms.
+The nodal candidate now closes the spherical momentum viscosity metric at wet
+faces, sharing the existing scalar flux operator; its joint norm uses those
+same face coefficients. This changes the opt-in nodal path, not production
+legacy geometry. Prior 30-day evidence predates this spatial correction;
+new-source qualification is tracked in the implementation record. The default
+component time scheme retains its combined-viscosity counterexample. The
+material 1-degree 600/300 s trials also retain their 128-subcycle rejections.
+Local scalar dissipation does not prove full momentum energy or climate accuracy.
 Float32 passes local transport/stop gates but has material cumulative salt and
 volume-budget sensitivity; it is not qualified for century delivery.
 The [GPU environment and backend validation](docs/gpu_runtime_zh.md) likewise

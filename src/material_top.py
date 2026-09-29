@@ -11,7 +11,7 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
-from config import C_P, OMEGA, R_EARTH, RHO_0
+from config import C_P, RHO_0
 from jax_solver_global import (
     _barotropic_subcycle_transport,
     _biharmonic_h,
@@ -232,13 +232,8 @@ def _checkpointed_material_scan(advance, initial, maximum):
 def _momentum_diffusion_norm_bound(params):
     """Absolute row-sum bound of the retained reference-momentum operators."""
     wet = params.wet_mask_z
-    east = wet * jnp.roll(wet, -1, axis=0)
-    north = (wet * jnp.roll(wet, -1, axis=1)).at[:, -1].set(0.)
-    south = jnp.roll(north, 1, axis=1).at[:, 0].set(0.)
-    horizontal = 2. * ((east + jnp.roll(east, 1, axis=0)) * params.inv_dx2
-                       + (north + south) * params.inv_dy2)
-    metric = jnp.abs(params.f[0] / (2. * OMEGA * params.cos_lat * R_EARTH)) * params.inv_dy
-    horizontal_norm = jnp.max(horizontal + metric[None, :, None])
+    unit_diffusivity = jnp.ones_like(params.coastal_kappa_h_2d)[..., None]
+    horizontal_norm = 2. * jnp.max(_horizontal_row_rate(unit_diffusivity, params))
     vertical = _vertical_row_rate(params.nu_v, wet[..., :-1] * wet[..., 1:], params)
     vertical_norm = 2. * jnp.max(vertical / params.dz_node)
     return params.nu_h * horizontal_norm + vertical_norm + params.nu_bi * horizontal_norm ** 2

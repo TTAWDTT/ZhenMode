@@ -25,8 +25,15 @@ POLICY = dict(subcycle_scheme="actual_geometry_v2", momentum_diffusion_scheme="j
 
 def _controlled_factory(*, stairs=False, metric=False, duration=600., physics=None):
     grid, _ = _fixture(stairs=stairs)
-    rotation = np.broadcast_to(2. * OMEGA * np.sin(np.deg2rad(grid.lat)), (8, 8)).copy() if metric else np.zeros((8, 8))
-    grid = replace(grid, dx_2d=np.full((8, 8), 1000.), dy=1000., cos_lat=np.ones(8), f=rotation)
+    if metric:
+        latitude = np.arange(-7., 8., 2.)
+        cosine = np.cos(np.deg2rad(latitude))
+        spacing = R_EARTH * np.deg2rad(2.)
+        grid = replace(grid, lat=latitude, cos_lat=cosine, dy=spacing,
+                       dx_2d=np.broadcast_to(spacing * cosine, (8, 8)).copy(),
+                       f=np.broadcast_to(2. * OMEGA * np.sin(np.deg2rad(latitude)), (8, 8)).copy())
+    else:
+        grid = replace(grid, dx_2d=np.full((8, 8), 1000.), dy=1000., cos_lat=np.ones(8), f=np.zeros((8, 8)))
     if physics is None:
         physics = replace(PhysicsConfig(), nu_h=800., nu_v=.01625, nu_bi=7.5e7,
                           kappa_h=0., kappa_v=0., kappa_bi=0., kappa_conv=0., kappa_gm=0., kappa_redi=0., r_bot=0.)
@@ -55,14 +62,11 @@ def _numpy_operators(params):
             horizontal[row, row] -= rate
         for next_latitude in (max(latitude - 1, 0), min(latitude + 1, shape[1] - 1)):
             column = np.ravel_multi_index((longitude, next_latitude, depth), shape)
-            rate = wet[longitude, latitude, depth] * wet[longitude, next_latitude, depth] / float(params.dy) ** 2
+            cosine_face = .5 * (float(params.cos_lat[latitude]) + float(params.cos_lat[next_latitude]))
+            rate = (wet[longitude, latitude, depth] * wet[longitude, next_latitude, depth]
+                    * cosine_face / float(params.cos_lat[latitude]) / float(params.dy) ** 2)
             horizontal[row, column] += rate
             horizontal[row, row] -= rate
-        metric = float(params.f[0, latitude]) / (2. * OMEGA * float(params.cos_lat[latitude]) * R_EARTH)
-        north = np.ravel_multi_index((longitude, min(latitude + 1, shape[1] - 1), depth), shape)
-        south = np.ravel_multi_index((longitude, max(latitude - 1, 0), depth), shape)
-        horizontal[row, north] -= metric / (2. * float(params.dy))
-        horizontal[row, south] += metric / (2. * float(params.dy))
         for next_depth in (depth - 1, depth + 1):
             if 0 <= next_depth < shape[2] and wet[longitude, latitude, depth] and wet[longitude, latitude, next_depth]:
                 column = np.ravel_multi_index((longitude, latitude, next_depth), shape)

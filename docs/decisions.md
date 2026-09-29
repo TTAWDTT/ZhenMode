@@ -71,6 +71,19 @@ amplified the same grid-scale mode that blew up the tracer on the boundary row;
 it was replaced by the mirror ghost cell (ghost = boundary value), which gives
 `d²u/dy²|_0 = (u1 - u0)/dy²` — zero normal gradient, stable.
 
+The later original-FD audit found that these gates covered only the second
+differences: the expanded spherical first-derivative correction still read dry
+velocity sentinels and produced positive scalar viscous work on an actual wet
+coast. `nodal_dual_v1` now reuses the existing closed wet-face cosine flux
+operator for momentum Laplacian and its square. The material joint-stage norm
+uses the same face row sums. Scalar self-adjoint dissipation is proved only
+under the declared regular latitude-longitude/reference-node metric; it is not
+a full vector viscosity or complete momentum-energy theorem. Legacy geometry
+retains the old stencil for explicit production compatibility, not as a renewed
+correctness claim. Old nodal source checkpoints are not continued under new
+hashes. Numerical and actual-run qualification is recorded in
+[the implementation ledger, section20](legacy_core_repair_status_zh.md).
+
 ## D6 — Face-flux divergence: the w diagnosis must see what advection sees
 
 On fully-wet nodes the face-flux divergence and the central difference are
