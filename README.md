@@ -38,6 +38,13 @@ they do not establish long-window climate/forecast accuracy. Real WOA/NCEP
 fixed-January candidate runs at 1/2 degrees, halved timestep, and opt-in 2-degree
 ice complete 30 days under numerical stop limits, not
 physical-budget or forecast-skill qualification.
+
+`material_top.make_material_top_step` is a separate float64 API candidate for
+moving, mass-lumped nodal tracer stocks on the original linear momentum core.
+It retains the frozen minmod/biharmonic options, stages thickness and content
+together, and rejects unsupported filters/ice/GM/Redi. It is not a production
+switch: the first actual no-cap trial stops at step 15 on the registered thin-cell
+convection limit. Local stock checks do not qualify a one-day or century run.
 Float32 passes local transport/stop gates but has material cumulative salt and
 volume-budget sensitivity; it is not qualified for century delivery.
 The [GPU environment and backend validation](docs/gpu_runtime_zh.md) likewise

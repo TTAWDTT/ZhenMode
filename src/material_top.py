@@ -1,0 +1,328 @@
+"""Opt-in moving nodal tracer inventory on the original linear FD dynamics.
+
+This is a mass-lumped point-sample approximation, not the C-grid migration or
+fully nonlinear momentum. Only float64, unfiltered material surfaces and the
+explicitly supported physics are accepted. Production defaults are untouched.
+"""
+from pathlib import Path
+from typing import NamedTuple
+
+import jax
+import jax.numpy as jnp
+import numpy as np
+
+from config import C_P, RHO_0
+from jax_solver_global import (
+    _barotropic_subcycle_transport,
+    _compute_tracer_tendency,
+    _convective_mask,
+    _d2_dz2_flux,
+    _effective_kappa_v,
+    _explicit_full_step,
+    _face_transport_divergence,
+    _horizontal_biharmonic_tracer,
+    _horizontal_tracer_diffusion,
+    _linear_bottom_drag_step,
+    _linear_half_step,
+    _match_layer_face_transports,
+    _vertical_transport_iface,
+)
+from restart_contract import make_restart_contract
+
+INVENTORY_SCHEME = "material_top_v1"
+SOURCE_NAMES = ("prescribed_heat", "bulk_heat", "coastal_bulk_heat",
+                "temperature_restore", "salinity_restore", "prescribed_brine")
+METRIC_NAMES = ("moving_node_water_sensible_heat_J", "moving_node_water_salt_kg")
+CONTINUITY_TOLERANCE_M = 1e-10
+FACE_TOLERANCE_M2_PER_S = 1e-9
+CFL_LIMIT = 0.5
+
+
+class MaterialTopResult(NamedTuple):
+    state: object
+    attempted_state: object
+    valid: jnp.ndarray
+    checks: dict
+    budget: dict
+
+
+def _validate_params(params):
+    requirements = {"column_geometry": "nodal_dual_v1", "mode_split": True,
+                    "match_barotropic_transport": True, "process_time_scheme": "symmetric_fast_v3",
+                    "conservative_kv": True, "localize_conv": True,
+                    "polar_cap_rows": 0,
+                    "dynamic_ice": False, "ice_salt_flux": 0., "kappa_gm": 0.,
+                    "kappa_redi": 0.}
+    for name, expected in requirements.items():
+        if getattr(params, name) != expected:
+            raise ValueError(f"{INVENTORY_SCHEME} requires {name}={expected!r}")
+    for name in ("sponge_rate", "eta_relax_rate"):
+        if np.any(np.asarray(getattr(params, name)) != 0.):
+            raise ValueError(f"{INVENTORY_SCHEME} requires {name}=0")
+    if not params.monotone_adv and not params.fct_adv:
+        raise ValueError(f"{INVENTORY_SCHEME} requires donor-cell or the existing minmod flux")
+    if np.asarray(params.dz_node).dtype != np.dtype("float64"):
+        raise ValueError(f"{INVENTORY_SCHEME} requires float64 parameters")
+
+
+def material_thickness(eta, params):
+    """Actual top mass weight; negative thickness is retained for rejection."""
+    return jnp.where(params.wet_mask_z > 0.,
+                     params.dz_node + eta[..., None] * params.surface_mask, 0.)
+
+
+def _contents(state, params):
+    concentration = jnp.stack((state.T, state.S), axis=-1)
+    return material_thickness(state.eta, params)[..., None] * jnp.where(
+        params.wet_mask_z[..., None] > 0., concentration, 0.)
+
+
+def _concentrations(content, eta, original, params):
+    thickness = material_thickness(eta, params)
+    denominator = jnp.where(thickness > 0., thickness, 1.)
+    concentration = content / denominator[..., None]
+    return original._replace(
+        T=jnp.where(params.wet_mask_z > 0., concentration[..., 0], original.T),
+        S=jnp.where(params.wet_mask_z > 0., concentration[..., 1], original.S), eta=eta)
+
+
+def _sum_content(content, params):
+    area = params.dx_2d * params.dy
+    units = jnp.asarray([RHO_0 * C_P, RHO_0 * 1e-3], dtype=jnp.float64)
+    return jnp.sum(content * area[..., None, None], axis=(0, 1, 2)) * units
+
+
+def material_inventory(state, params):
+    """Declared moving nodal J/kg stocks, not a full ice/momentum energy budget."""
+    return _sum_content(_contents(state, params), params)
+
+
+def _safe_tracers(state, params):
+    return state._replace(T=jnp.where(params.wet_mask_z > 0., state.T, 0.),
+                          S=jnp.where(params.wet_mask_z > 0., state.S, 0.))
+
+
+def _linear_rhs(state, params):
+    safe = _safe_tracers(state, params)
+    tendencies = tuple(_horizontal_tracer_diffusion(tracer, params)
+                       + _d2_dz2_flux(tracer, _effective_kappa_v(params), params)
+                       - (params.kappa_bi * _horizontal_biharmonic_tracer(tracer, params)
+                          if params.kappa_bi > 0. else 0.) for tracer in (safe.T, safe.S))
+    return params.dz_node[..., None] * jnp.stack(tendencies, axis=-1)
+
+
+def _vertical_row_rate(coefficient, gate, params):
+    conductance = coefficient * gate / params.dz_iface
+    zero = jnp.zeros_like(conductance[..., :1])
+    return jnp.concatenate((zero, conductance), axis=-1) + jnp.concatenate((conductance, zero), axis=-1)
+
+
+def _horizontal_row_rate(coefficient, params):
+    wet = params.wet_mask_z
+    east = .5 * (coefficient + jnp.roll(coefficient, -1, axis=0)) * wet * jnp.roll(wet, -1, axis=0)
+    north = .5 * (coefficient + jnp.roll(coefficient, -1, axis=1)) * wet * jnp.roll(wet, -1, axis=1)
+    cosine_face = .5 * (params.cos_lat + jnp.roll(params.cos_lat, -1))
+    north = (north * cosine_face[None, :, None]).at[:, -1].set(0.)
+    south = jnp.roll(north, 1, axis=1).at[:, 0].set(0.)
+    return ((east + jnp.roll(east, 1, axis=0)) * params.inv_dx ** 2
+            + (north + south) * params.inv_dy ** 2 / params.cos_lat[None, :, None])
+
+
+def _linear_row_rate(params):
+    wet = params.wet_mask_z
+    horizontal = params.dz_node * _horizontal_row_rate(params.kappa_h + params.coastal_kappa_h_2d[..., None], params)
+    if params.kappa_bi > 0.:
+        unit_row = _horizontal_row_rate(jnp.ones_like(params.coastal_kappa_h_2d)[..., None], params)
+        horizontal = horizontal + params.dz_node * params.kappa_bi * 4. * jnp.max(unit_row) * unit_row
+    vertical = _vertical_row_rate(_effective_kappa_v(params), wet[..., :-1] * wet[..., 1:], params)
+    return horizontal + vertical
+
+
+def _fraction(rate, eta, duration, params):
+    thickness = material_thickness(eta, params)
+    return jnp.max(jnp.where(params.wet_mask_z > 0.,
+                             duration * rate / jnp.where(thickness > 0., thickness, 1.), 0.))
+
+
+def _linear_material_step(state, params, duration):
+    content = _contents(state, params)
+    first = _linear_rhs(state, params)
+    predicted = _concentrations(content + duration * first, state.eta, state, params)
+    second = _linear_rhs(predicted, params)
+    change = .5 * duration * (first + second)
+    absolute_change = .5 * duration * (jnp.abs(first) + jnp.abs(second))
+    updated = _concentrations(content + change, state.eta, state, params)
+    momentum = _linear_half_step(state, params, duration)
+    updated = updated._replace(u=momentum.u, v=momentum.v)
+    return updated, change, absolute_change, _fraction(_linear_row_rate(params), state.eta, duration, params)
+
+
+def _transport_outflow(faces, vertical, params):
+    east, north = faces
+    west = jnp.roll(east, 1, axis=0)
+    south = jnp.roll(north, 1, axis=1).at[:, 0].set(0.)
+    horizontal = ((jnp.maximum(east, 0.) + jnp.maximum(-west, 0.)) * params.inv_dx
+                  + (jnp.maximum(north, 0.) + jnp.maximum(-south, 0.))
+                  * params.inv_dy / params.cos_lat[None, :, None])
+    relative_vertical = vertical.at[..., 0].set(0.)
+    return horizontal + jnp.maximum(relative_vertical[..., 1:], 0.) + jnp.maximum(-relative_vertical[..., :-1], 0.)
+
+
+def _nonlinear_rhs(state, params, faces, vertical):
+    safe = _safe_tracers(state, params)
+    terms = _compute_tracer_tendency(safe, params, face_transport=faces, return_terms=True)[2]
+    sources, processes, top_temperature, top_salinity = terms[:4]
+    advection = params.dz_node[..., None] * jnp.stack(processes[0], axis=-1)
+    surface_reference_exchange = jnp.stack((top_temperature, top_salinity), axis=-1)
+    advection = advection.at[..., 0, :].add(-surface_reference_exchange)
+    convection = params.dz_node[..., None] * jnp.stack(processes[1], axis=-1)
+    zero = jnp.zeros_like(sources[0])
+    source_pairs = tuple(jnp.stack((source, zero) if index < 4 else (zero, source), axis=-1)
+                         for index, source in enumerate(sources))
+    source_content = jnp.stack(source_pairs) * params.dz_node[None, ..., None]
+    rhs = advection + convection + jnp.sum(source_content, axis=0)
+    _, unstable = _convective_mask(safe, params)
+    convective_rate = _vertical_row_rate(params.kappa_conv, unstable, params)
+    return rhs, source_content, advection, convection, convective_rate
+
+
+def _material_tracer_step(state, params, faces):
+    subcycles = max(int(params.adv_nsub), int(params.conv_nsub))
+    subparams = params._replace(dt=params.dt / subcycles, adv_nsub=1, conv_nsub=1)
+    vertical = _vertical_transport_iface(state.u, state.v, params, face_transport=faces)
+    eta_rate = -_face_transport_divergence(jnp.sum(faces[0], axis=-1), jnp.sum(faces[1], axis=-1), params)
+    outflow = _transport_outflow(faces, vertical, params)
+    initial_content = _contents(state, params)
+    zero = jnp.zeros_like(initial_content)
+    source_zero = jnp.zeros((len(SOURCE_NAMES),) + zero.shape, dtype=zero.dtype)
+    wet = params.wet_mask_z > 0.
+
+    def advance(carry, unused):
+        content, eta, total_rhs, absolute_rhs, total_sources, total_advection, total_convection, maxima, minimum = carry
+        stage = _concentrations(content, eta, state, params)
+        first = _nonlinear_rhs(stage, subparams, faces, vertical)
+        predicted_eta = eta + subparams.dt * eta_rate
+        predicted = _concentrations(content + subparams.dt * first[0], predicted_eta, state, params)
+        second = _nonlinear_rhs(predicted, subparams, faces, vertical)
+        weight = .5 * subparams.dt
+        change = weight * (first[0] + second[0])
+        sources = weight * (first[1] + second[1])
+        advection = weight * (first[2] + second[2])
+        convection = weight * (first[3] + second[3])
+        fractions = jnp.asarray([jnp.maximum(_fraction(outflow, eta, subparams.dt, params),
+                                             _fraction(outflow, predicted_eta, subparams.dt, params)),
+                                  jnp.maximum(_fraction(first[4], eta, subparams.dt, params),
+                                              _fraction(second[4], predicted_eta, subparams.dt, params))])
+        minimum = jnp.minimum(minimum, jnp.minimum(
+            jnp.min(jnp.where(wet, material_thickness(eta, params), jnp.inf)),
+            jnp.min(jnp.where(wet, material_thickness(predicted_eta, params), jnp.inf))))
+        return (content + change, predicted_eta, total_rhs + change,
+                absolute_rhs + weight * (jnp.abs(first[0]) + jnp.abs(second[0])),
+                total_sources + sources, total_advection + advection, total_convection + convection,
+                jnp.maximum(maxima, fractions), minimum), None
+
+    initial = (initial_content, state.eta, zero, zero, source_zero, zero, zero,
+               jnp.zeros(2, dtype=zero.dtype), jnp.asarray(jnp.inf, dtype=zero.dtype))
+    final, _ = jax.lax.scan(advance, initial, xs=None, length=subcycles)
+    content, eta, rhs, absolute_rhs, sources, advection, convection, maxima, minimum = final
+    return _concentrations(content, eta, state, params), rhs, absolute_rhs, sources, advection, convection, maxima, minimum
+
+
+def _material_step(state, params):
+    for name, value in state._asdict().items():
+        if value.dtype != jnp.float64:
+            raise ValueError(f"{INVENTORY_SCHEME} requires float64 {name}")
+        expected_shape = params.wet_mask.shape if name in {"eta", "ice"} else params.wet_mask_z.shape
+        if value.shape != expected_shape:
+            raise ValueError("material state shapes must match the frozen FD grid")
+    duration = params.dt / 2.
+    start = _linear_bottom_drag_step(state, params, duration)
+    first, linear_rhs_1, absolute_1, fraction_1 = _linear_material_step(start, params, duration)
+    nonlinear_predictor = _explicit_full_step(first, params, params.dt)
+    predictor = _linear_half_step(nonlinear_predictor, params, duration)
+    dynamical, column_faces, filter_change = _barotropic_subcycle_transport(predictor, params)
+    velocity_x = .5 * (first.u + nonlinear_predictor.u)
+    velocity_y = .5 * (first.v + nonlinear_predictor.v)
+    faces = _match_layer_face_transports(velocity_x, velocity_y, column_faces, params)
+    middle, nonlinear_rhs, absolute_nonlinear, sources, advection, convection, fractions, minimum = _material_tracer_step(first, params, faces)
+    end, linear_rhs_2, absolute_2, fraction_2 = _linear_material_step(middle, params, duration)
+    attempted = dynamical._replace(T=end.T, S=end.S)
+    attempted = _linear_bottom_drag_step(attempted, params, duration)
+    attempted = attempted._replace(v=attempted.v * params.interior_mask_z)
+    before, after = _contents(state, params), _contents(attempted, params)
+    expected = linear_rhs_1 + nonlinear_rhs + linear_rhs_2
+    absolute_rhs = absolute_1 + absolute_nonlinear + absolute_2
+    local_residual = after - before - expected
+    floor = 64. * jnp.finfo(jnp.float64).eps * (1. + jnp.abs(before) + jnp.abs(after) + absolute_rhs)
+    matched_error = jnp.max(jnp.stack([jnp.max(jnp.abs(jnp.sum(layer, axis=-1) - column))
+                                      for layer, column in zip(faces, column_faces, strict=True)]))
+    continuity = attempted.eta - state.eta + params.dt * _face_transport_divergence(*column_faces, params)
+    minimum = jnp.minimum(minimum, jnp.min(jnp.where(params.wet_mask_z > 0., material_thickness(state.eta, params), jnp.inf)))
+    minimum = jnp.minimum(minimum, jnp.min(jnp.where(params.wet_mask_z > 0., material_thickness(attempted.eta, params), jnp.inf)))
+    checks = {"minimum_wet_thickness_m": minimum,
+              "transport_outflow_fraction_max": fractions[0], "convective_fraction_max": fractions[1],
+              "linear_diffusion_fraction_max": jnp.maximum(fraction_1, fraction_2),
+              "local_continuity_residual_max_m": jnp.max(jnp.abs(continuity)),
+              "tracer_face_mismatch_max_m2_per_s": matched_error,
+              "unpaired_eta_filter_max_m": jnp.max(jnp.abs(filter_change)),
+              "local_inventory_roundoff_ratio_max": jnp.max(jnp.abs(local_residual) / floor),
+              "ice_abs_max_m": jnp.max(jnp.abs(state.ice)),
+              "velocity_abs_max_m_per_s": jnp.maximum(jnp.max(jnp.abs(attempted.u)), jnp.max(jnp.abs(attempted.v))),
+              "eta_abs_max_m": jnp.max(jnp.abs(attempted.eta))}
+    source_totals = jax.vmap(lambda content: _sum_content(content, params))(sources)
+    observed = _sum_content(after - before, params)
+    budget = {"observed_change": observed, "source_inputs": source_totals,
+              "source_budget_residual": observed - jnp.sum(source_totals, axis=0),
+              "linear_exchange": _sum_content(linear_rhs_1 + linear_rhs_2, params),
+              "advection_exchange": _sum_content(advection, params),
+              "convection_exchange": _sum_content(convection, params),
+              "local_implementation_residual": _sum_content(local_residual, params),
+              "absolute_local_implementation_residual": _sum_content(jnp.abs(local_residual), params)}
+    finite = jnp.all(jnp.stack([jnp.all(jnp.isfinite(value)) for value in jax.tree.leaves((attempted, checks, budget))]))
+    valid = (finite & (minimum > 0.) & (fractions[0] <= CFL_LIMIT) & (fractions[1] <= CFL_LIMIT)
+             & (checks["linear_diffusion_fraction_max"] <= CFL_LIMIT)
+             & (checks["local_continuity_residual_max_m"] <= CONTINUITY_TOLERANCE_M)
+             & (matched_error <= FACE_TOLERANCE_M2_PER_S)
+             & (checks["unpaired_eta_filter_max_m"] <= CONTINUITY_TOLERANCE_M)
+             & (checks["local_inventory_roundoff_ratio_max"] <= 1.) & (checks["ice_abs_max_m"] == 0.)
+             & (checks["velocity_abs_max_m_per_s"] <= 10.) & (checks["eta_abs_max_m"] <= 15.))
+    checks["finite"] = finite
+    selected = jax.tree.map(lambda new, old: jnp.where(valid, new, old), attempted, state)
+    return MaterialTopResult(selected, attempted, valid, checks, budget)
+
+
+def make_material_top_step(params):
+    """Build an explicit checked candidate; callers must stop at first rejection."""
+    _validate_params(params)
+
+    @jax.jit
+    def step(state, forcing=None, atmosphere=None):
+        current = params
+        if forcing is not None:
+            for value in forcing:
+                if value.dtype != jnp.float64 or value.shape != params.wet_mask.shape:
+                    raise ValueError("material forcing requires float64 horizontal fields")
+            current = current._replace(tau_x_2d=forcing[0], tau_y_2d=forcing[1], Q_heat_2d=forcing[2])
+        if atmosphere is not None:
+            if atmosphere.dtype != jnp.float64 or atmosphere.shape != params.T_atm_3d.shape:
+                raise ValueError("material atmosphere requires the frozen float64 field shape")
+            current = current._replace(T_atm_3d=atmosphere)
+        return _material_step(state, current)
+
+    return step
+
+
+def make_material_top_restart_contract(grid, params, *, forcing, controls, execution):
+    """Separate stock semantics and source hashes; no old-contract continuation."""
+    _validate_params(params)
+    controls = dict(controls)
+    if "tracer_inventory_scheme" in controls:
+        raise ValueError("inventory scheme is frozen by the material restart factory")
+    controls["tracer_inventory_scheme"] = INVENTORY_SCHEME
+    source_directory = Path(__file__).resolve().parent
+    contract = make_restart_contract(
+        grid, params, dtype="float64", forcing=forcing, controls=controls,
+        code_paths={name: source_directory / f"{name}.py"
+                    for name in ("material_top", "jax_solver_global", "restart_contract", "config", "grid")}, execution=execution)
+    contract["state_family"] = "FD_point_samples_material_top_mass_lumped_linear_momentum_v1"
+    return contract

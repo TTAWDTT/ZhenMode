@@ -41,6 +41,7 @@ py-modules = [
     "nonlinear_dynamics",
     "barotropic_transport",
     "jax_solver_global",
+    "material_top",
     "run_long_integration_global",
     "restart_contract",
     "forcing",
