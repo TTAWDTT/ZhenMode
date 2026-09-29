@@ -168,9 +168,17 @@ def main():
         raise ValueError("real nonlinear reference incomplete or unpinned")
     if report["kinetic_norm"] != "finite_volume_full_half_prism_dual_not_physical_field_L2" or not report["curvature"] or report["upwind"]:
         raise ValueError("actual nonlinear method contract")
-    sha = lambda filename: hashlib.sha256(filename.read_bytes()).hexdigest()
+    def sha(filename):
+        return hashlib.sha256(filename.read_bytes()).hexdigest()
+
     if any(sha(ROOT / name) != value for name, value in report["provenance"]["source_sha256"].items()):
         raise ValueError("runtime source hashes changed")
+    if sha(ROOT / report["provenance"]["input_report"]) != report["provenance"]["input_report_sha256"]:
+        raise ValueError("immutable input report hash")
+    expected_groups = {(geometry, dtype, disturbed) for geometry in ("prior_smoothed", "unsmoothed")
+                       for dtype in ("float64", "float32") for disturbed in (False, True)}
+    if {(run["geometry"], run["velocity_dtype"], run["disturbed"]) for run in report["runs"]} != expected_groups:
+        raise ValueError("eight actual nonlinear group coverage")
     evidence, rejected = [], []
     for run in report["runs"]:
         snapshot = ROOT / run["snapshot_path"]
@@ -182,7 +190,8 @@ def main():
             if row["step"] != index + 1 or not row["accepted"] or any(value is None or not np.isfinite(value) for value in row.values()):
                 raise ValueError("recorded nonlinear trajectory failure")
             if (row["momentum_residual"] > row["momentum_tolerance"] or abs(row["energy_residual"]) > row["energy_tolerance"]
-                    or row["continuity_residual"] > row["continuity_tolerance"] or row["constant_error"] > 1e-12 or row["bound_excursion"] > 1e-12):
+                    or row["continuity_residual"] > row["continuity_tolerance"] or row["constant_error"] > 1e-12 or row["bound_excursion"] > 1e-12
+                    or row["outer_change"] > 2e-13 or row["solve_relative_residual"] > 1e-12):
                 raise ValueError("recorded nonlinear gate violation")
         with np.load(snapshot, allow_pickle=False) as saved:
             data = {name: saved[name] for name in saved.files}
