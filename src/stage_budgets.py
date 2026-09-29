@@ -8,7 +8,12 @@ import jax
 import jax.numpy as jnp
 
 from config import C_P, RHO_0
-from jax_solver_global import _step_impl, _vertical_transport_iface
+from jax_solver_global import (
+    _face_transport_divergence,
+    _layer_face_transports,
+    _step_impl,
+    _vertical_transport_iface,
+)
 
 METRIC_NAMES = ("fixed_node_water_ice_enthalpy_J", "water_salt_kg", "eta_volume_m3")
 STAGE_NAMES = ("linear_diffusion", "sponge", "nonlinear", "free_surface",
@@ -16,6 +21,9 @@ STAGE_NAMES = ("linear_diffusion", "sponge", "nonlinear", "free_surface",
 SOURCE_NAMES = ("prescribed_heat", "bulk_heat", "coastal_bulk_heat", "temperature_restore",
                 "salinity_restore", "prescribed_brine", "sponge", "ice_atmosphere_heat", "ice_brine")
 NONLINEAR_PROCESS_NAMES = ("advection", "convection", "gm", "redi")
+TRANSPORT_METRIC_NAMES = ("local_continuity_residual_m", "nontransport_eta_change_m",
+                          "tracer_face_mean_mismatch_m2_per_s", "final_filter_face_change_m2_per_s")
+MAXIMUM_BUDGET_FIELDS = ("projection_relative_residual_max", "transport_consistency_max")
 
 
 def empty_budget():
@@ -37,13 +45,15 @@ def empty_budget():
             "absolute_nonlinear_accounting_residual": jnp.zeros(3, dtype=jnp.float64),
             "surface_displacement_tracer_change": jnp.zeros(3, dtype=jnp.float64),
             "projection_transport_norm_squared": jnp.zeros(2, dtype=jnp.float64),
-            "projection_relative_residual_max": jnp.asarray(0., dtype=jnp.float64)}
+            "projection_relative_residual_max": jnp.asarray(0., dtype=jnp.float64),
+            "transport_consistency_max": jnp.zeros(4, dtype=jnp.float64),
+            "transport_audited_steps": jnp.asarray(0., dtype=jnp.float64)}
 
 
 def accumulate_budget(totals, interval):
     """Sum inventories and squared norms, but preserve the worst residual ratio."""
     return {name: (jnp.maximum(totals[name], interval[name])
-                   if name == "projection_relative_residual_max" else totals[name] + interval[name])
+                   if name in MAXIMUM_BUDGET_FIELDS else totals[name] + interval[name])
             for name in totals}
 
 
@@ -63,6 +73,35 @@ class _StageRecorder:
         self.advection_boundary = jnp.zeros(3, dtype=jnp.float64)
         self.projection_norm_squared = jnp.zeros(2, dtype=jnp.float64)
         self.projection_relative_residual_max = jnp.asarray(0., dtype=jnp.float64)
+        self.tracer_face_mean = (jnp.zeros_like(self.surface_area), jnp.zeros_like(self.surface_area))
+        self.fast_face_mean = None
+        self.transport_consistency_max = jnp.zeros(4, dtype=jnp.float64)
+        self.transport_audited_steps = jnp.asarray(0., dtype=jnp.float64)
+        self.prefilter_faces = None
+
+    def tracer_transport(self, layer_transport):
+        self.tracer_face_mean = tuple(total + 0.5 * jnp.sum(flux, axis=-1)
+                                      for total, flux in zip(self.tracer_face_mean, layer_transport, strict=True))
+
+    def barotropic_transport(self, eta_before, eta_after, face_mean, filter_change):
+        self.fast_face_mean = face_mean
+        continuity = (eta_after - eta_before + self.params.dt * _face_transport_divergence(*face_mean, self.params)
+                      - filter_change)
+        self.transport_consistency_max = self.transport_consistency_max.at[:2].set(
+            jnp.stack((jnp.max(jnp.abs(continuity)), jnp.max(jnp.abs(filter_change)))))
+        self.transport_audited_steps = jnp.asarray(1., dtype=jnp.float64)
+
+    def before_transport_filter(self, state):
+        self.prefilter_faces = tuple(jnp.sum(flux, axis=-1)
+                                     for flux in _layer_face_transports(state.u, state.v, self.params))
+
+    def after_transport_filter(self, state):
+        if self.prefilter_faces is not None:
+            final_faces = tuple(jnp.sum(flux, axis=-1)
+                                for flux in _layer_face_transports(state.u, state.v, self.params))
+            mismatch = jnp.max(jnp.stack([jnp.max(jnp.abs(final - before))
+                                          for final, before in zip(final_faces, self.prefilter_faces, strict=True)]))
+            self.transport_consistency_max = self.transport_consistency_max.at[3].set(mismatch)
 
     def difference(self, before, after):
         heat = RHO_0 * C_P * (jnp.asarray(after.T, dtype=jnp.float64) - jnp.asarray(before.T, dtype=jnp.float64)) * self.volume
@@ -142,6 +181,10 @@ class _StageRecorder:
         self.sources["ice_brine"] = self.sources["ice_brine"].at[1].add(salt)
 
     def result(self, before, after):
+        if self.fast_face_mean is not None:
+            mismatch = jnp.max(jnp.stack([jnp.max(jnp.abs(tracer - fast))
+                                          for tracer, fast in zip(self.tracer_face_mean, self.fast_face_mean, strict=True)]))
+            self.transport_consistency_max = self.transport_consistency_max.at[2].set(mismatch)
         observed, _ = self.difference(before, after)
         stages = jnp.stack([self.stages[name] for name in STAGE_NAMES])
         sources = jnp.stack([self.sources[name] for name in SOURCE_NAMES])
@@ -163,7 +206,9 @@ class _StageRecorder:
                 "absolute_nonlinear_accounting_residual": jnp.abs(nonlinear_residual),
                 "surface_displacement_tracer_change": self.surface_displacement_change(before, after),
                 "projection_transport_norm_squared": self.projection_norm_squared,
-                "projection_relative_residual_max": self.projection_relative_residual_max}
+                "projection_relative_residual_max": self.projection_relative_residual_max,
+                "transport_consistency_max": self.transport_consistency_max,
+                "transport_audited_steps": self.transport_audited_steps}
 
 
 def make_budget_step(params):

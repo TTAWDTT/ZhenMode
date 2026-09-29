@@ -20,10 +20,12 @@ from grid import global_grid_dims, land_distance_from_land_mask, make_global_gri
 from jax_solver_global import make_solver_global, projection_config
 from run_long_integration_global import ETA_BLOWUP_M, MAX_U_BOUND
 from stage_budgets import (
+    MAXIMUM_BUDGET_FIELDS,
     METRIC_NAMES,
     NONLINEAR_PROCESS_NAMES,
     SOURCE_NAMES,
     STAGE_NAMES,
+    TRANSPORT_METRIC_NAMES,
     accumulate_budget,
     empty_budget,
     make_budget_step,
@@ -56,6 +58,7 @@ def main():
     parser.add_argument("--audit-budget", action="store_true")
     parser.add_argument("--dtype", choices=["float32", "float64"], default="float32")
     parser.add_argument("--column-geometry", choices=["legacy", "nodal_dual_v1"], default="legacy")
+    parser.add_argument("--match-barotropic-transport", action="store_true")
     parser.add_argument("--projection-niter", type=int, default=None)
     parser.add_argument("--projection-rtol", type=float, default=None)
     parser.add_argument("--projection-preconditioner", choices=["none", "jacobi"], default="none")
@@ -69,6 +72,8 @@ def main():
         parser.error("days, dt and resolution must be finite and positive")
     if not np.isfinite(args.kappa_bi) or args.kappa_bi < 0.:
         parser.error("kappa-bi must be finite and nonnegative")
+    if args.match_barotropic_transport and args.column_geometry != "nodal_dual_v1":
+        parser.error("--match-barotropic-transport requires --column-geometry nodal_dual_v1")
     grid, physics, initial_temperature, initial_salinity, atmosphere, forcing = make_smoke_fixture(
         args.resolution, args.bathy, args.kappa_bi)
     nx, ny = grid.nx, grid.ny
@@ -114,7 +119,7 @@ def main():
             mixed_layer_depth_m=20. if case in {"mixed", "ice"} else None,
             dynamic_ice=case == "ice", coastal_kappa_h_mask=coast_mask,
             coastal_kappa_h=500. if coast_mask is not None else 0., return_params=True,
-            column_geometry=args.column_geometry)
+            column_geometry=args.column_geometry, match_barotropic_transport=args.match_barotropic_transport)
         state = initialize(T_init=initial_temperature, S_init=initial_salinity)
         audited_step = make_budget_step(params) if args.audit_budget else None
         zero_budget = empty_budget()
@@ -169,6 +174,9 @@ def main():
         parameter_path = output.with_name(f"{output.stem}_{case}_parameters.npz")
         np.savez_compressed(parameter_path, **parameter_arrays)
         result["parameter_arrays"] = str(parameter_path)
+        initial_state_path = output.with_name(f"{output.stem}_{case}_initial_state.npz")
+        np.savez_compressed(initial_state_path, **{name: np.asarray(value) for name, value in state._asdict().items()})
+        result["initial_state_path"] = str(initial_state_path)
         while completed < total_steps:
             count = min(batch_steps, total_steps - completed)
             batch_started = time.perf_counter()
@@ -177,7 +185,7 @@ def main():
             result["timing"]["integration_seconds"] += time.perf_counter() - batch_started
             if args.audit_budget:
                 for name, values in ledger.items():
-                    if name == "projection_relative_residual_max":
+                    if name in MAXIMUM_BUDGET_FIELDS:
                         accumulated_budget[name] = np.maximum(accumulated_budget[name], np.asarray(values))
                     else:
                         accumulated_budget[name] += np.asarray(values)
@@ -196,6 +204,8 @@ def main():
                 record["nonlinear_accounting_residual"] = np.asarray(ledger["nonlinear_accounting_residual"]).tolist()
                 record["projection_transport_norm_squared"] = np.asarray(ledger["projection_transport_norm_squared"]).tolist()
                 record["projection_relative_residual_max"] = float(ledger["projection_relative_residual_max"])
+                record["transport_consistency_max"] = np.asarray(ledger["transport_consistency_max"]).tolist()
+                record["transport_audited_steps"] = float(ledger["transport_audited_steps"])
             records.append(record)
             print(json.dumps({"case": case, **record}), flush=True)
             save_report()
@@ -213,6 +223,7 @@ def main():
         if args.audit_budget:
             result["stage_budget"] = {"metrics": METRIC_NAMES, "stages": STAGE_NAMES, "sources": SOURCE_NAMES,
                                       "nonlinear_processes": NONLINEAR_PROCESS_NAMES,
+                                      "transport_metrics": TRANSPORT_METRIC_NAMES,
                                       "projection_transport_norm_squared_units": "m4/s2; area-weighted before/after sums",
                                       "scope": ("fixed_node_proxy_not_complete_moving_volume_budget" if args.column_geometry == "legacy"
                                                 else "static_nodal_reference_not_complete_moving_volume_budget"),

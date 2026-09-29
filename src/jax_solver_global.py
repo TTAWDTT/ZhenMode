@@ -530,7 +530,41 @@ def _divergence_h(u, v, p):
     return div_x + div_y
 
 
-def _vertical_transport_iface(u, v, p):
+def _layer_face_transports(velocity_x, velocity_y, params):
+    """Static nodal volume flux per face width; y includes cos(face latitude)."""
+    wet = params.wet_mask_z
+    thickness_x = params.dz_node * wet * jnp.roll(wet, -1, axis=0)
+    thickness_y = params.dz_node * wet * jnp.roll(wet, -1, axis=1)
+    cosine_face = 0.5 * (params.cos_lat + jnp.roll(params.cos_lat, -1))
+    flux_x = 0.5 * (velocity_x + jnp.roll(velocity_x, -1, axis=0)) * thickness_x
+    flux_y = 0.5 * (velocity_y + jnp.roll(velocity_y, -1, axis=1)) * thickness_y * cosine_face[None, :, None]
+    return flux_x, flux_y.at[:, -1].set(0.)
+
+
+def _face_transport_divergence(flux_x, flux_y, params):
+    """Divergence of layer or column face transports, with closed y walls."""
+    incoming_y = jnp.roll(flux_y, 1, axis=1).at[:, 0].set(0.)
+    inverse_dx = params.inv_dx[..., :1] if flux_x.ndim == 3 else params.inv_dx[..., 0]
+    cosine = params.cos_lat[None, :, None] if flux_y.ndim == 3 else params.cos_lat[None, :]
+    return ((flux_x - jnp.roll(flux_x, 1, axis=0)) * inverse_dx
+            + (flux_y - incoming_y) * params.inv_dy / cosine)
+
+
+def _match_layer_face_transports(velocity_x, velocity_y, column_transport, params):
+    """Match the fast-mode time mean at every open face, retaining layer shear."""
+    fluxes = _layer_face_transports(velocity_x, velocity_y, params)
+    corrected = []
+    for axis, flux, target in zip((0, 1), fluxes, column_transport, strict=True):
+        thickness = params.dz_node * params.wet_mask_z * jnp.roll(params.wet_mask_z, -1, axis=axis)
+        if axis == 1:
+            thickness = thickness.at[:, -1].set(0.)
+        depth = jnp.sum(thickness, axis=-1, keepdims=True)
+        weights = thickness / jnp.where(depth > 0., depth, 1.)
+        corrected.append(flux + weights * (target - jnp.sum(flux, axis=-1))[..., None])
+    return tuple(corrected)
+
+
+def _vertical_transport_iface(u, v, p, face_transport=None):
     """Interface volume transports Fz (nx, ny, nz+1), DOWNWARD-positive.
 
     The EXACT discrete inverse of _divergence_h, cumulated from the seafloor up:
@@ -541,6 +575,10 @@ def _vertical_transport_iface(u, v, p):
     no CFL limit removes. Fz[..., 0] is the column-integrated horizontal divergence,
     the rigid-lid leak the barotropic subcycle absorbs via Fz_top = Fz[0]*T[0]. (D7)
     """
+    if face_transport is not None:
+        integrand = _face_transport_divergence(*face_transport, p)
+        accumulated = jnp.cumsum(integrand[..., ::-1], axis=-1)[..., ::-1]
+        return jnp.concatenate([accumulated, jnp.zeros_like(accumulated[..., :1])], axis=-1)
     div_h = _divergence_h(u, v, p)
     # div_h is per-LAYER (nz entries) — weight by the per-node cell thickness
     # dz_node, NOT dz_3d (interface-centred, length nz-1).
@@ -846,12 +884,13 @@ FDPhysParams = namedtuple('FDPhysParams', [
     'projection_niter_source',
     'projection_max_refinements',
     'column_geometry',
+    'match_barotropic_transport',
 ])
 
 # Keyword-constructed callers that predate nu_nsub/use_scan/freeze_adv_vel/
 # conservative_kv/project_adv_vel/localize_conv/monotone_adv get the legacy
 # behavior instead of a TypeError.
-FDPhysParams.__new__.__defaults__ = (None, False, False, False, False, False, False, False, None, None, None, -1.8, 0.0, False, 1.0, 150, None, 'none', None, 'default', 2, 'legacy')
+FDPhysParams.__new__.__defaults__ = (None, False, False, False, False, False, False, False, None, None, None, -1.8, 0.0, False, 1.0, 150, None, 'none', None, 'default', 2, 'legacy', False)
 
 
 # ── Equation of state ─────────────────────────────────────────────────
@@ -1070,7 +1109,7 @@ def _limited_tracer_slope(tracer, wet, axis):
             * wet * previous_wet * following_wet)
 
 
-def _advection_scalar(T, u, v, Fz_in, p, return_boundary=False):
+def _advection_scalar(T, u, v, Fz_in, p, return_boundary=False, face_transport=None):
     """3D FLUX-FORM scalar advection (FD, land-masked, NOT dealiased).
 
     Flux form (-div(uT)) rather than advective form: the two differ by +T*div(u), a
@@ -1099,6 +1138,8 @@ def _advection_scalar(T, u, v, Fz_in, p, return_boundary=False):
     # Fx = u_face * T_face (centered unless monotone_adv), face-gated on both
     # cells wet; +x-directed (u>0 carries T eastward).
     ux_face = 0.5 * (u + jnp.roll(u, -1, axis=0))
+    if face_transport is not None:
+        ux_face = face_transport[0] / p.dz_node
     if p.fct_adv:
         # TVD/MUSCL flux limiter: reconstruct from the left and right cells with a
         # minmod slope, then choose the state consistent with the face velocity.
@@ -1127,6 +1168,9 @@ def _advection_scalar(T, u, v, Fz_in, p, return_boundary=False):
     v_pad = jnp.pad(v, pad, mode='edge')
     wm_pad = jnp.pad(wm, pad, mode='edge')
     vy_face = 0.5 * (v_pad[:, 1:-1] + v_pad[:, 2:])
+    if face_transport is not None:
+        cosine_face = 0.5 * (p.cos_lat + jnp.roll(p.cos_lat, -1))
+        vy_face = face_transport[1] / (p.dz_node * cosine_face[None, :, None])
     if p.fct_adv:
         # Same TVD/MUSCL limiter as x, but on the padded row. The last face is
         # closed explicitly below, so the edge-padded value cannot enter the
@@ -1424,7 +1468,7 @@ def _surface_heat_weights(p):
     return overlap / (wet_depth * p.dz_node)
 
 
-def _compute_tracer_tendency(state, p, budget=None):
+def _compute_tracer_tendency(state, p, budget=None, face_transport=None):
     """dT/dt, dS/dt (FD, land-masked). Includes bulk air-sea heat flux.
 
     Vertical advection is SUBCYCLED adv_nsub times when adv_nsub > 1 (frozen
@@ -1434,7 +1478,10 @@ def _compute_tracer_tendency(state, p, budget=None):
     diffusion, surface fluxes, GM/Redi skew flux and convective adjustment are all
     inside their explicit bounds at dt=3600 and stay evaluated ONCE. (D16)
     """
-    Fz = _vertical_transport_iface(state.u, state.v, p)
+    Fz = _vertical_transport_iface(state.u, state.v, p, face_transport=face_transport)
+    if budget is not None and p.column_geometry == 'nodal_dual_v1':
+        budget.tracer_transport(face_transport if face_transport is not None
+                                else _layer_face_transports(state.u, state.v, p))
     n_a = int(p.adv_nsub)
     if n_a > 1:
         # The reported rate is the MEAN over the substeps, so the Strang
@@ -1445,12 +1492,12 @@ def _compute_tracer_tendency(state, p, budget=None):
         def _adv_sub(carry):
             tT, tS = carry
             if budget is not None:
-                aT, top_T = _advection_scalar(tT, state.u, state.v, Fz, p, return_boundary=True)
-                aS, top_S = _advection_scalar(tS, state.u, state.v, Fz, p, return_boundary=True)
+                aT, top_T = _advection_scalar(tT, state.u, state.v, Fz, p, return_boundary=True, face_transport=face_transport)
+                aS, top_S = _advection_scalar(tS, state.u, state.v, Fz, p, return_boundary=True, face_transport=face_transport)
                 terms = (aT, aS, top_T, top_S)
             else:
-                aT = _advection_scalar(tT, state.u, state.v, Fz, p)
-                aS = _advection_scalar(tS, state.u, state.v, Fz, p)
+                aT = _advection_scalar(tT, state.u, state.v, Fz, p, face_transport=face_transport)
+                aS = _advection_scalar(tS, state.u, state.v, Fz, p, face_transport=face_transport)
                 terms = (aT, aS)
             return (tT + aT * dts, tS + aS * dts), terms
 
@@ -1460,11 +1507,11 @@ def _compute_tracer_tendency(state, p, budget=None):
             top_T, top_S = terms[2:]
     else:
         if budget is not None:
-            adv_T, top_T = _advection_scalar(state.T, state.u, state.v, Fz, p, return_boundary=True)
-            adv_S, top_S = _advection_scalar(state.S, state.u, state.v, Fz, p, return_boundary=True)
+            adv_T, top_T = _advection_scalar(state.T, state.u, state.v, Fz, p, return_boundary=True, face_transport=face_transport)
+            adv_S, top_S = _advection_scalar(state.S, state.u, state.v, Fz, p, return_boundary=True, face_transport=face_transport)
         else:
-            adv_T = _advection_scalar(state.T, state.u, state.v, Fz, p)
-            adv_S = _advection_scalar(state.S, state.u, state.v, Fz, p)
+            adv_T = _advection_scalar(state.T, state.u, state.v, Fz, p, face_transport=face_transport)
+            adv_S = _advection_scalar(state.S, state.u, state.v, Fz, p, face_transport=face_transport)
 
     diff_h_T = _horizontal_tracer_diffusion(state.T, p)
     diff_h_S = _horizontal_tracer_diffusion(state.S, p)
@@ -1574,7 +1621,7 @@ def _refill_volume(eta_now, eta_before, area_cell, area_ocean, p):
 
 
 def _free_surface_step_fd(eta, u, v, p, F_rho_x=None, F_rho_y=None, dt_half=None,
-                          column_divergence_offset=None):
+                          column_divergence_offset=None, column_face_transport=None):
     """Forward-backward (Sielecki) free-surface (shallow water) step on lat-lon FD.
 
         eta^{n+1} = eta^n - dt*H_sw*div_h(ubt^n)                   # eta from OLD u
@@ -1617,9 +1664,12 @@ def _free_surface_step_fd(eta, u, v, p, F_rho_x=None, F_rho_y=None, dt_half=None
     # centered (roll) form leaks volume at coastlines and closed walls. Mask
     # ubt/vbt to wet first so the face averages carry no land values. (D2)
     if p.column_geometry == 'nodal_dual_v1':
-        column_transport_divergence = _reference_depth_divergence(ubt, vbt, p)
-        if column_divergence_offset is not None:
-            column_transport_divergence = column_transport_divergence + column_divergence_offset
+        if column_face_transport is not None:
+            column_transport_divergence = _face_transport_divergence(*column_face_transport, p)
+        else:
+            column_transport_divergence = _reference_depth_divergence(ubt, vbt, p)
+            if column_divergence_offset is not None:
+                column_transport_divergence = column_transport_divergence + column_divergence_offset
     else:
         div_bt = _divergence_conservative(ubt * p.wet_mask, vbt * p.wet_mask, p)
         column_transport_divergence = p.H_sw * div_bt
@@ -1842,7 +1892,7 @@ def _linear_half_step(state, p, dt_half, budget=None):
 
 # ── Nonlinear explicit step (forward-backward RK2, FD) ─────────────
 
-def _compute_tracer_residual(state, p, budget=None):
+def _compute_tracer_residual(state, p, budget=None, face_transport=None):
     """Tracer tendency minus the linear diffusion (handled by the linear step).
 
     The Strang split L(dt/2).N(dt).L(dt/2) handles ALL linear dissipation
@@ -1853,7 +1903,7 @@ def _compute_tracer_residual(state, p, budget=None):
     it must not appear here at all -- a term here would be re-applied by N(dt) and
     cancel the L-step damping exactly (-dt/2 + dt - dt/2 = 0), a silent no-op. (D9)
     """
-    dTdt, dSdt = _compute_tracer_tendency(state, p, budget=budget)
+    dTdt, dSdt = _compute_tracer_tendency(state, p, budget=budget, face_transport=face_transport)
     dTdt = dTdt - _horizontal_tracer_diffusion(state.T, p)
     dSdt = dSdt - _horizontal_tracer_diffusion(state.S, p)
     dTdt = dTdt - _vertical_diffusion(state.T, _effective_kappa_v(p), p)
@@ -2154,16 +2204,76 @@ def _dynamic_ice_closure(state, p, budget=None):
                      ice_new * p.wet_mask)
 
 
+def _barotropic_subcycle_transport(state, params):
+    """Return actual OLD-face time mean and eta changes not caused by transport.
+
+    The shear is frozen at the post-L/N/L predictor. Each OLD barotropic value
+    is lifted onto that shear before recording the open-face volume flux. The
+    optional transport-matched path drives eta with those same faces. Filtering,
+    sponge and eta relaxation are recorded separately, not fitted into a flux.
+    """
+    forcing_x, forcing_y = _compute_bt_rho_pgf(state, params)
+    initial_u, initial_v = _barotropic_velocity(state.u, state.v, params)
+    offset = (_column_divergence(state.u, state.v, params)
+              - _reference_depth_divergence(initial_u, initial_v, params))
+    zero = jnp.zeros_like(state.eta)
+
+    def advance(carry):
+        eta, mean_u, mean_v, total_x, total_y, filter_change = carry
+        velocity_x = state.u + (mean_u - initial_u)[..., None] * params.wet_mask_z
+        velocity_y = state.v + (mean_v - initial_v)[..., None] * params.wet_mask_z
+        layers = _layer_face_transports(velocity_x, velocity_y, params)
+        faces = tuple(jnp.sum(flux, axis=-1) for flux in layers)
+        if params.match_barotropic_transport:
+            divergence = _face_transport_divergence(*faces, params)
+        else:
+            divergence = _reference_depth_divergence(mean_u, mean_v, params) + offset
+        updated = _free_surface_step_fd(
+            eta, mean_u, mean_v, params, forcing_x, forcing_y, dt_half=params.dt_bt,
+            column_divergence_offset=offset,
+            column_face_transport=faces if params.match_barotropic_transport else None)
+        eta_new, mean_u_new, mean_v_new = updated
+        nontransport_change = eta_new - (eta - params.dt_bt * divergence)
+        return (eta_new, mean_u_new, mean_v_new, total_x + faces[0], total_y + faces[1],
+                filter_change + nontransport_change), None
+
+    final, _ = _subcycle(advance, (state.eta, initial_u, initial_v, zero, zero, zero), int(params.n_subcyc), params)
+    eta, mean_u, mean_v, total_x, total_y, filter_change = final
+    column_transport = (total_x / params.n_subcyc, total_y / params.n_subcyc)
+    updated = state._replace(eta=eta,
+                             u=state.u + (mean_u - initial_u)[..., None] * params.wet_mask_z,
+                             v=state.v + (mean_v - initial_v)[..., None] * params.wet_mask_z)
+    return updated, column_transport, filter_change
+
+
+def _tracer_step_with_transport(state, params, column_transport, budget=None):
+    """Replay only the accepted tracer stages with the actual fast-mode mean.
+
+    Both RK stages and every advection substep share matched open-layer faces.
+    The provisional tracer update used for momentum forcing is discarded; its
+    sources are not booked. This is a lagged predictor/corrector, not a claim of
+    second-order coupled momentum or a moving-volume inventory formulation.
+    """
+    faces = _match_layer_face_transports(state.u, state.v, column_transport, params)
+    temperature_1, salinity_1 = _compute_tracer_residual(state, params, budget=budget, face_transport=faces)
+    predicted = state._replace(T=state.T + params.dt * temperature_1,
+                               S=state.S + params.dt * salinity_1)
+    temperature_2, salinity_2 = _compute_tracer_residual(predicted, params, budget=budget, face_transport=faces)
+    return state._replace(T=state.T + 0.5 * params.dt * (temperature_1 + temperature_2),
+                          S=state.S + 0.5 * params.dt * (salinity_1 + salinity_2))
+
+
 def _step_impl(state, p, budget=None):
     """Strang splitting: L(dt/2) -> N(dt) -> L(dt/2).
 
-    mode_split=True: identical L/N/L baroclinic core, but the linear half-steps
-    carry only diffusion/sponge/Coriolis (no free surface, no nu_h). After the
+    Default mode_split=True retains the L/N/L baroclinic core; linear half-steps
+    carry diffusion/sponge/Coriolis, including subcycled nu_h, but no free surface. After the
     second L half-step, n_subcyc barotropic forward-backward subcycles of dt_bt
     evolve (eta, ubt, vbt), driven by the rho-PGF + wind forcing computed from the
-    baroclinic state at step start (MOM-style coupling lag), with nu_h dissipation
-    inside each subcycle. The final (ubt, vbt) is projected back onto the 3D
-    velocity as a uniform-in-depth delta. (D12)
+    post-L/N/L predictor, held fixed over the subcycle. The final (ubt, vbt) is projected back onto the 3D
+    velocity as a uniform-in-depth delta. The opt-in transport candidate replays
+    accepted tracer stages with the actual fast-mode mean; momentum retains its
+    provisional tracer forcing. Static nodal inventories remain approximate. (D12)
     """
     dt_half = p.dt / 2.0
     # Capture land/ghost values BEFORE the step. Final masking holds these
@@ -2174,17 +2284,31 @@ def _step_impl(state, p, budget=None):
     land_T, land_S = state.T, state.S
     state = _linear_half_step(state, p, dt_half, budget=budget)
     nonlinear_start = state
-    state = _explicit_full_step(state, p, p.dt, budget=budget)
-    if budget is not None:
+    predictor_budget = None if p.match_barotropic_transport else budget
+    state = _explicit_full_step(state, p, p.dt, budget=predictor_budget)
+    if predictor_budget is not None:
         budget.stage("nonlinear", nonlinear_start, state)
-    state = _linear_half_step(state, p, dt_half, budget=budget)
+    state = _linear_half_step(state, p, dt_half, budget=predictor_budget)
     barotropic_start = state
 
     # ── mode split: barotropic subcycle (free surface + nu_h) ──
     # Runs AFTER the L/N/L core on the un-masked final 3D state (before the
     # polar cap / land hold below, so the subcycle sees the same masked,
     # capped input the monolithic path fed _free_surface_step_fd).
-    if p.mode_split:
+    if p.mode_split and p.column_geometry == 'nodal_dual_v1' and (budget is not None or p.match_barotropic_transport):
+        state, column_transport, filter_change = _barotropic_subcycle_transport(state, p)
+        if budget is not None:
+            budget.stage("free_surface", barotropic_start, state)
+            budget.barotropic_transport(barotropic_start.eta, state.eta, column_transport, filter_change)
+        if p.match_barotropic_transport:
+            tracer_state = _tracer_step_with_transport(nonlinear_start, p, column_transport, budget=budget)
+            if budget is not None:
+                budget.stage("nonlinear", nonlinear_start, tracer_state)
+            tracer_state = _linear_half_step(tracer_state, p, dt_half, budget=budget)
+            state = state._replace(T=tracer_state.T, S=tracer_state.S)
+        if budget is not None:
+            budget.before_transport_filter(state)
+    elif p.mode_split:
         # Coupling forcing from the baroclinic state, held fixed over the
         # subcycle (MOM-style forcing lag at dt=3600 s is standard).
         F_rho_x, F_rho_y = _compute_bt_rho_pgf(state, p)
@@ -2243,6 +2367,7 @@ def _step_impl(state, p, budget=None):
     updated = _dynamic_ice_closure(masked, p, budget=budget)
     if budget is not None:
         budget.stage("dynamic_ice", masked, updated)
+        budget.after_transport_filter(updated)
     return updated
 
 
@@ -2271,7 +2396,8 @@ def make_solver_global(grid, physics, dt, forcing=None,
                        localize_conv=False, monotone_adv=False,
                        fct_adv=False, projection_niter=None,
                        projection_rtol=None, projection_preconditioner='none',
-                       projection_max_refinements=2, column_geometry='legacy'):
+                       projection_max_refinements=2, column_geometry='legacy',
+                       match_barotropic_transport=False):
     """Create a JIT-compiled global FD ocean solver.
 
     Key properties:
@@ -2306,8 +2432,16 @@ def make_solver_global(grid, physics, dt, forcing=None,
         conservative_kv/localize_conv. It does not yet match the actual fast-mode
         time-averaged tracer transport or define true moving-volume inventories.
         Default 'legacy' retains the frozen original numerical path.
+      - match_barotropic_transport=True is an opt-in M2 transport candidate,
+        requiring mode_split and nodal_dual_v1. Retains the original momentum
+        predictor; replays accepted tracer stages with the actual OLD-face
+        barotropic time mean. No source is counted twice. Retains static nodal
+        thickness and the original surface tracer flux; no exact moving-volume
+        heat/salt conservation, full temporal order or speedup is claimed.
     """
     base = make_fd_params(grid, column_geometry=column_geometry)
+    if match_barotropic_transport and (not mode_split or column_geometry != 'nodal_dual_v1'):
+        raise ValueError("match_barotropic_transport requires mode_split=True and column_geometry='nodal_dual_v1'")
     if column_geometry == 'nodal_dual_v1':
         if not conservative_kv or not localize_conv:
             raise ValueError("nodal_dual_v1 requires conservative_kv=True and localize_conv=True")
@@ -2617,6 +2751,7 @@ def make_solver_global(grid, physics, dt, forcing=None,
         projection_niter_source=projection_niter_source,
         projection_max_refinements=int(projection_max_refinements),
         column_geometry=column_geometry,
+        match_barotropic_transport=bool(match_barotropic_transport),
     )
 
     if projection_preconditioner == 'jacobi':
