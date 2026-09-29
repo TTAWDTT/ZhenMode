@@ -25,6 +25,7 @@ from jax_solver_global import (
     _linear_bottom_drag_step,
     _linear_half_step,
     _match_layer_face_transports,
+    _surface_heat_weights,
     _vertical_transport_iface,
 )
 from restart_contract import make_restart_contract
@@ -36,6 +37,13 @@ METRIC_NAMES = ("moving_node_water_sensible_heat_J", "moving_node_water_salt_kg"
 CONTINUITY_TOLERANCE_M = 1e-10
 FACE_TOLERANCE_M2_PER_S = 1e-9
 CFL_LIMIT = 0.5
+SUBCYCLE_SCHEMES = ("reference_static_v1", "actual_geometry_v2")
+
+
+class SubcyclePlan(NamedTuple):
+    required: jnp.ndarray
+    count: jnp.ndarray
+    supported: jnp.ndarray
 
 
 class MaterialTopResult(NamedTuple):
@@ -63,6 +71,28 @@ def _validate_params(params):
         raise ValueError(f"{INVENTORY_SCHEME} requires donor-cell or the existing minmod flux")
     if np.asarray(params.dz_node).dtype != np.dtype("float64"):
         raise ValueError(f"{INVENTORY_SCHEME} requires float64 parameters")
+    for name, value in params._asdict().items():
+        if isinstance(value, (np.ndarray, jax.Array)):
+            values = np.asarray(value)
+            if not np.isfinite(values).all():
+                raise ValueError(f"material parameters require finite {name}")
+            if values.dtype.kind == "f" and values.dtype != np.dtype("float64"):
+                raise ValueError(f"material parameters require float64 {name}")
+    for name in ("nu_h", "nu_v", "nu_bi", "kappa_h", "kappa_v", "kappa_conv", "kappa_bi",
+                 "r_bot", "lambda_bulk", "restore_coef_S", "coastal_kappa_h_2d", "coastal_kappa_v_2d",
+                 "coastal_bulk_lambda_2d", "coastal_restore_coef_2d"):
+        values = np.asarray(getattr(params, name))
+        if not np.isfinite(values).all() or np.any(values < 0.):
+            raise ValueError(f"material parameters require finite nonnegative {name}")
+    if not np.isfinite(params.dt) or params.dt <= 0.:
+        raise ValueError("material timestep must be finite and positive")
+
+
+def _validate_subcycle_policy(scheme, maximum):
+    if scheme not in SUBCYCLE_SCHEMES:
+        raise ValueError("unknown material subcycle scheme")
+    if isinstance(maximum, bool) or not isinstance(maximum, int) or maximum < 1:
+        raise ValueError("material max_subcycles must be a positive integer")
 
 
 def material_thickness(eta, params):
@@ -157,6 +187,48 @@ def _linear_material_step(state, params, duration):
     return updated, change, absolute_change, _fraction(_linear_row_rate(params), state.eta, duration, params)
 
 
+def _subcycle_plan(rate, lower_thickness, duration, reference_count, params, maximum):
+    """Uncut required count; unsupported plans activate no numerical substeps."""
+    wet = params.wet_mask_z > 0.
+    fractions = jnp.where(wet, duration * rate / jnp.where(lower_thickness > 0., lower_thickness, 1.), 0.)
+    required = jnp.maximum(float(reference_count), jnp.ceil(jnp.max(fractions) / CFL_LIMIT))
+    supported = (jnp.all(jnp.isfinite(fractions)) & jnp.all(jnp.isfinite(lower_thickness))
+                 & jnp.all(jnp.where(wet, lower_thickness > 0., True)) & jnp.isfinite(required)
+                 & (required <= maximum))
+    count = jnp.where(supported, required, 0.).astype(jnp.int32)
+    return SubcyclePlan(required, count, supported)
+
+
+def _linear_material_subcycle(state, params, duration, maximum):
+    """Bounded differentiable scan; only tracer mixing is subcycled here."""
+    rate = _linear_row_rate(params)
+    plan = _subcycle_plan(rate, material_thickness(state.eta, params), duration, 1, params, maximum)
+    subduration = duration / jnp.maximum(plan.count, 1)
+    content = _contents(state, params)
+    zero = jnp.zeros_like(content)
+
+    @jax.checkpoint
+    def integrate(carry):
+        current, rhs, absolute = carry
+        stage = _concentrations(current, state.eta, state, params)
+        first = _linear_rhs(stage, params)
+        predicted = _concentrations(current + subduration * first, state.eta, state, params)
+        second = _linear_rhs(predicted, params)
+        change = .5 * subduration * (first + second)
+        absolute_change = .5 * subduration * (jnp.abs(first) + jnp.abs(second))
+        return current + change, rhs + change, absolute + absolute_change
+
+    def advance(carry, index):
+        return jax.lax.cond(plan.supported & (index < plan.count), integrate, lambda current: current, carry), None
+
+    final, _ = jax.lax.scan(advance, (content, zero, zero), jnp.arange(maximum))
+    updated = _concentrations(final[0], state.eta, state, params)
+    momentum = _linear_half_step(state, params, duration)
+    updated = updated._replace(u=momentum.u, v=momentum.v)
+    fraction = jnp.where(plan.supported, _fraction(rate, state.eta, subduration, params), 0.)
+    return updated, final[1], final[2], fraction, plan
+
+
 def _transport_outflow(faces, vertical, params):
     east, north = faces
     west = jnp.roll(east, 1, axis=0)
@@ -166,6 +238,25 @@ def _transport_outflow(faces, vertical, params):
                   * params.inv_dy / params.cos_lat[None, :, None])
     relative_vertical = vertical.at[..., 0].set(0.)
     return horizontal + jnp.maximum(relative_vertical[..., 1:], 0.) + jnp.maximum(-relative_vertical[..., :-1], 0.)
+
+
+def _surface_feedback_row_rate(params):
+    heat = (params.dz_node * _surface_heat_weights(params)
+            * (params.lambda_bulk + params.coastal_bulk_lambda_2d[..., None]) / (RHO_0 * C_P))
+    restore_temperature = params.dz_node * params.surface_mask * params.coastal_restore_coef_2d[..., None]
+    restore_salinity = params.dz_node * params.surface_mask * params.restore_coef_S
+    return jnp.maximum(heat + restore_temperature, restore_salinity) * params.wet_mask_z
+
+
+def _nonlinear_subcycle_plan(state, params, faces, maximum, endpoint_eta=None):
+    vertical = _vertical_transport_iface(state.u, state.v, params, face_transport=faces)
+    eta_rate = -_face_transport_divergence(jnp.sum(faces[0], axis=-1), jnp.sum(faces[1], axis=-1), params)
+    endpoint_eta = state.eta + params.dt * eta_rate if endpoint_eta is None else endpoint_eta
+    lower_thickness = jnp.minimum(material_thickness(state.eta, params), material_thickness(endpoint_eta, params))
+    wet = params.wet_mask_z
+    convective = _vertical_row_rate(params.kappa_conv, wet[..., :-1] * wet[..., 1:], params)
+    rate = _transport_outflow(faces, vertical, params) + convective + _surface_feedback_row_rate(params)
+    return _subcycle_plan(rate, lower_thickness, params.dt, max(params.adv_nsub, params.conv_nsub), params, maximum)
 
 
 def _nonlinear_rhs(state, params, faces, vertical):
@@ -186,22 +277,28 @@ def _nonlinear_rhs(state, params, faces, vertical):
     return rhs, source_content, advection, convection, convective_rate
 
 
-def _material_tracer_step(state, params, faces):
-    subcycles = max(int(params.adv_nsub), int(params.conv_nsub))
+def _material_tracer_step(state, params, faces, *, subcycle_plan=None, max_subcycles=128, endpoint_eta=None):
+    scheduled = subcycle_plan is not None
+    subcycles = jnp.maximum(subcycle_plan.count, 1) if scheduled else max(int(params.adv_nsub), int(params.conv_nsub))
     subparams = params._replace(dt=params.dt / subcycles, adv_nsub=1, conv_nsub=1)
     vertical = _vertical_transport_iface(state.u, state.v, params, face_transport=faces)
     eta_rate = -_face_transport_divergence(jnp.sum(faces[0], axis=-1), jnp.sum(faces[1], axis=-1), params)
     outflow = _transport_outflow(faces, vertical, params)
     initial_content = _contents(state, params)
     zero = jnp.zeros_like(initial_content)
-    source_zero = jnp.zeros((len(SOURCE_NAMES),) + zero.shape, dtype=zero.dtype)
+    source_zero = jnp.zeros((len(SOURCE_NAMES), 2) if scheduled else (len(SOURCE_NAMES),) + zero.shape, dtype=zero.dtype)
+    exchange_zero = jnp.zeros(2, dtype=zero.dtype) if scheduled else zero
     wet = params.wet_mask_z > 0.
 
-    def advance(carry, unused):
+    def advance(carry, index):
         content, eta, total_rhs, absolute_rhs, total_sources, total_advection, total_convection, maxima, minimum = carry
         stage = _concentrations(content, eta, state, params)
         first = _nonlinear_rhs(stage, subparams, faces, vertical)
         predicted_eta = eta + subparams.dt * eta_rate
+        if scheduled:
+            predicted_eta = state.eta + (index + 1) * subparams.dt * eta_rate
+            if endpoint_eta is not None:
+                predicted_eta = jnp.where(index + 1 == subcycle_plan.count, endpoint_eta, predicted_eta)
         predicted = _concentrations(content + subparams.dt * first[0], predicted_eta, state, params)
         second = _nonlinear_rhs(predicted, subparams, faces, vertical)
         weight = .5 * subparams.dt
@@ -213,6 +310,13 @@ def _material_tracer_step(state, params, faces):
                                              _fraction(outflow, predicted_eta, subparams.dt, params)),
                                   jnp.maximum(_fraction(first[4], eta, subparams.dt, params),
                                               _fraction(second[4], predicted_eta, subparams.dt, params))])
+        if scheduled:
+            feedback = _surface_feedback_row_rate(params)
+            combined = jnp.maximum(_fraction(outflow + first[4] + feedback, eta, subparams.dt, params),
+                                    _fraction(outflow + second[4] + feedback, predicted_eta, subparams.dt, params))
+            fractions = jnp.concatenate((fractions, combined[None]))
+            sources = jax.vmap(lambda values: _sum_content(values, params))(sources)
+            advection, convection = _sum_content(advection, params), _sum_content(convection, params)
         minimum = jnp.minimum(minimum, jnp.minimum(
             jnp.min(jnp.where(wet, material_thickness(eta, params), jnp.inf)),
             jnp.min(jnp.where(wet, material_thickness(predicted_eta, params), jnp.inf))))
@@ -221,14 +325,23 @@ def _material_tracer_step(state, params, faces):
                 total_sources + sources, total_advection + advection, total_convection + convection,
                 jnp.maximum(maxima, fractions), minimum), None
 
-    initial = (initial_content, state.eta, zero, zero, source_zero, zero, zero,
-               jnp.zeros(2, dtype=zero.dtype), jnp.asarray(jnp.inf, dtype=zero.dtype))
-    final, _ = jax.lax.scan(advance, initial, xs=None, length=subcycles)
+    initial = (initial_content, state.eta, zero, zero, source_zero, exchange_zero, exchange_zero,
+               jnp.zeros(3 if scheduled else 2, dtype=zero.dtype), jnp.asarray(jnp.inf, dtype=zero.dtype))
+    if scheduled:
+        integrate = jax.checkpoint(lambda operands: advance(operands[0], operands[1])[0])
+
+        def bounded_advance(carry, index):
+            return jax.lax.cond(subcycle_plan.supported & (index < subcycle_plan.count),
+                                integrate, lambda operands: operands[0], (carry, index)), None
+
+        final, _ = jax.lax.scan(bounded_advance, initial, jnp.arange(max_subcycles))
+    else:
+        final, _ = jax.lax.scan(advance, initial, xs=None, length=subcycles)
     content, eta, rhs, absolute_rhs, sources, advection, convection, maxima, minimum = final
     return _concentrations(content, eta, state, params), rhs, absolute_rhs, sources, advection, convection, maxima, minimum
 
 
-def _material_step(state, params):
+def _material_step(state, params, subcycle_scheme="reference_static_v1", max_subcycles=128):
     for name, value in state._asdict().items():
         if value.dtype != jnp.float64:
             raise ValueError(f"{INVENTORY_SCHEME} requires float64 {name}")
@@ -236,16 +349,26 @@ def _material_step(state, params):
         if value.shape != expected_shape:
             raise ValueError("material state shapes must match the frozen FD grid")
     duration = params.dt / 2.
+    scheduled = subcycle_scheme == "actual_geometry_v2"
     start = _linear_bottom_drag_step(state, params, duration)
-    first, linear_rhs_1, absolute_1, fraction_1 = _linear_material_step(start, params, duration)
+    if scheduled:
+        first, linear_rhs_1, absolute_1, fraction_1, linear_plan_1 = _linear_material_subcycle(start, params, duration, max_subcycles)
+    else:
+        first, linear_rhs_1, absolute_1, fraction_1 = _linear_material_step(start, params, duration)
     nonlinear_predictor = _explicit_full_step(first, params, params.dt)
     predictor = _linear_half_step(nonlinear_predictor, params, duration)
     dynamical, column_faces, filter_change = _barotropic_subcycle_transport(predictor, params)
     velocity_x = .5 * (first.u + nonlinear_predictor.u)
     velocity_y = .5 * (first.v + nonlinear_predictor.v)
     faces = _match_layer_face_transports(velocity_x, velocity_y, column_faces, params)
-    middle, nonlinear_rhs, absolute_nonlinear, sources, advection, convection, fractions, minimum = _material_tracer_step(first, params, faces)
-    end, linear_rhs_2, absolute_2, fraction_2 = _linear_material_step(middle, params, duration)
+    nonlinear_plan = _nonlinear_subcycle_plan(first, params, faces, max_subcycles, endpoint_eta=dynamical.eta) if scheduled else None
+    middle, nonlinear_rhs, absolute_nonlinear, sources, advection, convection, fractions, minimum = _material_tracer_step(
+        first, params, faces, subcycle_plan=nonlinear_plan, max_subcycles=max_subcycles,
+        endpoint_eta=dynamical.eta if scheduled else None)
+    if scheduled:
+        end, linear_rhs_2, absolute_2, fraction_2, linear_plan_2 = _linear_material_subcycle(middle, params, duration, max_subcycles)
+    else:
+        end, linear_rhs_2, absolute_2, fraction_2 = _linear_material_step(middle, params, duration)
     attempted = dynamical._replace(T=end.T, S=end.S)
     attempted = _linear_bottom_drag_step(attempted, params, duration)
     attempted = attempted._replace(v=attempted.v * params.interior_mask_z)
@@ -269,15 +392,21 @@ def _material_step(state, params):
               "ice_abs_max_m": jnp.max(jnp.abs(state.ice)),
               "velocity_abs_max_m_per_s": jnp.maximum(jnp.max(jnp.abs(attempted.u)), jnp.max(jnp.abs(attempted.v))),
               "eta_abs_max_m": jnp.max(jnp.abs(attempted.eta))}
-    source_totals = jax.vmap(lambda content: _sum_content(content, params))(sources)
+    source_totals = sources if scheduled else jax.vmap(lambda content: _sum_content(content, params))(sources)
     observed = _sum_content(after - before, params)
     budget = {"observed_change": observed, "source_inputs": source_totals,
               "source_budget_residual": observed - jnp.sum(source_totals, axis=0),
               "linear_exchange": _sum_content(linear_rhs_1 + linear_rhs_2, params),
-              "advection_exchange": _sum_content(advection, params),
-              "convection_exchange": _sum_content(convection, params),
+              "advection_exchange": advection if scheduled else _sum_content(advection, params),
+              "convection_exchange": convection if scheduled else _sum_content(convection, params),
               "local_implementation_residual": _sum_content(local_residual, params),
               "absolute_local_implementation_residual": _sum_content(jnp.abs(local_residual), params)}
+    if scheduled:
+        checks["nonlinear_combined_fraction_max"] = fractions[2]
+        for name, plan in (("linear_first", linear_plan_1), ("nonlinear", nonlinear_plan), ("linear_second", linear_plan_2)):
+            checks[f"{name}_required_subcycles"] = plan.required
+            checks[f"{name}_active_subcycles"] = plan.count
+            checks[f"{name}_schedule_supported"] = plan.supported
     finite = jnp.all(jnp.stack([jnp.all(jnp.isfinite(value)) for value in jax.tree.leaves((attempted, checks, budget))]))
     valid = (finite & (minimum > 0.) & (fractions[0] <= CFL_LIMIT) & (fractions[1] <= CFL_LIMIT)
              & (checks["linear_diffusion_fraction_max"] <= CFL_LIMIT)
@@ -286,14 +415,18 @@ def _material_step(state, params):
              & (checks["unpaired_eta_filter_max_m"] <= CONTINUITY_TOLERANCE_M)
              & (checks["local_inventory_roundoff_ratio_max"] <= 1.) & (checks["ice_abs_max_m"] == 0.)
              & (checks["velocity_abs_max_m_per_s"] <= 10.) & (checks["eta_abs_max_m"] <= 15.))
+    if scheduled:
+        valid = (valid & linear_plan_1.supported & nonlinear_plan.supported & linear_plan_2.supported
+                 & (checks["nonlinear_combined_fraction_max"] <= CFL_LIMIT))
     checks["finite"] = finite
     selected = jax.tree.map(lambda new, old: jnp.where(valid, new, old), attempted, state)
     return MaterialTopResult(selected, attempted, valid, checks, budget)
 
 
-def make_material_top_step(params):
+def make_material_top_step(params, *, subcycle_scheme="reference_static_v1", max_subcycles=128):
     """Build an explicit checked candidate; callers must stop at first rejection."""
     _validate_params(params)
+    _validate_subcycle_policy(subcycle_scheme, max_subcycles)
 
     @jax.jit
     def step(state, forcing=None, atmosphere=None):
@@ -307,18 +440,22 @@ def make_material_top_step(params):
             if atmosphere.dtype != jnp.float64 or atmosphere.shape != params.T_atm_3d.shape:
                 raise ValueError("material atmosphere requires the frozen float64 field shape")
             current = current._replace(T_atm_3d=atmosphere)
-        return _material_step(state, current)
+        return _material_step(state, current, subcycle_scheme, max_subcycles)
 
     return step
 
 
-def make_material_top_restart_contract(grid, params, *, forcing, controls, execution):
+def make_material_top_restart_contract(grid, params, *, forcing, controls, execution,
+                                       subcycle_scheme="reference_static_v1", max_subcycles=128):
     """Separate stock semantics and source hashes; no old-contract continuation."""
     _validate_params(params)
+    _validate_subcycle_policy(subcycle_scheme, max_subcycles)
     controls = dict(controls)
-    if "tracer_inventory_scheme" in controls:
+    if any(name in controls for name in ("tracer_inventory_scheme", "material_subcycle_scheme", "material_max_subcycles")):
         raise ValueError("inventory scheme is frozen by the material restart factory")
     controls["tracer_inventory_scheme"] = INVENTORY_SCHEME
+    controls["material_subcycle_scheme"] = subcycle_scheme
+    controls["material_max_subcycles"] = max_subcycles
     source_directory = Path(__file__).resolve().parent
     contract = make_restart_contract(
         grid, params, dtype="float64", forcing=forcing, controls=controls,

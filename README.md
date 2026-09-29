@@ -43,8 +43,12 @@ physical-budget or forecast-skill qualification.
 moving, mass-lumped nodal tracer stocks on the original linear momentum core.
 It retains the frozen minmod/biharmonic options, stages thickness and content
 together, and rejects unsupported filters/ice/GM/Redi. It is not a production
-switch: the first actual no-cap trial stops at step 15 on the registered thin-cell
-convection limit. Local stock checks do not qualify a one-day or century run.
+switch: the default `reference_static_v1` still rejects the archived step-15
+thin-cell convection case. Explicit `actual_geometry_v2` sizes bounded subcycles
+from actual thickness, transport, mixing and source-feedback stiffness; the
+frozen 2-degree float64 no-cap January run completes 1/7/30 days with independently
+audited moving stocks and unchanged dt, coefficients and stop limits. This does
+not qualify seasonal, century, climate, forecast or unsupported physics.
 Float32 passes local transport/stop gates but has material cumulative salt and
 volume-budget sensitivity; it is not qualified for century delivery.
 The [GPU environment and backend validation](docs/gpu_runtime_zh.md) likewise
