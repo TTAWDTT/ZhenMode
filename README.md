@@ -21,16 +21,26 @@ utilities, plus two clearly-marked side directories —
 
 ## Production and Migration Status
 
-The CLI still runs the legacy FD core above. The current migration entry is
-`paired_dynamics.paired_momentum_surface_step`:
+The CLI still runs the legacy FD core above. The current migration candidate is
+`nonlinear_dynamics.nonlinear_momentum_surface_step`:
 physical geometry/inventories (`finite_volume.py`)
--> wet-contact pressure FORCE (`cgrid_momentum.py`) and coupled kinetic
-mass/rotation/pressure/surface midpoint (`paired_dynamics.py`)
+-> held wet-contact pressure FORCE (`cgrid_momentum.py`), conservative 3-D
+dual momentum and simultaneously coupled moving surface (`nonlinear_dynamics.py`)
 -> SAME actual mean Q and extensive FCT (`bounded_transport.py`)
--> wet/dual Q and physical fluid/grid velocity (`wet_fluxes.py`, `physical_velocity.py`).
-This actual LINEAR step is not yet in the production driver (D37-D46).
-The former split-linear reference is historical, not another production mainline.
+-> actual metric dual Q (`wet_fluxes.py`).
+Its kinetic norm is explicitly FV half-prism dual, NOT reconstructed physical L2.
+Physical-field diagnostics remain separate and require convergence qualification.
+The paired-L2/split-linear steps are historical references, not other production mainlines.
+The candidate is not yet in the production driver (D37-D46).
 Inventories/Q/geometry are64; momentum is64/32.
+
+The new actual nonlinear candidate passes28 direct source/impulse/work/rejection
+and time/metric refinement tests. Rain/evaporation momentum, explicit incoming
+velocity, central/upwind 3-D flux, wall reaction and cast work are accounted for.
+Real-grid and full-suite qualification for this new source are still pending;
+held pressure work does NOT close buoyancy/EOS conversion. No production,
+century, climate, forecast, GPU/distributed or complete adjoint claim follows.
+See the [registered nonlinear method](research/experiments/cgrid_hydrostatic_momentum/nonlinear_dual_protocol.md).
 
 The PRIOR physical-frame stage has540 regressions,131 adjacent tests and
 eight real-grid100x60s linear references;
@@ -44,8 +54,8 @@ recording fixes the original near-rest evidence gap without changing field
 gates. Paired-kernel full suite passes574 tests; all eight100-step references
 now pass runtime and independent LAST-step aggregate audits, rejecting9
 corruptions (each case6000s, not century or every-substep qualification).
-A NEW zero-incoming-momentum rain witness fails physical
-source closure despite zero frozen work; it is not hidden or promoted.
+A NEW zero-incoming-momentum rain witness fails the HISTORICAL frozen path's
+physical source closure despite zero frozen work; it is retained, not promoted.
 Frozen/cast/moving-mass work are distinct; actual nonlinear
 dynamics/buoyancy and driver cutover remain required. Century/climate/forecast/
 GPU/full-adjoint claims remain unqualified.

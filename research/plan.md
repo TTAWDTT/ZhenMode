@@ -4,6 +4,16 @@ Updated: 2026-09-29
 
 ## Current authority: full industrial alignment
 
+Next actual candidate is now `nonlinear_dynamics.nonlinear_momentum_surface_step`,
+registered by1c2572d before implementation. It evolves3-D dual m*u, moving eta
+and same-Q V/N; explicit FV norm is not the previous physical-field L2 norm.
+28 direct tests pass with independent face loops/source/row/work/wall audits,
+four deliberate defects rejected and nonlinear time/metric refinement.
+Changing spatial scoring domain initially FAILS; fixed physical locations,
+not relaxed threshold or altered dynamics, repair the comparison. Real-grid,
+full-suite/installed and full buoyancy/production qualification remain pending.
+Keep every complete industrial requirement below active.
+
 Latest qualification: specific paired-reference76252/PID28884 completes all
 eight100x60s groups; independent host39846 passes all eight last-step aggregates
 and9 corruptions reject. This is frozen linear6000s pergroup, NOT full nonlinear

@@ -38,6 +38,7 @@ py-modules = [
     "wet_fluxes",
     "physical_velocity",
     "paired_dynamics",
+    "nonlinear_dynamics",
     "barotropic_transport",
     "jax_solver_global",
     "run_long_integration_global",

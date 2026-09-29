@@ -1118,5 +1118,23 @@ industrial_alignment_20260928:
     endpoint_content_change_is_closed_budget: false
     century_acceptance_requirements: "docs/century_climate_acceptance_zh.md"
     century_climate_forecast_gpu_full_adjoint_pass: false
-  next: "Specific eight100-step process76252/PID28884 and independent host39846 completed:8 runtime/last-step aggregate audits PASS plus9 corruptions rejected, each6000s only. Shared v2 wet-area/angular scoring corrects misleading equal-cell/index scores and rejects mixed versions/domains/references;66 adjacent and598 full tests pass, specific61319 exit0 and launch/end hashes unchanged. Resume ACTUAL nonlinear momentum/source/moving kinetic-buoyancy work and production cutover, not arbitrary Mdot or KE repair. Actual rain witness still FAILS zero-incoming-momentum contract despite zero frozen work. Complete EOS/real sources/mixing/ice and every global topology, century/sensitivity, independent climate/forecast, fair GPU/distributed, whole-model adjoint/learning and engineering requirement. No final industrial qualification yet."
+  nonlinear_dual_candidate:
+    status: actual_step_direct_tests_pass_real_and_full_pending
+    protocol_commit: "1c2572d"
+    entry: nonlinear_dynamics.nonlinear_momentum_surface_step
+    kinetic_norm: finite_volume_full_half_prism_dual_not_physical_field_L2
+    direct_tests_passed: 28
+    incoming_source_momentum_and_mixing_explicit: true
+    same_actual_three_dimensional_dual_Q: true
+    wall_reaction_impulse_recorded: true
+    time_and_metric_refinement_pass: true
+    original_spatial_scoring_domain_FAIL_retained: true
+    physical_L2_positive_rain_increment_is_psd: false
+    physical_L2_increment_min_eigenvalue_m3: -78510192.7478044
+    actual_real_reference_status: pending
+    full_suite_status: pending
+    moving_buoyancy_EOS_work_qualified: false
+    production_cutover: false
+    complete_industrial_goal_achieved: false
+  next: "Qualify NEW actual nonlinear FV dual momentum/surface/source/3-D transport on eight immutable real inputs, independent impulse/work/Q/reaction audits, full regressions and installed entry. Frozen paired-L2 path is historical, old rain-contract FAIL retained; physical L2 moving norm cannot be interpreted as added-fluid mass. Complete thermodynamic/buoyancy pressure pairing, real EOS/sources/mixing/ice, actual initialization/restart/production/global cutover and every century/sensitivity, independent climate/forecast, fair GPU/distributed, whole-model adjoint/constrained-learning and engineering requirement. No final industrial qualification yet."
   unresolved: ["whole-model budgets", "volume/free-surface consistency", "partial cells/global topology", "complete real physical forcing", "independent climate/forecast skill", "fair GPU/distributed cost", "whole-model adjoint and constrained learning"]

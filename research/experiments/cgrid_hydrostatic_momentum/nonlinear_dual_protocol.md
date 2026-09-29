@@ -119,3 +119,44 @@ surface and V/N; former paired-L2 method remains explicitly a historical
 frozen reference, not another production mainline. The CLI remains legacy
 until initialization/restart/physics/driver migration is complete. Never
 upgrade this candidate to full climate/century or energy/EOS qualification.
+
+## Concrete refinement fixtures, registered before execution
+
+The direct source/row/work suite first passes25 tests. Its initial independent
+row audit correctly rejected a mismatched host Earth rotation constant
+(7.292115e-5 versus actual config7.2921e-5); align the INPUT constant, not its
+1e-11+64eps gates. Four deliberate endpoint-Q/source-sign/vertical/transpose
+corruptions reject. These small-grid results are not real-grid qualification.
+
+Next, use the same5x4x3 irregular grid with radius2.1e6, both all-wet and
+partial/land. Smooth perturbed eta=.3+.04*cos(i+.4*j) on wet columns and seeded
+sheared initial velocities, zero density anomaly/source, full curvature and
+rotation, central momentum. Integrate1200s at dt300/150/75 and a dt18.75
+reference. Compare volume-weighted velocity/surface state differences; both
+successive error ratios must exceed3.3 before a second-order time claim.
+Changing the method or threshold requires registering an explanation first.
+
+For spatial metric consistency, constant physical U=.3,V=.12 on uniform
+wet50m sphere bands, lat[-55,55] with ny12/24/48, nx8. Include normal wall
+constraints but score north acceleration only at interior faces, removing
+the two nearest faces at each wall. With f0, compare actual dual C/m north
+acceleration with -U^2*tan(phi_face)/R. Maximum-error ratios must exceed3.3.
+This consistency test is NOT an exact discrete global axial-momentum proof.
+
+For isolated source rain, also independently integrate axial angular momentum
+using the exact cos^2 latitude primitive, allowing only the explicitly declared
+incoming axial inventory. It does not excuse full nonlinear axial truncation.
+Next real inputs reuse only immutable starting states, not previous trajectories:
+8geometries/precisions/disturbances, dt60, initially10actual steps. Capture
+new full state/Q/u_star/eta_bar/reaction diagnostics and launch/end hashes;
+retain any FAIL, and independently audit snapshots before longer qualification.
+
+The first refinement run passes27 tests, including both nonlinear time gates,
+but spatial ratios2.891/3.404 FAIL. Inspection shows the proposed "remove two
+faces" changes the physical scoring domain on refinement (36.67deg versus
+45.83/50.42deg maximum latitude); tan(phi)-dependent error is not compared at
+the same locations. The uniform-grid north acceleration is analytically
+-U^2*tan(phi_face)*cos(delta_phi/2)/R, so the METHOD has second-order truncation.
+Before rerunning, retain original FAIL log and correct the comparison to the
+SAME seven nested physical faces at [-27.5,-18.333,-9.167,0,9.167,18.333,27.5]
+degrees on all three grids. Keep3.3 ratio gate; do not change core rotation.
