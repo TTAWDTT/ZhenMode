@@ -21,6 +21,8 @@ def test_two_actual_restarts_preserve_state_seasonal_phase_and_every_budget_fiel
         dtype=dtype, column_geometry="legacy" if scheme == "legacy" else "nodal_dual_v1",
         match_barotropic_transport=scheme != "legacy", process_time_scheme=scheme,
         use_scan=True, dynamic_ice=ice, mixed_layer_depth_m=20., lambda_bulk=80.,
+        polar_cap_rows=1 if scheme == "symmetric_fast_v3" else 0,
+        polar_cap_taper=1 if scheme == "symmetric_fast_v3" else 0,
         T_atm=np.full((8, 8), -3.))
     initial = initialize()._replace(T=jnp.full((8, 8, 4), -1.8, dtype=dtype),
                                     ice=jnp.full((8, 8), 0.25 if ice else 0., dtype=dtype))

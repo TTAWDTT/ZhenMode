@@ -2182,7 +2182,7 @@ def _polar_cap_weights(ncap, ntaper):
 
     The order is a caller contract, not a convenience: the weight at index 0
     belongs on the POLE ROW. The south band slices pole-inward and uses this
-    array as-is; the north band slices pole-FIRST and must reverse it. Applying
+    array as-is; the north band slices pole-LAST and must reverse it. Applying
     the north band unflipped leaves the wall row effectively uncapped -- see
     _apply_polar_cap.
     """
@@ -2205,6 +2205,10 @@ def _apply_polar_cap(field, wm, p):
     amplifies). Land and ghost nodes keep their masked value, so wm must match the
     field's rank: the 3D mask matters, since the 2D one is column-wide and would let
     ghost nodes below a shallow seafloor into the deep-level mean. (D21)
+
+    Non-legacy float32 candidates reduce and blend only the cap bands in float64,
+    then return the original dtype. Incremental blending preserves constant wet
+    fields exactly. This does not make rounded tracer inventories conservative.
     """
     ncap = p.polar_cap_rows
     if ncap <= 0:
@@ -2216,6 +2220,13 @@ def _apply_polar_cap(field, wm, p):
     wts = _polar_cap_weights(ncap, p.polar_cap_taper).astype(field.dtype)
 
     def _cap_band(f, w, wts_band):
+        if field.dtype == jnp.float32 and getattr(p, 'process_time_scheme', 'legacy') != 'legacy':
+            wet64 = w.astype(jnp.float64)
+            values64 = f.astype(jnp.float64) * wet64
+            count64 = jnp.maximum(jnp.sum(wet64, axis=0, keepdims=True), 1.)
+            mean64 = jnp.sum(values64, axis=0, keepdims=True) / count64
+            fraction64 = wts_band.astype(jnp.float64).reshape((1, nb) + (1,) * (field.ndim - 2))
+            return (values64 + fraction64 * (mean64 * wet64 - values64)).astype(field.dtype)
         # Wet-point zonal mean over the FULL band (one value per (row, ...)),
         # broadcast back; land/ghost stays at its masked value.
         s = f * w

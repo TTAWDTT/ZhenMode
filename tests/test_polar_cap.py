@@ -3,7 +3,7 @@
 `_polar_cap_weights` returns the blend weights in POLE-INWARD order: weight 1
 on the pole row, cos^2 taper into the interior. `_apply_polar_cap` slices the
 south band inward from its own pole, so that order matches. The north band
-slices POLE-FIRST (`field[:, -nb:]` starts nb-1 rows INSIDE the wall), so its
+slices POLE-LAST (`field[:, -nb:]` starts nb-1 rows INSIDE the wall), so its
 weights have to be reversed -- and were not.
 
 The consequence is invisible until a deep-water wall meets it: the north cap
