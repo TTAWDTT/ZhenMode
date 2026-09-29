@@ -11,7 +11,17 @@ and same-Q V/N; explicit FV norm is not the previous physical-field L2 norm.
 four deliberate defects rejected and nonlinear time/metric refinement.
 Changing spatial scoring domain initially FAILS; fixed physical locations,
 not relaxed threshold or altered dynamics, repair the comparison. Real-grid,
-full-suite/installed and full buoyancy/production qualification remain pending.
+full buoyancy/production qualification remain pending. New eight real10x60s
+groups retain overall FAIL: four disturbed histories and NumPy last-step
+audits PASS, eleven corruptions reject; four near-rest groups fail because
+tiny solved eta is lost on stored64 volume. Independent storage-work witness
+pinpoints error; no dynamics/gate relaxation. Isolated installed original
+rain-input dilution and compiled scalar compensated arithmetic pass, not
+complete state/physics proof. Follow registered storage precision protocol;
+full-suite56743/PID46616 is terminal exit0 with626 passed/18 old warnings,
+490.27s and matching launch/end src/test/pyproject hashes. Next implement a
+coherently registered compensated geometry/inventory/time/Q/FCT/restart state,
+not only rename the storage error; retain original eight-case FAIL meanwhile.
 Keep every complete industrial requirement below active.
 
 Latest qualification: specific paired-reference76252/PID28884 completes all

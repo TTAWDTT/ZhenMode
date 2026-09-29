@@ -1119,7 +1119,7 @@ industrial_alignment_20260928:
     century_acceptance_requirements: "docs/century_climate_acceptance_zh.md"
     century_climate_forecast_gpu_full_adjoint_pass: false
   nonlinear_dual_candidate:
-    status: actual_step_direct_tests_pass_real_and_full_pending
+    status: actual_step_direct_tests_pass_real_four_of_eight_FAIL_retained
     protocol_commit: "1c2572d"
     entry: nonlinear_dynamics.nonlinear_momentum_surface_step
     kinetic_norm: finite_volume_full_half_prism_dual_not_physical_field_L2
@@ -1131,10 +1131,28 @@ industrial_alignment_20260928:
     original_spatial_scoring_domain_FAIL_retained: true
     physical_L2_positive_rain_increment_is_psd: false
     physical_L2_increment_min_eigenvalue_m3: -78510192.7478044
-    actual_real_reference_status: pending
-    full_suite_status: pending
+    implementation_commit: "e085cd8"
+    real_source_commit: "d6dcf63"
+    actual_real_reference_status: FAIL_four_disturbed_pass_four_near_rest_fail
+    actual_real_steps_per_requested_group: 10
+    actual_real_dt_seconds: 60
+    actual_real_source_hashes_unchanged: true
+    actual_real_report: "results/industrial_alignment/nonlinear_dual_real_10.json"
+    four_disturbed_independent_last_steps_pass: true
+    deliberate_real_corruptions_rejected: 11
+    independent_last_momentum_relative_max: 7.6534337070617e-16
+    independent_last_energy_change_work_relative_max: 4.572161685808182e-16
+    near_rest_surface_storage_energy_identified_not_repaired: true
+    isolated_installed_old_rain_input_test: passed_momentum32
+    compiled_scalar_compensated_storage_witness: passed_not_ocean_qualification
+    full_suite_status: passed_terminal_specific_56743
+    full_suite_passed: 626
+    full_suite_deprecation_warnings: 18
+    full_suite_seconds: 490.27
+    full_suite_src_test_pyproject_launch_end_hashes_match: true
+    full_suite_log: "results/industrial_alignment/nonlinear_dual_full_tests.log"
     moving_buoyancy_EOS_work_qualified: false
     production_cutover: false
     complete_industrial_goal_achieved: false
-  next: "Qualify NEW actual nonlinear FV dual momentum/surface/source/3-D transport on eight immutable real inputs, independent impulse/work/Q/reaction audits, full regressions and installed entry. Frozen paired-L2 path is historical, old rain-contract FAIL retained; physical L2 moving norm cannot be interpreted as added-fluid mass. Complete thermodynamic/buoyancy pressure pairing, real EOS/sources/mixing/ice, actual initialization/restart/production/global cutover and every century/sensitivity, independent climate/forecast, fair GPU/distributed, whole-model adjoint/constrained-learning and engineering requirement. No final industrial qualification yet."
+  next: "NEW actual nonlinear FV step has28 direct tests and isolated installed source dilution PASS; specific full-suite56743/PID46616 terminal exit0:626 passed/18 old warnings/490.27s and matching src/test/pyproject hashes. Real eight-case600s experiment remains FAIL: four disturbed histories and NumPy last-step impulse/work/reaction audits PASS with11 corruptions rejected, four near-rest states lose solved eta on64-bit volume storage. Follow preregistered surface-storage research and register a coherent compensated physical geometry/inventory/time/Q/FCT/restart representation, not merely renamed storage error, relaxed energy gates or arbitrary rescaling. Frozen paired-L2 and original rain failures remain historical evidence. Complete buoyancy/EOS/real physics/production/global and every century/sensitivity, independent climate/forecast, GPU/distributed, whole-adjoint/learning and engineering requirement. Goal remains active and unachieved."
   unresolved: ["whole-model budgets", "volume/free-surface consistency", "partial cells/global topology", "complete real physical forcing", "independent climate/forecast skill", "fair GPU/distributed cost", "whole-model adjoint and constrained learning"]

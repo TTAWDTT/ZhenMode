@@ -37,10 +37,16 @@ Inventories/Q/geometry are64; momentum is64/32.
 The new actual nonlinear candidate passes28 direct source/impulse/work/rejection
 and time/metric refinement tests. Rain/evaporation momentum, explicit incoming
 velocity, central/upwind 3-D flux, wall reaction and cast work are accounted for.
-Real-grid and full-suite qualification for this new source are still pending;
+Eight new real-grid600s cases retain overall FAIL: four disturbed trajectories
+pass, four near-rest cases lose tiny solved eta during volume storage and fail
+the strict energy gate. Independent disturbed impulse/work/reaction audits
+pass and reject11 corruptions; this is not eight-case qualification.
+The final-source full suite passes626 tests (18 existing deprecation warnings),
+with matching launch/end source hashes; isolated installed source stepping passes.
 held pressure work does NOT close buoyancy/EOS conversion. No production,
 century, climate, forecast, GPU/distributed or complete adjoint claim follows.
 See the [registered nonlinear method](research/experiments/cgrid_hydrostatic_momentum/nonlinear_dual_protocol.md).
+See the [actual nonlinear evidence and retained failure](research/experiments/cgrid_hydrostatic_momentum/nonlinear_dual_review.md).
 
 The PRIOR physical-frame stage has540 regressions,131 adjacent tests and
 eight real-grid100x60s linear references;
@@ -97,7 +103,7 @@ windows (`area_weighted_angular_box_v2`), not equal-cell/index-window scores.
 Comparison rejects different metric versions, domains or reference fields;
 archived scores are not silently upgraded. Initial-reference and endpoint
 content-change diagnostics are NOT independent climate or closed-budget
-evidence. Current full suite passes598 tests; this is not climate qualification.
+evidence. Current full suite passes626 tests; this is not climate qualification.
 See the [scoring protocol](docs/benchmark_protocol_zh.md) and
 [century/climate acceptance requirements](docs/century_climate_acceptance_zh.md).
 
