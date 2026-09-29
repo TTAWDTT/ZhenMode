@@ -57,10 +57,11 @@ jointly stages viscosity instead of adding separately bounded old-state terms.
 The nodal candidate now closes the spherical momentum viscosity metric at wet
 faces, sharing the existing scalar flux operator; its joint norm uses those
 same face coefficients. This changes the opt-in nodal path, not production
-legacy geometry. Prior 30-day evidence predates this spatial correction;
-new-source qualification is tracked in the implementation record. The default
+legacy geometry. The corrected source completes independently audited 2-degree
+600/300 s fixed-January runs through 30 days. The default
 component time scheme retains its combined-viscosity counterexample. The
-material 1-degree 600/300 s trials also retain their 128-subcycle rejections.
+material 1-degree 600/300 s trials stop near day 1.22: their first rejected
+steps require 162/145 nonlinear subcycles, exceeding the retained 128 cap.
 Local scalar dissipation does not prove full momentum energy or climate accuracy.
 Float32 passes local transport/stop gates but has material cumulative salt and
 volume-budget sensitivity; it is not qualified for century delivery.
