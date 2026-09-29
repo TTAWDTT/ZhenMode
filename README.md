@@ -30,10 +30,13 @@ to production. See the [original-core repair plan](docs/legacy_core_repair_plan_
 and [registered results, compatibility and remaining failures](docs/legacy_core_repair_status_zh.md).
 
 Independent local geometry, transport, rotation, convection and nonlinear time
-checks do not qualify the whole model. Full-step gravity and wind/linear-drag
-coupling still have first-order errors; complete moving heat/salt inventories,
-versioned production restart and long-window climate/forecast validation remain open.
-Real WOA/NCEP fixed-month one-day runs are numerical smoke, not forecast skill.
+checks do not qualify the whole model. The opt-in `symmetric_fast_v3` additionally
+passes isolated full-step gravity and wind/linear-drag time gates; diffusion,
+coupled forcing, filters and complete moving heat/salt inventories remain open.
+Versioned strict production restart and CUDA candidate restart are implemented;
+they do not establish long-window climate/forecast accuracy. Real WOA/NCEP
+fixed-January candidate runs complete 30 days under numerical stop limits, not
+physical-budget or forecast-skill qualification.
 The [GPU environment and backend validation](docs/gpu_runtime_zh.md) likewise
 do not establish industrial-model superiority or century reliability.
 

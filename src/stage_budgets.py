@@ -3,6 +3,9 @@
 Heat is fixed-node water sensible heat minus ice latent heat. Salt is nominal
 water salt mass; eta displacement is separate from the fixed reference volume.
 Decomposition closure does not imply that the independent source budget closes.
+Bottom-drag reference kinetic loss is a separate audit, not a heat source or
+whole momentum/energy closure. A zero audited-half count means uninstrumented,
+not necessarily zero physical drag in older schemes.
 """
 import jax
 import jax.numpy as jnp
@@ -23,7 +26,8 @@ SOURCE_NAMES = ("prescribed_heat", "bulk_heat", "coastal_bulk_heat", "temperatur
 NONLINEAR_PROCESS_NAMES = ("advection", "convection", "gm", "redi")
 TRANSPORT_METRIC_NAMES = ("local_continuity_residual_m", "nontransport_eta_change_m",
                           "tracer_face_mean_mismatch_m2_per_s", "final_filter_face_change_m2_per_s")
-MAXIMUM_BUDGET_FIELDS = ("projection_relative_residual_max", "transport_consistency_max")
+MAXIMUM_BUDGET_FIELDS = ("projection_relative_residual_max", "transport_consistency_max",
+                         "bottom_drag_face_change_max_m2_per_s")
 
 
 def empty_budget():
@@ -47,7 +51,10 @@ def empty_budget():
             "projection_transport_norm_squared": jnp.zeros(2, dtype=jnp.float64),
             "projection_relative_residual_max": jnp.asarray(0., dtype=jnp.float64),
             "transport_consistency_max": jnp.zeros(4, dtype=jnp.float64),
-            "transport_audited_steps": jnp.asarray(0., dtype=jnp.float64)}
+            "transport_audited_steps": jnp.asarray(0., dtype=jnp.float64),
+            "bottom_drag_reference_energy_loss_J": jnp.asarray(0., dtype=jnp.float64),
+            "bottom_drag_face_change_max_m2_per_s": jnp.asarray(0., dtype=jnp.float64),
+            "bottom_drag_audited_halves": jnp.asarray(0., dtype=jnp.float64)}
 
 
 def accumulate_budget(totals, interval):
@@ -78,6 +85,20 @@ class _StageRecorder:
         self.transport_consistency_max = jnp.zeros(4, dtype=jnp.float64)
         self.transport_audited_steps = jnp.asarray(0., dtype=jnp.float64)
         self.prefilter_faces = None
+        self.drag_energy_loss = jnp.asarray(0., dtype=jnp.float64)
+        self.drag_face_change = jnp.asarray(0., dtype=jnp.float64)
+        self.drag_halves = jnp.asarray(0., dtype=jnp.float64)
+
+    def bottom_drag(self, before, after):
+        velocity_before = jnp.asarray(before.u, dtype=jnp.float64) ** 2 + jnp.asarray(before.v, dtype=jnp.float64) ** 2
+        velocity_after = jnp.asarray(after.u, dtype=jnp.float64) ** 2 + jnp.asarray(after.v, dtype=jnp.float64) ** 2
+        self.drag_energy_loss = self.drag_energy_loss + 0.5 * RHO_0 * jnp.sum((velocity_before - velocity_after) * self.volume)
+        before_faces = _layer_face_transports(before.u, before.v, self.params)
+        after_faces = _layer_face_transports(after.u, after.v, self.params)
+        difference = jnp.max(jnp.stack([jnp.max(jnp.abs(jnp.sum(new - old, axis=-1)))
+                                        for new, old in zip(after_faces, before_faces, strict=True)]))
+        self.drag_face_change = jnp.maximum(self.drag_face_change, difference)
+        self.drag_halves = self.drag_halves + 1.
 
     def tracer_transport(self, layer_transport, weight=0.5):
         self.tracer_face_mean = tuple(total + weight * jnp.sum(flux, axis=-1)
@@ -216,7 +237,10 @@ class _StageRecorder:
                 "projection_transport_norm_squared": self.projection_norm_squared,
                 "projection_relative_residual_max": self.projection_relative_residual_max,
                 "transport_consistency_max": self.transport_consistency_max,
-                "transport_audited_steps": self.transport_audited_steps}
+                "transport_audited_steps": self.transport_audited_steps,
+                "bottom_drag_reference_energy_loss_J": self.drag_energy_loss,
+                "bottom_drag_face_change_max_m2_per_s": self.drag_face_change,
+                "bottom_drag_audited_halves": self.drag_halves}
 
 
 def make_budget_step(params):

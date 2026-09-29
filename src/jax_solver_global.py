@@ -1624,6 +1624,54 @@ def _refill_volume(eta_now, eta_before, area_cell, area_ocean, p):
     return eta_now + (-dV / area_ocean) * p.wet_mask
 
 
+def _filter_barotropic_eta(eta, params, duration):
+    """Retain the actual sponge/relaxation/cap changes, independently of transport."""
+    area = params.dx_2d * params.dy
+    ocean_area = jnp.maximum(jnp.sum(area * params.wet_mask), 1.0)
+    decay = jnp.exp(-params.sponge_rate_2d * duration)
+    updated = _refill_volume(eta * decay, eta, area, ocean_area, params)
+    relaxation = jnp.exp(-params.eta_relax_rate * duration * params.eta_relax_mask)
+    updated = _refill_volume(updated * relaxation, updated, area, ocean_area, params)
+    return _apply_polar_cap(updated, params.wet_mask, params)
+
+
+def _symmetric_free_surface_step(eta, velocity_x, velocity_y, params, duration,
+                                 forcing_x=None, forcing_y=None, column_face_transport=None):
+    """Drift-kick-drift with constrained midpoint rotation and actual half-step faces."""
+    normal_mask = params.interior_mask_z[..., 0]
+    velocity_x = velocity_x * params.wet_mask
+    velocity_y = velocity_y * params.wet_mask * normal_mask
+    if column_face_transport is None:
+        layers = _layer_face_transports(velocity_x[..., None], velocity_y[..., None], params)
+        first_faces = tuple(jnp.sum(flux, axis=-1) for flux in layers)
+    else:
+        first_faces = column_face_transport
+    midpoint_eta = eta - (duration / 2.) * _face_transport_divergence(*first_faces, params)
+    pressure_x, pressure_y = _reference_depth_gradient(midpoint_eta, params)
+    source_x = params.tau_x_2d / (RHO_0 * params.H_sw)
+    source_y = params.tau_y_2d / (RHO_0 * params.H_sw)
+    if forcing_x is not None:
+        source_x, source_y = source_x + forcing_x, source_y + forcing_y
+    half_rotation = params.f * normal_mask * (duration / 2.)
+    right_x = velocity_x + half_rotation * velocity_y + duration * (-G_EARTH * pressure_x + source_x)
+    right_y = (velocity_y - half_rotation * velocity_x
+               + duration * (-G_EARTH * pressure_y + source_y)) * normal_mask
+    denominator = 1. + half_rotation * half_rotation
+    next_x = ((right_x + half_rotation * right_y) / denominator) * params.wet_mask
+    next_y = ((right_y - half_rotation * right_x) / denominator) * params.wet_mask * normal_mask
+    delta_layers = _layer_face_transports((next_x - velocity_x)[..., None],
+                                         (next_y - velocity_y)[..., None], params)
+    second_faces = tuple(first + jnp.sum(delta, axis=-1)
+                         for first, delta in zip(first_faces, delta_layers, strict=True))
+    transported_eta = midpoint_eta - (duration / 2.) * _face_transport_divergence(*second_faces, params)
+    mean_faces = tuple(0.5 * (first + second) for first, second in zip(first_faces, second_faces, strict=True))
+    final_eta = _filter_barotropic_eta(transported_eta * params.wet_mask, params, duration)
+    decay = jnp.exp(-params.sponge_rate_2d * duration)
+    final_x = _apply_polar_cap(next_x * decay, params.wet_mask, params)
+    final_y = _apply_polar_cap(next_y * decay, params.wet_mask, params) * normal_mask
+    return (final_eta, final_x, final_y), mean_faces
+
+
 def _free_surface_step_fd(eta, u, v, p, F_rho_x=None, F_rho_y=None, dt_half=None,
                           column_divergence_offset=None, column_face_transport=None):
     """Forward-backward (Sielecki) free-surface (shallow water) step on lat-lon FD.
@@ -1646,6 +1694,9 @@ def _free_surface_step_fd(eta, u, v, p, F_rho_x=None, F_rho_y=None, dt_half=None
     """
     if dt_half is None:
         dt_half = p.dt / 2.0
+    if p.process_time_scheme == 'symmetric_fast_v3':
+        return _symmetric_free_surface_step(eta, u, v, p, dt_half, F_rho_x, F_rho_y,
+                                            column_face_transport)[0]
     if p.mode_split:
         ubt, vbt = u, v   # subcycle mode: caller passes BT velocity directly
     else:
@@ -1692,8 +1743,6 @@ def _free_surface_step_fd(eta, u, v, p, F_rho_x=None, F_rho_y=None, dt_half=None
         eta_new = eta - dt_half * p.H_sw * div_bt
 
     eta_new = eta_new * p.wet_mask
-    area_cell = p.dx_2d * p.dy                       # (nx, ny) cell area
-    area_ocean = jnp.maximum(jnp.sum(area_cell * p.wet_mask), 1.0)
     # Lateral sponge on eta (2D). No-op when sponge_rate_2d == 0.
     sw_decay = jnp.exp(-p.sponge_rate_2d * dt_half)
     # MASS-CONSERVING SPONGE: the bare decay eta *= sw_decay changes global
@@ -1703,9 +1752,6 @@ def _free_surface_step_fd(eta, u, v, p, F_rho_x=None, F_rho_y=None, dt_half=None
     # UNIFORMLY over the wet domain: total volume is exactly conserved, the local
     # anomaly damping is unchanged, and a uniform eta offset has zero PGF so the
     # dynamics are untouched. (D23)
-    eta_pre_sponge = eta_new
-    eta_new = _refill_volume(eta_new * sw_decay, eta_pre_sponge,
-                             area_cell, area_ocean, p)
 
     # ── Semi-enclosed-sea eta relaxation (Mediterranean artifact fix) ──
     # Gibraltar (14 km wide) is sub-grid on a 1 deg mesh: the one-cell strait
@@ -1719,10 +1765,6 @@ def _free_surface_step_fd(eta, u, v, p, F_rho_x=None, F_rho_y=None, dt_half=None
     # returns the removed volume over the global wet domain; a uniform eta offset
     # has zero PGF, so the relaxation damps the basin anomaly, not its water
     # mass. (D23)
-    eta_relax_decay = jnp.exp(-p.eta_relax_rate * dt_half * p.eta_relax_mask)
-    eta_pre_relax = eta_new
-    eta_new = _refill_volume(eta_new * eta_relax_decay, eta_pre_relax,
-                             area_cell, area_ocean, p)
 
     # Polar-cap filter: zonally average the poleward rows to kill the
     # cos(lat)->0 metric singularity (dx->0 makes the explicit SW CFL
@@ -1742,7 +1784,7 @@ def _free_surface_step_fd(eta, u, v, p, F_rho_x=None, F_rho_y=None, dt_half=None
     # step's div(ubt) and grad(eta) are dynamically inconsistent. Capping eta
     # first makes ubt/vbt consistent with eta by construction; their cap is then
     # a CFL-safety smoothing, not an independent forcing. (D21)
-    eta_new = _cap(eta_new)
+    eta_new = _filter_barotropic_eta(eta_new, p, dt_half)
     # Energy-consistent PGF: the exact adjoint of the conservative divergence
     # (area-weighted), so the FB pair is neutral on the masked non-uniform grid.
     # The centered _d_dx/_d_dy gradient is NOT the adjoint and injects energy.
@@ -1806,7 +1848,10 @@ def _rotate_baroclinic_shear(velocity_x, velocity_y, params, duration):
     mean_x, mean_y = _barotropic_velocity(velocity_x, velocity_y, params)
     shear_x = (velocity_x - mean_x[..., None]) * params.wet_mask_z
     shear_y = (velocity_y - mean_y[..., None]) * params.wet_mask_z
-    rotated_x, rotated_y = _coriolis_rotation_2d(shear_x, shear_y, params.f, duration)
+    rotation = params.f
+    if params.process_time_scheme == 'symmetric_fast_v3':
+        rotation = rotation * params.interior_mask_z[..., 0]
+    rotated_x, rotated_y = _coriolis_rotation_2d(shear_x, shear_y, rotation, duration)
     return (velocity_x + (rotated_x - shear_x) * params.wet_mask_z,
             velocity_y + (rotated_y - shear_y) * params.wet_mask_z)
 
@@ -2046,7 +2091,7 @@ def _nonlinear_predictor_rk2(state, params, duration, budget=None):
         second_y = second_y + params.r_bot * predicted.v * bottom
     velocity_x = state.u + 0.5 * duration * (first_x + second_x)
     velocity_y = state.v + 0.5 * duration * (first_y + second_y)
-    if implicit_drag:
+    if implicit_drag and params.process_time_scheme != 'symmetric_fast_v3':
         decay = jnp.exp(-params.r_bot * duration * bottom)
         velocity_x, velocity_y = velocity_x * decay, velocity_y * decay
     return tracer._replace(u=velocity_x, v=velocity_y)
@@ -2059,7 +2104,7 @@ def _explicit_full_step(state, p, dt, budget=None):
     for the baroclinic PGF — shifts internal-wave eigenvalues left of the
     imaginary axis for neutral stability.
     """
-    if p.process_time_scheme == 'subcycled_rk2_v2':
+    if p.process_time_scheme in ('subcycled_rk2_v2', 'symmetric_fast_v3'):
         return _nonlinear_predictor_rk2(state, p, dt, budget=budget)
     dT1, dS1 = _compute_tracer_residual(state, p, budget=budget)
     T_pred = state.T + dT1 * dt
@@ -2293,6 +2338,8 @@ def _barotropic_subcycle_transport(state, params):
     optional transport-matched path drives eta with those same faces. Filtering,
     sponge and eta relaxation are recorded separately, not fitted into a flux.
     """
+    if params.process_time_scheme == 'symmetric_fast_v3':
+        state = state._replace(v=state.v * params.interior_mask_z)
     forcing_x, forcing_y = _compute_bt_rho_pgf(state, params)
     initial_u, initial_v = _barotropic_velocity(state.u, state.v, params)
     offset = (_column_divergence(state.u, state.v, params)
@@ -2309,10 +2356,15 @@ def _barotropic_subcycle_transport(state, params):
             divergence = _face_transport_divergence(*faces, params)
         else:
             divergence = _reference_depth_divergence(mean_u, mean_v, params) + offset
-        updated = _free_surface_step_fd(
-            eta, mean_u, mean_v, params, forcing_x, forcing_y, dt_half=params.dt_bt,
-            column_divergence_offset=offset,
-            column_face_transport=faces if params.match_barotropic_transport else None)
+        if params.process_time_scheme == 'symmetric_fast_v3':
+            updated, faces = _symmetric_free_surface_step(
+                eta, mean_u, mean_v, params, params.dt_bt, forcing_x, forcing_y, faces)
+            divergence = _face_transport_divergence(*faces, params)
+        else:
+            updated = _free_surface_step_fd(
+                eta, mean_u, mean_v, params, forcing_x, forcing_y, dt_half=params.dt_bt,
+                column_divergence_offset=offset,
+                column_face_transport=faces if params.match_barotropic_transport else None)
         eta_new, mean_u_new, mean_v_new = updated
         nontransport_change = eta_new - (eta - params.dt_bt * divergence)
         return (eta_new, mean_u_new, mean_v_new, total_x + faces[0], total_y + faces[1],
@@ -2337,7 +2389,7 @@ def _tracer_step_with_transport(state, params, column_transport, budget=None, ad
     """
     velocity_x, velocity_y = (state.u, state.v) if advection_velocity is None else advection_velocity
     faces = _match_layer_face_transports(velocity_x, velocity_y, column_transport, params)
-    if params.process_time_scheme == 'subcycled_rk2_v2':
+    if params.process_time_scheme in ('subcycled_rk2_v2', 'symmetric_fast_v3'):
         return _tracer_rk_subcycle(state, params, face_transport=faces, budget=budget)
     temperature_1, salinity_1 = _compute_tracer_residual(state, params, budget=budget, face_transport=faces)
     predicted = state._replace(T=state.T + params.dt * temperature_1,
@@ -2345,6 +2397,17 @@ def _tracer_step_with_transport(state, params, column_transport, budget=None, ad
     temperature_2, salinity_2 = _compute_tracer_residual(predicted, params, budget=budget, face_transport=faces)
     return state._replace(T=state.T + 0.5 * params.dt * (temperature_1 + temperature_2),
                           S=state.S + 0.5 * params.dt * (salinity_1 + salinity_2))
+
+
+def _linear_bottom_drag_step(state, params, duration, budget=None):
+    """Exact wet-bottom drag, separately audited from numerical face filtering."""
+    if params.bottom_friction != 'linear' or params.r_bot == 0.:
+        return state
+    decay = jnp.exp(-params.r_bot * duration * params.bottom_mask * params.wet_mask_z)
+    updated = state._replace(u=state.u * decay, v=state.v * decay)
+    if budget is not None:
+        budget.bottom_drag(state, updated)
+    return updated
 
 
 def _step_impl(state, p, budget=None):
@@ -2366,6 +2429,8 @@ def _step_impl(state, p, budget=None):
     # huge gradient, seeding an exponentially-growing spurious PGF.
     land_u, land_v = state.u, state.v
     land_T, land_S = state.T, state.S
+    if p.process_time_scheme == 'symmetric_fast_v3':
+        state = _linear_bottom_drag_step(state, p, dt_half, budget=budget)
     state = _linear_half_step(state, p, dt_half, budget=budget)
     nonlinear_start = state
     predictor_budget = None if p.match_barotropic_transport else budget
@@ -2388,7 +2453,7 @@ def _step_impl(state, p, budget=None):
         if p.match_barotropic_transport:
             advection_velocity = ((0.5 * (nonlinear_start.u + nonlinear_end.u),
                                    0.5 * (nonlinear_start.v + nonlinear_end.v))
-                                  if p.process_time_scheme == 'subcycled_rk2_v2' else None)
+                                  if p.process_time_scheme in ('subcycled_rk2_v2', 'symmetric_fast_v3') else None)
             tracer_state = _tracer_step_with_transport(nonlinear_start, p, column_transport, budget=budget,
                                                       advection_velocity=advection_velocity)
             if budget is not None:
@@ -2432,6 +2497,11 @@ def _step_impl(state, p, budget=None):
                           state.T, state.S, eta, state.ice)
         if budget is not None:
             budget.stage("free_surface", barotropic_start, state)
+
+    if p.process_time_scheme == 'symmetric_fast_v3':
+        state = _linear_bottom_drag_step(state, p, dt_half, budget=budget)
+        if budget is not None:
+            budget.before_transport_filter(state)
 
     # 3D polar-cap filter: zonally average the cap rows of u,v,T,S to kill
     # the cos(lat)->0 metric singularity in the diffusion/advection operators.
@@ -2536,11 +2606,15 @@ def make_solver_global(grid, physics, dt, forcing=None,
         nonlinear tracer substeps, predictor-velocity momentum stages and
         midpoint slow shear for matched tracer faces. Linear and gravity
         splitting errors remain; no whole-model second-order claim is made.
+      - process_time_scheme='symmetric_fast_v3' additionally uses two actual
+        half-continuity steps around midpoint fast momentum, constrained walls,
+        and exact linear bottom drag around the full step. Diffusion, filters
+        and coupled forcing errors remain unqualified; not whole-model RK2.
     """
     base = make_fd_params(grid, column_geometry=column_geometry)
     if match_barotropic_transport and (not mode_split or column_geometry != 'nodal_dual_v1'):
         raise ValueError("match_barotropic_transport requires mode_split=True and column_geometry='nodal_dual_v1'")
-    if process_time_scheme not in ('legacy', 'consistent_split_v1', 'subcycled_rk2_v2'):
+    if process_time_scheme not in ('legacy', 'consistent_split_v1', 'subcycled_rk2_v2', 'symmetric_fast_v3'):
         raise ValueError("unknown process_time_scheme")
     if process_time_scheme != 'legacy' and not match_barotropic_transport:
         raise ValueError(f"{process_time_scheme} requires match_barotropic_transport=True")

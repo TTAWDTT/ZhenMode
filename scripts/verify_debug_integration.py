@@ -125,7 +125,7 @@ def main():
     parser.add_argument("--dtype", choices=["float32", "float64"], default="float32")
     parser.add_argument("--column-geometry", choices=["legacy", "nodal_dual_v1"], default="legacy")
     parser.add_argument("--match-barotropic-transport", action="store_true")
-    parser.add_argument("--process-time-scheme", choices=["legacy", "consistent_split_v1", "subcycled_rk2_v2"], default="legacy")
+    parser.add_argument("--process-time-scheme", choices=["legacy", "consistent_split_v1", "subcycled_rk2_v2", "symmetric_fast_v3"], default="legacy")
     parser.add_argument("--initial-from", default=None,
                         help="validated T_initial/S_initial with exact lon/lat/z/wet_mask_z; otherwise synthetic")
     parser.add_argument("--ncep-month", type=int, default=None,

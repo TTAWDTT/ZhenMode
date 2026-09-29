@@ -14,7 +14,7 @@ from stage_budgets import accumulate_budget, empty_budget, make_budget_step
 
 
 @pytest.mark.parametrize("dtype", ["float32", "float64"])
-@pytest.mark.parametrize("scheme", ["legacy", "subcycled_rk2_v2"])
+@pytest.mark.parametrize("scheme", ["legacy", "subcycled_rk2_v2", "symmetric_fast_v3"])
 @pytest.mark.parametrize("ice", [False, True])
 def test_two_actual_restarts_preserve_state_seasonal_phase_and_every_budget_field(tmp_path, dtype, scheme, ice):
     grid, (_, initialize, _, params, _) = _fixture(
