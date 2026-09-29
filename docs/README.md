@@ -14,6 +14,9 @@
 | --- | --- |
 | [`decisions.md`](decisions.md) | **决策日志（D1–D46）**。为什么求解器长这样：诊断出的失效、定案的测量、被否掉的方案。代码里只留一两行不变量，按 D 编号指回这里。 |
 | [`debug_validation_zh.md`](debug_validation_zh.md) | 本轮混合层、海冰、输运、重启、评分与安装修复；回归和积分的证据，以及尚未验证的边界。 |
+| [`method_choice_review_zh.md`](method_choice_review_zh.md) | 原方法可用性与替换动机的独立复核；区分必要一致性修复、可选架构迁移及新原型自身问题。 |
+| [`legacy_core_repair_plan_zh.md`](legacy_core_repair_plan_zh.md) | 原核心优先的修复方案：3–7 工作日规划、工作包、验收矩阵、止损与新核心替换门槛；已开始执行。 |
+| [`legacy_core_repair_status_zh.md`](legacy_core_repair_status_zh.md) | 实施与验收记录：冻结 R、原路径兼容性、M1 几何候选、真实地形对照及保留的失败；不将稳定性等同物理预算达标。 |
 | [`industrial_alignment_roadmap_zh.md`](industrial_alignment_roadmap_zh.md) | 持续对齐并超越成熟模式的完整验收矩阵、文献依据、逐轮研究/实现规则与未完成项。 |
 | [`solver_technical_report_zh.md`](solver_technical_report_zh.md) | 求解器技术报告：方程、离散、时间积分、模块结构。 |
 | [`deep-heat-poisoning-root-cause.md`](deep-heat-poisoning-root-cause.md) | 深海增温（deep-heat poisoning）根因：列热收支泄漏的两个独立缺陷（含 Defect 5：GM 与 Redi 是同一算子的双计）。 |

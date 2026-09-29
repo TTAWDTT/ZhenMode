@@ -55,6 +55,7 @@ def main():
     parser.add_argument("--kappa-bi", type=float, default=0.)
     parser.add_argument("--audit-budget", action="store_true")
     parser.add_argument("--dtype", choices=["float32", "float64"], default="float32")
+    parser.add_argument("--column-geometry", choices=["legacy", "nodal_dual_v1"], default="legacy")
     parser.add_argument("--projection-niter", type=int, default=None)
     parser.add_argument("--projection-rtol", type=float, default=None)
     parser.add_argument("--projection-preconditioner", choices=["none", "jacobi"], default="none")
@@ -112,7 +113,8 @@ def main():
             projection_max_refinements=args.projection_max_refinements,
             mixed_layer_depth_m=20. if case in {"mixed", "ice"} else None,
             dynamic_ice=case == "ice", coastal_kappa_h_mask=coast_mask,
-            coastal_kappa_h=500. if coast_mask is not None else 0., return_params=True)
+            coastal_kappa_h=500. if coast_mask is not None else 0., return_params=True,
+            column_geometry=args.column_geometry)
         state = initialize(T_init=initial_temperature, S_init=initial_salinity)
         audited_step = make_budget_step(params) if args.audit_budget else None
         zero_budget = empty_budget()
@@ -144,10 +146,35 @@ def main():
         result = {"case": case, "status": "running", "records": records,
                   "column_projection": projection_config(params)}
         results.append(result)
+        jax.block_until_ready(state)
+        lower_started = time.perf_counter()
+        lowered = advance.lower(state, jnp.asarray(batch_steps, dtype=jnp.int32))
+        compile_started = time.perf_counter()
+        compiled_advance = lowered.compile()
+        integration_started = time.perf_counter()
+        result["timing"] = {"trace_lower_seconds": compile_started - lower_started,
+                            "compile_seconds": integration_started - compile_started,
+                            "integration_seconds": 0., "scope": "audited_monitored_batches_no_report_IO"}
+        result["effective_parameters"] = {}
+        parameter_arrays = {}
+        for name, value in params._asdict().items():
+            if value is None or isinstance(value, (str, bool, int, float)):
+                result["effective_parameters"][name] = value
+            else:
+                array = np.asarray(value)
+                parameter_arrays[name] = array
+                result["effective_parameters"][name] = {
+                    "shape": list(array.shape), "dtype": str(array.dtype),
+                    "sha256": hashlib.sha256(array.tobytes()).hexdigest()}
+        parameter_path = output.with_name(f"{output.stem}_{case}_parameters.npz")
+        np.savez_compressed(parameter_path, **parameter_arrays)
+        result["parameter_arrays"] = str(parameter_path)
         while completed < total_steps:
             count = min(batch_steps, total_steps - completed)
-            state, peak_velocity, peak_eta, finite, ledger = advance(state, count)
-            state.T.block_until_ready()
+            batch_started = time.perf_counter()
+            state, peak_velocity, peak_eta, finite, ledger = compiled_advance(state, jnp.asarray(count, dtype=jnp.int32))
+            jax.block_until_ready((state, peak_velocity, peak_eta, finite, ledger))
+            result["timing"]["integration_seconds"] += time.perf_counter() - batch_started
             if args.audit_budget:
                 for name, values in ledger.items():
                     if name == "projection_relative_residual_max":
@@ -176,12 +203,19 @@ def main():
                 break
         result.update(status="complete" if passed else "failed", stability_pass=bool(passed), steps=completed,
                       wall_seconds=time.perf_counter() - started,
-                      final_budget=compute_budget_diagnostics(state, grid).as_dict())
+                      final_budget=compute_budget_diagnostics(state, grid, column_geometry=args.column_geometry).as_dict(),
+                      final_budget_geometry=args.column_geometry,
+                      state_semantics="z_level_point_samples_not_moving_layer_inventory",
+                      failure_detection_scope="every_step_monitor_batch_end_stop_no_exact_failure_locator")
+        final_state_path = output.with_name(f"{output.stem}_{case}_final_state.npz")
+        np.savez_compressed(final_state_path, **{name: np.asarray(value) for name, value in state._asdict().items()})
+        result["final_state_path"] = str(final_state_path)
         if args.audit_budget:
             result["stage_budget"] = {"metrics": METRIC_NAMES, "stages": STAGE_NAMES, "sources": SOURCE_NAMES,
                                       "nonlinear_processes": NONLINEAR_PROCESS_NAMES,
                                       "projection_transport_norm_squared_units": "m4/s2; area-weighted before/after sums",
-                                      "scope": "fixed_node_proxy_not_complete_moving_volume_budget",
+                                      "scope": ("fixed_node_proxy_not_complete_moving_volume_budget" if args.column_geometry == "legacy"
+                                                else "static_nodal_reference_not_complete_moving_volume_budget"),
                                       "values": {name: values.tolist() for name, values in accumulated_budget.items()}}
         save_report()
     report["status"] = "complete" if all(result["stability_pass"] for result in results) else "failed"

@@ -16,6 +16,7 @@ from dataclasses import dataclass
 import numpy as np
 
 from config import C_P, RHO_0
+from grid import nodal_control_thickness
 
 
 @dataclass(frozen=True)
@@ -44,13 +45,17 @@ class BudgetDiagnostics:
         }
 
 
-def node_thickness(z):
+def node_thickness(z, column_geometry="legacy"):
     """Positive thickness associated with each z-level node.
 
     The model fields live on z-level nodes, not finite-volume layer centres.
     This mirrors the solver's ``dz_node`` convention:
     ``dz_node[0] = |z1-z0|`` and ``dz_node[-1] = |zN-1-zN-2|``.
     """
+    if column_geometry == "nodal_dual_v1":
+        return nodal_control_thickness(z)
+    if column_geometry != "legacy":
+        raise ValueError("column_geometry must be legacy or nodal_dual_v1")
     z = np.asarray(z, dtype=float)
     if z.ndim != 1 or z.size < 2:
         raise ValueError("z must be a 1-D array with at least two levels")
@@ -58,7 +63,7 @@ def node_thickness(z):
     return np.concatenate(([dz[0]], 0.5 * (dz[:-1] + dz[1:]), [dz[-1]]))
 
 
-def compute_budget_diagnostics(state, grid, rho0=RHO_0, cp=C_P) -> BudgetDiagnostics:
+def compute_budget_diagnostics(state, grid, rho0=RHO_0, cp=C_P, *, column_geometry="legacy") -> BudgetDiagnostics:
     """Compute global heat/salt/volume diagnostics from a solver snapshot.
 
     All calculations use the true wet mask and the node-based vertical metric.
@@ -69,7 +74,7 @@ def compute_budget_diagnostics(state, grid, rho0=RHO_0, cp=C_P) -> BudgetDiagnos
     S = np.asarray(state.S, dtype=np.float64)
     area = np.asarray(grid.dx_2d, dtype=np.float64) * float(grid.dy)
     wet3 = np.asarray(grid.wet_mask_3d, dtype=np.float64)
-    dz_node = node_thickness(grid.z)
+    dz_node = node_thickness(grid.z, column_geometry=column_geometry)
 
     if T.shape != wet3.shape or S.shape != wet3.shape:
         raise ValueError(
