@@ -53,6 +53,7 @@ py-modules = [
     "stage_budgets",
     "woa_data",
     "input_quality",
+    "input_sources",
     "benchmark_metrics",
     "benchmark_gate",
     "benchmark_manifest",

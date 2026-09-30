@@ -98,3 +98,56 @@ ruff check .
 按设计返回退出码 2，未执行填充或数值积分。单核 120s/2GiB 预算，实际 9.01s，
 峰值工作集 342720512 bytes。JSON 和原缺测掩膜只存于私有临时目录，不收入 Git。
 这些是全域计数，与前文南端六行的 440 节点/175 湿柱不同。
+
+## 2026-09-30 修订：六个 strict 反例与读取快照
+
+独立复审发现上一版 17 项测试没有覆盖格式身份、有限缺测码、网格合同和读取身份竞争。
+上一版 strict 门槛不充分；严格行为以本节修订及新增测试为准。
+科学 `woa_data.py` 与既有填充/插值代码仍未修改。
+
+1. **变量、单位和格式。** 新预检 reader 只接受有明确元数据的 typed twin 或
+   WOA-compatible NetCDF。无元数据 NPZ、同一温度 twin 用作盐度、未知单位/编码均拒绝。
+   NPZ 不得宣称自己已经通过 NetCDF mask/packing 解码。
+2. **有限缺测码。** NetCDF 必须声明 `_FillValue`，由 netCDF4 在解码时应用 mask/packing；
+   typed twin 的有限 fill code 必须显式声明。没有被声明编码解释的已知 WOA 哨兵值拒绝，
+   不能因为有限就视为有效。解码后的 packed NetCDF 不再次按原 encoded fill 误掩码。
+3. **网格合同。** 湿节点不能位于原水深之下或零水深柱；坐标单位/深度方向必须已知。
+4. **周期唯一性。** 原/目标经度周期归一后必须唯一，精确坐标映射必须单射；
+   `[0,360]` 不能映射为两个独立的源 0° 节点。
+5. **同一读取快照。** 源路径（含 twin 选择）只解析一次。源、网格和初态从不可变 bytes
+   解析，SHA256 绑定同一 bytes，而不是解析后另读路径生成 hash。
+   解析后及输出阶段复核路径当前内容；检测到改变返回 2。
+   身份是读取快照身份，变更检测只保证验证时点，不能保证文件未来不变。
+6. **公开严格检查。** `enforce_strict_quality` 重核元数据、映射/网格/编码 flags、
+   缺测/变更/非有限/截断计数、记录及变量字段；`status=supported` 本身不能放行。
+
+### typed twin 显式合同
+
+NPZ 不得使用 pickle/object 元数据。除原有 `lon/lat/depth/data` 外须保存标量：
+
+| 字段 | 已支持值 |
+| --- | --- |
+| `source_format` | `ocean.woa_twin.v1` |
+| `variable` | `temperature` 或 `salinity`，必须匹配用途 |
+| `units` | 温度 `degrees_celsius`；盐度 `1` 或 `psu` |
+| `longitude_units` / `latitude_units` | `degrees_east` / `degrees_north` |
+| `depth_units` / `depth_positive` | `m` 或 `meters` / `down` |
+| `missing_encoding` | `nan` 或 `fill_value` |
+| `fill_value` | `fill_value` 编码必需，有限且可由 data dtype 表示 |
+
+这是输入声明合同，不是自动元数据补全。既有无类型 twin 的科学复现路径未改动，
+但新预检拒绝猜测其含义。NetCDF 另须有 `t_an`/`s_an`、
+`time/depth/lat/lon` 维度与单一 time，及对应变量/坐标单位、向下深度和 `_FillValue`。
+未知格式在诊断和严格模式均清楚拒绝；已知格式的输入质量缺口仍可写诊断 sidecar。
+
+### 新验证
+
+本地 52 项测试通过、全仓 ruff 通过、只读 code gate 通过。
+全部六个反例已纳入；另覆盖正常 typed twin/NetCDF、合法 packed 解码、伪装 NetCDF 的 NPZ、
+错误坐标单位/方向、无法解释的已知哨兵值，以及源/网格/初态读后替换和输出阶段替换。
+本地 NumPy 2.5/netCDF4 写入合成文件产生 9 条第三方弃用警告，测试无失败。
+多轮 donor、垂向兜底、非重合网格及历史原 hash 的边界维持前文说明，不假称完整 provenance。
+
+新版对当前原 NetCDF 和同一归档进行一次快照预检，仍按设计返回 2；T/S 各自
+9297 个缺测湿节点、363 整柱缺测、2891 含缺测湿柱，原场和科学填充未改。
+单核 120s/2GiB 预算下实际 9.01s，峰值工作集 451698688 bytes，无积分步。

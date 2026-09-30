@@ -16,6 +16,12 @@ def example():
         'lat': np.array([-1., 0., 1.]),
         'depth': np.array([0., 10.]),
         'data': np.full((2, 3, 4), 7.),
+        'source_format': np.array('ocean.woa_twin.v1'),
+        'variable': np.array('temperature'), 'units': np.array('degrees_celsius'),
+        'missing_encoding': np.array('nan'),
+        'longitude_units': np.array('degrees_east'),
+        'latitude_units': np.array('degrees_north'),
+        'depth_units': np.array('m'), 'depth_positive': np.array('down'),
     }
     grid = {
         'lon': raw['lon'].copy(), 'lat': raw['lat'].copy(),
@@ -184,7 +190,8 @@ def test_cli_records_actual_twin_identity_and_independent_variable_masks(tmp_pat
 
     raw, grid = example()
     np.savez(tmp_path / 'grid.npz', **grid)
-    np.savez(tmp_path / 'salt.nc.npz', **raw)
+    salt = {**raw, 'variable': np.array('salinity'), 'units': np.array('1')}
+    np.savez(tmp_path / 'salt.nc.npz', **salt)
     raw['data'][0, 1, 1] = np.nan
     np.savez(tmp_path / 'temp.nc.npz', **raw)
     arguments = ['--temperature', str(tmp_path / 'temp.nc'), '--salinity',
@@ -205,9 +212,11 @@ def test_cli_diagnostic_preserves_input_and_refuses_overwrites(tmp_path):
     np.savez(tmp_path / 'grid.npz', **grid)
     raw['data'][0, 1, 1] = np.nan
     np.savez(tmp_path / 'source.nc.npz', **raw)
+    salt = {**raw, 'variable': np.array('salinity'), 'units': np.array('1')}
+    np.savez(tmp_path / 'salt.nc.npz', **salt)
     original = (tmp_path / 'source.nc.npz').read_bytes()
     arguments = ['--temperature', str(tmp_path / 'source.nc'), '--salinity',
-                 str(tmp_path / 'source.nc'), '--grid', str(tmp_path / 'grid.npz'),
+                 str(tmp_path / 'salt.nc'), '--grid', str(tmp_path / 'grid.npz'),
                  '--output', str(tmp_path / 'quality.json')]
     assert cli().main(arguments) == 0
     assert (tmp_path / 'source.nc.npz').read_bytes() == original
@@ -216,3 +225,43 @@ def test_cli_diagnostic_preserves_input_and_refuses_overwrites(tmp_path):
     arguments[-1] = str(tmp_path / 'grid.npz')
     with pytest.raises(SystemExit):
         cli().main(arguments)
+
+
+def test_missing_variable_identity_cannot_pass_strict():
+    raw, grid = example()
+    del raw['variable']
+    report, _ = audit_woa_variable(raw, grid, variable='T')
+    with pytest.raises(ValueError, match='unsupported'):
+        enforce_strict_quality(report)
+
+
+def test_finite_woa_fill_value_cannot_pass_strict():
+    raw, grid = example()
+    raw['data'][:] = 9.96921e36
+    raw.update(source_format='ocean.woa_twin.v1', variable='temperature',
+               units='degrees_celsius', missing_encoding='fill_value', fill_value=9.96921e36)
+    report, _ = audit_woa_variable(raw, grid, variable='T')
+    assert report['missing_wet_nodes'] == 24
+    with pytest.raises(ValueError, match='unsupported'):
+        enforce_strict_quality(report)
+
+
+def test_wet_node_below_bathymetry_is_rejected():
+    raw, grid = example()
+    grid['depth'][:] = 1.
+    with pytest.raises(ValueError, match='bathymetry'):
+        audit_woa_variable(raw, grid, variable='T')
+
+
+def test_periodic_aliasing_is_rejected():
+    raw, grid = example()
+    grid['lon'] = np.array([0., 1., 2., 360.])
+    with pytest.raises(ValueError, match='longitude'):
+        audit_woa_variable(raw, grid, variable='T')
+
+
+def test_strict_checks_fields_instead_of_status_only():
+    report = {'schema': 'ocean.input_quality.v1', 'status': 'supported',
+              'missing_wet_nodes': 99, 'coordinate_mapping_supported': False}
+    with pytest.raises(ValueError, match='unsupported'):
+        enforce_strict_quality(report)
