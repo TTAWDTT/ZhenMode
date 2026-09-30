@@ -41,7 +41,7 @@ python scripts/quality_speed/gate.py --control evidence/control.json \
 
 ## Manifest 与冻结方式
 
-schema_version 为 1。完整机器字段见 `contract.run_errors` 和测试中的具名夹具。
+schema_version 为严格整数 1（拒绝 true/1.0）。完整机器字段见 `contract.run_errors` 和测试中的具名夹具。
 夹具是人为的单元测试数据，绝不是 MOM6 结果或科学阈值来源。
 
 - `source_sha` 为实际 40 位 Git SHA，`source_clean=true`；`source_tree_sha256`
@@ -54,7 +54,12 @@ schema_version 为 1。完整机器字段见 `contract.run_errors` 和测试中�
   `manifest.attach_files` 流式计算选定文件 hash；CLI 验证所有引用的附件存在且未变。
   相对路径须留在 manifest 所在根目录内，不能逃逸或引用未附带的 hash。
 - requested/accepted/attempted 步数必须全等，accepted×dt 必须等于 duration；
-  verdict=PASS、coverage_complete=true 都须显式给出，不能从缺失推断。
+  verdict=PASS、coverage_complete=true、not_comparable=false 都须显式给出，不能从缺失推断。
+  not_comparable 必须为 JSON 布尔值；任一方 true 则 NOT_COMPARABLE，缺失/错误类型则
+  INCOMPLETE。顶层字段采用 RUN_FIELDS 白名单（含 artifacts），不支持的 status/pass/
+  comparable 等别名及拼写错误不会被静默忽略，而是 INCOMPLETE；不能用额外字段覆盖 verdict。
+  这是对尚未验收的 schema 1 的收紧；旧 manifest 需补显式声明，不自动迁移。
+  pair_contract 用 canonical JSON 身份比较，避免 true==1，并区分 1 与 1.0。
 - quality 的每项有非负 value、unit、definition_sha256、evidence_sha256。
   库存指标必须是**扣除实际外源后的绝对残差**，不是巨大初始库存归一化的百分比。
   如热残差 `abs(ΔH−∫Qdt)/(湿表面积×时长)` W/m²；盐/水量使用登记的 kg/s、m³/s。
@@ -93,7 +98,7 @@ python scripts/quality_speed/monitor_probe.py --out monitor-new.json
 它**不能**满足生产门禁的 monitoring scope，未接入或替换生产驱动。
 包括分项计时、实际 NPZ 写盘和父进程 wall；并不包含完整生产快照/重启策略，
 因此结果只代表此合成控制下的监测开销。缺依赖/超时/状态不一致明确非零退出。
-脚本完整运行尚待装有依赖的环境实证；不能把标准库计时单测当 JAX 实测。
+原交付因缺依赖未运行；续作实测状态见下文，不能把标准库计时单测当 JAX 实测。
 
 ## 工业配对场景选择与缺口
 
@@ -101,7 +106,7 @@ python scripts/quality_speed/monitor_probe.py --out monitor-new.json
 
 | 场景 | 公平配对条件与用途 | 当前缺口/结论 |
 | --- | --- | --- |
-| 同源生产监测开销 | 上述 CPU 小控制、同初态同完整步，定位 host 同步及监测代价 | 当前无 JAX/netCDF4；BLOCKED，无速度数字 |
+| 同源生产监测开销 | 上述 CPU 小控制、同初态同完整步，定位 host 同步及监测代价 | 原交付缺依赖；续作已安装 CPU 依赖，实测状态见下文 |
 | MOM6 同物理短期海盆 | 冻结相同盆地/底形/有效体积、线性 EOS、封闭壁、无冰风驱/表面通量；同资源先完成 1 天预算，再独立登记 7/30 天 | 无 MOM6 可执行文件/版本编译见证、共同网格映射、成对输入和逐步账本；不能导入旧历史分数充数 |
 | 真实 ETOPO/WOA/NCEP 2°配对 | 先保留 core 已登记 180×66×14、±66°边界及原 dt/闭合；对齐 MOM6 有效体积、表面源、calendar、恢复和输出，误差按共同物理评分域 | 本云 checkout 无 data；本地历史数据/hash清单不等于实际数据到位；尚无同版本同机重复总wall |
 | 真实 1°及海冰生产场景 | 待 B 修复原失败并重跑原冻结案例、A 接受步源账本/严格重启闭环后，完整质量门通过再计时 | 原 negative-top/容量与时间阶失败仍保留；缺公平 MOM6 冰/混合层/边界闭合，当前不具验收条件 |
@@ -110,7 +115,7 @@ python scripts/quality_speed/monitor_probe.py --out monitor-new.json
 不是认定历史配置已公平。参考方案为项目内部技术选择，无新外部模式性能事实。
 跨硬件结果另列成本/资源吞吐，不标纯算法加速。长期气候、百年、预报仍需独立资格矩阵。
 
-## 本次资源和验收证据
+## 首批资源和验收证据（历史，f95f739）
 
 云环境 cgroup：4 CPU、16 GiB；默认 Python 缺 JAX、pytest、netCDF4，存在 NumPy。
 未下载科学数据、未安装 JAX、未调用收费 API/GPU、未跑物理积分。仅安装小型 ruff 工具
@@ -118,3 +123,30 @@ python scripts/quality_speed/monitor_probe.py --out monitor-new.json
 `quality_speed_evidence/` 保存实际单测日志、lint、blocked probe 与源/配置身份。
 blocked probe 的 source_clean=false 如实记录当时尚未提交的新增工具，源码逐文件 hash
 仍可核查；不伪称已经测量。全库回归和监测脚本的 JAX 运行未验证，远端 CI 另看 PR。
+
+## B 复审修复（2026-09-30 续作）
+
+新容器已恢复 shell，在同一工作分支从远端 f95f739 追加提交；core 基线仍为
+82e1ca4a2158d4c0ed20f91c04e80cdf43f8a36b。检查未发现 AGENTS.md / .agents/skills，
+/workspace/.agents 为空；已读 S0/S1 与冻结协议，未发现并发写进程。
+
+B 的 not_comparable=true 绕过在原 head 复现为 PASS。修复后双方显式声明不可比
+均停止于 NOT_COMPARABLE；无 speed、pass=false、industrial_qualified=false。
+状态别名、布尔/非布尔混用、缺字段、schema 版本与冻结硬件类型均有回归，CLI 仍验证附件字节。
+相同新增回归修复前 32 测试/70 子用例失败，修复后 32 测试通过；不是 70 个独立测试。
+实际日志见 quality_speed_evidence/review_{before,after,ruff}.log。
+新合同及既有 benchmark gate/manifest 定向 pytest：53 passed、240 subtests passed（4.03秒），
+日志 review_targeted.log。
+
+4 CPU quota / 16 GiB；官方 PyPI 项目声明依赖装入 /tmp/ocean-c-venv，
+CPU JAX 0.11.2、NumPy 2.5.3、netCDF4 1.7.4、pytest 9.1.1。
+仅小网格有界测试，无科学数据下载、模型、收费 API、外部 GPU 或长积分。
+B PR3 @ 38765d32 的只读报告/测试审查保留：原 1° 接受步为0、moving-limiter 1.9仍失败；
+未重跑 B 测试或修改其文件。独立复审与真实 MOM6 配对/物理资格仍未完成。
+
+续作监测对照：monitor_probe_review.json 状态 MEASURED，6 个新进程（3对）末态六字段
+字节一致，8×8×4、每次8步、2步暖机、每子进程60秒上限，外层180秒上限。
+source_sha=f95f739、source_clean=false 如实记录修复尚未提交时的 checkout，
+逐文件 source_tree hash 冻结实际代码；不能把 source_sha 单独当成全部运行代码身份。
+本对照仅验证该合成小网格的监测开销，不是生产监测全输出、更不是工业配对资格。
+真实数据、MOM6 与原失败场景仍未验证；旧 BLOCKED 文件作为历史原件保留。

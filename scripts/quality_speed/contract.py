@@ -14,6 +14,14 @@ PAIR_FIELDS = ('scenario', 'evidence_class', 'hardware', 'precision', 'grid_sha2
                'initial_sha256', 'forcing_sha256', 'boundary_sha256', 'physics_sha256',
                'scoring_sha256', 'output_sha256', 'duration_s', 'dt_s', 'dt_bt_s')
 HASH_FIELDS = tuple(k for k in PAIR_FIELDS if k.endswith('_sha256'))
+# Closed top-level schema: unrecognized status aliases must not be ignored.
+RUN_FIELDS = frozenset(PAIR_FIELDS) | {
+    'schema_version', 'model', 'algorithm', 'source_sha', 'source_clean',
+    'source_tree_sha256', 'config_sha256', 'environment', 'command',
+    'requested_steps', 'accepted_steps', 'attempted_steps', 'verdict',
+    'coverage_complete', 'not_comparable', 'timing_scope', 'synchronization',
+    'cold_cache', 'peak_memory', 'quality', 'trials', 'artifacts',
+}
 CATEGORIES = {'conservation', 'error', 'convergence'}
 REQUIRED_METRICS = {'heat_budget': 'conservation', 'salt_budget': 'conservation',
                     'volume_budget': 'conservation', 'solution_error': 'error',
@@ -54,7 +62,8 @@ def policy_errors(policy, expected_sha256):
             errors.append('policy: pre-registered SHA256 mismatch')
     except (ValueError, TypeError):
         errors.append('policy: invalid JSON numbers/types')
-    if policy.get('schema_version') != SCHEMA or not nonempty(policy.get('registration')):
+    if (type(policy.get('schema_version')) is not int or policy['schema_version'] != SCHEMA
+            or not nonempty(policy.get('registration'))):
         errors.append('policy: schema/registration missing')
     if not number(policy.get('minimum_speedup'), True) or policy['minimum_speedup'] <= 1:
         errors.append('policy: explicit significant speedup > 1 required')
@@ -102,7 +111,11 @@ def policy_errors(policy, expected_sha256):
 
 def run_errors(run, policy):
     errors = []
-    if run.get('schema_version') != SCHEMA:
+    for key in run.keys() - RUN_FIELDS:
+        errors.append(f'unsupported run field: {key}')
+    if type(run.get('not_comparable')) is not bool:
+        errors.append('not_comparable: explicit boolean required')
+    if type(run.get('schema_version')) is not int or run['schema_version'] != SCHEMA:
         errors.append('schema_version')
     for key in ('model', 'algorithm', 'scenario', 'precision', 'environment', 'command'):
         if not nonempty(run.get(key)):
@@ -201,9 +214,12 @@ def evaluate(control, candidate, policy, expected_policy_sha256):
         result['reasons'] = errors
         return result
     result['evidence_class'] = control['evidence_class']
-    mismatch = [key for key in PAIR_FIELDS
-                if control[key] != candidate[key]
-                or control[key] != policy['pair_contract'][key]]
+    mismatch = [f'{label}: declared not_comparable'
+                for label, run in (('control', control), ('candidate', candidate))
+                if run['not_comparable']]
+    mismatch += [key for key in PAIR_FIELDS
+                if digest(control[key]) != digest(candidate[key])
+                or digest(control[key]) != digest(policy['pair_contract'][key])]
     for label, run in (('control', control), ('candidate', candidate)):
         for key in ('source_sha', 'config_sha256', 'algorithm'):
             if run[key] != policy['runs'][label][key]:

@@ -35,7 +35,7 @@ def fixtures():
                hardware=dict(device='cpu', cpu='test', accelerator='none', runtime='test',
                              threads=1, ranks=1, memory_limit_bytes=1000),
                duration_s=100, dt_s=10, dt_bt_s=5, requested_steps=10, accepted_steps=10,
-               attempted_steps=10, verdict='PASS', coverage_complete=True,
+               attempted_steps=10, verdict='PASS', coverage_complete=True, not_comparable=False,
                timing_scope='full_integration_with_production_monitoring',
                synchronization='all_state_and_diagnostics', cold_cache=True,
                peak_memory={'status': 'unavailable', 'reason': 'test fixture'},
@@ -73,6 +73,60 @@ class GateTests(unittest.TestCase):
                 bad = copy.deepcopy(self.b)
                 del bad[key]
                 self.assertEqual(evaluate(self.a, bad, self.p, digest(self.p))['status'], 'INCOMPLETE')
+
+    def test_declared_incomparability_blocks_both_runs(self):
+        for label in ('control', 'candidate'):
+            with self.subTest(label=label):
+                a, b, p = fixtures()
+                (a if label == 'control' else b)['not_comparable'] = True
+                result = evaluate(a, b, p, digest(p))
+                self.assertEqual(result['status'], 'NOT_COMPARABLE')
+                self.assertFalse(result['pass'])
+                self.assertFalse(result['industrial_qualified'])
+                self.assertIsNone(result['speed'])
+
+    def test_status_and_boolean_fields_fail_closed(self):
+        cases = [(key, value) for key in ('source_clean', 'coverage_complete', 'cold_cache')
+                 for value in (False, 0, 1, 'true', None, [], {})]
+        cases += [('not_comparable', value) for value in (0, 1, 'false', 'true', None, [], {})]
+        cases += [('verdict', value) for value in ('FAIL', 'NOT_COMPARABLE', 'pass', True, None)]
+        cases += [(key, value) for key in ('status', 'pass', 'comparable', 'failed', 'not_comparabl')
+                  for value in ('NOT_COMPARABLE', True, False, None)]
+        for label in ('control', 'candidate'):
+            for key, value in cases:
+                with self.subTest(label=label, key=key, value=value):
+                    a, b, p = fixtures()
+                    (a if label == 'control' else b)[key] = value
+                    result = evaluate(a, b, p, digest(p))
+                    self.assertEqual(result['status'], 'INCOMPLETE')
+                    self.assertFalse(result['pass'])
+                    self.assertFalse(result['industrial_qualified'])
+                    self.assertIsNone(result['speed'])
+
+    def test_missing_fields_on_both_runs_hide_speed(self):
+        for label in ('control', 'candidate'):
+            for key in self.a:
+                with self.subTest(label=label, key=key):
+                    a, b, p = fixtures()
+                    del (a if label == 'control' else b)[key]
+                    result = evaluate(a, b, p, digest(p))
+                    self.assertEqual(result['status'], 'INCOMPLETE')
+                    self.assertIsNone(result['speed'])
+                    self.assertFalse(result['industrial_qualified'])
+
+    def test_schema_boolean_is_not_version_one(self):
+        for label in ('control', 'candidate', 'policy'):
+            for value in (True, 1.0, '1', None):
+                with self.subTest(label=label, value=value):
+                    a, b, p = fixtures()
+                    {'control': a, 'candidate': b, 'policy': p}[label]['schema_version'] = value
+                    self.assertEqual(evaluate(a, b, p, digest(p))['status'], 'INCOMPLETE')
+
+    def test_frozen_hardware_boolean_cannot_equal_integer(self):
+        self.p['pair_contract']['hardware']['threads'] = True
+        result = self.result()
+        self.assertEqual(result['status'], 'NOT_COMPARABLE')
+        self.assertIsNone(result['speed'])
 
     def test_policy_freeze(self):
         frozen = digest(self.p)
@@ -205,8 +259,11 @@ class EvidenceTests(unittest.TestCase):
             self.assertEqual(json.loads(completed.stdout)['status'], 'INCOMPLETE')
 
     def test_cli_all_verdicts_with_attached_bytes(self):
-        for expected, code in [('PASS', 0), ('QUALITY_FAIL', 1), ('SPEED_FAIL', 1),
-                               ('NOT_COMPARABLE', 3), ('INCOMPLETE', 2)]:
+        for case, expected, code in [('declared', 'NOT_COMPARABLE', 3),
+                                      ('status', 'INCOMPLETE', 2),
+                                      ('boolean', 'INCOMPLETE', 2),
+                                      ('missing', 'INCOMPLETE', 2)] + [(status, status, code) for status, code in [('PASS', 0), ('QUALITY_FAIL', 1), ('SPEED_FAIL', 1),
+                               ('NOT_COMPARABLE', 3), ('INCOMPLETE', 2)]]:
             with self.subTest(expected=expected), tempfile.TemporaryDirectory() as temp:
                 root = Path(temp)
                 (root / 'fixture.txt').write_text('synthetic unit-test evidence only')
@@ -229,10 +286,18 @@ class EvidenceTests(unittest.TestCase):
                     b['quality']['heat_budget']['value'] = .9
                 if expected == 'SPEED_FAIL':
                     b['trials'][0]['total'] = 30
-                if expected == 'NOT_COMPARABLE':
+                if case == 'NOT_COMPARABLE':
                     b['precision'] = 'float32'
-                if expected == 'INCOMPLETE':
+                if case == 'INCOMPLETE':
                     (root / 'fixture.txt').write_text('tampered')
+                if case == 'declared':
+                    b['not_comparable'] = True
+                if case == 'status':
+                    b['status'] = 'NOT_COMPARABLE'
+                if case == 'boolean':
+                    b['not_comparable'] = 'false'
+                if case == 'missing':
+                    del b['not_comparable']
                 for name, value in [('control', a), ('candidate', b), ('policy', policy)]:
                     (root / f'{name}.json').write_text(json.dumps(value))
                 completed = subprocess.run(
@@ -244,6 +309,9 @@ class EvidenceTests(unittest.TestCase):
                 result = json.loads(completed.stdout)
                 self.assertEqual(result['status'], expected)
                 self.assertFalse(result['industrial_qualified'])
+                if code in (2, 3):
+                    self.assertIsNone(result['speed'])
+                    self.assertFalse(result['pass'])
 
     def test_synchronized_phase_accounting(self):
         ticks = iter(range(12))
