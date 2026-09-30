@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "registered_date": "2026-09-30",
+  "stage": "S0-S1",
+  "branch": "ttawdtt/core-repair-review",
+  "main_baseline": "bb7ba235eed5706b0adf86472e95b46bc4c021b1",
+  "repair_baseline": "cfb5bb6f314b2b8e27b9eaf4567c18a5449f6ef7",
+  "scope": "production input validation and monitoring; unchanged dynamics",
+  "state_fields": ["u", "v", "T", "S", "eta", "ice"],
+  "production_limits": {"horizontal_velocity_m_per_s": 10.0, "eta_m": 15.0, "comparison": ">"},
+  "debug_script_comparison": ">= (retained historical debug contract)",
+  "requirements": [
+    "finite positive dt, dt_bt and requested duration before loading inputs",
+    "reject zero effective integration steps and invalid integer/nonnegative controls",
+    "check every attempted state, including both horizontal velocity components",
+    "stop at first failure; accepted state/time excludes rejected attempt",
+    "peaks include all attempted steps and initial state; nonfinite values remain visible",
+    "failed CLI exits nonzero; max-steps truncation is not full-duration PASS",
+    "do not overwrite last valid checkpoint with rejected state",
+    "same legal step and forcing yield unchanged numerical state",
+    "continuous and resumed monitoring histories/statistics obey the same contract"
+  ],
+  "evidence": {
+    "pre_repair_contract_probes": "research/reviews/test_driver_contract_review.py",
+    "same_test_comparison": "results/branch_comparison_20260930/",
+    "retained_time_failure": "docs/legacy_core_repair_status_zh.md section 37"
+  },
+  "later_stages": "blocked until their configuration, actual input identities and thresholds are registered",
+  "century_climate_forecast_qualification": false
+}

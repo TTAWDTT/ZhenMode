@@ -38,7 +38,9 @@ replacement production defaults.
 
 The [repair status](docs/legacy_core_repair_status_zh.md) is the detailed evidence
 record; sections 36–37 cover the latest weak-content/capacity/time work.
-The [repair plan](docs/legacy_core_repair_plan_zh.md) explains the work packages.
+The [delivery execution plan](docs/production_delivery_plan_zh.md) defines the
+current order, objectives, dependencies and acceptance gates. The earlier
+[repair plan](docs/legacy_core_repair_plan_zh.md) remains a historical reference.
 The [r-star index](research/experiments/material_rstar_coordinates/README.md)
 maps their code and audit commands. Test counts do not override failed gates.
 No current evidence establishes century reliability, independent climate /

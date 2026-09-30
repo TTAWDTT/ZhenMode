@@ -242,3 +242,77 @@ FCT的时间一致性，但不能由SSP名称跳过阶数验证。这不是要�
 判定及实际强迫身份，让已有严格测试与生产执行真正接通；时间研究保持
 窄范围，先证明被组合映射的前提。存在必要工程工作，但目前仍未完成，
 新增7个反例也不是新的积分资格。
+
+## 生产调用链、修复依赖与成熟模式验收实践复核
+
+Lady，2026-09-30。此次以`cfb5bb6`为源码基线，只读核对默认调用链、
+现有回归和保存结果；未新开CPU/GPU实验、改内核、切分支、提交或push。
+范围包括driver建模/推进/判定/重启，FD的L/N/L、快慢耦合、扩散/源处理，
+库存与阶段账本，研究Euler/Heun及CI。不是全库无缺陷的背书。
+
+### 当前真正运行的主线与取舍
+
+生产入口是`run_long_integration_global.main -> make_solver_global -> _step_impl`。
+CLI在`src/run_long_integration_global.py:920`没有传入新几何/过程方案参数，
+因此沿工厂默认`column_geometry='legacy'`、`match_barotropic_transport=False`、
+`process_time_scheme='legacy'`。用户可显式打开mode-split；是否split与是否
+采用新候选是两个不同维度。材料顶层、FV/C-grid模块及研究弱式组合不因
+被安装、导入测试或具有局地通过项而获得生产资格。
+
+| 现有成果 | 实际实现/依赖 | 判断与边界 |
+| --- | --- | --- |
+| 表面热源、海冰焓/融冰盐修复`cf097d8` | `_surface_heat_weights`、tracer源、`_dynamic_ice_closure`及完整步源分配；`tests/test_surface_energy.py` | 在旧几何也生效，应保留。需一起保留源分配与冰闭合，不能只摘一个权重函数；热/相变控制不是现实海冰技能验收。 |
+| 守恒水平扩散`36a1da4` | `_horizontal_diffusion_flux`同时服务tendency、L半步、N残差扣除与诊断；`tests/test_horizontal_tracer_diffusion.py` | 应保留完整调用闭环。只改tendency会让L/N抵消关系不一致；局地守恒/耗散/空间精度不等于整模式闭合。 |
+| 湿面伴随投影`cce8f87`及后续细化 | `_column_divergence`、3D梯度、参数字段、预条件/实际输运残差；`tests/test_column_projection.py` | 有明确离散依据，但只在开启project_adv_vel时使用。移植不能遗漏几何算子、有效参数和实际残差控制。 |
+| 严格重启`e47010e` | `restart_contract.py`加driver恢复历史/输出身份、有效参数/实际强迫/源码指纹；`tests/test_production_restart.py` | 应保留工程成果，不能把新模块孤立摘出就声称CLI修好了。小网格连续/两次重启控制与真实30天跨进程字节失败仍分别记账。 |
+| 阶段账本 | `stage_budgets.py`直接依赖FD私有步与面输运算子；`tests/test_stage_budgets.py` | 有用但非独立可搬运的旁路；生产snapshot库存不能冒充它的源积分账本。 |
+| nodal/material/r-star候选 | 新质量/输运/时间方案及对应网格、状态、审计合同 | 保留代码和失败证据，不作为本轮生产交付前提；弱式时间未达标，不推广。 |
+
+`diagnostics.py:66`仍用静态参考节点体积，driver在`:1202`调用默认库存。
+该量不包含eta引起的移动库存和冰潜热，也没有累计外部输入。它可以描述
+参考库存变化，却不能单独回答“热盐预算是否相对实际源闭合”。阶段
+`decomposition_residual`的近零也只说明账目分解一致，不能代替独立源闭合。
+
+旧生产链还保留值得针对性修复、而非以“旧方法全错”处理的问题：
+`_compute_tracer_tendency`在legacy且conv_nsub>1时同时除κ和子步时长
+（`:1526`）；改变子步数会改变有效对流强度。L半步对整个速度旋转
+（`:1947`），快模态又演化均值Coriolis（`:1811`）。两者已在候选过程
+方案分开处理，但不能把候选控制通过说成旧生产默认已修复，或由此
+推断它们是某次历史发散的根因。应各自用固定物理系数的最小控制验收。
+
+### “生产级”应落到哪些可核验要求
+
+以下是借鉴成熟模式/业务系统的项目验收框架，不是存在一张通用工业
+认证，也不规定所有限幅场必须满足同一个阶数。已登记的1.9时间门槛
+仍不改；其失败不能被其他控制、CPU/GPU一致或稳定长跑抵消。
+
+| 验收层 | 一手实践依据 | 本项目尚需补齐 |
+| --- | --- | --- |
+| 同平台基线回归、重启 | [MITgcm贡献/测试文档](https://mitgcm.readthedocs.io/en/latest/contributing/contributing.html#required-testing-for-mitgcm-code-contributors)要求先测未修改master、再用同选项测分支；另有2+2重启检查及不同运行环境日测 | 已有52项同源控制只是抽样。应建立冻结输入的完整步参考与连续/分段控制；CPU/GPU数值一致和同环境字节重启分开验收。 |
+| 连续方程与tracer耦合 | [MOM6快慢耦合](https://mom6.readthedocs.io/en/main/api/generated/pages/Barotropic_Baroclinic_Coupling.html)使用正压时间平均输运；[MITgcm自由面](https://mitgcm.readthedocs.io/en/latest/algorithm/nonlinear-freesurf.html)保留线性方案，非线性方案要求一致厚度/输运 | 有必要检验实际面通量/连续性/常量场保持；并不由此要求把原FD全面换成FV或r-star。 |
+| 长期模拟与气候评价 | [OMIP实验/诊断协议](https://gmd.copernicus.org/articles/9/3231/2016/)规定大气强迫实验与海洋/海冰诊断 | 需冻结强迫、区域、恢复项、日历、评分窗及独立参考；长期漂移、源闭合、空间/季节偏差、环流等分别报告。百年无NaN不是气候态精度。 |
+| 预报验证 | [OceanPredict业务验证综述](https://sp.copernicus.org/articles/5-opsr/16/2025/)与[Class 4观测空间比较](https://sp.copernicus.org/articles/5-opsr/17/2025/) | 需多起报日、明确预报时效、观测时空配对与覆盖；和持续性/气候基线比较。现有内部SST评分没有提供这一资格。 |
+| 可微与性能 | [MITgcm梯度检验](https://mitgcm.readthedocs.io/en/latest/autodiff/autodiff.html)以及已有本地局地FD/JVP控制 | 局地导数、完整短窗目标梯度、切换点适用范围分别声明；同物理/分辨率/精度下测完整步吞吐、显存、JIT与I/O，不以单算子/GPU支持声明工业优势。 |
+
+当前`.github/workflows/ci.yml`只有CPU合成地形回归与MMS，
+`pyproject.toml`默认tests目录不包含研究时间验收程序。CI全绿与第37节
+时间资格FAIL可以同时成立；需要不同的自动化验收层和明确的promotion
+条件，不能删失败案例制造一张全绿报表。
+
+### 收敛到一个迭代顺序
+
+1. **保留现分支作为工作基础，main作为冻结基线。** 已生效修复有跨函数/
+   driver依赖，未经上述闭环移植控制就建议“从main重来”依据不足。
+   不整支合并；后续可把已验收的生产修复作为独立小补丁交付。
+2. **先接通生产可靠性判定。** 提升已有7个工程反例为正式回归，修逐步
+   六字段/双速度监测、输入校验、失败退出码、requested/applied强迫身份。
+   复用已存在的监测性质，不改变动力离散，不每步拷回全部GPU场。
+3. **再逐项修旧链的物理一致性。** 每个修复必须对应独立源/算子控制、
+   实际L/N/L完整步及冻结生产基线；不顺手变更坐标、网格、强迫或参数。
+4. **候选研究维持隔离。** 若下一轮授权时间诊断，只在原失败轨迹锚点
+   分离有限步映射、支持/限幅切换与阶段一致性；根因未证实前不扩大模块。
+5. **最后才扩大真实积分和外部资格。** 工程/完整步/重启控制通过后按
+   固定配置推进长期、气候及预报评价；百年与超工业级均保持未完成。
+
+本轮新增交付是调用链/依赖/验收取舍，不是新的数值通过项；只更新本报告，
+不把研究进度当作生产进度，也不废置已验证的修复和反例。
