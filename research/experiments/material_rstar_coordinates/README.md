@@ -229,3 +229,29 @@ PDE order, full momentum/fast-slow coupling, ice or climate/forecast performance
 Local dense hat traces scale with column count times vertical-node-count squared;
 actual-grid GPU throughput and peak memory are not qualified. No production imports
 or default changes are made.
+
+## Physical point pressure accuracy and consistent kinetic mass
+
+`pressure_accuracy_protocol.json` registers all-node analytic hydrostatic controls,
+with independent five-point Gauss force functionals. Vertical isolation uses the
+exact centered angular derivative; horizontal isolation uses the exact hat
+projection. Physical point errors are also saved without subtracting a bias.
+Endpoints are never excluded from the qualification norm.
+
+```shell
+python research/experiments/material_rstar_coordinates/pressure_accuracy_audit.py --output results/rstar_pressure_lumped_new
+python research/experiments/material_rstar_coordinates/pressure_accuracy_audit.py --consistent-velocity --output results/rstar_pressure_consistent_new
+python research/experiments/material_rstar_coordinates/weak_momentum_audit.py --output results/rstar_weak_momentum_new
+```
+
+The first command intentionally fails the full-node vertical second-order gate
+although its pressure work/rest controls passed. Its force functional is correct;
+lumped velocity mass introduces endpoint point-force error. `weak_momentum.py`
+uses the actual consistent hat kinetic mass and the **same** weak transpose.
+This explicitly changes the local kinetic contract, not the pressure formula or
+domain. Registered vertical/horizontal operator order and recomputed work/rest
+controls pass on CPU and actual CUDA. Do not reuse the old diagonal power audit
+for this new mass: the new raw packets include independently assembled kinetic
+matrices. The old witness auditor is not an auditor for this kinetic contract.
+These gates do not qualify moving-mass momentum, bounded tracers, complete PDE
+order, fast-slow time coupling or a production factory.
