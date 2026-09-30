@@ -4,7 +4,15 @@ Only exact source/target nodes are supported in this first implementation.
 First-pass donor records describe the legacy horizontal-fill candidate, not
 complete reconstruction provenance. Any missing wet node fails strict mode.
 """
+import base64
+import binascii
+import hashlib
+import json
+import math
+import zipfile
+import zlib
 from collections import deque
+from io import BytesIO
 
 import numpy as np
 
@@ -180,10 +188,18 @@ def audit_woa_variable(raw, grid, *, variable, initial_field=None, max_records=1
     ]
     mapped = all(index is not None for index in indices)
     masks = {'raw_missing': raw_missing.copy(),
+             'target_wet': wet.copy(),
              'target_support_known': np.full(wet.shape, mapped, dtype=bool),
              'target_missing': np.zeros(wet.shape, dtype=bool)}
     report = {
         'schema': 'ocean.input_quality.v1', 'variable': variable,
+        'raw_shape_depth_lat_lon': list(data.shape),
+        'target_shape_lon_lat_depth': list(wet.shape),
+        'raw_missing_nodes': int(np.count_nonzero(raw_missing)),
+        'wet_nodes': int(np.count_nonzero(wet)),
+        'wet_columns': int(np.count_nonzero(wet.any(axis=-1))),
+        'target_source_indices_lon_lat_depth': (
+            [index.tolist() for index in indices] if mapped else None),
         'coordinate_mapping_supported': mapped,
         'grid_contract_verified': True,
         'source_format_identity_verified': identity_ok,
@@ -305,7 +321,166 @@ def validate_quality_fields(report):
 
 
 def enforce_strict_quality(report):
-    """Only a committed, supported report can pass the public strict gate."""
+    """Local variable support check only; use the bundle reader for artifacts."""
     if not isinstance(report, dict) or report.get('publication_state') != 'committed':
         raise ValueError('unsupported input quality: report is not committed')
     validate_quality_fields(report)
+
+
+_MAX_COMPRESSED_MASK_BYTES = 32 * 1024 * 1024
+_MAX_UNCOMPRESSED_MASK_BYTES = 128 * 1024 * 1024
+_MAX_REPORT_BYTES = 64 * 1024 * 1024
+_MASK_FIELDS = ('raw_missing', 'target_missing', 'target_support_known', 'target_wet')
+
+
+def _shape_field(report, name):
+    shape = report.get(name)
+    if (not isinstance(shape, list) or len(shape) != 3
+            or any(type(size) is not int or size <= 0 for size in shape)):
+        raise ValueError('unsupported bundle: invalid mask shape')
+    return tuple(shape)
+
+
+def _read_bounded_masks(content, expected_shapes, limit):
+    """Read only eight boolean NPY members after checking expansion/header bounds."""
+    masks = {}
+    with zipfile.ZipFile(BytesIO(content)) as archive:
+        members = archive.infolist()
+        expected = {key + '.npy' for key in expected_shapes}
+        if (len(members) != len(expected) or {item.filename for item in members} != expected
+                or sum(item.file_size for item in members) > limit):
+            raise ValueError('unsupported bundle: mask members or expansion limit')
+        for item in members:
+            if (item.flag_bits & 1 or item.compress_type not in
+                    (zipfile.ZIP_STORED, zipfile.ZIP_DEFLATED)):
+                raise ValueError('unsupported bundle: mask compression')
+            # Central-directory size is checked first, and actual reads are bounded.
+            with archive.open(item) as stream:
+                member = stream.read(item.file_size + 1)
+            if len(member) != item.file_size:
+                raise ValueError('unsupported bundle: mask member length')
+            buffer = BytesIO(member)
+            version = np.lib.format.read_magic(buffer)
+            if version == (1, 0):
+                shape, _, dtype = np.lib.format.read_array_header_1_0(buffer)
+            elif version == (2, 0):
+                shape, _, dtype = np.lib.format.read_array_header_2_0(buffer)
+            else:
+                raise ValueError('unsupported bundle: NPY version')
+            key = item.filename[:-4]
+            if (dtype != np.dtype(bool) or shape != expected_shapes[key]
+                    or math.prod(shape) > limit
+                    or buffer.tell() + math.prod(shape) != len(member)):
+                raise ValueError('unsupported bundle: mask dtype, shape or payload')
+            # Bool payload must be canonical, not arbitrary nonzero bytes.
+            if any(value > 1 for value in memoryview(member)[buffer.tell():]):
+                raise ValueError('unsupported bundle: noncanonical boolean mask')
+            buffer.seek(0)
+            masks[key] = np.load(buffer, allow_pickle=False)
+    return masks
+
+
+def enforce_strict_quality_bundle(bundle, *,
+                                  max_compressed_bytes=_MAX_COMPRESSED_MASK_BYTES,
+                                  max_uncompressed_bytes=_MAX_UNCOMPRESSED_MASK_BYTES):
+    """Validate this v2 artifact contract and return masks; no scientific qualification.
+
+    Limits bound compressed bytes, total ZIP expansion and NPY array allocation.
+    This is a narrow format/integrity check, not a general hostile-input sandbox.
+    """
+    for limit in (max_compressed_bytes, max_uncompressed_bytes):
+        if type(limit) is not int or limit <= 0:
+            raise ValueError('unsupported bundle: invalid size limit')
+    if (not isinstance(bundle, dict)
+            or bundle.get('schema') != 'ocean.input_quality_bundle.v2'
+            or bundle.get('publication_state') != 'committed'):
+        raise ValueError('unsupported bundle: schema or publication state')
+    variables = bundle.get('variables')
+    if not isinstance(variables, dict) or set(variables) != {'T', 'S'}:
+        raise ValueError('unsupported bundle: T/S variable identities')
+    shapes = {}
+    for label, report in variables.items():
+        enforce_strict_quality(report)
+        if report.get('variable') != label:
+            raise ValueError('unsupported bundle: variable identity mismatch')
+        raw_shape = _shape_field(report, 'raw_shape_depth_lat_lon')
+        target_shape = _shape_field(report, 'target_shape_lon_lat_depth')
+        shapes.update({f'{label}_{name}': raw_shape if name == 'raw_missing' else target_shape
+                       for name in _MASK_FIELDS})
+    if shapes['T_target_wet'] != shapes['S_target_wet']:
+        raise ValueError('unsupported bundle: T/S target shapes differ')
+    artifact = bundle.get('private_mask_artifact')
+    if not isinstance(artifact, dict) or artifact.get('storage') != 'embedded_npz_base64':
+        raise ValueError('unsupported bundle: mask storage')
+    encoded = artifact.get('content_base64')
+    if (not isinstance(encoded, str) or len(encoded) > 4 * ((max_compressed_bytes + 2) // 3)
+            or type(artifact.get('bytes')) is not int
+            or not 0 < artifact['bytes'] <= max_compressed_bytes):
+        raise ValueError('unsupported bundle: compressed mask limit or length')
+    try:
+        content = base64.b64decode(encoded, validate=True)
+        if (len(content) != artifact['bytes'] or len(content) > max_compressed_bytes
+                or hashlib.sha256(content).hexdigest() != artifact.get('sha256')):
+            raise ValueError('unsupported bundle: mask bytes or hash mismatch')
+        masks = _read_bounded_masks(content, shapes, max_uncompressed_bytes)
+    except (binascii.Error, zipfile.BadZipFile, EOFError, UnicodeError, OSError,
+            zlib.error, NotImplementedError, RuntimeError) as error:
+        raise ValueError('unsupported bundle: invalid embedded masks') from error
+    for label, report in variables.items():
+        raw_missing = masks[f'{label}_raw_missing']
+        wet = masks[f'{label}_target_wet']
+        missing = masks[f'{label}_target_missing']
+        known = masks[f'{label}_target_support_known']
+        indices = report.get('target_source_indices_lon_lat_depth')
+        if not isinstance(indices, list) or len(indices) != 3:
+            raise ValueError('unsupported bundle: missing exact-node mapping')
+        for axis, index in enumerate(indices):
+            raw_axis = (2, 1, 0)[axis]
+            if (not isinstance(index, list) or len(index) != wet.shape[axis]
+                    or any(type(value) is not int or not 0 <= value < raw_missing.shape[raw_axis]
+                           for value in index) or len(set(index)) != len(index)):
+                raise ValueError('unsupported bundle: invalid exact-node mapping')
+        ii, jj, kk = indices
+        if not np.array_equal(missing, raw_missing[np.ix_(kk, jj, ii)].transpose(2, 1, 0)):
+            raise ValueError('unsupported bundle: raw/target missing masks disagree')
+        affected = wet & missing
+        counts = {
+            'wet_nodes': int(np.count_nonzero(wet)),
+            'wet_columns': int(np.count_nonzero(wet.any(axis=-1))),
+            'raw_missing_nodes': int(np.count_nonzero(raw_missing)),
+            'missing_wet_nodes': int(np.count_nonzero(affected)),
+            'unsupported_wet_columns': int(np.count_nonzero(affected.any(axis=-1))),
+            'all_missing_wet_columns': int(np.count_nonzero(
+                wet.any(axis=-1) & np.all(missing | ~wet, axis=-1))),
+        }
+        if (not known.all() or np.any(np.diff(wet.astype(np.int8), axis=-1) > 0)
+                or any(type(report.get(key)) is not int or report[key] != value
+                       for key, value in counts.items())):
+            raise ValueError('unsupported bundle: mask/count contradiction')
+    if not np.array_equal(masks['T_target_wet'], masks['S_target_wet']):
+        raise ValueError('unsupported bundle: T/S wet masks differ')
+    return masks
+
+
+def _unique_json_object(pairs):
+    result = {}
+    for key, value in pairs:
+        if key in result:
+            raise ValueError('unsupported bundle: duplicate JSON key')
+        result[key] = value
+    return result
+
+
+def load_strict_quality_bundle(path, *, max_report_bytes=_MAX_REPORT_BYTES, **limits):
+    """Bound file reading, validate the complete v2 bundle, return report and masks."""
+    if type(max_report_bytes) is not int or max_report_bytes <= 0:
+        raise ValueError('unsupported bundle: invalid report size limit')
+    with open(path, 'rb') as stream:
+        content = stream.read(max_report_bytes + 1)
+    if len(content) > max_report_bytes:
+        raise ValueError('unsupported bundle: report size limit')
+    try:
+        bundle = json.loads(content, object_pairs_hook=_unique_json_object)
+    except (UnicodeError, json.JSONDecodeError) as error:
+        raise ValueError('unsupported bundle: invalid JSON') from error
+    return bundle, enforce_strict_quality_bundle(bundle, **limits)

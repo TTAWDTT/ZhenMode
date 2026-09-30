@@ -11,7 +11,11 @@ from tempfile import TemporaryDirectory
 import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'src'))
-from input_quality import audit_woa_variable, validate_quality_fields  # noqa: E402
+from input_quality import (  # noqa: E402
+    audit_woa_variable,
+    load_strict_quality_bundle,
+    validate_quality_fields,
+)
 from input_sources import (  # noqa: E402
     InputSnapshot,
     load_climatology_snapshot,
@@ -47,6 +51,8 @@ def publish_sidecar(report, masks, output, masks_path, snapshots):
             quality['publication_state'] = 'committed'
         with staged_report.open('x', encoding='utf-8') as stream:
             json.dump(report, stream, indent=2, allow_nan=False)
+        if report['mode'] == 'strict':
+            load_strict_quality_bundle(staged_report)
         # Final snapshot check follows all serialization; only the private
         # staging copy can contain a committed marker before this succeeds.
         for snapshot in snapshots:

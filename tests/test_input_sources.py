@@ -341,3 +341,21 @@ def test_packed_netcdf_valid_decoded_value_equal_to_encoded_fill_is_preserved(tm
     assert not masks['raw_missing'].any()
     report['publication_state'] = 'committed'
     enforce_strict_quality(report)
+
+
+def test_bundle_reader_rejects_failed_top_level(tmp_path):
+    from input_quality import enforce_strict_quality_bundle
+    assert cli().main(write_inputs(tmp_path)) == 0
+    report = json.loads((tmp_path / 'quality.json').read_text())
+    report['publication_state'] = 'failed'
+    with pytest.raises(ValueError):
+        enforce_strict_quality_bundle(report)
+
+
+def test_bundle_reader_rejects_invalid_base64(tmp_path):
+    from input_quality import enforce_strict_quality_bundle
+    assert cli().main(write_inputs(tmp_path)) == 0
+    report = json.loads((tmp_path / 'quality.json').read_text())
+    report['private_mask_artifact']['content_base64'] = '@invalid'
+    with pytest.raises(ValueError):
+        enforce_strict_quality_bundle(report)

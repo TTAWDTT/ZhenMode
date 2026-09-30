@@ -185,3 +185,50 @@ no-clobber competition for the final JSON, publication failure with an unrelated
 user mask, and successful embedded-mask byte/hash recovery. Earlier scientific
 fill results, thresholds, donor limitations and missing historical hashes remain
 unchanged. No private input arrays were added to this repository.
+
+
+## 2026-09-30 Correction: strict bundle reader integrity
+
+Consumers must use the complete reader rather than validating each variable alone:
+
+```python
+from input_quality import load_strict_quality_bundle
+report, masks = load_strict_quality_bundle("quality.json")
+```
+
+`enforce_strict_quality_bundle(report)` is the corresponding already-parsed
+mapping entry point. `enforce_strict_quality(variable_report)` checks local
+variable support only; it does not validate a bundle or its embedded artifact.
+The strict CLI validates its serialized private staging JSON with the complete
+reader before final input-snapshot checks and atomic publication.
+
+The bundle reader requires v2, committed top-level and variable states, exactly
+T/S with matching roles, supported metadata/counts, valid base64, compressed byte
+length and SHA256, exactly eight boolean NPY masks, expected 3D shapes and
+canonical boolean payloads. New masks include each variable's target wet mask;
+reports record raw/target shapes, raw missing count, wet counts and exact-node
+source indices. It verifies source-to-target missing-mask mapping, known support,
+wet prefixes, per-variable missing/all-missing/unsupported counts and identical
+T/S wet geometry. Old v2 artifacts missing these fields fail closed and must be
+regenerated; original archives are not modified.
+
+Defaults limit report reads to 64 MiB, compressed NPZ to 32 MiB and total ZIP
+member expansion to 128 MiB. ZIP member count/names, compression and expansion
+are checked before reading; NPY headers, shapes, bool dtype and actual payload
+length are checked before NumPy allocation. Callers may explicitly choose other
+positive bounds; limits describe payload sizes, not total process RSS. Only
+stored/deflated ZIP and NPY v1/v2 are supported, with pickle disabled. JSON keys
+must be unique. Unsupported input is refused rather than repaired.
+
+This is narrow artifact format and internal-consistency validation, not generic
+safe parsing, source authenticity or scientific qualification. A party able to
+rewrite all fields and hashes can fabricate a consistent report; the reader has
+no signed provenance or original arrays. It does not resolve historical raw-hash
+gaps, incomplete donor lineage or physical validity of the southern boundary.
+
+Validation: 96 focused tests passed in 2.65s; full-repository ruff passed. Tests
+include successful mapping/file round trips, failed top/variable states, swapped
+T/S, corrupt base64/bytes/hash, recomputed-hash mask/key/dtype/shape/count
+contradictions, size bounds before allocation, forged huge NPY headers and
+duplicate JSON keys. The earlier publication/source-change tests remain passing.
+No solver step or scientific fill change was introduced.
