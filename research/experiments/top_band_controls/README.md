@@ -97,9 +97,13 @@ At this depth the analytic fixed/merge/moving pressure errors are respectively
 that moving-interface pressure generally fails: the moving P0 integral is
 exact here and differs from an inaccurate fixed P0 integral. A common physical
 depth scan covers -2 to -20 m. A linear-only reconstruction fitted from exact
-active physical means has zero pseudoforce to roundoff on that scan; non-affine
-density is explicitly rejected rather than silently advertised as general
-well balancing. This is a matched linear control, not a complete pressure
+active physical means has zero pseudoforce to roundoff on that scan. Only
+discrete means inconsistent with an affine fit can be rejected. Two distinct
+active means always fit a line and cannot identify curvature of the underlying
+physical profile. Exact merged means of T(z)=20+.01z² are accepted despite
+nonzero pressure error against its analytic integral (retained negative
+capability control). Equal-column zero force also cannot certify pressure
+accuracy. This is a matched linear control, not a complete pressure
 solver. Neither component is qualified for original-FD coupled use.
 
 ## Counterflow and strict restart/rejection limits
@@ -130,7 +134,7 @@ creates a missing neighbor are made.
 
 ## Validation, costs and next decision
 
-40 bounded CPU tests pass: four inventories, analytic kinetic loss/mixing,
+41 bounded CPU tests pass: four inventories, analytic kinetic loss/mixing,
 uniform means, sources, stable initial stratification/shear, pressure negative
 control and scan/linear match, eight restart placements, strict damaged
 checkpoint controls, opposed-flow loss, one-sided/invalid-entry/outflow

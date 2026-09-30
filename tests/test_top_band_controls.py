@@ -1,5 +1,7 @@
 """Isolated FV falsifications, not original FD or real one-degree acceptance."""
 import importlib.util
+import json
+import subprocess
 import sys
 from pathlib import Path
 
@@ -230,10 +232,26 @@ def test_common_depth_scan_and_linear_matched_control():
     assert abs(at_four["p0_error_Pa"]["moving"]) < 1e-10
 
 
-def test_linear_control_rejects_nonaffine_density():
+def test_linear_control_rejects_inconsistent_discrete_means():
     state = m.initial()
     with pytest.raises(ValueError, match="non-affine"):
         m.pressure_linear_at(state, -4)
+
+
+def test_two_merged_means_cannot_identify_true_quadratic_curvature(tmp_path):
+    result = m.quadratic_two_mean_control()
+    assert result["fit_accepted"] and result["active_means_per_column"] == 2
+    assert not result["qualification_passed"]
+    assert all(abs(error) > 1e-6 for error in result["fit_pressure_error_Pa"])
+    # Independently integrate the density anomaly corresponding to .01*z².
+    exact = m.RHO0 * m.GRAVITY * -2 - m.GRAVITY * m.RHO0 * 2e-6 * 56 / 3
+    assert_roundoff(result["analytic_pressure_Pa"], exact, abs(exact))
+    output = tmp_path / "audit"
+    subprocess.run([sys.executable, str(PATH.with_name("audit.py")), "--output", str(output)],
+                   check=True, capture_output=True, text=True, timeout=60)
+    report = json.loads((output / "report.json").read_text())
+    assert not report["qualification_passed"] and not report["pressure_reconstruction_qualified"]
+    assert report["quadratic_two_mean_negative_capability"]["fit_accepted"]
 
 
 def test_counterflow_aggregation_erases_resolved_tracer_exchange():

@@ -240,7 +240,9 @@ def pressure_linear_at(state, depth):
     """Linear-profile-only reconstruction from exact physical cell means.
 
     Fit anomaly=a*z+b to ACTIVE cell centers and integrate analytically. Reject
-    non-affine profiles; this is a matched control, not general well balancing.
+    discrete means inconsistent with that fit, not all curved physical profiles.
+    Any two distinct means fit a line; merge cannot detect underlying curvature.
+    This is a matched control, not general well balancing.
     """
     z, c = edges(state), means(state)
     result = RHO0 * GRAVITY * state.eta
@@ -254,7 +256,7 @@ def pressure_linear_at(state, depth):
         design = np.column_stack((centers, np.ones_like(centers)))
         slope, intercept = np.linalg.lstsq(design, values, rcond=None)[0]
         if np.any(np.abs(design @ [slope, intercept] - values) > 64 * np.finfo(float).eps * (1 + np.abs(values))):
-            raise ValueError("non-affine density outside linear control")
+            raise ValueError("non-affine discrete means outside linear control")
         eta = state.eta[column]
         result[column] += GRAVITY * (.5 * slope * (eta**2 - depth**2) + intercept * (eta - depth))
     return result
@@ -296,3 +298,21 @@ def counterflow():
     return {"layer_q_m3_per_s": q.tolist(), "column_q_m3_per_s": float(q.sum()),
             "resolved_T_S_u_v_exchange_per_s": resolved.tolist(),
             "merged_T_S_u_v_exchange_per_s": (next_state.n[1].sum(axis=0) - merged.n[1].sum(axis=0)).tolist()}
+
+
+def quadratic_two_mean_control():
+    """Exact means of T(z)=20+.01*z² evade a two-mean affine-fit check."""
+    state = State(target_h(np.full(2, -2.), "merge"), np.zeros((2, 3, 4)), "merge")
+    z = edges(state)
+    c = np.zeros_like(state.n)
+    c[..., 0] = 20 + .01 * (z[:, :-1]**2 + z[:, :-1] * z[:, 1:] + z[:, 1:]**2) / 3
+    c[..., 1] = 35.
+    state.n = state.h[..., None] * c
+    depth, eta = -4., -2.
+    fitted = pressure_linear_at(state, depth)
+    exact = RHO0 * GRAVITY * eta - GRAVITY * RHO0 * 2e-6 * (eta**3 - depth**3) / 3
+    return {"physical_temperature_profile": "20+.01*z^2", "active_means_per_column": 2,
+            "fit_accepted": True, "common_depth_m": depth,
+            "analytic_pressure_Pa": exact, "fit_pressure_error_Pa": (fitted - exact).tolist(),
+            "qualification_passed": False,
+            "limitation": "Two means cannot identify physical curvature; zero intercolumn force does not establish accurate pressure."}

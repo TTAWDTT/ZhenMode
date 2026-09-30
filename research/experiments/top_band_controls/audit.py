@@ -73,7 +73,8 @@ def main():
             "final_active_means": m.means(state)[state.h > 0].tolist()}
     report["pressure_counterexample_m_per_s2"] = m.pressure_counterexample()
     report["pressure_common_depth_scan"] = m.pressure_scan()
-    report["pressure_conclusion"] = "Mixed P0 reconstruction counterexample only; moving error is zero at -4m. Linear matched control is not a general pressure scheme."
+    report["pressure_conclusion"] = "Mixed P0 reconstruction counterexample only; moving error is zero at -4m. Affine fit tests discrete means only; two means cannot detect physical curvature. Not a general pressure scheme."
+    report["quadratic_two_mean_negative_capability"] = m.quadratic_two_mean_control()
     report["opposed_layer_exchange_counterexample"] = m.counterflow()
     report["rejection_scope"] = {"absent_neighbor_and_negative_band_entries": "invalid input controls",
                                   "valid_input_exhaustion_request": "outflow_cfl rejects first; exhaustion operator not exercised"}

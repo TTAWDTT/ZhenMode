@@ -5,9 +5,9 @@
     "billing_cost": "not_visible",
     "device": "CPU",
     "numpy": "2.5.3",
-    "peak_rss_KiB_linux": 27152,
+    "peak_rss_KiB_linux": 27084,
     "python": "3.12.14",
-    "wall_s": 0.020955398998921737
+    "wall_s": 0.018813864999174257
   },
   "coupled_ocean_steps": 0,
   "opposed_layer_exchange_counterexample": {
@@ -272,12 +272,25 @@
       }
     }
   ],
-  "pressure_conclusion": "Mixed P0 reconstruction counterexample only; moving error is zero at -4m. Linear matched control is not a general pressure scheme.",
+  "pressure_conclusion": "Mixed P0 reconstruction counterexample only; moving error is zero at -4m. Affine fit tests discrete means only; two means cannot detect physical curvature. Not a general pressure scheme.",
   "pressure_counterexample_m_per_s2": {
     "merge": -1.4715000000007155e-06,
     "moving": 4.414499999998597e-06
   },
   "pressure_reconstruction_qualified": false,
+  "quadratic_two_mean_negative_capability": {
+    "active_means_per_column": 2,
+    "analytic_pressure_Pa": -20110.875396,
+    "common_depth_m": -4.0,
+    "fit_accepted": true,
+    "fit_pressure_error_Pa": [
+      1.2870719999991707,
+      1.2870719999991707
+    ],
+    "limitation": "Two means cannot identify physical curvature; zero intercolumn force does not establish accurate pressure.",
+    "physical_temperature_profile": "20+.01*z^2",
+    "qualification_passed": false
+  },
   "qualification_passed": false,
   "real_inputs_used": false,
   "rejection_scope": {
@@ -686,9 +699,9 @@
   },
   "scope": "synthetic_prescribed_transport_FV_component",
   "sha256": {
-    "audit.py": "05a38722c627b142af21270d9ccce51971bab31049b18eaef698ed9a98231777",
-    "component.py": "f01d954c011e1ffddc5d45dd1057201b36d7cd89b1437fb2588c0b428d7bb2db",
+    "audit.py": "d85e3013f9a0ffd995cef696e67ae6bd9ced1a24af9a1834bacc670da6357f75",
+    "component.py": "1f750de1d9dcd8bc7e9ab0d7790a31040a28cbb9b873e3cf5ede4d1c07a7906d",
     "config.json": "32e04ed69476f3a8034690b533bd8ea6a8eb32285d957af6e869239c80e53712",
-    "test_top_band_controls.py": "18a3d983643b2a72334aef40d71d0b2298f4ec623a09a5439b1f255dd3ecc6f2"
+    "test_top_band_controls.py": "247dc8d7f05e32b4a74fdbfa7dcbb8925c221040636122af5b42cea291fa5861"
   }
 }
