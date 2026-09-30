@@ -298,3 +298,34 @@ point-precision-weighted oracle scale are retained too; runtime physical bounds,
 inventory/decomposition and original pressure gates are not relaxed.
 No time-order, full moving-mass momentum, full source/diffusion suite, production
 factory/restart, real day7/30 or industrial qualification follows from these stages.
+
+## Time candidate: partial success, moving-limiter gate fails
+
+`weak_time.py` evaluates prescribed fields at the original and updated stage
+time/state/geometry, then combines **consistent content and surface**, not node
+values at a different mass. The actual per-column mass is affine in surface, so
+the final decoded state is a mass-weighted convex combination. Either-stage
+refusal rolls back original bytes; the source ledger is the mean of the two
+actual stage content injections. These contracts have independent Gauss mass,
+source, dry-byte and refusal controls.
+
+```shell
+python -m pytest tests/test_rstar_weak_time.py tests/test_rstar_weak_bounded.py -q
+python research/experiments/material_rstar_coordinates/weak_time_audit.py --output results/rstar_time_new
+```
+
+The second command currently **exits 1**: `weak_time_protocol.json` registers
+both Fourier and moving active-limiter time gates. Full-node flat smooth Fourier
+transport shows order approximately 2; the Euler negative control shows order 1.
+On the unchanged variable-bed/surface signed and pulse controls, the measured
+coarse-to-reference orders are only about 0.77/1.16 and 0.62/0.86, respectively,
+on CPU and CUDA. The two-reference resolution checks pass, but the order gates
+do not. The 38 positive regression tests qualify composition/source/rollback and
+the Fourier control, **not** those failed moving-branch time gates.
+
+Keep the candidate out of production. The original frozen-field signed Euler
+map is affine in duration within its stock roundoff scale, so a blanket claim
+that moving mass alone necessarily adds a non-Euler quadratic term is not
+supported. Next isolate changing overlap/bound support and limiter switching,
+then rerun the original time matrix; do not relax the gate or claim full PDE,
+fast-slow/momentum, energy/entropy or industrial qualification.
