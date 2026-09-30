@@ -10,6 +10,7 @@ import numpy as np
 RHO0 = 1025.0
 GRAVITY = 9.81
 CFL_LIMIT = 0.5
+CHECKPOINT_VERSION = 1
 
 
 @dataclass
@@ -28,16 +29,28 @@ class State:
 
 
 def valid(state):
-    if not isinstance(state.step, (int, np.integer)) or state.step < 0:
+    if (isinstance(state.step, (bool, np.bool_))
+            or not isinstance(state.step, (int, np.integer)) or state.step < 0):
         return False
     if state.h.shape != (2, 3) or state.n.shape != (2, 3, 4):
         return False
+    if state.h.dtype != np.float64 or state.n.dtype != np.float64:
+        return False
     if not np.isfinite(state.h).all() or not np.isfinite(state.n).all():
+        return False
+    if not np.isfinite(state.eta).all() or not np.all(state.h[:, 2] == 10.0):
         return False
     if state.scheme == "merge":
         return (np.all(state.h[:, 0] == 0) and np.all(state.n[:, 0] == 0)
                 and np.all(state.h[:, 1:] > 0))
-    return state.scheme in {"fixed", "moving", "lagrangian"} and np.all(state.h > 0)
+    if not np.all(state.h > 0):
+        return False
+    if state.scheme == "fixed":
+        return np.all(state.h[:, 1] == 7.5)
+    if state.scheme == "moving":
+        band = state.h[:, :2].sum(axis=1)
+        return np.all(np.abs(state.h[:, 0] - .25 * band) <= 64 * np.finfo(float).eps * band)
+    return state.scheme == "lagrangian"
 
 
 def means(state):
@@ -148,12 +161,29 @@ def initial(uniform=False):
 
 
 def save(state, path):
-    np.savez(path, h=state.h, n=state.n, scheme=np.array(state.scheme), step=np.array(state.step))
+    if not valid(state) or state.scheme == "lagrangian":
+        raise ValueError("checkpoint requires valid completed target geometry")
+    np.savez(path, h=state.h, n=state.n, scheme=np.array(state.scheme), step=np.array(state.step),
+             schema_version=np.array(CHECKPOINT_VERSION))
 
 
 def load(path):
     with np.load(path, allow_pickle=False) as packet:
-        return State(packet["h"].copy(), packet["n"].copy(), str(packet["scheme"]), int(packet["step"]))
+        if set(packet.files) != {"h", "n", "scheme", "step", "schema_version"}:
+            raise ValueError("checkpoint keys do not match schema")
+        for key in ("step", "schema_version"):
+            value = packet[key]
+            if value.shape != () or value.dtype.kind not in "iu":
+                raise ValueError(f"{key} must be an integer scalar")
+        if packet["schema_version"].item() != CHECKPOINT_VERSION:
+            raise ValueError("unsupported checkpoint version")
+        scheme = packet["scheme"]
+        if scheme.shape != () or scheme.dtype.kind != "U":
+            raise ValueError("scheme must be a Unicode scalar")
+        state = State(packet["h"].copy(), packet["n"].copy(), scheme.item(), packet["step"].item())
+    if not valid(state) or state.scheme == "lagrangian":
+        raise ValueError("invalid checkpoint state or completed geometry")
+    return state
 
 
 def stationary_profile(h):
@@ -204,3 +234,65 @@ def pressure_counterexample():
         acceleration = -(pressure[1] - pressure[0]) / (RHO0 * 1000.0)
         results[scheme] = float(acceleration)
     return results
+
+
+def pressure_linear_at(state, depth):
+    """Linear-profile-only reconstruction from exact physical cell means.
+
+    Fit anomaly=a*z+b to ACTIVE cell centers and integrate analytically. Reject
+    non-affine profiles; this is a matched control, not general well balancing.
+    """
+    z, c = edges(state), means(state)
+    result = RHO0 * GRAVITY * state.eta
+    anomaly = RHO0 * (-2e-4 * (c[..., 0] - 20) + 8e-4 * (c[..., 1] - 35))
+    for column in range(2):
+        active = state.h[column] > 0
+        centers = .5 * (z[column, :-1] + z[column, 1:])[active]
+        values = anomaly[column, active]
+        if centers.size < 2:
+            raise ValueError("linear control requires at least two physical means")
+        design = np.column_stack((centers, np.ones_like(centers)))
+        slope, intercept = np.linalg.lstsq(design, values, rcond=None)[0]
+        if np.any(np.abs(design @ [slope, intercept] - values) > 64 * np.finfo(float).eps * (1 + np.abs(values))):
+            raise ValueError("non-affine density outside linear control")
+        eta = state.eta[column]
+        result[column] += GRAVITY * (.5 * slope * (eta**2 - depth**2) + intercept * (eta - depth))
+    return result
+
+
+def pressure_scan():
+    """Common depths, same analytic stationary physical density in all grids."""
+    result = []
+    eta = np.full(2, -2.0)
+    for depth in (-2., -2.25, -2.5, -3., -4., -5., -7., -10., -15., -20.):
+        exact = RHO0 * GRAVITY * -2 + GRAVITY * RHO0 * 1e-4 * (depth**2 - 4) / 2
+        row = {"common_depth_m": depth, "analytic_pressure_Pa": exact,
+               "p0_error_Pa": {}, "linear_error_Pa": {}, "p0_mixed_acceleration_m_per_s2": {},
+               "linear_mixed_acceleration_m_per_s2": {}}
+        for scheme in ("fixed", "merge", "moving"):
+            h = np.stack((target_h(eta, "fixed")[0], target_h(eta, scheme)[0]))
+            profile = stationary_profile(h)
+            p0, linear = pressure_at(profile, depth), pressure_linear_at(profile, depth)
+            row["p0_error_Pa"][scheme] = float(p0[1] - exact)
+            row["linear_error_Pa"][scheme] = float(linear[1] - exact)
+            row["p0_mixed_acceleration_m_per_s2"][scheme] = float(-(p0[1] - p0[0]) / (RHO0 * 1000))
+            row["linear_mixed_acceleration_m_per_s2"][scheme] = float(-(linear[1] - linear[0]) / (RHO0 * 1000))
+        result.append(row)
+    return result
+
+
+def counterflow():
+    """Equal column transport does not imply equal resolved layer exchange."""
+    state = initial()
+    q = np.array([.1, -.1, 0.])
+    donor = np.where((q >= 0)[:, None], means(state)[0], means(state)[1])
+    resolved = np.sum(q[:, None] * donor, axis=0)
+    merged, ok, _ = remap(state, "merge")
+    if not ok:
+        raise RuntimeError("counterflow conversion failed")
+    next_state, ok, _ = advance(merged, q, np.zeros((2, 3, 4)))
+    if not ok:
+        raise RuntimeError("counterflow update failed")
+    return {"layer_q_m3_per_s": q.tolist(), "column_q_m3_per_s": float(q.sum()),
+            "resolved_T_S_u_v_exchange_per_s": resolved.tolist(),
+            "merged_T_S_u_v_exchange_per_s": (next_state.n[1].sum(axis=0) - merged.n[1].sum(axis=0)).tolist()}

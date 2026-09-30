@@ -64,18 +64,21 @@ This is not the original solver restart contract or a cross-process test.
 
 ## Retained quality losses and failed pressure qualification
 
-The total conversion kinetic-energy loss for merge is **5354.82421875 J**,
+At the explicitly fixed area **1 m² per column**, the total conversion
+kinetic-energy loss for merge is **5354.82421875 J**,
 matching the independently evaluated sum over columns of
 `m0*m1/(2*(m0+m1))*|u0-u1|²`, including both velocity components.
 Temperature variance drops 1251.875→1158.125 at conversion; salt and momentum
-content totals remain conserved. Total inventory alone hides this irreversible
+content totals remain conserved: heat/salt inventory is NOT lost, whereas
+profile variance/information is lost. Total inventory alone hides this irreversible
 mixing. Moving conversion at the initial eta=0 has zero loss, since its initial
 grid is the same; later transport/remap is dissipative.
 
 After the common cycle, additional kinetic losses are about68.89074 J (merge)
-and2730.86974 J (moving). Relative to each converted initial state, maximum
-content changes are about2.64706 and3.82255 (mixed field units); final active
-means are preserved in report.json. These are reported errors/losses, not
+and2730.86974 J (moving). Report.json now lists each T/S/u/v content error
+separately, with its unit and maxabs converted-initial-content normalization.
+The old mixed-unit cycle_content_maxabs is removed and cannot rank schemes.
+Final active means are preserved. These are reported errors/losses, not
 required byte reversibility of a lossy cycle. Geometry returns; profiles do not.
 The cycle losses combine donor advection and remapping and do not isolate a
 causal remap contribution. Do not rank physical quality from this one fixture.
@@ -89,17 +92,50 @@ but fixed-versus-merge gives -1.4715e-6 m/s² and fixed-versus-moving gives
 +4.4145e-6 m/s². Identical target grids give zero force. These are explicitly
 **diagnostic P0 reconstruction forces, not measured original FD forces**.
 The heterogeneous topology is not supported by the transport component.
-This counterexample prevents promoting a simple cell-mean pressure formula
-to a coupled scheme; it does not prove every ALE or merge method impossible.
-Both pressure qualifications and overall ocean qualifications remain false.
+At this depth the analytic fixed/merge/moving pressure errors are respectively
+4.5248625/6.03315/0 Pa. Thus the mixed-force observation does not establish
+that moving-interface pressure generally fails: the moving P0 integral is
+exact here and differs from an inaccurate fixed P0 integral. A common physical
+depth scan covers -2 to -20 m. A linear-only reconstruction fitted from exact
+active physical means has zero pseudoforce to roundoff on that scan; non-affine
+density is explicitly rejected rather than silently advertised as general
+well balancing. This is a matched linear control, not a complete pressure
+solver. Neither component is qualified for original-FD coupled use.
+
+## Counterflow and strict restart/rejection limits
+
+The same COLUMN flux is not the same layered exchange. With q=[.1,-.1,0]
+m³/s the net column flux is0, but fine-layer donors exchange0.6 m³·K/s of
+temperature content. Aggregating q before coarse donor evaluation makes this
+exchange0. This is a retained loss-of-information counterexample, not an
+implementation error solved by inventory conservation. Salt and momentum
+exchange differences are also reported. Closed whole-domain inventories can
+still close while the individual columns evolve differently.
+
+Checkpoint schema_version=1 must match exactly; step/version are integer
+scalars (no floats, booleans or truncation), scheme is a scalar Unicode value,
+and shape, float64 dtype, finite arrays, inactive slots, positive volume,
+fixed bottom and scheme-specific geometry are validated. Only completed target
+states can be saved/restored. Missing keys, unsupported version, bad metadata,
+damaged bytes and inconsistent geometry are negative tests. This remains an
+isolated component format, not the original solver's geometry-history restart.
+
+Rollback assertions compare BOTH returned state and original argument against
+a deep snapshot captured BEFORE the call. Missing neighbor and negative-band
+tests are invalid ENTRY tests, not evidence of disappearance in an accepted
+trajectory. From valid regular/thin-band states, a request that would exhaust
+the band is rejected first by the declared outflow CFL; the later geometry
+exhaustion branch is not exercised. No claims that accepted donor evolution
+creates a missing neighbor are made.
 
 ## Validation, costs and next decision
 
-20 bounded CPU tests pass: four inventories, analytic kinetic loss/mixing,
+40 bounded CPU tests pass: four inventories, analytic kinetic loss/mixing,
 uniform means, sources, stable initial stratification/shear, pressure negative
-control, eight restart placements, one-sided/missing-neighbor/exhaustion/outflow
-rejections and byte rollback. Linux Python3.12.14/NumPy2.5.3: pytest0.19 s;
-measured wrapper0.417 s, child peakRSS38596 KiB. Audit0.00811 s, peakRSS25508 KiB.
+control and scan/linear match, eight restart placements, strict damaged
+checkpoint controls, opposed-flow loss, one-sided/invalid-entry/outflow
+rejections and snapshot byte rollback. Final cost/logs are in evidence/;
+Linux Python3.12.14/NumPy2.5.3, CPU, bounded60 s timeout.
 No GPU, external science download or paid API; billing cost is unavailable.
 The timing wrapper initially lacked /usr/bin/time; the retained final costs
 use Python resource/subprocess instead. Ruff and whitespace checks pass.

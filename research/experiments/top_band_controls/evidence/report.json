@@ -1,14 +1,278 @@
 {
+  "area_m2": 1.0,
   "base": "82e1ca4a2158d4c0ed20f91c04e80cdf43f8a36b",
   "cost": {
     "billing_cost": "not_visible",
     "device": "CPU",
     "numpy": "2.5.3",
-    "peak_rss_KiB_linux": 25508,
+    "peak_rss_KiB_linux": 27152,
     "python": "3.12.14",
-    "wall_s": 0.008110421000310453
+    "wall_s": 0.020955398998921737
   },
   "coupled_ocean_steps": 0,
+  "opposed_layer_exchange_counterexample": {
+    "column_q_m3_per_s": 0.0,
+    "layer_q_m3_per_s": [
+      0.1,
+      -0.1,
+      0.0
+    ],
+    "merged_T_S_u_v_exchange_per_s": [
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "resolved_T_S_u_v_exchange_per_s": [
+      0.5999999999999999,
+      -0.1200000000000001,
+      0.17500000000000002,
+      -0.020000000000000004
+    ]
+  },
+  "pressure_common_depth_scan": [
+    {
+      "analytic_pressure_Pa": -20110.5,
+      "common_depth_m": -2.0,
+      "linear_error_Pa": {
+        "fixed": 0.0,
+        "merge": 0.0,
+        "moving": 0.0
+      },
+      "linear_mixed_acceleration_m_per_s2": {
+        "fixed": -0.0,
+        "merge": -0.0,
+        "moving": -0.0
+      },
+      "p0_error_Pa": {
+        "fixed": 0.0,
+        "merge": 0.0,
+        "moving": 0.0
+      },
+      "p0_mixed_acceleration_m_per_s2": {
+        "fixed": -0.0,
+        "merge": -0.0,
+        "moving": -0.0
+      }
+    },
+    {
+      "analytic_pressure_Pa": -20109.96581484375,
+      "common_depth_m": -2.25,
+      "linear_error_Pa": {
+        "fixed": 0.0,
+        "merge": 0.0,
+        "moving": 0.0
+      },
+      "linear_mixed_acceleration_m_per_s2": {
+        "fixed": -0.0,
+        "merge": -0.0,
+        "moving": -0.0
+      },
+      "p0_error_Pa": {
+        "fixed": 0.03142265624774154,
+        "merge": 0.9741023437491094,
+        "moving": 0.21995859374874271
+      },
+      "p0_mixed_acceleration_m_per_s2": {
+        "fixed": -0.0,
+        "merge": -9.196875000013345e-07,
+        "moving": -1.8393750000097676e-07
+      }
+    },
+    {
+      "analytic_pressure_Pa": -20109.368784375,
+      "common_depth_m": -2.5,
+      "linear_error_Pa": {
+        "fixed": 0.0,
+        "merge": 0.0,
+        "moving": 0.0
+      },
+      "linear_mixed_acceleration_m_per_s2": {
+        "fixed": -0.0,
+        "merge": -0.0,
+        "moving": -0.0
+      },
+      "p0_error_Pa": {
+        "fixed": 0.0,
+        "merge": 1.8853593750027358,
+        "moving": 0.37707187500200234
+      },
+      "p0_mixed_acceleration_m_per_s2": {
+        "fixed": -0.0,
+        "merge": -1.839375000002669e-06,
+        "moving": -3.678750000019535e-07
+      }
+    },
+    {
+      "analytic_pressure_Pa": -20107.9861875,
+      "common_depth_m": -3.0,
+      "linear_error_Pa": {
+        "fixed": 0.0,
+        "merge": 0.0,
+        "moving": 0.0
+      },
+      "linear_mixed_acceleration_m_per_s2": {
+        "fixed": -0.0,
+        "merge": -0.0,
+        "moving": -0.0
+      },
+      "p0_error_Pa": {
+        "fixed": 1.7596687499972177,
+        "merge": 3.5193374999980733,
+        "moving": 0.5027625000002445
+      },
+      "p0_mixed_acceleration_m_per_s2": {
+        "fixed": -0.0,
+        "merge": -1.7167500000008349e-06,
+        "moving": 1.226249999997047e-06
+      }
+    },
+    {
+      "analytic_pressure_Pa": -20104.46685,
+      "common_depth_m": -4.0,
+      "linear_error_Pa": {
+        "fixed": 0.0,
+        "merge": 0.0,
+        "moving": 0.0
+      },
+      "linear_mixed_acceleration_m_per_s2": {
+        "fixed": -0.0,
+        "merge": -0.0,
+        "moving": -0.0
+      },
+      "p0_error_Pa": {
+        "fixed": 4.524862499998562,
+        "merge": 6.033149999999296,
+        "moving": 0.0
+      },
+      "p0_mixed_acceleration_m_per_s2": {
+        "fixed": -0.0,
+        "merge": -1.4715000000007155e-06,
+        "moving": 4.414499999998597e-06
+      }
+    },
+    {
+      "analytic_pressure_Pa": -20099.9419875,
+      "common_depth_m": -5.0,
+      "linear_error_Pa": {
+        "fixed": 0.0,
+        "merge": 0.0,
+        "moving": 0.0
+      },
+      "linear_mixed_acceleration_m_per_s2": {
+        "fixed": -0.0,
+        "merge": -0.0,
+        "moving": -0.0
+      },
+      "p0_error_Pa": {
+        "fixed": 6.28453124999578,
+        "merge": 7.541437500000029,
+        "moving": 2.5138124999975844
+      },
+      "p0_mixed_acceleration_m_per_s2": {
+        "fixed": -0.0,
+        "merge": -1.2262500000041455e-06,
+        "moving": 3.6787499999982396e-06
+      }
+    },
+    {
+      "analytic_pressure_Pa": -20087.8756875,
+      "common_depth_m": -7.0,
+      "linear_error_Pa": {
+        "fixed": 0.0,
+        "merge": 0.0,
+        "moving": 0.0
+      },
+      "linear_mixed_acceleration_m_per_s2": {
+        "fixed": -0.0,
+        "merge": -0.0,
+        "moving": -0.0
+      },
+      "p0_error_Pa": {
+        "fixed": 6.787293749999662,
+        "merge": 7.541437500000029,
+        "moving": 4.524862499998562
+      },
+      "p0_mixed_acceleration_m_per_s2": {
+        "fixed": -0.0,
+        "merge": -7.357500000003578e-07,
+        "moving": 2.207250000001073e-06
+      }
+    },
+    {
+      "analytic_pressure_Pa": -20062.2348,
+      "common_depth_m": -10.0,
+      "linear_error_Pa": {
+        "fixed": 0.0,
+        "merge": 0.0,
+        "moving": 0.0
+      },
+      "linear_mixed_acceleration_m_per_s2": {
+        "fixed": -0.0,
+        "merge": -0.0,
+        "moving": -0.0
+      },
+      "p0_error_Pa": {
+        "fixed": -3.637978807091713e-12,
+        "merge": 0.0,
+        "moving": -3.637978807091713e-12
+      },
+      "p0_mixed_acceleration_m_per_s2": {
+        "fixed": -0.0,
+        "merge": -3.5492476166748416e-18,
+        "moving": -0.0
+      }
+    },
+    {
+      "analytic_pressure_Pa": -19999.3894875,
+      "common_depth_m": -15.0,
+      "linear_error_Pa": {
+        "fixed": 0.0,
+        "merge": 0.0,
+        "moving": 0.0
+      },
+      "linear_mixed_acceleration_m_per_s2": {
+        "fixed": -0.0,
+        "merge": -0.0,
+        "moving": -0.0
+      },
+      "p0_error_Pa": {
+        "fixed": 12.569062499998836,
+        "merge": 12.569062500002474,
+        "moving": 12.569062499998836
+      },
+      "p0_mixed_acceleration_m_per_s2": {
+        "fixed": -0.0,
+        "merge": -3.5492476166748416e-18,
+        "moving": -0.0
+      }
+    },
+    {
+      "analytic_pressure_Pa": -19911.40605,
+      "common_depth_m": -20.0,
+      "linear_error_Pa": {
+        "fixed": 0.0,
+        "merge": 0.0,
+        "moving": 0.0
+      },
+      "linear_mixed_acceleration_m_per_s2": {
+        "fixed": -0.0,
+        "merge": -0.0,
+        "moving": -0.0
+      },
+      "p0_error_Pa": {
+        "fixed": 0.0,
+        "merge": 3.637978807091713e-12,
+        "moving": 0.0
+      },
+      "p0_mixed_acceleration_m_per_s2": {
+        "fixed": -0.0,
+        "merge": -3.5492476166748416e-18,
+        "moving": -0.0
+      }
+    }
+  ],
+  "pressure_conclusion": "Mixed P0 reconstruction counterexample only; moving error is zero at -4m. Linear matched control is not a general pressure scheme.",
   "pressure_counterexample_m_per_s2": {
     "merge": -1.4715000000007155e-06,
     "moving": 4.414499999998597e-06
@@ -16,6 +280,10 @@
   "pressure_reconstruction_qualified": false,
   "qualification_passed": false,
   "real_inputs_used": false,
+  "rejection_scope": {
+    "absent_neighbor_and_negative_band_entries": "invalid input controls",
+    "valid_input_exhaustion_request": "outflow_cfl rejects first; exhaustion operator not exercised"
+  },
   "results": {
     "merge": {
       "content_residual_T_S_u_v": [
@@ -26,8 +294,41 @@
       ],
       "conversion_energy_loss_J": 5354.82421875,
       "converted_temperature_variance": 1158.125,
-      "cycle_content_maxabs": 2.6470588235295622,
       "cycle_energy_loss_J": 68.89073988971313,
+      "cycle_fields": {
+        "S": {
+          "cycle_maxabs": 0.5294117647057988,
+          "cycle_normalized_maxabs": 0.0014705882352938854,
+          "global_conservation_residual": 0.0,
+          "normalization": "maxabs converted_initial_content for this field",
+          "normalization_scale": 360.0,
+          "unit_at_area_1m2": "m^3 salinity_unit (salt proxy)"
+        },
+        "T": {
+          "cycle_maxabs": 2.6470588235295622,
+          "cycle_normalized_maxabs": 0.016289592760181923,
+          "global_conservation_residual": -1.1368683772161603e-13,
+          "normalization": "maxabs converted_initial_content for this field",
+          "normalization_scale": 162.5,
+          "unit_at_area_1m2": "m^3 degC (heat proxy; differences m^3 K)"
+        },
+        "u": {
+          "cycle_maxabs": 0.1654411764705932,
+          "cycle_normalized_maxabs": 0.03308823529411864,
+          "global_conservation_residual": 0.0,
+          "normalization": "maxabs converted_initial_content for this field",
+          "normalization_scale": 5.0,
+          "unit_at_area_1m2": "m^4/s (momentum/rho0)"
+        },
+        "v": {
+          "cycle_maxabs": 0.46323529411764763,
+          "cycle_normalized_maxabs": 0.2647058823529415,
+          "global_conservation_residual": 4.440892098500626e-16,
+          "normalization": "maxabs converted_initial_content for this field",
+          "normalization_scale": 1.75,
+          "unit_at_area_1m2": "m^4/s (momentum/rho0)"
+        }
+      },
       "eta_path": [
         {
           "eta": [
@@ -180,8 +481,41 @@
       ],
       "conversion_energy_loss_J": 0.0,
       "converted_temperature_variance": 1251.875,
-      "cycle_content_maxabs": 3.8225511973571713,
       "cycle_energy_loss_J": 2730.8697353341104,
+      "cycle_fields": {
+        "S": {
+          "cycle_maxabs": 0.7645102394714627,
+          "cycle_normalized_maxabs": 0.0021236395540873963,
+          "global_conservation_residual": 0.0,
+          "normalization": "maxabs converted_initial_content for this field",
+          "normalization_scale": 360.0,
+          "unit_at_area_1m2": "m^3 salinity_unit (salt proxy)"
+        },
+        "T": {
+          "cycle_maxabs": 3.8225511973571713,
+          "cycle_normalized_maxabs": 0.03397823286539708,
+          "global_conservation_residual": 0.0,
+          "normalization": "maxabs converted_initial_content for this field",
+          "normalization_scale": 112.5,
+          "unit_at_area_1m2": "m^3 degC (heat proxy; differences m^3 K)"
+        },
+        "u": {
+          "cycle_maxabs": 1.4736463185698883,
+          "cycle_normalized_maxabs": 0.19648617580931843,
+          "global_conservation_residual": -8.881784197001252e-16,
+          "normalization": "maxabs converted_initial_content for this field",
+          "normalization_scale": 7.5,
+          "unit_at_area_1m2": "m^4/s (momentum/rho0)"
+        },
+        "v": {
+          "cycle_maxabs": 0.36426335023717415,
+          "cycle_normalized_maxabs": 0.24284223349144943,
+          "global_conservation_residual": -2.220446049250313e-16,
+          "normalization": "maxabs converted_initial_content for this field",
+          "normalization_scale": 1.5,
+          "unit_at_area_1m2": "m^4/s (momentum/rho0)"
+        }
+      },
       "eta_path": [
         {
           "eta": [
@@ -352,9 +686,9 @@
   },
   "scope": "synthetic_prescribed_transport_FV_component",
   "sha256": {
-    "audit.py": "0c338131a715128017d6acf7f29b75e6e7d3e43021434999b921522d827db390",
-    "component.py": "ac413c2e1e3dfea8f772c970af5b7cd7174bdb19a4c48fe75fc85e028c438cba",
+    "audit.py": "05a38722c627b142af21270d9ccce51971bab31049b18eaef698ed9a98231777",
+    "component.py": "f01d954c011e1ffddc5d45dd1057201b36d7cd89b1437fb2588c0b428d7bb2db",
     "config.json": "32e04ed69476f3a8034690b533bd8ea6a8eb32285d957af6e869239c80e53712",
-    "test_top_band_controls.py": "b22e2a4882dcafe6349769f86a1eccc2d7d05a1e5f7be9ad2761a3da1b723b39"
+    "test_top_band_controls.py": "18a3d983643b2a72334aef40d71d0b2298f4ec623a09a5439b1f255dd3ecc6f2"
   }
 }

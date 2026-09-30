@@ -29,7 +29,7 @@ def main():
               "initial_h": m.initial().h.tolist(), "initial_means": m.means(m.initial()).tolist()}
     config_path = args.output / "config.json"
     config_path.write_text(json.dumps(config, indent=2, sort_keys=True) + "\n")
-    report = {"base": "82e1ca4a2158d4c0ed20f91c04e80cdf43f8a36b",
+    report = {"base": "82e1ca4a2158d4c0ed20f91c04e80cdf43f8a36b", "area_m2": 1.,
               "scope": "synthetic_prescribed_transport_FV_component",
               "real_inputs_used": False, "coupled_ocean_steps": 0, "qualification_passed": False,
               "pressure_reconstruction_qualified": False, "results": {}}
@@ -49,6 +49,16 @@ def main():
         mass = m.RHO0 * initial.h[:, :2]
         shear = m.means(initial)[:, 0, 2:] - m.means(initial)[:, 1, 2:]
         merge_loss = np.sum(mass[:, 0] * mass[:, 1] / (2 * mass.sum(axis=1)) * np.sum(shear**2, axis=1))
+        units = ("m^3 degC (heat proxy; differences m^3 K)", "m^3 salinity_unit (salt proxy)",
+                 "m^4/s (momentum/rho0)", "m^4/s (momentum/rho0)")
+        fields = {}
+        for k, field in enumerate(("T", "S", "u", "v")):
+            scale = float(np.max(np.abs(converted.n[..., k])))
+            error = float(np.max(np.abs(state.n[..., k] - converted.n[..., k])))
+            fields[field] = {"unit_at_area_1m2": units[k], "cycle_maxabs": error,
+                             "normalization": "maxabs converted_initial_content for this field",
+                             "normalization_scale": scale, "cycle_normalized_maxabs": error / scale if scale else None,
+                             "global_conservation_residual": float(state.n[..., k].sum() - initial.n[..., k].sum())}
         report["results"][scheme] = {
             "eta_path": path, "water_residual": float(state.h.sum() - initial.h.sum()),
             "content_residual_T_S_u_v": (state.n.sum(axis=(0, 1)) - initial.n.sum(axis=(0, 1))).tolist(),
@@ -58,10 +68,15 @@ def main():
             "initial_temperature_variance": m.variance(initial, 0),
             "converted_temperature_variance": m.variance(converted, 0),
             "final_temperature_variance": m.variance(state, 0),
-            "cycle_content_maxabs": float(np.max(np.abs(state.n - converted.n))),
+            "cycle_fields": fields,
             "initial_active_means": m.means(converted)[converted.h > 0].tolist(),
             "final_active_means": m.means(state)[state.h > 0].tolist()}
     report["pressure_counterexample_m_per_s2"] = m.pressure_counterexample()
+    report["pressure_common_depth_scan"] = m.pressure_scan()
+    report["pressure_conclusion"] = "Mixed P0 reconstruction counterexample only; moving error is zero at -4m. Linear matched control is not a general pressure scheme."
+    report["opposed_layer_exchange_counterexample"] = m.counterflow()
+    report["rejection_scope"] = {"absent_neighbor_and_negative_band_entries": "invalid input controls",
+                                  "valid_input_exhaustion_request": "outflow_cfl rejects first; exhaustion operator not exercised"}
     root = Path(__file__).resolve().parents[3]
     paths = [Path(__file__).resolve(), Path(__file__).with_name("component.py"),
              root / "tests/test_top_band_controls.py", config_path]
