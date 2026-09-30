@@ -1,0 +1,31 @@
+# 2026-09-30 15:03:26  /tmp/ocean-a-venv/bin/python
+# ocean-solver --days 0.000925925925925926 --dt 10 --dt-bt 5 --mode-split --seasonal-wind --snap-days 0.0002314814814814815 --checkpoint-days 0.0002314814814814815 --tag controlled --out-dir results/production_delivery/s2_cloud_a/cross_process_reviewed/resumed --log-dir results/production_delivery/s2_cloud_a/cross_process_reviewed/resumed --nu-h 0 --nu-bi 0 --kappa-v 0 --kappa-conv 0 --polar-cap-rows 0 --polar-cap-taper 0 --no-meridional-heat-flux --no-bulk-flux --restart-from results/production_delivery/s2_cloud_a/cross_process_reviewed/resumed/ckpt_controlled.npz --budget-audit --wind-jit --use-scan
+Building global FD grid (lat_max=60.0, resolution=1.0°, ny=120, smooth=30, min_depth=100.0)...
+  grid 8x8x4, ocean 100.0%, dx_eq=4989780m, lat[-30.0,30.0]
+Loading WOA2023 climatology for initial T/S...
+  T_init range=[17.00, 17.00] C
+Loading 12 monthly NCEP wind snapshots (year 2023)...
+RESUME from results/production_delivery/s2_cloud_a/cross_process_reviewed/resumed/ckpt_controlled.npz: step 2 (day 0.0), 2 diagnostic rows restored, 0 verified 3D snapshots kept
+======================================================================
+GLOBAL FD LONG INTEGRATION (0 days)
+======================================================================
+grid: 8x8x4  res=1°  dx_eq=4989780m  lon[0.5,359.5]E lat[-30.0,30.0]N
+dt=10s  steps=8  snap every 2 steps (0d)
+MODE SPLIT: baroclinic dt=10s, barotropic subcycle 2 x 5.0s (--dt-bt 5s), conv_nsub=1, nu_nsub=2, scan=ON
+physics: nu_h=0  nu_bi=0  kappa_conv=0.0  kappa_v=0
+sub-grid closure: NONE (kappa_gm=0, kappa_redi=0)
+bulk_flux=0 W/m^2/K (off)
+sss_restore: NONE (no surface salt flux)
+wall: no-flux N/S (v=0 at boundary rows, mirror-ghost dy)
+wind: seasonal cycle 2023 (12 monthly NCEP snapshots)
+wind blend: 5d linear window at month boundaries
+sponge: NONE
+polar cap: NONE
+eta_relax: NONE
+init: T_init_max=17.00C  amplitude_cap=29.00C
+criteria: max|u|<10.0  drift_tol=2.0C  watchdog |eta|>15.0m
+
+   day    step    max|u|   max|T|  max|eta|   SSH_std           KE    NaN
+------------------------------------------------------------------------------
+    0.0        4     0.000   17.000     0.000    0.0000   1.1797e-12      0
+  [ckpt] saved verified restart results/production_delivery/s2_cloud_a/cross_process_reviewed/resumed/ckpt_controlled.npz at step 4
