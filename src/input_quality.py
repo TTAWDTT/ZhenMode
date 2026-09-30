@@ -191,6 +191,7 @@ def audit_woa_variable(raw, grid, *, variable, initial_field=None, max_records=1
         'source_metadata': source_metadata(raw),
         'historical_raw_identity_verified': False,
         'status': 'unsupported', 'records': [],
+        'publication_state': 'uncommitted',
         'unimplemented': ['multi_round_donor_tree', 'vertical_fallback_lineage',
                           'interpolated_or_extrapolated_grid_lineage'],
         'policy': 'diagnostic only; strict rejects every missing wet node or unknown mapping',
@@ -279,8 +280,8 @@ def audit_woa_variable(raw, grid, *, variable, initial_field=None, max_records=1
     return report, masks
 
 
-def enforce_strict_quality(report):
-    """Fail closed; donor consistency never promotes filled nodes to support."""
+def validate_quality_fields(report):
+    """Validate scientific input support before publishing a sidecar."""
     if not isinstance(report, dict):
         raise ValueError('unsupported input quality: report must be a mapping')
     flags = ('coordinate_mapping_supported', 'grid_contract_verified',
@@ -301,3 +302,10 @@ def enforce_strict_quality(report):
             or report.get('variable') not in ('T', 'S')
             or report.get('initial_field_comparison') not in ('provided', 'not_provided')):
         raise ValueError('unsupported input quality: missing, changed, or unknown provenance')
+
+
+def enforce_strict_quality(report):
+    """Only a committed, supported report can pass the public strict gate."""
+    if not isinstance(report, dict) or report.get('publication_state') != 'committed':
+        raise ValueError('unsupported input quality: report is not committed')
+    validate_quality_fields(report)

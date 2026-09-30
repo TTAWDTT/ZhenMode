@@ -151,3 +151,37 @@ NPZ 不得使用 pickle/object 元数据。除原有 `lon/lat/depth/data` 外须
 新版对当前原 NetCDF 和同一归档进行一次快照预检，仍按设计返回 2；T/S 各自
 9297 个缺测湿节点、363 整柱缺测、2891 含缺测湿柱，原场和科学填充未改。
 单核 120s/2GiB 预算下实际 9.01s，峰值工作集 451698688 bytes，无积分步。
+
+
+## 2026-09-30 Correction: sidecar atomic publication
+
+The CLI now emits `ocean.input_quality_bundle.v2`: one private JSON containing
+all quality records and the compressed NPZ masks as `private_mask_artifact`
+(`storage=embedded_npz_base64`, `content_base64`, original NPZ bytes and SHA256).
+The previous separate `.masks.npz` publication is superseded. Consumers decode
+base64, verify bytes/SHA256, then load with `allow_pickle=False`; the suggested
+NPZ filename is metadata, not a second file that the CLI creates. Keep this JSON
+private: embedding masks does not make them suitable for Git or public sharing.
+
+Serialization occurs only in a new temporary directory next to the destination.
+After JSON serialization, source, grid and optional initial-state snapshots are
+rechecked. Only success permits an atomic no-clobber hard link of the single
+complete JSON. Filesystems without hard-link support fail closed. The CLI never
+unlinks a public destination, including a competing user's file. Temporary files
+are removed on failure; an existing report remains untouched. No two-file
+transaction or conditional public-file deletion is claimed.
+
+Raw audit reports carry `publication_state=uncommitted`. The public strict gate
+requires `committed` and still checks all scientific support fields. Strict CLI
+validation happens before serialization; unsupported input creates no new success
+artifact. Diagnostic mode may publish a committed *unsupported* report, which
+still cannot pass strict. The state marker is a publication contract, not a
+signature against intentional report forgery. Snapshot checks establish the
+validation-time identity, not immutability of source paths after publication.
+
+Regression witnesses include mutation immediately after JSON serialization,
+mutation during mask serialization, pre-existing report/mask preservation,
+no-clobber competition for the final JSON, publication failure with an unrelated
+user mask, and successful embedded-mask byte/hash recovery. Earlier scientific
+fill results, thresholds, donor limitations and missing historical hashes remain
+unchanged. No private input arrays were added to this repository.

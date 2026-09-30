@@ -1,14 +1,17 @@
 """Write an optional private quality sidecar; never invokes the ocean solver."""
 import argparse
+import base64
 import hashlib
 import json
+import os
 import sys
 from pathlib import Path
+from tempfile import TemporaryDirectory
 
 import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'src'))
-from input_quality import audit_woa_variable, enforce_strict_quality  # noqa: E402
+from input_quality import audit_woa_variable, validate_quality_fields  # noqa: E402
 from input_sources import (  # noqa: E402
     InputSnapshot,
     load_climatology_snapshot,
@@ -20,6 +23,36 @@ def file_identity(path):
     with path.open('rb') as stream:
         digest = hashlib.file_digest(stream, 'sha256').hexdigest()
     return {'filename': path.name, 'bytes': path.stat().st_size, 'sha256': digest}
+
+
+def publish_sidecar(report, masks, output, masks_path, snapshots):
+    """Atomically publish one self-contained private report, never overwrite.
+
+    Compressed masks are embedded so there is no second public artifact or
+    partial-pair cleanup. Hard-link creation is atomic and no-clobber on NTFS
+    and POSIX; unsupported filesystems fail closed.
+    """
+    output.parent.mkdir(parents=True, exist_ok=True)
+    with TemporaryDirectory(prefix='.input-preflight-', dir=output.parent) as staging:
+        staged_mask = Path(staging) / masks_path.name
+        staged_report = Path(staging) / output.name
+        with staged_mask.open('xb') as stream:
+            np.savez_compressed(stream, **masks)
+        report['private_mask_artifact'] = {
+            **file_identity(staged_mask), 'storage': 'embedded_npz_base64',
+            'content_base64': base64.b64encode(staged_mask.read_bytes()).decode('ascii'),
+        }
+        report['publication_state'] = 'committed'
+        for quality in report['variables'].values():
+            quality['publication_state'] = 'committed'
+        with staged_report.open('x', encoding='utf-8') as stream:
+            json.dump(report, stream, indent=2, allow_nan=False)
+        # Final snapshot check follows all serialization; only the private
+        # staging copy can contain a committed marker before this succeeds.
+        for snapshot in snapshots:
+            snapshot.verify_unchanged()
+        os.link(staged_report, output)
+
 
 
 def main(argv=None):
@@ -61,7 +94,7 @@ def write_preflight(args, snapshots, grid_snapshot, initial_snapshot, masks_path
     if initial_snapshot is not None:
         loaded = load_snapshot_npz(initial_snapshot)
         initial = {key: loaded[key] for key in ('T', 'S')}
-    report = {'schema': 'ocean.input_quality_bundle.v1', 'mode': 'strict' if args.strict
+    report = {'schema': 'ocean.input_quality_bundle.v2', 'mode': 'strict' if args.strict
               else 'diagnostic', 'historical_raw_hashes_available': False, 'variables': {}}
     masks = {}
     for label in ('T', 'S'):
@@ -79,26 +112,16 @@ def write_preflight(args, snapshots, grid_snapshot, initial_snapshot, masks_path
     report['entrypoint_sha256'] = file_identity(Path(__file__))['sha256']
     if initial_snapshot is not None:
         report['initial_state_identity'] = initial_snapshot.identity()
-    for snapshot in [*snapshots.values(), grid_snapshot, initial_snapshot]:
-        if snapshot is not None:
-            snapshot.verify_unchanged()
+    all_snapshots = [*snapshots.values(), grid_snapshot]
+    if initial_snapshot is not None:
+        all_snapshots.append(initial_snapshot)
+    for snapshot in all_snapshots:
+        snapshot.verify_unchanged()
     report['input_snapshots_unchanged_at_validation'] = True
-    args.output.parent.mkdir(parents=True, exist_ok=True)
-    with masks_path.open('xb') as stream:
-        np.savez_compressed(stream, **masks)
-    report['private_mask_artifact'] = file_identity(masks_path)
-    with args.output.open('x', encoding='utf-8') as stream:
-        json.dump(report, stream, indent=2, allow_nan=False)
-    for snapshot in [*snapshots.values(), grid_snapshot, initial_snapshot]:
-        if snapshot is not None:
-            snapshot.verify_unchanged()
     if args.strict:
-        try:
-            for quality in report['variables'].values():
-                enforce_strict_quality(quality)
-        except ValueError as error:
-            print(str(error), file=sys.stderr)
-            return 2
+        for quality in report['variables'].values():
+            validate_quality_fields(quality)
+    publish_sidecar(report, masks, args.output, masks_path, all_snapshots)
     print(f'Input quality sidecar: {args.output}')
     return 0
 

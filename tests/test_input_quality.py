@@ -1,6 +1,8 @@
 """Small input-support contracts, independent of real/private datasets."""
+import base64
 import copy
 import importlib.util
+from io import BytesIO
 from pathlib import Path
 
 import numpy as np
@@ -35,6 +37,7 @@ def test_original_valid_input_is_supported_and_unchanged():
     raw, grid = example()
     before = copy.deepcopy(raw)
     report, masks = audit_woa_variable(raw, grid, variable='T')
+    report['publication_state'] = 'committed'
     enforce_strict_quality(report)
     assert report['missing_wet_nodes'] == 0
     assert report['status'] == 'supported'
@@ -147,6 +150,7 @@ def test_binary_mask_dtypes_accept_valid_wet_prefix(dtype):
     grid['wet_mask_3d'][1, 1, 1] = 0
     grid['wet_mask_3d'] = grid['wet_mask_3d'].astype(dtype)
     report, _ = audit_woa_variable(raw, grid, variable='T')
+    report['publication_state'] = 'committed'
     enforce_strict_quality(report)
 
 
@@ -196,13 +200,14 @@ def test_cli_records_actual_twin_identity_and_independent_variable_masks(tmp_pat
     np.savez(tmp_path / 'temp.nc.npz', **raw)
     arguments = ['--temperature', str(tmp_path / 'temp.nc'), '--salinity',
                  str(tmp_path / 'salt.nc'), '--grid', str(tmp_path / 'grid.npz'),
-                 '--output', str(tmp_path / 'quality.json'), '--strict']
-    assert cli().main(arguments) == 2
+                 '--output', str(tmp_path / 'quality.json')]
+    assert cli().main(arguments) == 0
     report = json.loads((tmp_path / 'quality.json').read_text())
     assert report['variables']['T']['current_source_identity']['filename'] == 'temp.nc.npz'
     assert report['variables']['T']['missing_wet_nodes'] == 1
     assert report['variables']['S']['missing_wet_nodes'] == 0
-    with np.load(tmp_path / 'quality.masks.npz') as masks:
+    with np.load(BytesIO(base64.b64decode(
+            report['private_mask_artifact']['content_base64']))) as masks:
         assert masks['T_raw_missing'].sum() == 1
         assert masks['S_raw_missing'].sum() == 0
 
