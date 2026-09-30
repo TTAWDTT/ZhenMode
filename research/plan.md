@@ -1,8 +1,17 @@
-# Current Research Plan
+# Historical Research Log (not the current execution plan)
 
-Updated: 2026-09-29
+The entries below preserve the earlier FV/C-grid research sequence and its
+failed gates. Their "next" / "resume" statements are historical, not current
+execution instructions. The original-core repair path and measured status are
+documented in [the repair plan](../docs/legacy_core_repair_plan_zh.md) and
+[the repair record](../docs/legacy_core_repair_status_zh.md). The latest isolated
+weak-path code is indexed in [the r-star README](experiments/material_rstar_coordinates/README.md).
+Work is now assigned by user/manager messages; this log does not authorize
+automatic Goal continuation, new experiments or production promotion.
 
-## Current authority: full industrial alignment
+Historical entries last updated: 2026-09-29.
+
+## Earlier industrial-alignment research sequence (superseded)
 
 Next actual candidate is now `nonlinear_dynamics.nonlinear_momentum_surface_step`,
 registered by1c2572d before implementation. It evolves3-D dual m*u, moving eta
@@ -205,7 +214,7 @@ duration, diagnostics, and stability gates. Details:
 Locked diagnostic baseline: candidate_65n_07_gm0
 Runner: scripts/run_candidate_baseline.sh
 
-## Historical plan entries (superseded by current authority above)
+## Earlier plan entries
 1. **Reproduce the candidate baseline.** [COMPLETE 2026-09-22]
    Run one 365d integration with `candidate_65n_07_gm0`.
    Confirm global A2 RMSE is near the previous `1.336 C` and the North

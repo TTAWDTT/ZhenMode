@@ -6,6 +6,17 @@
 
 代码里出现 `D<n>` 标记时，索引的是 [`decisions.md`](decisions.md) 的第 n 条。
 
+## 先读哪几份
+
+1. [项目入口与代码主线](../README.md)：CLI → 初始化/强迫 → FD完整步 → 输出/重启。
+2. [修复实施记录](legacy_core_repair_status_zh.md)：区分生产、显式候选与失败证据；§36–37是最新弱式容量/时间结果。
+3. [节点r-star实验索引](../research/experiments/material_rstar_coordinates/README.md)：按依赖链找代码、协议和审计，不把旧控制当并行生产方案。
+4. [决策日志](decisions.md)：按源码中的D编号查理由；完整方案/长期验收按需查阅。
+
+[`research/plan.md`](../research/plan.md)是旧研究日志，不是当前执行计划。
+已保存结果以当时的源码快照/提交和输入hash为准；后续清理不会重标失败或
+使旧结果自动成为当前源码的资格证明。路线图不是自动运行授权。
+
 ---
 
 ## 当前主线 / Current

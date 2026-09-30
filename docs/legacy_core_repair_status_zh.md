@@ -2,6 +2,11 @@
 
 Lady，2026-09-29。依据：[实施方案](legacy_core_repair_plan_zh.md)。
 
+阅读导航见[项目主线](../README.md)及[弱式实验索引](../research/experiments/material_rstar_coordinates/README.md)。
+下文按时间保留验收历史：“当前源/hash相符”等表述指该批次验收时的源码。
+§36、§37对应本地提交`51f02bd`、`af4dcb0`及各自冻结快照；后续整理不自动
+升级历史结果，失败原件和门槛仍保留。当前工作由消息安排，不自动续跑Goal。
+
 **当前结论：M0 已完成；M1 几何与 M2 实际时层输运子项通过，候选仍未整体验收。
 生产默认不切换，新 FV/C-grid 核心没有接入生产链。**
 

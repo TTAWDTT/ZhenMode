@@ -50,6 +50,7 @@ def bounded_weak_euler(content, surface, velocities, source_rate, duration, para
     endpoint = surface + duration * coefficients.surface_rate
     next_geometry = rstar_geometry(endpoint, depths, params.dz_node, params.wet_mask_z)
     wet = mass.wet
+    active_content = jnp.where(wet, content, 0.)
     concentration = solve_nodal_mass(content, geometry, area, mass)
     current_mass, endpoint_mass = area[..., None] * geometry.thickness, area[..., None] * next_geometry.thickness
     denominator = jnp.where(wet & (endpoint_mass > 0.), endpoint_mass, 1.)
@@ -60,7 +61,7 @@ def bounded_weak_euler(content, surface, velocities, source_rate, duration, para
     diffusion = accumulate_edges(graph, -duration * viscosity * difference).reshape(content.shape)
     source = duration * jnp.broadcast_to(jnp.asarray(source_rate, dtype=content.dtype), content.shape)
     low_row = current_mass * concentration + duration * rate + diffusion + source
-    high_content = jnp.where(wet, content, 0.) + duration * rate + source
+    high_content = active_content + duration * rate + source
     high = solve_nodal_mass(high_content, next_geometry, area, mass)
     old_pairs = mass_pair_entries(geometry, area, mass, graph)
     new_pairs = mass_pair_entries(next_geometry, area, mass, graph)
@@ -99,8 +100,8 @@ def bounded_weak_euler(content, surface, velocities, source_rate, duration, para
                       & jnp.all(jnp.abs(new_row - endpoint_mass) <= eps * (jnp.abs(new_row) + jnp.abs(endpoint_mass)))
                       & jnp.all(jnp.abs(continuity) <= eps * continuity_scale)
                       & jnp.all(jnp.abs(decomposition) <= eps * decomposition_scale))
-    inventory = jnp.sum(attempted) - jnp.sum(jnp.where(wet, content, 0.)) - jnp.sum(source)
-    inventory_floor = eps * (jnp.sum(jnp.abs(attempted)) + jnp.sum(jnp.abs(jnp.where(wet, content, 0.))) + jnp.sum(jnp.abs(source)))
+    inventory = jnp.sum(attempted) - jnp.sum(active_content) - jnp.sum(source)
+    inventory_floor = eps * (jnp.sum(jnp.abs(attempted)) + jnp.sum(jnp.abs(active_content)) + jnp.sum(jnp.abs(source)))
     active_inputs_valid = (jnp.all(jnp.where(wet, jnp.isfinite(content), True))
                            & jnp.all(jnp.stack([jnp.all(jnp.where(wet, jnp.isfinite(value), True)) for value in velocities])))
     source_valid = jnp.all(jnp.isfinite(source)) & jnp.all(jnp.where(wet, True, source == 0.))
