@@ -41,6 +41,8 @@ record; sections 36–37 cover the latest weak-content/capacity/time work.
 The [delivery execution plan](docs/production_delivery_plan_zh.md) defines the
 current order, objectives, dependencies and acceptance gates. The earlier
 [repair plan](docs/legacy_core_repair_plan_zh.md) remains a historical reference.
+The [S0/S1 execution record](docs/production_delivery_execution_20260930_zh.md)
+records the input/first-rejection repairs, retained failures and verified scope.
 The [r-star index](research/experiments/material_rstar_coordinates/README.md)
 maps their code and audit commands. Test counts do not override failed gates.
 No current evidence establishes century reliability, independent climate /
