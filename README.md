@@ -62,6 +62,9 @@ legacy geometry. The corrected source completes independently audited 2-degree
 component time scheme retains its combined-viscosity counterexample. The
 material 1-degree 600/300 s trials stop near day 1.22: their first rejected
 steps require 162/145 nonlinear subcycles, exceeding the retained 128 cap.
+Separate 256-cap controls accept those steps, then reject the next step when
+the top-only moving mass weight becomes negative. This candidate geometry
+requires further work before 1-degree qualification.
 Local scalar dissipation does not prove full momentum energy or climate accuracy.
 Float32 passes local transport/stop gates but has material cumulative salt and
 volume-budget sensitivity; it is not qualified for century delivery.
