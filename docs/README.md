@@ -23,6 +23,7 @@
 
 | 文档 | 作用 |
 | --- | --- |
+| [`branch_review_zh.md`](branch_review_zh.md) | main与本地修复分支的同测试对照、已获收益、未过资格及复杂度成本；不以绿测试替代完整模式交付。 |
 | [`decisions.md`](decisions.md) | **决策日志（D1–D46）**。为什么求解器长这样：诊断出的失效、定案的测量、被否掉的方案。代码里只留一两行不变量，按 D 编号指回这里。 |
 | [`debug_validation_zh.md`](debug_validation_zh.md) | 本轮混合层、海冰、输运、重启、评分与安装修复；回归和积分的证据，以及尚未验证的边界。 |
 | [`method_choice_review_zh.md`](method_choice_review_zh.md) | 原方法可用性与替换动机的独立复核；区分必要一致性修复、可选架构迁移及新原型自身问题。 |
