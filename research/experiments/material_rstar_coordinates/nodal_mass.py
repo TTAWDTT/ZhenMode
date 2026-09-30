@@ -17,16 +17,20 @@ class NodalMass(NamedTuple):
 def make_nodal_mass(depths, params):
     depths = np.asarray(depths, dtype=np.float64)
     mask = np.asarray(params.wet_mask_z)
-    if (depths.ndim != 1 or not len(depths) or not np.all(np.isfinite(depths))
-            or depths[0] != 0. or not np.all(np.diff(depths) > 0.)):
+    if (depths.ndim not in (1, 3) or not depths.size or not np.all(np.isfinite(depths))):
         raise ValueError("nodal mass requires finite increasing reference depths starting at zero")
-    if mask.ndim != 3 or mask.shape[-1] != len(depths) or not np.all((mask == 0.) | (mask == 1.)):
+    if (mask.ndim != 3 or mask.shape[-1] != depths.shape[-1]
+            or (depths.ndim == 3 and depths.shape != mask.shape) or not np.all((mask == 0.) | (mask == 1.))):
         raise ValueError("nodal mass requires matching binary wet mask")
+    nodes = np.broadcast_to(depths, mask.shape)
+    active = mask > 0.
+    if (np.any((nodes[..., 0] != 0.) & active[..., 0])
+            or np.any((np.diff(nodes, axis=-1) <= 0.) & active[..., :-1] & active[..., 1:])):
+        raise ValueError("nodal mass requires finite increasing reference depths starting at zero")
     if not np.all(np.isfinite(np.asarray(params.dz_node))):
         raise ValueError("nodal mass requires finite reference widths")
     make_potential_basis(depths, params)
     wet = mask > 0.
-    nodes = np.broadcast_to(depths, wet.shape)
     width = np.asarray(params.dz_node) * wet
     connected = wet[..., :-1] & wet[..., 1:]
     gap = np.diff(nodes, axis=-1) * connected

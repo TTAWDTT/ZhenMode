@@ -197,3 +197,35 @@ The first cancelled-dot comparison failures and its explicitly revised absolute
 summand-based64eps scale are retained separately; the original pressure/rest
 gates are unchanged. Next coupling scope and non-promotion constraints are in
 [the representation decision](representation_decision_zh.md).
+
+## Joint physical weak transport and completed-bed contract
+
+`weak_transport.py` integrates the same nodal hats across actual shared fluid
+apertures, including relative vertical transport from partial face volume flux.
+Its pressure is paired with this transport and its declared lumped velocity mass.
+An independent NumPy five-point face quadrature checks the RHS. This is an
+instantaneous centered, unbounded experiment, not a complete ocean factory.
+
+`bed_completion.py` registers `bed_complete_nodal_v1`: preserve original physical
+beds and old wet nodes, reuse the first dry slot for a bed sample where needed,
+and reject a missing slot. Shape is preserved but unknowns and local wet topology
+change. Old dry values are not valid new samples; initialization, restart migration
+and dependent operators are not implemented. The old sparse graph is not qualified
+for the new topology. This is not truncation or a hidden cell-average rename.
+
+```shell
+python research/experiments/material_rstar_coordinates/weak_audit.py --complete-bed --output results/rstar_weak_completed_new
+python research/experiments/material_rstar_coordinates/weak_witness_audit.py --input results/rstar_weak_completed_new --output results/rstar_weak_completed_witness_new.json
+python research/experiments/material_rstar_coordinates/weak_audit.py --output results/rstar_weak_tail_new
+```
+
+The completed original-domain 16 controls pass the instantaneous gates on CPU and
+actual CUDA/x64. The tail command deliberately exits nonzero: its original-domain
+affine-stair rest failure remains. Truncated-bed controls are localization only.
+The NumPy witness auditor checks every saved array and complete unique case matrix;
+it does not independently rerun quadrature from geometry or accept an ocean step.
+Positive regression counts include verified failures and do not qualify boundedness,
+PDE order, full momentum/fast-slow coupling, ice or climate/forecast performance.
+Local dense hat traces scale with column count times vertical-node-count squared;
+actual-grid GPU throughput and peak memory are not qualified. No production imports
+or default changes are made.

@@ -25,10 +25,11 @@ def _gauss_mass(depths, widths, wet):
     matrix = np.zeros(wet.shape + (wet.shape[-1],))
     moment = np.zeros(wet.shape)
     quadrature, weights = np.polynomial.legendre.leggauss(3)
+    node_depths = np.broadcast_to(depths, wet.shape)
     for column in np.ndindex(wet.shape[:2]):
         count = int(wet[column].sum())
         for level in range(count - 1):
-            low, high = depths[level:level + 2]
+            low, high = node_depths[column][level:level + 2]
             positions = .5 * ((high - low) * quadrature + high + low)
             measure = .5 * (high - low) * weights
             hats = ((high - positions) / (high - low), (positions - low) / (high - low))
@@ -38,7 +39,7 @@ def _gauss_mass(depths, widths, wet):
                 for other, other_hat in enumerate(hats):
                     matrix[column + (node, level + other)] += np.sum(measure * hat * other_hat)
         if count:
-            low, high = depths[count - 1], widths[column].sum()
+            low, high = node_depths[column][count - 1], widths[column].sum()
             positions = .5 * ((high - low) * quadrature + high + low)
             measure = .5 * (high - low) * weights
             matrix[column + (count - 1, count - 1)] += measure.sum()
