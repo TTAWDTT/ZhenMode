@@ -134,3 +134,45 @@ counts actual sparse graph storage. The first 128-capacity stop is not the same
 state and still has positive thickness. There are zero accepted integration
 steps here, no full-step compile, remapped heat/salt inventory or GPU peak-memory
 qualification.
+
+## Pressure work versus physical resting state
+
+`pressure_work.py` evaluates the original chain-rule force, its actual-width
+negative-adjoint weighting, and a reversible energy-adjoint candidate on the
+**same original node layout**. Transport uses a declared mean-thickness coordinate
+band and original spherical metrics; this is not qualified physical face overlap.
+The energy experiment integrates a piecewise-linear nodal density representation
+and a **constant tail** from the last wet node to the bed. Its mass matches the
+nodal widths; its depth first moment is not simply width times node position.
+Centered density transport isolates reversible work. Original donor-minus-centered
+potential transfer is reported separately, not removed or called external heating.
+
+```shell
+python research/experiments/material_rstar_coordinates/pressure_audit.py --output results/rstar_pressure_new
+python research/experiments/material_rstar_coordinates/pressure_witness_audit.py --input results/rstar_pressure_new --output results/rstar_pressure_witness_new.json
+```
+
+The first command intentionally exits nonzero when candidate qualification fails,
+while still saving all sources, cases and an affine-stair array witness. The
+second command independently recomputes that witness with NumPy only; successful
+audit means the saved **failure** is verified, not that physics passed. It checks
+hash/dtype/finiteness, numerical values and claimed flags; its scope is one witness,
+not all cases or a trajectory. Actual CUDA uses the same before-launch backend
+selection as above; CPU/GPU qualified-source hashes must match.
+
+Observed gates reject every full interface candidate: the width-weighted force
+closes pure free-surface/constant-density work and preserves the affine resting
+point field, but general pressure work is not qualified. The energy-adjoint force
+closes the specified reversible work but creates a force on the affine resting
+stair field. Fixed-domain full-wet vertical refinement also fails its registered
+second-order diagnostic. Correct helper/counterexample tests do not convert these
+physical failures into passes. The dry-surface energy conjugate was separately
+fixed to match the energy derivative and ignore unused finite/NaN land values.
+
+The affine nodal samples, constant-tail continuous reconstruction and a globally
+affine continuous profile are different physical representations. Their inventory
+and potential gaps are reported, not hidden inside a residual correction. Resolve
+the point/content/pressure reconstruction and bed policy before introducing a new
+factory or state/restart contract. These results neither prove r-star/A-grid
+impossible nor invalidate the original historical integration or accepted 2-degree
+thermal-source budgets. No force here is promoted to production.
