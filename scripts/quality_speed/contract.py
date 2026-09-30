@@ -190,6 +190,24 @@ def run_errors(run, policy):
                 errors.append(f'trials.{index}: missing/invalid phase')
             elif trial['total'] < sum(trial[key] for key in PHASES):
                 errors.append(f'trials.{index}: total excludes measured phases')
+            statuses = trial.get('phase_status')
+            if not isinstance(statuses, dict) or set(statuses) != set((*PHASES, 'total')):
+                errors.append(f'trials.{index}: complete phase_status required')
+                continue
+            for phase in (*PHASES, 'total'):
+                declaration = statuses[phase]
+                duration = trial.get(phase)
+                if not isinstance(declaration, dict):
+                    errors.append(f'trials.{index}.{phase}: invalid phase status')
+                elif declaration.get('status') == 'measured':
+                    if not number(duration, True):
+                        errors.append(f'trials.{index}.{phase}: measured duration must be positive')
+                elif declaration.get('status') == 'not_applicable':
+                    if (phase in ('integration', 'total') or not number(duration) or duration != 0
+                            or not nonempty(declaration.get('reason'))):
+                        errors.append(f'trials.{index}.{phase}: invalid zero-duration exemption')
+                else:
+                    errors.append(f'trials.{index}.{phase}: unsupported phase status')
         if any(not nonempty(i) for i in ids) or len(set(map(str, ids))) != len(ids):
             errors.append('trials: duplicate/missing pair_id')
     return errors

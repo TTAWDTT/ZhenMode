@@ -83,8 +83,10 @@ schema_version 为严格整数 1（拒绝 true/1.0）。完整机器字段见 `c
 同步回调必须等全部状态与诊断叶子完成；异步入队时间不能当执行时间。
 暖机后必须重置测量初态；每次冷计时使用新进程和禁用/隔离持久编译缓存。
 积分包含真实生产监测，I/O 包含实际输出写完；total 含全部分项及调度余量。
-纯积分和 total 均必须大于零；冷编译为零只适用于已说明的 AOT/no-runtime-compile 情形，
-不能靠省略字段得到零。报告另区分进程启动墙钟，避免把 import、初始化隐去。
+纯积分和 total 均必须大于零；每个 trial 的 phase_status 必须显式列出五个分项及 total 的状态。
+measured 必须为正时长；not_applicable 必须恰为零且有非空文本 reason。
+冷编译无需运行时编译（AOT/解释执行）的环境可声明 not_applicable 并说明原因，
+不能靠省略字段得到零；integration 和 total 永远不能豁免。报告另区分进程启动墙钟，避免把 import、初始化隐去。
 峰值内存必须是实测值及方法，或显式 unavailable+原因，不填假零。
 
 ```bash
@@ -150,3 +152,10 @@ source_sha=f95f739、source_clean=false 如实记录修复尚未提交时的 che
 逐文件 source_tree hash 冻结实际代码；不能把 source_sha 单独当成全部运行代码身份。
 本对照仅验证该合成小网格的监测开销，不是生产监测全输出、更不是工业配对资格。
 真实数据、MOM6 与原失败场景仍未验证；旧 BLOCKED 文件作为历史原件保留。
+
+A 复审续修：读取 PR4 固定 head 的 c_peer_review.txt（当时 PR2 评论时间线仅含 B，
+故引用仓库内原始审查），在 cec135c 复现未解释 cold_compile=0 返回 PASS。
+新增 phase_status、零时长理由与正负 AOT 对照。37项最终合同测试及CLI状态见
+phase_review_after.log；首次新增36项修复前26子用例失败（phase_review_before.log），
+随后另补1项零时长理由类型回归。timing helper 给实际测量阶段明确 measured 状态。
+监测 probe 的历史计时原件不改写；该 probe 本身并非可提交工业 gate 的 manifest。

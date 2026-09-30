@@ -9,7 +9,7 @@ from pathlib import Path
 
 TOOLS = Path(__file__).resolve().parents[1] / 'scripts' / 'quality_speed'
 sys.path.insert(0, str(TOOLS))
-from contract import HASH_FIELDS, PAIR_FIELDS, digest, evaluate
+from contract import HASH_FIELDS, PAIR_FIELDS, PHASES, digest, evaluate
 from gate import load
 from manifest import attach_files, verify_files
 from timing import measure_lifecycle
@@ -43,7 +43,9 @@ def fixtures():
                                    unit=rule['unit'], definition_sha256=h, evidence_sha256=h)
                         for name, rule in policy['metrics'].items()},
                trials=[dict(pair_id=str(i), setup=1, cold_compile=1, warmup=1,
-                            integration=10, diagnostics_io=1, total=15) for i in range(3)])
+                            integration=10, diagnostics_io=1, total=15,
+                            phase_status={name: {'status': 'measured'} for name in (*PHASES, 'total')})
+                       for i in range(3)])
     run.update({key: h for key in HASH_FIELDS})
     candidate = copy.deepcopy(run)
     for trial in candidate['trials']:
@@ -180,6 +182,66 @@ class GateTests(unittest.TestCase):
         self.b['trials'][0]['integration'] = 0
         self.assertEqual(self.result()['status'], 'INCOMPLETE')
 
+    def test_unexplained_zero_phases_fail_closed(self):
+        for label in ('control', 'candidate'):
+            for phase in (*PHASES, 'total'):
+                with self.subTest(label=label, phase=phase):
+                    a, b, p = fixtures()
+                    trial = (a if label == 'control' else b)['trials'][0]
+                    trial[phase] = 0
+                    result = evaluate(a, b, p, digest(p))
+                    self.assertEqual(result['status'], 'INCOMPLETE')
+                    self.assertIsNone(result['speed'])
+
+    def test_no_runtime_compile_with_explicit_reason_passes(self):
+        for run in (self.a, self.b):
+            for trial in run['trials']:
+                trial['cold_compile'] = 0
+                trial['phase_status']['cold_compile'] = {
+                    'status': 'not_applicable', 'reason': 'AOT executable; no runtime compilation'}
+        self.assertEqual(self.result()['status'], 'PASS')
+        self.assertFalse(self.result()['industrial_qualified'])
+
+    def test_phase_status_missing_malformed_or_contradictory(self):
+        for value in (None, True, 'measured', {}, {'status': 'unknown'},
+                      {'status': True}, {'status': 'not_applicable'},
+                      {'status': 'not_applicable', 'reason': ' '},
+                      {'status': 'not_applicable', 'reason': False},
+                      {'status': 'not_applicable', 'reason': 'AOT but duration is positive'}):
+            with self.subTest(value=value):
+                a, b, p = fixtures()
+                b['trials'][0]['phase_status']['cold_compile'] = value
+                result = evaluate(a, b, p, digest(p))
+                self.assertEqual(result['status'], 'INCOMPLETE')
+                self.assertIsNone(result['speed'])
+        for phase in (*PHASES, 'total'):
+            with self.subTest(missing=phase):
+                a, b, p = fixtures()
+                del b['trials'][0]['phase_status'][phase]
+                self.assertEqual(evaluate(a, b, p, digest(p))['status'], 'INCOMPLETE')
+        del self.b['trials'][0]['phase_status']
+        self.assertEqual(self.result()['status'], 'INCOMPLETE')
+
+    def test_zero_exemption_requires_nonempty_text_reason(self):
+        for reason in (None, '', ' ', True, 0, [], {}):
+            with self.subTest(reason=reason):
+                a, b, p = fixtures()
+                b['trials'][0]['cold_compile'] = 0
+                b['trials'][0]['phase_status']['cold_compile'] = {
+                    'status': 'not_applicable', 'reason': reason}
+                result = evaluate(a, b, p, digest(p))
+                self.assertEqual(result['status'], 'INCOMPLETE')
+                self.assertIsNone(result['speed'])
+
+    def test_integration_and_total_cannot_be_not_applicable(self):
+        for phase in ('integration', 'total'):
+            with self.subTest(phase=phase):
+                a, b, p = fixtures()
+                b['trials'][0][phase] = 0
+                b['trials'][0]['phase_status'][phase] = {
+                    'status': 'not_applicable', 'reason': 'invalid exemption'}
+                self.assertEqual(evaluate(a, b, p, digest(p))['status'], 'INCOMPLETE')
+
     def test_total_must_include_phases(self):
         self.b['trials'][0]['total'] = 5
         self.assertEqual(self.result()['status'], 'INCOMPLETE')
@@ -262,7 +324,9 @@ class EvidenceTests(unittest.TestCase):
         for case, expected, code in [('declared', 'NOT_COMPARABLE', 3),
                                       ('status', 'INCOMPLETE', 2),
                                       ('boolean', 'INCOMPLETE', 2),
-                                      ('missing', 'INCOMPLETE', 2)] + [(status, status, code) for status, code in [('PASS', 0), ('QUALITY_FAIL', 1), ('SPEED_FAIL', 1),
+                                      ('missing', 'INCOMPLETE', 2),
+                                      ('zero_compile', 'INCOMPLETE', 2),
+                                      ('aot', 'PASS', 0)] + [(status, status, code) for status, code in [('PASS', 0), ('QUALITY_FAIL', 1), ('SPEED_FAIL', 1),
                                ('NOT_COMPARABLE', 3), ('INCOMPLETE', 2)]]:
             with self.subTest(expected=expected), tempfile.TemporaryDirectory() as temp:
                 root = Path(temp)
@@ -290,6 +354,12 @@ class EvidenceTests(unittest.TestCase):
                     b['precision'] = 'float32'
                 if case == 'INCOMPLETE':
                     (root / 'fixture.txt').write_text('tampered')
+                if case in ('zero_compile', 'aot'):
+                    for trial in b['trials']:
+                        trial['cold_compile'] = 0
+                        if case == 'aot':
+                            trial['phase_status']['cold_compile'] = {
+                                'status': 'not_applicable', 'reason': 'AOT; no runtime compilation'}
                 if case == 'declared':
                     b['not_comparable'] = True
                 if case == 'status':
@@ -326,6 +396,8 @@ class EvidenceTests(unittest.TestCase):
         self.assertEqual(final, 5)
         self.assertEqual(timings['total'], 11)
         self.assertEqual(timings['integration'], 1)
+        self.assertEqual(timings['phase_status'],
+                         {name: {'status': 'measured'} for name in (*PHASES, 'total')})
 
     def test_failed_sync_not_recorded_as_success(self):
         def fail(value):

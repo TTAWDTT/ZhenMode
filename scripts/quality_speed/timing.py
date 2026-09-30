@@ -23,5 +23,6 @@ def measure_lifecycle(*, setup, compile_cold, warmup, integrate, diagnostics_io,
         synchronize(current)
         phases[name] = clock() - start
     phases['total'] = clock() - total_start
+    phases['phase_status'] = {name: {'status': 'measured'} for name in phases}
     phases['pair_id'] = pair_id
     return phases, current
