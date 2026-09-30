@@ -28,6 +28,18 @@ class WeakParameters(NamedTuple):
     cos_lat: jax.Array
 
 
+class PhysicalFaceQuadrature(NamedTuple):
+    left_trace: HatTrace
+    right_trace: HatTrace
+    measures: jax.Array
+    flux: jax.Array
+    left_primitive: jax.Array
+    right_primitive: jax.Array
+    inside_left: jax.Array
+    inside_right: jax.Array
+    total: jax.Array
+
+
 def consistent_potential_basis(depths, params, reference_geometry, mass):
     lumped = make_potential_basis(depths, params)
     moment = lumped.mean_depth * params.dz_node * params.wet_mask_z
@@ -69,7 +81,7 @@ def _evaluate(trace, field, wet):
     return jnp.sum(trace.weights * safe[..., None, None, :], axis=-1)
 
 
-def _face_rates(density, velocity, geometry, surface, params, axis):
+def physical_face_quadrature(velocity, geometry, surface, params, axis):
     def neighbor(values):
         return jnp.roll(values, -1, axis=axis)
 
@@ -111,15 +123,22 @@ def _face_rates(density, velocity, geometry, surface, params, axis):
     flux = endpoint_flux[..., 0, None] + slope[..., None] * displacement
     partial = prefix[..., None] + endpoint_flux[..., 0, None] * displacement + .5 * slope[..., None] * displacement ** 2
     total = jnp.sum(segment_volume, axis=-1)
-    left_density = _evaluate(left_trace, density, wet)
-    right_density = _evaluate(right_trace, neighbor(density), other_wet)
-    centered = .5 * (left_density + right_density)
-    horizontal = measures * flux * centered
     left_height, right_height = bed - top, other_bed - other_top
     left_primitive = partial - total[..., None, None] * (locations - top[..., None, None]) / jnp.where(left_height > 0., left_height, 1.)[..., None, None]
     right_primitive = partial - total[..., None, None] * (locations - other_top[..., None, None]) / jnp.where(right_height > 0., right_height, 1.)[..., None, None]
     inside_left = (locations >= top[..., None, None]) & (locations <= bed[..., None, None])
     inside_right = (locations >= other_top[..., None, None]) & (locations <= other_bed[..., None, None])
+    return PhysicalFaceQuadrature(left_trace, right_trace, measures, flux, left_primitive,
+                                  right_primitive, inside_left, inside_right, total)
+
+
+def _face_rates(density, velocity, geometry, surface, params, axis):
+    face = physical_face_quadrature(velocity, geometry, surface, params, axis)
+    left_trace, right_trace, measures, flux, left_primitive, right_primitive, inside_left, inside_right, total = face
+    wet = params.wet_mask_z
+    left_density = _evaluate(left_trace, density, wet)
+    right_density = _evaluate(right_trace, jnp.roll(density, -1, axis=axis), jnp.roll(wet, -1, axis=axis))
+    horizontal = measures * flux * .5 * (left_density + right_density)
     left_terms = (-horizontal[..., None] * left_trace.weights
                   - (measures * left_density * left_primitive * inside_left)[..., None] * left_trace.derivative)
     right_terms = (horizontal[..., None] * right_trace.weights

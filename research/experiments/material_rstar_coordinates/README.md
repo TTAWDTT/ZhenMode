@@ -255,3 +255,46 @@ for this new mass: the new raw packets include independently assembled kinetic
 matrices. The old witness auditor is not an auditor for this kinetic contract.
 These gates do not qualify moving-mass momentum, bounded tracers, complete PDE
 order, fast-slow time coupling or a production factory.
+
+## Bounded consistent content and full-grid capacity
+
+`weak_sparse.py` assembles physical weak coefficients without a global dense
+Jacobian. The graph contains adjacent vertical hats and all potential wet pairs
+across physical column faces, not the old equal-index graph. Face quadrature
+streams 16 original longitude columns and one actual periodic halo using a scan;
+all latitude columns, beds, wet unknowns and the north wall remain unchanged.
+This fixed graph permits changing vertical overlap but can be wider than the
+currently nonzero overlap. Do not call its local-nz-squared storage globally dense.
+
+`weak_bounded.py` decomposes high/low consistent-mass stages into antisymmetric
+corrections, limits each pair against actual endpoint/source-adjusted node bounds,
+then re-encodes **consistent** content. It checks decoded nodes too and rolls back
+invalid stages without clipping states or correcting an inventory residual.
+The declared source is applied identically to both paths. Limited-minus-high
+thermal potential transfer is reported separately and need not be negative.
+
+```shell
+python research/experiments/material_rstar_coordinates/weak_bounded_audit.py --output results/rstar_bounded_new
+python -m pytest tests/test_rstar_weak_bounded.py -q
+python research/experiments/material_rstar_coordinates/weak_actual_capacity_audit.py --advance --output results/rstar_full_capacity_new
+```
+
+The last command requires the original saved grid, parameters and first-rejected
+surface packets named in `real_geometry_protocol.json`; these large local inputs
+are not bundled in a fresh clone. Omitting `--advance` only constructs the graph.
+Use the same entry point on actual CUDA with `JAX_PLATFORMS=cuda` and
+`XLA_PYTHON_CLIENT_PREALLOCATE=false`. `weak_actual_protocol.json` records the
+fields, gates and interpretation; every run freezes source/input hashes and raw
+arrays, refuses existing output folders and records completed stages separately
+from accepted ocean steps. It is not an integration command.
+
+Eight prescribed-flow CPU/CUDA controls and two full original1degree real-grid
+prescribed tracer stress stages pass, with independent quadrature/matrix/source
+checks. The first full-grid CUDA OOM is retained: streaming fixes workspace, not
+the domain or tolerance. The full-grid probe uses fresh analytic node fields and
+100W/m2 heat, not a WOA restart or solved momentum; accepted ocean steps remain
+zero. The first near-zero pulse stock comparison and the explicitly revised
+point-precision-weighted oracle scale are retained too; runtime physical bounds,
+inventory/decomposition and original pressure gates are not relaxed.
+No time-order, full moving-mass momentum, full source/diffusion suite, production
+factory/restart, real day7/30 or industrial qualification follows from these stages.
