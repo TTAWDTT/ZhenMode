@@ -35,6 +35,7 @@ import numpy as np
 
 from config import ALPHA_T, BETA_S, C_P, G_EARTH, OMEGA, R_EARTH, RHO_0
 from grid import nodal_control_thickness
+from runtime_validation import finite_number, integer_count, validate_grid
 
 # ── State ──────────────────────────────────────────────────────────
 JaxStateG = namedtuple('JaxStateG', ['u', 'v', 'T', 'S', 'eta', 'ice'])
@@ -2623,7 +2624,24 @@ def make_solver_global(grid, physics, dt, forcing=None,
         and exact linear bottom drag around the full step. Diffusion, filters
         and coupled forcing errors remain unqualified; not whole-model RK2.
     """
-    base = make_fd_params(grid, column_geometry=column_geometry)
+    finite_number('dt', dt, positive=True)
+    finite_number('dt_bt', dt_bt, positive=True)
+    validate_grid(grid)
+    if dtype not in {'float32', 'float64'}:
+        raise ValueError('dtype must be float32 or float64')
+    for name in ('nu_h', 'nu_v', 'nu_bi', 'kappa_h', 'kappa_v', 'kappa_bi',
+                 'kappa_conv', 'kappa_gm', 'kappa_redi', 'r_bot', 'cd'):
+        finite_number(name, getattr(physics, name), nonnegative=True)
+    for name, value in (('lambda_bulk', lambda_bulk), ('sss_restore_days', sss_restore_days),
+                        ('coastal_restore_days', coastal_restore_days), ('coastal_bulk_lambda', coastal_bulk_lambda),
+                        ('coastal_kappa_h', coastal_kappa_h), ('coastal_kappa_v', coastal_kappa_v),
+                        ('sponge_days', sponge_days), ('eta_relax_days', eta_relax_days)):
+        finite_number(name, value, nonnegative=True)
+    for name, value in (('polar_cap_rows', polar_cap_rows), ('polar_cap_taper', polar_cap_taper),
+                        ('sponge_cells', sponge_cells)):
+        integer_count(name, value)
+    if nu_nsub is not None and not (isinstance(nu_nsub, str) and nu_nsub == 'cfl'):
+        integer_count('nu_nsub', nu_nsub, minimum=1)
     if match_barotropic_transport and (not mode_split or column_geometry != 'nodal_dual_v1'):
         raise ValueError("match_barotropic_transport requires mode_split=True and column_geometry='nodal_dual_v1'")
     if process_time_scheme not in ('legacy', 'consistent_split_v1', 'subcycled_rk2_v2', 'symmetric_fast_v3'):
@@ -2633,6 +2651,9 @@ def make_solver_global(grid, physics, dt, forcing=None,
     if column_geometry == 'nodal_dual_v1':
         if not conservative_kv or not localize_conv:
             raise ValueError("nodal_dual_v1 requires conservative_kv=True and localize_conv=True")
+    if polar_cap_rows > 0 and 2 * (polar_cap_rows + polar_cap_taper) > grid.ny:
+        raise ValueError('polar cap bands must not overlap; reduce rows/taper or disable the cap')
+    base = make_fd_params(grid, column_geometry=column_geometry)
     nx, ny, nz = base.nx, base.ny, base.nz
     if projection_niter is None:
         legacy_cap = os.environ.get('OCEAN_PAV_NITER')

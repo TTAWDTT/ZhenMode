@@ -311,6 +311,6 @@ def test_candidate_vertical_diffusion_cfl_uses_control_width_not_node_distance()
 
 def test_default_geometry_is_still_legacy():
     grid, _ = _fixture()
-    _, _, _, params, _ = make_solver_global(grid, PhysicsConfig(), 10., return_params=True)
+    _, _, _, params, _ = make_solver_global(grid, PhysicsConfig(), 10., return_params=True, polar_cap_rows=0)
     assert params.column_geometry == "legacy"
     assert np.sum(params.dz_node) == 67.5

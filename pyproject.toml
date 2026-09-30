@@ -44,6 +44,8 @@ py-modules = [
     "material_top",
     "run_long_integration_global",
     "restart_contract",
+    "runtime_validation",
+    "integration_monitor",
     "forcing",
     "wind_reanalysis",
     "air_reanalysis",

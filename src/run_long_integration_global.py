@@ -60,8 +60,10 @@ from forcing import (
     ocean_zonal_mean,
 )
 from grid import global_grid_dims, land_distance_from_land_mask, make_global_grid
+from integration_monitor import classify_state
 from jax_solver_global import JaxStateG, make_solver_global, projection_config
 from restart_contract import file_sha256, load_restart, make_restart_contract, save_restart
+from runtime_validation import finite_number, integer_count
 from wind_reanalysis import real_wind_forcing
 from woa_data import get_initial_fields
 
@@ -135,11 +137,7 @@ SPONGE_DAYS_DEFAULT_G = 0.0   # OFF (no residual instability at lat_max=60; the
 
 
 def state_is_finite(state):
-    for f in (state.u, state.v, state.T, state.S, state.eta, state.ice):
-        a = np.asarray(f)
-        if not np.isfinite(a).all():
-            return False
-    return True
+    return bool(classify_state(state).finite)
 
 
 def total_kinetic_energy(state, ocean_mask):
@@ -311,7 +309,7 @@ def _lat_band_mask(grid, band):
             & (grid.lat[None, :] <= lat_max)).astype(float)
 
 
-SNAPSHOT_SCALARS = ("days", "max_u", "max_T", "max_eta", "ssh_std", "ke", "ice_fraction")
+SNAPSHOT_SCALARS = ("days", "max_u", "max_velocity", "max_T", "max_eta", "ssh_std", "ke", "ice_fraction")
 SNAPSHOT_FIELDS = ("eta", "T_top", "ice_top")
 
 
@@ -332,12 +330,16 @@ def _validate_restart_history(record, grid, n_snap, dt, save_3d, save_terms, out
     if not np.array_equal(record.history["days"], days):
         raise ValueError("restart history days differ from the absolute snapshot timeline")
     expected_count = count if save_3d else 0
-    if record.counters != {"n_3d_snaps": expected_count}:
+    if record.counters != {"n_3d_snaps": expected_count, "accepted_steps": record.step,
+                           "attempted_steps": record.step}:
         raise ValueError("restart actual 3D output counter mismatch")
-    if set(record.cumulative) != {"max_u_peak"} or record.cumulative["max_u_peak"].shape != ():
+    if (set(record.cumulative) != {"max_u_peak", "max_velocity_peak"}
+            or any(value.shape != () for value in record.cumulative.values())):
         raise ValueError("restart production statistics mismatch")
-    peak = max(record.history["max_u"][1:], default=0.)
-    if float(record.cumulative["max_u_peak"]) != peak:
+    peak = float(record.cumulative["max_u_peak"])
+    velocity_peak = float(record.cumulative["max_velocity_peak"])
+    if (peak < max(record.history["max_u"]) or velocity_peak < max(record.history["max_velocity"])
+            or velocity_peak < peak or velocity_peak > MAX_U_BOUND):
         raise ValueError("restart historical velocity peak mismatch")
     for field, state_field in (("eta", "eta"), ("T_top", "T"), ("ice_top", "ice")):
         current = record.state[state_field]
@@ -362,6 +364,65 @@ def _save_snapshot_file(path, array, outputs, relative_path):
         np.save(stream, array)
     if outputs is not None:
         outputs[relative_path] = file_sha256(path)
+
+
+def _validate_arguments(args):
+    for name in ('days', 'dt', 'snap_days', 'min_depth', 'lat_max', 'gm_slope_max',
+                 'mixed_layer_depth_min', 'mixed_layer_depth_max'):
+        finite_number(name, getattr(args, name), positive=True)
+    if args.lat_max >= 90.:
+        raise ValueError('lat_max must be below 90 degrees')
+    for name in ('dt_bt', 'resolution', 'projection_rtol'):
+        if getattr(args, name) is not None:
+            finite_number(name, getattr(args, name), positive=True)
+    for name in ('nu_h', 'nu_bi', 'kappa_v', 'kappa_conv', 'kappa_gm', 'kappa_redi',
+                 'lambda_bulk', 'bulk_lambda_mult', 'sss_restore_days', 'coastal_restore_days',
+                 'global_sst_restore_days', 'coastal_bulk_lambda', 'coastal_kappa_h',
+                 'coastal_kappa_v', 'sponge_days', 'eta_relax_days', 'eta_relax_buffer',
+                 'checkpoint_days', 'wind_blend_days', 'mixed_layer_depth', 'mld_density_delta'):
+        if getattr(args, name) is not None:
+            finite_number(name, getattr(args, name), nonnegative=True)
+    for name in ('ice_air_floor_temp', 'ice_freeze_temp', 'ice_salt_flux'):
+        finite_number(name, getattr(args, name))
+    finite_number('ice_insulation_scale_m', args.ice_insulation_scale_m, positive=True)
+    for name in ('max_steps', 'smooth_passes', 'air_marine_smooth_passes', 'polar_cap_rows',
+                 'polar_cap_taper', 'sponge_cells', 'coastal_restore_cells', 'coastal_bulk_cells',
+                 'coastal_kappa_h_cells', 'coastal_kappa_v_cells'):
+        integer_count(name, getattr(args, name))
+    if args.ny is not None:
+        integer_count('ny', args.ny, minimum=4)
+    if args.projection_niter is not None:
+        integer_count('projection_niter', args.projection_niter, minimum=1)
+    if args.nu_nsub is not None and args.nu_nsub != 'cfl':
+        try:
+            value = int(args.nu_nsub)
+        except ValueError as error:
+            raise ValueError('nu_nsub must be cfl or a positive integer') from error
+        integer_count('nu_nsub', value, minimum=1)
+    if args.mixed_layer_depth_min > args.mixed_layer_depth_max:
+        raise ValueError('mixed_layer_depth_min exceeds mixed_layer_depth_max')
+    if args.save_3d_terms and not args.save_3d:
+        raise ValueError('save_3d_terms requires save_3d')
+    for name in ('mixed_layer_lat_band', 'eta_relax_box'):
+        values = getattr(args, name)
+        if values is not None:
+            for value in values:
+                finite_number(name, value)
+            if not -90. <= values[-2] <= values[-1] <= 90.:
+                raise ValueError(f'{name} must contain an ordered latitude interval within [-90, 90]')
+    if args.z_levels:
+        nodes = np.asarray([float(value) for value in args.z_levels.split(',')])
+        if len(nodes) < 3 or not np.isfinite(nodes).all() or nodes[0] != 0. or not np.all(np.diff(nodes) < 0.):
+            raise ValueError('z_levels must start at zero and strictly descend through finite depths')
+    duration_seconds = finite_number('duration_seconds', args.days * 86400., positive=True)
+    step_ratio = finite_number('requested_steps', duration_seconds / args.dt, positive=True)
+    for name in ('snap_days', 'checkpoint_days'):
+        if getattr(args, name) > 0.:
+            finite_number(f'{name} step ratio', getattr(args, name) * 86400. / args.dt, positive=True)
+    requested_steps = int(round(step_ratio))
+    if requested_steps < 1:
+        raise ValueError('requested duration rounds to zero integration steps')
+    return requested_steps
 
 
 def main():
@@ -617,6 +678,10 @@ def main():
                          "code/effective parameters/grid/forcing/dtype/backend, restores "
                          "absolute time and histories; old state-only files need migration")
     args = ap.parse_args()
+    try:
+        requested_steps = _validate_arguments(args)
+    except ValueError as error:
+        ap.error(str(error))
 
     tag = args.tag or f"g{int(args.days)}d"
     os.makedirs(args.out_dir, exist_ok=True)
@@ -1007,7 +1072,7 @@ def main():
 
     state = init_state_global(T_init=jnp.array(T_init), S_init=jnp.array(S_init))
 
-    n_total = int(round(args.days * 86400.0 / args.dt))
+    n_total = requested_steps
     if args.max_steps > 0:
         n_total = min(n_total, args.max_steps)
     n_snap = max(1, int(round(args.snap_days * 86400.0 / args.dt)))
@@ -1020,7 +1085,8 @@ def main():
         source_dir = Path(__file__).resolve().parent
         source_names = ("run_long_integration_global", "jax_solver_global", "restart_contract",
                         "config", "grid", "diagnostics", "forcing", "wind_reanalysis",
-                        "air_reanalysis", "woa_data", "benchmark_metrics", "mixed_layer_ice")
+                        "air_reanalysis", "woa_data", "benchmark_metrics", "mixed_layer_ice",
+                        "integration_monitor", "runtime_validation", "stage_budgets")
         checkpoint_contract = make_restart_contract(
             grid, _params, dtype=args.dtype,
             forcing={"initial_T": T_init, "initial_S": S_init, "baked": forcing_baked,
@@ -1029,7 +1095,9 @@ def main():
                       "wind_blend_days": args.wind_blend_days, "wind_jit": args.wind_jit,
                       "n_snap": n_snap, "save_3d": args.save_3d,
                       "save_3d_terms": args.save_3d_terms,
-                      "budget_kind": "snapshot_inventory_only_no_flux_ledger"},
+                      "budget_kind": "snapshot_inventory_only_no_flux_ledger",
+                      "monitor_schema_version": 1, "monitor_comparison": ">",
+                      "velocity_limit": MAX_U_BOUND, "eta_limit": ETA_BLOWUP_M},
             code_paths={name: source_dir / f"{name}.py" for name in source_names},
             execution={"python": sys.version, "jax": jax.__version__, "numpy": np.__version__,
                        "backend": jax.default_backend(),
@@ -1138,6 +1206,7 @@ def main():
     # ── Integration loop ──
     snap_days = []
     snap_maxu = []
+    snap_maxvelocity = []
     snap_maxT = []
     snap_maxeta = []
     snap_sshstd = []
@@ -1149,9 +1218,11 @@ def main():
     snap_budget: list[BudgetDiagnostics] = []
     maxT_history = []
     max_u_peak = 0.0
+    max_velocity_peak = 0.0
     if restored is not None:
         snap_days = list(restored.history["days"])
         snap_maxu = list(restored.history["max_u"])
+        snap_maxvelocity = list(restored.history["max_velocity"])
         snap_maxT = list(restored.history["max_T"])
         snap_maxeta = list(restored.history["max_eta"])
         snap_sshstd = list(restored.history["ssh_std"])
@@ -1165,6 +1236,7 @@ def main():
                        for index in range(len(snap_days))]
         maxT_history = list(snap_maxT)
         max_u_peak = float(restored.cumulative["max_u_peak"])
+        max_velocity_peak = float(restored.cumulative["max_velocity_peak"])
     diverged_at = None
     diverge_reason = ""
     cur = 0
@@ -1179,6 +1251,7 @@ def main():
             if args.dtype == "float32" else np.asarray
         eta = f64(state.eta)
         maxu = float(np.max(np.abs(f64(state.u))))
+        maxvelocity = max(maxu, float(np.max(np.abs(f64(state.v)))))
         maxT = float(np.max(np.abs(f64(state.T))))
         maxeta = float(np.nanmax(np.abs(eta))) if np.isfinite(eta).any() else float('nan')
         sshstd = float(np.std(eta[ocean])) if ocean.any() else float('nan')
@@ -1186,6 +1259,7 @@ def main():
         nan = int(np.sum(~np.isfinite(f64(state.u))))
         snap_days.append(day)
         snap_maxu.append(maxu)
+        snap_maxvelocity.append(maxvelocity)
         snap_maxT.append(maxT)
         snap_maxeta.append(maxeta)
         snap_sshstd.append(sshstd)
@@ -1245,35 +1319,50 @@ def main():
         maxu, maxT, maxeta, nan = snap_maxu[-1], snap_maxT[-1], snap_maxeta[-1], 0
 
     cur = start_step
+    attempted_steps = start_step
+    first_rejected_step = -1
+    rejected_path = ''
+    initial_metrics = classify_state(state, MAX_U_BOUND, ETA_BLOWUP_M)
+    max_u_peak = float(jnp.maximum(max_u_peak, initial_metrics.max_u))
+    max_velocity_peak = float(jnp.maximum(max_velocity_peak, initial_metrics.max_velocity))
+    failure_code = int(initial_metrics.failure)
+    if failure_code:
+        diverged_at = cur * args.dt / 86400.
+        first_rejected_step = cur
+        diverge_reason = f'invalid incoming state (monitor code {failure_code})'
+        rejected = state
 
-    while cur < n_total:
+    while cur < n_total and not failure_code:
         take = min(n_snap, n_total - cur)
         for _ in range(take):
-            state = do_step(state, cur * args.dt / 86400.0)
+            proposed = do_step(state, cur * args.dt / 86400.0)
+            metrics = classify_state(proposed, MAX_U_BOUND, ETA_BLOWUP_M)
+            attempted_steps += 1
+            max_u_peak = float(jnp.maximum(max_u_peak, metrics.max_u))
+            max_velocity_peak = float(jnp.maximum(max_velocity_peak, metrics.max_velocity))
+            failure_code = int(metrics.failure)
+            if failure_code:
+                rejected = proposed
+                first_rejected_step = attempted_steps
+                diverged_at = attempted_steps * args.dt / 86400.
+                diverge_reason = f'first rejected step {attempted_steps} (monitor code {failure_code})'
+                break
+            state = proposed
             cur += 1
-        maxu, maxT, maxeta, nan = snapshot(cur)
-        max_u_peak = max(max_u_peak, maxu)
-        if not state_is_finite(state):
-            diverged_at = cur * args.dt / 86400.0
-            diverge_reason = "non-finite field (NaN/Inf)"
-            break
-        if maxu > MAX_U_BOUND:
-            diverged_at = cur * args.dt / 86400.0
-            diverge_reason = f"max|u| {maxu:.2f} > bound {MAX_U_BOUND}"
-            break
-        if np.isfinite(maxeta) and maxeta > ETA_BLOWUP_M:
-            diverged_at = cur * args.dt / 86400.0
-            diverge_reason = f"|eta| {maxeta:.2f} > watchdog {ETA_BLOWUP_M}"
+        if cur * args.dt / 86400. != snap_days[-1]:
+            maxu, maxT, maxeta, nan = snapshot(cur)
+        if failure_code:
             break
         if (args.checkpoint_days > 0 and cur % n_ckpt == 0
                 and cur < n_total and cur > start_step):
-            history = {"days": snap_days, "max_u": snap_maxu, "max_T": snap_maxT,
+            history = {"days": snap_days, "max_u": snap_maxu, "max_velocity": snap_maxvelocity, "max_T": snap_maxT,
                        "max_eta": snap_maxeta, "ssh_std": snap_sshstd, "ke": snap_ke,
                        "eta": snap_eta, "T_top": snap_T_top, "ice_top": snap_ice_top,
                        "ice_fraction": snap_ice_fraction, **diagnostics_to_arrays(snap_budget)}
             save_restart(ckpt_path, state, checkpoint_contract, step=cur,
-                         counters={"n_3d_snaps": n_3d_snaps},
-                         cumulative={"max_u_peak": max_u_peak}, history=history,
+                         counters={"n_3d_snaps": n_3d_snaps, "accepted_steps": cur,
+                                   "attempted_steps": attempted_steps},
+                         cumulative={"max_u_peak": max_u_peak, "max_velocity_peak": max_velocity_peak}, history=history,
                          outputs=output_manifest)
             print(f"  [ckpt] saved verified restart {ckpt_path} at step {cur}", flush=True)
 
@@ -1295,6 +1384,8 @@ def main():
         verdict = "FAIL_BLOWUP"
     elif monotonic_drift or not amplitude_bounded:
         verdict = "FAIL_DRIFT"
+    elif cur < requested_steps:
+        verdict = "INCOMPLETE"
     else:
         verdict = "PASS"
 
@@ -1312,7 +1403,8 @@ def main():
     # the run unreproducible from its own output.
     config_dict = {
         'days': args.days, 'snap_days': args.snap_days,
-        'diagnostics_schema_version': 2,
+        'diagnostics_schema_version': 3,
+        'monitor_schema_version': 1,
         'restart_schema_version': 1,
         'lat_max': args.lat_max, 'ny': grid.ny, 'nx': grid.nx, 'nz': grid.nz,
         'resolution': float(gcfg.resolution),
@@ -1366,9 +1458,17 @@ def main():
         'coastal_kappa_v': args.coastal_kappa_v,
         'init_from': args.init_from or '',
     }
+    if failure_code:
+        rejected_path = os.path.join(args.out_dir, f'rejected_{tag}.npz')
+        with open(rejected_path, 'xb') as stream:
+            np.savez_compressed(stream, **{name: np.asarray(getattr(rejected, name)) for name in rejected._fields},
+                                resumable=False, failure_code=failure_code,
+                                attempted_step=first_rejected_step, accepted_step=cur,
+                                elapsed_seconds=diverged_at * 86400.)
     np.savez_compressed(out_npz,
                         days=np.array(snap_days),
                         max_u=np.array(snap_maxu),
+                        max_velocity=np.array(snap_maxvelocity),
                         max_T=np.array(snap_maxT),
                         max_eta=np.array(snap_maxeta),
                         ssh_std=np.array(snap_sshstd),
@@ -1378,7 +1478,8 @@ def main():
                         ice_top=np.array(snap_ice_top),
                         ice_fraction=np.array(snap_ice_fraction),
                         **diagnostics_to_arrays(snap_budget),
-                        diagnostics_schema_version=2,
+                        diagnostics_schema_version=3,
+                        monitor_schema_version=1,
                         salt_content_units="kg",
                         T_init=T_init,
                         S_init=S_init,
@@ -1391,13 +1492,19 @@ def main():
                         monotonic_drift=monotonic_drift,
                         amplitude_bounded=amplitude_bounded,
                         max_u_peak=max_u_peak,
+                        max_velocity_peak=max_velocity_peak,
+                        requested_steps=requested_steps, accepted_steps=cur,
+                        attempted_steps=attempted_steps, first_rejected_step=first_rejected_step,
+                        failure_code=failure_code, rejected_state_path=rejected_path,
+                        duration_complete=(cur == requested_steps and not failure_code),
                         n_3d_snaps=n_3d_snaps,
                         three_d_dir=(three_d_dir or ""),
                         config=str(config_dict))
     print(f"  saved {out_npz}")
     if three_d_dir:
         print(f"  3D snapshots: {n_3d_snaps} files in {three_d_dir}")
+    return 0 if verdict == 'PASS' else 3 if verdict == 'INCOMPLETE' else 1
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

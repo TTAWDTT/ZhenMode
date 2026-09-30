@@ -17,8 +17,8 @@ import numpy as np
 from config import DEFAULT_CONFIG, GlobalGridConfig, PhysicsConfig
 from diagnostics import compute_budget_diagnostics
 from grid import global_grid_dims, land_distance_from_land_mask, make_global_grid
+from integration_monitor import make_monitored_advance
 from jax_solver_global import make_solver_global, projection_config
-from run_long_integration_global import ETA_BLOWUP_M, MAX_U_BOUND
 from stage_budgets import (
     MAXIMUM_BUDGET_FIELDS,
     METRIC_NAMES,
@@ -26,7 +26,6 @@ from stage_budgets import (
     SOURCE_NAMES,
     STAGE_NAMES,
     TRANSPORT_METRIC_NAMES,
-    accumulate_budget,
     empty_budget,
     make_budget_step,
 )
@@ -47,68 +46,6 @@ def make_smoke_fixture(resolution, bathymetry, kappa_bi):
     physics = replace(PhysicsConfig(), nu_h=2e6, nu_bi=0., kappa_bi=kappa_bi,
                       kappa_v=1e-6, kappa_conv=0.01, kappa_gm=0., kappa_redi=0.)
     return grid, physics, initial_temperature, initial_salinity, atmosphere, forcing
-
-
-def make_monitored_advance(step, zero_budget, audited=False, transport_tolerances=None):
-    """Stop on the first rejected step; never book its state or ledger as accepted.
-
-    Failure codes: 1 non-finite state, 2 non-finite budget, 3 velocity, 4 eta,
-    5 continuity, 6 tracer/fast transport. Optional tolerances require auditing.
-    An invalid incoming state has zero attempts. Peaks include rejected values.
-    Returned state and totals contain only accepted steps; rejected data is separate.
-    """
-    if transport_tolerances is not None:
-        if not audited or len(transport_tolerances) != 2 or not all(
-                np.isfinite(value) and value > 0. for value in transport_tolerances):
-            raise ValueError("transport_tolerances require auditing and two finite positive limits")
-
-    def classify(state, ledger):
-        velocity = jnp.maximum(jnp.max(jnp.abs(state.u)), jnp.max(jnp.abs(state.v)))
-        eta = jnp.max(jnp.abs(state.eta))
-        finite_state = jnp.all(jnp.stack([jnp.all(jnp.isfinite(field)) for field in state]))
-        finite_ledger = jnp.all(jnp.stack([jnp.all(jnp.isfinite(values)) for values in ledger.values()]))
-        failure = jnp.where(~finite_state, 1, jnp.where(~finite_ledger, 2,
-                            jnp.where(velocity >= MAX_U_BOUND, 3, jnp.where(eta >= ETA_BLOWUP_M, 4, 0))))
-        if transport_tolerances is not None:
-            continuity, matching = transport_tolerances
-            metrics = ledger["transport_consistency_max"]
-            transport_failure = jnp.where(jnp.abs(metrics[0]) > continuity, 5,
-                                          jnp.where(jnp.abs(metrics[2]) > matching, 6, 0))
-            failure = jnp.where(failure == 0, transport_failure, failure)
-        return velocity, eta, finite_state & finite_ledger, failure
-
-    @jax.jit
-    def advance(current, count):
-        initial_velocity, initial_eta, initial_finite, initial_failure = classify(current, zero_budget)
-        initial = (current, initial_velocity, initial_eta, initial_finite, zero_budget,
-                   jnp.asarray(0), jnp.asarray(0), initial_failure, current, zero_budget)
-
-        def attempt(carry):
-            previous, peak_velocity, peak_eta, finite, totals, accepted, attempted, _, rejected, rejected_ledger = carry
-            if audited:
-                updated, ledger = step(previous)
-            else:
-                updated, ledger = step(previous), zero_budget
-            new_totals = accumulate_budget(totals, ledger) if audited else totals
-            velocity, eta, step_finite, failure = classify(updated, ledger)
-            total_finite = jnp.all(jnp.stack([jnp.all(jnp.isfinite(values)) for values in new_totals.values()]))
-            failure = jnp.where((failure == 0) & ~total_finite, 2, failure)
-            step_finite = step_finite & total_finite
-            valid = failure == 0
-            accepted_state = jax.tree.map(lambda new, old: jnp.where(valid, new, old), updated, previous)
-            accepted_totals = jax.tree.map(lambda new, old: jnp.where(valid, new, old), new_totals, totals)
-            rejected = jax.tree.map(lambda new, old: jnp.where(valid, old, new), updated, rejected)
-            rejected_ledger = jax.tree.map(lambda new, old: jnp.where(valid, old, new), ledger, rejected_ledger)
-            return (accepted_state, jnp.maximum(peak_velocity, velocity), jnp.maximum(peak_eta, eta),
-                    finite & step_finite, accepted_totals, accepted + valid.astype(accepted.dtype),
-                    attempted + 1, failure, rejected, rejected_ledger)
-
-        def monitored_step(index, carry):
-            return jax.lax.cond(carry[7] == 0, attempt, lambda unchanged: unchanged, carry)
-
-        return jax.lax.fori_loop(0, count, monitored_step, initial)
-
-    return advance
 
 
 def load_initial_fixture(path, grid):
