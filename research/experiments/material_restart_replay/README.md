@@ -24,3 +24,23 @@ Missing local baseline/input data is an explicit refusal, not a request to
 download replacements or reuse a different trajectory. This narrow real-data
 replay cannot establish seasonal or century reliability, climate/forecast
 skill, unsupported physics, or superiority to an industrial model.
+
+After both processes terminate, inspect raw arrays independently of the solver
+or restart loader:
+
+```shell
+python research/experiments/material_restart_replay/audit.py --replay-folder results/replay_new
+```
+
+The audit writes a new `validation_final.json` and refuses an existing output.
+It verifies metadata and every raw array checksum, the clock/counter contract,
+all history prefixes, reference state/ledger agreement, source/input identity,
+the two-process checkpoint hash chain and final byte equality. Its corruption
+controls are `tests/test_material_restart_raw_audit.py`.
+
+The registered September-30 trial completed both numerical segments, but its
+final cross-process byte gate **failed** at floating-point-tail scale. Source,
+inputs, local strict round trips and actual source totals agree; five state
+fields and parts of the cumulative ledger/history do not. The failed output
+and independent audit remain archived. This runner has not established general
+cross-process bit reproducibility, and its gate has not been relaxed.
