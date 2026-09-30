@@ -1,0 +1,13 @@
+{
+  "scope": "bounded pressure-interface localization, not a replacement solver or accepted ocean step",
+  "question": "Can removing the constant bed tail or replacing lumped nodal content with exact hat-function mass alone reconcile the already registered rest and reversible work gates?",
+  "matrix": "original declared bed versus last-wet-node truncated bed, crossed with lumped point content versus consistent piecewise-linear hat mass; retain original node locations and wet topology; use flat and variable eta with physical affine density",
+  "domain_warning": "truncating the bed changes the physical domain and nodal widths, and consistent mass changes individual content semantics; neither is an original-domain qualification, restart migration or permission to change production",
+  "independence": "assemble consistent mass and first moments by independent three-point Gauss integration, including the declared constant bed extension; no energy-derived flux compensation, pressure subtraction, clipping or tolerance changes",
+  "transport": "retain the registered coordinate-band centered flux and relative vertical continuity unchanged, to test representation-only changes; this flux is not automatically the weak-form transport of the consistent mass state",
+  "gates": "retain pressure-work and physical affine resting force dimensional64eps gates; both must pass to reject the hypothesis that further transport/geometry coupling is needed, but even both passing would not qualify production",
+  "retention": "record all cases, changed bed depth, matrix/energy/conjugate identities, source hashes and runtime; if representation-only changes fail, do not integrate them into the factory or create additional unbounded variants before recording the technical decision",
+  "nodal_mass_algebra": "follow-on prerequisite only: batched tridiagonal exact hat mass, inverse, fixed-branch coordinate derivatives and dry-sentinel independence; this does not qualify weak transport, bounds, energy or any ocean step",
+  "mass_comparison_revision": "retain first two failed mass-application comparisons: a relative bound on the cancelled dot result plus arbitrary0.01 absolute bound did not scale with summand magnitudes; before rerun use64eps*(1+sum_j(abs(actual_area_scale*Mij*cj))) for independent quadrature dot comparison, with separate matrix-entry/row-mass checks; no pressure/rest gate changes, no hiding the original failures",
+  "inverse_warning": "positive consistent content can yield negative nodal point values; preserve this negative control and require conservative bounded weak transport before using the inverse in an accepted step"
+}

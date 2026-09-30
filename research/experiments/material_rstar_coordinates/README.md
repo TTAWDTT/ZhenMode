@@ -176,3 +176,24 @@ the point/content/pressure reconstruction and bed policy before introducing a ne
 factory or state/restart contract. These results neither prove r-star/A-grid
 impossible nor invalidate the original historical integration or accepted 2-degree
 thermal-source budgets. No force here is promoted to production.
+
+## Bounded representation localization
+
+`representation_protocol.json` freezes a bed-policy/consistent-mass factorial
+control. `representation_audit.py --output results/rstar_representation_new`
+archives eight cases, matrices, content and source identity. Truncating the bed
+changes the domain; replacing lumped content changes individual content semantics.
+Neither makes the unchanged coordinate-band flux a consistent weak transport.
+All tested combinations retain the work/rest conflict. Successful audit execution
+does not qualify a physical candidate or accept an ocean step.
+
+`nodal_mass.py` supplies batched tridiagonal hat-mass application and inversion
+as a prerequisite, not a transport scheme. Positive content does not imply
+positive recovered node values; the negative control is mandatory. Caller-side
+geometry rejection remains necessary, and no factory imports this module.
+Independent Gauss, dense-column, dry-sentinel and local AD controls live in
+`tests/test_rstar_representation.py` and `tests/test_rstar_nodal_mass.py`.
+The first cancelled-dot comparison failures and its explicitly revised absolute
+summand-based64eps scale are retained separately; the original pressure/rest
+gates are unchanged. Next coupling scope and non-promotion constraints are in
+[the representation decision](representation_decision_zh.md).
