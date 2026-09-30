@@ -1,0 +1,281 @@
+{
+  "schema_version": 1,
+  "synthetic_reproduction_matched": true,
+  "qualification_passed": false,
+  "real_1degree_replayed": false,
+  "production_promotion": false,
+  "real_ocean_steps_accepted": 0,
+  "synthetic_full_step_attempts": 3,
+  "synthetic_full_step_accepts": 1,
+  "checkout_head_at_execution": "82e1ca4a2158d4c0ed20f91c04e80cdf43f8a36b",
+  "worktree_status_at_execution": "?? research/experiments/material_failure_replay/\n?? tests/test_material_failure_replay.py\n",
+  "source_sha256": {
+    "src/air_reanalysis.py": "e8226c5841c10c04b95ee850586ae19fe53b8822540fd90d58b8f7ed545d8da4",
+    "src/barotropic_transport.py": "7d0685d4cad3bfba89af5243c5e9c917b5be8e0b9f675433eb7ee5d3a236f8d2",
+    "src/bench_climatology_global.py": "12384d569b6717c45dfc321b31da800cb24580ce883f678a53fc83675703f62b",
+    "src/benchmark_gate.py": "ea1c2b90fd38d0f864f53c7ca09f3293845b9c7de7a5b9d766048d3cb7b1fde1",
+    "src/benchmark_manifest.py": "fceeff7c3f2894452963f7cc4f712d550e993e16957bd424cfd3af0bf0b219e0",
+    "src/benchmark_metrics.py": "0bbab7ce77841dec67d75311970cf41a36d6be47f1120548f786f1e14e901f39",
+    "src/benchmark_table.py": "02a7d27b870734a05561ce367d9944716c27750f61e824186de075953d940060",
+    "src/bounded_transport.py": "4619e30e33e26aab5622f3466a0d3218e1817da2aed42217db3f40684566868d",
+    "src/cgrid_momentum.py": "f130ed62f7f87647df070cfbbca0f58720dbbbc529af79f4f6bc09fcff8aaa87",
+    "src/config.py": "faf2a5da5f473ebc6db1e6e9e9eb269c576f2f9a3a7f266591516e31d110906a",
+    "src/diagnostics.py": "f5abd85323f61294d7e463072df5e1100b057f2a2f47fcae7969da48008ed3f9",
+    "src/erddap_fetch.py": "81435557452e9c916df173f12c6cb09bb5f39e70b4c467dd72ff4e8ae4abe2eb",
+    "src/export_mom6_air_temp_forcing.py": "001ecbe2e12e265fb073c6881cba08307a1ccf01a20dfe4e972e60f99c208c8e",
+    "src/export_mom6_sensible_forcing.py": "63c3a2d109ae91e154e77a5d88d090c2996a3747673eabc35e9e586b71a2fb46",
+    "src/export_mom6_wind_forcing.py": "72eef3892c42bbbf66cb17054884b485e980ba1173760944c82766aa18da1796",
+    "src/fetch_sla_monthly.py": "dacc967e7f53e6b006db854cbced1324500562924d690d488247b253598dd46e",
+    "src/fetch_ssh_abs_monthly.py": "21eaad2581e7c36a19624f67da6a63cdaa44bbf571380fd025675ceb595809c3",
+    "src/finite_volume.py": "71e2cc033794af53a09810ddfda56fc6ee604fd35c55bdf30a721a17311efba5",
+    "src/forcing.py": "c2a7c34e640ba4801353ed66f8bb41b37e087716b10c5483013609ed69e379b6",
+    "src/grid.py": "1e3ed9805737dd2ca6541ec05c99748be7eaf8706254701e09b395029d2d8360",
+    "src/integration_monitor.py": "c5dae1ee3311f61bf922855d9a2a1a28ff13fa2b0b8412def6ae2bb7a6656572",
+    "src/jax_solver_global.py": "0ee5874cef57a318e534edb9b99690c797a4ecb1be95c4f0283f957e32ff4169",
+    "src/material_top.py": "c97842bc27bee6127aa4f96fde2d0d672ee7715c60b7ded91c6d009aac2625e8",
+    "src/mixed_layer_ice.py": "fce58f82d650147daa12c3378ade3282a0d29994c218da3baa36b1a784f699ea",
+    "src/nonlinear_dynamics.py": "f1438695ecd40ff0498400477910763bcbadcc967b539ea39ee9d7560a198f40",
+    "src/paired_dynamics.py": "adac8c8c5eb47596b8f242f701c9319439348ea333d590ddfa891c160898e777",
+    "src/physical_velocity.py": "0caf9d228d5892292d50c4f906b51a5aa2239c975efc487fcd338fdf84611cac",
+    "src/restart_contract.py": "c02d1f8aad6634dae36e8a99e811ed57000ad809bf8db0bba6c301b5c423477a",
+    "src/run_long_integration_global.py": "71a1210d769cddf648696f62bb40dfd8593a8aaacced5e84ea59736209b76118",
+    "src/runtime_validation.py": "eeb738a7875987f42de92c9ada6a3e0eb7c07bb4cd4a4cce79b4a4b78136b8f8",
+    "src/score_external_model.py": "8d0938946657205ea7ffc1f946a58d75db3530396d14ca4faa4546a495bbd8b5",
+    "src/score_mom6_prog.py": "92c9c16b4d8f28dcd7fd0495b6361265b6862f14cb5bc3fa9e45b802739af22e",
+    "src/stage_budgets.py": "d67925637836e154064ffbca5af6ecccd2fed9a72155e7d3b33b724de69ed28d",
+    "src/summarize_ice_diagnostics.py": "587d47824d4cd507cfe53c2517d75ef3e059760b214ec6c9d083cd770fbca043",
+    "src/wet_fluxes.py": "e092594115ca63c6a8ad88ebba84728ad84d68e6d9aa561629d6e5da7cad654c",
+    "src/wind_reanalysis.py": "dbf06dbe69860d70516a0dcef747a911251d22bbbafb88cb4233f2f351cdd0a2",
+    "src/woa_data.py": "50124ce84babd8433f4d08228c9ebe56e6646d13cf36e2ea7e45429c2cba3c66",
+    "research/experiments/material_failure_replay/audit.py": "4ff75c7b153569f38e617f4ab9a72e9b78ec1b11cb8605421ffd53c209ac46e0",
+    "tests/test_material_failure_replay.py": "a5b77d5b3235052ea3423bb61e3c1445a23fe9c0d642f955a17b99287cd3e085"
+  },
+  "config_sha256": "f0587dc35f99fff20af3ef5d2de1f0fb27ec6202e1a6d9a47b0cbd26fd9b41d8",
+  "packet_sha256": {
+    "capacity_only_counterfactual.npz": "c5ec574d8d7317db92c9c1ae378fd90775cbdf33a0b02f36888174ffdedc78a0",
+    "inputs.npz": "6276df46004104e7a99ed7b2f81c6e866e2643671c1e93dec06bf740118ea2e7",
+    "next_complete_attempt.npz": "9a7bcde47569e3db8a4b909c18b5c76e548e9ff1898a2df6f8753db9b080c67c",
+    "original_capacity.npz": "e5e778141283b35bfd6c0e3f21935d5d96e48c4c6e480af33f4eec44dda5e229"
+  },
+  "environment": {
+    "python": "3.12.14",
+    "jax": "0.4.38",
+    "numpy": "2.5.3",
+    "backend": "cpu",
+    "devices": [
+      "TFRT_CPU_0"
+    ]
+  },
+  "wall_seconds_including_compilation": 13.050868493999928,
+  "process_peak_rss_kib_linux": 532636,
+  "cost_scope": "local CPU only; no paid API, GPU or ocean-data download; not a throughput benchmark",
+  "cases": [
+    {
+      "accepted": false,
+      "diagnostic_blocker": "subcycle_capacity",
+      "capacity_exceeded_stages": [
+        "nonlinear"
+      ],
+      "unsupported_stages": [
+        "nonlinear"
+      ],
+      "failed_scalar_checks": [
+        "local_inventory_roundoff_ratio_max"
+      ],
+      "checks": {
+        "convective_fraction_max": 0.0,
+        "eta_abs_max_m": 2.4999615880210464,
+        "finite": true,
+        "ice_abs_max_m": 0.0,
+        "linear_diffusion_fraction_max": 0.0,
+        "linear_first_active_subcycles": 1,
+        "linear_first_required_subcycles": 1.0,
+        "linear_first_schedule_supported": true,
+        "linear_second_active_subcycles": 1,
+        "linear_second_required_subcycles": 1.0,
+        "linear_second_schedule_supported": true,
+        "local_continuity_residual_max_m": 8.780603144264396e-16,
+        "local_inventory_roundoff_ratio_max": 199835657664.045,
+        "minimum_wet_thickness_m": 3.841197895360082e-05,
+        "nonlinear_active_subcycles": 0,
+        "nonlinear_combined_fraction_max": 0.0,
+        "nonlinear_required_subcycles": 161.0,
+        "nonlinear_schedule_supported": false,
+        "tracer_face_mismatch_max_m2_per_s": 7.105427357601002e-15,
+        "transport_outflow_fraction_max": 0.0,
+        "unpaired_eta_filter_max_m": 8.881784197001252e-16,
+        "velocity_abs_max_m_per_s": 0.9999999995073809
+      },
+      "initial_geometry": {
+        "finite": true,
+        "minimum_wet_thickness_m": 0.00011999999999989797,
+        "minimum_index_xyz": [
+          0,
+          0,
+          0
+        ],
+        "eta_at_minimum_m": -2.49988,
+        "reference_column_at_minimum_m": 50.0,
+        "actual_column_at_minimum_m": 47.500119999999995,
+        "minimum_actual_column_m": 47.500119999999995,
+        "nonpositive_wet_nodes": 0,
+        "nonpositive_columns": 0
+      },
+      "attempted_geometry": {
+        "finite": true,
+        "minimum_wet_thickness_m": 3.841197895360082e-05,
+        "minimum_index_xyz": [
+          0,
+          0,
+          0
+        ],
+        "eta_at_minimum_m": -2.4999615880210464,
+        "reference_column_at_minimum_m": 50.0,
+        "actual_column_at_minimum_m": 47.500038411978956,
+        "minimum_actual_column_m": 47.500038411978956,
+        "nonpositive_wet_nodes": 0,
+        "nonpositive_columns": 0
+      },
+      "rejected_state_rollback_bytes_equal": true,
+      "attempt_budget_is_accepted_increment": false,
+      "name": "original_capacity",
+      "maximum_subcycles": 128
+    },
+    {
+      "accepted": true,
+      "diagnostic_blocker": "accepted",
+      "capacity_exceeded_stages": [],
+      "unsupported_stages": [],
+      "failed_scalar_checks": [],
+      "checks": {
+        "convective_fraction_max": 0.4495151930683104,
+        "eta_abs_max_m": 2.4999615880210464,
+        "finite": true,
+        "ice_abs_max_m": 0.0,
+        "linear_diffusion_fraction_max": 0.0,
+        "linear_first_active_subcycles": 1,
+        "linear_first_required_subcycles": 1.0,
+        "linear_first_schedule_supported": true,
+        "linear_second_active_subcycles": 1,
+        "linear_second_required_subcycles": 1.0,
+        "linear_second_schedule_supported": true,
+        "local_continuity_residual_max_m": 8.780603144264396e-16,
+        "local_inventory_roundoff_ratio_max": 0.0018958546858958802,
+        "minimum_wet_thickness_m": 3.841197895360082e-05,
+        "nonlinear_active_subcycles": 161,
+        "nonlinear_combined_fraction_max": 0.46174021141270266,
+        "nonlinear_required_subcycles": 161.0,
+        "nonlinear_schedule_supported": true,
+        "tracer_face_mismatch_max_m2_per_s": 7.105427357601002e-15,
+        "transport_outflow_fraction_max": 0.013192704685077163,
+        "unpaired_eta_filter_max_m": 8.881784197001252e-16,
+        "velocity_abs_max_m_per_s": 0.9999999995073809
+      },
+      "initial_geometry": {
+        "finite": true,
+        "minimum_wet_thickness_m": 0.00011999999999989797,
+        "minimum_index_xyz": [
+          0,
+          0,
+          0
+        ],
+        "eta_at_minimum_m": -2.49988,
+        "reference_column_at_minimum_m": 50.0,
+        "actual_column_at_minimum_m": 47.500119999999995,
+        "minimum_actual_column_m": 47.500119999999995,
+        "nonpositive_wet_nodes": 0,
+        "nonpositive_columns": 0
+      },
+      "attempted_geometry": {
+        "finite": true,
+        "minimum_wet_thickness_m": 3.841197895360082e-05,
+        "minimum_index_xyz": [
+          0,
+          0,
+          0
+        ],
+        "eta_at_minimum_m": -2.4999615880210464,
+        "reference_column_at_minimum_m": 50.0,
+        "actual_column_at_minimum_m": 47.500038411978956,
+        "minimum_actual_column_m": 47.500038411978956,
+        "nonpositive_wet_nodes": 0,
+        "nonpositive_columns": 0
+      },
+      "rejected_state_rollback_bytes_equal": null,
+      "attempt_budget_is_accepted_increment": true,
+      "name": "capacity_only_counterfactual",
+      "maximum_subcycles": 256
+    },
+    {
+      "accepted": false,
+      "diagnostic_blocker": "nonpositive_node_with_water_remaining",
+      "capacity_exceeded_stages": [
+        "nonlinear"
+      ],
+      "unsupported_stages": [
+        "nonlinear"
+      ],
+      "failed_scalar_checks": [
+        "local_inventory_roundoff_ratio_max"
+      ],
+      "checks": {
+        "convective_fraction_max": 0.0,
+        "eta_abs_max_m": 2.5000431759500175,
+        "finite": true,
+        "ice_abs_max_m": 0.0,
+        "linear_diffusion_fraction_max": 0.0,
+        "linear_first_active_subcycles": 1,
+        "linear_first_required_subcycles": 1.0,
+        "linear_first_schedule_supported": true,
+        "linear_second_active_subcycles": 1,
+        "linear_second_required_subcycles": 1.0,
+        "linear_second_schedule_supported": true,
+        "local_continuity_residual_max_m": 7.062397624465664e-16,
+        "local_inventory_roundoff_ratio_max": 200371227987.8802,
+        "minimum_wet_thickness_m": -4.3175950017459996e-05,
+        "nonlinear_active_subcycles": 0,
+        "nonlinear_combined_fraction_max": 0.0,
+        "nonlinear_required_subcycles": 1326.0,
+        "nonlinear_schedule_supported": false,
+        "tracer_face_mismatch_max_m2_per_s": 7.105427357601002e-15,
+        "transport_outflow_fraction_max": 0.0,
+        "unpaired_eta_filter_max_m": 8.881784197001252e-16,
+        "velocity_abs_max_m_per_s": 0.999999998029524
+      },
+      "initial_geometry": {
+        "finite": true,
+        "minimum_wet_thickness_m": 3.841197895360082e-05,
+        "minimum_index_xyz": [
+          0,
+          0,
+          0
+        ],
+        "eta_at_minimum_m": -2.4999615880210464,
+        "reference_column_at_minimum_m": 50.0,
+        "actual_column_at_minimum_m": 47.500038411978956,
+        "minimum_actual_column_m": 47.500038411978956,
+        "nonpositive_wet_nodes": 0,
+        "nonpositive_columns": 0
+      },
+      "attempted_geometry": {
+        "finite": true,
+        "minimum_wet_thickness_m": -4.3175950017459996e-05,
+        "minimum_index_xyz": [
+          0,
+          0,
+          0
+        ],
+        "eta_at_minimum_m": -2.5000431759500175,
+        "reference_column_at_minimum_m": 50.0,
+        "actual_column_at_minimum_m": 47.49995682404998,
+        "minimum_actual_column_m": 47.49995682404998,
+        "nonpositive_wet_nodes": 8,
+        "nonpositive_columns": 0
+      },
+      "rejected_state_rollback_bytes_equal": true,
+      "attempt_budget_is_accepted_increment": false,
+      "name": "next_complete_attempt",
+      "maximum_subcycles": 256
+    }
+  ]
+}
