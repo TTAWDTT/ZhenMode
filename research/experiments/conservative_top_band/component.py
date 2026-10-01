@@ -36,11 +36,32 @@ def geometry_valid(s):
     )
 
 
+def stock_roundoff_bound(s):
+    """Fixed-stencil gamma_n envelope, in extensive T/S units (not psu).
+
+    3 source overlap integrals * 100 ops + at most 7 face subsegments
+    * 100 ops + 100 geometry/update/comparison ops = 1100. Unit roundoff is eps/2.
+    Coordinate subtraction contributes absolute endpoint magnitude, so thin
+    cells are not assigned a geometry-independent mean tolerance.
+    """
+    operations = 3 * 100 + 7 * 100 + 100
+    unit = np.finfo(np.float64).eps / 2
+    gamma = operations * unit / (1 - operations * unit)
+    h = -np.diff(s.z)
+    tracer_scale = np.maximum(abs(TRACER_LOWER), abs(TRACER_UPPER))
+    coordinate_scale = abs(s.z[:, :-1]) + abs(s.z[:, 1:])
+    return gamma * (abs(s.n[..., :2]) + (h + coordinate_scale)[..., None] * tracer_scale)
+
+
 def valid(s):
     if not geometry_valid(s):
         return False
-    means = s.n[..., :2] / (-np.diff(s.z))[..., None]
-    return bool(np.all(means >= TRACER_LOWER) and np.all(means <= TRACER_UPPER))
+    h = (-np.diff(s.z))[..., None]
+    bound = stock_roundoff_bound(s)
+    return bool(
+        np.all(s.n[..., :2] >= h * TRACER_LOWER - bound)
+        and np.all(s.n[..., :2] <= h * TRACER_UPPER + bound)
+    )
 
 
 def target(eta):
@@ -66,7 +87,10 @@ def reconstruction(s):
     # Symmetric endpoint excursions shrink, while the integral/mean is unchanged.
     # Both cell endpoints are inside the declared physical tracer interval.
     excursion = 0.5 * h[..., None] * abs(slope[..., :2])
-    capacity = np.minimum(c[..., :2] - TRACER_LOWER, TRACER_UPPER - c[..., :2])
+    capacity = np.maximum(0.0, np.minimum(c[..., :2] - TRACER_LOWER, TRACER_UPPER - c[..., :2]))
+    # A mean barely outside the physical interval cannot be corrected by slope:
+    # keep that stored mean unchanged, flatten its slope, and report roundoff.
+
     theta = np.ones_like(capacity)
     np.divide(capacity, excursion, out=theta, where=excursion > 0)
     slope[..., :2] *= np.minimum(1.0, theta)
@@ -148,6 +172,8 @@ def advance(s, segments, eta, sources, dt=1.0):
     try:
         if not valid(s) or not np.isfinite(dt) or dt <= 0:
             raise ValueError("invalid input")
+        if len(segments) > 3:
+            raise ValueError("fixed stencil supports at most three face bands")
         tz = target(eta)
         source = np.asarray(sources, dtype=float)
         if source.shape != s.n.shape or not np.isfinite(source).all():

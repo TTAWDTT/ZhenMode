@@ -264,3 +264,47 @@ def test_bounds_with_nonuniform_misaligned_face_and_restart(tmp_path):
         assert out.n.tobytes() == replay.n.tobytes() and out.z.tobytes() == replay.z.tobytes()
         s = out
     np.testing.assert_allclose(s.n.sum(axis=(0, 1)), total, atol=1e-12)
+
+
+def test_constant_upper_bound_small_flux_not_rejected():
+    s = salt_state([[50, 50, 50], [50, 50, 50]])
+    out, ok, _ = b.advance(s, [(-9, 0, 0.001)], [-0.001, 0.001], np.zeros_like(s.n))
+    assert ok and b.valid(out)
+    np.testing.assert_allclose(out.n.sum(axis=(0, 1)), s.n.sum(axis=(0, 1)), atol=1e-12)
+    c = out.n[..., 1] / (-np.diff(out.z))
+    assert np.max(abs(c - 50)) < 5e-14
+
+
+@pytest.mark.parametrize("sign", [-1, 1])
+def test_one_ulp_upper_bound_classified_as_roundoff(sign):
+    s = salt_state([[50, 50, 50], [50, 50, 50]])
+    s.n[0, 0, 1] = np.nextafter(s.n[0, 0, 1], np.inf if sign > 0 else -np.inf)
+    stored = s.n.copy()
+    assert b.valid(s)
+    c, m, _ = b.reconstruction(s)
+    np.testing.assert_array_equal(s.n, stored)
+    if sign > 0:
+        assert m[0, 0, 1] == 0
+    assert abs(c[0, 0, 1] - 50) < 1e-13
+
+
+@pytest.mark.parametrize(
+    "field,value", [(0, 45.000001), (0, -5.000001), (1, 50.000001), (1, -0.000001)]
+)
+def test_real_excess_rejected_without_clipping(field, value):
+    s = initial(uniform=True)
+    s.n[0, 0, field] = (-np.diff(s.z))[0, 0] * value
+    snap = s.copy()
+    out, ok, _ = b.advance(s, [], [0, 0], np.zeros_like(s.n))
+    assert not ok and out.n.tobytes() == snap.n.tobytes() == s.n.tobytes()
+
+
+def test_many_upper_bound_cycles_conserve_without_clipping():
+    s = salt_state([[50, 50, 50], [50, 50, 50]])
+    total = s.n.sum(axis=(0, 1)).copy()
+    for direction in [1, -1] * 40:
+        eta = s.z[:, 0] + np.array([-0.001, 0.001]) * direction
+        s, ok, _ = b.advance(s, [(-9, min(s.z[:, 0]), 0.001 * direction)], eta, np.zeros_like(s.n))
+        assert ok and b.valid(s)
+    np.testing.assert_allclose(s.n.sum(axis=(0, 1)), total, atol=1e-10)
+    assert abs((s.n[..., 1] / (-np.diff(s.z))) - 50).max() < 1e-12
