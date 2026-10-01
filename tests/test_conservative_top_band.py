@@ -148,11 +148,11 @@ def test_restart_before_and_after_crossing(tmp_path):
 def test_corrupt_checkpoint(tmp_path, damage):
     s = initial()
     path = tmp_path / "bad.npz"
-    packet = dict(z=s.z, n=s.n, step=np.array(0), version=np.array(1))
+    packet = dict(z=s.z, n=s.n, step=np.array(0), version=np.array(b.VERSION))
     if damage == "step":
         packet["step"] = np.array(5.9)
     if damage == "version":
-        packet["version"] = np.array(2)
+        packet["version"] = np.array(b.VERSION + 1)
     if damage == "geometry":
         packet["z"] = s.z.copy()
         packet["z"][0, 1] = 1
@@ -193,3 +193,74 @@ def test_curvature_pressure_not_qualified():
     depth = -4
     exact = b.RHO * b.G * (-2e-6) * (0 - depth**3) / 3
     assert abs(b.pressure(s, depth)[0] - exact) > 0.1
+
+
+def salt_state(values):
+    s = initial(uniform=True)
+    s.n[..., 1] = -np.diff(s.z) * np.asarray(values)
+    return s
+
+
+@pytest.mark.parametrize(
+    "values", [[[0, 1, 1], [0, 0, 0]], [[50, 49, 49], [50, 50, 50]], [[0, 50, 0], [50, 0, 50]]]
+)
+def test_shared_reconstruction_endpoint_limits(values):
+    s = salt_state(values)
+    c, m, _ = b.reconstruction(s)
+    h = -np.diff(s.z)
+    for sign in [-1, 1]:
+        endpoint = c[..., :2] + sign * 0.5 * h[..., None] * m[..., :2]
+        assert np.all(endpoint >= b.TRACER_LOWER) and np.all(endpoint <= b.TRACER_UPPER)
+    np.testing.assert_array_equal(c * h[..., None], s.n)
+    z = s.z.copy()
+    z[:, 1] = -0.1
+    z[:, 2] = -7
+    out = b.remap(s, z)
+    assert b.valid(out)
+    np.testing.assert_allclose(out.n.sum(axis=1), s.n.sum(axis=1), atol=1e-12)
+
+
+def test_negative_salt_transfer_counterexample():
+    s = salt_state([[0, 1, 1], [0, 0, 0]])
+    out, ok, _ = b.advance(s, [(-0.1, 0, 0.1)], [-0.1, 0.1], np.zeros_like(s.n))
+    assert ok and b.valid(out)
+    assert np.min(out.n[..., 1] / (-np.diff(out.z))) >= 0
+    np.testing.assert_allclose(out.n.sum(axis=(0, 1)), s.n.sum(axis=(0, 1)), atol=1e-12)
+
+
+@pytest.mark.parametrize("depth", [np.nan, np.inf, -np.inf])
+def test_pressure_nonfinite_rejected(depth):
+    with pytest.raises(ValueError):
+        b.pressure(initial(), depth)
+
+
+@pytest.mark.parametrize("bad_source,bad_input", [(True, False), (False, True)])
+def test_infeasible_tracer_update_rollback(bad_source, bad_input):
+    s = salt_state([[0, 0, 0], [0, 0, 0]])
+    source = np.zeros_like(s.n)
+    if bad_source:
+        source[0, 0, 1] = -1
+    if bad_input:
+        s.n[0, 0, 1] = -1
+    snapshot = s.copy()
+    out, ok, reason = b.advance(s, [], [0, 0], source)
+    assert not ok and reason["rejection_reason"]
+    assert s.n.tobytes() == snapshot.n.tobytes() == out.n.tobytes()
+    assert s.z.tobytes() == snapshot.z.tobytes() == out.z.tobytes()
+
+
+def test_bounds_with_nonuniform_misaligned_face_and_restart(tmp_path):
+    s = salt_state([[0, 1, 2], [2, 1, 0]])
+    path = tmp_path / "bounds.npz"
+    total = s.n.sum(axis=(0, 1)).copy()
+    for direction in [1] * 12 + [-1] * 12:
+        b.save(s, path)
+        copy = b.load(path)
+        eta = s.z[:, 0] + np.array([-0.3, 0.3]) * direction
+        segment = [(-9, min(s.z[:, 0]), 0.3 * direction)]
+        out, ok, report = b.advance(s, segment, eta, np.zeros_like(s.n))
+        replay, ok2, report2 = b.advance(copy, segment, eta, np.zeros_like(s.n))
+        assert ok and ok2 and b.valid(out) and report == report2
+        assert out.n.tobytes() == replay.n.tobytes() and out.z.tobytes() == replay.z.tobytes()
+        s = out
+    np.testing.assert_allclose(s.n.sum(axis=(0, 1)), total, atol=1e-12)

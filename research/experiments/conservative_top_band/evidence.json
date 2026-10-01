@@ -1,9 +1,9 @@
 {
   "base": "82e1ca4a2158d4c0ed20f91c04e80cdf43f8a36b",
   "test_exit": 0,
-  "test_output": "....................                                                     [100%]\n20 passed in 0.28s\n",
-  "test_wall_s": 0.6665878939966206,
-  "child_peak_RSS_KiB": 40276,
+  "test_output": "..............................                                           [100%]\n30 passed in 0.52s\n",
+  "test_wall_s": 0.7460496839994448,
+  "child_peak_RSS_KiB": 40164,
   "area_m2": 1,
   "min_eta_m": -3.6,
   "cycle_errors": {
@@ -27,7 +27,16 @@
   },
   "qualification_passed": false,
   "hashes": {
-    "research/experiments/conservative_top_band/component.py": "a3203a976edb3e61048817063cc9f0e3dfec7bc766701c70bfd90d8bd3d46fd6",
-    "tests/test_conservative_top_band.py": "6505b24097f164fbb6654a3c048b98d38145fe4c549a4382073441c715c810d5"
-  }
+    "research/experiments/conservative_top_band/component.py": "b5c942f00e34f5397e2289a766b1f9714f166e8218885201c86e36b01ced7589",
+    "tests/test_conservative_top_band.py": "0cd9a84ae71df24c873111eab31b1d2ccc56ee3a470ce41842b976f3a58d3945"
+  },
+  "checkpoint_version": 2,
+  "declared_T_bounds_C": [
+    -5,
+    45
+  ],
+  "declared_S_bounds_psu": [
+    0,
+    50
+  ]
 }

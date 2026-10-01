@@ -6,7 +6,10 @@ import numpy as np
 
 RHO = 1025.0
 G = 9.81
-VERSION = 1
+VERSION = 2
+# Isolated declared physical contract; velocities have no imposed bound.
+TRACER_LOWER = np.array([-5.0, 0.0])
+TRACER_UPPER = np.array([45.0, 50.0])
 
 
 @dataclass
@@ -19,7 +22,7 @@ class State:
         return State(self.z.copy(), self.n.copy(), self.step)
 
 
-def valid(s):
+def geometry_valid(s):
     return (
         type(s.step) is int
         and s.step >= 0
@@ -31,6 +34,13 @@ def valid(s):
         and np.all(s.z[:, -1] == -20.0)
         and np.all(-np.diff(s.z) > 0)
     )
+
+
+def valid(s):
+    if not geometry_valid(s):
+        return False
+    means = s.n[..., :2] / (-np.diff(s.z))[..., None]
+    return bool(np.all(means >= TRACER_LOWER) and np.all(means <= TRACER_UPPER))
 
 
 def target(eta):
@@ -53,6 +63,13 @@ def reconstruction(s):
     slope[:, -1] = secant[:, -1]
     a, b = secant[:, 0], secant[:, 1]
     slope[:, 1] = np.where(a * b > 0, np.sign(a) * np.minimum(abs(a), abs(b)), 0)
+    # Symmetric endpoint excursions shrink, while the integral/mean is unchanged.
+    # Both cell endpoints are inside the declared physical tracer interval.
+    excursion = 0.5 * h[..., None] * abs(slope[..., :2])
+    capacity = np.minimum(c[..., :2] - TRACER_LOWER, TRACER_UPPER - c[..., :2])
+    theta = np.ones_like(capacity)
+    np.divide(capacity, excursion, out=theta, where=excursion > 0)
+    slope[..., :2] *= np.minimum(1.0, theta)
     return c, slope, x
 
 
@@ -63,7 +80,11 @@ def integral(s, col, cell, lo, hi):
 
 def remap(s, z):
     out = State(np.asarray(z, dtype=float).copy(), np.zeros_like(s.n), s.step)
-    if not valid(s) or not valid(out) or not np.array_equal(z[:, [0, -1]], s.z[:, [0, -1]]):
+    if (
+        not valid(s)
+        or not geometry_valid(out)
+        or not np.array_equal(z[:, [0, -1]], s.z[:, [0, -1]])
+    ):
         raise ValueError("invalid target or different water domain")
     for j in range(2):
         for k in range(3):
@@ -71,11 +92,15 @@ def remap(s, z):
                 lo, hi = max(z[j, k + 1], s.z[j, src + 1]), min(z[j, k], s.z[j, src])
                 if hi > lo:
                     out.n[j, k] += integral(s, j, src, lo, hi)
+    if not valid(out):
+        raise ValueError("remap tracer means outside declared bounds")
     return out
 
 
 def pressure(s, depth):
     """Same P1 T/S reconstruction as flux; common physical-depth evaluation."""
+    if not valid(s) or np.ndim(depth) != 0 or not np.isfinite(depth):
+        raise ValueError("invalid state or nonfinite scalar depth")
     if depth < -20 or np.any(depth > s.z[:, 0]):
         raise ValueError("depth outside common wet domain")
     p = RHO * G * s.z[:, 0].copy()
@@ -162,6 +187,8 @@ def advance(s, segments, eta, sources, dt=1.0):
             raise ValueError("eta not consistent with shared volume flux")
         nz[:, -1] = -20.0  # enforce exact fixed bed only after roundoff consistency check
         intermediate = State(nz, s.n + dn + dt * source, s.step + 1)
+        if not valid(intermediate):
+            raise ValueError("intermediate tracer means outside declared bounds")
         out = remap(intermediate, tz)
         return (
             out,
@@ -183,8 +210,8 @@ def advance(s, segments, eta, sources, dt=1.0):
                 ),
             },
         )
-    except (ValueError, IndexError, TypeError):
-        return before, False, {}
+    except (ValueError, IndexError, TypeError) as error:
+        return before, False, {"rejection_reason": str(error)}
 
 
 def fd_to_means(nodes, values, z):
