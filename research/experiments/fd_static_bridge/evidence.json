@@ -1,0 +1,78 @@
+{
+  "qualification_passed": false,
+  "base_core": "82e1ca4a2158d4c0ed20f91c04e80cdf43f8a36b",
+  "parent_PR9": "d2d3ec24389e08a81293b42a83049162c2b77f71",
+  "tests": "10 passed in 0.59s",
+  "rows": [
+    {
+      "profile": "quadratic",
+      "nodes": 9,
+      "pressure_difference_Pa": 1.0712863349999993
+    },
+    {
+      "profile": "quadratic",
+      "nodes": 17,
+      "pressure_difference_Pa": 0.29014423874999706
+    },
+    {
+      "profile": "quadratic",
+      "nodes": 33,
+      "pressure_difference_Pa": 0.0754732924804763
+    },
+    {
+      "profile": "quadratic",
+      "nodes": 65,
+      "pressure_difference_Pa": 0.019081662161649235
+    },
+    {
+      "profile": "cubic",
+      "nodes": 9,
+      "pressure_difference_Pa": 1.7879491406247894
+    },
+    {
+      "profile": "cubic",
+      "nodes": 17,
+      "pressure_difference_Pa": 0.45476737773051923
+    },
+    {
+      "profile": "cubic",
+      "nodes": 33,
+      "pressure_difference_Pa": 0.11401152086193633
+    },
+    {
+      "profile": "cubic",
+      "nodes": 65,
+      "pressure_difference_Pa": 0.028502990685751683
+    }
+  ],
+  "near_crossing": {
+    "qualification_passed": false,
+    "water_m": 37.51,
+    "original_material_T_S_reference_u_v": [
+      691.7,
+      1312.85,
+      8.0,
+      -16.0
+    ],
+    "candidate_inventory": [
+      691.7,
+      1312.85,
+      8.0,
+      -16.0
+    ],
+    "interpolation_geometry_inventory": [
+      691.99450475,
+      1312.85,
+      7.9689995,
+      -15.937999
+    ],
+    "max_original_pressure_difference_Pa": 1.18928469374805,
+    "momentum_units": "rho0 times u/v stocks = kg m/s per unit area"
+  },
+  "cost": "bounded CPU; no private scientific data, no integration; peak memory not measured",
+  "hashes": {
+    "research/experiments/fd_static_bridge/bridge.py": "cf18bd43d4ee2b00cc33dbfd6a27d38b486c2af539826e4fd8db0f5fd3ad192a",
+    "research/experiments/fd_static_bridge/CONTRACT.md": "e4df2aafa82b6017128bb532cdee52f5bc84225d46cb8367b8d8a76e0fbb9ccc",
+    "tests/test_fd_static_bridge.py": "1829f7a31de00747cbe5b4eae01528b1f06c6e479a82c0ded1e5585c9e0d4daa"
+  }
+}
