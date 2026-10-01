@@ -62,8 +62,14 @@ def read_native_states(directory):
                 raise ValueError('unknown native full-state time identity')
             seconds = float(time[0]) * 86400.
             rounded = round(seconds)
-            if abs(seconds - rounded) > 1.e-8 or rounded in states:
-                raise ValueError('duplicate or fractional native state time')
+            if abs(seconds - rounded) > 1.e-8:
+                raise ValueError('fractional native state time')
+            file_hash = hashlib.sha256(path.read_bytes()).hexdigest()
+            if rounded in states:
+                if states[rounded]['sha256'] != file_hash:
+                    raise ValueError('conflicting duplicate native state time')
+                states[rounded].setdefault('identical_file_aliases', []).append(str(path.relative_to(directory)))
+                continue
             state = {}
             for name, actual, dims in [
                     ('T', 'Temp', ('Time', 'Layer', 'lath', 'lonh')),
@@ -77,7 +83,7 @@ def read_native_states(directory):
                 if state[name].shape != shape or ds[actual].units != units[name]:
                     raise ValueError('native full-state shape or units mismatch: ' + name)
             state['filename'] = str(path.relative_to(directory))
-            state['sha256'] = hashlib.sha256(path.read_bytes()).hexdigest()
+            state['sha256'] = file_hash
             states[rounded] = state
     return states
 
@@ -198,7 +204,14 @@ def inspect_run(directory):
                 native = np.stack([full_states[int(round(t))][key][0] for t in times_s])
                 if not np.array_equal(value, native):
                     raise ValueError('diagnostic differs from full native state: ' + name)
-    receipt['full_state_identities'] = {str(t): {'filename': s['filename'], 'sha256': s['sha256']}
+        interfaces = read_field(ds, 'e', ('time', 'zi', 'yh', 'xh'))
+        native_h = np.stack([full_states[int(round(t))]['h'][0] for t in times_s])
+        if (ds['e'].units != 'm' or np.max(np.abs(native_h + np.diff(interfaces, axis=1))) > 1.e-10
+                or np.max(np.abs(interfaces[:, -1] + 100.)) > 1.e-10):
+            raise ValueError('instantaneous native interfaces differ from complete-state thickness')
+        receipt['eta_field_identity'] = 'native e top interface; SSH is intrinsically cycle-averaged in MOM.F90:1098-1100'
+    receipt['full_state_identities'] = {str(t): {'filename': s['filename'], 'sha256': s['sha256'],
+                                               'identical_file_aliases': s.get('identical_file_aliases', [])}
                                         for t, s in full_states.items()}
     receipt['runtime_contract_passed'] = True
     (directory / 'native_inspection.json').write_text(json.dumps(receipt, indent=2) + '\n')

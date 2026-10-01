@@ -46,6 +46,20 @@ def test_full_native_states_preserve_values_and_times(tmp_path):
     assert np.all(states[1000]['v'] == 0.)
 
 
+def test_only_byte_identical_duplicate_snapshot_is_an_alias(tmp_path):
+    (tmp_path / 'RESTART').mkdir()
+    write_state(tmp_path / 'native_initial.nc', 0.)
+    first = tmp_path / 'RESTART/final.nc'
+    alias = tmp_path / 'RESTART/timestamp.nc'
+    write_state(first, 1000.)
+    alias.write_bytes(first.read_bytes())
+    assert len(read_native_states(tmp_path)[1000]['identical_file_aliases']) == 1
+    with netCDF4.Dataset(alias, 'a') as ds:
+        ds['u'][0, 0, 0, 0] = .002
+    with pytest.raises(ValueError, match='conflicting duplicate'):
+        read_native_states(tmp_path)
+
+
 @pytest.mark.parametrize('change', ['units', 'masked', 'time', 'coordinate'])
 def test_native_states_reject_wrong_identity(tmp_path, change):
     (tmp_path / 'RESTART').mkdir()

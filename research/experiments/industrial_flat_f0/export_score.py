@@ -111,7 +111,10 @@ def mom_arrays(directory, frozen, guard, executable):
         faces = dict(x_u=ux.ravel(), y_u=uy.ravel(), x_v=vx.ravel(), y_v=vy.ravel())
         values.update(x_eta=xx.ravel(), y_eta=yy.ravel())
         seconds = np.asarray(ds['time'][:]) * (86400. if ds['time'].units.lower().startswith('days') else 1.)
-        ssh = np.asarray(ds['SSH'][:])
+        # MOM.F90:1098-1100 sends cycle-averaged ssh to SSH. The requested
+        # native e field is the instantaneous interface geometry, not that
+        # intrinsically averaged surface diagnostic (even with time: point).
+        ssh = read_field(ds, 'e', ('time', 'zi', 'yh', 'xh'))[:, 0]
         if np.array_equal(seconds, times[1:]):
             with netCDF4.Dataset(directory / 'native_initial.nc') as initial:
                 ssh = np.concatenate((np.asarray(initial['eta'][:])[:, 0], ssh), axis=0)
@@ -151,7 +154,7 @@ def mom_arrays(directory, frozen, guard, executable):
                                   dict(time_scheme='native split RK2; FMS elapsed Main loop includes diagnostics/checkpoint I/O',
                                        transport='native PPM continuity and tracer transport',
                                        filters='native BEBT=' + str(options['BEBT']) + '; all defaults in retained parameter documents',
-                                       vertical_coordinate='four homogeneous fixed control volumes; adiabatic full T/S advection',
+                                       vertical_coordinate='four homogeneous fixed control volumes; eta is native e top interface, not cycle-mean SSH',
                                        substeps='actual DTBT/DT=100s; native complete-state output',
                                        resolved_options={key: options[key] for key in frozen['mom_time_options']}))
     return values
