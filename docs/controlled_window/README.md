@@ -136,3 +136,43 @@ Independent review conveyed conditional approval for this one fixed window after
 preparation. No merge/auto-merge, reset card, original Goal/session change or
 raw-array upload is authorized by these scripts. New source/state files are
 temporary private outputs only; repository deliverables contain scalar evidence.
+
+## 2026-10-01: fixed six-hour window completed
+
+The conditionally authorized fresh-t0 alternative completed once:72 common rounds,
+288 accepted attempts,21600 model seconds, normal exit and no guard. The frozen
+executed protocol SHA is `9d9e756162c8f19ac1d3e32bbfb178d3c44d13c4f11ccf83e697b7e9c716f148`.
+All288 checkpoint hashes and72 markers were checked. The first-hour48 checkpoint
+archives are byte-identical to the prior one-hour run, without claiming any
+continuous reference past that interval. Integration stopped at the registered
+six-hour endpoint. No three-hour fallback or additional window was run.
+
+Total wall1286.657092s (21min27s), peak working set3,377,913,856bytes and commit
+3,355,398,144bytes, affinity1. First warm-round forecast including120s margin was
+1384.282763s, below1800s. Warm execution means were2.964/2.977/3.021/3.017s in
+cell order I0B0/I1B0/I0B1/I1B1. All scientific gates remained unchanged: worst
+continuity1.894318036e-15m, face mismatch5.684341886e-14m²/s, inventory roundoff
+ratio0.0356580724, minimum wet thickness1.008804956m, maximum speed1.199773351m/s.
+No rejection occurred, so rollback was not triggered in this window.
+
+See `evidence_6h.md` for2/4/6h conditional effects, interaction and geographic
+ledger, `evidence_6h.json` for all per-step scalar records, and
+`original_artifact_hashes_6h.json` for private checkpoint/marker identities.
+These files contain scalar diagnostics and relative hashes only, not arrays.
+At6h the fixed296 means are −1017.114/−1018.195/−1074.131/−1075.544mm; the
+boundary main effects at2/4/6h are −56.651/−81.762/−57.183mm. Input sensitivity
+and interaction vary with time and geography; neither contrast demonstrates repair.
+
+The complete regional ledger includes both identical geographic cuts and the
+periodic east/west seam, nontransport changes and the explicit absence of a
+volumetric water source in this frozen equation. Per-step residual sums differ
+slightly from a final ledger recomputed from accumulated totals. The latter
+maximum is0.00600432m³ versus cumulative declared allowances85.1–89.2m³ at6h;
+the added floating-point accumulation allowance is disclosed separately and is
+**not** a new or relaxed scientific gate. Saved initial/final eta at1/2/4/6h
+independently reconstruct volume change, differing from summed step changes by
+at most0.001953125m³. No source was fitted to close the ledger.
+
+Independent read-only review of code, completed scalar results, effect formulas
+and ledger accounting passed. Historical raw-input identity, initialization
+qualification, closed-boundary physics and the30h failure remain unresolved.
