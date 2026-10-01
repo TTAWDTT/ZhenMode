@@ -30,8 +30,10 @@ def test_native_mom_roundtrip_preserves_interfaces_and_units(tmp_path):
     adapter.write_mom_initial(target, arrays)
     with netCDF4.Dataset(target) as ds:
         assert ds['x'].units == ds['y'].units == 'm'
-        np.testing.assert_array_equal(ds['eta'][:].transpose(2, 1, 0),
-                                      arrays['interfaces_m'])
+        expected = arrays['interfaces_m'].copy()
+        expected[..., 0] *= np.sinc(1. / 64.)
+        np.testing.assert_array_equal(ds['eta'][:].transpose(2, 1, 0), expected)
+        np.testing.assert_array_equal(arrays['interfaces_m'][..., 0], arrays['eta_m'])
         assert np.all(ds['PTEMP'][:] == 15.)
         assert np.all(ds['SALT'][:] == 35.)
 
@@ -39,3 +41,8 @@ def test_native_mom_roundtrip_preserves_interfaces_and_units(tmp_path):
 def test_nonfinite_f0_rejected():
     with pytest.raises(ValueError):
         adapter.native_arrays(float('nan'))
+
+
+def test_nonzero_f0_not_silently_accepted():
+    with pytest.raises(ValueError, match='requires f0=0'):
+        adapter.native_arrays(1.e-4)

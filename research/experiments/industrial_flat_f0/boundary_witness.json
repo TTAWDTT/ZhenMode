@@ -1,0 +1,14 @@
+{
+  "scope": "pure final boundary mask only; no time step",
+  "source_sha256": "0ee5874cef57a318e534edb9b99690c797a4ecb1be95c4f0283f957e32ff4169",
+  "source_function": "_step_impl",
+  "line_start": 2526,
+  "line_end": 2536,
+  "u_byte_identical": true,
+  "u_wall_max_abs_difference": 0.0,
+  "v_wall_max_abs": 0.0,
+  "v_interior_byte_identical": true,
+  "temperature_byte_identical": true,
+  "salinity_byte_identical": true,
+  "limitation": "Does not verify full-step y invariance, filters or other stages."
+}

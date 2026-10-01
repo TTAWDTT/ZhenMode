@@ -15,6 +15,8 @@ import numpy as np
 def native_arrays(f0):
     if not np.isfinite(f0):
         raise ValueError('f0 must be finite and explicitly supplied')
+    if f0 != 0.:
+        raise ValueError('this frozen standing-wave protocol requires f0=0')
     nx, ny = 64, 8
     length_x = 32000.0 * np.sqrt(9.81 * 100.0)
     dx, dy = length_x / nx, 100000.0 / ny
@@ -40,6 +42,8 @@ def native_arrays(f0):
 
 def write_mom_initial(path, arrays):
     """MOM native file contract: (Interface/Layer, y, x), positive-up eta."""
+    mom_interfaces = arrays['interfaces_m'].copy()
+    mom_interfaces[..., 0] *= np.sinc(1. / 64.)
     with netCDF4.Dataset(path, 'w', format='NETCDF3_64BIT_OFFSET') as ds:
         for label, size in [('x', 64), ('y', 8), ('Layer', 4), ('Interface', 5)]:
             ds.createDimension(label, size)
@@ -53,7 +57,8 @@ def write_mom_initial(path, arrays):
                 ('SALT', 'S_psu', 'Layer', 'psu')]:
             var = ds.createVariable(label, 'f8', (dim, 'y', 'x'))
             var.units = units
-            var[:] = arrays[key].transpose(2, 1, 0)
+            value = mom_interfaces if label == 'eta' else arrays[key]
+            var[:] = value.transpose(2, 1, 0)
 
 
 def main():
@@ -77,6 +82,8 @@ def main():
                     g_m_s2=9.81, rho0_kg_m3=1025.,
                     drho_dT=-.205, drho_dS=.779,
                     ocean_geometry='nodal_dual_v1',
+                    ocean_eta_sampling='node', mom_eta_sampling='cell_mean',
+                    mom_eta_sinc_factor=float(np.sinc(1. / 64.)),
                     z_m=arrays['z_m'].tolist(), h0_m=arrays['h0_m'].tolist(),
                     input_identities=identities,
                     unresolved=['frozen scorer and acceptance gates',
