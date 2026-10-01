@@ -114,3 +114,58 @@ def test_generated_flux_pressure_force_negative_adjoint():
         expected -= q * delta
     actual = np.sum(k.velocity(s)[:, :, 0] * force)
     assert actual == pytest.approx(expected, rel=1e-13, abs=1e-12)
+
+
+@pytest.mark.parametrize(
+    "damage",
+    ["string_dx", "array_dx", "float32_deep", "shape_deep", "nan_h", "source_dtype", "float_step"],
+)
+def test_strict_checkpoint_rejected(tmp_path, damage):
+    s = initial()
+    path = tmp_path / "bad.npz"
+    packet = dict(
+        h=s.h,
+        n=s.n,
+        deep_nodes=s.deep_nodes,
+        dx=np.array(s.dx),
+        source_sha=np.array(s.source_sha),
+        step=np.array(0),
+        version=np.array(1),
+    )
+    if damage == "string_dx":
+        packet["dx"] = np.array("1000")
+    if damage == "array_dx":
+        packet["dx"] = np.array([1000.0])
+    if damage == "float32_deep":
+        packet["deep_nodes"] = s.deep_nodes.astype(np.float32)
+    if damage == "shape_deep":
+        packet["deep_nodes"] = s.deep_nodes[None, :]
+    if damage == "nan_h":
+        packet["h"] = s.h.copy()
+        packet["h"][0, 0] = np.nan
+    if damage == "source_dtype":
+        packet["source_sha"] = np.array(123)
+    if damage == "float_step":
+        packet["step"] = np.array(1.5)
+    np.savez(path, **packet)
+    with pytest.raises(ValueError):
+        k.load(path)
+
+
+@pytest.mark.parametrize("damage", ["string_dx", "float32_deep", "shape_deep", "nonfinite"])
+def test_invalid_state_failure_is_deep_snapshot(damage):
+    s = initial()
+    if damage == "string_dx":
+        s.dx = "1000"
+    if damage == "float32_deep":
+        s.deep_nodes = s.deep_nodes.astype(np.float32)
+    if damage == "shape_deep":
+        s.deep_nodes = s.deep_nodes[None, :]
+    if damage == "nonfinite":
+        s.n[0, 0, 0] = np.nan
+    snap = s.copy()
+    out, ok, r = k.advance(s, 1.0, np.zeros_like(s.n))
+    assert not ok and r["rejection_reason"]
+    assert out.h.tobytes() == s.h.tobytes() == snap.h.tobytes()
+    assert out.n.tobytes() == s.n.tobytes() == snap.n.tobytes()
+    assert out.deep_nodes.tobytes() == s.deep_nodes.tobytes() == snap.deep_nodes.tobytes()

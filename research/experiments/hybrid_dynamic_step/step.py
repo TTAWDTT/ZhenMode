@@ -37,10 +37,15 @@ class State:
 
 
 def validate(s):
+    if any(not isinstance(a, np.ndarray) for a in [s.h, s.n, s.deep_nodes]):
+        raise ValueError("state arrays required")
+    if np.asarray(s.dx).shape != () or np.asarray(s.dx).dtype != np.float64:
+        raise ValueError("dx float64 scalar required")
     if s.h.ndim != 2 or s.h.shape[0] != 2 or s.h.shape[1] < 4 or s.n.shape != s.h.shape + (4,):
         raise ValueError("shape")
     if (
-        s.h.dtype != np.float64
+        s.deep_nodes.dtype != np.float64
+        or s.h.dtype != np.float64
         or s.n.dtype != np.float64
         or s.deep_nodes.shape != (s.h.shape[1] - 3,)
     ):
@@ -74,6 +79,7 @@ def validate(s):
 
 
 def velocity(s):
+    validate(s)
     return s.n[:, :, 2:] / (RHO * s.h[:, :, None])
 
 
@@ -89,6 +95,7 @@ def top_pressure(s, col, depth):
 
 
 def pressures(s):
+    validate(s)
     out = np.zeros_like(s.h)
     for j in range(2):
         z = s.top_z[j]
@@ -293,7 +300,13 @@ def load(path):
         for key in ["step", "version"]:
             if p[key].shape != () or p[key].dtype.kind not in "iu":
                 raise ValueError("integer restart")
-        if p["version"].item() != 1 or p["dx"].shape != () or p["source_sha"].shape != ():
+        if (
+            p["version"].item() != 1
+            or p["dx"].shape != ()
+            or p["dx"].dtype != np.float64
+            or p["source_sha"].shape != ()
+            or p["source_sha"].dtype.kind != "U"
+        ):
             raise ValueError("restart metadata")
         s = State(
             p["h"].copy(),

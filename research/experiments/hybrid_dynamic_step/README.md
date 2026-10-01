@@ -20,3 +20,8 @@ CFL拒绝；不clip、不改输入dt、不加阻尼。完整接受/深快照拒�
 qualification=false。下一真实回放必须先由A审接口/动力精度并完成上述适配；
 平底局部配对成功不要求全柱坐标重写，但也不证明真实地形可直接继承旧算子。
 本分支供父任务审实现，不新增诊断PR；无私有原数组、长跑或外部算力。
+
+安全schema修订：dx必须float64 scalar；deep_nodes/h/n必须对应shape的float64
+数组，source为Unicode scalar/40hex，step/version严格整数，所有派生几何finite。
+拒绝字符串dx隐式float转换、float32 deep或畸形shape；非法advance返回调用前
+深快照。20tests过（0.22s）。pressure kick KE恒等式仍非总能闭合声明。
