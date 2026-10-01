@@ -308,3 +308,56 @@ def test_many_upper_bound_cycles_conserve_without_clipping():
         assert ok and b.valid(s)
     np.testing.assert_allclose(s.n.sum(axis=(0, 1)), total, atol=1e-10)
     assert abs((s.n[..., 1] / (-np.diff(s.z))) - 50).max() < 1e-12
+
+
+@pytest.mark.parametrize(
+    "eta,salt", [(-10 + 1e-6, 50.000001), (-10 + 1e-12, 100), (-10 + 1e-12, -100)]
+)
+def test_thin_layer_excess_rejected_all_entries(tmp_path, eta, salt):
+    s = salt_state([[50, 50, 50], [50, 50, 50]])
+    s.z = b.target([eta, eta])
+    s.n = (-np.diff(s.z))[..., None] * np.array([15, 50, 0.2, -0.1])
+    s.n[0, 0, 1] = (-np.diff(s.z))[0, 0] * salt
+    snap = s.copy()
+    assert not b.valid(s)
+    out, ok, _ = b.advance(s, [], [eta, eta], np.zeros_like(s.n))
+    assert not ok
+    assert out.n.tobytes() == s.n.tobytes() == snap.n.tobytes()
+    with pytest.raises(ValueError):
+        b.remap(s, s.z)
+    with pytest.raises(ValueError):
+        b.save(s, tmp_path / "save.npz")
+    path = tmp_path / "raw.npz"
+    np.savez(path, z=s.z, n=s.n, step=np.array(0), version=np.array(b.VERSION))
+    with pytest.raises(ValueError):
+        b.load(path)
+
+
+@pytest.mark.parametrize("delta", [1.0, 1e-3, 1e-6, 1e-9, 1e-12])
+def test_thickness_scan_bounded_mean_tolerance(delta):
+    s = initial(uniform=True)
+    s.z = b.target([-10 + delta] * 2)
+    s.n = (-np.diff(s.z))[..., None] * np.array([15, 50, 0.2, -0.1])
+    assert b.valid(s)
+    tolerance = b.stock_roundoff_bound(s)[..., 1] / (-np.diff(s.z))
+    assert tolerance.max() < 3e-11
+    bad = s.copy()
+    bad.n[0, 0, 1] = (-np.diff(s.z))[0, 0] * 50.000001
+    assert not b.valid(bad)
+
+
+def test_unresolvable_geometry_fails_closed(tmp_path):
+    s = initial()
+    s.z[:, 0] = -10
+    s.z[:, 1] = np.nextafter(-10.0, -np.inf)
+    s.z[:, 2] = s.z[:, 1] - 1
+    s.n = (-np.diff(s.z))[..., None] * np.array([15, 35, 0.2, -0.1])
+    snap = s.copy()
+    assert not b.geometry_valid(s)
+    out, ok, _ = b.advance(s, [], [-10, -10], np.zeros_like(s.n))
+    assert not ok
+    assert out.n.tobytes() == snap.n.tobytes() == s.n.tobytes()
+    with pytest.raises(ValueError):
+        b.remap(s, s.z)
+    with pytest.raises(ValueError):
+        b.save(s, tmp_path / "s.npz")

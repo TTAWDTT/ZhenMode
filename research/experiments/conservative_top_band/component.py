@@ -22,6 +22,14 @@ class State:
         return State(self.z.copy(), self.n.copy(), self.step)
 
 
+def geometry_roundoff_bound(z):
+    # Eight arithmetic operations cover target interfaces and their difference.
+    # This is a machine representation test, not a physical minimum thickness.
+    u = np.finfo(np.float64).eps / 2
+    gamma = 8 * u / (1 - 8 * u)
+    return gamma * (abs(z[:, :-1]) + abs(z[:, 1:]))
+
+
 def geometry_valid(s):
     return (
         type(s.step) is int
@@ -32,7 +40,7 @@ def geometry_valid(s):
         and np.isfinite(s.z).all()
         and np.isfinite(s.n).all()
         and np.all(s.z[:, -1] == -20.0)
-        and np.all(-np.diff(s.z) > 0)
+        and np.all(-np.diff(s.z) > geometry_roundoff_bound(s.z))
     )
 
 
@@ -41,16 +49,15 @@ def stock_roundoff_bound(s):
 
     3 source overlap integrals * 100 ops + at most 7 face subsegments
     * 100 ops + 100 geometry/update/comparison ops = 1100. Unit roundoff is eps/2.
-    Coordinate subtraction contributes absolute endpoint magnitude, so thin
-    cells are not assigned a geometry-independent mean tolerance.
+    Geometry is validated separately. Represented h is authoritative here;
+    no coordinate uncertainty is converted into an admissible tracer excess.
     """
     operations = 3 * 100 + 7 * 100 + 100
     unit = np.finfo(np.float64).eps / 2
     gamma = operations * unit / (1 - operations * unit)
     h = -np.diff(s.z)
     tracer_scale = np.maximum(abs(TRACER_LOWER), abs(TRACER_UPPER))
-    coordinate_scale = abs(s.z[:, :-1]) + abs(s.z[:, 1:])
-    return gamma * (abs(s.n[..., :2]) + (h + coordinate_scale)[..., None] * tracer_scale)
+    return gamma * (abs(s.n[..., :2]) + h[..., None] * tracer_scale)
 
 
 def valid(s):

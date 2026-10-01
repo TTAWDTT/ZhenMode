@@ -1,7 +1,7 @@
 {
   "base": "82e1ca4a2158d4c0ed20f91c04e80cdf43f8a36b",
   "test_exit": 0,
-  "test_output": "......................................                                   [100%]\n38 passed in 1.00s\n",
+  "test_output": "47 passed in 0.96s",
   "test_wall_s": 1.228602506002062,
   "child_peak_RSS_KiB": 40624,
   "area_m2": 1,
@@ -27,8 +27,8 @@
   },
   "qualification_passed": false,
   "hashes": {
-    "research/experiments/conservative_top_band/component.py": "007d39822e9f14560094b34c0885314c241c6e3797bd84bbc1ff1276dcc1e367",
-    "tests/test_conservative_top_band.py": "33de68480d302a61c48b9b68bd2a6017b7f10ec8789641f424bc522f279bd088"
+    "research/experiments/conservative_top_band/component.py": "d80de6f8f834983f6624dc9772af6b5e7290a3ba9ba3a49c2f26feb47de96ebb",
+    "tests/test_conservative_top_band.py": "dfb4ec193db94b90ceb7dc2c13d9b871ef9dddfb5246c43721f08e2357e889d4"
   },
   "checkpoint_version": 2,
   "declared_T_bounds_C": [
@@ -40,5 +40,7 @@
     50
   ],
   "roundoff_operation_budget": 1100,
-  "max_face_bands": 3
+  "max_face_bands": 3,
+  "geometry_operation_budget": 8,
+  "geometry_uncertainty_in_tracer_tolerance": false
 }
