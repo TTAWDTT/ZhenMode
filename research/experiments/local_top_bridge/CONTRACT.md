@@ -36,3 +36,29 @@ NPZ严格keys：
 nagi需独立匹配历史source与输入hash，再构造此规范包；本云端没有真实
 四柱原数组。真实中心eta只能作为接口形状合成值，不冒称完成真实回放。
 FD点值不可逆、参考/实际动量质量语义、压力代价、底部未采样信息仍未关闭。
+
+## 阻断修订：有限派生量、动能语义与外部几何绑定
+
+输入有限不等于计算有限。column在所有计算中以浮点overflow/invalid/divide
+raise执行，并检查audit输出、旧/新库存、residual/预算、重构积分、压力、
+深层库存及全诊断finite；任一不有限明确拒绝并返回调用前深快照。
+压力/pair也拒绝非有限计算。JSON先以allow_nan=false序列化再创建输出，
+不会因NaN留下成功产物。
+
+全部库存按单位水平面积：热盐m*K/m*psu，动量kg/(m*s)，水m；所有K为J/m²。
+original_reference_mass_K =rho0/2 sum(h0*u_original²)；
+original_velocity_actual_mass_K =rho0/2 sum(h_actual*u_original²)；
+reference_momentum_on_original_actual_mass_K =sum(Nu²/(2*rho0*h_actual))；
+candidate_actual_mass_K=sum(Nu_new²/(2*rho0*h_new))。
+先前original_actual_mass_K名字错误，实际是第三项，现已更名并补第二项。
+
+新的CLI命令必需`--geometry-report nagi_geometry_binding.json`。
+绑定JSON schema_version=1、full_geometry_passed=true、input_sha256(完整canonical
+NPZ快照)、reference_weights_sha256(np数组C-order tobytes)、source_sha、terrain_sha。
+CLI对这五个字段匹配，记录整个报告bytes的SHA256；只绑定已获外部审查的
+全几何断言，不自行执行全几何检查。报告应由nagi既有全几何审查结果生成，
+不能因本局部组件成功就生成full_geometry_passed=true。篡改深层weights使
+旧报告身份不符而拒绝。裸column函数的accepted_scope明确仅局部顶部，
+即使保深层字节也不能证明深层几何正确；输出全几何未在本机重验标记。
+
+旧不带报告的CLI调用不再可用。qualification=false，完整动力资格未新增。

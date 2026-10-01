@@ -88,7 +88,7 @@ def test_positive_near_exhaustion_velocity_semantics():
     out, ok, r = b.column(fixture(-2.5 + 1e-8))
     assert ok
     assert r["original_reference_to_actual_velocity_factor_max"] > 1e8
-    assert np.isfinite(r["candidate_actual_mass_K_J"])
+    assert np.isfinite(r["candidate_actual_mass_K_J_per_m2"])
 
 
 def test_dry_column_not_fabricated():
@@ -131,7 +131,87 @@ def test_canonical_cli_static_pair(tmp_path):
     packet["distances_m"] = np.array([[0.0, 1000.0], [1000.0, 0.0]])
     path = tmp_path / "input.npz"
     np.savez(path, **packet)
-    r = replay.run(path)
+    report_path = bind_geometry_report(path, packet, tmp_path)
+    r = replay.run(path, report_path)
     assert all(c["accepted"] for c in r["columns"]) and len(r["pairs"]) == 1
     assert abs(r["columns"][1]["band_water_m"] - 20.00852074534863) < 1e-12
     assert r["qualification_passed"] is False
+
+
+def bind_geometry_report(path, packet, tmp_path):
+    import hashlib
+    import json
+
+    output = tmp_path / "geometry.json"
+    report = dict(
+        schema_version=1,
+        full_geometry_passed=True,
+        input_sha256=hashlib.sha256(path.read_bytes()).hexdigest(),
+        reference_weights_sha256=hashlib.sha256(packet["reference_weights"].tobytes()).hexdigest(),
+        source_sha=str(packet["source_sha"].item()),
+        terrain_sha=str(packet["terrain_sha"].item()),
+    )
+    output.write_text(json.dumps(report))
+    return output
+
+
+@pytest.mark.parametrize("stage", ["momentum", "energy", "deep"])
+def test_finite_overflow_rejects_snapshot(stage):
+    p = fixture()
+    if stage == "momentum":
+        p["values"][0, 2] = 1e308
+    if stage == "energy":
+        p["values"][0, 2] = 1e160
+    if stage == "deep":
+        p["values"][4, 2] = 1e308
+    snap = p["values"].copy()
+    out, ok, r = b.column(p)
+    assert not ok and r["rejection_reason"]
+    assert out["values"].tobytes() == snap.tobytes() == p["values"].tobytes()
+
+
+def test_energy_names_are_distinct():
+    p = fixture()
+    p["values"][:3, 2] = 0.1
+    _, ok, r = b.column(p)
+    assert ok
+    h = p["reference_weights"][:3].copy()
+    h[0] += p["eta"]
+    expected = 0.5 * p["rho0"] * np.sum(h[:, None] * p["values"][:3, 2:] ** 2)
+    assert r["original_velocity_actual_mass_K_J_per_m2"] == pytest.approx(expected)
+    assert r["reference_momentum_on_original_actual_mass_K_J_per_m2"] > expected
+
+
+def test_nonfinite_json_creates_no_artifact(tmp_path):
+    import replay
+
+    path = tmp_path / "bad.json"
+    with pytest.raises(ValueError):
+        replay.write_report({"accepted": True, "value": np.nan}, path)
+    assert not path.exists()
+
+
+def test_stale_geometry_report_blocks_weight_change(tmp_path):
+    import replay
+
+    p = fixture()
+    shared = ["Tref", "Sref", "alpha", "beta", "rho0", "gravity", "source_sha", "terrain_sha"]
+    packet = {k: p[k] for k in shared}
+    for k in [
+        "depth",
+        "reference_weights",
+        "wet_mask",
+        "values",
+        "eta",
+        "terrain_depth",
+        "discrete_bottom",
+    ]:
+        packet[k] = np.array([p[k]])
+    packet["distances_m"] = np.zeros((1, 1))
+    path = tmp_path / "input.npz"
+    np.savez(path, **packet)
+    report = bind_geometry_report(path, packet, tmp_path)
+    packet["reference_weights"][0, 4] += 100
+    np.savez(path, **packet)
+    with pytest.raises(ValueError, match="identity"):
+        replay.run(path, report)

@@ -7,11 +7,17 @@ import json
 from pathlib import Path
 
 import numpy as np
-from component import column, pair
+from component import column, pair, require_finite
 
 
-def run(path):
+def run(path, geometry_report_path):
     snapshot = Path(path).read_bytes()
+    geometry_snapshot = Path(geometry_report_path).read_bytes()
+    geometry = json.loads(geometry_snapshot)
+    if geometry.get("schema_version") != 1 or geometry.get("full_geometry_passed") is not True:
+        raise ValueError("external full geometry audit required")
+    if geometry.get("input_sha256") != hashlib.sha256(snapshot).hexdigest():
+        raise ValueError("geometry audit input identity mismatch")
     shared = {"Tref", "Sref", "alpha", "beta", "rho0", "gravity", "source_sha", "terrain_sha"}
     per = {
         "depth",
@@ -26,9 +32,18 @@ def run(path):
         if set(packet.files) != shared | per | {"distances_m"}:
             raise ValueError("exact canonical keys required")
         source_identity = str(packet["source_sha"].item())
+        if geometry.get("source_sha") != source_identity or geometry.get("terrain_sha") != str(
+            packet["terrain_sha"].item()
+        ):
+            raise ValueError("geometry audit source/terrain identity mismatch")
+        if (
+            geometry.get("reference_weights_sha256")
+            != hashlib.sha256(packet["reference_weights"].tobytes()).hexdigest()
+        ):
+            raise ValueError("geometry audit weight identity mismatch")
         values = packet["values"]
         count = values.shape[0]
-        if values.ndim != 3:
+        if values.ndim != 3 or count == 0:
             raise ValueError("values C,N,4 required")
         if any(packet[k].shape != () for k in shared):
             raise ValueError("shared scalar required")
@@ -57,7 +72,10 @@ def run(path):
                     pairs.append(
                         dict(columns=[i, j], **pair(results[i], results[j], distances[i, j]))
                     )
-    return dict(
+    report = dict(
+        external_geometry_report_sha256=hashlib.sha256(geometry_snapshot).hexdigest(),
+        external_geometry_assertion_bound=True,
+        external_geometry_independently_reperformed=False,
         input_sha256=hashlib.sha256(snapshot).hexdigest(),
         declared_source_sha=source_identity,
         historical_source_independently_verified=False,
@@ -66,12 +84,21 @@ def run(path):
         pairs=pairs,
     )
 
+    require_finite(report)
+    return report
+
+
+def write_report(report, path):
+    payload = json.dumps(report, indent=2, allow_nan=False)
+    with open(path, "x") as f:
+        f.write(payload)
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("input")
     parser.add_argument("output")
+    parser.add_argument("--geometry-report", required=True)
     args = parser.parse_args()
-    report = run(args.input)
-    with open(args.output, "x") as f:
-        json.dump(report, f, indent=2)
+    report = run(args.input, args.geometry_report)
+    write_report(report, args.output)

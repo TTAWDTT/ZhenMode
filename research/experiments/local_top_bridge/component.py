@@ -12,11 +12,24 @@ from discrete_audit import audit  # noqa: E402
 B = -22.5
 
 
+def require_finite(value):
+    if isinstance(value, dict):
+        for item in value.values():
+            require_finite(item)
+    elif isinstance(value, (list, tuple)):
+        for item in value:
+            require_finite(item)
+    elif not isinstance(value, (str, type(None))):
+        if not np.isfinite(value).all():
+            raise ValueError("nonfinite derived stage")
+
+
+@np.errstate(over="raise", invalid="raise", divide="raise")
 def column(p):
     """Return new top arrays and unchanged deep records, or untouched snapshot."""
     before = {k: v.copy() if isinstance(v, np.ndarray) else v for k, v in p.items()}
     try:
-        audit(**p)
+        require_finite(audit(**p))
         d, w, wet, v = map(
             np.asarray, [p["depth"], p["reference_weights"], p["wet_mask"], p["values"]]
         )
@@ -38,12 +51,15 @@ def column(p):
             raise ValueError("nonpositive or unresolved original geometry")
         n = h[:, None] * v[:3]
         n[:, 2:] = rho * w[:3, None] * v[:3, 2:]
+        require_finite(n)
         target = np.r_[eta, eta - (eta - B) * np.cumsum([1 / 9, 1 / 3, 5 / 9])]
         target[-1] = B
         new = np.array([integrate(z, n, target[k + 1], target[k]) for k in range(3)])
+        require_finite(new)
         gamma = 512 * u / (1 - 512 * u)
         bound = gamma * (abs(n).sum(axis=0) + abs(new).sum(axis=0))
         residual = new.sum(axis=0) - n.sum(axis=0)
+        require_finite([bound, residual])
         if np.any(abs(residual) > bound):
             raise ValueError("inventory roundoff budget exceeded")
         density = (
@@ -52,14 +68,19 @@ def column(p):
         original = (
             np.r_[0, np.cumsum(g * 0.5 * (density[:-1] + density[1:]) * np.diff(d))] + rho * g * eta
         )
+        require_finite([density, original])
         oldbase = float(np.interp(-B, d, original))
 
         def top_pressure(depth):
             q = integrate(target, new, depth, eta)
             length = eta - depth
-            return rho * g * eta + rho * g * (
+            require_finite(q)
+            value = rho * g * eta + rho * g * (
                 -p["alpha"] * (q[0] - p["Tref"] * length) + p["beta"] * (q[1] - p["Sref"] * length)
             )
+
+            require_finite(value)
+            return value
 
         newbase = top_pressure(B)
         ht = -np.diff(target)
@@ -84,9 +105,20 @@ def column(p):
             inventory_roundoff_bound=bound.tolist(),
             band_bottom_delta_pressure_Pa=float(newbase - oldbase),
             top_pressure_difference_max_Pa=float(max(abs(np.array(difference)))),
-            reference_K_J=float(0.5 * rho * np.sum(w[:3, None] * v[:3, 2:] ** 2)),
-            original_actual_mass_K_J=float(0.5 * np.sum(n[:, 2:] ** 2 / (rho * h[:, None]))),
-            candidate_actual_mass_K_J=float(0.5 * np.sum(new[:, 2:] ** 2 / (rho * ht[:, None]))),
+            original_reference_mass_K_J_per_m2=float(
+                0.5 * rho * np.sum(w[:3, None] * v[:3, 2:] ** 2)
+            ),
+            reference_momentum_on_original_actual_mass_K_J_per_m2=float(
+                0.5 * np.sum(n[:, 2:] ** 2 / (rho * h[:, None]))
+            ),
+            candidate_actual_mass_K_J_per_m2=float(
+                0.5 * np.sum(new[:, 2:] ** 2 / (rho * ht[:, None]))
+            ),
+            original_velocity_actual_mass_K_J_per_m2=float(
+                0.5 * rho * np.sum(h[:, None] * v[:3, 2:] ** 2)
+            ),
+            inventory_units=["m K", "m psu", "kg/(m s)", "kg/(m s)"],
+            accepted_scope="local_top_band_only; full geometry requires external binding",
             original_reference_to_actual_velocity_factor_max=float(max(w[:3] / h)),
             candidate_velocity_max_m_s=float(abs(new[:, 2:] / (rho * ht[:, None])).max()),
             deep_byte_preserved=True,
@@ -94,6 +126,7 @@ def column(p):
                 k: float(p[k]) for k in ["alpha", "beta", "rho0", "gravity", "Tref", "Sref"]
             },
         )
+        require_finite([record, report, difference])
         return (
             dict(
                 eos={k: float(p[k]) for k in ["alpha", "beta", "rho0", "gravity", "Tref", "Sref"]},
@@ -110,11 +143,13 @@ def column(p):
             True,
             report,
         )
-    except (ValueError, TypeError, IndexError) as error:
+    except (ValueError, TypeError, IndexError, FloatingPointError) as error:
         return before, False, {"rejection_reason": str(error), "qualification_passed": False}
 
 
+@np.errstate(over="raise", invalid="raise", divide="raise")
 def pressure(result, depth):
+    require_finite(result)
     if (
         np.ndim(depth) != 0
         or not np.isfinite(depth)
@@ -138,7 +173,9 @@ def pressure(result, depth):
     )
 
 
+@np.errstate(over="raise", invalid="raise", divide="raise")
 def pair(a, b, distance):
+    require_finite([a, b])
     if a["eos"] != b["eos"]:
         raise ValueError("pair EOS identities differ")
     if not np.isfinite(distance) or distance <= 0:
@@ -147,7 +184,7 @@ def pair(a, b, distance):
     top = min(a["eta"], b["eta"])
     depths = np.linspace(bottom, top, 201)
     change = (a["new_base"] - a["original_base"]) - (b["new_base"] - b["original_base"])
-    return dict(
+    report = dict(
         common_domain_m=[float(bottom), float(top)],
         bottom_delta_difference_Pa=float(change),
         deep_gradient_acceleration_change_m_s2=float(-change / (a["eos"]["rho0"] * distance)),
@@ -155,3 +192,6 @@ def pair(a, b, distance):
             max(abs(pressure(a, x) - pressure(b, x)) for x in depths)
         ),
     )
+
+    require_finite(report)
+    return report

@@ -3,7 +3,7 @@
   "base_core": "82e1ca4a2158d4c0ed20f91c04e80cdf43f8a36b",
   "parent_PR11": "b33f8ea2dd5b990fc4141eb34d7e674dcccf48c0",
   "source": "synthetic profile; eta scalar parent-reported only, not private-array replay",
-  "test_result": "33 passed in 0.79s (11 new +22 parent)",
+  "test_result": "39 passed in 0.82s (17 local +22 parent)",
   "synthetic_example": {
     "band_water_residual_m": 0.0,
     "qualification_passed": false,
@@ -22,9 +22,17 @@
     ],
     "band_bottom_delta_pressure_Pa": 24.486838962828188,
     "top_pressure_difference_max_Pa": 24.989815658394946,
-    "reference_K_J": 1.921875,
-    "original_actual_mass_K_J": 1.921875,
-    "candidate_actual_mass_K_J": 1.9588924807149535,
+    "original_reference_mass_K_J_per_m2": 1.921875,
+    "reference_momentum_on_original_actual_mass_K_J_per_m2": 1.921875,
+    "candidate_actual_mass_K_J_per_m2": 1.9588924807149535,
+    "original_velocity_actual_mass_K_J_per_m2": 1.921875,
+    "inventory_units": [
+      "m K",
+      "m psu",
+      "kg/(m s)",
+      "kg/(m s)"
+    ],
+    "accepted_scope": "local_top_band_only; full geometry requires external binding",
     "original_reference_to_actual_velocity_factor_max": 293.40156262289446,
     "candidate_velocity_max_m_s": 0.015692077570736488,
     "deep_byte_preserved": true,
@@ -39,9 +47,10 @@
   },
   "cost": "bounded CPU no integration; peak RSS not measured",
   "hashes": {
-    "research/experiments/local_top_bridge/CONTRACT.md": "9a11c914cb0bdbed4dec314b028410e338b4759db87e8fdfb10ba33615ea5a80",
-    "research/experiments/local_top_bridge/component.py": "9b220831fedc4f719f27a605d4a273c19d8a337049e7a7eca1dc32a849191c0b",
-    "research/experiments/local_top_bridge/replay.py": "e13a8e3dfda237809643f29131c64615f0a9a11dff09e62021296d373bb16a5b",
-    "tests/test_local_top_bridge.py": "df8010ee2f53b9e73fc104d2e6a97958fda68acc90f00f29f228100f5c8d5694"
-  }
+    "research/experiments/local_top_bridge/CONTRACT.md": "696a44b466f3341b5dda3c48ba87b2d0af21747b4b9f427017ddb2c0e445fb34",
+    "research/experiments/local_top_bridge/component.py": "7c1da27a7b20415bfd06997c75759e6fcbddb9920a41c3bce0be92a22769612f",
+    "research/experiments/local_top_bridge/replay.py": "862a3e985b9010e60e7f36fc4e0ec73387f46a91b81a808902085b936e8852d5",
+    "tests/test_local_top_bridge.py": "46801d552bccf911acdb331b002bebb59509d42cff3a79d4d0f340bb0ef6bec0"
+  },
+  "external_geometry_binding_required": true
 }
