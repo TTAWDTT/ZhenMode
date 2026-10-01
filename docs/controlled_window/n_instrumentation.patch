@@ -1,0 +1,68 @@
+--- historical/jax_solver_global.py
++++ instrumented/jax_solver_global.py
+@@ -1087,0 +1088 @@
++    _probe_raw_advection = (adv_u, adv_v)
+@@ -1090 +1091 @@
+-    return adv_u * p.wet_mask_z, adv_v * p.wet_mask_z
++    return adv_u * p.wet_mask_z, adv_v * p.wet_mask_z, _probe_raw_advection
+@@ -1240 +1241 @@
+-    adv_u, adv_v = _advection_flux_form(state.u, state.v, w, p)
++    adv_u, adv_v, _probe_raw_advection = _advection_flux_form(state.u, state.v, w, p)
+@@ -1270 +1271,5 @@
+-    return dudt, dvdt
++    _probe_terms = dict(advection_raw=_probe_raw_advection, advection_filtered=(adv_u, adv_v),
++                        pressure_full=(pgf_x, pgf_y), wind_surface=(wind_u, wind_v),
++                        horizontal_diffusion=(diff_h_u, diff_h_v), vertical_diffusion=(diff_v_u, diff_v_v),
++                        coriolis=(cor_u, cor_v), bottom_drag=(bot_u, bot_v))
++    return dudt, dvdt, _probe_terms
+@@ -1994 +1999,2 @@
+-    dudt, dvdt = _compute_momentum_tendency(state, p)
++    dudt, dvdt, _probe_terms = _compute_momentum_tendency(state, p)
++    _probe_full = (dudt, dvdt)
+@@ -2001,0 +2008 @@
++    _probe_after_horizontal = (dudt, dvdt)
+@@ -2006,0 +2014 @@
++    _probe_after_vertical = (dudt, dvdt)
+@@ -2008,0 +2017 @@
++    _probe_after_coriolis = (dudt, dvdt)
+@@ -2028,0 +2038,2 @@
++    _probe_after_eta = (dudt, dvdt)
++    _probe_eta_mean = (eta_pgf_x, eta_pgf_y)
+@@ -2032,0 +2044 @@
++    _probe_after_density = (dudt, dvdt)
+@@ -2037,0 +2050 @@
++    _probe_after_wind = (dudt, dvdt)
+@@ -2046 +2059,7 @@
+-    return dudt, dvdt
++    _probe_rhs = dict(terms=_probe_terms, full=_probe_full,
++                      after_horizontal=_probe_after_horizontal, after_vertical=_probe_after_vertical,
++                      after_coriolis=_probe_after_coriolis, after_eta=_probe_after_eta,
++                      after_density=_probe_after_density, after_wind=_probe_after_wind,
++                      residual=(dudt,dvdt), eta_mean_gradient=_probe_eta_mean,
++                      density_mean=(bt_rho_x,bt_rho_y), wind_mean=(bt_wind_x,bt_wind_y))
++    return dudt, dvdt, _probe_rhs
+@@ -2082 +2101 @@
+-    first_x, first_y = _compute_momentum_residual(state, params)
++    first_x, first_y, _probe_first_meta = _compute_momentum_residual(state, params)
+@@ -2087,0 +2107 @@
++    _probe_first_rhs = (first_x,first_y)
+@@ -2089 +2109 @@
+-    second_x, second_y = _compute_momentum_residual(predicted, params)
++    second_x, second_y, _probe_second_meta = _compute_momentum_residual(predicted, params)
+@@ -2092,0 +2113 @@
++    _probe_second_rhs = (second_x,second_y)
+@@ -2098 +2119,5 @@
+-    return tracer._replace(u=velocity_x, v=velocity_y)
++    _probe_n = dict(state0=state._asdict(), state_euler=predicted._asdict(), tracer=tracer._asdict(),
++                    state_out=tracer._replace(u=velocity_x,v=velocity_y)._asdict(),
++                    first_meta=_probe_first_meta, second_meta=_probe_second_meta,
++                    first_rhs=_probe_first_rhs, second_rhs=_probe_second_rhs)
++    return tracer._replace(u=velocity_x, v=velocity_y), _probe_n
+--- historical/material_top.py
++++ instrumented/material_top.py
+@@ -438 +438 @@
+-    nonlinear_predictor = _explicit_full_step(first, params, params.dt)
++    nonlinear_predictor, _probe_n = _explicit_full_step(first, params, params.dt)
+@@ -583 +583 @@
+-        return result, diagnostics
++        return result, diagnostics, _probe_n
