@@ -176,3 +176,8 @@ at most0.001953125m³. No source was fitted to close the ledger.
 Independent read-only review of code, completed scalar results, effect formulas
 and ledger accounting passed. Historical raw-input identity, initialization
 qualification, closed-boundary physics and the30h failure remain unresolved.
+
+
+## 2026-10-01 correction and fixed-snapshot follow-up
+
+The296-point mean is a subset statistic, not the whole wet-domain mean. The85–89m3 ledger allowance above is a posthoc arithmetic supplement, not a preregistered scientific acceptance gate. Existing I0B0 t0/2h/4h/6h snapshots are analyzed without any new integration in [evidence_postprocess.md](evidence_postprocess.md), with the prospectively frozen postprocessing definitions in [protocol_postprocess.json](protocol_postprocess.json). Their narrow arithmetic checks do not establish physical qualification.

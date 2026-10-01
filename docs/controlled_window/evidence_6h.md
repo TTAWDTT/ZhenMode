@@ -103,3 +103,8 @@ At1/2/4/6h, saved checkpoint eta is independently area-weighted against original
 | 6.0 | I1B0 | -4.722316324e-03 | 9.765625000e-04 | 8.514112558e+01 |
 | 6.0 | I0B1 | -1.640619004e-03 | -9.765625000e-04 | 8.916767121e+01 |
 | 6.0 | I1B1 | 2.521301574e-03 | 1.953125000e-03 | 8.919004822e+01 |
+
+
+## 2026-10-01 correction and fixed-snapshot follow-up
+
+The296-point mean is a subset statistic, not the whole wet-domain mean. The85–89m3 ledger allowance above is a posthoc arithmetic supplement, not a preregistered scientific acceptance gate. Existing I0B0 t0/2h/4h/6h snapshots are analyzed without any new integration in [evidence_postprocess.md](evidence_postprocess.md), with the prospectively frozen postprocessing definitions in [protocol_postprocess.json](protocol_postprocess.json). Their narrow arithmetic checks do not establish physical qualification.
