@@ -245,3 +245,106 @@ was 102146048 B and peak aggregate Job private memory was 91926528 B. One
 CPU, the 180 s wall limit and 4 GiB memory limit were enforced; no resource
 stop occurred and exit code was zero. The separate 24-test pressure suite
 passed in 0.32 s pytest / 2.019 s Job wall. Final targeted lint passed.
+
+## 2026-10-01: correction of footprint and affine-density qualification
+
+The preceding sections and top-level scalar receipt describe historical head
+`00237a7d4fea3f45867a7bb63bee85449f309937`. Their broader executable
+qualification is superseded by this correction. Further independent review
+found that empty face lists and only two opposite walls could receive an
+accepted wet certificate; an empty all-dry domain also received an accepted
+receipt. All three were actually reproduced with bounded failing tests.
+Vector closure alone did not establish a complete physical footprint.
+
+Current qualification requires an explicit copied `RectangularFootprint`:
+finite positive resolved rectangle bounds and matching column areas, no
+overlap or ambiguous neighbors, and all four sides of every wet column
+covered exactly once. A supplied face must match the actual adjacent columns,
+cardinal normal, full side length and exact periodic image. Duplicate sides,
+incomplete opposite-side pairs, wrong areas/lengths/normals/columns, unsupported
+partial sides, periodic holes and periodic self-faces are refused. A known
+dry neighbor must remain a declared shared adjacency and become the directly
+integrated dry wall, not an invented exterior wall. Legitimate isolated wet,
+closed wet/dry and multi-column periodic footprints have positive controls.
+An all-dry empty domain is mathematical zero and receives no wet scientific
+qualification. Consumer entry points reconstruct both inventory and geometry
+instead of trusting caller-supplied success receipts.
+
+Geometry comparisons retain the fixed 256-epsilon bound but scale before
+adding to avoid overflow. The finite huge-area counterexample (true box area
+1e308 versus declared 1.7e308) was reproduced and is now refused. Consumed
+diagnostic pressure-work/PE areas are separately checked against the copied
+rectangle geometry.
+
+The new pressure representation is explicitly
+`inventory_mean_density_p1_hydrostatic_v1`. Historical EOS **density means**
+are computed from unchanged IT/h and IS/h, and then directly reconstructed
+with minmod interior slopes and one-sided boundary secants. Density slopes
+alone are constrained to the EOS range implied by the tracer admissibility
+box: anomaly in [-33.415,15.785] kg/m^3. No tracer or density mean is clipped.
+The auxiliary limited T/S reconstructions remain diagnostic; pointwise
+pressure density is explicitly **not** claimed to equal their separate EOS
+combination. Pressure and PE use the same independent density reconstruction.
+An admissible affine density with inactive endpoint bounds is recovered even
+when T and S individually are nonlinear.
+
+The actual counterexample used exact cell means of
+`T=15+0.1*z^2`, `S=35+(alpha/beta)*(0.1*z^2+0.3*z)` on partitions
+`[0,-1,-2,-3]` and `[0,-0.5,-1.5,-3]`.
+Its exact anomaly is `rho'=0.0615*z`. Separate tracer limiting produced a
+measured pressure difference -0.04189687500183936 Pa at z=-1 with eta zero,
+and -0.038545124999473046 Pa with eta=-0.2. The corrected tests require
+less than 1e-12 Pa partition jumps, the known 0.0615 density gradient, and
+independent analytical reduced-pressure and PE formulas. Original constant
+and affine-T/S controls, P0 partition counterexample, independent pressure/PE
+integrators and tracer-bound tests remain active. All source stocks and arrays
+retain their meaning and are unchanged.
+
+The declared four-wet-plus-dry diagnostic star is still constructed from
+verified archived **center** dx/dy, with equal rectangle areas. It is not a
+claim about original global coastline or all original per-column areas. The
+original archived per-column areas differ from this diagnostic area by up to
+3.5156416819221305%. Pressure work and diagnostic PE now use the bound patch
+areas consistently. Original-area inventory PE/KE costs remain separate and
+explicitly labeled. In the corrected representation, the original-area P1
+moment change is -6.837618823298412e13 J; the diagnostic-area P1 moment change
+is -5.465895264724123e13 J. Their different measures are not conflated.
+
+The corrected real witness has complete coverage of all 16 wet sides yet
+remains **FAIL**. Its C-transpose force is
+`(-77331336569.69095,-24626183060.108753) N`, independently integrated physical
+force `(-77336152881.125,-24644747280.9375) N`, and discrepancy
+`(4816311.434051514,18564220.828746796) N` against 449.1482767574913 N.
+The original historical three-face witness is preserved unchanged in the
+public receipt; this corrected result does not replace its failure with an
+acceptance or fit a cap correction.
+
+The corrected diagnostic fixed-mass unit-impulse trial has KE change
+441691314.58452207 J, midpoint work 441691314.58453906 J and bound
+0.6892306989536511 J. This remains local algebra with no returned accepted
+state or time integration. A newly added complete periodic footprint with
+constant density and heights (1,2,3) correctly rejects the nonzero old-C
+pressure total despite physical boundary total zero.
+
+The corrected static archive audit took 4.433 s Job wall, peak interpreter
+RSS 270671872 B and peak aggregate Job private memory 270897152 B, under one
+CPU, 180 s and 4 GiB. All six source files and original arrays were unchanged.
+The 47 pressure tests passed in 0.41 s pytest / 2.120 s Job wall, peak RSS
+97972224 B and private memory 89878528 B. Targeted lint passed. The correction
+inspector's final read-only code gate is clean; this review round performed
+zero numerical probes, archive executions or simulations.
+
+`material_inventory_pressure_evidence.json` retains the initial receipt as a
+historical snapshot and identifies `qualification_correction` as the current
+source-bound static witness. Real force consumption, moving pressure and
+physical total-energy qualification remain blocked. No new dynamics module,
+production switch or real timestep was introduced by this correction.
+
+## 2026-10-01: correction final regression
+
+At the frozen corrected code, the same bounded dynamic/real-geometry/pressure
+command passed **139 tests** in 73.05 s pytest / 74.844 s Job wall. Peak
+interpreter RSS was 103088128 B and peak aggregate Job private memory
+93032448 B. One CPU, 180 s and 4 GiB limits were enforced; exit code was zero
+and no bound stop occurred. The local missing-JAX limitation remains as
+recorded above; it is not relabeled as a pass.

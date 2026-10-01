@@ -11,9 +11,11 @@ from dataclasses import dataclass, fields
 
 import numpy as np
 
+from .pressure_footprint import RectangularFootprint as RectangularFootprint
+from .pressure_footprint import bind_footprint_area, validate_footprint
 from .real_geometry import ColumnStocks, _array, _column, _readonly, _scalar
 
-CONTRACT = 'inventory_mean_p1_hydrostatic_v1'
+CONTRACT = 'inventory_mean_density_p1_hydrostatic_v1'
 EPSILON = np.finfo(float).eps
 
 
@@ -45,6 +47,9 @@ class Profile:
     slope_limited_count: int
     representation: str
     observational_profile_recovered: bool = False
+    density_slope_limited_count: int = 0
+    density_authority: str = 'direct_EOS_inventory_mean_P1'
+    pointwise_density_equals_auxiliary_TS_reconstruction: bool = False
 
 
 @dataclass(frozen=True)
@@ -53,6 +58,7 @@ class FaceRequest:
     right: tuple
     length: float
     normal: tuple
+    periodic_shift_m: tuple = (0., 0.)
 
 
 @dataclass(frozen=True)
@@ -146,12 +152,30 @@ def reconstruct(state, *, eos=EOS(), representation='p1', external_pressure_Pa=0
             slopes[index][:n] *= theta
     rho = eos.rho0 * (-eos.alpha * (means[..., 0] - eos.Tref) + eos.beta * (means[..., 1] - eos.Sref))
     rho *= state.wet_mask
-    slope = eos.rho0 * (-eos.alpha * slopes[..., 0] + eos.beta * slopes[..., 1])
+    # Pressure/PE share an independent density-mean representation. Separate
+    # nonlinear T/S limiter branches need not preserve an affine EOS density.
+    slope = np.zeros_like(rho)
+    density_limited = 0
+    rho_low = eos.rho0 * (-eos.alpha * (45. - eos.Tref) + eos.beta * (0. - eos.Sref))
+    rho_high = eos.rho0 * (-eos.alpha * (-5. - eos.Tref) + eos.beta * (50. - eos.Sref))
+    for index in np.ndindex(state.eta.shape):
+        n = int(state.active_layers[index])
+        if representation == 'p1' and n >= 2:
+            secant = np.diff(rho[index][:n]) / np.diff(center[index][:n])
+            slope[index][0], slope[index][n - 1] = secant[0], secant[-1]
+            left, right = secant[:-1], secant[1:]
+            slope[index][1:n - 1] = np.where(left * right > 0, np.sign(left) * np.minimum(abs(left), abs(right)), 0.)
+            excursion = .5 * state.h[index][:n] * abs(slope[index][:n])
+            room = np.maximum(0., np.minimum(rho[index][:n] - rho_low, rho_high - rho[index][:n]))
+            theta = np.ones_like(room)
+            np.divide(np.minimum(room, excursion), excursion, out=theta, where=excursion > 0)
+            density_limited += int(np.count_nonzero(theta < 1.))
+            slope[index][:n] *= theta
     if not all(np.isfinite(a).all() for a in [means, slopes, rho, slope]) or np.any((eos.rho0 + rho - .5 * state.h * abs(slope))[state.wet_mask] <= 0):
         raise ValueError('finite positive reconstructed density required')
     return Profile(state, eos, *[_readonly(a) for a in
                    [means[..., 0].copy(), means[..., 1].copy(), slopes[..., 0].copy(), slopes[..., 1].copy(), rho, slope, external]],
-                   limited, representation)
+                   limited, representation, density_slope_limited_count=density_limited)
 
 
 def _interval(profile, column, lower, upper):
@@ -209,8 +233,10 @@ def pressure_integral(profile, column, lower, upper, *, reduced=False):
     return result
 
 
-def potential_energy(profile, area):
+def potential_energy(profile, area, *, footprint=None):
     area = _array(area, 'area')
+    if footprint is not None:
+        area = bind_footprint_area(profile.state, footprint, area)
     if area.shape != profile.state.eta.shape or np.any(area <= 0):
         raise ValueError('positive area for each original column required')
     terms = []
@@ -370,13 +396,18 @@ def boundary_force_budget(profile, requests, outer_walls):
             'absolute_footprint_contribution_m': footprint_scale.tolist()}
 
 
-def certify_force_consumption(profile, requests=(), outer_walls=()):
+def certify_force_consumption(profile, requests=(), outer_walls=(), *, footprint=None):
     """Recompute qualification from inventory; diagnostic receipts are not authority."""
     if not isinstance(profile, Profile):
         raise ValueError('Profile inventory required; diagnostic receipts cannot authorize force')
     profile = reconstruct(profile.state, eos=profile.eos, representation=profile.representation,
                           external_pressure_Pa=profile.external_pressure_Pa)
     requests, outer_walls = tuple(requests), tuple(outer_walls)
+    wet = bool(np.any(profile.state.active_layers))
+    if not wet and footprint is None and not requests and not outer_walls:
+        return dict(accepted=False, reason='empty all-dry domain has no wet scientific qualification',
+                    footprint_closed=False, footprint_complete=False)
+    geometry = validate_footprint(profile.state, footprint, requests, outer_walls)
     faces = pressure_faces(profile, requests)
     boundary = boundary_force_budget(profile, requests, outer_walls)
     forces = [-face.area_m2 * face.pressure_jump_Pa * np.asarray(face.normal) for face in faces]
@@ -388,22 +419,25 @@ def certify_force_consumption(profile, requests=(), outer_walls=()):
         raise ValueError('finite independent force certification required')
     residual, bound = total - physical, float(_bound(scale))
     footprint_closed = bool(np.all(abs(closure) <= _bound(np.asarray(boundary['absolute_footprint_contribution_m']))))
-    accepted = footprint_closed and bool(np.all(abs(residual) <= bound))
+    accepted = wet and footprint_closed and bool(np.all(abs(residual) <= bound))
     return dict(accepted=accepted, Ctranspose_force_N=total.tolist(), physical_boundary_force_N=physical.tolist(),
                 incompatibility_N=residual.tolist(), bound_N=bound, footprint_closed=footprint_closed,
-                reason='compatible static physical boundary force' if accepted else 'Ctranspose pressure force is incompatible with the independently integrated physical boundary/geometry ledger')
+                footprint_complete=geometry['complete'], footprint_geometry=geometry,
+                reason='compatible static physical boundary force' if accepted else ('empty all-dry domain has no wet scientific qualification' if not wet else 'Ctranspose pressure force is incompatible with the independently integrated physical boundary/geometry ledger'))
 
 
-def require_force_consumption(profile, requests=(), outer_walls=()):
-    certificate = certify_force_consumption(profile, requests, outer_walls)
+def require_force_consumption(profile, requests=(), outer_walls=(), *, footprint=None):
+    certificate = certify_force_consumption(profile, requests, outer_walls, footprint=footprint)
     if certificate.get('accepted') is not True:
         raise PressureForceIncompatibility(certificate.get('reason', 'pressure force not certified'))
 
 
-def algebraic_midpoint_work(profile, faces, area):
+def algebraic_midpoint_work(profile, faces, area, *, footprint=None):
     """One-second unit impulse as algebra only; no time step or state returned."""
     area = _array(area, 'area')
     state = profile.state
+    if footprint is not None:
+        area = bind_footprint_area(state, footprint, area)
     if area.shape != state.eta.shape or np.any(area <= 0):
         raise ValueError('positive bound column area required')
     impulse = np.zeros(state.h.shape + (2,))
