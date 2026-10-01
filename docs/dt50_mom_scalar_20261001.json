@@ -1,0 +1,110 @@
+{
+  "schema": "standing-wave-v0",
+  "contract_sha256": "d50e2ed2323100ce5bbee92ff072ed7ccac49712be79e665b3f1a2a75c5f750b",
+  "model": "MOM6",
+  "source_sha": "f49a00096df607b48354603e2398e14e189fd62e",
+  "input_sha256": "f5fce7eb2f7ec76711942d3e29e0596093fe0608021885b480abd06a769b1318",
+  "config_sha256": "8dae0f808740d5a2f9bd5a09ec3891dc67b26e4f3ea7cfe523e18b3a23be5657",
+  "executable_sha256": "35743c5cc1068b5d19f7ae36d358a8e83d3da43c12429211a61e545c9f4caac9",
+  "metrics": {
+    "eta_error": 0.0032271816230861174,
+    "u_error": 0.001711246893069165,
+    "phase_rad": 0.005689631982666617,
+    "amplitude": 0.006866557586677202,
+    "energy": 0.013350180987315663,
+    "volume": 2.220446049250313e-16,
+    "T": 1.2079226507921703e-13,
+    "S": 2.8421709430404007e-13,
+    "v_over_U": 0.0
+  },
+  "failed_metrics": [],
+  "engineering_screen_pass": true,
+  "industrial_qualified": false,
+  "equal_error_speedup_qualified": false,
+  "energy_units": "J",
+  "initial_energy_J": 25174944062.566784,
+  "resource_record": {
+    "initialization_s": 0.034499,
+    "integration_s": 7.882114,
+    "total_wall_s": 8.42748659900002,
+    "aggregate_peak_bytes": 145907712,
+    "cpu": 1,
+    "ranks": 1
+  },
+  "diagnostic_only": true,
+  "protocol_sha256": "e60127b32a2c9a2c7fc75dd9a83b6c3925f08b2b479c12fe48eb17fd01be6432",
+  "energy_final_signed": -0.010899599016258588,
+  "energy_worst_time_s": 29000.0,
+  "minimum_saved_thickness_m": 16.65668272273631,
+  "nonfinite_saved_values": 0,
+  "complete_states": 33,
+  "steps": 640,
+  "dt_s": 50.0,
+  "guard": {
+    "exit_code": 0,
+    "stopped_reason": null,
+    "wall_s": 8.42748659900002,
+    "sampled_aggregate_peak_rss_bytes": 145907712,
+    "sampled_peak_output_bytes": 53726522,
+    "descendant_cleanup_confirmed": true
+  },
+  "energy_csv_sha256": "8dc2a10618426c97bf3b6b5439c7aaa2336257832f0597534fbc1826766a256c",
+  "guard_sha256": "033d4b57b3dfe21ebb05385e9b06f640b9eec5927a71b2a3435e80373f86d033",
+  "resolved_mom_diff": {
+    "DT_TRACER_ADVECT": [
+      100.0,
+      50.0
+    ],
+    "DT_FORCING": [
+      100.0,
+      50.0
+    ],
+    "DT": [
+      100.0,
+      50.0
+    ],
+    "DT_THERM": [
+      100.0,
+      50.0
+    ],
+    "DTBT": [
+      100.0,
+      50.0
+    ]
+  },
+  "effective_fast_mode": {
+    "dtbt_s": 50.0,
+    "dt_filt_s": 6.25,
+    "nstep": 1,
+    "nfilter": 1,
+    "iterations_per_btstep": 2,
+    "velocity_eta_weights": [
+      0.8888888888888888,
+      0.1111111111111111
+    ],
+    "transport_acceleration_weights": [
+      0.9,
+      0.1
+    ]
+  },
+  "native_energy_max_abs": 0.013350180987082072,
+  "native_energy_final_signed": -0.010899599016218842,
+  "clocks": {
+    "initialization_s": 0.034499,
+    "main_loop_including_io_s": 7.882114,
+    "cold_lower_compile_s": null,
+    "first_compiled_execution_s": null,
+    "warm_remaining_execution_s": null,
+    "native_io_clocks": {
+      "Ocean MOM save_restart": {
+        "calls": 33,
+        "seconds": 0.035549
+      },
+      "Ocean diagnostics framework": {
+        "calls": 4480,
+        "seconds": 0.05239
+      }
+    }
+  },
+  "timing_limitations": "No JIT; native Initialization and Main loop clocks; Main loop includes diagnostics/checkpoint I/O. First/warm split unavailable."
+}
