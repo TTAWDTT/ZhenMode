@@ -15,6 +15,14 @@
     "sha256": "ae16e4b3ff783a550e27ba7d7c3cae2e1aeaeff00039128b0f2e55ede2cd7899",
     "bytes": 11070
   },
+  "docs/controlled_window/evidence_mechanical_probe.json": {
+    "sha256": "614f85ede96b373a14f0a8b38c74999696efac4ad78693eea59023d3b444e67a",
+    "bytes": 90162
+  },
+  "docs/controlled_window/evidence_mechanical_probe.md": {
+    "sha256": "8dc540badc575467280f763515ad8cfc51effa41397930fb69f07dcd0aebce96",
+    "bytes": 8484
+  },
   "docs/controlled_window/evidence_postprocess.json": {
     "sha256": "99c660827d87d1333db34d6630297a966297c50cbbff95b8222b9ea4572b695d",
     "bytes": 202978
@@ -30,6 +38,18 @@
   "docs/controlled_window/instrumentation_6h.patch": {
     "sha256": "2ddcb5c5c98861dd1c0807bd569e91288b7616c10d47f7d4fd93afee80372c11",
     "bytes": 2728
+  },
+  "docs/controlled_window/mechanical_instrumentation.patch": {
+    "sha256": "632f2e606aa2d4f948e03c601f5505d5280270b638395a3a9634fbfff026f06b",
+    "bytes": 5748
+  },
+  "docs/controlled_window/mechanical_record_audit.md": {
+    "sha256": "3d8995f3a7126c494f5d49465f4cf82bf5a3a398bae8f4870e312f22b7e2184f",
+    "bytes": 4646
+  },
+  "docs/controlled_window/mechanical_source_manifest.json": {
+    "sha256": "948476debc7d4a7249a6dc118199aa84f4f258c298e063cfc16a7579277baca0",
+    "bytes": 8900
   },
   "docs/controlled_window/original_artifact_hashes_1h.json": {
     "sha256": "1f528783c8eb2d9960fb28e97c8c3cff8a28163b1d6d6419ce7e7879f6b7cba3",
@@ -47,21 +67,37 @@
     "sha256": "9d9e756162c8f19ac1d3e32bbfb178d3c44d13c4f11ccf83e697b7e9c716f148",
     "bytes": 13441
   },
+  "docs/controlled_window/protocol_mechanical_probe.json": {
+    "sha256": "ee4731e0418efc5b3456cc6b44000813b45642d5a858314275f2236bcb1de980",
+    "bytes": 8885
+  },
   "docs/controlled_window/protocol_postprocess.json": {
     "sha256": "729f1138367c9f9095b69a7adef3d794e4778cbd332f0a5c2e244d1ad889d2f8",
     "bytes": 2357
   },
   "docs/controlled_window/README.md": {
-    "sha256": "ccbfe5313e0cfe06d3d260fcc8f67a32bcec8d19698fa34338e98dd1673ad466",
-    "bytes": 11977
+    "sha256": "7593872c6042397b18279968c8ebb2c68e4e6f0d334198538d4e208c832cb9fd",
+    "bytes": 12442
+  },
+  "scripts/controlled_window/mechanical_probe.py": {
+    "sha256": "63bac409ac12e30650554e8004717a432e1987ca7211ceb9b8d9000efe31d6a3",
+    "bytes": 6819
   },
   "scripts/controlled_window/postprocess_6h.py": {
     "sha256": "bd7d90214a956208a1fefe59576d0397e378d35d7498f1edf41f129877f79759",
     "bytes": 13188
   },
+  "scripts/controlled_window/prepare_mechanical_source.py": {
+    "sha256": "31f99a47392ea4c4eed9a289413c8de682ae4404386204f9f27a00f8a206f89d",
+    "bytes": 7550
+  },
   "scripts/controlled_window/prepare_source.py": {
     "sha256": "695d1e6f2535552503e8bf12285fee1a6eadce108335024d00ea41052d6ab0e9",
     "bytes": 1758
+  },
+  "scripts/controlled_window/summarize_mechanical_probe.py": {
+    "sha256": "970416e9746b21959bdeb1554ffececb718aeb6b2bc1502885582dd5420e6fd8",
+    "bytes": 15235
   },
   "scripts/controlled_window/supervisor.py": {
     "sha256": "f21bbf62b72c386274969c1166a72c8f8661196e9c776ec986760fe110635ba3",
@@ -78,5 +114,9 @@
   "tests/test_window_postprocess.py": {
     "sha256": "779886b5f7d0e36f6a519e6b47e4c9961db50043eb73013a0a1665d0c4acf7d6",
     "bytes": 1777
+  },
+  "tests/test_mechanical_source_projection.py": {
+    "sha256": "28ec3f2b5c9a7aaa4c8f2897e62a70da3af27930ee8b8e2ed43cb45765619579",
+    "bytes": 1445
   }
 }
