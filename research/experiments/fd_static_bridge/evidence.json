@@ -2,7 +2,7 @@
   "qualification_passed": false,
   "base_core": "82e1ca4a2158d4c0ed20f91c04e80cdf43f8a36b",
   "parent_PR9": "d2d3ec24389e08a81293b42a83049162c2b77f71",
-  "tests": "20 passed in 0.66s",
+  "tests": "22 passed in 0.72s",
   "rows": [
     {
       "profile": "quadratic",
@@ -72,9 +72,10 @@
   "cost": "bounded CPU; no private scientific data, no integration; peak memory not measured",
   "hashes": {
     "research/experiments/fd_static_bridge/bridge.py": "d2749cdd5c64280630e740ebb35cb2477cede330a78680179e9376b68a07344e",
-    "research/experiments/fd_static_bridge/CONTRACT.md": "5133f8687e49b515e0f05827a7c33ee857c750212efa7d554325519b5c8f4413",
-    "tests/test_fd_static_bridge.py": "95e05d82d421e2637bf2605499befe19319f15560f01987eddfac96869848c40",
-    "research/experiments/fd_static_bridge/discrete_audit.py": "41a1e2b229ae7731b602a5a2b933b257613ca5979d3c2dcd965001bce4285074"
+    "research/experiments/fd_static_bridge/CONTRACT.md": "8a6f69dbfe02929533d501cd6ce5b2bee414fb258f4f8b2037ad2eb4326668a3",
+    "tests/test_fd_static_bridge.py": "93fd94325e9a8efe8f5542173bfc7115097659d32c90883b9cae73a6d1714711",
+    "research/experiments/fd_static_bridge/discrete_audit.py": "d32edc880dfd40f9ede41933b113c60353f1d29b8ad6dacd9d44ff02b21297b3",
+    "research/experiments/fd_static_bridge/TOP_BAND_PROTOCOL.md": "8e01658688deae7ed7528133c0cf322c245050fdca89214a03c09a69e9ff61d0"
   },
   "eos_identity": {
     "alpha": 0.0002,

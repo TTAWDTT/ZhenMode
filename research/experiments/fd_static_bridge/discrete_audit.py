@@ -75,6 +75,8 @@ def audit(
     if np.any(v[active, :2] < [-5, 0]) or np.any(v[active, :2] > [45, 50]):
         raise ValueError("tracer bounds")
     count = int(active.sum())
+    if discrete_bottom < d[count - 1]:
+        raise ValueError("discrete bottom shallower than deepest wet node")
     if z.size and (z.shape != (count + 1,) or np.any(np.diff(z) >= 0) or z[0] != eta):
         raise ValueError("invalid declared interfaces")
     stock = h[:, None] * v
@@ -97,6 +99,8 @@ def audit(
         ),
         water_m=float(h.sum()),
         reference_column_m=float((w * mask).sum()),
+        reference_weight_minus_discrete_bottom_m=float((w * mask).sum() - discrete_bottom),
+        terrain_minus_discrete_bottom_m=float(terrain_depth - discrete_bottom),
         T_S_reference_u_v_inventory=stock.sum(axis=0).tolist(),
         wet_node_depth_m=float(d[count - 1]),
         terrain_depth_m=float(terrain_depth),

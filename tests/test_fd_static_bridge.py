@@ -192,3 +192,24 @@ def test_cli_single_snapshot_identity(tmp_path, monkeypatch):
     with open(output) as f:
         r = json.load(f)
     assert r["input_sha256"] == hashlib.sha256(snapshot).hexdigest() and len(calls) == 1
+
+
+def test_audit_rejects_shallow_discrete_bottom():
+    p = discrete_fixture()
+    p.update(discrete_bottom=100.0, terrain_depth=50.0)
+    before = p["reference_weights"].copy()
+    with pytest.raises(ValueError, match="shallower"):
+        audit_module().audit(**p)
+    np.testing.assert_array_equal(before, p["reference_weights"])
+
+
+def test_audit_reports_weight_and_terrain_differences():
+    p = discrete_fixture()
+    p.update(discrete_bottom=700.0, terrain_depth=650.0)
+    r = audit_module().audit(**p)
+    assert r["reference_weight_minus_discrete_bottom_m"] == 50
+    assert r["terrain_minus_discrete_bottom_m"] == -50
+    p.update(discrete_bottom=750.0, terrain_depth=750.0)
+    r = audit_module().audit(**p)
+    assert r["reference_weight_minus_discrete_bottom_m"] == 0
+    assert r["wet_node_depth_m"] == 500

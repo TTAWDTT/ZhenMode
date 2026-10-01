@@ -57,3 +57,7 @@ control_interfaces若未有经审查的物理定义须为空向量，不根据we
 hydrostatic-pressure却先mask异常密度再梯形节点积分。这两条离散约定
 都不能唯一恢复节点以下的连续密度/速度。常量延拓只是待审假设，本PR
 不执行任何底部外推、补点或生产桥接。qualification始终false。
+
+audit现拒绝discrete_bottom浅于末湿node；明确报告sum(reference_weights*wet)
+减discrete_bottom的差，以及terrain减discrete_bottom差，不强制后二者相等。
+后续顶部局部桥仅协议草案见TOP_BAND_PROTOCOL.md，尚未实现。
