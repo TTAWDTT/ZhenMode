@@ -1,0 +1,47 @@
+{
+  "qualification_passed": false,
+  "base_core": "82e1ca4a2158d4c0ed20f91c04e80cdf43f8a36b",
+  "parent_PR11": "b33f8ea2dd5b990fc4141eb34d7e674dcccf48c0",
+  "source": "synthetic profile; eta scalar parent-reported only, not private-array replay",
+  "test_result": "33 passed in 0.79s (11 new +22 parent)",
+  "synthetic_example": {
+    "band_water_residual_m": 0.0,
+    "qualification_passed": false,
+    "band_water_m": 20.00852074534863,
+    "inventory_residual": [
+      0.0,
+      0.0,
+      2.842170943040401e-14,
+      -1.4210854715202004e-14
+    ],
+    "inventory_roundoff_bound": [
+      4.536621132808651e-11,
+      7.961469078591583e-11,
+      2.6219026949549186e-11,
+      1.3109513474774593e-11
+    ],
+    "band_bottom_delta_pressure_Pa": 24.486838962828188,
+    "top_pressure_difference_max_Pa": 24.989815658394946,
+    "reference_K_J": 1.921875,
+    "original_actual_mass_K_J": 1.921875,
+    "candidate_actual_mass_K_J": 1.9588924807149535,
+    "original_reference_to_actual_velocity_factor_max": 293.40156262289446,
+    "candidate_velocity_max_m_s": 0.015692077570736488,
+    "deep_byte_preserved": true,
+    "eos_identity": {
+      "alpha": 0.0002,
+      "beta": 0.00076,
+      "rho0": 1025.0,
+      "gravity": 9.81,
+      "Tref": 15.0,
+      "Sref": 35.0
+    }
+  },
+  "cost": "bounded CPU no integration; peak RSS not measured",
+  "hashes": {
+    "research/experiments/local_top_bridge/CONTRACT.md": "9a11c914cb0bdbed4dec314b028410e338b4759db87e8fdfb10ba33615ea5a80",
+    "research/experiments/local_top_bridge/component.py": "9b220831fedc4f719f27a605d4a273c19d8a337049e7a7eca1dc32a849191c0b",
+    "research/experiments/local_top_bridge/replay.py": "e13a8e3dfda237809643f29131c64615f0a9a11dff09e62021296d373bb16a5b",
+    "tests/test_local_top_bridge.py": "df8010ee2f53b9e73fc104d2e6a97958fda68acc90f00f29f228100f5c8d5694"
+  }
+}
