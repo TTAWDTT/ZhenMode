@@ -18,6 +18,11 @@ def identity(path):
     return hashlib.sha256(Path(path).read_bytes()).hexdigest()
 
 
+def mom_substeps_description(resolved_options):
+    return (f'actual DTBT={resolved_options["DTBT"]:g}s; '
+            f'DT={resolved_options["DT"]:g}s; native complete-state output')
+
+
 def metadata(frozen, model, guard, initialization, integration, identities, numerics):
     return dict(schema=SCHEMA, contract_sha256=digest(frozen), model=model,
                 **identities, coordinate_system='cartesian_m',
@@ -155,7 +160,7 @@ def mom_arrays(directory, frozen, guard, executable):
                                        transport='native PPM continuity and tracer transport',
                                        filters='native BEBT=' + str(options['BEBT']) + '; all defaults in retained parameter documents',
                                        vertical_coordinate='four homogeneous fixed control volumes; eta is native e top interface, not cycle-mean SSH',
-                                       substeps='actual DTBT/DT=100s; native complete-state output',
+                                       substeps=mom_substeps_description(options),
                                        resolved_options={key: options[key] for key in frozen['mom_time_options']}))
     return values
 
