@@ -9,11 +9,13 @@ from prepare_inputs import native_arrays, write_mom_initial
 from resolved_config import BASE_MOM_CONTRACT
 
 
-def settings(preflight):
+def settings(preflight, dt_s=100.):
+    if dt_s not in (50., 100.) or (preflight and dt_s != 100.):
+        raise ValueError('only frozen coarse or dt50 diagnostic settings are supported')
     values = dict(BASE_MOM_CONTRACT)
     values.update(SOUTHLAT=0., WESTLON=0., ISOTROPIC=False, NIHALO=4, NJHALO=4,
                   BOUSSINESQ=True, SPLIT=True, SPLIT_RK2B=False,
-                  DT=100., DT_THERM=100., DT_FORCING=100., DTBT=100.,
+                  DT=dt_s, DT_THERM=dt_s, DT_FORCING=dt_s, DTBT=dt_s,
                   USE_REGRIDDING=False, BULKMIXEDLAYER=False, ADIABATIC=True,
                   COORD_CONFIG='none', LIGHTEST_DENSITY=1025., GFS=9.81,
                   P_REF=0., P_REF_LINEAR_EOS=0.,
@@ -39,13 +41,13 @@ def settings(preflight):
     return values
 
 
-def prepare(directory, preflight):
+def prepare(directory, preflight, dt_s=100.):
     directory = Path(directory)
     directory.mkdir(parents=True, exist_ok=False)
     (directory / 'INPUT').mkdir()
     (directory / 'RESTART').mkdir()
     write_mom_initial(directory / 'INPUT/initial.nc', native_arrays(0.))
-    values = settings(preflight)
+    values = settings(preflight, dt_s)
     lines = []
     for name, value in values.items():
         formatted = ('"' + value + '"') if isinstance(value, str) else str(value)

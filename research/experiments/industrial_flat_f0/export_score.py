@@ -25,7 +25,7 @@ def metadata(frozen, model, guard, initialization, integration, identities, nume
                            area='m2', T='degC', S='psu'), snapshot_kind='instantaneous',
                 sampling_eta='node' if model == 'ocean-solver' else 'cell_mean',
                 sampling_u='node', velocity_layout='collocated' if model == 'ocean-solver' else 'cgrid',
-                dt_s=100., steps=320, full_dynamics=True,
+                dt_s=frozen['dt'], steps=int(frozen['period_s']/frozen['dt']), full_dynamics=True,
                 zero_processes=frozen['explicitly_zero'], recorded_numerics=numerics,
                 initialization_s=initialization, integration_s=integration,
                 total_wall_s=guard['wall_s'], aggregate_peak_bytes=guard['sampled_aggregate_peak_rss_bytes'],
@@ -56,7 +56,7 @@ def native_quadrature(h, x, y, area, layout, faces=None):
 def ocean_arrays(directory, frozen, guard, source_sha):
     native = directory / 'native'
     receipt = json.loads((directory / 'trajectory_receipt.json').read_text())
-    if receipt['completed_steps'] != 320:
+    if receipt['completed_steps'] != int(frozen['period_s']/frozen['dt']):
         raise ValueError('incomplete production trajectory')
     index = [json.loads(line) for line in (native / 'snapshot_index.jsonl').read_text().splitlines()]
     times = np.arange(0., 32001., 1000.)

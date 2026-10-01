@@ -1,0 +1,140 @@
+{
+  "schema": "ocean.dt50_time_refinement_diagnostic.v1",
+  "diagnostic_only": true,
+  "scientific_purpose": "Temporal error and dissipation sensitivity; not paired speed qualification",
+  "grid": [
+    64,
+    8,
+    4
+  ],
+  "dt_s": 50.0,
+  "steps": 640,
+  "duration_s": 32000.0,
+  "output_s": 1000.0,
+  "complete_outputs": 33,
+  "attempts_per_model": 1,
+  "baseline_contract_sha256": "a27312b7ace5223eb798ceb17038b64bc0e29184442559e2ee92a9c3ebca3752",
+  "baseline_score_sha256": "597d38e7128a1f23dc01f9ca8aac7fa0088c89b8eb43946d18f0bd86592efba4",
+  "baseline_output_sha256": "44d212af470924d1cf60b7e69e2f58cb693e47cfb8567cab398e037f22f8f2ef",
+  "contract_byte_sha256": "4b0789552bae0d70fd9d631412c0d8535bbed5ad41195a8561f7341b7e840d87",
+  "contract_canonical_sha256": "d50e2ed2323100ce5bbee92ff072ed7ccac49712be79e665b3f1a2a75c5f750b",
+  "input_sha256": "43ffb2c82f30638ac0b79b9199459c6fc1bb0922a76fee84b5fad7df8a0160f7",
+  "executable_sha256": "35743c5cc1068b5d19f7ae36d358a8e83d3da43c12429211a61e545c9f4caac9",
+  "requested_mom_diff": {
+    "DT": [
+      100.0,
+      50.0
+    ],
+    "DT_THERM": [
+      100.0,
+      50.0
+    ],
+    "DT_FORCING": [
+      100.0,
+      50.0
+    ],
+    "DTBT": [
+      100.0,
+      50.0
+    ]
+  },
+  "expected_resolved_mom_changes": [
+    "DT",
+    "DT_THERM",
+    "DT_FORCING",
+    "DTBT",
+    "DT_TRACER_ADVECT"
+  ],
+  "retained_mom_parameters": {
+    "BE": 0.6,
+    "BEGW": 0.0,
+    "BEBT": 0.1,
+    "DT_BT_FILTER": -0.25
+  },
+  "fast_mode_prediction": {
+    "dtbt_s": 50.0,
+    "dt_filt_s": 6.25,
+    "nstep": 1,
+    "nfilter": 1,
+    "iterations_per_btstep": 2,
+    "velocity_eta_weights": [
+      0.8888888888888888,
+      0.1111111111111111
+    ],
+    "transport_acceleration_weights": [
+      0.9,
+      0.1
+    ]
+  },
+  "scoring": "Separate namespace overrides contract admission only; original scorer bytes and checks/formulas/thresholds retained",
+  "budget": {
+    "cpu": 1,
+    "ranks": 1,
+    "rss_bytes": 4294967296,
+    "wall_per_model_s": 600,
+    "wall_total_s": 1200,
+    "new_output_total_bytes": 134217728
+  },
+  "limitations": [
+    "MOM full-state nonfinite/positive-thickness check at saved outputs; native MAXTRUNC=0 retained",
+    "Ocean engineering TS gate is relative each step; final scorer TS metric is absolute",
+    "No fine grid, repeat, parameter repair, threshold relaxation, speedup or industrial qualification"
+  ],
+  "source_base": "8ad3552ff651cf45dfec7ae9a119ac75eef28890",
+  "source_hashes": {
+    "research/experiments/standing_wave_v0/score.py": "29e97ecb6f18d79cc67cffe09b3ec51563e76819027fbb6a73474f7a40bc291b",
+    "src/air_reanalysis.py": "e8226c5841c10c04b95ee850586ae19fe53b8822540fd90d58b8f7ed545d8da4",
+    "src/barotropic_transport.py": "7d0685d4cad3bfba89af5243c5e9c917b5be8e0b9f675433eb7ee5d3a236f8d2",
+    "src/bench_climatology_global.py": "12384d569b6717c45dfc321b31da800cb24580ce883f678a53fc83675703f62b",
+    "src/benchmark_gate.py": "ea1c2b90fd38d0f864f53c7ca09f3293845b9c7de7a5b9d766048d3cb7b1fde1",
+    "src/benchmark_manifest.py": "fceeff7c3f2894452963f7cc4f712d550e993e16957bd424cfd3af0bf0b219e0",
+    "src/benchmark_metrics.py": "0bbab7ce77841dec67d75311970cf41a36d6be47f1120548f786f1e14e901f39",
+    "src/benchmark_table.py": "02a7d27b870734a05561ce367d9944716c27750f61e824186de075953d940060",
+    "src/bounded_transport.py": "4619e30e33e26aab5622f3466a0d3218e1817da2aed42217db3f40684566868d",
+    "src/cgrid_momentum.py": "f130ed62f7f87647df070cfbbca0f58720dbbbc529af79f4f6bc09fcff8aaa87",
+    "src/config.py": "faf2a5da5f473ebc6db1e6e9e9eb269c576f2f9a3a7f266591516e31d110906a",
+    "src/diagnostics.py": "f5abd85323f61294d7e463072df5e1100b057f2a2f47fcae7969da48008ed3f9",
+    "src/erddap_fetch.py": "81435557452e9c916df173f12c6cb09bb5f39e70b4c467dd72ff4e8ae4abe2eb",
+    "src/export_mom6_air_temp_forcing.py": "001ecbe2e12e265fb073c6881cba08307a1ccf01a20dfe4e972e60f99c208c8e",
+    "src/export_mom6_sensible_forcing.py": "63c3a2d109ae91e154e77a5d88d090c2996a3747673eabc35e9e586b71a2fb46",
+    "src/export_mom6_wind_forcing.py": "72eef3892c42bbbf66cb17054884b485e980ba1173760944c82766aa18da1796",
+    "src/fetch_sla_monthly.py": "dacc967e7f53e6b006db854cbced1324500562924d690d488247b253598dd46e",
+    "src/fetch_ssh_abs_monthly.py": "21eaad2581e7c36a19624f67da6a63cdaa44bbf571380fd025675ceb595809c3",
+    "src/finite_volume.py": "71e2cc033794af53a09810ddfda56fc6ee604fd35c55bdf30a721a17311efba5",
+    "src/forcing.py": "c2a7c34e640ba4801353ed66f8bb41b37e087716b10c5483013609ed69e379b6",
+    "src/grid.py": "1e3ed9805737dd2ca6541ec05c99748be7eaf8706254701e09b395029d2d8360",
+    "src/input_quality.py": "e4f2f29bff228fa2c05c0ae5787bff22c5b35d9cd3188da47a147e9c2f8fb162",
+    "src/input_sources.py": "5ecffaf39a8d930f81f39a15bcc0c84448e8eb22573ffa2fc147e3a7461f9da5",
+    "src/integration_monitor.py": "c5dae1ee3311f61bf922855d9a2a1a28ff13fa2b0b8412def6ae2bb7a6656572",
+    "src/jax_solver_global.py": "0ee5874cef57a318e534edb9b99690c797a4ecb1be95c4f0283f957e32ff4169",
+    "src/material_top.py": "c97842bc27bee6127aa4f96fde2d0d672ee7715c60b7ded91c6d009aac2625e8",
+    "src/mixed_layer_ice.py": "fce58f82d650147daa12c3378ade3282a0d29994c218da3baa36b1a784f699ea",
+    "src/nonlinear_dynamics.py": "f1438695ecd40ff0498400477910763bcbadcc967b539ea39ee9d7560a198f40",
+    "src/paired_dynamics.py": "adac8c8c5eb47596b8f242f701c9319439348ea333d590ddfa891c160898e777",
+    "src/physical_velocity.py": "0caf9d228d5892292d50c4f906b51a5aa2239c975efc487fcd338fdf84611cac",
+    "src/restart_contract.py": "c02d1f8aad6634dae36e8a99e811ed57000ad809bf8db0bba6c301b5c423477a",
+    "src/run_long_integration_global.py": "7991fee272e7c1bcd972d95ce687a270136168b81c4ec3ead39e4dc6623d1090",
+    "src/runtime_validation.py": "eeb738a7875987f42de92c9ada6a3e0eb7c07bb4cd4a4cce79b4a4b78136b8f8",
+    "src/score_external_model.py": "8d0938946657205ea7ffc1f946a58d75db3530396d14ca4faa4546a495bbd8b5",
+    "src/score_mom6_prog.py": "92c9c16b4d8f28dcd7fd0495b6361265b6862f14cb5bc3fa9e45b802739af22e",
+    "src/stage_budgets.py": "d67925637836e154064ffbca5af6ecccd2fed9a72155e7d3b33b724de69ed28d",
+    "src/summarize_ice_diagnostics.py": "587d47824d4cd507cfe53c2517d75ef3e059760b214ec6c9d083cd770fbca043",
+    "src/wet_fluxes.py": "e092594115ca63c6a8ad88ebba84728ad84d68e6d9aa561629d6e5da7cad654c",
+    "src/wind_reanalysis.py": "dbf06dbe69860d70516a0dcef747a911251d22bbbafb88cb4233f2f351cdd0a2",
+    "src/woa_data.py": "50124ce84babd8433f4d08228c9ebe56e6646d13cf36e2ea7e45429c2cba3c66",
+    "research/experiments/industrial_flat_f0/boundary_witness.py": "74bcbd3d1ebc7a6f60314105d43e7e55275390a67c8933ecfa07f161acc94d7e",
+    "research/experiments/industrial_flat_f0/diagnostic_contract.py": "b3d06db48b1e0b36567aed2a6e629526b066fcbc4adfee503979344bb2d3bff7",
+    "research/experiments/industrial_flat_f0/diagnostic_scoring.py": "b8484def7acf4ec2d1b75f6531427baae1f8a5fb42ff52899016cd091b5a3e86",
+    "research/experiments/industrial_flat_f0/export_score.py": "ecc2a6c347a1d7365b686e6d7f2b748930710cf0bb4f92aa1fbb9c289c45135c",
+    "research/experiments/industrial_flat_f0/mom_diagnostics.py": "60a00f6b7a762e98551541ca318243707a384702e762e19fcb059f261fb3dc55",
+    "research/experiments/industrial_flat_f0/native_mom.py": "7f9f2829ccd0a1e1af9c4888ac2f2ba5ba252e436af572389d113b2fb1a4ff0a",
+    "research/experiments/industrial_flat_f0/native_output.py": "bd19f040ff28432b7d03224acb1f07988a1ec5b2ffd950e6a58abfa48b4d902b",
+    "research/experiments/industrial_flat_f0/prepare_inputs.py": "bb9d0396a979058bc2d207c0bb1a250ea3ecdf2016528187e70eeb364ac9e203",
+    "research/experiments/industrial_flat_f0/prepare_mom.py": "2499f5d788f624621778764610631965d4cc47ed99ccd4a7ed8319ed7df4f8c5",
+    "research/experiments/industrial_flat_f0/resolved_config.py": "dc9d3cb10077eea99c9a3a637f20e389b0b746046dc00fbd3d88b48b17298e38",
+    "research/experiments/industrial_flat_f0/run_dt50_diagnostic.py": "48e6cc222432edd8b58f52f5678aae2cf86c3b5ed549930c5afd446d8e120489",
+    "research/experiments/industrial_flat_f0/run_guard.py": "ac6412ca585c79be61fb2765ee8213eb279fc908aab51e8e22b400b88bc3ff41",
+    "research/experiments/industrial_flat_f0/run_ocean.py": "7e2899f7ab5ea69493d1c8bd03a9544b200ca60004de81ea5ec56dd9399905b1",
+    "research/experiments/industrial_flat_f0/test_run_guard_linux.py": "d0ed050df3e92e835778672405d3cb59e53bb7b564bb6cddb68e994c65711622"
+  }
+}
