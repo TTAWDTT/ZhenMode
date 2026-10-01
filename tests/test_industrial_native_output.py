@@ -5,7 +5,6 @@ from types import SimpleNamespace
 import numpy as np
 import pytest
 
-
 root = Path(__file__).parents[1] / 'research/experiments/industrial_flat_f0'
 
 

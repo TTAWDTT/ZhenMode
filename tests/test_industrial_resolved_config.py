@@ -5,7 +5,6 @@ import netCDF4
 import numpy as np
 import pytest
 
-
 path = Path(__file__).parents[1] / 'research/experiments/industrial_flat_f0/resolved_config.py'
 spec = importlib.util.spec_from_file_location('resolved_wave', path)
 module = importlib.util.module_from_spec(spec)

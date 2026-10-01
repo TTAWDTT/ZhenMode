@@ -1,0 +1,37 @@
+{
+  "schema": "standing-wave-v0",
+  "contract_sha256": "55e8633b368a392bcfafede92f826aae924fda130d5ac1dca9854ae90aa2f54e",
+  "model": "MOM6",
+  "source_sha": "f49a00096df607b48354603e2398e14e189fd62e",
+  "input_sha256": "f5fce7eb2f7ec76711942d3e29e0596093fe0608021885b480abd06a769b1318",
+  "config_sha256": "86c7b27f93ebac45b07e883f5b39f6a672d889b9513cd5fddced21f6a813098e",
+  "executable_sha256": "35743c5cc1068b5d19f7ae36d358a8e83d3da43c12429211a61e545c9f4caac9",
+  "metrics": {
+    "eta_error": 0.0058269804228221886,
+    "u_error": 0.0031554992313768283,
+    "phase_rad": 0.009446376374028363,
+    "amplitude": 0.013475163009958324,
+    "energy": 0.026510930140936195,
+    "volume": 2.220446049250313e-16,
+    "T": 6.572520305780927e-14,
+    "S": 1.7763568394002505e-13,
+    "v_over_U": 0.0
+  },
+  "failed_metrics": [
+    "energy"
+  ],
+  "engineering_screen_pass": false,
+  "industrial_qualified": false,
+  "equal_error_speedup_qualified": false,
+  "energy_units": "J",
+  "initial_energy_J": 25174944062.566784,
+  "resource_record": {
+    "initialization_s": 0.042737,
+    "integration_s": 6.355331,
+    "total_wall_s": 7.342635024,
+    "aggregate_peak_bytes": 89116672,
+    "cpu": 1,
+    "ranks": 1
+  },
+  "output_sha256": "44d212af470924d1cf60b7e69e2f58cb693e47cfb8567cab398e037f22f8f2ef"
+}
