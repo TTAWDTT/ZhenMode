@@ -2,6 +2,7 @@
 
 import argparse
 import hashlib
+import io
 import json
 from pathlib import Path
 
@@ -40,7 +41,12 @@ def integrate(z, n, lo, hi):
     return out
 
 
-def bridge(depth, h0, eta, values, target, Tref, Sref):
+def bridge(depth, h0, eta, values, target, Tref, Sref, alpha, beta, rho0, gravity):
+    for value in (eta, Tref, Sref, alpha, beta, rho0, gravity):
+        if np.asarray(value).shape != () or not np.isfinite(value):
+            raise ValueError("finite scalar EOS/eta required")
+    if min(alpha, beta, rho0, gravity) <= 0:
+        raise ValueError("positive EOS constants required")
     depth, h0, values, target = map(
         lambda a: np.asarray(a, dtype=float), (depth, h0, values, target)
     )
@@ -88,18 +94,31 @@ def bridge(depth, h0, eta, values, target, Tref, Sref):
         [np.trapezoid(np.interp(cuts, -depth[::-1], values[::-1, f]), cuts) for f in range(4)]
     )
     scans = np.linspace(-depth[-1], eta, 401)
-    rho = RHO * (-2e-4 * (values[:, 0] - Tref) + 8e-4 * (values[:, 1] - Sref))
-    original = np.r_[0, np.cumsum(G * 0.5 * (rho[:-1] + rho[1:]) * np.diff(depth))] + RHO * G * eta
+    rho = rho0 * (-alpha * (values[:, 0] - Tref) + beta * (values[:, 1] - Sref))
+    original = (
+        np.r_[0, np.cumsum(gravity * 0.5 * (rho[:-1] + rho[1:]) * np.diff(depth))]
+        + rho0 * gravity * eta
+    )
     pold = np.interp(-scans, depth, original)
     pnew = []
     for d in scans:
         stock = integrate(target, new, d, eta)
         length = eta - d
         pnew.append(
-            RHO * G * eta
-            + RHO * G * (-2e-4 * (stock[0] - Tref * length) + 8e-4 * (stock[1] - Sref * length))
+            rho0 * gravity * eta
+            + rho0
+            * gravity
+            * (-alpha * (stock[0] - Tref * length) + beta * (stock[1] - Sref * length))
         )
     return new, dict(
+        eos_identity=dict(
+            alpha=float(alpha),
+            beta=float(beta),
+            rho0=float(rho0),
+            gravity=float(gravity),
+            Tref=float(Tref),
+            Sref=float(Sref),
+        ),
         qualification_passed=False,
         water_m=sum(h),
         original_material_T_S_reference_u_v=old.sum(axis=0).tolist(),
@@ -115,16 +134,32 @@ if __name__ == "__main__":
     parser.add_argument("input")
     parser.add_argument("output")
     args = parser.parse_args()
-    with np.load(args.input, allow_pickle=False) as p:
-        required = {"depth", "h0", "eta", "values", "target", "Tref", "Sref", "source_sha"}
+    snapshot = Path(args.input).read_bytes()
+    with np.load(io.BytesIO(snapshot), allow_pickle=False) as p:
+        required = {
+            "depth",
+            "h0",
+            "eta",
+            "values",
+            "target",
+            "Tref",
+            "Sref",
+            "source_sha",
+            "alpha",
+            "beta",
+            "rho0",
+            "gravity",
+        }
         if set(p.files) != required:
             raise ValueError("exact canonical keys required")
+        if p["source_sha"].shape != () or p["source_sha"].dtype.kind != "U":
+            raise ValueError("source_sha must be Unicode scalar")
         source_sha = str(p["source_sha"].item())
         if len(source_sha) != 40 or any(c not in "0123456789abcdef" for c in source_sha):
             raise ValueError("declared historical source_sha required")
         _, report = bridge(**{key: p[key] for key in required - {"source_sha"}})
         report["declared_source_sha"] = source_sha
         report["historical_source_independently_verified"] = False
-    report["input_sha256"] = hashlib.sha256(Path(args.input).read_bytes()).hexdigest()
+    report["input_sha256"] = hashlib.sha256(snapshot).hexdigest()
     with open(args.output, "x") as f:
         json.dump(report, f, indent=2)

@@ -20,7 +20,19 @@ def fixture(n=9, eta=0, nonuniform=False):
     z = np.r_[eta, -0.5 * (d[:-1] + d[1:]), -40]
     target = z.copy()
     target[1] = eta - 0.25 * (eta - z[2])
-    return dict(depth=d, h0=h, eta=eta, values=v, target=target, Tref=20, Sref=35)
+    return dict(
+        depth=d,
+        h0=h,
+        eta=eta,
+        values=v,
+        target=target,
+        Tref=20,
+        Sref=35,
+        alpha=2e-4,
+        beta=7.6e-4,
+        rho0=1025.0,
+        gravity=9.81,
+    )
 
 
 @pytest.mark.parametrize("nonuniform", [False, True])
@@ -86,3 +98,97 @@ def test_pressure_refinement(profile):
         _, r = b.bridge(**p)
         errors.append(r["max_original_pressure_difference_Pa"])
     assert all(a / bb > 3 for a, bb in zip(errors, errors[1:]))
+
+
+@pytest.mark.parametrize("key", ["eta", "Tref", "Sref", "alpha", "beta", "rho0", "gravity"])
+def test_scalar_arrays_rejected(key):
+    p = fixture()
+    p[key] = np.array([p[key]])
+    with pytest.raises(ValueError):
+        b.bridge(**p)
+
+
+def audit_module():
+    spec = importlib.util.spec_from_file_location(
+        "audit",
+        Path(__file__).parents[1] / "research/experiments/fd_static_bridge/discrete_audit.py",
+    )
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def discrete_fixture():
+    return dict(
+        depth=np.array([0.0, 5, 300, 500, 1000]),
+        reference_weights=np.array([2.5, 147.5, 250, 350, 750]),
+        wet_mask=np.array([1, 1, 1, 1, 0]),
+        values=np.tile([15, 36, 0.2, -0.1], (5, 1)),
+        eta=-2.49,
+        Tref=15.0,
+        Sref=35.0,
+        alpha=2e-4,
+        beta=7.6e-4,
+        rho0=1025.0,
+        gravity=9.81,
+        terrain_depth=750.0,
+        discrete_bottom=750.0,
+        control_interfaces=np.array([]),
+        source_sha="2" * 40,
+        terrain_sha="a" * 64,
+    )
+
+
+def test_nonstandard_reference_bottom_inventory_not_truncated():
+    p = discrete_fixture()
+    r = audit_module().audit(**p)
+    assert r["reference_column_m"] == 750 and r["wet_node_depth_m"] == 500
+    assert r["unsampled_depth_to_discrete_bottom_m"] == 250
+    assert r["continuous_bottom_profile_recovered"] is False
+    assert r["T_S_reference_u_v_inventory"][2] == 150
+
+
+def test_beta_matches_source_pressure():
+    p = discrete_fixture()
+    p.update(
+        depth=np.array([0.0, 40]),
+        reference_weights=np.array([20.0, 20.0]),
+        wet_mask=np.ones(2),
+        values=np.tile([15, 36, 0, 0], (2, 1)),
+        eta=0.0,
+        terrain_depth=40.0,
+        discrete_bottom=40.0,
+    )
+    r = audit_module().audit(**p)
+    assert abs(r["original_node_pressure_Pa"][-1] - 305.6796) < 1e-10
+
+
+def test_cli_single_snapshot_identity(tmp_path, monkeypatch):
+    import hashlib
+    import io
+    import json
+    import runpy
+    import sys
+
+    p = fixture()
+    p["source_sha"] = np.array("2" * 40)
+    stream = io.BytesIO()
+    np.savez(stream, **p)
+    snapshot = stream.getvalue()
+    calls = []
+
+    def read(path):
+        calls.append(str(path))
+        assert len(calls) == 1
+        return snapshot
+
+    monkeypatch.setattr(Path, "read_bytes", read)
+    output = tmp_path / "result.json"
+    monkeypatch.setattr(sys, "argv", ["bridge.py", "input.npz", str(output)])
+    runpy.run_path(
+        str(Path(__file__).parents[1] / "research/experiments/fd_static_bridge/bridge.py"),
+        run_name="__main__",
+    )
+    with open(output) as f:
+        r = json.load(f)
+    assert r["input_sha256"] == hashlib.sha256(snapshot).hexdigest() and len(calls) == 1

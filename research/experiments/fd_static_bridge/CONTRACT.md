@@ -30,3 +30,30 @@ qualification=false，FD信息损失/真实湿床/动力耦合继续阻断生产
 原压力对照为EOS梯形节点压力的深度插值；未调用生产PGF或证明实际湿面力等价。新桥重构为算法级同P1，不是PR9代码调用复用，不证明温盐动力耦合。
 同分辨率桥的维数未必降低，但没有声明逆算；减少目标层数或limiter非线性会丢失点值信息。桥只保留指定4库存，不能据此保留剖面、压力或动能；压力差完整报告而不补残差。正eta缺表面节点覆盖拒绝，部分湿底列和legacy非dual几何拒绝。
 合同冻结是仓库协议声明，不作为外部可验证预注册证明。
+
+## 真实非标准质量列：修订合同（替代此前可直接真实桥接的表述）
+
+EOS alpha/beta/rho0/gravity必须显式标量输入，连同Tref/Sref输出身份；
+core config是alpha2e-4/beta7.6e-4/rho01025/g9.81，禁止8e-4替代。
+bridge规范keys增alpha/beta/rho0/gravity；eta/refs/EOS全要求shape=()。
+两个CLI只读一次不可变bytes，同时由该快照np.load(BytesIO)与SHA256，
+避免读取数组与再次读取hash身份不一致。旧规范输入缺EOS会拒绝。
+
+真实列不能用标准dual重算权重，原bridge仍拒绝此几何。新增只读入口：
+`python research/experiments/fd_static_bridge/discrete_audit.py original_column.npz summary.json`。
+严格函数字段：depth/reference_weights/wet_mask/values/eta/Tref/Sref/alpha/beta/
+rho0/gravity/terrain_depth/discrete_bottom/control_interfaces/source_sha/terrain_sha。
+depth为完整原节点深度；weights为原params.dz_node；mask为原二进制连续湿mask。
+control_interfaces若未有经审查的物理定义须为空向量，不根据weights倒推物理层界；
+若提供，仅报告该界面体积与离散质量差。source40hex/terrain64hex均仅声明。
+
+库存严格按原weights与mask，T/S用material-top厚度，动量仍单列参考质量。
+压力仅输出原EOS梯形在湿节点有定义的离散压力，不产生500–750m场或
+对该区域作压力桥比较。terrain/discrete-bottom身份与最深湿节点分别输出。
+例如原750m参考柱/500m末湿节点/350m底点权重，不能截成500m柱或把底点
+改100m；1000/1500m情况同理。诊断可接受该离散质量，**不能真实桥接**。
+
+核查core _fill_ghost_bottom复制最后湿值到ghost槽，服务垂向stencil；
+hydrostatic-pressure却先mask异常密度再梯形节点积分。这两条离散约定
+都不能唯一恢复节点以下的连续密度/速度。常量延拓只是待审假设，本PR
+不执行任何底部外推、补点或生产桥接。qualification始终false。
