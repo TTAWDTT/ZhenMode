@@ -1,0 +1,33 @@
+{
+  "base": "82e1ca4a2158d4c0ed20f91c04e80cdf43f8a36b",
+  "test_exit": 0,
+  "test_output": "....................                                                     [100%]\n20 passed in 0.28s\n",
+  "test_wall_s": 0.6665878939966206,
+  "child_peak_RSS_KiB": 40276,
+  "area_m2": 1,
+  "min_eta_m": -3.6,
+  "cycle_errors": {
+    "hT_m3_K": 0.39916463377034006,
+    "hS_m3_psu": 1.1368683772161603e-13,
+    "hu_m4_s": 0.07983292675407683,
+    "hv_m4_s": 0.039916463377038414
+  },
+  "cycle_global_stock_error": [
+    -2.2737367544323206e-13,
+    0.0,
+    -1.7763568394002505e-15,
+    8.881784197001252e-16
+  ],
+  "summed_stage_accounts": {
+    "transport_source_ke_change_J": -4.6071112931401785,
+    "remap_mean_ke_change_J": -0.11253768737833525,
+    "remap_PE_change_J": 0.07630771874983111,
+    "remap_T2_change_m3_K2": -0.009465983737754868,
+    "remap_S2_change_m3_psu2": 1.4551915228366852e-11
+  },
+  "qualification_passed": false,
+  "hashes": {
+    "research/experiments/conservative_top_band/component.py": "a3203a976edb3e61048817063cc9f0e3dfec7bc766701c70bfd90d8bd3d46fd6",
+    "tests/test_conservative_top_band.py": "6505b24097f164fbb6654a3c048b98d38145fe4c549a4382073441c715c810d5"
+  }
+}
