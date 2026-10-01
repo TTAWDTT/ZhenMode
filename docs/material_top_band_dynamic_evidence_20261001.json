@@ -1,0 +1,374 @@
+{
+  "contract": "moving_stock_predict_fast_replay_v1",
+  "python": "3.13.5",
+  "numpy": "2.1.3",
+  "source_sha256": "e9ac6ab7880c78cd5cdc8bfdaf897a802e4d220b07e55e41da45da58444ab99c",
+  "moving_witness": {
+    "authenticity": "prototype",
+    "shape": [
+      8,
+      4,
+      6
+    ],
+    "dt_s": 30.0,
+    "parameters": {
+      "dt": 30.0,
+      "nu_h": 2000000.0,
+      "nu_v": 0.0001,
+      "kappa_h": 100.0,
+      "kappa_v": 1e-06,
+      "kappa_conv": 0.01,
+      "r_bot": 0.001,
+      "lambda_bulk": 80.0,
+      "air_temperature": 17.0,
+      "tau_x": 0.001,
+      "tau_y": 0.0002,
+      "coriolis": 0.0001,
+      "fct": true,
+      "kappa_bi": 0.0,
+      "momentum_filter": false
+    },
+    "accepted": true,
+    "eta_change_max_m": 6.807078648307652e-06,
+    "deep_stock_change_max_IT_IS_Mu_Mv": [
+      5.973085876576079e-06,
+      6.903064786456525e-08,
+      18.04254505675192,
+      6.50392593979025
+    ],
+    "specific_velocity_change_max_m_s": 9.000119165446788e-05,
+    "pressure_absolute_work_sum_J": 192268388797.14038,
+    "horizontal_density_gradient_nonzero": true,
+    "vertical_shear_nonzero": true,
+    "report": {
+      "contract": "moving_stock_predict_fast_replay_v1",
+      "qualification_passed": false,
+      "original_configuration_covered": false,
+      "missing_adapters": [
+        "biharmonic",
+        "momentum_filter",
+        "coast",
+        "variable_bathymetry",
+        "original_process_clocks",
+        "total_PE_ALE_compatibility"
+      ],
+      "fast_steps": [
+        {
+          "cross_band_max_m_s": 1.9046874334031256e-07,
+          "water_roundoff_ratio": 0.0,
+          "stock_residual": [
+            -512.0,
+            2048.0,
+            -640.0,
+            0.25
+          ],
+          "pressure_work_J": 16022854611.045097,
+          "pressure_work_roundoff_ratio": 0.001573453768815271,
+          "external_stock": [
+            0.0,
+            0.0,
+            -654.6714462637901,
+            2316342.071051104
+          ]
+        },
+        {
+          "cross_band_max_m_s": 1.904741616309938e-07,
+          "water_roundoff_ratio": 0.0,
+          "stock_residual": [
+            -768.0,
+            -1024.0,
+            -512.0,
+            -0.75
+          ],
+          "pressure_work_J": 16022765871.048557,
+          "pressure_work_roundoff_ratio": 0.000940480416792938,
+          "external_stock": [
+            0.0,
+            0.0,
+            -654.6522761583328,
+            6949019.896785228
+          ]
+        },
+        {
+          "cross_band_max_m_s": 1.9047957965398453e-07,
+          "water_roundoff_ratio": 0.0,
+          "stock_residual": [
+            0.0,
+            1024.0,
+            128.0,
+            0.5
+          ],
+          "pressure_work_J": 16022677086.972782,
+          "pressure_work_roundoff_ratio": 0.0013727574566509246,
+          "external_stock": [
+            0.0,
+            0.0,
+            -654.9673963785172,
+            11581694.696395796
+          ]
+        },
+        {
+          "cross_band_max_m_s": 1.9048499740927604e-07,
+          "water_roundoff_ratio": 0.0,
+          "stock_residual": [
+            512.0,
+            0.0,
+            -768.0,
+            -0.25
+          ],
+          "pressure_work_J": 16022588258.830967,
+          "pressure_work_roundoff_ratio": 0.00017771508859997195,
+          "external_stock": [
+            0.0,
+            0.0,
+            -655.2618474960327,
+            16214374.24559521
+          ]
+        },
+        {
+          "cross_band_max_m_s": 1.904904148968598e-07,
+          "water_roundoff_ratio": 0.0,
+          "stock_residual": [
+            -256.0,
+            1024.0,
+            -384.0,
+            -0.5
+          ],
+          "pressure_work_J": 16022499386.620583,
+          "pressure_work_roundoff_ratio": 0.0008542293069790076,
+          "external_stock": [
+            0.0,
+            0.0,
+            -655.4497902393341,
+            20847049.771351226
+          ]
+        },
+        {
+          "cross_band_max_m_s": 1.90495832116727e-07,
+          "water_roundoff_ratio": 0.0,
+          "stock_residual": [
+            -1280.0,
+            -3072.0,
+            128.0,
+            -1.0
+          ],
+          "pressure_work_J": 16022410470.337883,
+          "pressure_work_roundoff_ratio": 0.0016268186898290619,
+          "external_stock": [
+            0.0,
+            0.0,
+            -655.7481370568275,
+            25479723.794641387
+          ]
+        },
+        {
+          "cross_band_max_m_s": 1.905012490688695e-07,
+          "water_roundoff_ratio": 0.0,
+          "stock_residual": [
+            1536.0,
+            3072.0,
+            128.0,
+            1.0
+          ],
+          "pressure_work_J": 16022321509.987799,
+          "pressure_work_roundoff_ratio": 0.0013621987238254776,
+          "external_stock": [
+            0.0,
+            0.0,
+            -656.1195355653763,
+            30112403.235944506
+          ]
+        },
+        {
+          "cross_band_max_m_s": 1.9050666575327858e-07,
+          "water_roundoff_ratio": 0.0,
+          "stock_residual": [
+            -768.0,
+            -2048.0,
+            -640.0,
+            -0.75
+          ],
+          "pressure_work_J": 16022232505.569744,
+          "pressure_work_roundoff_ratio": 0.0012826136807562293,
+          "external_stock": [
+            0.0,
+            0.0,
+            -656.4167866110802,
+            34745084.56574065
+          ]
+        },
+        {
+          "cross_band_max_m_s": 1.9051208216994563e-07,
+          "water_roundoff_ratio": 0.0,
+          "stock_residual": [
+            256.0,
+            1024.0,
+            -256.0,
+            -0.25
+          ],
+          "pressure_work_J": 16022143457.084415,
+          "pressure_work_roundoff_ratio": 0.001244912672519325,
+          "external_stock": [
+            0.0,
+            0.0,
+            -656.7273989915848,
+            39377766.835367486
+          ]
+        },
+        {
+          "cross_band_max_m_s": 1.9051749831886218e-07,
+          "water_roundoff_ratio": 0.0,
+          "stock_residual": [
+            -1024.0,
+            1024.0,
+            -768.0,
+            -1.0
+          ],
+          "pressure_work_J": 16022054364.52929,
+          "pressure_work_roundoff_ratio": 0.0006425996670891026,
+          "external_stock": [
+            0.0,
+            0.0,
+            -657.0418279767036,
+            44010450.54573305
+          ]
+        },
+        {
+          "cross_band_max_m_s": 1.9052291420001955e-07,
+          "water_roundoff_ratio": 0.0,
+          "stock_residual": [
+            1280.0,
+            -2048.0,
+            896.0,
+            0.5
+          ],
+          "pressure_work_J": 16021965227.903728,
+          "pressure_work_roundoff_ratio": 0.0007310236615274471,
+          "external_stock": [
+            0.0,
+            0.0,
+            -657.3317115902901,
+            48643131.93363568
+          ]
+        },
+        {
+          "cross_band_max_m_s": 1.9052832981340937e-07,
+          "water_roundoff_ratio": 0.0034193822214414206,
+          "stock_residual": [
+            -512.0,
+            4096.0,
+            384.0,
+            2.0
+          ],
+          "pressure_work_J": 16021876047.209534,
+          "pressure_work_roundoff_ratio": 0.00038638547941562763,
+          "external_stock": [
+            0.0,
+            0.0,
+            -657.6099144816399,
+            53275813.00973918
+          ]
+        }
+      ],
+      "committed_fast_steps": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12
+      ],
+      "executed_fast_steps": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12
+      ],
+      "stages": [
+        "linear_source_first",
+        "predictor_discarded",
+        "twelve_joint_fast_steps",
+        "column_Q_diagnostic",
+        "accepted_slow_replay"
+      ],
+      "rejection_reason": null,
+      "predictor_eta_change_max_m": 6.8070787619944895e-06,
+      "column_Q_max_m3_s": 8745727.012728224,
+      "column_Q_match_residual_m3_s": 9.313225746154785e-10,
+      "independent_water_residual_m3": -32.0,
+      "independent_water_roundoff_ratio": 0.0034193822214414206,
+      "independent_stock_residual": [
+        647.4530029296875,
+        0.0,
+        1323.0,
+        2.0
+      ],
+      "independent_stock_roundoff_ratio": [
+        0.003203618262749482,
+        0.0,
+        0.012473904350924984,
+        0.006317160728455948
+      ],
+      "expected_external_stock": [
+        386716495736.547,
+        0.0,
+        -3987360965512747.0,
+        -2784824828846158.0
+      ],
+      "cross_band_max_m_s": 1.9052832981340937e-07,
+      "diffusion_subcycles": [
+        1,
+        1
+      ],
+      "bulk_heat_J": 1.5815737884385434e+18,
+      "total_energy_change_J": -7363962638336.0,
+      "total_PE_ALE_residual_status": "unproved; energy change is not a numerical loss",
+      "temporal_order_status": "unmeasured; no second-order claim",
+      "pressure_work_sum_J": 192268388797.14038,
+      "unclosed_total_energy_remainder_J": -7556231027133.141,
+      "unclosed_remainder_includes": [
+        "transport/ALE",
+        "mixing",
+        "sources; not classified as loss"
+      ]
+    }
+  },
+  "order_witness": {
+    "configuration": "fast_only; all slow coefficients zero, FCT active",
+    "fixed_endpoint_s": 2.0,
+    "macro_dt_s": [
+      1.0,
+      0.5,
+      0.25,
+      0.125
+    ],
+    "metric": "L2 of h, IT, IS, Mu/rho0, Mv/rho0 at identical endpoint",
+    "successive_endpoint_differences": [
+      1.055465680936937e-06,
+      2.6393364368267816e-07,
+      6.639425594636713e-08
+    ],
+    "observed_orders": [
+      1.9996325012334928,
+      1.9910449247479476
+    ],
+    "second_order_witness_passed": true,
+    "full_active_subset_order_qualified": false,
+    "scope": "this synthetic fixed endpoint only; no spatial convergence or industrial claim"
+  },
+  "industrial_quality_or_speed_qualified": false
+}
