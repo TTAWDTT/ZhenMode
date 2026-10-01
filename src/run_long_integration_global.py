@@ -24,7 +24,10 @@ Usage:
   python src/run_long_integration_global.py --days 200 --tag g200d_smoke   # shorter probe
 """
 import argparse
+import hashlib
+import json
 import os
+import subprocess
 import sys
 import time
 from dataclasses import replace
@@ -62,8 +65,23 @@ from forcing import (
 from grid import global_grid_dims, land_distance_from_land_mask, make_global_grid
 from integration_monitor import classify_state
 from jax_solver_global import JaxStateG, make_solver_global, projection_config
-from restart_contract import file_sha256, load_restart, make_restart_contract, save_restart
+from restart_contract import (
+    file_sha256,
+    fingerprint,
+    load_restart,
+    make_restart_contract,
+    save_restart,
+)
 from runtime_validation import finite_number, integer_count
+from stage_budgets import (
+    METRIC_NAMES,
+    NONLINEAR_PROCESS_NAMES,
+    SOURCE_NAMES,
+    STAGE_NAMES,
+    accumulate_budget,
+    empty_budget,
+    make_budget_step,
+)
 from wind_reanalysis import real_wind_forcing
 from woa_data import get_initial_fields
 
@@ -313,17 +331,89 @@ SNAPSHOT_SCALARS = ("days", "max_u", "max_velocity", "max_T", "max_eta", "ssh_st
 SNAPSHOT_FIELDS = ("eta", "T_top", "ice_top")
 
 
-def _validate_restart_history(record, grid, n_snap, dt, save_3d, save_terms, output_dirs):
+SOURCE_MODULES = (
+    "run_long_integration_global", "jax_solver_global", "restart_contract", "config", "grid",
+    "diagnostics", "forcing", "wind_reanalysis", "air_reanalysis", "woa_data", "benchmark_metrics",
+    "mixed_layer_ice", "integration_monitor", "runtime_validation", "stage_budgets",
+    "finite_volume", "bounded_transport", "cgrid_momentum", "wet_fluxes", "physical_velocity",
+    "paired_dynamics", "nonlinear_dynamics", "barotropic_transport", "material_top",
+)
+
+
+def _state_identity(state):
+    # Incoming invalid states still need a failure report; do not pass them
+    # through restart's finite-only contract encoder.
+    return {name: {"shape": list(value.shape), "dtype": value.dtype.str,
+                   "sha256": hashlib.sha256(value.tobytes()).hexdigest(),
+                   "finite": bool(np.isfinite(value).all())}
+            for name, field in zip(state._fields, state, strict=True)
+            for value in [np.asarray(field)]}
+
+
+def _same_state_bytes(left, right):
+    return all(np.asarray(a).dtype == np.asarray(b).dtype
+               and np.asarray(a).shape == np.asarray(b).shape
+               and np.asarray(a).tobytes() == np.asarray(b).tobytes()
+               for a, b in zip(left, right, strict=True))
+
+
+def _input_files(args, *, seasonal=None, air=None):
+    """Selected loader paths, including WOA's documented npz precedence."""
+    import air_reanalysis
+    import grid as grid_module
+    import wind_reanalysis
+    import woa_data
+
+    bathy = Path(DEFAULT_CONFIG.bathymetry_file)
+    if (not bathy.is_file() or grid_module.Dataset is None) and Path(str(bathy) + ".npz").is_file():
+        bathy = Path(str(bathy) + ".npz")
+    paths = {"bathymetry": bathy}
+    if args.init_from:
+        paths["initial_fields"] = Path(args.init_from)
+    else:
+        for name, filename in woa_data.WOA_FILES.items():
+            path = Path(filename)
+            paths[name] = Path(filename + ".npz") if Path(filename + ".npz").is_file() else path
+    seasonal = args.seasonal_wind if seasonal is None else seasonal
+    months = range(12) if seasonal else [int(args.month[5:7]) - 1]
+    year = args.wind_year if seasonal else int(args.month[:4])
+    for month in months:
+        index = (year - 1948) * 12 + month
+        paths[f"wind_{index}"] = Path(wind_reanalysis.CACHE_DIR) / f"monthly_mean_{index}.npz"
+    if not args.no_bulk_flux and args.lambda_bulk * args.bulk_lambda_mult > 0:
+        if air is None:
+            air = "monthly" if args.real_air_temp_monthly else "annual" if args.real_air_temp else "zonal"
+        if air in {"monthly", "annual"}:
+            paths["air"] = Path(air_reanalysis.CACHE_DIR) / f"air_2m_{air}_{args.wind_year:04d}.npz"
+    return paths
+
+
+def _source_identity():
+    source_dir = Path(__file__).resolve().parent
+    root = source_dir.parent
+    try:
+        head = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=root,
+                                       text=True, stderr=subprocess.DEVNULL).strip()
+    except (OSError, subprocess.CalledProcessError):
+        head = "unavailable_installed_distribution"
+    return {"git_head": head, "source_sha256": {
+        name + ".py": file_sha256(source_dir / (name + ".py")) for name in SOURCE_MODULES}}
+
+
+def _validate_restart_history(record, grid, n_snap, dt, save_3d, save_terms, output_dirs, budget_audit=False):
     """A production continuation restores all diagnostics and verifies retained files."""
     if record.step % n_snap:
         raise ValueError("restart must land on a snapshot boundary")
     count = record.step // n_snap + 1
     budget_names = tuple(BudgetDiagnostics.__dataclass_fields__)
     expected = set(SNAPSHOT_SCALARS + SNAPSHOT_FIELDS + budget_names)
+    ledger_shapes = {"ledger_" + name: np.shape(value) for name, value in empty_budget().items()} if budget_audit else {}
+    expected.update(ledger_shapes)
     if set(record.history) != expected:
         raise ValueError("restart snapshot/diagnostic history fields mismatch")
     for name, values in record.history.items():
-        shape = (count, grid.nx, grid.ny) if name in SNAPSHOT_FIELDS else (count,)
+        shape = ((count,) + ledger_shapes[name] if name in ledger_shapes else
+                 (count, grid.nx, grid.ny) if name in SNAPSHOT_FIELDS else (count,))
         if values.shape != shape:
             raise ValueError(f"restart history {name} shape differs from the snapshot timeline")
     days = np.arange(count) * n_snap * dt / 86400.
@@ -333,9 +423,17 @@ def _validate_restart_history(record, grid, n_snap, dt, save_3d, save_terms, out
     if record.counters != {"n_3d_snaps": expected_count, "accepted_steps": record.step,
                            "attempted_steps": record.step}:
         raise ValueError("restart actual 3D output counter mismatch")
-    if (set(record.cumulative) != {"max_u_peak", "max_velocity_peak"}
-            or any(value.shape != () for value in record.cumulative.values())):
+    stat_names = {"max_u_peak", "max_velocity_peak", "max_eta_peak"}
+    if (set(record.cumulative) != stat_names | set(ledger_shapes)
+            or any(record.cumulative[name].shape != () for name in stat_names)
+            or any(record.cumulative[name].shape != shape for name, shape in ledger_shapes.items())):
         raise ValueError("restart production statistics mismatch")
+    for name in ledger_shapes:
+        if record.cumulative[name].tobytes() != record.history[name][-1].tobytes():
+            raise ValueError("restart cumulative ledger differs from final history")
+    eta_peak = float(record.cumulative["max_eta_peak"])
+    if eta_peak < max(record.history["max_eta"]) or eta_peak > ETA_BLOWUP_M:
+        raise ValueError("restart historical eta peak mismatch")
     peak = float(record.cumulative["max_u_peak"])
     velocity_peak = float(record.cumulative["max_velocity_peak"])
     if (peak < max(record.history["max_u"]) or velocity_peak < max(record.history["max_velocity"])
@@ -677,7 +775,15 @@ def main():
                     help="versioned checkpoint from --checkpoint-days; requires identical "
                          "code/effective parameters/grid/forcing/dtype/backend, restores "
                          "absolute time and histories; old state-only files need migration")
+    ap.add_argument("--budget-audit", action="store_true",
+                    help="strict accepted-step ledger; shadow audit must match ordinary state bytes (extra cost)")
+    ap.add_argument("--allow-forcing-fallback", action="store_true",
+                    help="exploration only: explicitly allow unavailable NCEP forcing to fall back")
+    ap.add_argument("--strict-forcing", action="store_true",
+                    help="require all selected local input/cache files before loading; prohibit fallback/download")
     args = ap.parse_args()
+    if args.strict_forcing and args.allow_forcing_fallback:
+        ap.error("--strict-forcing forbids --allow-forcing-fallback")
     try:
         requested_steps = _validate_arguments(args)
     except ValueError as error:
@@ -700,6 +806,11 @@ def main():
         assert args.save_3d, "--save-3d-terms requires --save-3d"
         three_d_terms_dir = os.path.join(args.out_dir, f"global_{tag}_terms")
         os.makedirs(three_d_terms_dir, exist_ok=True)
+
+    if args.strict_forcing:
+        missing = [str(path) for path in _input_files(args).values() if not path.is_file()]
+        if missing:
+            raise ValueError(f"strict forcing preflight: missing local inputs {missing}")
 
     # ── Build global grid ──
     bathy = DEFAULT_CONFIG.bathymetry_file
@@ -880,6 +991,7 @@ def main():
         print(f"  global SST restore: tau={args.global_sst_restore_days:g}d over all wet cells")
 
     # ── Wind forcing ──
+    fallback_events = []
     seasonal = args.seasonal_wind
     wind_months = None
     if seasonal:
@@ -888,6 +1000,9 @@ def main():
             wind_months = build_seasonal_wind_global(grid, year=args.wind_year)
             wind_src = f"seasonal cycle {args.wind_year} (12 monthly NCEP snapshots)"
         except Exception as e:
+            if not args.allow_forcing_fallback:
+                raise ValueError("requested seasonal wind unavailable; fallback disabled") from e
+            fallback_events.append({"component": "wind", "reason": repr(e)})
             print(f"  seasonal wind fetch failed ({e!r}); fallback fixed-month")
             seasonal = False
     if not seasonal:
@@ -928,6 +1043,11 @@ def main():
                     T_atm_source += f" + {args.air_marine_smooth_passes} marine smooth"
                 T_atm = np.mean(T_atm_months, axis=0)
             except Exception as exc:
+                if not args.allow_forcing_fallback:
+                    raise ValueError("requested NCEP air unavailable; fallback disabled") from exc
+                fallback_events.append({"component": "air", "reason": repr(exc)})
+                T_atm = None
+                T_atm_source = "zonal WOA SST (explicit fallback)"
                 print(f"  WARNING: monthly NCEP air-temperature fetch failed "
                       f"({exc!r}); falling back to zonal WOA SST target")
                 T_atm_months = None
@@ -943,6 +1063,11 @@ def main():
                         T_atm, grid.ocean_mask, args.air_marine_smooth_passes)
                     T_atm_source += f" + {args.air_marine_smooth_passes} marine smooth"
             except Exception as exc:
+                if not args.allow_forcing_fallback:
+                    raise ValueError("requested NCEP air unavailable; fallback disabled") from exc
+                fallback_events.append({"component": "air", "reason": repr(exc)})
+                T_atm = None
+                T_atm_source = "zonal WOA SST (explicit fallback)"
                 print(f"  WARNING: real NCEP air-temperature fetch failed "
                       f"({exc!r}); falling back to zonal WOA SST target")
         if T_atm is None:
@@ -982,6 +1107,47 @@ def main():
         forcing_baked = (tau_x, tau_y, Q_heat)
     else:
         forcing_baked = (np.zeros_like(Q_heat), np.zeros_like(Q_heat), Q_heat)
+    applied_arrays = {"initial_T": T_init, "initial_S": S_init,
+                      "baked": np.asarray(forcing_baked), "wind_months": wind_months,
+                      "air_months": T_atm_months, "T_atm": T_atm, "S_ref_surf": S_ref_surf}
+    for name, value in applied_arrays.items():
+        if value is not None and not np.isfinite(np.asarray(value, dtype=args.dtype)).all():
+            raise ValueError(f"nonfinite effective forcing/input: {name}")
+    air_applied = ("disabled" if lambda_bulk <= 0 else "monthly" if T_atm_months is not None
+                   else "annual" if args.real_air_temp and not any(e["component"] == "air" for e in fallback_events)
+                   else "zonal")
+    selected_files = _input_files(args, seasonal=seasonal, air=air_applied)
+    forcing_provenance = {
+        "schema_version": 1,
+        "requested": {"seasonal_wind": args.seasonal_wind, "month": args.month,
+                      "wind_year": args.wind_year, "annual_air": args.real_air_temp,
+                      "monthly_air": args.real_air_temp_monthly},
+        "applied": {"wind": wind_src, "air": T_atm_source if lambda_bulk > 0 else "disabled"},
+        "fallback_events": fallback_events, "strict_local_inputs": args.strict_forcing,
+        "selected_files": {name: {"path": str(path), "sha256": file_sha256(path) if path.is_file() else None}
+                           for name, path in selected_files.items()},
+        "effective_arrays": fingerprint({name: None if value is None else np.asarray(value, dtype=args.dtype)
+                                         for name, value in applied_arrays.items()}),
+        "compute_dtype": args.dtype,
+        "calendar": "repeating_360_day_30_day_months", "forcing_period_seconds": 360 * 86400 if seasonal else None,
+        "time_origin": "January start of repeating climatological cycle" if seasonal else "fixed month",
+        "interpolation": "bilinear space; 30-day months, linear boundary blend" if seasonal else "bilinear space; fixed time",
+        "wind_blend_days": args.wind_blend_days, "wind_jit": args.wind_jit,
+        "wind_stress_units": "N/m2", "prescribed_heat_units": "W/m2 into ocean",
+        "air_units": "degC", "air_marine_smooth_passes": args.air_marine_smooth_passes,
+        "ice_air_floor": args.ice_air_floor, "ice_air_floor_temp_C": args.ice_air_floor_temp,
+        "restoration": {"sss_days": args.sss_restore_days, "sss_zonal": args.sss_restore_zonal,
+                        "coastal_days": args.coastal_restore_days, "global_sst_days": args.global_sst_restore_days},
+        "wind_spatial_processing": "bilinear clipped source coordinates; N/S taper",
+        "prescribed_heat_source": "disabled" if args.no_meridional_heat_flux else "idealized_meridional_50_W_m2",
+        "physical_forcing_qualification": "not_assessed",
+    }
+    source_identity = _source_identity()
+    execution_identity = {"python": sys.version, "jax": jax.__version__, "numpy": np.__version__,
+                          "backend": jax.default_backend(), "device_kind": jax.devices()[0].device_kind,
+                          "flags": {name: os.environ.get(name) for name in
+                                    ("XLA_FLAGS", "JAX_PLATFORMS", "JAX_ENABLE_X64",
+                                     "JAX_COMPILATION_CACHE_DIR", "XLA_PYTHON_CLIENT_PREALLOCATE")}}
     _ret = make_solver_global(
         grid, physics, args.dt,
         forcing=forcing_baked,
@@ -1029,6 +1195,20 @@ def main():
         step, init_state_global, _, _params, terms_fn, step_dyn = _ret
     else:
         step, init_state_global, _, _params, terms_fn = _ret
+    if args.budget_audit:
+        audited_step = make_budget_step(_params)
+        ordinary_step = step
+        def step(state):
+            updated = ordinary_step(state)
+            audited, ledger = audited_step(state)
+            return updated, audited, ledger
+        if seasonal:
+            ordinary_dynamic_step = step_dyn
+            def step_dyn(state, tx, ty, heat, T_atm_3d=None):
+                updated = ordinary_dynamic_step(state, tx, ty, heat, T_atm_3d=T_atm_3d)
+                audited, ledger = audited_step(state, (tx, ty, heat), T_atm_3d)
+                return updated, audited, ledger
+
     # Runtime forcing must be cast to the compute dtype up front. Left in
     # float64 they promote every downstream tensor (a f32 state + f64 flux ->
     # f64), which under lax.scan is a hard carry-dtype error and under the
@@ -1083,10 +1263,7 @@ def main():
     output_manifest = {}
     if args.restart_from or args.checkpoint_days > 0:
         source_dir = Path(__file__).resolve().parent
-        source_names = ("run_long_integration_global", "jax_solver_global", "restart_contract",
-                        "config", "grid", "diagnostics", "forcing", "wind_reanalysis",
-                        "air_reanalysis", "woa_data", "benchmark_metrics", "mixed_layer_ice",
-                        "integration_monitor", "runtime_validation", "stage_budgets")
+        source_names = SOURCE_MODULES
         checkpoint_contract = make_restart_contract(
             grid, _params, dtype=args.dtype,
             forcing={"initial_T": T_init, "initial_S": S_init, "baked": forcing_baked,
@@ -1095,19 +1272,18 @@ def main():
                       "wind_blend_days": args.wind_blend_days, "wind_jit": args.wind_jit,
                       "n_snap": n_snap, "save_3d": args.save_3d,
                       "save_3d_terms": args.save_3d_terms,
-                      "budget_kind": "snapshot_inventory_only_no_flux_ledger",
+                      "budget_kind": "strict_shadow_accepted_stage_ledger_v1" if args.budget_audit else "snapshot_inventory_only_no_flux_ledger",
+                      "forcing_provenance": forcing_provenance, "production_schema_version": 4,
                       "monitor_schema_version": 1, "monitor_comparison": ">",
                       "velocity_limit": MAX_U_BOUND, "eta_limit": ETA_BLOWUP_M},
             code_paths={name: source_dir / f"{name}.py" for name in source_names},
-            execution={"python": sys.version, "jax": jax.__version__, "numpy": np.__version__,
-                       "backend": jax.default_backend(),
-                       "device_kind": jax.devices()[0].device_kind})
+            execution=execution_identity)
     start_step = 0
     n_3d_snaps = 0
     if args.restart_from:
         restored = load_restart(args.restart_from, checkpoint_contract)
         _validate_restart_history(restored, grid, n_snap, args.dt, args.save_3d, args.save_3d_terms,
-                                  {"3d": three_d_dir, "terms": three_d_terms_dir})
+                                  {"3d": three_d_dir, "terms": three_d_terms_dir}, args.budget_audit)
         state = JaxStateG(**{name: jnp.asarray(value) for name, value in restored.state.items()})
         start_step = restored.step
         if start_step > n_total:
@@ -1217,6 +1393,11 @@ def main():
     snap_ice_fraction = []
     snap_budget: list[BudgetDiagnostics] = []
     maxT_history = []
+    ledger_totals = empty_budget() if args.budget_audit else {}
+    ledger_history = {"ledger_" + name: [] for name in ledger_totals}
+    rejected_ledger = {}
+    audit_mismatch_fields = []
+    max_eta_peak = 0.0
     max_u_peak = 0.0
     max_velocity_peak = 0.0
     if restored is not None:
@@ -1235,6 +1416,9 @@ def main():
                                           for name in BudgetDiagnostics.__dataclass_fields__})
                        for index in range(len(snap_days))]
         maxT_history = list(snap_maxT)
+        max_eta_peak = float(restored.cumulative["max_eta_peak"])
+        ledger_totals = {name: jnp.asarray(restored.cumulative["ledger_" + name]) for name in ledger_totals}
+        ledger_history = {name: list(restored.history[name]) for name in ledger_history}
         max_u_peak = float(restored.cumulative["max_u_peak"])
         max_velocity_peak = float(restored.cumulative["max_velocity_peak"])
     diverged_at = None
@@ -1274,6 +1458,8 @@ def main():
         # solver. It records the global heat/salt/volume invariants without
         # changing the numerical solution.
         snap_budget.append(compute_budget_diagnostics(state, grid))
+        for name, value in ledger_totals.items():
+            ledger_history["ledger_" + name].append(np.asarray(value).copy())
         if args.save_3d:
             # 4-field snapshot: T,u,v,S each (nx,ny,nz). eta is NOT stacked —
             # it is 2D while these are 3D, and it is already saved per-frame in
@@ -1325,6 +1511,7 @@ def main():
     initial_metrics = classify_state(state, MAX_U_BOUND, ETA_BLOWUP_M)
     max_u_peak = float(jnp.maximum(max_u_peak, initial_metrics.max_u))
     max_velocity_peak = float(jnp.maximum(max_velocity_peak, initial_metrics.max_velocity))
+    max_eta_peak = float(jnp.maximum(max_eta_peak, initial_metrics.max_eta))
     failure_code = int(initial_metrics.failure)
     if failure_code:
         diverged_at = cur * args.dt / 86400.
@@ -1336,18 +1523,33 @@ def main():
         take = min(n_snap, n_total - cur)
         for _ in range(take):
             proposed = do_step(state, cur * args.dt / 86400.0)
+            interval_ledger = {}
+            if args.budget_audit:
+                proposed, audited, interval_ledger = proposed
             metrics = classify_state(proposed, MAX_U_BOUND, ETA_BLOWUP_M)
             attempted_steps += 1
             max_u_peak = float(jnp.maximum(max_u_peak, metrics.max_u))
             max_velocity_peak = float(jnp.maximum(max_velocity_peak, metrics.max_velocity))
+            max_eta_peak = float(jnp.maximum(max_eta_peak, metrics.max_eta))
             failure_code = int(metrics.failure)
+            if args.budget_audit:
+                audit_mismatch_fields = [name for name in proposed._fields
+                                         if not _same_state_bytes((getattr(proposed, name),), (getattr(audited, name),))]
+                pending_totals = accumulate_budget(ledger_totals, interval_ledger)
+                if not failure_code and audit_mismatch_fields:
+                    failure_code = 7
+                if not failure_code and not all(np.isfinite(np.asarray(value)).all() for value in (*interval_ledger.values(), *pending_totals.values())):
+                    failure_code = 2
             if failure_code:
                 rejected = proposed
+                rejected_ledger = interval_ledger
                 first_rejected_step = attempted_steps
                 diverged_at = attempted_steps * args.dt / 86400.
                 diverge_reason = f'first rejected step {attempted_steps} (monitor code {failure_code})'
                 break
             state = proposed
+            if args.budget_audit:
+                ledger_totals = pending_totals
             cur += 1
         if cur * args.dt / 86400. != snap_days[-1]:
             maxu, maxT, maxeta, nan = snapshot(cur)
@@ -1358,11 +1560,12 @@ def main():
             history = {"days": snap_days, "max_u": snap_maxu, "max_velocity": snap_maxvelocity, "max_T": snap_maxT,
                        "max_eta": snap_maxeta, "ssh_std": snap_sshstd, "ke": snap_ke,
                        "eta": snap_eta, "T_top": snap_T_top, "ice_top": snap_ice_top,
-                       "ice_fraction": snap_ice_fraction, **diagnostics_to_arrays(snap_budget)}
+                       "ice_fraction": snap_ice_fraction, **diagnostics_to_arrays(snap_budget), **ledger_history}
             save_restart(ckpt_path, state, checkpoint_contract, step=cur,
                          counters={"n_3d_snaps": n_3d_snaps, "accepted_steps": cur,
                                    "attempted_steps": attempted_steps},
-                         cumulative={"max_u_peak": max_u_peak, "max_velocity_peak": max_velocity_peak}, history=history,
+                         cumulative={"max_u_peak": max_u_peak, "max_velocity_peak": max_velocity_peak,
+                                     "max_eta_peak": max_eta_peak, **{"ledger_" + name: value for name, value in ledger_totals.items()}}, history=history,
                          outputs=output_manifest)
             print(f"  [ckpt] saved verified restart {ckpt_path} at step {cur}", flush=True)
 
@@ -1381,7 +1584,7 @@ def main():
             amplitude_bounded = False
 
     if diverged_at is not None:
-        verdict = "FAIL_BLOWUP"
+        verdict = "FAIL_AUDIT_IDENTITY" if failure_code == 7 else "FAIL_LEDGER" if failure_code == 2 else "FAIL_BLOWUP"
     elif monotonic_drift or not amplitude_bounded:
         verdict = "FAIL_DRIFT"
     elif cur < requested_steps:
@@ -1462,6 +1665,10 @@ def main():
         rejected_path = os.path.join(args.out_dir, f'rejected_{tag}.npz')
         with open(rejected_path, 'xb') as stream:
             np.savez_compressed(stream, **{name: np.asarray(getattr(rejected, name)) for name in rejected._fields},
+                                **{"ledger_" + name: np.asarray(value) for name, value in rejected_ledger.items()},
+                                **({"audited_" + name: np.asarray(getattr(audited, name)) for name in audited._fields}
+                                   if failure_code == 7 else {}),
+                                audit_mismatch_fields=np.asarray(audit_mismatch_fields, dtype=str),
                                 resumable=False, failure_code=failure_code,
                                 attempted_step=first_rejected_step, accepted_step=cur,
                                 elapsed_seconds=diverged_at * 86400.)
@@ -1478,7 +1685,32 @@ def main():
                         ice_top=np.array(snap_ice_top),
                         ice_fraction=np.array(snap_ice_fraction),
                         **diagnostics_to_arrays(snap_budget),
-                        diagnostics_schema_version=3,
+                        **{name: np.asarray(value) for name, value in ledger_history.items()},
+                        budget_audit_enabled=args.budget_audit,
+                        ledger_metric_names=np.asarray(METRIC_NAMES),
+                        ledger_stage_names=np.asarray(STAGE_NAMES),
+                        ledger_source_names=np.asarray(SOURCE_NAMES),
+                        ledger_process_names=np.asarray(NONLINEAR_PROCESS_NAMES),
+                        ledger_inventory_kind="fixed_reference_node_water_minus_ice_latent; eta_displacement_separate",
+                        ledger_boundary_kind="internal_advection_reference_boundary_diagnostic_not_external_netboundaryflux",
+                        physical_budget_closed=False,
+                        external_netboundaryflux_status="not_measured_do_not_substitute_numerical_residual",
+                        actual_moving_volume_inventory_status="not_implemented_in_this_legacy_driver",
+                        effective_config_identity_json=json.dumps(fingerprint(_params), sort_keys=True),
+                        grid_identity_json=json.dumps(fingerprint(grid), sort_keys=True),
+                        ledger_heat_residual_W_m2=(float(ledger_totals["budget_residual"][0]) /
+                                                  (float(np.sum(np.asarray(grid.dx_2d) * grid.dy * ocean)) * cur * args.dt)
+                                                  if args.budget_audit and cur else np.nan),
+                        ledger_absolute_heat_residual_W_m2=(float(ledger_totals["absolute_budget_residual"][0]) /
+                                                           (float(np.sum(np.asarray(grid.dx_2d) * grid.dy * ocean)) * cur * args.dt)
+                                                           if args.budget_audit and cur else np.nan),
+                        final_state_identity_json=json.dumps(_state_identity(state), sort_keys=True),
+                        forcing_provenance_json=json.dumps(forcing_provenance, sort_keys=True),
+                        source_identity_json=json.dumps(source_identity, sort_keys=True),
+                        execution_identity_json=json.dumps(execution_identity, sort_keys=True),
+                        forcing_phase_seconds=(cur * args.dt) % (360 * 86400),
+                        elapsed_seconds=cur * args.dt,
+                        diagnostics_schema_version=4,
                         monitor_schema_version=1,
                         salt_content_units="kg",
                         T_init=T_init,
@@ -1493,6 +1725,7 @@ def main():
                         amplitude_bounded=amplitude_bounded,
                         max_u_peak=max_u_peak,
                         max_velocity_peak=max_velocity_peak,
+                        max_eta_peak=max_eta_peak,
                         requested_steps=requested_steps, accepted_steps=cur,
                         attempted_steps=attempted_steps, first_rejected_step=first_rejected_step,
                         failure_code=failure_code, rejected_state_path=rejected_path,
