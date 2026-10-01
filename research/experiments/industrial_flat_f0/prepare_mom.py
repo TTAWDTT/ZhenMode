@@ -11,7 +11,7 @@ from resolved_config import BASE_MOM_CONTRACT
 
 def settings(preflight):
     values = dict(BASE_MOM_CONTRACT)
-    values.update(SOUTHLAT=0., WESTLON=0., ISOTROPIC=False, NIHALO=2, NJHALO=2,
+    values.update(SOUTHLAT=0., WESTLON=0., ISOTROPIC=False, NIHALO=4, NJHALO=4,
                   BOUSSINESQ=True, SPLIT=True, SPLIT_RK2B=False,
                   DT=100., DT_THERM=100., DT_FORCING=100., DTBT=100.,
                   USE_REGRIDDING=False, BULKMIXEDLAYER=False, ADIABATIC=True,

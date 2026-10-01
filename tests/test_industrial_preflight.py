@@ -16,6 +16,7 @@ def test_positive_independent_preflight_and_coarse_duration():
     assert settings(True)['DAYMAX'] * 86400. == 100.
     assert settings(False)['DAYMAX'] * 86400. == 32000.
     assert settings(True)['DT'] == settings(False)['DT'] == 100.
+    assert settings(True)['NIHALO'] == settings(True)['NJHALO'] == 4
 
 
 def test_preflight_native_sampling_and_input_hashes(tmp_path):
