@@ -174,3 +174,25 @@ last change in 58.269 s; RSS 37,605,376 bytes and job private 32,231,424 bytes.
 The nonzero and observed-order values remain unchanged. Total local validation
 including independent probes is below ten minutes, within the twenty-minute
 budget; this supersedes the earlier under-eight-minute subtotal.
+
+## Receipt-only follow-up: independent bulk heat quantity
+
+The finite `bulk_heat_J` field previously escaped independent validation even
+when external IT stock and the source law were correct. A targeted counterexample
+left the returned stocks unchanged and doubled only this heat receipt; the
+macro step incorrectly accepted it. This was a report-contract defect.
+
+`_slow` now compares the reported J value with the independently derived
+pre-source `expected[0]*rho0*Cp`. Its arithmetic scale includes the magnitudes
+of air/water temperatures before subtraction, and uses the existing 256-epsilon
+roundoff envelope. Trajectory formulas, stage order and thresholds are unchanged.
+First-half and final-replay forgeries reject with full snapshot rollback; the
+latter executes twelve fast steps but exposes no commits. Normal nonzero bulk
+heat and the existing nonzero complete-step control still pass.
+
+Four targeted tests pass in 4.37 s (6.14 s bounded wall, one CPU, interpreter
+RSS 95,895,552 bytes, aggregate job private memory 82,178,048 bytes).
+Repository and explicit research lint pass. No full order run or scan was
+repeated. The numerical JSON retains its original source hash/head; its added
+`receipt_validation_followup` binds this narrow guard and its targeted tests
+without relabeling the historical numerical witness as a new full run.

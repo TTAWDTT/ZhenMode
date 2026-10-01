@@ -439,3 +439,46 @@ def test_arbitrary_precision_receipt_cannot_escape_full_rollback(monkeypatch, fi
     out, accepted, report = d.advance(state, grid, d.Parameters())
     assert not accepted and report['committed_fast_steps'] == []
     assert out.h.tobytes() == state.h.tobytes() and out.n.tobytes() == state.n.tobytes()
+
+
+@pytest.mark.parametrize('forged_call', [1, 3])
+def test_finite_wrong_bulk_heat_receipt_rejects_full_macro_state(monkeypatch, forged_call):
+    grid, state = geometry(), moving_state(geometry())
+    original = d.sources
+    original_state = state.copy()
+    calls = 0
+    def forge_heat_only(*args):
+        nonlocal calls
+        calls += 1
+        out, receipt = original(*args)
+        if calls == forged_call:
+            receipt['bulk_heat_J'] *= 2.
+        return out, receipt
+    monkeypatch.setattr(d, 'sources', forge_heat_only)
+    out, accepted, report = d.advance(state, grid, d.Parameters(dt=1., lambda_bulk=80., air_temperature=17.))
+    assert not accepted, report
+    assert 'heat' in report['rejection_reason']
+    if forged_call == 3:
+        assert len(report['executed_fast_steps']) == 12
+    assert report['committed_fast_steps'] == []
+    assert out.step == state.step and out.bottom == state.bottom
+    assert out.h.tobytes() == original_state.h.tobytes()
+    assert out.n.tobytes() == original_state.n.tobytes()
+    assert state.h.tobytes() == original_state.h.tobytes()
+    assert state.n.tobytes() == original_state.n.tobytes()
+
+
+def test_nonzero_heat_receipt_matches_independent_surface_law():
+    grid, state = geometry(), moving_state(geometry())
+    parameters = d.Parameters(dt=1., lambda_bulk=80., air_temperature=17.)
+    duration = parameters.dt / 2
+    surface_temperature = state.n[..., 0, 0] / state.h[..., 0]
+    relaxation = -np.expm1(-parameters.lambda_bulk * duration / (d.RHO * d.CP * state.h[..., 0]))
+    expected_heat_J = np.sum(grid.area * state.h[..., 0]
+                             * (parameters.air_temperature - surface_temperature) * relaxation) * d.RHO * d.CP
+    out, receipt = d._slow(state, grid, parameters, duration)
+    assert receipt['bulk_heat_J'] != 0
+    assert abs(receipt['bulk_heat_J'] - expected_heat_J) <= d.roundoff_bound(abs(expected_heat_J))
+    observed_heat_J = np.sum(grid.area[..., None] * (out.n[..., 0] - state.n[..., 0])) * d.RHO * d.CP
+    stock_scale = np.sum(grid.area[..., None] * (abs(out.n[..., 0]) + abs(state.n[..., 0]))) * d.RHO * d.CP
+    assert abs(observed_heat_J - expected_heat_J) <= d.roundoff_bound(stock_scale)

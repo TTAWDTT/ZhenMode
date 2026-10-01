@@ -457,6 +457,11 @@ def _slow(state, grid, params, duration):
     expected[0] = np.sum(grid.area * mixed.h[..., 0] * (params.air_temperature - temperature) * heat_fraction)
     out, source_report = sources(mixed, grid, params, duration)
     claimed = _receipt_stock(source_report, ('bulk_heat_J',))
+    expected_heat_J = expected[0] * RHO * CP
+    heat_scale_J = np.sum(grid.area * mixed.h[..., 0]
+                          * (abs(params.air_temperature) + abs(temperature)) * abs(heat_fraction)) * RHO * CP
+    if abs(source_report['bulk_heat_J'] - expected_heat_J) > roundoff_bound(heat_scale_J):
+        raise ValueError("independent bulk heat receipt budget failed")
     validate(out, grid)
     _, old_stock = totals(mixed, grid)
     _, new_stock = totals(out, grid)

@@ -370,5 +370,16 @@
     "full_active_subset_order_qualified": false,
     "scope": "this synthetic fixed endpoint only; no spatial convergence or industrial claim"
   },
-  "industrial_quality_or_speed_qualified": false
+  "industrial_quality_or_speed_qualified": false,
+  "receipt_validation_followup": {
+    "scope": "independent bulk_heat_J law check only; trajectory formulas and tolerances unchanged",
+    "numerical_witness_head": "d57302b67349a6d91c91222a0c3b3cd0a6a98bc8",
+    "numerical_witness_source_sha256": "e9ac6ab7880c78cd5cdc8bfdaf897a802e4d220b07e55e41da45da58444ab99c",
+    "full_order_witness_rerun": false,
+    "receipt_guard_source_sha256": "25568711d98ea867bbac8267dc8f1fcb3d1f226308f6e39d38c5b278e183349b",
+    "targeted_tests_passed": 4,
+    "wall_s": 6.14,
+    "peak_interpreter_RSS_bytes": 95895552,
+    "peak_job_private_bytes": 82178048
+  }
 }
