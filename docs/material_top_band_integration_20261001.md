@@ -149,3 +149,27 @@ heat closure. The observer path matches the original complete selected state
 byte-for-byte on the declared domain. This evidence remains prototype-level;
 actual dt300/dt600 solver steps, moving-domain qualification and industrial
 speed/quality comparisons were not attempted.
+
+## 2026-10-01 correction: derived capacity and comparison scope
+
+A finite coefficient (`kappa_bi=1e308`) can overflow the derived row bound and
+produce an infinite required count. The former host integer conversion raised
+`OverflowError` before structured refusal. Capability checks now validate scalar
+plan fields and finite requirements first, inspect support before integer
+conversion, and check supported counts against the capacity/integer contract.
+Nonfinite plans record a null count and an explicit missing contract; finite
+over-capacity requirements remain uncut finite values. No broad exception
+swallowing or coefficient clipping is introduced. Direct coverage and full-entry
+regressions require JSON-safe refusal, zero numerical stages and full snapshot
+rollback; the existing finite over-capacity witness remains.
+
+The byte comparison is specifically against
+`material_top._material_step(actual_geometry_v2, joint_heun_v1)`, **not** the
+production `_step_impl`. The resting domain's positive biharmonic, FCT, drag and
+other coefficients often have zero tendencies. Stage dispatch and the observed
+heat/vertical-mixing stock change do not establish nonzero dynamic physics.
+
+Follow-up validation: 26 focused integration tests passed in 40.16 seconds;
+bounded child wall 41.58 seconds, peak working set 1,072,394,240 bytes and process
+commit counter 1,254,649,856 bytes. Both lint checks and independent static
+inspection passed. No numerical scope or production exception policy changed.

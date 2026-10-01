@@ -187,9 +187,29 @@ def coverage(state, params, grid, *, max_subcycles=256):
         nonlinear = material._nonlinear_subcycle_plan(state, params, (zero, zero), max_subcycles)
         for name, plan in (('linear', linear), ('momentum', momentum), ('nonlinear', nonlinear)):
             jax.block_until_ready(plan)
-            plans[name] = int(np.asarray(plan.required))
-            if not bool(plan.supported):
+            required, count, supported = map(np.asarray, plan)
+            if (required.shape != () or count.shape != () or supported.shape != ()
+                    or required.dtype.kind not in 'iuf' or count.dtype.kind not in 'iu'
+                    or supported.dtype.kind != 'b'):
+                plans[name] = None
+                missing.append('invalid_original_' + name + '_plan')
+                continue
+            # Finite coefficients can overflow derived row bounds. Never convert
+            # a nonfinite requirement to int or emit NaN/Inf in the capability ledger.
+            if not np.isfinite(required) or not np.isfinite(count):
+                plans[name] = None
+                missing.append('nonfinite_original_' + name + '_plan')
+                continue
+            if not bool(supported):
+                plans[name] = float(required)  # Preserve the finite, uncut requirement.
                 missing.append('original_' + name + '_capacity')
+                continue
+            if (required < 1 or required > max_subcycles or required != np.floor(required)
+                    or count != required):
+                plans[name] = None
+                missing.append('invalid_original_' + name + '_plan')
+                continue
+            plans[name] = int(required)
     return {'contract': CONTRACT, 'missing_contracts': sorted(set(missing)),
             'stages': list(STAGES), 'moving_geometry_supported': False,
             'declared_time_scheme': params.process_time_scheme,

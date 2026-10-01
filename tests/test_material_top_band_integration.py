@@ -1,5 +1,6 @@
 """Restricted full-stage seam, not moving-geometry or historical qualification."""
 import importlib.util
+import json
 from dataclasses import replace
 from pathlib import Path
 
@@ -71,6 +72,26 @@ def test_capacity_failure_rejects_before_any_stage(monkeypatch):
     assert not result['accepted']
     assert 'original_linear_capacity' in result['report']['missing_contracts']
     assert result['report']['executed_stages'] == []
+
+
+def test_finite_coefficient_derived_nonfinite_plan_structurally_rejects(monkeypatch):
+    grid, params, state = configured()
+    params = params._replace(kappa_bi=1e308)
+    assert np.isfinite(params.kappa_bi)
+    def unexpected(*args, **kwargs):
+        pytest.fail('nonfinite derived capacity entered a numerical stage')
+    monkeypatch.setattr(integration.material, '_material_step', unexpected)
+    capability = integration.coverage(state, params, grid)
+    assert 'nonfinite_original_linear_plan' in capability['missing_contracts']
+    assert capability['preflight_required_subcycles']['linear'] is None
+    json.dumps(capability, allow_nan=False)
+    result = integration.advance(state, params, grid)
+    assert not result['accepted'] and result['report']['executed_stages'] == []
+    assert 'nonfinite_original_linear_plan' in result['report']['missing_contracts']
+    assert result['band'] is None
+    for actual, expected in zip(result['state'], state, strict=True):
+        assert actual.shape == expected.shape and actual.dtype == expected.dtype
+        assert np.asarray(actual).tobytes() == np.asarray(expected).tobytes()
 
 
 @pytest.mark.parametrize('mutation', ['eta', 'velocity', 'horizontal_density', 'wind', 'coast'])
