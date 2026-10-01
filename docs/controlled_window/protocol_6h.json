@@ -1,0 +1,219 @@
+{
+  "status": "conditionally_approved_fixed_6h_from_t0",
+  "created_utc": "2026-10-01T04:02:10.275072+00:00",
+  "model_window_seconds": 21600,
+  "steps": 72,
+  "dt": 300,
+  "dt_fast": 25,
+  "fast_subcycles": 12,
+  "cells_order": [
+    "I0B0",
+    "I1B0",
+    "I0B1",
+    "I1B1"
+  ],
+  "fresh_registered_t0": true,
+  "no_25s_continuation": true,
+  "source_commit": "212df951c351f82dba74fbc43db5e52b0ad34c47",
+  "historical_source_hashes": {
+    "src/air_reanalysis.py": "e8226c5841c10c04b95ee850586ae19fe53b8822540fd90d58b8f7ed545d8da4",
+    "src/barotropic_transport.py": "7d0685d4cad3bfba89af5243c5e9c917b5be8e0b9f675433eb7ee5d3a236f8d2",
+    "src/bench_climatology_global.py": "12384d569b6717c45dfc321b31da800cb24580ce883f678a53fc83675703f62b",
+    "src/benchmark_gate.py": "ea1c2b90fd38d0f864f53c7ca09f3293845b9c7de7a5b9d766048d3cb7b1fde1",
+    "src/benchmark_manifest.py": "fceeff7c3f2894452963f7cc4f712d550e993e16957bd424cfd3af0bf0b219e0",
+    "src/benchmark_metrics.py": "0bbab7ce77841dec67d75311970cf41a36d6be47f1120548f786f1e14e901f39",
+    "src/benchmark_table.py": "02a7d27b870734a05561ce367d9944716c27750f61e824186de075953d940060",
+    "src/bounded_transport.py": "4619e30e33e26aab5622f3466a0d3218e1817da2aed42217db3f40684566868d",
+    "src/cgrid_momentum.py": "f130ed62f7f87647df070cfbbca0f58720dbbbc529af79f4f6bc09fcff8aaa87",
+    "src/config.py": "faf2a5da5f473ebc6db1e6e9e9eb269c576f2f9a3a7f266591516e31d110906a",
+    "src/diagnostics.py": "f5abd85323f61294d7e463072df5e1100b057f2a2f47fcae7969da48008ed3f9",
+    "src/erddap_fetch.py": "81435557452e9c916df173f12c6cb09bb5f39e70b4c467dd72ff4e8ae4abe2eb",
+    "src/export_mom6_air_temp_forcing.py": "001ecbe2e12e265fb073c6881cba08307a1ccf01a20dfe4e972e60f99c208c8e",
+    "src/export_mom6_sensible_forcing.py": "63c3a2d109ae91e154e77a5d88d090c2996a3747673eabc35e9e586b71a2fb46",
+    "src/export_mom6_wind_forcing.py": "72eef3892c42bbbf66cb17054884b485e980ba1173760944c82766aa18da1796",
+    "src/fetch_sla_monthly.py": "dacc967e7f53e6b006db854cbced1324500562924d690d488247b253598dd46e",
+    "src/fetch_ssh_abs_monthly.py": "21eaad2581e7c36a19624f67da6a63cdaa44bbf571380fd025675ceb595809c3",
+    "src/finite_volume.py": "71e2cc033794af53a09810ddfda56fc6ee604fd35c55bdf30a721a17311efba5",
+    "src/forcing.py": "c2a7c34e640ba4801353ed66f8bb41b37e087716b10c5483013609ed69e379b6",
+    "src/grid.py": "1e3ed9805737dd2ca6541ec05c99748be7eaf8706254701e09b395029d2d8360",
+    "src/jax_solver_global.py": "3d8f8d1cb850403ecdae6efb3bee66f6f2c2785c90fc564ef445a4e2a89a73ef",
+    "src/material_top.py": "c97842bc27bee6127aa4f96fde2d0d672ee7715c60b7ded91c6d009aac2625e8",
+    "src/mixed_layer_ice.py": "fce58f82d650147daa12c3378ade3282a0d29994c218da3baa36b1a784f699ea",
+    "src/nonlinear_dynamics.py": "f1438695ecd40ff0498400477910763bcbadcc967b539ea39ee9d7560a198f40",
+    "src/paired_dynamics.py": "adac8c8c5eb47596b8f242f701c9319439348ea333d590ddfa891c160898e777",
+    "src/physical_velocity.py": "0caf9d228d5892292d50c4f906b51a5aa2239c975efc487fcd338fdf84611cac",
+    "src/restart_contract.py": "c02d1f8aad6634dae36e8a99e811ed57000ad809bf8db0bba6c301b5c423477a",
+    "src/run_long_integration_global.py": "d80c7a55271f21c55a3cea81f3d87955a8a94a36eca86d3f048abfa8f633b1ca",
+    "src/score_external_model.py": "8d0938946657205ea7ffc1f946a58d75db3530396d14ca4faa4546a495bbd8b5",
+    "src/score_mom6_prog.py": "92c9c16b4d8f28dcd7fd0495b6361265b6862f14cb5bc3fa9e45b802739af22e",
+    "src/stage_budgets.py": "d67925637836e154064ffbca5af6ecccd2fed9a72155e7d3b33b724de69ed28d",
+    "src/summarize_ice_diagnostics.py": "587d47824d4cd507cfe53c2517d75ef3e059760b214ec6c9d083cd770fbca043",
+    "src/wet_fluxes.py": "e092594115ca63c6a8ad88ebba84728ad84d68e6d9aa561629d6e5da7cad654c",
+    "src/wind_reanalysis.py": "dbf06dbe69860d70516a0dcef747a911251d22bbbafb88cb4233f2f351cdd0a2",
+    "src/woa_data.py": "50124ce84babd8433f4d08228c9ebe56e6646d13cf36e2ea7e45429c2cba3c66"
+  },
+  "instrumented_material_sha256": "f18e1c05994740f66916c19351fe69a1a0daecba649943eef3b2bf879a033a9a",
+  "base_inputs": {
+    "initial_state_used.npz": "fd0669b3dcc5bdd46b1331ab9184a91217b8ffb519e9b307dabe9a885b358cfc",
+    "grid_used.npz": "336899f3b5a7bf26299453e0b7811cb3c4b00d0350b7fa75ed258ca1640eec98",
+    "parameter_arrays_used.npz": "be8a8dd07dcb04d3ad2a80eb98245b6336a2c883405358e673015c6b1ce56320",
+    "manifest_start.json": "3b06005f5fd497708a5b7455dc1efde60efc9bcdf25e541067bbfd55495c2342"
+  },
+  "raw_identities": {
+    "T": {
+      "sha256": "0bd98d3c9c20254e8fcf714aefdd23b4a191eacdfdc3ce5d019205e4a8bc41b5",
+      "filename": "woa23_decav_t00_01.nc"
+    },
+    "S": {
+      "sha256": "3ab18000cea789a2b349cf6b08531f1ebf144f601d90a83f4c3508456003f019",
+      "filename": "woa23_decav_s00_01.nc"
+    }
+  },
+  "donor_provenance_sha256": "0dacc1e83023c05ff6f3264a64faca1d031e5830c72f57e38d06bb24b89aef7e",
+  "full_crop_contract_sha256": "cccaedf9efb4c0fae7b1db0b5e18aa42adc3ea9cc77cb2fccccbdba2872594b3",
+  "I1": "Exactly frozen440 layerwise pairedT/S stitch;56/175 multi-profile columns, crop retains202points and23/90multi-profile columns. Not a trusted physical reconstruction.",
+  "B1": "Strict crop oldj0 only; ny131, new-wallnormalmask, rebuildonly wallprojectionrow; shared interiorbytes retained. No grid rebuild or smoothing.",
+  "fixed_observers": {
+    "target": [
+      302.5,
+      -63.5
+    ],
+    "retained_low_eta_points": 296,
+    "deleted609": 152,
+    "new_constrained609": 161,
+    "south_rows_original": [
+      2,
+      6
+    ],
+    "north_reference_original": [
+      8,
+      16
+    ]
+  },
+  "forcing": "Archived January2023 held fixed for all steps; no new data or time updates.",
+  "policies": [
+    "actual_geometry_v2",
+    "joint_heun_v1"
+  ],
+  "max_subcycles": 256,
+  "original_acceptance_gates_unchanged": true,
+  "limits": {
+    "logical_cpu_affinity_mask": 1,
+    "global_single_worker_working_set_and_commit_bytes": 4294967296,
+    "per_cell_cumulative_wall_seconds": 900,
+    "batch_wall_seconds": 1800
+  },
+  "budget_interpretation": "One serial CPU worker,4GiB global working-set AND commit,1800s whole batch including all startup validation, compilation, diagnostics, I/O. No escalation. Stop all cases on first rejection/guard.",
+  "synchronization": "Stage four attempts, commit only if all four accepted and guards pass. Common effects use maximum complete common accepted prefix. Rejecting round excluded; attempted/rollback records retained.",
+  "failure_artifacts": "Save rejected attempted and returned state with byte rollback checks; keep last complete round. If interrupted before result, mark attempt unavailable, never invent it. Do not run a steadier cell farther.",
+  "first_step_instrumentation_check": {
+    "reference": "Existing four uninstrumented accepted t0 full-step artifacts",
+    "fields_max_abs_tolerance": 1e-11,
+    "ice_byte_equal": true,
+    "valid_and_schedule_flags_equal": true,
+    "mismatch_stops_batch": true
+  },
+  "metrics": [
+    "per-step node and geographic eta, pressure initial/pre-fast, actual mean column faces, L/N/L scalar T/S stage observations",
+    "all original checks and source/inventory budget",
+    "cold lowering/compile, firstexecution and warm-step wall cost",
+    "actual flux oldj0/j1 forB0 versus closed exterior forB1; B1first internalface isoldj1/j2, label distinctly",
+    "fixed296/south/north area statistics; all signed effects and interaction at completed common times"
+  ],
+  "cache_evidence": {
+    "previous_processes_exited": true,
+    "persistent_cache_current_setting": null,
+    "old_65to67_second_wall_contains_compile_and_execute": true,
+    "measured_warm_step_cost": null,
+    "reuse_plan": "In-process compiled executables within this worker and across I0/I1 on same domain. No configured reusable persistent cache; no claim of existing kernel reuse."
+  },
+  "stop_interpretation": "Do not infer30h behavior from25s sign or a single300s positive response; report complete trajectory and first rejection.",
+  "private_outputs_only": true,
+  "estimated_checkpoint_storage": "Up to~1GiB private, all complete-round checkpoints; no raw input uploads/Git.",
+  "execution_gate": "Exact frozen protocol and runner SHA plus explicit --execute-reviewed; independent review authorized this fixed6h once after preparation.",
+  "authorization": "Parent conveyed conditional independent approval for fixed total6h, budget1800s,1CPU4GiB. Fresh-t0 alternative explicitly permitted when continuous restart reference unavailable.",
+  "metrics_units": {
+    "pressure_before/pre_fast": "density-derived column acceleration m/s2",
+    "surface_pressure": "eta-gradient acceleration m/s2",
+    "north_cos_face": "cos(latitude)-weighted column transport m2/s",
+    "material_inventory": [
+      "moving-node heatJ",
+      "moving-node saltkg"
+    ]
+  },
+  "commit_recovery": "COMMITTED includes all four metrics and SHA256 of exact four checkpoints; validate it as authority if trajectory append/progress interrupted. Missing/corrupt case/marker excludes round.",
+  "original_local_protocol_sha256": "e238cbab8e1b99c85d3c3b8091e7e513dcc52dec58d5ff324188ec00f406adee",
+  "publication_transform": "Review derivative: personal paths replaced by explicit CLI inputs; original local bytes/hashes remain private. Scientific settings unchanged.",
+  "original_runner_hashes": {
+    "worker.py": "a01e50c06ca15c9fff19e49d06a898f9b2b20665b7d1dbc4345c47d9b2d0eb86",
+    "supervisor.py": "74dd0e805a1ce2af1ed70d05b6b355fad2b75dc7d4bd0f08dc7cd2ee4e97ac7e",
+    "instrumentation.diff": "6e795a133cabbf2a0c8368861d4a37cbec07460271149774b732247e9b935033"
+  },
+  "private_prerequisites": {
+    "four_cell_private_deltas.npz": "79398e304854746489a03f58dfc0382e8842b9014b87440241eeff8a3f3d6825",
+    "donor_provenance.json": "0dacc1e83023c05ff6f3264a64faca1d031e5830c72f57e38d06bb24b89aef7e",
+    "full_crop_contract.json": "cccaedf9efb4c0fae7b1db0b5e18aa42adc3ea9cc77cb2fccccbdba2872594b3"
+  },
+  "reference_full_step_files": [
+    "full_baseline_attempted_private.npz",
+    "full_baseline_summary.json",
+    "I1B0-full_attempted_private.npz",
+    "I1B0-full_summary.json",
+    "I0B1-full_attempted_private.npz",
+    "I0B1-full_summary.json",
+    "I1B1-full_attempted_private.npz",
+    "I1B1-full_summary.json"
+  ],
+  "original_1h_protocol_sha256": "e238cbab8e1b99c85d3c3b8091e7e513dcc52dec58d5ff324188ec00f406adee",
+  "start_strategy": "Fresh archived t0 in each cell. Prior process exited with no continuous next-step reference; restart equivalence not established and no checkpoint continuation used.",
+  "fallback": "Before execution only: fixed3h from t0 if measured cost cannot fit6h; never combine separate trajectories. Current observed1h cost supports6h, so register72steps.",
+  "original_instrumented_material_sha256": "d00d0b51a524ab5040ead2c58571ce1a06f83e15d5e5817f9f1a18dd8a7c4674",
+  "cost_basis": {
+    "measured_warm_execution_seconds": [
+      2.8268100818,
+      2.8638752364
+    ],
+    "measured_warm_wall_per_cell_step_seconds": 3.4818181818181815,
+    "two_cold_compile_seconds": 230.4470938,
+    "estimated_288_step_compute_io_plus_compile_seconds": 1233.21,
+    "planning_allowance_seconds": 1500,
+    "hard_batch_seconds": 1800
+  },
+  "common_section": {
+    "longitude_centers_degrees_east": [
+      0.5,
+      359.5
+    ],
+    "longitude_count": 360,
+    "south_face_original_j": 3,
+    "north_face_original_j": 7,
+    "south_face_latitude_degrees_north": -62.0,
+    "north_face_latitude_degrees_north": -58.0,
+    "region_original_rows_half_open": [
+      4,
+      8
+    ],
+    "region_center_latitudes_degrees_north": [
+      -61.5,
+      -58.5
+    ],
+    "positive_flux": "northward; net volume outflow=north\u2212south+east\u2212west",
+    "depth_contract": "All14 original layers; adjacent wet-mask intersection and min adjacent reference dz recorded as SHA256; masks/reference depths identical in B0/B1 after crop. Actual solver transports, no diagnostic regridding or depth clipping.",
+    "time_integral": "Per-step mean actual column_faces\u00d7dt300, accumulated only committed rounds.",
+    "all_boundary_accounting": "Latitude south/north full360 faces plus periodic longitude seam east/west (equal and cancel); dry/coast blocked faces covered by operator masks. Record area-weighted eta change, transport divergence, filter/relaxation change. No explicit volumetric water-source term in archived eta equation; heat/salt/brine are tracer sources, not water volume.",
+    "identity_check": "delta(sum A eta)+dt*(north\u2212south+east\u2212west)\u2212sum A nontransport; cancellation-scale floating-point bound plus independent local continuity bound. Residual anomaly stops diagnostic extension, without changing scientific gate.",
+    "observational_limit": "One section alone cannot attribute eta; compare closed regional volume ledger, all faces and nontransport terms."
+  },
+  "report_times_model_seconds": [
+    7200,
+    14400,
+    21600
+  ],
+  "first_warm_guard": "After complete round2: record peak memory/execution/checkpoint cost; if budget forecast leaves insufficient margin, stop common prefix, no unregistered shortened trajectory.",
+  "checkpoint_storage_estimate": "Up to approximately6GiB private checkpoints, no source arrays in Git.",
+  "worker_filename": "worker_6h.py",
+  "runner_hashes": {
+    "supervisor.py": "f21bbf62b72c386274969c1166a72c8f8661196e9c776ec986760fe110635ba3",
+    "worker_6h.py": "deda1421e1a77ef4cde77c4446f6463d0a195a15ee25e66370a1d9adee24b19d"
+  }
+}

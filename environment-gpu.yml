@@ -1,0 +1,12 @@
+name: ocean-solver-gpu
+channels:
+  - conda-forge
+dependencies:
+  - python=3.12
+  - pip
+  - pip:
+      - jax[cuda13]==0.11.2
+      - numpy==2.5.3
+      - scipy==1.18.1
+      - netCDF4==1.7.4
+      - pytest

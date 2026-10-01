@@ -34,6 +34,8 @@ import jax.scipy.sparse.linalg
 import numpy as np
 
 from config import ALPHA_T, BETA_S, C_P, G_EARTH, OMEGA, R_EARTH, RHO_0
+from grid import nodal_control_thickness
+from runtime_validation import finite_number, integer_count, validate_grid
 
 # ── State ──────────────────────────────────────────────────────────
 JaxStateG = namedtuple('JaxStateG', ['u', 'v', 'T', 'S', 'eta', 'ice'])
@@ -74,12 +76,14 @@ FDParams = namedtuple('FDParams', [
 ])
 
 
-def make_fd_params(grid):
+def make_fd_params(grid, column_geometry='legacy'):
     """Build FDParams from a GlobalOceanGrid (grid.py).
 
     Precomputes all metric inverse fields so the FD operators are pure
     array arithmetic (no division inside the hot loop).
     """
+    if column_geometry not in {'legacy', 'nodal_dual_v1'}:
+        raise ValueError("column_geometry must be legacy or nodal_dual_v1")
     nx, ny, nz = grid.nx, grid.ny, grid.nz
     dx_2d = jnp.array(grid.dx_2d)                # (nx, ny)
     dy = float(grid.dy)
@@ -141,6 +145,18 @@ def make_fd_params(grid):
 
     surface_mask = jnp.zeros(nz).at[0].set(1.0).reshape(1, 1, -1)
     bottom_mask = jnp.zeros(nz).at[-1].set(1.0).reshape(1, 1, -1)
+
+    if column_geometry == 'nodal_dual_v1':
+        thickness = nodal_control_thickness(grid.z)
+        wet = np.broadcast_to(np.asarray(wet_mask_z), (nx, ny, nz))
+        if (not np.all((wet == 0.) | (wet == 1.)) or np.any(np.diff(wet, axis=-1) > 0.)
+                or not np.array_equal(wet[..., 0], np.asarray(grid.wet_mask))):
+            raise ValueError("nodal_dual_v1 requires binary, contiguous wet columns with a wet surface")
+        wet_mask_z = jnp.asarray(wet)
+        dz_node = jnp.asarray(thickness).reshape(1, 1, -1)
+        dz_surface = float(thickness[0])
+        next_wet = jnp.concatenate((wet_mask_z[..., 1:], jnp.zeros_like(wet_mask_z[..., :1])), axis=-1)
+        bottom_mask = wet_mask_z * (1. - next_wet)
 
     return FDParams(
         dx_2d=dx_2d, dy=dy, cos_lat=cos_lat,
@@ -250,12 +266,43 @@ def _column_divergence(u, v, p):
     advection budget uses, so a zero here is exactly the discretely
     divergence-free condition the tracer flux operator needs. (D13)
     """
-    wm = p.wet_mask_z
-    integrand = jnp.stack(
-        [_divergence_conservative(u[..., k] * wm[..., k],
-                                  v[..., k] * wm[..., k], p)
-         for k in range(p.nz)], axis=-1)
-    return jnp.sum(integrand * p.dz_node, axis=-1) * p.wet_mask
+    return jnp.sum(_divergence_h(u, v, p) * p.dz_node, axis=-1) * p.wet_mask
+
+
+def _column_projection_diagonal(p):
+    """Exact diagonal of -A*B*G3, including closed wet faces and walls."""
+    wet = p.wet_mask_z
+    positive_x = wet * jnp.roll(wet, -1, axis=0)
+    negative_x = wet * jnp.roll(wet, 1, axis=0)
+    diagonal_x = 0.25 * p.inv_dx[..., :1] ** 2 * (
+        (positive_x - negative_x) ** 2 + positive_x ** 2 + negative_x ** 2)
+    if p.nx <= 2:
+        diagonal_x = jnp.zeros_like(wet)
+    cosine = p.cos_lat[None, :, None]
+    cosine_north = jnp.roll(cosine, -1, axis=1)
+    cosine_south = jnp.roll(cosine, 1, axis=1)
+    positive_y = (wet * jnp.roll(wet, -1, axis=1)).at[:, -1, :].set(0.)
+    negative_y = (wet * jnp.roll(wet, 1, axis=1)).at[:, 0, :].set(0.)
+    positive_y = positive_y * 0.5 * (cosine + cosine_north)
+    negative_y = negative_y * 0.5 * (cosine + cosine_south)
+    diagonal_y = 0.25 * p.inv_dy ** 2 * (
+        (positive_y - negative_y) ** 2 / cosine ** 2
+        + positive_y ** 2 / (cosine * cosine_north)
+        + negative_y ** 2 / (cosine * cosine_south))
+    area = p.dx_2d * p.dy * p.wet_mask
+    return area * jnp.sum((diagonal_x + diagonal_y) * p.dz_node, axis=-1)
+
+
+def projection_config(params):
+    """Effective immutable solve settings for machine-readable provenance."""
+    tolerance = max(params.projection_rtol or 1e-12,
+                    32. * float(jnp.finfo(params.wet_mask_z.dtype).eps))
+    return {"enabled": bool(params.project_adv_vel), "niter": params.projection_niter,
+            "rtol": tolerance, "preconditioner": params.projection_preconditioner,
+            "niter_source": params.projection_niter_source,
+            "max_refinements": params.projection_max_refinements,
+            "transport_rtol": max(1e-10, 32. * float(jnp.finfo(params.wet_mask_z.dtype).eps)),
+            "refinement_atol_scale": "original_rhs_l2"}
 
 
 def _project_column_divergence(u, v, p, dt, n_iter=None):
@@ -264,28 +311,64 @@ def _project_column_divergence(u, v, p, dt, n_iter=None):
     The Euler correction (u, v) -= dt*g*grad(psi) of a surface-pressure potential
     that solves the area-weighted Poisson problem with the EXACT column divergence
     (not a constant-H 2D one, which leaves ~40% of the residual at coastlines).
-    Fixed CG iteration count for predictable per-step cost. (D13)
+    The 3D wet-face gradient is the volume-weighted negative adjoint of that
+    constraint; a broadcast 2D gradient is not equivalent at bottom steps.
+    CG stops at a dtype-aware tolerance or the fixed iteration cap. Bounded
+    reprojection checks the actual transport, not the recursive CG residual.
+    Correction solves retain an absolute floor from the original RHS. (D36)
     """
     if n_iter is None:
-        n_iter = int(os.environ.get("OCEAN_PAV_NITER", "150"))
+        n_iter = p.projection_niter
     g = G_EARTH
     wm = p.wet_mask
     area = p.dx_2d * p.dy * wm
     col_div = _column_divergence(u, v, p)
-    rhs = (col_div / (dt * g)) * area
+    rhs = -(col_div / (dt * g)) * area
 
     def _matvec(psi):
-        gx, gy = _gradient_conservative(psi, p)
-        u3 = gx[:, :, None] * p.wet_mask_z
-        v3 = gy[:, :, None] * p.wet_mask_z
-        return _column_divergence(u3, v3, p) * area
+        gx, gy = _gradient_conservative_3d(psi[:, :, None], p)
+        return -_column_divergence(gx, gy, p) * area
 
-    psi, _ = jax.scipy.sparse.linalg.cg(_matvec, rhs, tol=0.0,
-                                        maxiter=n_iter)
-    gx, gy = _gradient_conservative(psi, p)
-    u_corr = u - (dt * g) * gx[:, :, None] * p.wet_mask_z
-    v_corr = v - (dt * g) * gy[:, :, None] * p.wet_mask_z
-    return u_corr, v_corr
+    tolerance = max(p.projection_rtol or 1e-12, 32. * jnp.finfo(u.dtype).eps)
+    preconditioner = None
+    if p.projection_preconditioner == "jacobi":
+        inverse_diagonal = p.projection_inv_diagonal
+        if inverse_diagonal is None:
+            diagonal = _column_projection_diagonal(p)
+            inverse_diagonal = 1. / jnp.where(diagonal > 0., diagonal, 1.)
+        def preconditioner(residual):
+            return residual * inverse_diagonal
+    psi, _ = jax.scipy.sparse.linalg.cg(_matvec, rhs, tol=tolerance,
+                                        maxiter=n_iter, M=preconditioner)
+
+    def correct(velocities, potential):
+        gradient = _gradient_conservative_3d(potential[..., None], p)
+        return tuple(velocity - (dt * g) * derivative
+                     for velocity, derivative in zip(velocities, gradient, strict=True))
+
+    corrected = correct((u, v), psi)
+    if p.projection_max_refinements == 0:
+        return corrected
+
+    def transport_norm_squared(velocities):
+        transport = _vertical_transport_iface(*velocities, p)[..., 0].astype(jnp.float64)
+        area64 = p.dx_2d.astype(jnp.float64) * p.dy * wm
+        return jnp.sum(transport ** 2 * area64)
+
+    transport_tolerance = max(1e-10, 32. * jnp.finfo(u.dtype).eps)
+    threshold = transport_tolerance ** 2 * transport_norm_squared((u, v))
+    absolute_floor = tolerance * jnp.linalg.norm(rhs)
+
+    def refine(velocities):
+        residual = -(_column_divergence(*velocities, p) / (dt * g)) * area
+        delta, _ = jax.scipy.sparse.linalg.cg(_matvec, residual, tol=tolerance,
+                    atol=absolute_floor, maxiter=n_iter, M=preconditioner)
+        return correct(velocities, delta)
+
+    for refinement in range(p.projection_max_refinements):
+        corrected = jax.lax.cond(transport_norm_squared(corrected) > threshold,
+                                 refine, lambda velocities: velocities, corrected)
+    return corrected
 
 
 def _gradient_conservative_3d(field, p):
@@ -347,10 +430,11 @@ def _laplacian_h(u, p):
         grad^2 u = 1/cos(phi) d/dphi(cos(phi) du/dphi) + 1/cos^2(phi) d2u/dlam2
                  = d2u/dy2 - (tan(phi)/R) du/dy + (1/cos^2(phi)) d2u/dx2
 
-    Both second differences are FACE-GATED (open iff both cells wet) and the lat one
-    uses the mirror ghost cell of _d_dy, so the Laplacian sees a flat profile across
-    a closed face instead of the mask step. (D5)
+    The nodal candidate uses closed wet-face cosine fluxes. The legacy branch
+    retains its expanded metric correction for production compatibility. (D5)
     """
+    if getattr(p, 'column_geometry', 'legacy') == 'nodal_dual_v1':
+        return _horizontal_diffusion_flux(u, jnp.ones_like(p.coastal_kappa_h_2d)[:, :, None], p)
     # ∂²u/∂x²: FACE-GATED conservative form (open iff BOTH cells wet). The bare
     # central stencil reads the mask step at the coast, where ghost nodes hold
     # the T_ref sentinel, and the spike/dipole it produces drifts whole coastal
@@ -379,12 +463,41 @@ def _laplacian_h(u, p):
     return d2u_dx2 + d2u_dy2 + corr
 
 
-def _biharmonic_h(u, p):
-    """Biharmonic grad^4 u = grad^2(grad^2 u), two face-gated Laplacians.
+def _horizontal_diffusion_flux(tracer, diffusivity, p):
+    """Wet-face variable-coefficient diffusion with closed latitude walls."""
+    wet = p.wet_mask_z
+    zonal_flux = (0.5 * (diffusivity + jnp.roll(diffusivity, -1, axis=0))
+                  * (jnp.roll(tracer, -1, axis=0) - tracer) * p.inv_dx
+                  * wet * jnp.roll(wet, -1, axis=0))
+    padding = [(0, 0), (0, 1), (0, 0)]
+    next_tracer = jnp.pad(tracer, padding, mode='edge')[:, 1:, :]
+    next_diffusivity = jnp.pad(diffusivity, padding, mode='edge')[:, 1:, :]
+    next_wet = jnp.pad(wet, padding, mode='edge')[:, 1:, :]
+    cos_face = 0.5 * (p.cos_lat + jnp.roll(p.cos_lat, -1))
+    meridional_flux = (0.5 * (diffusivity + next_diffusivity)
+                       * (next_tracer - tracer) * p.inv_dy
+                       * wet * next_wet * cos_face[None, :, None])
+    meridional_flux = meridional_flux.at[:, -1, :].set(0.)
+    incoming_y = jnp.roll(meridional_flux, 1, axis=1).at[:, 0, :].set(0.)
+    return ((zonal_flux - jnp.roll(zonal_flux, 1, axis=0)) * p.inv_dx
+            + (meridional_flux - incoming_y) * p.inv_dy / p.cos_lat[None, :, None])
 
-    The gate keeps the mask-step halo out of the inner Laplacian, so it cannot seed
-    the outer one. (D5)
-    """
+
+def _horizontal_tracer_diffusion(tracer, p):
+    """Conservative wet-face diffusion for background and enhanced coefficients."""
+    diffusivity = p.kappa_h + p.coastal_kappa_h_2d[:, :, None]
+    return _horizontal_diffusion_flux(tracer, diffusivity, p)
+
+
+def _horizontal_biharmonic_tracer(tracer, p):
+    """Square the self-adjoint wet-face Laplacian; negative sign dissipates."""
+    unit_diffusivity = jnp.ones_like(p.coastal_kappa_h_2d)[:, :, None]
+    laplacian = _horizontal_diffusion_flux(tracer, unit_diffusivity, p)
+    return _horizontal_diffusion_flux(laplacian, unit_diffusivity, p)
+
+
+def _biharmonic_h(u, p):
+    """Square the geometry-specific horizontal Laplacian. (D5)"""
     return _laplacian_h(_laplacian_h(u, p), p)
 
 
@@ -415,7 +528,41 @@ def _divergence_h(u, v, p):
     return div_x + div_y
 
 
-def _vertical_transport_iface(u, v, p):
+def _layer_face_transports(velocity_x, velocity_y, params):
+    """Static nodal volume flux per face width; y includes cos(face latitude)."""
+    wet = params.wet_mask_z
+    thickness_x = params.dz_node * wet * jnp.roll(wet, -1, axis=0)
+    thickness_y = params.dz_node * wet * jnp.roll(wet, -1, axis=1)
+    cosine_face = 0.5 * (params.cos_lat + jnp.roll(params.cos_lat, -1))
+    flux_x = 0.5 * (velocity_x + jnp.roll(velocity_x, -1, axis=0)) * thickness_x
+    flux_y = 0.5 * (velocity_y + jnp.roll(velocity_y, -1, axis=1)) * thickness_y * cosine_face[None, :, None]
+    return flux_x, flux_y.at[:, -1].set(0.)
+
+
+def _face_transport_divergence(flux_x, flux_y, params):
+    """Divergence of layer or column face transports, with closed y walls."""
+    incoming_y = jnp.roll(flux_y, 1, axis=1).at[:, 0].set(0.)
+    inverse_dx = params.inv_dx[..., :1] if flux_x.ndim == 3 else params.inv_dx[..., 0]
+    cosine = params.cos_lat[None, :, None] if flux_y.ndim == 3 else params.cos_lat[None, :]
+    return ((flux_x - jnp.roll(flux_x, 1, axis=0)) * inverse_dx
+            + (flux_y - incoming_y) * params.inv_dy / cosine)
+
+
+def _match_layer_face_transports(velocity_x, velocity_y, column_transport, params):
+    """Match the fast-mode time mean at every open face, retaining layer shear."""
+    fluxes = _layer_face_transports(velocity_x, velocity_y, params)
+    corrected = []
+    for axis, flux, target in zip((0, 1), fluxes, column_transport, strict=True):
+        thickness = params.dz_node * params.wet_mask_z * jnp.roll(params.wet_mask_z, -1, axis=axis)
+        if axis == 1:
+            thickness = thickness.at[:, -1].set(0.)
+        depth = jnp.sum(thickness, axis=-1, keepdims=True)
+        weights = thickness / jnp.where(depth > 0., depth, 1.)
+        corrected.append(flux + weights * (target - jnp.sum(flux, axis=-1))[..., None])
+    return tuple(corrected)
+
+
+def _vertical_transport_iface(u, v, p, face_transport=None):
     """Interface volume transports Fz (nx, ny, nz+1), DOWNWARD-positive.
 
     The EXACT discrete inverse of _divergence_h, cumulated from the seafloor up:
@@ -426,6 +573,10 @@ def _vertical_transport_iface(u, v, p):
     no CFL limit removes. Fz[..., 0] is the column-integrated horizontal divergence,
     the rigid-lid leak the barotropic subcycle absorbs via Fz_top = Fz[0]*T[0]. (D7)
     """
+    if face_transport is not None:
+        integrand = _face_transport_divergence(*face_transport, p)
+        accumulated = jnp.cumsum(integrand[..., ::-1], axis=-1)[..., ::-1]
+        return jnp.concatenate([accumulated, jnp.zeros_like(accumulated[..., :1])], axis=-1)
     div_h = _divergence_h(u, v, p)
     # div_h is per-LAYER (nz entries) — weight by the per-node cell thickness
     # dz_node, NOT dz_3d (interface-centred, length nz-1).
@@ -561,6 +712,13 @@ def _vertical_diffusion(tracer, kappa, p):
     if p.conservative_kv:
         return _d2_dz2_flux(tracer, kappa, p)
     return kappa * _d2_dz2(tracer, p)
+
+
+def _vertical_momentum_diffusion(velocity, p):
+    """Use the reference-cell flux balance for the nodal geometry candidate."""
+    if p.column_geometry == 'nodal_dual_v1':
+        return _d2_dz2_flux(velocity, p.nu_v, p)
+    return p.nu_v * _d2_dz2(velocity, p)
 
 
 def _convective_mask(state, p):
@@ -717,12 +875,21 @@ FDPhysParams = namedtuple('FDPhysParams', [
     # conductivity insulation, and brine-rejection salinity flux.
     'dynamic_ice',
     'ice_insulation_scale_m',
+    'projection_niter',
+    'projection_rtol',
+    'projection_preconditioner',
+    'projection_inv_diagonal',
+    'projection_niter_source',
+    'projection_max_refinements',
+    'column_geometry',
+    'match_barotropic_transport',
+    'process_time_scheme',
 ])
 
 # Keyword-constructed callers that predate nu_nsub/use_scan/freeze_adv_vel/
 # conservative_kv/project_adv_vel/localize_conv/monotone_adv get the legacy
 # behavior instead of a TypeError.
-FDPhysParams.__new__.__defaults__ = (None, False, False, False, False, False, False, False, None, None, None, -1.8, 0.0, False, 1.0)
+FDPhysParams.__new__.__defaults__ = (None, False, False, False, False, False, False, False, None, None, None, -1.8, 0.0, False, 1.0, 150, None, 'none', None, 'default', 2, 'legacy', False, 'legacy')
 
 
 # ── Equation of state ─────────────────────────────────────────────────
@@ -771,11 +938,25 @@ def _compute_pressure_gradient(state, p):
 
 def _barotropic_velocity(u, v, p):
     """Depth-averaged (barotropic) horizontal velocity."""
+    if p.column_geometry == 'nodal_dual_v1':
+        return jnp.sum(u * p.dz_norm, axis=-1), jnp.sum(v * p.dz_norm, axis=-1)
     u_avg = 0.5 * (u[..., :-1] + u[..., 1:])
     v_avg = 0.5 * (v[..., :-1] + v[..., 1:])
     ubt = jnp.sum(u_avg * p.dz_norm, axis=-1)
     vbt = jnp.sum(v_avg * p.dz_norm, axis=-1)
     return ubt, vbt
+
+
+def _reference_depth_divergence(ubt, vbt, p):
+    """Divergence of common-wet nodal face transport, not H_cell * div(u)."""
+    return _column_divergence(ubt[..., None], vbt[..., None], p)
+
+
+def _reference_depth_gradient(eta, p):
+    """Negative adjoint of depth divergence in the A * H_ref velocity norm."""
+    gradient_x, gradient_y = _gradient_conservative_3d(eta[..., None], p)
+    return (jnp.sum(gradient_x * p.dz_norm, axis=-1),
+            jnp.sum(gradient_y * p.dz_norm, axis=-1))
 
 
 def _compute_bt_rho_pgf(state, p):
@@ -791,6 +972,10 @@ def _compute_bt_rho_pgf(state, p):
     forcing of the old trapezoidal-over-all-layers form is gone; what remains is
     the physical wet-column (JEBAR-type) coupling. (D26)
     """
+    if p.column_geometry == 'nodal_dual_v1':
+        acceleration_x, acceleration_y = _compute_pressure_gradient(state._replace(eta=jnp.zeros_like(state.eta)), p)
+        return (jnp.sum(acceleration_x * p.dz_norm, axis=-1),
+                jnp.sum(acceleration_y * p.dz_norm, axis=-1))
     rho_prime = _density_anomaly(state.T, state.S, p)
     rho_prime = rho_prime * p.wet_mask_z          # zero out ghost water
     rho_avg = 0.5 * (rho_prime[..., :-1] + rho_prime[..., 1:])
@@ -906,7 +1091,24 @@ def _advection_flux_form(u, v, w, p):
     return adv_u * p.wet_mask_z, adv_v * p.wet_mask_z
 
 
-def _advection_scalar(T, u, v, Fz_in, p):
+def _limited_tracer_slope(tracer, wet, axis):
+    """Minmod reconstruction using only wet neighbours and physical boundaries."""
+    if axis == 1:
+        padding = [(0, 0), (1, 1), (0, 0)]
+        padded = jnp.pad(tracer, padding, mode='edge')
+        padded_wet = jnp.pad(wet, padding, mode='edge')
+        previous, following = padded[:, :-2], padded[:, 2:]
+        previous_wet, following_wet = padded_wet[:, :-2], padded_wet[:, 2:]
+    else:
+        previous, following = jnp.roll(tracer, 1, axis=axis), jnp.roll(tracer, -1, axis=axis)
+        previous_wet, following_wet = jnp.roll(wet, 1, axis=axis), jnp.roll(wet, -1, axis=axis)
+    left_delta, right_delta = tracer - previous, following - tracer
+    signs = jnp.sign(left_delta) + jnp.sign(right_delta)
+    return (0.5 * signs * jnp.minimum(jnp.abs(left_delta), jnp.abs(right_delta))
+            * wet * previous_wet * following_wet)
+
+
+def _advection_scalar(T, u, v, Fz_in, p, return_boundary=False, face_transport=None):
     """3D FLUX-FORM scalar advection (FD, land-masked, NOT dealiased).
 
     Flux form (-div(uT)) rather than advective form: the two differ by +T*div(u), a
@@ -935,19 +1137,15 @@ def _advection_scalar(T, u, v, Fz_in, p):
     # Fx = u_face * T_face (centered unless monotone_adv), face-gated on both
     # cells wet; +x-directed (u>0 carries T eastward).
     ux_face = 0.5 * (u + jnp.roll(u, -1, axis=0))
+    if face_transport is not None:
+        ux_face = face_transport[0] / p.dz_node
     if p.fct_adv:
         # TVD/MUSCL flux limiter: reconstruct from the left and right cells with a
         # minmod slope, then choose the state consistent with the face velocity.
         # This is a compact local limiter, not a full Zalesak 3D FCT, but it is
         # flux-form, conservative, and removes the centered scheme's overshoot at
         # a sharp front while remaining second-order in smooth regions.
-        def _minmod(a, b):
-            s = jnp.sign(a) + jnp.sign(b)
-            return jnp.where(s != 0.0,
-                             0.5 * s * jnp.minimum(jnp.abs(a), jnp.abs(b)),
-                             0.0)
-        slope_x = _minmod(T - jnp.roll(T, 1, axis=0),
-                          jnp.roll(T, -1, axis=0) - T)
+        slope_x = _limited_tracer_slope(T, wm, axis=0)
         Tx_face = jnp.where(
             ux_face >= 0.0,
             T + 0.5 * slope_x,
@@ -969,17 +1167,14 @@ def _advection_scalar(T, u, v, Fz_in, p):
     v_pad = jnp.pad(v, pad, mode='edge')
     wm_pad = jnp.pad(wm, pad, mode='edge')
     vy_face = 0.5 * (v_pad[:, 1:-1] + v_pad[:, 2:])
+    if face_transport is not None:
+        cosine_face = 0.5 * (p.cos_lat + jnp.roll(p.cos_lat, -1))
+        vy_face = face_transport[1] / (p.dz_node * cosine_face[None, :, None])
     if p.fct_adv:
         # Same TVD/MUSCL limiter as x, but on the padded row. The last face is
         # closed explicitly below, so the edge-padded value cannot enter the
         # budget.
-        def _minmod_y(a, b):
-            s = jnp.sign(a) + jnp.sign(b)
-            return jnp.where(s != 0.0,
-                             0.5 * s * jnp.minimum(jnp.abs(a), jnp.abs(b)),
-                             0.0)
-        slope_y = _minmod_y(T - jnp.roll(T, 1, axis=1),
-                            jnp.roll(T, -1, axis=1) - T)
+        slope_y = _limited_tracer_slope(T, wm, axis=1)
         slope_y_pad = jnp.pad(slope_y, pad, mode='edge')
         Ty_face = jnp.where(
             vy_face >= 0.0,
@@ -1034,7 +1229,10 @@ def _advection_scalar(T, u, v, Fz_in, p):
     div_y = (Fy - Fy_up) * p.inv_dy / p.cos_lat[None, :, None]
     div_z = (dn - up) / p.dz_node
     adv_T = -(div_x + div_y + div_z)
-    return adv_T * p.wet_mask_z
+    tendency = adv_T * p.wet_mask_z
+    if return_boundary:
+        return tendency, Fz_top[..., 0]
+    return tendency
 
 
 def _compute_momentum_tendency(state, p):
@@ -1050,8 +1248,8 @@ def _compute_momentum_tendency(state, p):
 
     diff_h_u = p.nu_h * _laplacian_h(state.u, p)
     diff_h_v = p.nu_h * _laplacian_h(state.v, p)
-    diff_v_u = p.nu_v * _d2_dz2(state.u, p)
-    diff_v_v = p.nu_v * _d2_dz2(state.v, p)
+    diff_v_u = _vertical_momentum_diffusion(state.u, p)
+    diff_v_v = _vertical_momentum_diffusion(state.v, p)
 
     wind_factor = 1.0 / (RHO_0 * p.dz_surface)
     wind_u = p.tau_x_2d[:, :, None] * wind_factor * p.surface_mask
@@ -1243,8 +1441,7 @@ def _tracer_terms(state, p):
     """
     Fz = _vertical_transport_iface(state.u, state.v, p)
     adv_T = _advection_scalar(state.T, state.u, state.v, Fz, p)
-    kappa_h_eff = p.kappa_h + p.coastal_kappa_h_2d[:, :, None]
-    diff_h_T = kappa_h_eff * _laplacian_h(state.T, p)
+    diff_h_T = _horizontal_tracer_diffusion(state.T, p)
     diff_v_T = _vertical_diffusion(state.T, _effective_kappa_v(p), p)
 
     conv_mask_3d, unstable_iface = _convective_mask(state, p)
@@ -1256,7 +1453,21 @@ def _tracer_terms(state, p):
     return jnp.stack([t * p.wet_mask_z for t in terms], axis=0)
 
 
-def _compute_tracer_tendency(state, p):
+def _surface_heat_weights(p):
+    """Per-node heat deposition; sum(weights * wet node thickness) is one."""
+    mixed_depth = float(p.mixed_layer_depth_m or 0.)
+    if mixed_depth <= 0. and p.mixed_layer_depth_2d is None:
+        return p.surface_mask * p.wet_mask_z / p.dz_surface
+    requested_depth = (p.mixed_layer_depth_2d if p.mixed_layer_depth_2d is not None
+                       else jnp.full_like(p.wet_mask, mixed_depth))
+    depth = jnp.where(p.mixed_layer_mask_2d > 0.5, requested_depth, p.dz_surface)
+    layer_top = jnp.cumsum(p.dz_node, axis=-1) - p.dz_node
+    overlap = jnp.clip(depth[:, :, None] - layer_top, 0., p.dz_node) * p.wet_mask_z
+    wet_depth = jnp.maximum(jnp.sum(overlap, axis=-1, keepdims=True), 1e-12)
+    return overlap / (wet_depth * p.dz_node)
+
+
+def _compute_tracer_tendency(state, p, budget=None, face_transport=None, return_terms=False):
     """dT/dt, dS/dt (FD, land-masked). Includes bulk air-sea heat flux.
 
     Vertical advection is SUBCYCLED adv_nsub times when adv_nsub > 1 (frozen
@@ -1266,7 +1477,11 @@ def _compute_tracer_tendency(state, p):
     diffusion, surface fluxes, GM/Redi skew flux and convective adjustment are all
     inside their explicit bounds at dt=3600 and stay evaluated ONCE. (D16)
     """
-    Fz = _vertical_transport_iface(state.u, state.v, p)
+    measure_terms = budget is not None or return_terms
+    Fz = _vertical_transport_iface(state.u, state.v, p, face_transport=face_transport)
+    if budget is not None and p.column_geometry == 'nodal_dual_v1':
+        budget.tracer_transport(face_transport if face_transport is not None
+                                else _layer_face_transports(state.u, state.v, p))
     n_a = int(p.adv_nsub)
     if n_a > 1:
         # The reported rate is the MEAN over the substeps, so the Strang
@@ -1276,30 +1491,40 @@ def _compute_tracer_tendency(state, p):
 
         def _adv_sub(carry):
             tT, tS = carry
-            aT = _advection_scalar(tT, state.u, state.v, Fz, p)
-            aS = _advection_scalar(tS, state.u, state.v, Fz, p)
-            return (tT + aT * dts, tS + aS * dts), (aT, aS)
+            if measure_terms:
+                aT, top_T = _advection_scalar(tT, state.u, state.v, Fz, p, return_boundary=True, face_transport=face_transport)
+                aS, top_S = _advection_scalar(tS, state.u, state.v, Fz, p, return_boundary=True, face_transport=face_transport)
+                terms = (aT, aS, top_T, top_S)
+            else:
+                aT = _advection_scalar(tT, state.u, state.v, Fz, p, face_transport=face_transport)
+                aS = _advection_scalar(tS, state.u, state.v, Fz, p, face_transport=face_transport)
+                terms = (aT, aS)
+            return (tT + aT * dts, tS + aS * dts), terms
 
-        _, (adv_T, adv_S) = _subcycle(_adv_sub, (state.T, state.S), n_a, p)
+        _, terms = _subcycle(_adv_sub, (state.T, state.S), n_a, p)
+        adv_T, adv_S = terms[:2]
+        if measure_terms:
+            top_T, top_S = terms[2:]
     else:
-        adv_T = _advection_scalar(state.T, state.u, state.v, Fz, p)
-        adv_S = _advection_scalar(state.S, state.u, state.v, Fz, p)
+        if measure_terms:
+            adv_T, top_T = _advection_scalar(state.T, state.u, state.v, Fz, p, return_boundary=True, face_transport=face_transport)
+            adv_S, top_S = _advection_scalar(state.S, state.u, state.v, Fz, p, return_boundary=True, face_transport=face_transport)
+        else:
+            adv_T = _advection_scalar(state.T, state.u, state.v, Fz, p, face_transport=face_transport)
+            adv_S = _advection_scalar(state.S, state.u, state.v, Fz, p, face_transport=face_transport)
 
-    kappa_h_eff = p.kappa_h + p.coastal_kappa_h_2d[:, :, None]
-    diff_h_T = kappa_h_eff * _laplacian_h(state.T, p)
-    diff_h_S = kappa_h_eff * _laplacian_h(state.S, p)
+    diff_h_T = _horizontal_tracer_diffusion(state.T, p)
+    diff_h_S = _horizontal_tracer_diffusion(state.S, p)
     diff_v_T = _vertical_diffusion(state.T, _effective_kappa_v(p), p)
     diff_v_S = _vertical_diffusion(state.S, _effective_kappa_v(p), p)
 
-    # Convective adjustment: the kappa_conv CFL at dt=3600 s on the thin surface
-    # layer is 1.8 >> 0.5, so the operator is subcycled conv_nsub times with
-    # kappa_conv/conv_nsub each. The mask stays frozen over the baroclinic step.
-    # (D10)
+    # The legacy subcycle scales both kappa and time. The candidate retains the
+    # physical kappa and divides time only; neither path proves RK order. (D10)
     conv_mask_3d, unstable_iface = _convective_mask(state, p)
     iface_gate = unstable_iface if p.localize_conv else None
     n_c = int(p.conv_nsub)
     if n_c > 1:
-        kappa_c = p.kappa_conv / n_c
+        kappa_c = p.kappa_conv if p.process_time_scheme != 'legacy' else p.kappa_conv / n_c
         h_c = p.dt / n_c
 
         def _conv_sub(carry):
@@ -1313,44 +1538,18 @@ def _compute_tracer_tendency(state, p):
         conv_T = _conv_flux_tendency(state.T, conv_mask_3d, p.kappa_conv, p, iface_gate)
         conv_S = _conv_flux_tendency(state.S, conv_mask_3d, p.kappa_conv, p, iface_gate)
 
-    # The default keeps the legacy bit-exact 5 m surface-node treatment.  When
-    # a mixed-layer depth is supplied, the same flux is spread over that slab,
-    # which is the minimal heat-capacity closure for a well-mixed layer.
-    mixed_depth = float(p.mixed_layer_depth_m or 0.0)
-    # A spatially restricted mixed-layer mask lets a high-lat/polar closure
-    # improve regional bias without globally changing the surface heat capacity.
-    # A stratification-derived 2D depth replaces the constant depth only inside
-    # that mask; land still falls through to the legacy surface-cell treatment.
-    if getattr(p, 'mixed_layer_depth_2d', None) is not None:
-        constant_depth = jnp.where(
-            p.mixed_layer_mask_2d > 0.5, mixed_depth, float(p.dz_surface))
-        constant_depth = constant_depth[:, :, None]
-        effective_depth = jnp.where(
-            (p.mixed_layer_mask_2d[:, :, None] > 0.5)
-            & (mixed_depth > 0.0),
-            p.mixed_layer_depth_2d[:, :, None], constant_depth)
-    else:
-        effective_depth = jnp.where((p.mixed_layer_mask_2d[:, :, None] > 0.5)
-                                    & (mixed_depth > 0.0),
-                                    mixed_depth, float(p.dz_surface))
-    heat_factor = 1.0 / (RHO_0 * C_P * effective_depth)
-    ice_insulation = jnp.ones_like(state.T[:, :, 0:1])
-    if getattr(p, 'dynamic_ice', False):
-        ice_now = jnp.broadcast_to(
-            jnp.asarray(state.ice, dtype=state.T.dtype), (p.nx, p.ny))
-        ice_insulation = 1.0 / (1.0 + ice_now[:, :, None] / p.ice_insulation_scale_m)
-
-    heat_T = (p.Q_heat_2d[:, :, None] * heat_factor * p.surface_mask
-              * ice_insulation)
+    heat_factor = _surface_heat_weights(p) / (RHO_0 * C_P)
+    heat_T = p.Q_heat_2d[:, :, None] * heat_factor
     # Bulk air-sea heat flux (Haney/Barnier): genuine SST negative feedback.
     bulk_T = (p.lambda_bulk * (p.T_atm_3d - state.T[:, :, 0:1])
-              * heat_factor * p.surface_mask)
+              * heat_factor)
     coastal_bulk_T = (p.coastal_bulk_lambda_2d[:, :, None]
                       * (p.T_atm_3d - state.T[:, :, 0:1])
-                      * heat_factor * p.surface_mask)
+                      * heat_factor)
     if getattr(p, 'dynamic_ice', False):
-        bulk_T = bulk_T * ice_insulation
-        coastal_bulk_T = coastal_bulk_T * ice_insulation
+        heat_T = jnp.zeros_like(heat_T)
+        bulk_T = jnp.zeros_like(bulk_T)
+        coastal_bulk_T = jnp.zeros_like(coastal_bulk_T)
 
     # Surface salinity restoring (Haney): equivalent salt flux relaxing SSS
     # to climatology with timescale tau = 1/restore_coef_S. Same form as the
@@ -1383,6 +1582,14 @@ def _compute_tracer_tendency(state, p):
     # Land: tracers held (no tendency over land).
     dTdt = dTdt * p.wet_mask_z
     dSdt = dSdt * p.wet_mask_z
+    if budget is not None:
+        budget.surface_sources((heat_T, bulk_T, coastal_bulk_T, rest_T, rest_S, ice_salt))
+        budget.nonlinear_terms(((adv_T, adv_S), (conv_T, conv_S), (gm_T, gm_S), (redi_T, redi_S)))
+        budget.advection_boundary_fluxes(top_T, top_S)
+    if return_terms:
+        processes = ((adv_T, adv_S), (conv_T, conv_S), (gm_T, gm_S), (redi_T, redi_S))
+        return dTdt, dSdt, ((heat_T, bulk_T, coastal_bulk_T, rest_T, rest_S, ice_salt),
+                            processes, top_T, top_S, jax.tree.map(jnp.abs, processes))
     return dTdt, dSdt
 
 
@@ -1415,7 +1622,56 @@ def _refill_volume(eta_now, eta_before, area_cell, area_ocean, p):
     return eta_now + (-dV / area_ocean) * p.wet_mask
 
 
-def _free_surface_step_fd(eta, u, v, p, F_rho_x=None, F_rho_y=None, dt_half=None):
+def _filter_barotropic_eta(eta, params, duration):
+    """Retain the actual sponge/relaxation/cap changes, independently of transport."""
+    area = params.dx_2d * params.dy
+    ocean_area = jnp.maximum(jnp.sum(area * params.wet_mask), 1.0)
+    decay = jnp.exp(-params.sponge_rate_2d * duration)
+    updated = _refill_volume(eta * decay, eta, area, ocean_area, params)
+    relaxation = jnp.exp(-params.eta_relax_rate * duration * params.eta_relax_mask)
+    updated = _refill_volume(updated * relaxation, updated, area, ocean_area, params)
+    return _apply_polar_cap(updated, params.wet_mask, params)
+
+
+def _symmetric_free_surface_step(eta, velocity_x, velocity_y, params, duration,
+                                 forcing_x=None, forcing_y=None, column_face_transport=None):
+    """Drift-kick-drift with constrained midpoint rotation and actual half-step faces."""
+    normal_mask = params.interior_mask_z[..., 0]
+    velocity_x = velocity_x * params.wet_mask
+    velocity_y = velocity_y * params.wet_mask * normal_mask
+    if column_face_transport is None:
+        layers = _layer_face_transports(velocity_x[..., None], velocity_y[..., None], params)
+        first_faces = tuple(jnp.sum(flux, axis=-1) for flux in layers)
+    else:
+        first_faces = column_face_transport
+    midpoint_eta = eta - (duration / 2.) * _face_transport_divergence(*first_faces, params)
+    pressure_x, pressure_y = _reference_depth_gradient(midpoint_eta, params)
+    source_x = params.tau_x_2d / (RHO_0 * params.H_sw)
+    source_y = params.tau_y_2d / (RHO_0 * params.H_sw)
+    if forcing_x is not None:
+        source_x, source_y = source_x + forcing_x, source_y + forcing_y
+    half_rotation = params.f * normal_mask * (duration / 2.)
+    right_x = velocity_x + half_rotation * velocity_y + duration * (-G_EARTH * pressure_x + source_x)
+    right_y = (velocity_y - half_rotation * velocity_x
+               + duration * (-G_EARTH * pressure_y + source_y)) * normal_mask
+    denominator = 1. + half_rotation * half_rotation
+    next_x = ((right_x + half_rotation * right_y) / denominator) * params.wet_mask
+    next_y = ((right_y - half_rotation * right_x) / denominator) * params.wet_mask * normal_mask
+    delta_layers = _layer_face_transports((next_x - velocity_x)[..., None],
+                                         (next_y - velocity_y)[..., None], params)
+    second_faces = tuple(first + jnp.sum(delta, axis=-1)
+                         for first, delta in zip(first_faces, delta_layers, strict=True))
+    transported_eta = midpoint_eta - (duration / 2.) * _face_transport_divergence(*second_faces, params)
+    mean_faces = tuple(0.5 * (first + second) for first, second in zip(first_faces, second_faces, strict=True))
+    final_eta = _filter_barotropic_eta(transported_eta * params.wet_mask, params, duration)
+    decay = jnp.exp(-params.sponge_rate_2d * duration)
+    final_x = _apply_polar_cap(next_x * decay, params.wet_mask, params)
+    final_y = _apply_polar_cap(next_y * decay, params.wet_mask, params) * normal_mask
+    return (final_eta, final_x, final_y), mean_faces
+
+
+def _free_surface_step_fd(eta, u, v, p, F_rho_x=None, F_rho_y=None, dt_half=None,
+                          column_divergence_offset=None, column_face_transport=None):
     """Forward-backward (Sielecki) free-surface (shallow water) step on lat-lon FD.
 
         eta^{n+1} = eta^n - dt*H_sw*div_h(ubt^n)                   # eta from OLD u
@@ -1436,10 +1692,15 @@ def _free_surface_step_fd(eta, u, v, p, F_rho_x=None, F_rho_y=None, dt_half=None
     """
     if dt_half is None:
         dt_half = p.dt / 2.0
+    if p.process_time_scheme == 'symmetric_fast_v3':
+        return _symmetric_free_surface_step(eta, u, v, p, dt_half, F_rho_x, F_rho_y,
+                                            column_face_transport)[0]
     if p.mode_split:
         ubt, vbt = u, v   # subcycle mode: caller passes BT velocity directly
     else:
         ubt, vbt = _barotropic_velocity(u, v, p)
+        if p.column_geometry == 'nodal_dual_v1':
+            column_divergence_offset = _column_divergence(u, v, p) - _reference_depth_divergence(ubt, vbt, p)
 
     F_x = jnp.zeros_like(ubt)
     F_y = jnp.zeros_like(vbt)
@@ -1449,13 +1710,22 @@ def _free_surface_step_fd(eta, u, v, p, F_rho_x=None, F_rho_y=None, dt_half=None
     F_x = F_x + p.tau_x_2d / (RHO_0 * p.H_sw)
     F_y = F_y + p.tau_y_2d / (RHO_0 * p.H_sw)
 
-    r_bt = p.r_bot if p.bottom_friction == 'linear' else 0.0
+    r_bt = p.r_bot if p.bottom_friction == 'linear' and p.column_geometry == 'legacy' else 0.0
     drag = 1.0 / (1.0 + r_bt * dt_half)
     # Mass-conserving (flux-form) divergence: face fluxes zeroed at wet/dry
     # interfaces so the divergence telescopes to zero over the wet domain. The
     # centered (roll) form leaks volume at coastlines and closed walls. Mask
     # ubt/vbt to wet first so the face averages carry no land values. (D2)
-    div_bt = _divergence_conservative(ubt * p.wet_mask, vbt * p.wet_mask, p)
+    if p.column_geometry == 'nodal_dual_v1':
+        if column_face_transport is not None:
+            column_transport_divergence = _face_transport_divergence(*column_face_transport, p)
+        else:
+            column_transport_divergence = _reference_depth_divergence(ubt, vbt, p)
+            if column_divergence_offset is not None:
+                column_transport_divergence = column_transport_divergence + column_divergence_offset
+    else:
+        div_bt = _divergence_conservative(ubt * p.wet_mask, vbt * p.wet_mask, p)
+        column_transport_divergence = p.H_sw * div_bt
 
     # Forward-backward (Sielecki) free-surface coupling: update eta FIRST (old
     # velocity), then update barotropic momentum using the NEW eta gradient.
@@ -1465,11 +1735,12 @@ def _free_surface_step_fd(eta, u, v, p, F_rho_x=None, F_rho_y=None, dt_half=None
     # 2 - dt^2*g*H*k^2 => |lambda| = 1 under CFL < 1, the standard OGCM
     # discretization (MOM6/ROMS/NEMO); bottom drag then decays the free mode.
     # (D22)
-    eta_new = eta - dt_half * p.H_sw * div_bt
+    if p.column_geometry == 'nodal_dual_v1':
+        eta_new = eta - dt_half * column_transport_divergence
+    else:
+        eta_new = eta - dt_half * p.H_sw * div_bt
 
     eta_new = eta_new * p.wet_mask
-    area_cell = p.dx_2d * p.dy                       # (nx, ny) cell area
-    area_ocean = jnp.maximum(jnp.sum(area_cell * p.wet_mask), 1.0)
     # Lateral sponge on eta (2D). No-op when sponge_rate_2d == 0.
     sw_decay = jnp.exp(-p.sponge_rate_2d * dt_half)
     # MASS-CONSERVING SPONGE: the bare decay eta *= sw_decay changes global
@@ -1479,9 +1750,6 @@ def _free_surface_step_fd(eta, u, v, p, F_rho_x=None, F_rho_y=None, dt_half=None
     # UNIFORMLY over the wet domain: total volume is exactly conserved, the local
     # anomaly damping is unchanged, and a uniform eta offset has zero PGF so the
     # dynamics are untouched. (D23)
-    eta_pre_sponge = eta_new
-    eta_new = _refill_volume(eta_new * sw_decay, eta_pre_sponge,
-                             area_cell, area_ocean, p)
 
     # ── Semi-enclosed-sea eta relaxation (Mediterranean artifact fix) ──
     # Gibraltar (14 km wide) is sub-grid on a 1 deg mesh: the one-cell strait
@@ -1495,10 +1763,6 @@ def _free_surface_step_fd(eta, u, v, p, F_rho_x=None, F_rho_y=None, dt_half=None
     # returns the removed volume over the global wet domain; a uniform eta offset
     # has zero PGF, so the relaxation damps the basin anomaly, not its water
     # mass. (D23)
-    eta_relax_decay = jnp.exp(-p.eta_relax_rate * dt_half * p.eta_relax_mask)
-    eta_pre_relax = eta_new
-    eta_new = _refill_volume(eta_new * eta_relax_decay, eta_pre_relax,
-                             area_cell, area_ocean, p)
 
     # Polar-cap filter: zonally average the poleward rows to kill the
     # cos(lat)->0 metric singularity (dx->0 makes the explicit SW CFL
@@ -1518,26 +1782,37 @@ def _free_surface_step_fd(eta, u, v, p, F_rho_x=None, F_rho_y=None, dt_half=None
     # step's div(ubt) and grad(eta) are dynamically inconsistent. Capping eta
     # first makes ubt/vbt consistent with eta by construction; their cap is then
     # a CFL-safety smoothing, not an independent forcing. (D21)
-    eta_new = _cap(eta_new)
+    eta_new = _filter_barotropic_eta(eta_new, p, dt_half)
     # Energy-consistent PGF: the exact adjoint of the conservative divergence
     # (area-weighted), so the FB pair is neutral on the masked non-uniform grid.
     # The centered _d_dx/_d_dy gradient is NOT the adjoint and injects energy.
-    grad_eta_x, grad_eta_y = _gradient_conservative(eta_new, p)
+    if p.column_geometry == 'nodal_dual_v1':
+        grad_eta_x, grad_eta_y = _reference_depth_gradient(eta_new, p)
+    else:
+        grad_eta_x, grad_eta_y = _gradient_conservative(eta_new, p)
     # Barotropic momentum with PGF + forcing (intermediate star state).
     u_star = ubt + dt_half * (-G_EARTH * grad_eta_x + F_x)
     v_star = vbt + dt_half * (-G_EARTH * grad_eta_y + F_y)
     # Semi-implicit barotropic Coriolis. The shallow-water momentum eqn is
     #   du/dt - f*v = -g*grad(eta) + F ;  dv/dt + f*u = -g*grad(eta) + F
-    # Treating Coriolis implicitly (unconditionally stable, energy-neutral):
+    # Legacy backward Euler is stable but damps kinetic energy:
     #   u_new = (u_star + f*dt*v_star) / (1+(f*dt)^2)
     #   v_new = (v_star - f*dt*u_star) / (1+(f*dt)^2)
     # Without it the barotropic PGF has no geostrophic balance: it drives a
     # convergent ubt that grows eta monotonically. This is the barotropic
     # analogue of the 3D rotation in _linear_half_step. (D22)
-    fd = p.f * dt_half                 # (nx, ny)
-    denom = 1.0 + fd * fd
-    ubt_new = (u_star + fd * v_star) / denom
-    vbt_new = (v_star - fd * u_star) / denom
+    if p.process_time_scheme != 'legacy':
+        half_rotation = p.f * (dt_half / 2.)
+        right_x = u_star + half_rotation * vbt
+        right_y = v_star - half_rotation * ubt
+        denominator = 1. + half_rotation * half_rotation
+        ubt_new = (right_x + half_rotation * right_y) / denominator
+        vbt_new = (right_y - half_rotation * right_x) / denominator
+    else:
+        fd = p.f * dt_half
+        denom = 1.0 + fd * fd
+        ubt_new = (u_star + fd * v_star) / denom
+        vbt_new = (v_star - fd * u_star) / denom
     ubt_new = ubt_new * drag
     vbt_new = vbt_new * drag
 
@@ -1557,20 +1832,35 @@ def _free_surface_step_fd(eta, u, v, p, F_rho_x=None, F_rho_y=None, dt_half=None
     # Project barotropic delta back to 3D velocity (uniform over depth)
     delta_ubt = (ubt_new - ubt)[:, :, None]
     delta_vbt = (vbt_new - vbt)[:, :, None]
-    u_new = u + delta_ubt
-    v_new = v + delta_vbt
+    projection_mask = p.wet_mask_z if p.column_geometry == 'nodal_dual_v1' else 1.
+    u_new = u + delta_ubt * projection_mask
+    v_new = v + delta_vbt * projection_mask
     # No-flux wall: enforce zero normal velocity at the N/S boundary rows on
     # the projected 3D v too, consistent with _step_impl's final mask.
     v_new = v_new * p.interior_mask_z
     return eta_new, u_new, v_new
 
 
-def _linear_half_step(state, p, dt_half):
+def _rotate_baroclinic_shear(velocity_x, velocity_y, params, duration):
+    """Rotate only the wet-depth anomaly; the fast mode rotates its own mean."""
+    mean_x, mean_y = _barotropic_velocity(velocity_x, velocity_y, params)
+    shear_x = (velocity_x - mean_x[..., None]) * params.wet_mask_z
+    shear_y = (velocity_y - mean_y[..., None]) * params.wet_mask_z
+    rotation = params.f
+    if params.process_time_scheme == 'symmetric_fast_v3':
+        rotation = rotation * params.interior_mask_z[..., 0]
+    rotated_x, rotated_y = _coriolis_rotation_2d(shear_x, shear_y, rotation, duration)
+    return (velocity_x + (rotated_x - shear_x) * params.wet_mask_z,
+            velocity_y + (rotated_y - shear_y) * params.wet_mask_z)
+
+
+def _linear_half_step(state, p, dt_half, budget=None, *, momentum_diffusion=None):
     """Linear half-step: FD diffusion + 2D Coriolis + free surface (or not, split).
 
-    The FD linear step is explicit horizontal+vertical diffusion (CFL-safe at 1 deg),
-    exact per-gridpoint Coriolis rotation on the 2D f-field, and -- monolithic only --
-    an explicit forward-Euler free surface with CFL dt < dx/sqrt(gH). (D22)
+    The default retains component-wise explicit diffusion; component CFL limits
+    alone do not bound their combined update. An opt-in diffusion callback acts
+    before masking, damping and rotation. The monolithic free surface remains
+    forward Euler with CFL dt < dx/sqrt(gH). (D22)
     """
     # Explicit diffusion (horizontal Laplacian + vertical d2/dz2). nu_h CANNOT
     # be applied at dt_half in one explicit shot (nu_h*dt_half/dy^2 = 0.73 >
@@ -1580,7 +1870,9 @@ def _linear_half_step(state, p, dt_half):
     # subcycled (nu_sub_cyc substeps of dt_half/nu_sub_cyc, CFL 0.06 each) --
     # the same fixed-operator subcycling pattern as conv_nsub. Monolithic
     # dt=60-300 keeps the single-shot form (CFL-safe). (D12)
-    if p.mode_split and p.n_subcyc > 0:
+    if momentum_diffusion is not None:
+        u, v = momentum_diffusion(state, p, dt_half)
+    elif p.mode_split and p.n_subcyc > 0:
         # Subcycle count sized by the 0.5*LHS FTCS criterion. Legacy sizing
         # (nu_nsub=None) reuses n_subcyc; nu_nsub right-sizes it from the actual
         # metric worst case: nu_h*dt/(n*dy_min^2) <= 0.5 (see make_solver_global).
@@ -1597,20 +1889,20 @@ def _linear_half_step(state, p, dt_half):
     else:
         u = state.u + p.nu_h * _laplacian_h(state.u, p) * dt_half
         v = state.v + p.nu_h * _laplacian_h(state.v, p) * dt_half
-    kappa_h_eff = p.kappa_h + p.coastal_kappa_h_2d[:, :, None]
-    T = state.T + kappa_h_eff * _laplacian_h(state.T, p) * dt_half
-    S = state.S + kappa_h_eff * _laplacian_h(state.S, p) * dt_half
+    T = state.T + _horizontal_tracer_diffusion(state.T, p) * dt_half
+    S = state.S + _horizontal_tracer_diffusion(state.S, p) * dt_half
     # Scale-selective biharmonic (nabla^4): damps grid-scale modes far more than
     # large-scale ones. Explicit forward-Euler; CFL nu_bi*dt/dx^4 < ~0.05.
     # docs/resolution_cfl_limits.md has the dx^4 auto-scaling.
-    if p.nu_bi > 0.0:
+    if p.nu_bi > 0.0 and momentum_diffusion is None:
         u = u - p.nu_bi * _biharmonic_h(state.u, p) * dt_half
         v = v - p.nu_bi * _biharmonic_h(state.v, p) * dt_half
     if p.kappa_bi > 0.0:
-        T = T - p.kappa_bi * _biharmonic_h(state.T, p) * dt_half
-        S = S - p.kappa_bi * _biharmonic_h(state.S, p) * dt_half
-    u = u + p.nu_v * _d2_dz2(state.u, p) * dt_half
-    v = v + p.nu_v * _d2_dz2(state.v, p) * dt_half
+        T = T - p.kappa_bi * _horizontal_biharmonic_tracer(state.T, p) * dt_half
+        S = S - p.kappa_bi * _horizontal_biharmonic_tracer(state.S, p) * dt_half
+    if momentum_diffusion is None:
+        u = u + _vertical_momentum_diffusion(state.u, p) * dt_half
+        v = v + _vertical_momentum_diffusion(state.v, p) * dt_half
     T = T + _vertical_diffusion(state.T, _effective_kappa_v(p), p) * dt_half
     S = S + _vertical_diffusion(state.S, _effective_kappa_v(p), p) * dt_half
     # Mask: no diffusion updates over land or below seafloor (ghost water). Hold
@@ -1623,6 +1915,10 @@ def _linear_half_step(state, p, dt_half):
     v = v * p.wet_mask_z + state.v * (1.0 - p.wet_mask_z)
     T = T * p.wet_mask_z + state.T * (1.0 - p.wet_mask_z)
     S = S * p.wet_mask_z + state.S * (1.0 - p.wet_mask_z)
+
+    if budget is not None:
+        diffusion_state = JaxStateG(u, v, T, S, state.eta, state.ice)
+        budget.stage("linear_diffusion", state, diffusion_state)
 
     # Lateral sponge (Rayleigh damping): exponential decay, no damping CFL.
     # Applied in the linear half-step so Strang splitting gives total sponge time
@@ -1640,8 +1936,16 @@ def _linear_half_step(state, p, dt_half):
     T = p.T_clim_3d + (T - p.T_clim_3d) * decay
     S = p.S_clim_3d + (S - p.S_clim_3d) * decay
 
+    if budget is not None:
+        sponge_state = JaxStateG(u, v, T, S, state.eta, state.ice)
+        budget.stage("sponge", diffusion_state, sponge_state)
+        budget.sponge_sources(diffusion_state, decay)
+
     # Coriolis rotation (2D f-field, exact)
-    u, v = _coriolis_rotation_2d(u, v, p.f, dt_half)
+    if p.process_time_scheme != 'legacy':
+        u, v = _rotate_baroclinic_shear(u, v, p, dt_half)
+    else:
+        u, v = _coriolis_rotation_2d(u, v, p.f, dt_half)
 
     # Semi-implicit free surface (with density barotropic PGF). mode_split: the
     # free surface runs ONCE per baroclinic step in _step_impl's barotropic
@@ -1652,12 +1956,15 @@ def _linear_half_step(state, p, dt_half):
         return JaxStateG(u, v, T, S, state.eta, state.ice)
     F_rho_x, F_rho_y = _compute_bt_rho_pgf(state, p)
     eta, u, v = _free_surface_step_fd(state.eta, u, v, p, F_rho_x, F_rho_y, dt_half)
-    return JaxStateG(u, v, T, S, eta, state.ice)
+    updated = JaxStateG(u, v, T, S, eta, state.ice)
+    if budget is not None:
+        budget.stage("free_surface", sponge_state, updated)
+    return updated
 
 
 # ── Nonlinear explicit step (forward-backward RK2, FD) ─────────────
 
-def _compute_tracer_residual(state, p):
+def _compute_tracer_residual(state, p, budget=None, face_transport=None, return_terms=False):
     """Tracer tendency minus the linear diffusion (handled by the linear step).
 
     The Strang split L(dt/2).N(dt).L(dt/2) handles ALL linear dissipation
@@ -1668,13 +1975,14 @@ def _compute_tracer_residual(state, p):
     it must not appear here at all -- a term here would be re-applied by N(dt) and
     cancel the L-step damping exactly (-dt/2 + dt - dt/2 = 0), a silent no-op. (D9)
     """
-    dTdt, dSdt = _compute_tracer_tendency(state, p)
-    kappa_h_eff = p.kappa_h + p.coastal_kappa_h_2d[:, :, None]
-    dTdt = dTdt - kappa_h_eff * _laplacian_h(state.T, p)
-    dSdt = dSdt - kappa_h_eff * _laplacian_h(state.S, p)
+    result = _compute_tracer_tendency(state, p, budget=budget, face_transport=face_transport,
+                                      return_terms=return_terms)
+    dTdt, dSdt = result[:2]
+    dTdt = dTdt - _horizontal_tracer_diffusion(state.T, p)
+    dSdt = dSdt - _horizontal_tracer_diffusion(state.S, p)
     dTdt = dTdt - _vertical_diffusion(state.T, _effective_kappa_v(p), p)
     dSdt = dSdt - _vertical_diffusion(state.S, _effective_kappa_v(p), p)
-    return dTdt, dSdt
+    return (dTdt, dSdt, result[2]) if return_terms else (dTdt, dSdt)
 
 
 def _compute_momentum_residual(state, p):
@@ -1695,8 +2003,8 @@ def _compute_momentum_residual(state, p):
     # nu_v likewise: _linear_half_step applies nu_v*_d2_dz2 over dt/2 twice,
     # so omitting it here applied vertical momentum diffusion at 2*nu_v
     # (measured coefficient 2.12 per step).
-    dudt = dudt - p.nu_v * _d2_dz2(state.u, p)
-    dvdt = dvdt - p.nu_v * _d2_dz2(state.v, p)
+    dudt = dudt - _vertical_momentum_diffusion(state.u, p)
+    dvdt = dvdt - _vertical_momentum_diffusion(state.v, p)
     dudt = dudt - p.f[:, :, None] * state.v
     dvdt = dvdt + p.f[:, :, None] * state.u
     # barotropic PGF from eta. The full tendency's 3D PGF contains the eta part
@@ -1708,7 +2016,11 @@ def _compute_momentum_residual(state, p):
     # spurious eta-PGF wherever the layer gate differs from the column gate).
     # Monolithic: keep the historical bare _d_dx/_d_dy subtraction bit-exact to
     # the pre-split solver. (D12)
-    if p.mode_split:
+    if p.column_geometry == 'nodal_dual_v1':
+        eta_pgf_x, eta_pgf_y = _reference_depth_gradient(state.eta, p)
+        dudt = dudt + G_EARTH * eta_pgf_x[..., None]
+        dvdt = dvdt + G_EARTH * eta_pgf_y[..., None]
+    elif p.mode_split:
         eta_pgf_x, eta_pgf_y = _gradient_conservative_3d(state.eta[:, :, None], p)
         dudt = dudt + G_EARTH * eta_pgf_x
         dvdt = dvdt + G_EARTH * eta_pgf_y
@@ -1735,14 +2047,68 @@ def _compute_momentum_residual(state, p):
     return dudt, dvdt
 
 
-def _explicit_full_step(state, p, dt):
+def _tracer_rk_subcycle(state, params, face_transport=None, budget=None):
+    """Heun substeps of the instantaneous nonlinear RHS, with actual RK weights."""
+    subcycles = max(int(params.adv_nsub), int(params.conv_nsub))
+    subparams = params._replace(dt=params.dt / subcycles, adv_nsub=1, conv_nsub=1)
+
+    def advance(current):
+        temperature, salinity = current
+        stage = state._replace(T=temperature, S=salinity)
+        first = _compute_tracer_residual(stage, subparams, face_transport=face_transport,
+                                         return_terms=budget is not None)
+        predicted = stage._replace(T=temperature + subparams.dt * first[0],
+                                    S=salinity + subparams.dt * first[1])
+        second = _compute_tracer_residual(predicted, subparams, face_transport=face_transport,
+                                          return_terms=budget is not None)
+        updated = (temperature + 0.5 * subparams.dt * (first[0] + second[0]),
+                   salinity + 0.5 * subparams.dt * (first[1] + second[1]))
+        terms = (jax.tree.map(lambda start, end: 0.5 * (start + end), first[2], second[2])
+                 if budget is not None else None)
+        return updated, terms
+
+    (temperature, salinity), terms = _subcycle(advance, (state.T, state.S), subcycles, params)
+    if budget is not None:
+        budget.tracer_transport(face_transport if face_transport is not None
+                                else _layer_face_transports(state.u, state.v, params), weight=1.)
+        budget.surface_sources(terms[0], duration=params.dt)
+        budget.nonlinear_terms(terms[1], duration=params.dt, absolute_tendencies=terms[4])
+        budget.advection_boundary_fluxes(terms[2], terms[3], duration=params.dt)
+    return state._replace(T=temperature, S=salinity)
+
+
+def _nonlinear_predictor_rk2(state, params, duration, budget=None):
+    """Two actual momentum stages; accepted tracer transport is replayed later."""
+    tracer = _tracer_rk_subcycle(state, params._replace(dt=duration), budget=budget)
+    first_x, first_y = _compute_momentum_residual(state, params)
+    implicit_drag = params.mode_split and params.bottom_friction == 'linear'
+    bottom = params.bottom_mask * params.wet_mask_z
+    if implicit_drag:
+        first_x = first_x + params.r_bot * state.u * bottom
+        first_y = first_y + params.r_bot * state.v * bottom
+    predicted = tracer._replace(u=state.u + duration * first_x, v=state.v + duration * first_y)
+    second_x, second_y = _compute_momentum_residual(predicted, params)
+    if implicit_drag:
+        second_x = second_x + params.r_bot * predicted.u * bottom
+        second_y = second_y + params.r_bot * predicted.v * bottom
+    velocity_x = state.u + 0.5 * duration * (first_x + second_x)
+    velocity_y = state.v + 0.5 * duration * (first_y + second_y)
+    if implicit_drag and params.process_time_scheme != 'symmetric_fast_v3':
+        decay = jnp.exp(-params.r_bot * duration * bottom)
+        velocity_x, velocity_y = velocity_x * decay, velocity_y * decay
+    return tracer._replace(u=velocity_x, v=velocity_y)
+
+
+def _explicit_full_step(state, p, dt, budget=None):
     """Forward-backward RK2 for nonlinear tendencies (FD).
 
     Tracers updated first (old velocity), then momentum uses predicted T
     for the baroclinic PGF — shifts internal-wave eigenvalues left of the
     imaginary axis for neutral stability.
     """
-    dT1, dS1 = _compute_tracer_residual(state, p)
+    if p.process_time_scheme in ('subcycled_rk2_v2', 'symmetric_fast_v3'):
+        return _nonlinear_predictor_rk2(state, p, dt, budget=budget)
+    dT1, dS1 = _compute_tracer_residual(state, p, budget=budget)
     T_pred = state.T + dT1 * dt
     S_pred = state.S + dS1 * dt
     state_T = JaxStateG(state.u, state.v, T_pred, S_pred, state.eta, state.ice)
@@ -1783,11 +2149,13 @@ def _explicit_full_step(state, p, dt):
         # Fz_top = Fz[0]*T[0] conserves column heat. No-op when off. (D13)
         if p.project_adv_vel:
             u_adv, v_adv = _project_column_divergence(u_pred, v_pred, p, dt)
+            if budget is not None:
+                budget.column_projection(u_pred, v_pred, u_adv, v_adv)
         else:
             u_adv, v_adv = u_pred, v_pred
         state_pred = JaxStateG(u_adv, v_adv, T_pred, S_pred, state.eta, state.ice)
 
-    dT2, dS2 = _compute_tracer_residual(state_pred, p)
+    dT2, dS2 = _compute_tracer_residual(state_pred, p, budget=budget)
     T_new = state.T + 0.5 * (dT1 + dT2) * dt
     S_new = state.S + 0.5 * (dS1 + dS2) * dt
     state_T_new = JaxStateG(state.u, state.v, T_new, S_new, state.eta, state.ice)
@@ -1816,7 +2184,7 @@ def _polar_cap_weights(ncap, ntaper):
 
     The order is a caller contract, not a convenience: the weight at index 0
     belongs on the POLE ROW. The south band slices pole-inward and uses this
-    array as-is; the north band slices pole-FIRST and must reverse it. Applying
+    array as-is; the north band slices pole-LAST and must reverse it. Applying
     the north band unflipped leaves the wall row effectively uncapped -- see
     _apply_polar_cap.
     """
@@ -1839,6 +2207,10 @@ def _apply_polar_cap(field, wm, p):
     amplifies). Land and ghost nodes keep their masked value, so wm must match the
     field's rank: the 3D mask matters, since the 2D one is column-wide and would let
     ghost nodes below a shallow seafloor into the deep-level mean. (D21)
+
+    Non-legacy float32 candidates reduce and blend only the cap bands in float64,
+    then return the original dtype. Incremental blending preserves constant wet
+    fields exactly. This does not make rounded tracer inventories conservative.
     """
     ncap = p.polar_cap_rows
     if ncap <= 0:
@@ -1850,6 +2222,13 @@ def _apply_polar_cap(field, wm, p):
     wts = _polar_cap_weights(ncap, p.polar_cap_taper).astype(field.dtype)
 
     def _cap_band(f, w, wts_band):
+        if field.dtype == jnp.float32 and getattr(p, 'process_time_scheme', 'legacy') != 'legacy':
+            wet64 = w.astype(jnp.float64)
+            values64 = f.astype(jnp.float64) * wet64
+            count64 = jnp.maximum(jnp.sum(wet64, axis=0, keepdims=True), 1.)
+            mean64 = jnp.sum(values64, axis=0, keepdims=True) / count64
+            fraction64 = wts_band.astype(jnp.float64).reshape((1, nb) + (1,) * (field.ndim - 2))
+            return (values64 + fraction64 * (mean64 * wet64 - values64)).astype(field.dtype)
         # Wet-point zonal mean over the FULL band (one value per (row, ...)),
         # broadcast back; land/ghost stays at its masked value.
         s = f * w
@@ -1907,14 +2286,14 @@ def nu_nsub_for_2d_cfl(nu_h, dt, dx_2d, dy, margin=0.25):
                                * (inv_dx2_max + inv_dy2) / margin)))
 
 
-def _dynamic_ice_closure(state, p):
+def _dynamic_ice_closure(state, p, budget=None):
     """Advance the minimal stateful ice closure after one dynamics step.
 
-    This is an operator-split prototype: the ice state carries thickness, but
-    not velocity or a separate vertical thermodynamic column.  Growth/melt use
-    the surface heat imbalance and latent heat; ice conducts the surface flux
-    with a one-parameter insulation proxy.  Brine rejection is applied to the
-    mixed-layer/surface node.  The closure is off unless ``dynamic_ice`` is set.
+    This opt-in first-order surface operator applies atmospheric heat once.
+    Water sensible heat minus ice latent heat is conserved through phase change.
+    Existing ice exchanges heat at the surface node; excess melt energy and
+    open-water flux are distributed over the wet mixed-layer overlap. There is
+    no ice dynamics, entrainment or resolved ice thermodynamic column.
     """
     if not getattr(p, 'dynamic_ice', False):
         return state
@@ -1928,8 +2307,6 @@ def _dynamic_ice_closure(state, p):
     ice = jnp.maximum(jnp.broadcast_to(
         jnp.asarray(state.ice, dtype=state.T.dtype), (p.nx, p.ny)), 0.0)
 
-    # Rebuild the surface heat flux used by the tracer tendency.  Ice weakens
-    # all of it, including the prescribed Q and bulk exchange.
     insulation = 1.0 / (1.0 + ice / p.ice_insulation_scale_m)
     air_minus_sst = p.T_atm_3d[:, :, 0] - T_sst
     q = (p.Q_heat_2d
@@ -1937,63 +2314,126 @@ def _dynamic_ice_closure(state, p):
          + p.coastal_bulk_lambda_2d * air_minus_sst)
     q = q * insulation * p.wet_mask
 
-    # Reuse the same mixed-layer depth used by the surface heat budget.
-    mixed_depth = float(p.mixed_layer_depth_m or 0.0)
-    if getattr(p, 'mixed_layer_depth_2d', None) is not None:
-        effective_depth = jnp.where(
-            (p.mixed_layer_mask_2d > 0.5) & (mixed_depth > 0.0),
-            p.mixed_layer_depth_2d, float(p.dz_surface))
-    else:
-        effective_depth = jnp.where(
-            (p.mixed_layer_mask_2d > 0.5) & (mixed_depth > 0.0),
-            mixed_depth, float(p.dz_surface))
-    heat_capacity = RHO_0 * C_P * effective_depth
-    T_projected = T_sst + q * dt / heat_capacity
+    weights = _surface_heat_weights(p)
+    heat_capacity = RHO_0 * C_P * p.dz_surface
+    energy = q * dt
+    projected = state.T + energy[:, :, None] * weights / (RHO_0 * C_P)
+    freeze_deficit = heat_capacity * jnp.maximum(
+        p.ice_freeze_temp_c - projected[:, :, 0], 0.)
+    open_ice = freeze_deficit / (rho_ice * latent_heat)
+    open_temperature = projected.at[:, :, 0].set(
+        jnp.maximum(projected[:, :, 0], p.ice_freeze_temp_c))
 
-    # For open water, the sub-freezing deficit becomes ice.  For existing ice,
-    # cooling thickens ice and warming melts it.
-    latent_from_flux = jnp.abs(q) * dt / (rho_ice * latent_heat)
-    latent_from_deficit = (heat_capacity
-                           * jnp.maximum(p.ice_freeze_temp_c - T_projected, 0.0)
-                           / (rho_ice * latent_heat))
-    grows_new = ((q < 0.0) & (ice <= 0.0)
-                 & (T_projected < p.ice_freeze_temp_c))
-    grows_existing = (q < 0.0) & (ice > 0.0)
-    melts = (q > 0.0) & (ice > 0.0)
-    latent_change = jnp.where(
-        grows_new, latent_from_deficit,
-        jnp.where(grows_existing | melts, latent_from_flux, 0.0))
-
-    ice_new = jnp.where(grows_new | grows_existing,
-                        ice + latent_change,
-                        jnp.where(melts,
-                                  jnp.maximum(0.0, ice - latent_change),
-                                  ice))
-    salt_flux = (rho_ice * ice_salt_diff * latent_change
-                 / (RHO_0 * effective_depth))
-    salt_change = jnp.where(grows_existing | grows_new, salt_flux,
-                            -salt_flux)
-    active = grows_new | grows_existing | melts
-    T_new_surface = jnp.where(active, p.ice_freeze_temp_c, T_sst)
-    S_new_surface = state.S[:, :, 0] + salt_change
-    T = state.T.at[:, :, 0].set(jnp.where(
-        active & (p.wet_mask > 0.5), T_new_surface, T_sst))
-    S = state.S.at[:, :, 0].set(jnp.where(
-        active & (p.wet_mask > 0.5), S_new_surface, state.S[:, :, 0]))
+    enthalpy = (heat_capacity * (T_sst - p.ice_freeze_temp_c)
+                - rho_ice * latent_heat * ice + energy)
+    existing_ice = jnp.maximum(-enthalpy, 0.) / (rho_ice * latent_heat)
+    existing_temperature = state.T.at[:, :, 0].set(p.ice_freeze_temp_c)
+    existing_temperature = (existing_temperature
+                             + jnp.maximum(enthalpy, 0.)[:, :, None]
+                             * weights / (RHO_0 * C_P))
+    ice_new = jnp.where(ice > 0., existing_ice, open_ice) * p.wet_mask
+    temperature = jnp.where((ice > 0.)[:, :, None], existing_temperature, open_temperature)
+    salt_change = (rho_ice * ice_salt_diff / RHO_0
+                   * (ice_new - ice)[:, :, None] * weights)
+    T = jnp.where(p.wet_mask_z > 0.5, temperature, state.T)
+    S = jnp.where(p.wet_mask_z > 0.5, state.S + salt_change, state.S)
+    if budget is not None:
+        budget.ice_sources(q, ice_new - ice, rho_ice, ice_salt_diff)
     return JaxStateG(state.u, state.v, T, S, state.eta,
                      ice_new * p.wet_mask)
 
 
-def _step_impl(state, p):
+def _barotropic_subcycle_transport(state, params):
+    """Return actual OLD-face time mean and eta changes not caused by transport.
+
+    The shear is frozen at the post-L/N/L predictor. Each OLD barotropic value
+    is lifted onto that shear before recording the open-face volume flux. The
+    optional transport-matched path drives eta with those same faces. Filtering,
+    sponge and eta relaxation are recorded separately, not fitted into a flux.
+    """
+    if params.process_time_scheme == 'symmetric_fast_v3':
+        state = state._replace(v=state.v * params.interior_mask_z)
+    forcing_x, forcing_y = _compute_bt_rho_pgf(state, params)
+    initial_u, initial_v = _barotropic_velocity(state.u, state.v, params)
+    offset = (_column_divergence(state.u, state.v, params)
+              - _reference_depth_divergence(initial_u, initial_v, params))
+    zero = jnp.zeros_like(state.eta)
+
+    def advance(carry):
+        eta, mean_u, mean_v, total_x, total_y, filter_change = carry
+        velocity_x = state.u + (mean_u - initial_u)[..., None] * params.wet_mask_z
+        velocity_y = state.v + (mean_v - initial_v)[..., None] * params.wet_mask_z
+        layers = _layer_face_transports(velocity_x, velocity_y, params)
+        faces = tuple(jnp.sum(flux, axis=-1) for flux in layers)
+        if params.match_barotropic_transport:
+            divergence = _face_transport_divergence(*faces, params)
+        else:
+            divergence = _reference_depth_divergence(mean_u, mean_v, params) + offset
+        if params.process_time_scheme == 'symmetric_fast_v3':
+            updated, faces = _symmetric_free_surface_step(
+                eta, mean_u, mean_v, params, params.dt_bt, forcing_x, forcing_y, faces)
+            divergence = _face_transport_divergence(*faces, params)
+        else:
+            updated = _free_surface_step_fd(
+                eta, mean_u, mean_v, params, forcing_x, forcing_y, dt_half=params.dt_bt,
+                column_divergence_offset=offset,
+                column_face_transport=faces if params.match_barotropic_transport else None)
+        eta_new, mean_u_new, mean_v_new = updated
+        nontransport_change = eta_new - (eta - params.dt_bt * divergence)
+        return (eta_new, mean_u_new, mean_v_new, total_x + faces[0], total_y + faces[1],
+                filter_change + nontransport_change), None
+
+    final, _ = _subcycle(advance, (state.eta, initial_u, initial_v, zero, zero, zero), int(params.n_subcyc), params)
+    eta, mean_u, mean_v, total_x, total_y, filter_change = final
+    column_transport = (total_x / params.n_subcyc, total_y / params.n_subcyc)
+    updated = state._replace(eta=eta,
+                             u=state.u + (mean_u - initial_u)[..., None] * params.wet_mask_z,
+                             v=state.v + (mean_v - initial_v)[..., None] * params.wet_mask_z)
+    return updated, column_transport, filter_change
+
+
+def _tracer_step_with_transport(state, params, column_transport, budget=None, advection_velocity=None):
+    """Replay only the accepted tracer stages with the actual fast-mode mean.
+
+    Both RK stages and every advection substep share matched open-layer faces.
+    The provisional tracer update used for momentum forcing is discarded; its
+    sources are not booked. This is a lagged predictor/corrector, not a claim of
+    second-order coupled momentum or a moving-volume inventory formulation.
+    """
+    velocity_x, velocity_y = (state.u, state.v) if advection_velocity is None else advection_velocity
+    faces = _match_layer_face_transports(velocity_x, velocity_y, column_transport, params)
+    if params.process_time_scheme in ('subcycled_rk2_v2', 'symmetric_fast_v3'):
+        return _tracer_rk_subcycle(state, params, face_transport=faces, budget=budget)
+    temperature_1, salinity_1 = _compute_tracer_residual(state, params, budget=budget, face_transport=faces)
+    predicted = state._replace(T=state.T + params.dt * temperature_1,
+                               S=state.S + params.dt * salinity_1)
+    temperature_2, salinity_2 = _compute_tracer_residual(predicted, params, budget=budget, face_transport=faces)
+    return state._replace(T=state.T + 0.5 * params.dt * (temperature_1 + temperature_2),
+                          S=state.S + 0.5 * params.dt * (salinity_1 + salinity_2))
+
+
+def _linear_bottom_drag_step(state, params, duration, budget=None):
+    """Exact wet-bottom drag, separately audited from numerical face filtering."""
+    if params.bottom_friction != 'linear' or params.r_bot == 0.:
+        return state
+    decay = jnp.exp(-params.r_bot * duration * params.bottom_mask * params.wet_mask_z)
+    updated = state._replace(u=state.u * decay, v=state.v * decay)
+    if budget is not None:
+        budget.bottom_drag(state, updated)
+    return updated
+
+
+def _step_impl(state, p, budget=None):
     """Strang splitting: L(dt/2) -> N(dt) -> L(dt/2).
 
-    mode_split=True: identical L/N/L baroclinic core, but the linear half-steps
-    carry only diffusion/sponge/Coriolis (no free surface, no nu_h). After the
+    Default mode_split=True retains the L/N/L baroclinic core; linear half-steps
+    carry diffusion/sponge/Coriolis, including subcycled nu_h, but no free surface. After the
     second L half-step, n_subcyc barotropic forward-backward subcycles of dt_bt
     evolve (eta, ubt, vbt), driven by the rho-PGF + wind forcing computed from the
-    baroclinic state at step start (MOM-style coupling lag), with nu_h dissipation
-    inside each subcycle. The final (ubt, vbt) is projected back onto the 3D
-    velocity as a uniform-in-depth delta. (D12)
+    post-L/N/L predictor, held fixed over the subcycle. The final (ubt, vbt) is projected back onto the 3D
+    velocity as a uniform-in-depth delta. The opt-in transport candidate replays
+    accepted tracer stages with the actual fast-mode mean; momentum retains its
+    provisional tracer forcing. Static nodal inventories remain approximate. (D12)
     """
     dt_half = p.dt / 2.0
     # Capture land/ghost values BEFORE the step. Final masking holds these
@@ -2002,19 +2442,48 @@ def _step_impl(state, p):
     # huge gradient, seeding an exponentially-growing spurious PGF.
     land_u, land_v = state.u, state.v
     land_T, land_S = state.T, state.S
-    state = _linear_half_step(state, p, dt_half)
-    state = _explicit_full_step(state, p, p.dt)
-    state = _linear_half_step(state, p, dt_half)
+    if p.process_time_scheme == 'symmetric_fast_v3':
+        state = _linear_bottom_drag_step(state, p, dt_half, budget=budget)
+    state = _linear_half_step(state, p, dt_half, budget=budget)
+    nonlinear_start = state
+    predictor_budget = None if p.match_barotropic_transport else budget
+    state = _explicit_full_step(state, p, p.dt, budget=predictor_budget)
+    nonlinear_end = state
+    if predictor_budget is not None:
+        budget.stage("nonlinear", nonlinear_start, state)
+    state = _linear_half_step(state, p, dt_half, budget=predictor_budget)
+    barotropic_start = state
 
     # ── mode split: barotropic subcycle (free surface + nu_h) ──
     # Runs AFTER the L/N/L core on the un-masked final 3D state (before the
     # polar cap / land hold below, so the subcycle sees the same masked,
     # capped input the monolithic path fed _free_surface_step_fd).
-    if p.mode_split:
+    if p.mode_split and p.column_geometry == 'nodal_dual_v1' and (budget is not None or p.match_barotropic_transport):
+        state, column_transport, filter_change = _barotropic_subcycle_transport(state, p)
+        if budget is not None:
+            budget.stage("free_surface", barotropic_start, state)
+            budget.barotropic_transport(barotropic_start.eta, state.eta, column_transport, filter_change)
+        if p.match_barotropic_transport:
+            advection_velocity = ((0.5 * (nonlinear_start.u + nonlinear_end.u),
+                                   0.5 * (nonlinear_start.v + nonlinear_end.v))
+                                  if p.process_time_scheme in ('subcycled_rk2_v2', 'symmetric_fast_v3') else None)
+            tracer_state = _tracer_step_with_transport(nonlinear_start, p, column_transport, budget=budget,
+                                                      advection_velocity=advection_velocity)
+            if budget is not None:
+                budget.stage("nonlinear", nonlinear_start, tracer_state)
+            tracer_state = _linear_half_step(tracer_state, p, dt_half, budget=budget)
+            state = state._replace(T=tracer_state.T, S=tracer_state.S)
+        if budget is not None:
+            budget.before_transport_filter(state)
+    elif p.mode_split:
         # Coupling forcing from the baroclinic state, held fixed over the
         # subcycle (MOM-style forcing lag at dt=3600 s is standard).
         F_rho_x, F_rho_y = _compute_bt_rho_pgf(state, p)
         ubt0, vbt0 = _barotropic_velocity(state.u, state.v, p)
+        column_divergence_offset = None
+        if p.column_geometry == 'nodal_dual_v1':
+            column_divergence_offset = (_column_divergence(state.u, state.v, p)
+                                        - _reference_depth_divergence(ubt0, vbt0, p))
         ubt, vbt = ubt0, vbt0
         eta = state.eta
 
@@ -2028,15 +2497,24 @@ def _step_impl(state, p):
             # dt_half=dt_bt); each subcycle feeds the 2D triple forward.
             eta_i, ubt_i, vbt_i = carry
             return _free_surface_step_fd(
-                eta_i, ubt_i, vbt_i, p, F_rho_x, F_rho_y, dt_half=p.dt_bt), None
+                eta_i, ubt_i, vbt_i, p, F_rho_x, F_rho_y, dt_half=p.dt_bt,
+                column_divergence_offset=column_divergence_offset), None
 
         (eta, ubt, vbt), _ = _subcycle(_fb, (eta, ubt, vbt), int(p.n_subcyc), p)
         # Project the subcycle's net barotropic delta onto the 3D velocity
         # (uniform over depth) — same projection as the monolithic path.
         delta_ubt = (ubt - ubt0)[:, :, None]
         delta_vbt = (vbt - vbt0)[:, :, None]
-        state = JaxStateG(state.u + delta_ubt, state.v + delta_vbt,
+        projection_mask = p.wet_mask_z if p.column_geometry == 'nodal_dual_v1' else 1.
+        state = JaxStateG(state.u + delta_ubt * projection_mask, state.v + delta_vbt * projection_mask,
                           state.T, state.S, eta, state.ice)
+        if budget is not None:
+            budget.stage("free_surface", barotropic_start, state)
+
+    if p.process_time_scheme == 'symmetric_fast_v3':
+        state = _linear_bottom_drag_step(state, p, dt_half, budget=budget)
+        if budget is not None:
+            budget.before_transport_filter(state)
 
     # 3D polar-cap filter: zonally average the cap rows of u,v,T,S to kill
     # the cos(lat)->0 metric singularity in the diffusion/advection operators.
@@ -2055,8 +2533,14 @@ def _step_impl(state, p):
     # stencils in _d_dy/_laplacian_h (zero normal gradient), this is the full
     # closed-boundary condition that replaces the unstable one-sided stencil.
     v = v * p.interior_mask_z
-    state = JaxStateG(u, v, T, S, state.eta, state.ice)
-    return _dynamic_ice_closure(state, p)
+    masked = JaxStateG(u, v, T, S, state.eta, state.ice)
+    if budget is not None:
+        budget.stage("polar_cap_and_masks", state, masked)
+    updated = _dynamic_ice_closure(masked, p, budget=budget)
+    if budget is not None:
+        budget.stage("dynamic_ice", masked, updated)
+        budget.after_transport_filter(updated)
+    return updated
 
 
 # ── Public API ──────────────────────────────────────────────────────
@@ -2082,7 +2566,10 @@ def make_solver_global(grid, physics, dt, forcing=None,
                        dtype='float64', use_scan=False, freeze_adv_vel=False,
                        conservative_kv=False, project_adv_vel=False,
                        localize_conv=False, monotone_adv=False,
-                       fct_adv=False):
+                       fct_adv=False, projection_niter=None,
+                       projection_rtol=None, projection_preconditioner='none',
+                       projection_max_refinements=2, column_geometry='legacy',
+                       match_barotropic_transport=False, process_time_scheme='legacy'):
     """Create a JIT-compiled global FD ocean solver.
 
     Key properties:
@@ -2103,12 +2590,99 @@ def make_solver_global(grid, physics, dt, forcing=None,
         the biggest kernel-time lever); default 'float64' = bit-exact.
       - use_scan=True runs the barotropic subcycle as lax.scan (numerically
         identical, smaller XLA graph / fewer host launches).
+      - projection_niter overrides OCEAN_PAV_NITER, resolved once at construction.
+        projection_rtol has a dtype floor; optional Jacobi scales the exact native
+        Poisson diagonal. projection_max_refinements bounds actual-transport
+        corrections with an original-RHS stopping floor. Neither a cap nor
+        refinement is a convergence or physical conservation guarantee.
       - monotone_adv=True switches horizontal tracer face values to first-order
         donor-cell (upwind). ``fct_adv=True`` instead uses a local bounded
         centered face value; it takes precedence over monotone_adv.
+      - column_geometry='nodal_dual_v1' is an opt-in M1 repair candidate:
+        static nodal dual cells, an explicit staircase/deep truncation policy,
+        common-wet depth fluxes and their volume-weighted adjoint. Requires
+        conservative_kv/localize_conv. It does not yet match the actual fast-mode
+        time-averaged tracer transport or define true moving-volume inventories.
+        Default 'legacy' retains the frozen original numerical path.
+      - match_barotropic_transport=True is an opt-in M2 transport candidate,
+        requiring mode_split and nodal_dual_v1. Retains the original momentum
+        predictor; replays accepted tracer stages with the actual OLD-face
+        barotropic time mean. No source is counted twice. Retains static nodal
+        thickness and the original surface tracer flux; no exact moving-volume
+        heat/salt conservation, full temporal order or speedup is claimed.
+      - process_time_scheme='consistent_split_v1' is an opt-in M3 candidate:
+        convection subcycles retain physical kappa; slow rotation acts only on
+        shear, and fast mean rotation uses implicit midpoint. Requires M2.
+        The forward-backward gravity update and other process time errors remain;
+        this is not a claim of second-order accuracy for the complete step.
+      - process_time_scheme='subcycled_rk2_v2' additionally uses actual Heun
+        nonlinear tracer substeps, predictor-velocity momentum stages and
+        midpoint slow shear for matched tracer faces. Linear and gravity
+        splitting errors remain; no whole-model second-order claim is made.
+      - process_time_scheme='symmetric_fast_v3' additionally uses two actual
+        half-continuity steps around midpoint fast momentum, constrained walls,
+        and exact linear bottom drag around the full step. Diffusion, filters
+        and coupled forcing errors remain unqualified; not whole-model RK2.
     """
-    base = make_fd_params(grid)
+    finite_number('dt', dt, positive=True)
+    finite_number('dt_bt', dt_bt, positive=True)
+    validate_grid(grid)
+    if dtype not in {'float32', 'float64'}:
+        raise ValueError('dtype must be float32 or float64')
+    for name in ('nu_h', 'nu_v', 'nu_bi', 'kappa_h', 'kappa_v', 'kappa_bi',
+                 'kappa_conv', 'kappa_gm', 'kappa_redi', 'r_bot', 'cd'):
+        finite_number(name, getattr(physics, name), nonnegative=True)
+    for name, value in (('lambda_bulk', lambda_bulk), ('sss_restore_days', sss_restore_days),
+                        ('coastal_restore_days', coastal_restore_days), ('coastal_bulk_lambda', coastal_bulk_lambda),
+                        ('coastal_kappa_h', coastal_kappa_h), ('coastal_kappa_v', coastal_kappa_v),
+                        ('sponge_days', sponge_days), ('eta_relax_days', eta_relax_days)):
+        finite_number(name, value, nonnegative=True)
+    for name, value in (('polar_cap_rows', polar_cap_rows), ('polar_cap_taper', polar_cap_taper),
+                        ('sponge_cells', sponge_cells)):
+        integer_count(name, value)
+    if nu_nsub is not None and not (isinstance(nu_nsub, str) and nu_nsub == 'cfl'):
+        integer_count('nu_nsub', nu_nsub, minimum=1)
+    if match_barotropic_transport and (not mode_split or column_geometry != 'nodal_dual_v1'):
+        raise ValueError("match_barotropic_transport requires mode_split=True and column_geometry='nodal_dual_v1'")
+    if process_time_scheme not in ('legacy', 'consistent_split_v1', 'subcycled_rk2_v2', 'symmetric_fast_v3'):
+        raise ValueError("unknown process_time_scheme")
+    if process_time_scheme != 'legacy' and not match_barotropic_transport:
+        raise ValueError(f"{process_time_scheme} requires match_barotropic_transport=True")
+    if column_geometry == 'nodal_dual_v1':
+        if not conservative_kv or not localize_conv:
+            raise ValueError("nodal_dual_v1 requires conservative_kv=True and localize_conv=True")
+    if polar_cap_rows > 0 and 2 * (polar_cap_rows + polar_cap_taper) > grid.ny:
+        raise ValueError('polar cap bands must not overlap; reduce rows/taper or disable the cap')
+    base = make_fd_params(grid, column_geometry=column_geometry)
     nx, ny, nz = base.nx, base.ny, base.nz
+    if projection_niter is None:
+        legacy_cap = os.environ.get('OCEAN_PAV_NITER')
+        projection_niter_source = 'default' if legacy_cap is None else 'environment:OCEAN_PAV_NITER'
+        try:
+            projection_niter = 150 if legacy_cap is None else int(legacy_cap)
+        except ValueError as error:
+            raise ValueError('projection_niter environment value must be an integer') from error
+    else:
+        projection_niter_source = 'explicit'
+    if isinstance(projection_niter, (bool, np.bool_)) or not isinstance(projection_niter, (int, np.integer)) or projection_niter <= 0:
+        raise ValueError('projection_niter must be a positive integer')
+    if projection_rtol is not None and (not np.isfinite(projection_rtol) or projection_rtol <= 0.):
+        raise ValueError('projection_rtol must be finite and positive')
+    if projection_preconditioner not in {'none', 'jacobi'}:
+        raise ValueError('projection_preconditioner must be none or jacobi')
+    if isinstance(projection_max_refinements, (bool, np.bool_)) or not isinstance(projection_max_refinements, (int, np.integer)) or not 0 <= projection_max_refinements <= 2:
+        raise ValueError('projection_max_refinements must be an integer from 0 to 2')
+    projection_dtype = jnp.float32 if dtype == 'float32' else jnp.float64
+    projection_rtol = max(float(projection_rtol or 1e-12), 32. * float(jnp.finfo(projection_dtype).eps))
+    if mixed_layer_depth_m is not None:
+        if not np.isfinite(mixed_layer_depth_m) or mixed_layer_depth_m < 0.:
+            raise ValueError("mixed_layer_depth_m must be finite and nonnegative")
+    if mixed_layer_depth_2d is not None:
+        depths = np.asarray(mixed_layer_depth_2d)
+        if depths.shape != (nx, ny) or not np.all(np.isfinite(depths) & (depths > 0.)):
+            raise ValueError("mixed_layer_depth_2d must have grid shape and positive finite depths")
+    if dynamic_ice and (not np.isfinite(ice_insulation_scale_m) or ice_insulation_scale_m <= 0.):
+        raise ValueError("ice_insulation_scale_m must be finite and positive")
 
     if forcing is None:
         tau_x_2d = jnp.zeros((nx, ny))
@@ -2120,6 +2694,11 @@ def make_solver_global(grid, physics, dt, forcing=None,
     # Effective shallow-water depth = vertical grid span
     H_sw = float(jnp.sum(jnp.array(grid.dz)))
     dz_norm = (jnp.array(grid.dz).reshape(1, 1, -1) / H_sw)
+    if column_geometry == 'nodal_dual_v1':
+        column_thickness = np.asarray(base.dz_node) * np.asarray(base.wet_mask_z)
+        column_depth = np.sum(column_thickness, axis=-1)
+        H_sw = jnp.asarray(np.where(column_depth > 0., column_depth, 1.))
+        dz_norm = jnp.asarray(column_thickness) / H_sw[..., None]
 
     if T_atm is not None and lambda_bulk > 0.0:
         T_atm_3d = jnp.array(T_atm)[:, :, None]
@@ -2288,6 +2867,22 @@ def make_solver_global(grid, physics, dt, forcing=None,
     elif nu_nsub is not None:
         nu_nsub = max(1, int(nu_nsub))
 
+    conv_nsub = max(1, int(np.ceil(
+        physics.kappa_conv * dt / (0.4 * float(jnp.min(jnp.array(grid.dz))) ** 2))))
+    adv_nsub = max(1, int(np.ceil(dt * 4.0e-3 / (0.5 * float(jnp.min(jnp.array(grid.dz)))))))
+    if column_geometry == 'nodal_dual_v1':
+        widths = np.asarray(base.dz_node).ravel()
+        distances = np.asarray(base.dz_iface).ravel()
+        interface_rate = 1. / distances
+        row_rate = (np.pad(interface_rate, (1, 0)) + np.pad(interface_rate, (0, 1))) / widths
+        conv_nsub = max(1, int(np.ceil(physics.kappa_conv * dt * np.max(row_rate) / 0.4)))
+        adv_nsub = max(1, int(np.ceil(dt * 4.0e-3 / (0.5 * np.min(widths)))))
+        if physics.nu_v * (dt / 2.) * np.max(row_rate) > 0.4:
+            raise ValueError("nodal_dual_v1 vertical momentum diffusion exceeds its explicit CFL margin")
+        maximum_kappa_v = physics.kappa_v + float(np.max(np.asarray(coastal_kappa_v_2d)))
+        if maximum_kappa_v * (dt / 2.) * np.max(row_rate) > 0.4:
+            raise ValueError("nodal_dual_v1 vertical tracer diffusion exceeds its explicit CFL margin")
+
     params = FDPhysParams(
         dx_2d=base.dx_2d, dy=base.dy, cos_lat=base.cos_lat,
         inv_dx=base.inv_dx, inv_dy=base.inv_dy,
@@ -2331,8 +2926,7 @@ def make_solver_global(grid, physics, dt, forcing=None,
         mode_split=bool(mode_split),
         dt_bt=dt_bt_eff,
         n_subcyc=n_subcyc,
-        conv_nsub=max(1, int(np.ceil(
-            physics.kappa_conv * dt / (0.4 * float(jnp.min(jnp.array(grid.dz))) ** 2)))),
+        conv_nsub=conv_nsub,
         nu_nsub=nu_nsub,
         use_scan=bool(use_scan),
         # Vertical-advection subcycles: keep dt*(|u|/dx + |v|/dy + w/dz) below
@@ -2341,8 +2935,7 @@ def make_solver_global(grid, physics, dt, forcing=None,
         # horizontal terms (~1e-6/s at |u|~1 m/s) are negligible. Sized from a
         # nominal w_max=4e-3 m/s and a 0.5 target CFL per substep. Monolithic
         # dt=60-300: dt*w/dz <= 0.18 -> adv_nsub=1, path untouched. (D16)
-        adv_nsub=max(1, int(np.ceil(dt * 4.0e-3 / (0.5 * float(jnp.min(
-            jnp.array(grid.dz))))))),
+        adv_nsub=adv_nsub,
         freeze_adv_vel=bool(freeze_adv_vel),
         conservative_kv=bool(conservative_kv),
         project_adv_vel=bool(project_adv_vel),
@@ -2360,7 +2953,20 @@ def make_solver_global(grid, physics, dt, forcing=None,
         ice_salt_flux=float(ice_salt_flux),
         dynamic_ice=bool(dynamic_ice),
         ice_insulation_scale_m=float(ice_insulation_scale_m),
+        projection_niter=int(projection_niter),
+        projection_rtol=projection_rtol,
+        projection_preconditioner=projection_preconditioner,
+        projection_inv_diagonal=None,
+        projection_niter_source=projection_niter_source,
+        projection_max_refinements=int(projection_max_refinements),
+        column_geometry=column_geometry,
+        match_barotropic_transport=bool(match_barotropic_transport),
+        process_time_scheme=process_time_scheme,
     )
+
+    if projection_preconditioner == 'jacobi':
+        diagonal = _column_projection_diagonal(params)
+        params = params._replace(projection_inv_diagonal=1. / jnp.where(diagonal > 0., diagonal, 1.))
 
     # fp32 cast: params was just built in float64 (numpy defaults); when
     # computing in float32 every array field must be cast too, or XLA inserts

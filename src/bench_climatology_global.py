@@ -1,5 +1,11 @@
 """
-Stage-3 climatology comparison — GLOBAL FD solver edition.
+Historical Stage-3 climatology diagnostic — GLOBAL FD solver edition.
+
+This retains the legacy equal-cell/index-window definition, NOT the current
+shared benchmark_metrics area_weighted_angular_box_v2. Historical statements
+below describe the original experiment assumptions, not independently verified
+current climate or forecast skill. Initial/restored-reference dependence and
+whole-model production qualification still require explicit external validation.
 
 Reads a global run npz
 from run_long_integration_global.py and scores the model climatology against

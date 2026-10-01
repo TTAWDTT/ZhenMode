@@ -7,11 +7,13 @@ rather than yet another ad-hoc analysis script.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 from pathlib import Path
 
 import numpy as np
+from scipy.sparse import csr_array
 
 R_EARTH = 6.371e6
 RHO_0 = 1025.0
@@ -19,48 +21,93 @@ T_REF = 15.0
 ALPHA_T = 2.0e-4
 BETA_S = 7.6e-4
 S_REF = 35.0
+METRIC_DEFINITION = "area_weighted_angular_box_v2"
+
+
+def _float_array(values):
+    return np.asarray(np.ma.filled(np.ma.asarray(values, dtype=float), np.nan), dtype=float)
+
+
+def _weighted_mean(values, weights):
+    anchor = values.flat[0]
+    return anchor + np.sum(weights * (values - anchor)) / np.sum(weights)
 
 
 def smooth_2d_global(field: np.ndarray, lat: np.ndarray,
-                     deg: float = 2.0) -> np.ndarray:
-    """Smooth a global (nx, ny) field with a periodic zonal box mean.
-
-    This matches the definition used by ``bench_climatology_global.py`` so old
-    reports and the standardized benchmark remain comparable.
-    """
-    f = np.asarray(field, dtype=float)
-    nx, ny = f.shape
-    win = max(1, int(round(deg)))
-    padded = np.empty((nx + 2 * win, ny + 2 * win), dtype=float)
-    padded[win:win + nx, win:win + ny] = f
-    padded[:win, win:win + ny] = f[-win:, :]
-    padded[win + nx:, win:win + ny] = f[:win, :]
-    padded[:, :win] = padded[:, win:win + 1]
-    padded[:, win + ny:] = padded[:, win + ny - 1:win + ny]
-    csum = np.pad(np.cumsum(np.cumsum(padded, axis=0), axis=1), ((1, 0), (1, 0)))
-    w2 = 2 * win + 1
-    out = np.empty_like(f)
-    for i in range(nx):
-        for j in range(ny):
-            out[i, j] = (csum[i + w2, j + w2]
-                         - csum[i, j + w2]
-                         - csum[i + w2, j]
-                         + csum[i, j]) / (w2 * w2)
-    return out
+                     deg: float = 2.0, *, lon: np.ndarray,
+                     ocean: np.ndarray | None = None,
+                     area: np.ndarray | None = None) -> np.ndarray:
+    """Wet-area angular box mean with periodic longitude and bounded latitude."""
+    field = _float_array(field)
+    lat, lon = _float_array(lat), _float_array(lon)
+    if not np.isfinite(deg) or deg < 0.:
+        raise ValueError("angular filter half-width must be finite and nonnegative")
+    ocean = np.ones(field.shape, dtype=bool) if ocean is None else np.asarray(ocean, bool)
+    area = cell_area(lat, lon) if area is None else _float_array(area)
+    _validate_spatial_arrays(field, ocean, area, lat, lon)
+    longitude_distance = np.abs((lon[:, None] - lon[None, :] + 180.) % 360. - 180.)
+    longitude_window = csr_array(longitude_distance <= deg)
+    latitude_window = csr_array(np.abs(lat[:, None] - lat[None, :]) <= deg)
+    weights = np.where(ocean, area, 0.)
+    anchor = field[ocean][0] if ocean.any() else 0.
+    weighted_field = np.where(ocean, field - anchor, 0.) * weights
+    numerator = latitude_window.dot(longitude_window.dot(weighted_field).T).T
+    denominator = latitude_window.dot(longitude_window.dot(weights).T).T
+    return anchor + np.divide(numerator, denominator, out=np.full(field.shape, np.nan),
+                              where=denominator > 0.)
 
 
 def cell_area(lat: np.ndarray, lon: np.ndarray,
               radius: float = R_EARTH) -> np.ndarray:
-    """Area of regular lat-lon cells, shape (nx, ny), in square metres."""
-    lat = np.asarray(lat, dtype=float)
-    lon = np.asarray(lon, dtype=float)
-    if lat.size < 2 or lon.size < 2:
-        raise ValueError("lat/lon must have at least two points")
-    dlat = float(np.mean(np.abs(np.diff(lat))))
-    dlon = float(np.mean(np.abs(np.diff(lon))))
-    area = (radius * radius * np.radians(dlon) * np.radians(dlat) *
-            np.cos(np.radians(lat))[None, :])
-    return np.broadcast_to(area, (lon.size, lat.size)).copy()
+    """Spherical rectangle areas using inferred midpoint/extrapolated edges."""
+    lat, lon = _float_array(lat), _float_array(lon)
+    if not np.isfinite(radius) or radius <= 0.:
+        raise ValueError("radius must be finite and positive")
+    if lat.ndim != 1 or lon.ndim != 1 or lat.size < 2 or lon.size < 2:
+        raise ValueError("lat/lon must have at least two one-dimensional points")
+    if not np.all(np.isfinite(lat)) or not np.all(np.isfinite(lon)) or np.any(np.abs(lat) > 90.):
+        raise ValueError("lat/lon must be finite physical centers")
+    latitude = np.radians(lat)
+    longitude = np.unwrap(np.radians(lon))
+    edges = []
+    for centers in (longitude, latitude):
+        differences = np.diff(centers)
+        if not (np.all(differences > 0.) or np.all(differences < 0.)):
+            raise ValueError("lat/lon centers must be distinct and monotonically ordered")
+        edges.append(np.concatenate(([centers[0] - .5 * differences[0]],
+                                     .5 * (centers[:-1] + centers[1:]),
+                                     [centers[-1] + .5 * differences[-1]])))
+    longitude_edges, latitude_edges = edges
+    if abs(longitude_edges[-1] - longitude_edges[0]) > 2. * np.pi + 1e-12:
+        raise ValueError("inferred longitude cells exceed one revolution")
+    latitude_edges = np.clip(latitude_edges, -.5 * np.pi, .5 * np.pi)
+    return radius ** 2 * np.abs(np.diff(longitude_edges))[:, None] * np.abs(np.diff(np.sin(latitude_edges)))[None, :]
+
+
+def _validate_spatial_arrays(field, ocean, area, lat, lon):
+    if field.ndim != 2 or field.shape != ocean.shape or field.shape != area.shape:
+        raise ValueError("field, mask and area shapes must agree")
+    if lat.ndim != 1 or lon.ndim != 1 or field.shape != (lon.size, lat.size):
+        raise ValueError("field shape must match longitude/latitude centers")
+    if not np.all(np.isfinite(lat)) or not np.all(np.isfinite(lon)) or np.any(np.abs(lat) > 90.):
+        raise ValueError("coordinates must be finite physical centers")
+    if np.unique(lat).size != lat.size or np.unique(lon % 360.).size != lon.size:
+        raise ValueError("coordinates must be distinct")
+    if np.any(~np.isfinite(area[ocean])) or np.any(area[ocean] <= 0.):
+        raise ValueError("area weights must be finite and positive on scored wet cells")
+
+
+def _weighted_correlation(left, right, weights):
+    left, right, weights = (np.asarray(values, dtype=float) for values in (left, right, weights))
+    if left.size < 2 or not np.all(np.isfinite(left)) or not np.all(np.isfinite(right)):
+        return float("nan")
+    weights = weights / weights.sum()
+    left = left - _weighted_mean(left, weights)
+    right = right - _weighted_mean(right, weights)
+    variance_left, variance_right = np.sum(weights * left ** 2), np.sum(weights * right ** 2)
+    if variance_left <= 0. or variance_right <= 0.:
+        return float("nan")
+    return float(np.sum(weights * left * right) / np.sqrt(variance_left * variance_right))
 
 
 def regional_masks(lat: np.ndarray, lon: np.ndarray,
@@ -79,27 +126,25 @@ def regional_masks(lat: np.ndarray, lon: np.ndarray,
 def global_pattern_metrics(model_sst: np.ndarray,
                            reference_sst: np.ndarray,
                            ocean: np.ndarray,
-                           lat: np.ndarray) -> dict:
-    """Pre-registered A1/A2 large-scale SST metrics."""
+                           lat: np.ndarray, lon: np.ndarray,
+                           area: np.ndarray) -> dict:
+    """Area-weighted zonal and wet-only angular-filtered SST patterns."""
     ocean = np.asarray(ocean, dtype=bool)
     zonal_m = np.array([
-        model_sst[ocean[:, j], j].mean() if ocean[:, j].any() else np.nan
+        _weighted_mean(model_sst[ocean[:, j], j], area[ocean[:, j], j]) if ocean[:, j].any() else np.nan
         for j in range(len(lat))])
     zonal_w = np.array([
-        reference_sst[ocean[:, j], j].mean() if ocean[:, j].any() else np.nan
+        _weighted_mean(reference_sst[ocean[:, j], j], area[ocean[:, j], j]) if ocean[:, j].any() else np.nan
         for j in range(len(lat))])
-    good = np.isfinite(zonal_m) & np.isfinite(zonal_w)
-    a1_corr = (float(np.corrcoef(zonal_m[good], zonal_w[good])[0, 1])
-               if good.sum() >= 2 else float("nan"))
-    a1_rmse = float(np.sqrt(np.mean(
-        (zonal_m[good] - zonal_w[good]) ** 2))) if good.any() else float("nan")
-    model_sm = smooth_2d_global(model_sst, lat, deg=2.0)
-    reference_sm = smooth_2d_global(reference_sst, lat, deg=2.0)
-    a_model = model_sm[ocean] - model_sm[ocean].mean()
-    a_ref = reference_sm[ocean] - reference_sm[ocean].mean()
-    a2_corr = (float(np.corrcoef(a_model, a_ref)[0, 1])
-               if np.std(a_model) > 0 else float("nan"))
-    a2_rmse = float(np.sqrt(np.mean((model_sm[ocean] - reference_sm[ocean]) ** 2)))
+    zonal_area = np.sum(np.where(ocean, area, 0.), axis=0)
+    good = zonal_area > 0.
+    a1_corr = _weighted_correlation(zonal_m[good], zonal_w[good], zonal_area[good])
+    a1_rmse = float(np.sqrt(np.average((zonal_m[good] - zonal_w[good]) ** 2,
+                                      weights=zonal_area[good]))) if good.any() else float("nan")
+    model_sm = smooth_2d_global(model_sst, lat, lon=lon, ocean=ocean, area=area)
+    reference_sm = smooth_2d_global(reference_sst, lat, lon=lon, ocean=ocean, area=area)
+    a2_corr = _weighted_correlation(model_sm[ocean], reference_sm[ocean], area[ocean])
+    a2_rmse = regional_error_metrics(model_sm - reference_sm, ocean, weights=area)["raw_rmse"]
     return {
         "a1_corr": a1_corr,
         "a1_rmse_c": a1_rmse,
@@ -107,13 +152,22 @@ def global_pattern_metrics(model_sst: np.ndarray,
         "global_a2_rmse_c": a2_rmse,
     }
 
-def regional_error_metrics(error: np.ndarray, mask: np.ndarray) -> dict:
-    """Raw regional SST error statistics."""
-    raw = np.asarray(error, dtype=float)[mask]
+def regional_error_metrics(error: np.ndarray, mask: np.ndarray,
+                           weights: np.ndarray | None = None) -> dict:
+    """Weighted error statistics without silently dropping missing wet values."""
+    error, mask = _float_array(error), np.asarray(mask, dtype=bool)
+    weights = np.ones(error.shape) if weights is None else _float_array(weights)
+    if error.shape != mask.shape or error.shape != weights.shape:
+        raise ValueError("error, mask and weight shapes must agree")
+    raw, weights = error[mask], weights[mask]
+    if np.any(~np.isfinite(weights)) or np.any(weights <= 0.):
+        raise ValueError("scored weights must be finite and positive")
+    valid = raw.size > 0 and np.all(np.isfinite(raw))
     return {
         "n": int(mask.sum()),
-        "raw_bias": float(raw.mean()) if raw.size else float("nan"),
-        "raw_rmse": float(np.sqrt(np.mean(raw ** 2))) if raw.size else float("nan"),
+        "weight_sum": float(weights.sum()),
+        "raw_bias": float(_weighted_mean(raw, weights)) if valid else float("nan"),
+        "raw_rmse": float(np.sqrt(np.average(raw ** 2, weights=weights))) if valid else float("nan"),
     }
 
 
@@ -206,21 +260,36 @@ def mixed_layer_depth(T: np.ndarray, S: np.ndarray, z: np.ndarray,
 
 def score_snapshot(sst: np.ndarray, reference_sst: np.ndarray,
                    ocean: np.ndarray, lat: np.ndarray,
-                   lon: np.ndarray) -> dict:
-    """Score one 2D SST field against the same-grid WOA reference."""
+                   lon: np.ndarray, *, area: np.ndarray | None = None) -> dict:
+    """Score one same-grid SST pair; reference independence is not inferred."""
+    sst, reference_sst = _float_array(sst), _float_array(reference_sst)
     ocean = np.asarray(ocean, dtype=bool)
-    raw_error = (np.asarray(sst, dtype=float)
-                 - np.asarray(reference_sst, dtype=float))
+    lat, lon = _float_array(lat), _float_array(lon)
+    area_source = "inferred_center_edges" if area is None else "provided_cell_area"
+    area = cell_area(lat, lon) if area is None else _float_array(area)
+    _validate_spatial_arrays(sst, ocean, area, lat, lon)
+    if sst.shape != reference_sst.shape:
+        raise ValueError("model and reference shapes must agree")
+    raw_error = sst - reference_sst
+    domain = hashlib.sha256()
+    for values in (lat, lon, ocean.astype(float), np.where(ocean, area, 0.)):
+        domain.update(np.asarray(values.shape, dtype="<i8").tobytes())
+        domain.update(np.asarray(values, dtype="<f8").tobytes())
     result = {
-        "global": {
-            "n": int(ocean.sum()),
-            "raw_bias": float(np.mean(raw_error[ocean])),
-            "raw_rmse": float(np.sqrt(np.mean(raw_error[ocean] ** 2))),
-        }
+        "metric_definition": METRIC_DEFINITION,
+        "comparison_domain_sha256": domain.hexdigest(),
+        "comparison_reference_sha256": hashlib.sha256(
+            np.asarray(np.where(ocean, reference_sst, 0.), dtype="<f8").tobytes()).hexdigest(),
+        "area_source": area_source,
+        "spatial_filter": "wet_area_angular_box_half_width_2_degrees_not_constant_km",
+        "reference_role": "unspecified_not_independence_certified",
+        "coverage_complete": bool(ocean.any() and np.all(np.isfinite(sst[ocean]))
+                                  and np.all(np.isfinite(reference_sst[ocean]))),
+        "global": regional_error_metrics(raw_error, ocean, weights=area),
     }
-    result.update(global_pattern_metrics(sst, reference_sst, ocean, lat))
+    result.update(global_pattern_metrics(sst, reference_sst, ocean, lat, lon, area))
     for name, mask in regional_masks(lat, lon, ocean).items():
-        result[name] = regional_error_metrics(raw_error, mask)
+        result[name] = regional_error_metrics(raw_error, mask, weights=area)
     return result
 
 
@@ -238,7 +307,7 @@ def score_npz(path: str | os.PathLike,
     ocean = np.asarray(z["wet_mask"], dtype=bool)
     lat = np.asarray(z["lat"], dtype=float)
     lon = np.asarray(z["lon"], dtype=float)
-    raw_error = sst - reference
+    area = np.asarray(z["cell_area_m2"], dtype=float) if "cell_area_m2" in z else cell_area(lat, lon)
     result = {
         "path": str(Path(path)),
         "verdict": str(z["verdict"]),
@@ -249,13 +318,17 @@ def score_npz(path: str | os.PathLike,
         "heat_drift_percent": _relative_drift(z["heat_content_J"]),
         "salt_drift_percent": _relative_drift(z["salt_content_kg"]),
     }
-    result.update(global_pattern_metrics(sst, reference, ocean, lat))
-    result.update(regional_error_metrics(raw_error, ocean))
-    for name, mask in regional_masks(lat, lon, ocean).items():
-        result[name] = regional_error_metrics(raw_error, mask)
+    spatial = score_snapshot(sst, reference, ocean, lat, lon,
+                             area=area if "cell_area_m2" in z else None)
+    result.update(spatial)
+    result.update(spatial["global"])
+    result["reference_role"] = "initialization_field_not_independent_validation"
+    result["verdict_scope"] = "integration_watchdog_not_climate_accuracy"
+    result["temporal_averaging"] = "arithmetic_saved_records_not_time_bounds_weighted"
+    result["budget_drift_scope"] = "endpoint_content_change_not_budget_residual"
     result["ice"] = sea_ice_metrics(
         sst, ocean, freeze_temp=freeze_temp,
-        area=cell_area(lat, lon),
+        area=area,
         ice_thickness=(np.asarray(z["ice_top"][-1], dtype=float)
                        if "ice_top" in z else None))
     if "S_init" in z:
@@ -275,10 +348,10 @@ def score_npz(path: str | os.PathLike,
 
 
 def _relative_drift(series: np.ndarray) -> float:
-    series = np.asarray(series, dtype=float)
-    a = float(series[0])
-    b = float(series[-1])
-    return float(100.0 * (b - a) / abs(a)) if a else 0.0
+    values = np.asarray(np.ma.filled(series, np.nan), dtype=float)
+    if values.ndim != 1 or values.size < 2 or not np.all(np.isfinite(values)) or values[0] == 0.:
+        return float("nan")
+    return float(100.0 * (values[-1] - values[0]) / abs(values[0]))
 
 
 def score_3d_snapshot(snapshot: np.ndarray, z: np.ndarray,
@@ -317,4 +390,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

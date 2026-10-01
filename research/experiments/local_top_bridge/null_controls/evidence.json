@@ -1,0 +1,57 @@
+{
+  "parent_head": "4fb852aa67485053ba54e441298801b7146e53b9",
+  "quantity_passed": false,
+  "qualification_passed": false,
+  "test_result": "55 passed, 1 warning in 1.76s (16 null +39 parent)",
+  "rows": [
+    {
+      "layers": 8,
+      "max_source_remap_error_Pa": [
+        0.004335693145549158,
+        0.006501374034996843
+      ],
+      "remap_minus_source_base_Pa": 0.0
+    },
+    {
+      "layers": 16,
+      "max_source_remap_error_Pa": [
+        0.0005419616463768762,
+        0.0008121303362713661
+      ],
+      "remap_minus_source_base_Pa": 0.0
+    },
+    {
+      "layers": 32,
+      "max_source_remap_error_Pa": [
+        6.774520807084627e-05,
+        0.00010151629248866811
+      ],
+      "remap_minus_source_base_Pa": 0.0
+    },
+    {
+      "layers": 64,
+      "max_source_remap_error_Pa": [
+        8.468152373097837e-06,
+        1.268953928956762e-05
+      ],
+      "remap_minus_source_base_Pa": 0.0
+    }
+  ],
+  "cost": "bounded CPU; no integration/scientific inputs; peak RSS not measured",
+  "source": "analytic only plus actual production pressure function checks; no private inputs",
+  "hashes": {
+    "tests/test_top_pressure_null.py": "11c88bf495620511e4e8066c85ff6ef04f7ca335fb6e8cd3bf5cac2ec46e0140",
+    "research/experiments/local_top_bridge/null_controls/CONTRACT.md": "4d979c19e119f4eb48191385ef321d272709f9f94bd9b91f449cacc2bb3d3edd"
+  },
+  "base_core": "8ad3552ff651cf45dfec7ae9a119ac75eef28890",
+  "migration_source": "94b37d34f35fc3bfa6100308a78fbd4700ac4d94",
+  "FD_definition": "masked node EOS trapezoid pressure then physical-depth interpolation",
+  "FD_control": {
+    "P_FD_Pa": -20280.18234375,
+    "physical_eta_origin_truth_Pa": -20266.130131875,
+    "analytic_zero_origin_plus_eta_Pa": -20285.838421875,
+    "interpolation_difference_Pa": 5.656078125000931,
+    "FD_minus_physical_truth_Pa": -14.052211874997738
+  },
+  "warning": "numpy.ndarray size changed import warning; targeted tests passed"
+}

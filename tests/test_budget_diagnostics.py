@@ -27,6 +27,7 @@ def test_budget_diagnostics_on_uniform_state():
     assert d.total_volume_m3 > 0.0
     assert d.mean_T == pytest.approx(20.0)
     assert d.mean_S == pytest.approx(35.0)
+    assert d.salt_content_kg == pytest.approx(1025.0 * 0.035 * d.total_volume_m3)
     assert d.mean_T_top == pytest.approx(20.0)
     assert d.mean_S_top == pytest.approx(35.0)
     expected_mean_depth = float(node_thickness(grid.z).sum())

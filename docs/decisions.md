@@ -71,6 +71,19 @@ amplified the same grid-scale mode that blew up the tracer on the boundary row;
 it was replaced by the mirror ghost cell (ghost = boundary value), which gives
 `d²u/dy²|_0 = (u1 - u0)/dy²` — zero normal gradient, stable.
 
+The later original-FD audit found that these gates covered only the second
+differences: the expanded spherical first-derivative correction still read dry
+velocity sentinels and produced positive scalar viscous work on an actual wet
+coast. `nodal_dual_v1` now reuses the existing closed wet-face cosine flux
+operator for momentum Laplacian and its square. The material joint-stage norm
+uses the same face row sums. Scalar self-adjoint dissipation is proved only
+under the declared regular latitude-longitude/reference-node metric; it is not
+a full vector viscosity or complete momentum-energy theorem. Legacy geometry
+retains the old stencil for explicit production compatibility, not as a renewed
+correctness claim. Old nodal source checkpoints are not continued under new
+hashes. Numerical and actual-run qualification is recorded in
+[the implementation ledger, section20](legacy_core_repair_status_zh.md).
+
 ## D6 — Face-flux divergence: the w diagnosis must see what advection sees
 
 On fully-wet nodes the face-flux divergence and the central difference are
@@ -216,9 +229,9 @@ CFL while acting on the shear.
 
 The raw stage-2 predictor `u_pred = u + du1*dt` has `col_div(u_pred) = O(dt)`,
 because the barotropic subcycle projects only the FINAL u — after the tracer
-stage. The flux-form column leak `-Σ AREA·Fz[0]·T[0]` is therefore exactly O(dt)
+stage. The flux-form column leak `+Σ AREA·Fz[0]·T[0]` is therefore exactly O(dt)
 and monotonic (+63 ZJ/yr over 200 yr, a surface->abyss dipole).
-`project_adv_vel=True` applies the 2D Euler velocity increment
+The historical `project_adv_vel=True` implementation applied the 2D Euler velocity increment
 `-dt·g·∇(eta_proj)`, with `eta_proj` solving the area-weighted Poisson problem
 `∇·(H∇eta_proj) = col_div_h(u_pred)`; the residual is O(dt²). It removes ~93-99%
 of the one-step interior heat change (-1123 ZJ/yr -> ~0).
@@ -227,16 +240,15 @@ of the one-step interior heat change (-1123 ZJ/yr -> ~0).
 the tracer stage-2 velocity at the old (u, v), making the tracer RK2 consistent
 with the momentum RK2 (both stages old-velocity).
 
-`_project_column_divergence` uses the EXACT column divergence (the per-layer
-masked `_divergence_conservative` summed with `dz_node`), not a constant-H 2D
-divergence: the layer masking makes the two differ by ~40% at coastlines, and
-that residual is what the closure exists to remove. The CG solves the
-area-weighted Poisson problem
-`Div_col(Grad_conservative(psi)) = col_div_h(u,v)/(dt*g)` for a surface-pressure
-potential, then applies `(u,v) -= dt*g*grad(psi)`. The iteration count is fixed
-rather than a tolerance loop, for predictable per-step cost: the stage-2 leak
-saturates at -40 ZJ/yr (from -2238) for `n_iter >= 120`, so 150 is past the knee
-and the corrected field's column divergence sits at the CG residual (~1e-11).
+The historical projection summed surface-mask `_divergence_conservative` over
+masked layer velocities and called that the exact column constraint. D34
+corrects this claim: multiplying dry velocities by zero does not close dry
+bottom faces, and the broadcast 2D gradient is not the native constraint's
+wet-volume adjoint. Earlier measurements of a 150-iteration knee are historical,
+not proof of native transport convergence on current production geometry.
+The true top transport is `+Σ AREA*Fz[0]*T[0]` for downward-positive Fz;
+neither freezing nor projecting one RK velocity reconciles moving cell volume
+and time-averaged barotropic transport by itself.
 
 ## D14 — Face-gated horizontal gradients for advection
 
@@ -596,12 +608,15 @@ box edge so the relaxation itself cannot seed a PGF cliff at the boundary.
 
 ## D24 — Surface boundary conditions: bulk heat flux and salinity restoring
 
-Both surface fluxes are applied to the TOP NODE only, through `surface_mask`, and
+By default both surface fluxes are applied to the TOP NODE only, through `surface_mask`, and
 both are divided by the top cell's heat capacity. `heat_factor =
 1/(RHO_0*C_P*dz_surface)` turns a surface heat flux [W/m^2] into a tendency on
 the surface node; the bulk flux is the Haney/Barnier form
 `lambda_bulk*(T_atm - T[0])*heat_factor*surface_mask`, a genuine SST negative
 feedback.
+
+The optional mixed-layer and dynamic-ice heat paths supersede this top-node-only
+treatment; see D28 for their wet-node energy accounting.
 
 Surface salinity restoring is the same shape with a TRUE salt flux (psu/s, no
 `heat_factor`, because salinity has no `rho*cp`):
@@ -663,3 +678,515 @@ consistent with the face velocity. This is not yet a full Zalesak multidimension
 FCT limiter, but it is a cheap, local, bounded-flux step in that direction and
 keeps the same flux-form telescoping. It takes precedence over `--monotone-adv`.
 
+Reconstruction must not read across the closed latitude walls or a dry neighbour:
+latitude slopes use edge padding, longitude remains periodic, and a minmod
+slope requires all three stencil points to be wet. Flux masks alone do not
+prevent a land sentinel from corrupting a slope on a different, open wet face.
+
+## D28 — Optional surface heat: account for wet volume and ice latent heat
+
+Replacing the top-node thickness by a mixed-layer depth in the heat denominator
+without warming deeper nodes loses energy. With a 5 m node, a 20 m mixed layer
+retained only one quarter of a prescribed heat flux. Instead, deposit heat in
+proportion to the overlap of the requested mixed layer and each wet node volume,
+normalized by the actual wet overlap. The sum of tendency times node thickness
+must recover the input flux divided by rho*cp, including shallow columns and
+spatial mixed-layer masks. This is heat deposition, not a new entrainment model.
+
+For opt-in dynamic ice, disable prescribed/bulk/coastal-bulk heat in the dynamics
+tendency and apply it exactly once in the subsequent first-order surface operator.
+Track water sensible heat minus ice latent heat. Actual ice-thickness change sets
+the brine/melt salt source; complete melt returns excess energy to the wet water
+column instead of pinning SST and discarding it. The closure remains a surface
+node phase-change prototype, not resolved sea-ice dynamics or a complete mixed
+layer thermodynamic model. Isolated energy budgets, full-step application and
+checkpoint restart are covered by `tests/test_surface_energy.py`.
+
+## D29 — Spatial tracer diffusivity belongs inside a face flux
+
+An enhanced coastal diffusivity cannot multiply the cell Laplacian pointwise:
+`k(x,y)*lap(T)` does not telescope where k varies. With an enabled coastal band,
+the background plus enhanced coefficient is averaged onto wet faces, and the
+flux divergence uses the spherical face cosine and closed latitude boundaries.
+Area/node-thickness weighted heat changes cancel to roundoff, including land and
+meridional gradients. At this decision's original implementation the disabled
+band retained legacy constant diffusion; D31 supersedes that remaining path.
+
+## D30 — Runtime and scores must preserve evidence, not manufacture PASS
+
+Checkpoints contain all six state fields. Dynamic-ice restart requires an ice
+field rather than silently manufacturing zero thickness. Salt mass diagnostics
+use salinity/1000; new NPZ outputs declare schema 2 and kg units. Ice enthalpy
+change alone is not a heat closure residual: without integrated external heat
+input, residual fields are unavailable, not zero.
+
+External/MOM6 scoring shares one implementation. CF time units and calendars
+determine the day axis; absent units or invalid ordering are errors. The scoring
+PASS checks finite SST error and complete reference wet coverage, not climate
+skill or full model stability. Candidate gates reject missing/nonfinite budgets,
+and compare absolute wall bias so crossing from a small cold bias into a large
+warm bias cannot count as improvement. Undefined percentage drift is unavailable,
+not zero. Existing cell-based A2 smoothing is preserved for historical protocol
+compatibility, not asserted to be physically equal across resolutions.
+
+Tests, isolated wheel startup and integration settings/results are recorded in
+[`debug_validation_zh.md`](debug_validation_zh.md). Historical experiments are
+not retroactively relabelled as runs of the corrected model.
+
+## D31 — Default scalar diffusion must conserve too; square its flux operator
+
+The default constant-coefficient scalar Laplacian still used the expanded
+spherical metric form from the momentum operator. Its meridional metric term
+did not telescope under wet area/node-volume weights and could read dry
+neighbours even though the second differences were face-gated. Squaring that
+operator for scalar biharmonic diffusion inherited the defect. In the registered
+24x32x4 random-field fixture with land and dry bottom steps, net/absolute
+weighted tendency was -6.898e-6 for the old Laplacian and -1.970e-6 for its
+biharmonic. These are isolated-operator tests, not real climate drift estimates.
+
+All temperature/salinity background and coastal diffusion now share the wet-face
+flux operator. Scalar biharmonic uses its constant-unit-coefficient square:
+`-kappa_bi*D1(D1(C))`. D1 is self-adjoint and nonpositive in the wet-volume
+inner product, so the negative square conserves content and dissipates variance.
+No global mean correction is applied. Biharmonic does not guarantee monotonicity;
+its explicit half-step needs `kappa_bi*dt_half*abs(lambda_max(D1))**2 <= 2`.
+Momentum diffusion is unchanged and needs a separate spherical-vector audit.
+
+In the same masked fixture, the new signed ratios are 5.273e-18 and -1.302e-18.
+Tests cover constants, closed faces, self-adjointness, variance, complete linear
+half-steps, spherical accuracy and a tangent finite-difference check. The scalar
+manufactured-solution refinement ratios are 4.116 and 4.054. Four real-ETOPO,
+synthetically forced seven-day runs also pass with nonzero scalar biharmonic.
+This does not prove full-model budgets, real-forcing climate skill or a century
+of reliability. Protocol, reproducible analysis and limits are recorded in
+[`diffusion review`](../research/experiments/conservative_tracer_diffusion/review.md).
+
+## D32 — Record actual stages and sources; bookkeeping is not conservation
+
+Snapshot tendencies are not the time integral of the actual RK/Strang process.
+The optional `stage_budgets.make_budget_step(params)` executes the same core with
+a trace-local recorder. It separates linear diffusion, explicit sponge, nonlinear
+RK, free surface, polar cap/masks and dynamic ice. Surface sources are integrated
+at both actual RK evaluations, each with dt/2; ice heat is counted only in the
+ice operator when that mode disables dynamical heat. Runtime forcing/air targets
+are shared by the core and recorder, not read from an outdated closure.
+
+There are two independent residuals: endpoint change minus recorded stage changes
+checks bookkeeping; endpoint change minus declared external/restoring inputs
+checks the source budget. Internal diffusion, polar filtering and nonlinear
+transport are not automatically declared external sources. Signed and absolute
+per-step residual sums are both available, so cancellation cannot hide activity.
+Artificial diffusion heating and sub-update-quantum float32 input remain visible
+as unexplained residuals rather than triggering a mean correction.
+
+The metric is explicitly a fixed-node water/ice enthalpy proxy, nominal water
+salt mass, and separate eta displacement volume. It does not include a proper
+moving-layer tracer inventory or a full ice salt/freshwater reservoir. The new
+real-ETOPO one-day audit locates order 2e21 J of unexplained enthalpy change in
+the nonlinear stage even though stability passes. It is not marked conservation
+PASS. Resolving the free-surface/volume compatibility and process attribution is
+the next investigation, not something to erase with a diagnostic offset.
+
+Protocol and evidence:
+[`actual-stage budget review`](../research/experiments/actual_stage_budgets/review.md).
+
+## D33 — Attribute actual top transport; eta*C is not a conservation repair
+
+The read-only process table records actual RK/substep means for advection,
+convection, GM and Redi. The scalar operator optionally returns its actual top
+flux, averaged alongside tendencies when subcycled. Internal fluxes are not
+added to the external source table. Signed and absolute per-step accounting
+residuals are retained separately from the original source-budget residual.
+
+In the registered real-ETOPO synthetic-forcing one-day baseline/ice cases, the
+actual top heat transport explains the order 2e21 J fixed-node enthalpy gap;
+the remaining difference is order 4e8 J. This diagnoses a reference-domain
+boundary transport, not a new external heat source or a century drift estimate.
+The separate linearized surface inventory A*eta*C does not close the budget:
+adding it leaves approximately +2e21 J. Neither deleting the top term nor
+offsetting the diagnostic stock reconciles the continuity/tracer update.
+
+The next physical change must align cell volume and tracer/free-surface fluxes
+at the actual time levels. Existing GM/Redi and convection implementations are
+observed, not certified physically correct. The frozen fb322c6 comparison has
+zero state differences in four masked float32/float64 ice/no-ice fixtures.
+Registered protocol, independent checks and interpretation limits:
+[`nonlinear process review`](../research/experiments/nonlinear_process_budgets/review.md).
+
+## D34 — Project the native wet-face constraint with its volume adjoint
+
+`_column_divergence` now integrates the actual 3D wet-face `_divergence_h` with
+dz_node, matching the continuity diagnostic's top Fz. The pressure correction
+and Poisson use the same 3D wet-face gradient. `-A*B*G3` is symmetric positive
+on the compatible non-null subspace; constant/dry/grid null modes still exist.
+Only replacing B while retaining a broadcast 2D gradient is not sufficient.
+
+CG now has a dtype-aware stopping tolerance and an iteration cap. With the old
+zero tolerance, 1000 iterations can amplify roundoff or produce nonfinite output
+even in full-wet fixtures where 150 iterations were already accurate. The new
+direct gates verify native continuity, adjointness, energy, dry sentinel
+immunity, constants, zero RHS, float32 and a compatible-problem JVP.
+
+Actual stage-2 transport before/after is monitored without changing state or
+external sources. Local 150-cap residuals improve from approximately 6-7% to
+order 1e-10 in masked fixtures. However, the real-ETOPO one-day audit still has
+approximately 1.46% cumulative native projection residual and order 2e21 J
+fixed-node enthalpy imbalance. The algebraic repair is not production solver,
+moving-volume, century or climate qualification. Convergence/iteration
+provenance and physical transport/volume time coupling remain necessary.
+
+Protocol, failure reproduction, frozen comparison and actual evidence:
+[`column projection review`](../research/experiments/column_projection_consistency/review.md).
+
+## D35 — Immutable projection settings and native Jacobi; measure convergence
+
+The iteration cap, effective relative tolerance and preconditioner are explicit
+factory/CLI settings. The legacy OCEAN_PAV_NITER is resolved once at construction,
+not inside a JIT trace; an explicit cap takes precedence. Invalid settings fail
+construction. `projection_config(params)` records effective settings and cap
+origin, including the dtype tolerance floor. Legacy defaults remain none/150;
+they are not a production convergence qualification.
+
+Jacobi uses the exact diagonal of the existing native -A*B*G3 operator, validated
+against independent unit-basis matrix assembly. Only the Krylov preconditioner
+changes: no diagonal is added to the physical matrix and no source/mean or tracer
+is altered. Zero diagonal rows receive unit inverse scaling. The diagonal is
+precomputed with the grid and reused, rather than rebuilt inside each iteration.
+
+The read-only ledger records both cumulative before/after squared transport
+norms and the worst individual projection residual ratio. Accumulation must use
+`stage_budgets.accumulate_budget`: squared norms and inventories add, but maxima
+must use max, not sum. A successful CG return or a small interval-average residual
+does not certify every step. Local Jacobi JVP/VJP checks rely on converged solves,
+not on differentiation through an unconverged iteration cap.
+
+In 96 solves on 12 frozen cce8f87 real-grid stage-2 predictors, none/150 and
+jacobi/150 fail the registered native transport gates. Jacobi/300 also fails
+two float64 samples; the threshold is not relaxed. Both none/600 and jacobi/600
+pass the sampled float64/32 gates, with Jacobi reducing median CPU solve time at
+the same accuracy. This is one 2-degree, truncated, smoothed-bathymetry fixture,
+not a universal cap recommendation, GPU speedup, physical budget, century or
+climate result. The subsequent full one-day float64 cases meet the per-step
+projection gate, but float32 peaks of 5.43e-5/5.41e-5 fail the registered 5e-5
+gate despite passing the cumulative norm. Even converged float64 projection
+reduces the fixed-node heat gap by only about 0.028%; physical volume/time
+consistency remains absent. Do not extrapolate sampled solve gates to a full
+trajectory or confuse proxy-budget attribution with physical conservation.
+
+Registered research, gates and reproducible experiment:
+[`projection convergence protocol`](../research/experiments/projection_convergence/protocol.md).
+Actual evidence and failure boundaries:
+[`projection convergence review`](../research/experiments/projection_convergence/review.md).
+
+## D36 — Check actual transport and bound residual correction
+
+Float32 JAX CG can stop on a recursive residual below its requested tolerance
+while the true b-Apsi residual is approximately 14 times larger. On two frozen
+real-grid failure predictors the public solve and an independently instrumented
+recurrence agree exactly; the discrepancy is measured, not assumed from CG's
+return. A separate smooth-pressure masked regression fails the unchanged native
+5e-5 transport gate at 1.129e-4 without correction.
+
+The projection now checks actual reverse-cumsum top transport and performs at
+most `projection_max_refinements` additional velocity corrections, default 2.
+The internal trigger is max(1e-10,32*eps); it is not a guaranteed final tolerance.
+Correction solves retain the original RHS L2-based absolute stopping floor,
+rather than pursuing an arbitrarily small relative residual on a floating-point
+noise RHS in a semidefinite system. The no-floor negative control amplifies the
+native residual to 0.281/0.113 and is retained, not promoted.
+
+State/pressure precision, B/G3, wet faces, physical sources and tracer updates
+are unchanged. No regularization, global-mean deletion, top-flux removal or
+silent whole-model float64 conversion is used. Effective bound, trigger and
+absolute-floor scale are recorded with immutable configuration. A bound of 0
+reproduces the old unrefined solve. Legacy none/150 is still not globally
+qualified: bounded correction does not make an arbitrary low cap safe.
+
+Fixed-input comparison, 45 direct projection tests and 359 full-suite tests
+support the correction. Six actual one-day trajectories pass the unchanged
+per-step gate: float64/32 at 2 degrees and float32 at 1 degree, baseline/ice.
+Float32 peaks are approximately 4.1--4.3e-6 versus the old 5.4e-5 failures.
+All runtime hashes were checked. The approximately 2e21 J fixed-node heat proxy
+gap persists; physical volume/time coupling, other grids and whole-model
+differentiability are not qualified by those successes.
+Registered gates, retained failures and implementation scope:
+[`residual control protocol`](../research/experiments/projection_residual_control/protocol.md),
+[`residual control review`](../research/experiments/projection_residual_control/review.md).
+
+## D37 — Physical volumes and shared barotropic/tracer transport
+
+Node proxy, trapezoidal barotropic weights and wet pressure interfaces do not
+describe the same physical water column. A 50m column has 67.5m proxy thickness;
+final barotropic velocity cannot replace the actual substep mean driving eta.
+Neither a global correction nor adding linearized eta*C repairs this.
+
+`finite_volume` and `barotropic_transport` are core migration components:
+explicit spherical edges, physical partial cells and intersecting wet faces,
+primary V and N=V*C, shared Q, explicit water/content sources, material top/bottom,
+and layer-Q matching to the actual C-grid substep mean. Invalid CFL, depletion,
+dry sources/content and closed-face flux reject. Existing node initialization
+and checkpoints cannot be silently relabeled as cell means/face velocities.
+The production driver is not cut over yet.
+
+The first real-grid float32 surface check fails around 4.3e-6. Independent
+reproduction separates stored-volume quantization from V/A-h rounding. Surface
+diagnosis now uses explicit float64 division/subtraction, returns original dtype
+and requires X64 without changing global JAX settings. This is mixed arithmetic,
+not pure float32 or whole-state promotion. The original 2e-6 gate is unchanged.
+
+Eight 100-step real-ETOPO linear-wave/transport reference groups complete after
+this fix; six qualify. All surface/content-budget gates pass, but two nonuniform
+float32 groups fail the unchanged absolute boundedness gate, with salinity
+excursions up to 2.33e-5. Retain overall FAIL. Donor is a low-order foundation,
+not the final climate scheme; these references omit full momentum/physics.
+Mainline migration, whole-model conservation and the full roadmap remain open.
+
+Research, precommitted gates and retained failures:
+[`physical transport protocol`](../research/experiments/extensive_transport/protocol.md),
+[`precision follow-up`](../research/experiments/extensive_transport/precision_protocol.md),
+[`component review`](../research/experiments/extensive_transport/review.md).
+
+## D38 — Explicit inventory precision and all-direction shared FCT
+
+Frozen prescribed-Q controls distinguish arithmetic precision from stored V/N.
+Arithmetic64 with32 storage and promotion of only one inventory still violate
+the unchanged bound; both64 inventories and two32 expansions pass this fixture.
+Choose explicit V/N64 with eta/velocity32 permitted, not whole-state promotion.
+Two32 expansions save no inventory bytes and still reconstruct in64. The
+increased inventory memory and64 work are not a GPU performance qualification.
+
+`bounded_transport` reconstructs metric-weighted linear face concentrations,
+then limits shared antidiffusive amounts with positive/negative capacities
+collected over all six faces. Concentration capacities multiply NEW volume.
+Horizontal cell widths differ from center distances; vertical reconstruction
+uses current V/A. Closed neighbors cannot provide dry extrema or ghost slopes.
+Explicit sources can extend bounds to the forced low state, not silently refill
+content. SSPRK2 convexly averages BOTH V and N with frozen Q/sources and rejects
+invalid intermediate stages. No final clamp, mean repair or bathymetry floor.
+
+Same-dtype donor remains the reference default. Explicit inventory64 and
+centered_fct select the new coupled component. Seventeen direct tests include
+an independent scalar-loop oracle and local derivative checks. Cosine L2 ratios
+3.37/3.30 pass the preregistered3.2 gate but measured orders1.75/1.72 do not prove
+asymptotic2.00 or second-order coupled dynamics. Eight real-grid100-step groups
+pass with hashed inventory snapshots; current same-dtype donor still fails two
+patterned32 groups. Original frozen surface failures remain reproducible.
+
+These are migration components, not a qualified production ocean. Next integrate
+C-grid3D momentum and well-balanced pressure plus actual sources/ice/mixing and
+explicit initialization/restart semantics. Legacy budgets, century, independent
+climate/forecast, GPU/distributed and whole-model adjoint remain unqualified.
+Research, precision choice, unchanged gates and result scope:
+[`bounded transport protocol`](../research/experiments/bounded_extensive_transport/protocol.md),
+[`method selection`](../research/experiments/bounded_extensive_transport/selection.md),
+[`bounded transport review`](../research/experiments/bounded_extensive_transport/review.md).
+
+## D39 — Common-depth pressure and active linear momentum, with a physical FAIL
+
+Physical interfaces support analytic hydrostatic averages on the same wet depth,
+including partial cells/moving tops. Exact represented polynomial reference
+cell means are subtracted for reconstruction and their surface load is restored;
+this is not filtering physical density or claiming an arbitrary nonlinear EOS.
+Pressure's face-area mean enters fast momentum once; deviations drive layer
+shear, and existing shared fast mean Q advances V/N. The driver is not migrated.
+
+Weighted implicit rotation initially failed its VJP while forward residual,
+energy and FD passed. Same-matrix controls require BOTH zero CG starting guess
+and zero absolute tolerance: JAX's implicit transpose otherwise captures primal
+scales inappropriate for its RHS. Keep relative tol1e-13, independent true
+residual/floor and energy gates.31 direct/440 whole-suite tests and isolated
+installed active momentum step pass. Eight real-grid100x60s references pass
+registered inventory/pressure/energy gates with hashed snapshots; no century,
+whole-model conservation, full EOS or nonlinear-momentum qualification.
+
+Additional precommitted physical partial-face witness FAILS: with north velocity
+2m/s throughout a1m east face next to30m faces and f0.001/s, expected acceleration
+0.002m/s2 becomes0.006477m/s2. Rotation still preserves the chosen energy. The
+sqrt(W) interpolation's0.5*(1+sqrt(30)) amplification proves skew symmetry and
+dense algebra agreement are not sufficient physical consistency. Repair actual
+cross-face wet overlap/dual momentum volumes before nonlinear/production cutover;
+do not clip the force, damp it, remove shallow cells or relax the gate.
+
+Research, retained solver controls, real references and physical failure:
+[`momentum protocol`](../research/experiments/cgrid_hydrostatic_momentum/protocol.md),
+[`solver/input selection`](../research/experiments/cgrid_hydrostatic_momentum/selection.md),
+[`partial rotation protocol`](../research/experiments/cgrid_hydrostatic_momentum/partial_rotation_protocol.md),
+[`momentum review`](../research/experiments/cgrid_hydrostatic_momentum/review.md).
+
+## D40 — Physical wet momentum rectangles and shared Coriolis overlap
+
+D39's skew sqrt(W) interpolation is physically inconsistent on thin faces.
+Integrate each u/v pair on its actual common wet quadrant; use exact spherical
+half-cell areas and physical momentum volumes, not square-root neighbor-mass
+scaling. Prescribed f is cellwise constant; Earth f integrates each half-band.
+The normalized cross matrix and its exact transpose preserve midpoint energy
+without force clipping or extra damping. Geometry/mass uses actual initial V
+and remains frozen within this linear macrostep. New energy quadrature differs
+from the historical D39 definition; original failures/results remain retained.
+
+An independent host quadrant oracle, moving-top/land/partial64/32 cases and
+the original thin-face physical acceleration pass unchanged gates.46 direct/
+455 full tests and the same eight real references pass at this stage. The
+original3.24 amplification is reproduced from frozenf6bb886. This does not
+close pressure/continuity work, nonlinear dual-mass dynamics or production.
+Protocol and repair evidence:
+[`physical overlap protocol`](../research/experiments/cgrid_hydrostatic_momentum/overlap_protocol.md),
+[`physical-mass review`](../research/experiments/cgrid_hydrostatic_momentum/mass_review.md).
+
+## D41 — Pressure as the physical-mass adjoint of shared-Q divergence
+
+Exact spherical dual volume generally differs from face_area*point_distance.
+After D40, actual regular/irregular gravity work residuals0.001344/0.003076
+FAIL against1e-12 while offline contact/mass controls close near4e-17.
+Retain original FAIL; repair both hydrostatic and PUBLIC fast-wave gradients.
+
+Contact acceleration is -face_area*delta(P)/(rho0*physical_dual_volume), fast
+gravity is -g*face_length/dual_area*delta(eta). Factor horizontal half/dual areas
+and lengths once; rotation, pressure and gravity/CFL share them. Keep scalar
+center distances/reconstruction widths unchanged. No state repair, extra
+damping, shifted gate, mass reinterpretation or special legacy-gradient path.
+
+Before core edits7 new regressions fail. After repair, physical work residuals
+close to3.016e-17/4.087e-17; independently represented smooth spherical MMS
+ratios3.878--3.996 pass the preregistered3.5.11 direct pressure/AD cases,466 full
+regressions and same eight real-grid100x60s references pass at clean9a2f219; inventory snapshots and
+five verifier negative controls pass. Spatial smooth regular pressure accuracy
+is not arbitrary-cut-cell or full coupled order. Frozen geometry/linear stage
+does not prove full buoyancy energy, time-varying dual continuity, nonlinear
+momentum, production migration, century/climate/forecast or full adjoint/GPU.
+Protocol and complete scope/evidence:
+[`pressure work protocol`](../research/experiments/cgrid_hydrostatic_momentum/pressure_work_protocol.md),
+[`physical-mass review`](../research/experiments/cgrid_hydrostatic_momentum/mass_review.md).
+
+## D42 — Return actual shared Q; reject unmatched moving-dual mass
+
+The linear step already uses matched layer Q from the fast substep mean for
+V/N. Return that SAME immutable VolumeFluxes in MomentumResult, rather than
+rebuilding Q from endpoint velocity/new geometry. No arithmetic or state
+repair changes. Four missing-API regressions fail before implementation;
+61 adjacent cases and470 whole-suite tests pass afterward. The same eight
+real100x60s references pass at clean0eb56ed. Independent last-step local V/Q,
+column-Q, boundaries, inventories and hashes pass; nine negative controls reject.
+This verifier is not an independent replay of every intermediate step.
+
+Registered ordinary-MAC half-primary mass mapping FAILS for isolated rain on
+both regular and irregular/partial/land grids. Actual common-wet dual mass
+does not grow when only one side's sea surface rises; ordinary mapping
+predicts about1.45e12/4.14e12m3. Uniform-rain and scalar-source controls pass.
+The exact delta(beta*V) product including moving support explains the change,
+with explicit64-eps stored-inventory rounding floors. That algebra is NOT a
+physical momentum source or conservative nonlinear flux implementation.
+Retain the hypothesis FAIL; research actual moving supports/capacities and
+paired flux, pressure, rotation and fast projection before nonlinear migration.
+Production remains legacy; no century/climate/forecast/GPU/full-adjoint claim.
+Protocol and evidence:
+[`shared-Q/dual-mass protocol`](../research/experiments/cgrid_hydrostatic_momentum/dual_mass_protocol.md),
+[`moving-dual review`](../research/experiments/cgrid_hydrostatic_momentum/dual_mass_review.md).
+
+## D43 — Reconstruct actual shared Q only on wet contact traces
+
+Protocol3a91aed, implementationd7e24b9. Reconstruct SAME actual64 layer Q
+on W/E/S/N wet intervals; clipped vertical primitives match interface Q and
+mapped cell divergence without extending normal flux through blocked wedges.
+Return reconstruction from actual linear step and include validity in its
+acceptance. Current force, geometry, state arithmetic and sources unchanged.
+These are face-integrated mapped fluxes, NOT physical point velocities or a
+nonlinear moving momentum discretization. Constant area-coordinate transverse
+trace requires metric/dual-flux research before physical velocity promotion.
+
+13 direct/74 adjacent and483 full regressions pass; MMS and installed actual
+step pass. At cleand7e24b9 SAME eight real100x60s references pass. Independent
+last inventory/local-Q and wet-trace audits reject9+5 corruptions; recorded
+intermediate flags are not independent all-step replay. Four source/precision
+fixtures have bitwise V/N/u/v against immutable3a91aed source blobs; do not
+extend this assertion to all real references, whose JIT roundoff can differ.
+An initial end-of-process baseline manifest was rejected because it could
+hash edited rather than loaded code. Retain it and the initial JIT bool failure.
+Full physical support/forces/time coupling, nonlinear momentum and production
+migration remain required; no century/climate/forecast/GPU/whole-adjoint claim.
+Protocol and evidence:
+[`wet-trace protocol`](../research/experiments/cgrid_hydrostatic_momentum/wet_trace_protocol.md),
+[`wet-trace review`](../research/experiments/cgrid_hydrostatic_momentum/wet_trace_review.md).
+
+## D44 — Pair physical latitude-arc traces with actual half-prism Q
+
+Protocola3cad34, implementation4113bcc. Two constant physical normal-U
+counterexamples reject the old constant-area trace interpretation, with first
+sample about20.1percent relative error; prior mapped-Q contract was narrower.
+Arc weight w and matching north interior bubble preserve same contact Q,
+blocked-wall traces, vertical primitive and mapped divergence. Changing qx
+alone or pairing new bubble with old area-split transverse Q is rejected.
+
+Actual step now returns/checks full half-prism kinematic masses and paired
+dual Q from SAME primary Q; both outer wall halves included. North transverse
+east Q uses arc halves; mass/vertical Q use spherical area halves.89 final-source
+adjacent regressions, SAME eight real100x60s groups and independent last
+primary/metric/dual snapshots pass;9+10 corruptions reject. Four small frozen
+fixtures retain bitwise state, MMS and installed step pass. Full-suite handle
+completed exit0:498 tests,23 existing warnings,514.28s. No force/mass or state-source swap.
+
+This is NOT nonlinear momentum, physical wall/velocity/KE basis, moving time
+coupling or production migration. Existing D40/D41 force masses remain distinct
+from new kinematic mass. Pole endpoints reject explicitly, not cosine-floored;
+global topology remains required. Choose matched physical basis, forces,
+rotation and fast/time coupling before actual nonlinear/production cutover.
+Protocol and evidence:
+[`metric/dual protocol`](../research/experiments/cgrid_hydrostatic_momentum/metric_dual_protocol.md),
+[`metric/dual review`](../research/experiments/cgrid_hydrostatic_momentum/metric_dual_review.md).
+
+## D45 — Distinguish actual fluid velocity from material mean-Q transport
+
+Protocol9a7fa6b, corec08754d, runtime-coordinate addendumbe5e2f3 and evidence
+fix6bd7f50. Two naive qz/A surface witnesses FAIL before the physical API.
+Mapped qz was correctly scoped as transport; this does not prove an old driver
+velocity bug. New physical east/north/down and grid/relative frames use SAME
+actual Q, spherical metrics and signed top source, with lower incompressibility
+and all physical normal contacts checked in actual linear-step acceptance.
+
+42 direct,131 final-source adjacent and540 full regressions pass;23 old warnings.
+Four immutable-baseline small fixtures retain all16 state fields exactly.
+MMS4.30 and isolated installed active step pass. SAME eight6000s linear groups
+at clean6bd7f50 and independent last inventory/wet/dual/physical audits pass;
+34 deliberate corruptions reject. Initial endpoint records fail the host audit
+because reassociated coordinates cross discontinuous support; save actual
+compiled query depths and independently validate geometry, without changing
+field gates, widening support, clipping coordinates or altering Q/state.
+
+Independent physical-component integrals reject a missing1/cos(phi) in the
+kinetic probe and validate symmetric PSD Gram actions with nonzero mixed terms.
+Actual disturbed mean-Q fields differ from same-coefficient common-wet and
+half-prism diagonal proxies; no retrospective old discrete-norm bug is claimed.
+Choose the norm explicitly and derive its mass/pressure/rotation/wall/fast/time
+pairing before actual nonlinear momentum. Non-diagonal mass needs a newly
+derived projection, not the old diagonal mobility formula. Frozen mean-Q field
+evidence is NOT full ALE/GCL, endpoint velocity, energy exchange, production
+cutover, century/climate/forecast/GPU/whole-adjoint or industrial completion.
+
+[`Protocol`](../research/experiments/cgrid_hydrostatic_momentum/physical_velocity_protocol.md),
+[`coordinate addendum`](../research/experiments/cgrid_hydrostatic_momentum/physical_velocity_coordinate_addendum.md),
+[`review`](../research/experiments/cgrid_hydrostatic_momentum/physical_velocity_review.md).
+
+## D46 — Pair the selected kinetic norm with actual force and time equations
+
+Protocolf136f6f chooses the physical wet-contact field horizontal L2 norm,
+without retroactively invalidating FV quadratures. Core6fb6c88 integrates
+mixed mass/planetary rotation, pairs column B and pressure B^T, and advances
+layers/surface simultaneously by midpoint. Non-diagonal M requires a newly
+derived block solve, not old diagonal mobility; recover the old hydrostatic
+FORCE before using new mass. SAME midpoint Q drives actual bounded V/N.
+
+Addendumab125d9 preserves a small-force failure before increment stopping
+control with BOTH true residuals.33 direct tests and installed active step
+pass; full/eight-case qualification is pending. Frozen/cast/moving-mass work
+are DISTINCT, not whole nonlinear conservation. First near-rest host work
+audit FAILS; original partial evidence stays UNQUALIFIED. Addendumf6551fc
+registers actual eta0/independent representation validation before changes.
+No force, energy, source, field or continuity gate is weakened.
+
+Actual nonlinear/wall/buoyancy dynamics, production cutover and ALL industrial
+roadmap requirements remain necessary; local PASS is not century success.
+
+[`Protocol`](../research/experiments/cgrid_hydrostatic_momentum/paired_dynamics_protocol.md),
+[`increment addendum`](../research/experiments/cgrid_hydrostatic_momentum/paired_increment_addendum.md),
+[`eta addendum`](../research/experiments/cgrid_hydrostatic_momentum/paired_initial_eta_addendum.md),
+[`review`](../research/experiments/cgrid_hydrostatic_momentum/paired_dynamics_review.md).

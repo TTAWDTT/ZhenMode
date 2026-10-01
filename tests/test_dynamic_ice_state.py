@@ -12,6 +12,7 @@ from jax_solver_global import JaxStateG, _dynamic_ice_closure, make_solver_globa
 
 def _params(T_atm_value=-20.0, lambda_bulk=80.0, dt=864000.0):
     grid = all_wet_grid(nx=8, ny=8, nz=4)
+    grid = replace(grid, z=np.array([0., -5., -20., -50.]), dz=np.array([5., 15., 30.]))
     physics = replace(PhysicsConfig(), nu_h=0.0, nu_bi=0.0,
                       nu_v=0.0, kappa_h=0.0, kappa_v=0.0,
                       kappa_conv=0.0, kappa_gm=0.0, kappa_redi=0.0)

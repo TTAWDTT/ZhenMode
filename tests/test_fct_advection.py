@@ -117,3 +117,33 @@ def test_fct_bounded_flux_keeps_sharp_tracer_in_bounds():
     # The front should still move east, not freeze.
     assert float(np.max(T_new[:nx // 2, :, :])) > 10.0 + 1e-8
     assert float(np.max(T_new[nx // 2:, :, :])) <= 25.0 + 1e-12
+
+
+def test_fct_south_wall_does_not_read_north_wall():
+    grid = _synth_grid()
+    params = _make_params(grid, fct=True)
+    shape = (grid.nx, grid.ny, grid.nz)
+    velocity = jnp.zeros(shape).at[:, 1, :].set(1.)
+    transport = jnp.zeros((grid.nx, grid.ny, grid.nz + 1))
+    tracer = jnp.broadcast_to(10. + 2. * jnp.arange(grid.ny)[None, :, None], shape)
+    first = _advection_scalar(tracer.at[:, -1, :].set(0.), jnp.zeros(shape),
+                               velocity, transport, params)
+    second = _advection_scalar(tracer.at[:, -1, :].set(30.), jnp.zeros(shape),
+                                velocity, transport, params)
+    np.testing.assert_array_equal(first[:, :2, :], second[:, :2, :])
+
+
+def test_fct_wet_face_does_not_read_land_sentinel():
+    grid = _synth_grid()
+    params = _make_params(grid, fct=True)
+    shape = (grid.nx, grid.ny, grid.nz)
+    wet = jnp.ones(shape).at[0, :, :].set(0.)
+    params = params._replace(wet_mask_z=wet, wet_mask=wet[:, :, 0])
+    velocity = jnp.ones(shape).at[0, :, :].set(0.)
+    transport = jnp.zeros((grid.nx, grid.ny, grid.nz + 1))
+    tracer = jnp.full(shape, 20.).at[1, :, :].set(10.).at[2, :, :].set(12.)
+    first = _advection_scalar(tracer.at[0, :, :].set(0.), velocity,
+                               jnp.zeros(shape), transport, params)
+    second = _advection_scalar(tracer.at[0, :, :].set(15.), velocity,
+                                jnp.zeros(shape), transport, params)
+    np.testing.assert_array_equal(first[1:3], second[1:3])

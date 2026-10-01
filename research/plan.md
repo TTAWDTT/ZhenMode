@@ -1,8 +1,205 @@
-# Current Research Plan
+# Historical Research Log (not the current execution plan)
 
-Updated: 2026-09-26
+The entries below preserve the earlier FV/C-grid research sequence and its
+failed gates. Their "next" / "resume" statements are historical, not current
+execution instructions. The original-core repair path and measured status are
+documented in [the repair plan](../docs/legacy_core_repair_plan_zh.md) and
+[the repair record](../docs/legacy_core_repair_status_zh.md). The latest isolated
+weak-path code is indexed in [the r-star README](experiments/material_rstar_coordinates/README.md).
+Work is now assigned by user/manager messages; this log does not authorize
+automatic Goal continuation, new experiments or production promotion.
 
-## Active priority: external industrial comparison
+Historical entries last updated: 2026-09-29.
+
+## Earlier industrial-alignment research sequence (superseded)
+
+Next actual candidate is now `nonlinear_dynamics.nonlinear_momentum_surface_step`,
+registered by1c2572d before implementation. It evolves3-D dual m*u, moving eta
+and same-Q V/N; explicit FV norm is not the previous physical-field L2 norm.
+28 direct tests pass with independent face loops/source/row/work/wall audits,
+four deliberate defects rejected and nonlinear time/metric refinement.
+Changing spatial scoring domain initially FAILS; fixed physical locations,
+not relaxed threshold or altered dynamics, repair the comparison. Real-grid,
+full buoyancy/production qualification remain pending. New eight real10x60s
+groups retain overall FAIL: four disturbed histories and NumPy last-step
+audits PASS, eleven corruptions reject; four near-rest groups fail because
+tiny solved eta is lost on stored64 volume. Independent storage-work witness
+pinpoints error; no dynamics/gate relaxation. Isolated installed original
+rain-input dilution and compiled scalar compensated arithmetic pass, not
+complete state/physics proof. Follow registered storage precision protocol;
+full-suite56743/PID46616 is terminal exit0 with626 passed/18 old warnings,
+490.27s and matching launch/end src/test/pyproject hashes. Next implement a
+coherently registered compensated geometry/inventory/time/Q/FCT/restart state,
+not only rename the storage error; retain original eight-case FAIL meanwhile.
+Keep every complete industrial requirement below active.
+
+Latest qualification: specific paired-reference76252/PID28884 completes all
+eight100x60s groups; independent host39846 passes all eight last-step aggregates
+and9 corruptions reject. This is frozen linear6000s pergroup, NOT full nonlinear
+or century qualification. Actual rain/source momentum witness still FAILS.
+While that process was live and its hashed files protected, OMIP/Xarray research
+and protocols4ae565c/540bee9 precede shared scoring correctioncbfbb0b. New wet-area
+and coordinate angular metrics reject mixed definitions/domains/references;
+66 adjacent tests pass; specific full-suite61319 completes exit0 with598 passed,
+18 deprecation warnings and unchanged launch/end source hashes. Initialization references,
+record-count averages and endpoint inventory percentages remain diagnostics,
+not independent climate, time-bounds means or closed budgets. Complete acceptance
+requirements are in `docs/century_climate_acceptance_zh.md`.
+Resume ACTUAL nonlinear momentum/source/moving kinetic-
+buoyancy derivation and production migration; this necessary scoring correction
+is not an easier substitute for completing the full industrial objective.
+Earlier pending entries below are chronological milestone observations.
+
+Latest actual paired-dynamics milestone2026-09-29: protocolf136f6f,
+increment addendumab125d9 and core6fb6c88. Mixed physical-field mass and
+planetary rotation pair with B/B^T and simultaneous midpoint layer/surface
+dynamics; SAME actual mean Q advances V/N.33 direct and installed active
+step pass; legacy MMS4.30. First real rest100x60s passes runtime but FAILS
+independent near-rest work evidence, so partial report remains UNQUALIFIED
+and PID33232 is intentionally stopped. Addendumf6551fc preregisters exact
+starting-eta recording/independent geometry and global mean checks. No gate
+relaxation or state repair. Pre-eta full-suite handle42215 completes:573 pass,
+23 old warnings,673.50s with unchanged source hashes. Exact eta recording
+782cd63 passes80 final-source adjacent tests; final full/eight-case pending.
+Eight ONE-STEP real-grid runtime and independent host audits pass and reject9
+corruptions; maximum momentum3.11e-15/energy5.04e-16. New eight100-step and
+final full-suite processes remain pending. This is not century/production proof.
+Subsequent final full-suite handle91137 completes574 pass/23 old warnings,
+863.58s, unchanged ADAC8C8C/4418BBA4 launch/end source hashes. Two new100-step64
+cases and host audits pass, remaining groups pending. Preregistered actual
+rain/source witness9259164 has axial relative gain1.2e-5 despite zero frozen
+work under assumed zero incoming momentum; pinned f52737a report is the
+authority. Nonlinear/source/moving kinetic-buoyancy coupling remains REQUIRED.
+Final installed active eta64/Q64/inventory64/momentum32 step passes. Nonlinear
+moving-mass/buoyancy primary research is registered in
+`research/literature/nonlinear_paired_energy_20260929.md`; frozen quadratic
+midpoint cannot be blindly extended to a cubic piecewise moving Hamiltonian.
+See `research/experiments/cgrid_hydrostatic_momentum/paired_dynamics_review.md`.
+Qualify the corrected actual coupled reference, then ACTUAL nonlinear
+momentum/moving kinetic-buoyancy exchange and production cutover; do not
+return to indefinite read-only prototypes or shrink the full industrial goal.
+
+Latest actual physical-frame milestone2026-09-29: protocol9a7fa6b, corec08754d,
+coordinate evidence fix6bd7f50. Actual linear step returns/checks physical
+east/north/down, grid and relative frames from SAME mean Q/source.42 new,
+131 final-source adjacent and540 full tests pass; SAME eight100x60s real cases,
+last host inventory/wet/dual/physical and actual-Q kinetic audits pass.34
+corruptions reject. First endpoint/kinetic failures remain retained. Four
+small fixtures retain exact states; MMS and installed active step pass.
+See `research/experiments/cgrid_hydrostatic_momentum/physical_velocity_review.md`.
+Next choose the kinetic norm and derive matching mass/pressure/rotation/wall
+and fast/moving-time/source equations, then implement ACTUAL nonlinear
+momentum and production migration. No blind diagonal mobility/mass swap,
+indefinite unused prototype or narrowing of the complete industrial goal.
+
+Latest metric/spatial milestone2026-09-29:4113bcc replaces constant-area
+longitude traces by latitude-arc weights with paired interior north correction;
+actual linear step returns/checks full half-prism mass and dual Q from SAME
+primary Q. Two physical constant-U witnesses first fail old code.89 final-source
+adjacent regressions, SAME eight real100x60s groups and host metric/dual plus
+inventory audits pass;19 corruptions reject. Four small fixtures keep exact
+states, MMS and installed active step pass;498 full tests/23 old warnings pass.
+See `research/experiments/cgrid_hydrostatic_momentum/metric_dual_review.md`.
+Full half-prism kinematic mass is NOT substituted into current force masses.
+Next physical velocity/wall/kinetic representation and paired force/rotation/
+fast/moving-time/source coupling for ACTUAL nonlinear momentum and driver
+migration; full industrial scope and every unresolved gate remain intact.
+If the physical kinetic basis requires a coupled non-diagonal mass, re-derive
+the fast projection rather than reuse the diagonal C=sum(S^2/M) formula.
+
+Latest actual-path milestone2026-09-29:d7e24b9 implements shared-Q traces
+restricted to true wet contacts and a divergence-compatible vertical primitive,
+returned and checked by the ACTUAL linear step.13 new/74 adjacent/483 full
+tests, MMS, isolated installed step and SAME eight real100x60s references pass.
+Independent last-snapshot audits reject9 inventory/Q plus5 wet corruptions.
+Four small source/precision fixtures have bitwise states against immutable
+3a91aed blobs; the first late source manifest is rejected and retained.
+See `research/experiments/cgrid_hydrostatic_momentum/wet_trace_review.md`.
+Frozen mapped trace is NOT point velocity or nonlinear momentum. Next metric
+physical reconstruction and paired dual Q, mass/force/fast/time coupling, then
+actual nonlinear momentum and production cutover; full industrial scope intact.
+
+Latest representation selection2026-09-29: precommittedc6aae95/1b129ef,
+offline clean3768060 tests complete wet half-prisms on ALL four rain and eight
+actual real-Q snapshots. Kinematic mass/dual-flux and paired column mobility
+pass, including25 direct and12 independent matrix negative controls. Plain
+RT0 trace extension into blocked bottom wedges is explicitly rejected; this
+is hypothetical extrapolation, not actual core wall leakage. New support
+cannot reuse old uniform column mode or old fast capacity. See
+`research/experiments/cgrid_hydrostatic_momentum/staggered_support_review.md`.
+Before actual nonlinear migration, construct trace-compatible wet-boundary
+flux/velocity support and wall reactions with matched forces and moving time
+coupling; kinematic/algebraic evidence does not qualify physical accuracy.
+
+Latest coupling milestone2026-09-29:0eb56ed returns the SAME actual layer Q
+used by V/N. Four new API/source regressions,61 adjacent and470 full tests
+pass; MMS and isolated installation pass. Same eight real100x60s cases pass
+with independently verified last local V/Q, column mean Q, boundaries,
+inventory/source/snapshot hashes and nine verifier negative controls. See
+`research/experiments/cgrid_hydrostatic_momentum/dual_mass_review.md`.
+Registered ordinary-MAC mapping on moving common-wet masses FAILS under
+isolated rain on both grids while scalar/kinematic controls pass. Do not
+turn support-exchange algebra into a fake momentum source. Select physical
+moving staggered support and matched dual flux, pressure, rotation and fast
+projection before actual nonlinear/production migration; no claim from short
+linear references or from the green suite. Complete roadmap remains active.
+
+Latest physical milestone2026-09-29: repaired actual partial-face Coriolis with
+physical wet-quadrant overlap atf26d686, then repaired hydrostatic/PUBLIC fast
+pressure as the physical-mass adjoint of shared-Q divergence at9a2f219. Retain
+original3.24 acceleration amplification and0.00134/0.00308 pressure-work FAIL.
+Thin force matches at2.22e-16 relative; work closes near4e-17 without damping;
+smooth regular pressure MMS ratios3.88--4.00. Same eight real100x60s cases pass
+at clean9a2f219 with independently verified snapshots/hashes/negative controls.
+11 new force/AD tests,466 full regressions with23 existing warnings, legacy MMS
+and isolated installed active step pass; full-suite log is
+results/industrial_alignment/cgrid_pressure_mass_full_tests.log.
+See `research/experiments/cgrid_hydrostatic_momentum/mass_review.md`. Next derive
+and implement actual scalar-Q/moving-dual-mass nonlinear momentum and buoyancy
+energy pairing, then complete real EOS/sources/mixing/ice and actual production
+initialization/checkpoint/driver cutover. Fixed linear references are NOT full
+physical momentum qualification or a reason to leave an unused alternative
+kernel indefinitely. Whole industrial roadmap and all unresolved goals remain.
+
+The complete active objective and acceptance requirements are preserved in
+`docs/industrial_alignment_roadmap_zh.md`. Historical narrow slices below are
+research steps, not a redefinition of success. Historical surface/ice and
+comparison scores predate corrected kernels and must not qualify current code.
+Registered scalar diffusion gates have passed. The actual-stage audit exposes
+an unresolved nonlinear budget rather than proving conservation. Native
+wet-face projection and bounded original-RHS residual correction now pass six
+actual one-day per-step gates (float64/32 at 2 degrees, float32 at 1 degree,
+baseline/ice); 359 full-suite tests pass. Legacy none/150 is not qualified.
+Recursive versus true CG residual separation and unsafe no-floor corrections
+are retained in `research/experiments/projection_residual_control/review.md`.
+The geometry/time-average witnesses now lead to implemented physical migration
+components, not another read-only proxy. `finite_volume` and
+`barotropic_transport` implement true partial-cell contents and shared actual
+substep Q. The production driver has NOT migrated. Registered real-grid linear
+wave/transport reference groups are 6/8: guard-precision surface diagnosis passes
+the unchanged identity gates, but nonuniform float32 bounds still fail. See
+`research/experiments/extensive_transport/review.md`; retain overall FAIL and the
+approximately 2e21 J production fixed-node heat proxy gap. Next research finite-
+precision content/volume bounds and higher-order shared fluxes, then C-grid 3D
+momentum/well-balanced partial-cell pressure and explicit physical source/ice,
+initialization and checkpoint cutover. Do not leave an unused qualified
+prototype or label the old mainline physically repaired. That phase had392 tests.
+The subsequent explicit inventory64/centered-FCT component now passes8/8 of the
+same100-step groups; native same-dtype donor remains6/8, not relabeled PASS.
+Seventeen new independent tests and409 full-suite tests pass. Cosine ratios
+3.37/3.30 pass the registered gate but measured orders1.75/1.72 are not a strict
+asymptotic2.00 demonstration. See bounded_extensive_transport/review.md. The next
+implementation must advance C-grid3D momentum/well-balanced partial-cell pressure
+and actual production coupling, not extend a separate unused reference forever.
+Research and code mapping are recorded in
+`research/literature/volume_transport_consistency_20260928.md`. Existing 2-degree
+reports actually use 66 latitude rows, not the previously mistyped 65; the
+1-degree domain differs, so this is not a same-domain convergence claim.
+Real-forcing century
+runs, independent climate/forecast skill, full geometry/physics, fair GPU and
+distributed scaling, and whole-model differentiability remain required.
+
+## Historical priority: external industrial comparison
 
 The current annual candidate is not directly comparable with mature ocean
 models. The next major step is a same-protocol slice against one mature model,
@@ -17,7 +214,7 @@ duration, diagnostics, and stability gates. Details:
 Locked diagnostic baseline: candidate_65n_07_gm0
 Runner: scripts/run_candidate_baseline.sh
 
-## Ordered next steps
+## Earlier plan entries
 1. **Reproduce the candidate baseline.** [COMPLETE 2026-09-22]
    Run one 365d integration with `candidate_65n_07_gm0`.
    Confirm global A2 RMSE is near the previous `1.336 C` and the North
@@ -343,5 +540,3 @@ Runner: scripts/run_candidate_baseline.sh
     `-0.1443 C`. It passes the 30d stability and benchmark gates. Promote the
     closure to the 365d A/B check, but do not promote it as production default
     until that check repeats.
-
-

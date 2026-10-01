@@ -609,3 +609,550 @@ wind_only_050:
     mpi_ranks: 4
     verdict: PASS
   comparability: "wind-forced dynamic control only; not a climate benchmark"
+
+industrial_alignment_20260928:
+  status: active_not_industrial_qualified
+  objective: "Autonomously align with and exceed industrial models; research before every major action."
+  roadmap: "docs/industrial_alignment_roadmap_zh.md"
+  historical_evidence_boundary: "Earlier scores and model comparisons predate corrected surface, runtime and diffusion kernels; retain as historical evidence, not current qualification."
+  scalar_diffusion:
+    status: registered_local_gates_passed
+    protocol_commits: ["5a0b6b0", "ef62d56"]
+    review: "research/experiments/conservative_tracer_diffusion/review.md"
+    regression_tests: 36
+    full_tests_passed: 271
+    masked_old_budget_ratios: [-6.898e-6, -1.970e-6]
+    masked_new_budget_ratios: [5.273e-18, -1.302e-18]
+    spherical_refinement_ratios: [4.116, 4.054]
+    smoke: "Real ETOPO, synthetic forcing, four 1-day and four nonzero-biharmonic 7-day runs passed."
+  actual_stage_audit:
+    status: observability_passed_conservation_not_qualified
+    protocol_commit: "32d09bd"
+    review: "research/experiments/actual_stage_budgets/review.md"
+    regression_tests: 27
+    latest_full_tests_passed: 298
+    one_day_cases: ["baseline", "mixed_layer_dynamic_ice"]
+    forcing: synthetic_not_climate_validation
+    unresolved_fixed_node_enthalpy_J: [-2.082634e21, -2.095824e21]
+    implicated_stage: nonlinear
+    conservation_pass: false
+  nonlinear_process_audit:
+    status: top_transport_attributed_moving_volume_not_closed
+    protocol_commit: "77a4215"
+    review: "research/experiments/nonlinear_process_budgets/review.md"
+    regression_tests: 16
+    latest_full_tests_passed: 314
+    frozen_kernel_state_comparison: "fb322c6; all six fields have zero maximum difference in four masked float32/float64 ice/no-ice cases"
+    one_day_top_heat_transport_J: [-2.082634403e21, -2.095823988e21]
+    remaining_heat_after_linearized_surface_inventory_J: [1.996794974e21, 2.029398312e21]
+    conservation_pass: false
+    separate_convection_suspect: "kappa and dt both divided by conv_nsub; physical coefficient fidelity not yet verified"
+  native_column_projection:
+    status: algebra_corrected_production_convergence_not_qualified
+    protocol_commit: "11b5609"
+    review: "research/experiments/column_projection_consistency/review.md"
+    initial_failed_tests: 7
+    regression_tests: 16
+    latest_full_tests_passed: 330
+    masked_old_constraint_relative_linf_error: [0.3123, 0.3562, 0.6964]
+    masked_old_150_native_area_l2_residual: [0.05889, 0.06649, 0.07160]
+    masked_corrected_150_native_area_l2_residual: [8.986e-11, 1.578e-10, 2.090e-10]
+    one_day_real_grid_projection_residual_ratio: [0.014638, 0.014628]
+    one_day_fixed_node_enthalpy_residual_J: [-2.028493073e21, -2.043024553e21]
+    additional_float32_one_day_stability: passed_not_conservation
+    float32_eta_volume_residual_m3: [-3.501705e8, -3.306940e8]
+    float32_nonlinear_accounting_heat_residual_J: [-1.876769e18, -1.878697e18]
+    conservation_pass: false
+  projection_convergence:
+    status: float64_one_day_gate_passed_float32_worst_step_failed_not_conservation
+    protocol_commit: "0bdc47d"
+    implementation_commit: "02a385b"
+    precision_protocol_commits: ["e72a3ed", "2e74ba7"]
+    review: "research/experiments/projection_convergence/review.md"
+    latest_full_tests_passed: 350
+    fixed_predictors: 12
+    fixed_rhs_solves: 96
+    selected_configuration: "Jacobi/600, explicit provenance; legacy default none/150 is not qualified"
+    float64_actual_worst_step_relative_residual: [1.088623e-12, 1.091782e-12]
+    float32_actual_worst_step_relative_residual: [5.429311e-5, 5.411247e-5]
+    unchanged_float32_gate: 5.0e-5
+    float64_fixed_node_enthalpy_residual_J: [-2.027929320e21, -2.042456600e21]
+    float32_eta_volume_residual_m3: [-3.334187e8, -3.416929e8]
+    conservation_pass: false
+    capture_boundary: "Materializing internal outputs changes float32 compilation by about one temperature ULP; snapshots are not bitwise batch replay and cannot replace original gate failures"
+    precision_probe:
+      status: fixed_rhs_solver_path_implicated_not_whole_model_precision_qualified
+      reference_single_step_failure_counts: [18, 17]
+      worst_reference_steps: [13, 9]
+      original_snapshot_native_residual: [5.482235e-5, 5.520260e-5]
+      float64_solve_quantized_state_native_residual: [3.034089e-7, 2.129804e-7]
+      transport_metric_quantization_norm: [2.14958e-8, 1.94760e-8]
+      capture_bitwise_state_preserving: false
+    volume_research: "research/literature/volume_transport_consistency_20260928.md"
+  projection_residual_control:
+    status: six_actual_short_trajectory_projection_gates_passed_not_conservation
+    protocol_commit: "3804066"
+    implementation_commit: "2042ce1"
+    review: "research/experiments/projection_residual_control/review.md"
+    fixed_inputs: 14
+    fixed_rhs_solves: 86
+    direct_projection_tests: 45
+    latest_full_tests_passed: 359
+    recursive_residual_at_failed_predictors: [3.647447e-6, 3.571851e-6]
+    true_matrix_residual_at_same_predictors: [4.957070e-5, 4.993181e-5]
+    unsafe_no_absolute_floor_native_residual: [0.280783, 0.112927]
+    configuration: "Jacobi/600; maximum 2 native-transport corrections; original RHS L2 absolute stopping floor; no whole-state precision change"
+    float64_2deg_actual_worst_step: [1.089357e-12, 1.091198e-12]
+    float32_2deg_actual_worst_step: [4.318464e-6, 4.321725e-6]
+    float32_1deg_actual_worst_step: [4.149746e-6, 4.141430e-6]
+    runtime_source_hashes_verified: true
+    conservation_pass: false
+    default_scope: "Legacy none/150 remains unqualified; these actual cases are explicitly configured"
+  volume_transport_invariants:
+    status: independent_missing_invariants_reproduced_not_repaired
+    protocol_commit: "c3c47dd"
+    tool_commit: "82e9ce0"
+    review: "research/experiments/volume_transport_consistency/review.md"
+    full_wet_physical_depth_m: 50.
+    full_wet_node_proxy_depth_m: 67.5
+    sheared_full_wet_column_vs_barotropic_relative_error: 0.487805
+    sheared_stair_column_vs_barotropic_relative_error: 0.657422
+    actual_substep_mean_continuity_residual: 1.481133e-14
+    endpoint_instead_of_mean_continuity_error: 0.00594796
+    real_2deg_grid: [180, 66, 14]
+    previous_text_shape_error: "JSON/NPZ always recorded 66 rows; old text said 65. Retained protocol discrepancy; centers +/-65, full-cell edges +/-66."
+    real_2deg_node_proxy_column_depth_error_5_95_percentiles_m: [-900.974349, 924.668275]
+    real_2deg_node_proxy_volume_relative_difference: 0.01349908
+    conservation_pass: false
+  extensive_transport:
+    status: physical_components_6_of_8_reference_groups_passed_float32_bounds_failed_production_unmigrated
+    protocol_commit: "7f9a52c"
+    component_commit: "1d04acf"
+    precision_protocol_commit: "6f5b89e"
+    surface_guard_commit: "cb38ba7"
+    review: "research/experiments/extensive_transport/review.md"
+    direct_tests_passed: 33
+    pre_guard_full_tests_passed: 389
+    latest_full_tests_passed: 392
+    mms: ALL_PASS_ratio_4.30
+    installed_module_imports: passed_isolated_python
+    reference_groups: 8
+    qualified_reference_groups: 6
+    steps_per_group: 100
+    dt_seconds: 60.
+    real_grid_shape: [180, 66, 14]
+    physical_geometry: "exact spherical areas; partial layers to 8000m; material top/bottom; layer Q matches actual barotropic mean"
+    physics_scope: "linear gravity waves and synthetic two-tracer transport only; not full ocean momentum/forcing"
+    state_precision: "float64 or float32 V/N/eta/velocity storage; explicit float64 surface ratio arithmetic; X64 required"
+    original_float32_surface_failure: [4.246825e-6, 4.395836e-6]
+    corrected_float32_surface_maximum: [1.573215e-6, 1.556849e-6]
+    unchanged_float32_surface_gate: 2.0e-6
+    worst_float64_content_budget_relative_error: 2.930862e-14
+    worst_float32_content_budget_relative_error: 3.073009e-8
+    float32_nonuniform_salinity_undershoot: [2.331714e-5, 2.166751e-5]
+    unchanged_float32_absolute_bound_gate: 2.0e-6
+    source_hashes_verified_at_reference_commit: cb38ba7
+    production_cutover: false
+    whole_model_conservation_pass: false
+  bounded_extensive_transport:
+    status: explicit_inventory64_centered_fct_eight_component_groups_passed_production_unmigrated
+    protocol_commit: "8803e73"
+    precision_selection_commit: "71fc1c9"
+    implementation_commit: "2b9d632"
+    review: "research/experiments/bounded_extensive_transport/review.md"
+    direct_tests_passed: 17
+    latest_full_tests_passed: 409
+    old_warnings: 23
+    precision_control_cases: 12
+    native32_patterned_bound_excursion: 9.911659e-5
+    arithmetic64_with32_storage_repairs_bound: false
+    single_inventory_promotion_repairs_bound: false
+    reference_groups_passed: 8
+    steps_per_group: 100
+    dt_seconds: 60.
+    barotropic_substeps: 4
+    inventory_dtype: float64
+    momentum_dtype: [float64, float32]
+    maximum_surface_identity_mixed: 2.000e-7
+    worst_content_budget_relative: 5.029504e-14
+    maximum_absolute_final_bound_excursion: 3.268497e-13
+    volume_budget_delta_m3_range: [-4.228515625, 3.26416015625]
+    cosine_L2_errors: [0.007342957151, 0.002177976873, 0.000660276018]
+    cosine_refinement_ratios: [3.371457816, 3.298585462]
+    asymptotic_second_order_proven: false
+    retained_current_same_dtype_donor_groups_passed: 6
+    frozen_original_surface_failures_reproduced: true
+    snapshot_inventory_gates_independently_verified: true
+    verifier_negative_metadata_controls: 5
+    isolated_installed_fct_step: passed
+    mms: ALL_PASS_ratio_4.30
+    production_cutover: false
+    century_climate_gpu_full_adjoint_pass: false
+  cgrid_hydrostatic_momentum_pre_overlap:
+    status: physical_partial_face_rotation_failed_despite_eight_linear_references
+    protocol_commit: "047aed7"
+    solver_input_selection_commit: "6a67a99"
+    implementation_commit: "41ccecd"
+    partial_face_protocol_commit: "0481332"
+    review: "research/experiments/cgrid_hydrostatic_momentum/review.md"
+    direct_tests_passed: 31
+    adjacent_direct_tests_passed: 81
+    latest_full_tests_passed: 440
+    old_warnings: 23
+    reference_groups_passed: 8
+    steps_per_group: 100
+    dt_seconds: 60.
+    barotropic_substeps: 4
+    inventory_pressure_fast_dtype: float64
+    layer_velocity_dtype: [float64, float32]
+    worst_content_budget_relative: 8.750697e-18
+    volume_budget_delta_m3_range: [-0.012939453125, 0.000457763671875]
+    maximum_surface_identity_error_m: 5.412337e-16
+    maximum_bound_excursion: 2.344791e-13
+    reference_runtime_source_and_snapshot_hashes_verified: true
+    verifier_negative_controls: 5
+    retained_original_rotation_vjp_dot_error: 0.2858719181
+    corrected_rotation_vjp_dot_error: 2.520578e-15
+    absolute_tolerance_only_repairs_adjoint: false
+    partial_coriolis_expected_m_s2: 0.002
+    partial_coriolis_measured_m_s2: 0.006477225575
+    partial_coriolis_relative_error: 2.238612788
+    partial_coriolis_relative_gate: 1.0e-8
+    partial_coriolis_rotation_energy_error: 8.448034e-16
+    partial_coriolis_physical_consistency_pass: false
+    mms: ALL_PASS_ratio_4.30
+    isolated_installed_active_momentum_step: passed
+    full_physical_momentum_qualification: false
+    production_cutover: false
+    century_climate_gpu_full_adjoint_pass: false
+  cgrid_physical_overlap:
+    status: registered_physical_rotation_gates_pass_not_full_momentum
+    protocol_commit: "b55a130"
+    implementation_commit: "f26d686"
+    direct_tests_passed: 46
+    full_tests_passed: 455
+    old_warnings: 23
+    reference_groups_passed: 8
+    original_thin_face_failure_retained: true
+    physical_thin_face_relative_error: 2.220446e-16
+    relative_gate: 1.0e-8
+    changed_energy_definition: physical_wet_half_cell_rectangles
+    nonlinear_moving_dual_mass_qualified: false
+  cgrid_physical_pressure_work:
+    status: registered_frozen_pressure_work_and_regular_spatial_accuracy_pass
+    protocol_commit: "62d9b8d"
+    failure_and_accuracy_selection_commit: "fcd9761"
+    implementation_commit: "9a2f219"
+    review: "research/experiments/cgrid_hydrostatic_momentum/mass_review.md"
+    original_relative_work_failures: [0.001343973494, 0.003075742265]
+    repaired_relative_work_errors: [3.015855e-17, 4.087068e-17]
+    unchanged_relative_work_gate: 1.0e-12
+    spatial_east_ratios: [3.986720, 3.996385]
+    spatial_north_ratios: [3.878089, 3.935178]
+    preregistered_spatial_ratio_gate: 3.5
+    direct_pressure_tests_passed: 11
+    full_tests_passed: 466
+    old_warnings: 23
+    full_tests_log: "results/industrial_alignment/cgrid_pressure_mass_full_tests.log"
+    reference_groups_passed: 8
+    steps_per_group: 100
+    dt_seconds: 60.
+    barotropic_substeps: 4
+    inventory_pressure_fast_dtype: float64
+    layer_velocity_dtype: [float64, float32]
+    reference_runtime_git_clean: true
+    runtime_source_and_snapshot_hashes_verified: true
+    verifier_negative_controls: 5
+    worst_content_budget_relative: 4.953230e-18
+    volume_budget_delta_m3_range: [-0.00537109375, 0.0130615234375]
+    maximum_surface_identity_error_m: 5.412337e-16
+    maximum_bound_excursion: 2.344791e-13
+    maximum_stored_rotation_energy_error: 2.183385e-9
+    legacy_mms: ALL_PASS_ratio_4.30
+    isolated_installed_active_step: passed
+    full_buoyancy_energy_qualified: false
+    nonlinear_moving_dual_mass_qualified: false
+    production_cutover: false
+    century_climate_forecast_gpu_full_adjoint_pass: false
+  cgrid_shared_flux_and_moving_dual_mass:
+    status: actual_shared_flux_verified_ordinary_mac_moving_support_hypothesis_failed
+    protocol_commit: "32a2548"
+    implementation_commit: "0eb56ed"
+    review: "research/experiments/cgrid_hydrostatic_momentum/dual_mass_review.md"
+    new_direct_tests_passed: 4
+    adjacent_direct_tests_passed: 61
+    full_tests_passed: 470
+    old_warnings: 23
+    full_tests_log: "results/industrial_alignment/cgrid_shared_flux_full_tests.log"
+    reference_groups_passed: 8
+    steps_per_group: 100
+    dt_seconds: 60.
+    barotropic_substeps: 4
+    inventory_shared_flux_dtype: float64
+    layer_velocity_dtype: [float64, float32]
+    independently_verified_scope: final_inventory_geometry_and_last_local_flux_snapshot_not_every_step
+    verifier_negative_controls: 9
+    retained_moving_dual_diagnostic_status: FAIL
+    diagnostic_positive_controls_pass: true
+    diagnostic_groups: 4
+    isolated_source_ordinary_mac_relative_residual: [1., 1.]
+    isolated_source_actual_common_wet_mass_change_m3: 0.
+    independent_geometry_exchange_negative_controls: 8
+    legacy_mms: ALL_PASS_ratio_4.30
+    isolated_installed_actual_shared_flux_step: passed
+    nonlinear_momentum_implemented: false
+    production_cutover: false
+    century_climate_forecast_gpu_full_adjoint_pass: false
+  cgrid_half_prism_support_selection:
+    status: KINEMATIC_PASS_PHYSICAL_RECONSTRUCTION_UNQUALIFIED
+    protocol_commits: ["c6aae95", "1b129ef"]
+    authoritative_probe_commit: "3768060"
+    review: "research/experiments/cgrid_hydrostatic_momentum/staggered_support_review.md"
+    actual_input_snapshot_groups: 12
+    input_source_and_snapshot_hashes_verified: true
+    physical_half_prism_oracle_and_all_dual_stock_pass: true
+    local_shared_flux_commutation_and_mass_increment_pass: true
+    direct_flux_and_latitude_negative_controls: 25
+    separate_sparse_matrix_negative_controls: 12
+    independent_matrix_maximum_defect: 1.110223e-16
+    maximum_mass_gate_tolerance_fraction: 0.02927304
+    offline_column_mobility_and_work_pairing_pass: true
+    old_uniform_mode_cross_energy_on_candidate_mass_maximum: 0.7877442
+    old_vs_candidate_capacity_symmetric_relative_difference_maximum: 0.3106551
+    metrics_use_constructed_velocity_not_actual_trajectory_error: true
+    plain_rt0_contact_trace_qualified: false
+    hypothetical_unsmoothed_wall_trace_maximum_m3_s: 659793.3
+    actual_core_wall_leakage_claimed: false
+    nonlinear_momentum_implemented: false
+    production_cutover: false
+    century_climate_forecast_gpu_full_adjoint_pass: false
+  cgrid_wet_contact_trace:
+    status: actual_frozen_spatial_trace_pass_not_point_velocity_or_nonlinear_momentum
+    protocol_commit: "3a91aed"
+    implementation_commit: "d7e24b9"
+    review: "research/experiments/cgrid_hydrostatic_momentum/wet_trace_review.md"
+    new_direct_tests_passed: 13
+    adjacent_direct_tests_passed: 74
+    full_tests_passed: 483
+    old_warnings: 23
+    full_tests_log: "results/industrial_alignment/wet_trace_full_tests.log"
+    reference_groups_passed: 8
+    steps_per_group: 100
+    dt_seconds: 60.
+    barotropic_substeps: 4
+    reference_runtime_git_clean: true
+    independent_scope: last_inventory_geometry_actual_q_and_wet_trace_not_every_step_replay
+    inventory_q_negative_controls: 9
+    wet_trace_negative_controls: 5
+    maximum_recorded_bottom_closure_relative: 6.347202e-16
+    worst_content_budget_relative: 4.952833e-18
+    volume_budget_delta_m3_range: [-0.00537109375, 0.01318359375]
+    frozen_baseline_git_blob_commit: "3a91aed"
+    exact_state_fixture_groups: 4
+    exact_state_fields: [volume, content, east_velocity, north_velocity]
+    initial_late_baseline_manifest_qualified: false
+    all_real_trajectories_bitwise_unchanged_claimed: false
+    legacy_mms: ALL_PASS_ratio_4.30
+    isolated_installed_actual_wet_trace_step: passed
+    physical_point_velocity_qualified: false
+    nonlinear_momentum_implemented: false
+    production_cutover: false
+    century_climate_forecast_gpu_full_adjoint_pass: false
+  cgrid_latitude_metric_and_actual_dual_transport:
+    status: actual_spatial_metric_and_dual_q_pass_not_nonlinear_momentum
+    protocol_commit: "a3cad34"
+    implementation_commit: "4113bcc"
+    review: "research/experiments/cgrid_hydrostatic_momentum/metric_dual_review.md"
+    old_constant_physical_u_failures: 2
+    first_sample_old_normal_u_relative_error: 0.20133448
+    new_tests: 15
+    final_source_adjacent_tests_passed: 89
+    full_tests_status: passed
+    full_tests_passed: 498
+    old_warnings: 23
+    full_tests_seconds: 514.28
+    full_tests_log: "results/industrial_alignment/metric_dual_full_tests.log"
+    reference_groups_passed: 8
+    steps_per_group: 100
+    dt_seconds: 60.
+    barotropic_substeps: 4
+    reference_runtime_git_clean: true
+    independent_scope: last_inventory_geometry_actual_q_metric_trace_and_dual_flux_not_every_step_replay
+    inventory_q_negative_controls: 9
+    wet_trace_negative_controls: 5
+    metric_dual_negative_controls: 5
+    maximum_recorded_dual_commutation_relative: 4.432293e-16
+    maximum_recorded_bottom_closure_relative: 6.347202e-16
+    worst_content_budget_relative: 4.952833e-18
+    exact_state_fixture_groups: 4
+    exact_state_fields: [volume, content, east_velocity, north_velocity]
+    legacy_mms: ALL_PASS_ratio_4.30
+    isolated_installed_actual_metric_dual_step: passed
+    kinematic_mass_substituted_into_forces: false
+    full_physical_velocity_wall_kinetic_basis_qualified: false
+    moving_time_coupling_qualified: false
+    nonlinear_momentum_implemented: false
+    production_cutover: false
+    century_climate_forecast_gpu_full_adjoint_pass: false
+  cgrid_physical_mean_q_velocity:
+    status: frozen_actual_physical_frame_and_kinetic_selection_evidence_not_nonlinear_dynamics
+    protocol_commit: "9a7fa6b"
+    implementation_commit: "c08754d"
+    coordinate_protocol_commit: "be5e2f3"
+    qualified_reference_commit: "6bd7f50"
+    review: "research/experiments/cgrid_hydrostatic_momentum/physical_velocity_review.md"
+    rejected_initial_endpoint_report: "results/industrial_alignment/cgrid_physical_velocity_reference.json"
+    original_interpretation_failures: 2
+    new_tests: 42
+    final_source_adjacent_tests_passed: 131
+    full_tests_passed: 540
+    old_warnings: 23
+    full_tests_seconds: 409.92
+    full_tests_log: "results/industrial_alignment/physical_velocity_full_tests.log"
+    reference_report: "results/industrial_alignment/cgrid_physical_velocity_coordinate_reference.json"
+    reference_groups_passed: 8
+    steps_per_group: 100
+    dt_seconds: 60.
+    barotropic_substeps: 4
+    reference_runtime_git_clean: true
+    independent_scope: last_actual_mean_q_coordinates_geometry_and_physical_frame_not_every_step_replay
+    inventory_q_negative_controls: 9
+    wet_dual_negative_controls: 10
+    physical_frame_negative_controls: 15
+    recorded_lower_bulk_continuity_relative: 0.
+    actual_kinetic_reference_groups_passed: 8
+    kinetic_report: "results/industrial_alignment/physical_kinetic_actual_eight.json"
+    kinetic_proxy_comparison_uses_endpoint_velocities: false
+    symmetric_psd_gram_with_mixed_terms: true
+    actual_field_kinetic_mass_promoted_into_forces: false
+    exact_state_fixture_groups: 4
+    exact_state_fields: [volume, content, east_velocity, north_velocity]
+    legacy_mms: ALL_PASS_ratio_4.30
+    isolated_installed_actual_physical_step: passed
+    all_validation_processes_terminal: true
+    moving_time_coupling_qualified: false
+    wall_reaction_force_qualified: false
+    nonlinear_momentum_implemented: false
+    production_cutover: false
+    century_climate_forecast_gpu_full_adjoint_pass: false
+  cgrid_paired_dynamics:
+    status: actual_frozen_coupled_step_real_reference_qualified_not_nonlinear_or_production
+    protocol_commit: "f136f6f"
+    increment_protocol_commit: "ab125d9"
+    dynamics_commit: "6fb6c88"
+    eta_protocol_commit: "f6551fc"
+    eta_recording_commit: "782cd63"
+    review: "research/experiments/cgrid_hydrostatic_momentum/paired_dynamics_review.md"
+    kinetic_norm: physical_wet_contact_horizontal_field_L2_with_mixed_terms
+    time_scheme: simultaneous_midpoint_mass_rotation_pressure_surface_mean_q
+    original_force_failure_magnitude: 0.02723581
+    both_increment_and_endpoint_true_residuals_checked: true
+    direct_tests_before_eta_recording: 33
+    final_source_adjacent_tests_passed: 80
+    final_source_direct_tests_passed: 34
+    final_source_one_step_real_groups_passed: 8
+    one_step_report: "results/industrial_alignment/cgrid_paired_dynamics_eta_smoke.json"
+    one_step_independent_report: "results/industrial_alignment/cgrid_paired_dynamics_eta_smoke_host.json"
+    one_step_negative_controls_rejected: 9
+    final_source_reference_requested_steps_per_group: 100
+    final_source_reference_report: "results/industrial_alignment/cgrid_paired_dynamics_eta_reference.json"
+    final_source_reference_status: passed_runtime_and_independent_last_step_aggregate
+    final_source_reference_groups_passed: 8
+    final_source_reference_seconds_per_group: 6000
+    final_source_reference_host_report: "results/industrial_alignment/cgrid_paired_dynamics_eta_reference_host.json"
+    final_source_reference_sha256: "9ae61eba993bdfa0753121f4278dd694c2a5b1e74739a96a12b74e93bab03ff9"
+    final_source_reference_host_max_momentum_relative: 7.0833172701336155e-15
+    final_source_reference_host_max_energy_work_relative: 1.0062833442925811e-16
+    final_source_reference_negative_controls_rejected: 9
+    full_tests_before_eta_recording: 573
+    old_warnings: 23
+    full_tests_before_eta_recording_seconds: 673.50
+    final_source_full_suite: passed
+    final_source_full_tests_passed: 574
+    final_source_full_tests_seconds: 863.58
+    final_source_full_launch_end_hashes_match: true
+    final_source_full_tests_log: "results/industrial_alignment/paired_dynamics_final_full_tests.log"
+    physical_source_momentum_witness: new_contract_FAIL_not_frozen_kernel_bug_claim
+    source_witness_protocol_commit: "9259164"
+    pinned_source_witness_script_commit: "f52737a"
+    source_witness_report: "results/industrial_alignment/paired_source_momentum_pinned.json"
+    source_axial_relative_change: 1.2e-5
+    source_assumed_incoming_horizontal_velocity_m_s: 0.
+    source_frozen_work_relative: 0.
+    original_real_report: "results/industrial_alignment/cgrid_paired_dynamics_reference.json"
+    original_real_report_qualified: false
+    original_reference_process_intentionally_stopped: 33232
+    original_near_rest_host_energy_relative_failure: 0.007064013170804541
+    actual_initial_eta_recorded: true
+    geometry_floor_only_not_energy_gate: true
+    mean_eta_global_nullspace_checked: true
+    legacy_mms: ALL_PASS_ratio_4.30
+    installed_pre_eta_actual_step: passed
+    installed_final_source_actual_eta_step: passed
+    frozen_energy_work_separate_from_cast_and_moving_mass: true
+    nonlinear_momentum_implemented: false
+    moving_mass_buoyancy_energy_qualified: false
+    wall_reaction_force_qualified: false
+    production_cutover: false
+    century_climate_forecast_gpu_full_adjoint_pass: false
+  climate_spatial_scoring:
+    status: implemented_shared_spatial_correction_not_climate_qualification
+    protocol_commit: "4ae565c"
+    reference_protocol_commit: "540bee9"
+    implementation_commit: "cbfbb0b"
+    metric_definition: area_weighted_angular_box_v2
+    adjacent_tests_passed: 66
+    adjacent_tests_log: "results/industrial_alignment/climate_scoring_final_66.log"
+    full_suite_status: passed_specific_handle_61319
+    full_suite_passed: 598
+    full_suite_deprecation_warnings: 18
+    full_suite_seconds: 430.04
+    full_suite_launch_end_source_hashes_match: true
+    full_suite_result: "results/industrial_alignment/climate_scoring_full_result.json"
+    full_suite_log: "results/industrial_alignment/climate_scoring_full_tests.log"
+    actual_area_when_provided_else_labelled_inferred_edges: true
+    filter: wet_area_angular_box_half_width_2_degrees_not_constant_km
+    incomparable_metric_domain_reference_gates_reject: true
+    initialization_reference_is_independent_validation: false
+    current_time_average_is_bounds_weighted: false
+    endpoint_content_change_is_closed_budget: false
+    century_acceptance_requirements: "docs/century_climate_acceptance_zh.md"
+    century_climate_forecast_gpu_full_adjoint_pass: false
+  nonlinear_dual_candidate:
+    status: actual_step_direct_tests_pass_real_four_of_eight_FAIL_retained
+    protocol_commit: "1c2572d"
+    entry: nonlinear_dynamics.nonlinear_momentum_surface_step
+    kinetic_norm: finite_volume_full_half_prism_dual_not_physical_field_L2
+    direct_tests_passed: 28
+    incoming_source_momentum_and_mixing_explicit: true
+    same_actual_three_dimensional_dual_Q: true
+    wall_reaction_impulse_recorded: true
+    time_and_metric_refinement_pass: true
+    original_spatial_scoring_domain_FAIL_retained: true
+    physical_L2_positive_rain_increment_is_psd: false
+    physical_L2_increment_min_eigenvalue_m3: -78510192.7478044
+    implementation_commit: "e085cd8"
+    real_source_commit: "d6dcf63"
+    actual_real_reference_status: FAIL_four_disturbed_pass_four_near_rest_fail
+    actual_real_steps_per_requested_group: 10
+    actual_real_dt_seconds: 60
+    actual_real_source_hashes_unchanged: true
+    actual_real_report: "results/industrial_alignment/nonlinear_dual_real_10.json"
+    four_disturbed_independent_last_steps_pass: true
+    deliberate_real_corruptions_rejected: 11
+    independent_last_momentum_relative_max: 7.6534337070617e-16
+    independent_last_energy_change_work_relative_max: 4.572161685808182e-16
+    near_rest_surface_storage_energy_identified_not_repaired: true
+    isolated_installed_old_rain_input_test: passed_momentum32
+    compiled_scalar_compensated_storage_witness: passed_not_ocean_qualification
+    full_suite_status: passed_terminal_specific_56743
+    full_suite_passed: 626
+    full_suite_deprecation_warnings: 18
+    full_suite_seconds: 490.27
+    full_suite_src_test_pyproject_launch_end_hashes_match: true
+    full_suite_log: "results/industrial_alignment/nonlinear_dual_full_tests.log"
+    moving_buoyancy_EOS_work_qualified: false
+    production_cutover: false
+    complete_industrial_goal_achieved: false
+  next: "NEW actual nonlinear FV step has28 direct tests and isolated installed source dilution PASS; specific full-suite56743/PID46616 terminal exit0:626 passed/18 old warnings/490.27s and matching src/test/pyproject hashes. Real eight-case600s experiment remains FAIL: four disturbed histories and NumPy last-step impulse/work/reaction audits PASS with11 corruptions rejected, four near-rest states lose solved eta on64-bit volume storage. Follow preregistered surface-storage research and register a coherent compensated physical geometry/inventory/time/Q/FCT/restart representation, not merely renamed storage error, relaxed energy gates or arbitrary rescaling. Frozen paired-L2 and original rain failures remain historical evidence. Complete buoyancy/EOS/real physics/production/global and every century/sensitivity, independent climate/forecast, GPU/distributed, whole-adjoint/learning and engineering requirement. Goal remains active and unachieved."
+  unresolved: ["whole-model budgets", "volume/free-surface consistency", "partial cells/global topology", "complete real physical forcing", "independent climate/forecast skill", "fair GPU/distributed cost", "whole-model adjoint and constrained learning"]

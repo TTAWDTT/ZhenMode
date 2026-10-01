@@ -1,159 +1,134 @@
 # Ocean Solver
 
-A global finite-difference ocean model solving the hydrostatic primitive
-equations on a lat-lon grid, written in JAX.
+A JAX ocean model solving the hydrostatic primitive equations on a
+longitude-global, latitude-truncated finite-difference grid.
 
-**This is the whole project.** One solver, one driver, one test suite:
+## Mainline: read these files first
 
-| | |
+```text
+run_long_integration_global.main
+  -> config + grid + WOA / atmospheric forcing
+  -> jax_solver_global.make_solver_global
+  -> jax_solver_global._step_impl
+  -> diagnostics + snapshots + restart_contract
+```
+
+| Responsibility | Source |
 | --- | --- |
-| Solver core | `src/jax_solver_global.py` |
-| Driver (CLI) | `src/run_long_integration_global.py` |
-| Tests | `tests/` |
-| Design rationale | `docs/decisions.md` (D1-D27) + `docs/README.md` |
+| CLI, initialization, forcing schedule and output | `src/run_long_integration_global.py` |
+| State, operators, split-explicit barotropic mode and complete step | `src/jax_solver_global.py` |
+| Physical parameters and grid / bathymetry | `src/config.py`, `src/grid.py` |
+| Wind, air and initial tracer data | `src/forcing.py`, `src/wind_reanalysis.py`, `src/air_reanalysis.py`, `src/woa_data.py` |
+| Saved diagnostics, scoring and versioned restart | `src/diagnostics.py`, `src/benchmark_metrics.py`, `src/restart_contract.py` |
+| Regression suite and numerical decision log | `tests/`, [D1–D46](docs/decisions.md) |
 
-Everything else is support: data loaders (`src/forcing.py`,
-`src/wind_reanalysis.py`, `src/woa_data.py`), grid/bathymetry
-(`src/grid.py`), configuration (`src/config.py`), scoring and fetching
-utilities, plus two clearly-marked side directories —
-`archive/regional/` (a retired regional spectral solver) and `docs/archive/`
-(historical work logs). Neither is imported by the main line.
+The CLI does **not** import `material_top.py`, the FV/C-grid alternatives or
+the r-star experiments. They are explicitly selected research APIs, not
+replacement production defaults.
 
-## Features
+## What is qualified, and what is not?
 
-- **Domain**: global lat-lon, default lat +/-60 deg (`--lat-max`), 1 deg
-  default resolution
-- **Numerics**: conservative finite-difference horizontal operators
-  (divergence/gradient are exact adjoints, spherical `cos(lat)` mass
-  weighting); the barotropic mode is sub-cycled under a split-explicit
-  scheme (`--mode-split`)
-- **Time stepping**: RK2 with a JIT-compiled, `lax.scan`-based inner loop
-- **Advection**: flux-form tracer advection on the rigid-lid surface term;
-  `--project-adv-vel` projects the stage-2 velocity column-divergence-free
-  to close the column heat budget; `--monotone-adv` switches horizontal
-  tracer fluxes to donor-cell (default is centered); `--fct-adv` enables an
-  experimental TVD/MUSCL flux-limited horizontal transport (bounded, but not
-  yet a full Zalesak 3D FCT limiter)
-- **Vertical mixing**: GM/Redi skew-flux (`--kappa-gm`, `--kappa-redi`),
-  eddy viscosity (`--nu-h`), biharmonic (`--nu-bi`), convective adjustment
-  (`--kappa-conv`), polar-edge Rayleigh sponge (`--sponge-days`)
-- **Forcing**: NCEP/NCAR R1 reanalysis wind (`src/wind_reanalysis.py`),
-  bulk air-sea heat flux, seasonal wind cycle (`--seasonal-wind`),
-  WOA2023 initial fields (`src/woa_data.py`)
-- **Grid**: real ETOPO2022 bathymetry with smoothing and a `--min-depth`
-  floor
+| Path | Current evidence | Boundary |
+| --- | --- | --- |
+| Production FD CLI | Existing solver, forcing, diagnostics and versioned restart | Numerical stop gates are not closed physical budgets or climate / forecast skill |
+| `src/material_top.py` opt-in nodal candidate | Corrected 2-degree, float64, no-cap, fixed-January 600/300 s trials reach 30 days with moving-stock audits | 1-degree trials retain capacity and subsequent negative-top failures; hard-convection gradient and other gates remain open |
+| Completed-bed r-star weak operators | Registered pressure work/rest and specified point-order controls; bounded content/source controls and full 1-degree prescribed tracer stages on CPU/CUDA | New local state semantics; not a solved ocean step, factory or restart migration |
+| `weak_time.py` candidate | Smooth Fourier time order approximately 2 | Moving-limiter signed/pulse orders approximately 0.77/1.16 and 0.62/0.86 fail the 1.9 gate on both backends |
+| FV/C-grid alternative | Separate retained research controls and failures | Not the current original-core repair path or a production dependency |
 
-## Requirements
+The [repair status](docs/legacy_core_repair_status_zh.md) is the detailed evidence
+record; sections 36–37 cover the latest weak-content/capacity/time work.
+The [delivery execution plan](docs/production_delivery_plan_zh.md) defines the
+current order, objectives, dependencies and acceptance gates. The earlier
+[repair plan](docs/legacy_core_repair_plan_zh.md) remains a historical reference.
+The [S0/S1 execution record](docs/production_delivery_execution_20260930_zh.md)
+records the input/first-rejection repairs, retained failures and verified scope.
+The [r-star index](research/experiments/material_rstar_coordinates/README.md)
+maps their code and audit commands. Test counts do not override failed gates.
+No current evidence establishes century reliability, independent climate /
+forecast accuracy or superiority to an industrial model; see the
+[acceptance requirements](docs/century_climate_acceptance_zh.md) and
+[industrial roadmap](docs/industrial_alignment_roadmap_zh.md).
 
-- Python 3.12+
-- NumPy, SciPy, netCDF4
-- JAX (GPU strongly recommended for production runs)
+## Capabilities
 
-## Quick Start
+- Default horizontal resolution: 1 degree; default latitude limit: +/-60 degrees,
+  not full polar coverage. Real ETOPO2022 supplies bathymetry.
+- Conservative spherical FD operators, split-explicit barotropic subcycling
+  (`--mode-split`), JAX JIT and scan loops. Local RK stages do not establish
+  complete-step second-order accuracy.
+- Tracers, momentum and free surface with wind / bulk heat forcing and optional
+  seasonal cycles; WOA2023 supplies initial temperature/salinity.
+- Configurable mixing, GM/Redi and polar-edge controls. Mixed-layer heat and
+  dynamic ice remain opt-in prototypes; unsupported candidate processes are
+  rejected rather than silently enabled.
+- CPU and supported Linux/WSL CUDA execution. GPU availability is not a speed
+  benchmark, and distributed / multi-GPU qualification is not established.
 
-```bash
-pip install -e ".[dev]"          # installs the `ocean-solver` console script
+## Environment and commands
 
-python scripts/run_tests.py      # pytest suite (data-dependent tests skip)
-
-# Global production run: mode split at dt=3600 -- 24 barotropic subcycles of
-# 150 s. Without --mode-split the explicit free surface caps dt at 60 s.
-ocean-solver --days 365 --dt 3600 \
-  --mode-split --use-scan --seasonal-wind --wind-year 2023 \
-  --resolution 1.0 --dtype float32 \
-  --tag g365d --out-dir results --log-dir logs
-```
-
-`ocean-solver` and `python src/run_long_integration_global.py` are the same
-entry point.
-
-Bathymetry and WOA/Wind data are **not** in the repository. Point the solver
-at the ETOPO2022 relief file with the `OCEAN_SOLVER_BATHYMETRY` environment
-variable, or drop it in `data/`. Without it, grid construction fails with a
-message naming that variable, and the data-dependent tests skip.
-
-To exercise the grid / bathymetry / remap tests without the real file,
-generate a clearly-labelled synthetic stand-in (it is **not** ETOPO and is
-only for the test suite):
+Python 3.12+, NumPy, SciPy, netCDF4 and JAX are required.
+From the repository root:
 
 ```bash
-python scripts/make_synthetic_bathymetry.py   # -> data/ETOPO_..._surface.nc.npz
-python -m pytest tests/ -q                    # 138 tests, none skipped
+pip install -e ".[dev]"
+ocean-solver --help
+python scripts/run_tests.py
 ```
 
-## Resolution
-
-By default `--resolution` accepts integer multiples of the 0.1 deg ETOPO
-source grid. Add `--resolution-remap area` to build a conservative
-spherical-area remapped grid at arbitrary positive spacings (e.g. 0.37 deg).
-The time-step-sensitive physics parameters (`dt_bt`, `nu_h`, `nu_bi`) are
-auto-scaled by the power of `dx` their CFL demands (`dx^1`, `dx^2`, `dx^4`),
-so a finer grid stays stable without hand-tuning. At `--resolution 1.0` (or
-with no `--resolution`) the scaling is a no-op, preserving the 1 deg
-defaults bit-for-bit.
-
-Measured behavior across the resolution ladder, including the
-`--project-adv-vel` closure for the flux-form surface leak, is in
-[`docs/resolution_cfl_limits.md`](docs/resolution_cfl_limits.md).
-
-## Project Structure
-
-```
-ocean-solver/
-+-- src/                     # Core source (flat modules, installed as top-level py-modules)
-|   +-- config.py            # GlobalGridConfig, PhysicsConfig, Config/DEFAULT_CONFIG
-|   +-- grid.py              # global grid + ETOPO bathymetry
-|   +-- jax_solver_global.py # global FD solver core (JAX JIT)  <- the main line
-|   +-- run_long_integration_global.py  # long-run driver (CLI entry point)
-|   +-- forcing.py           # wind stress / heat flux generators
-|   +-- wind_reanalysis.py   # NCEP/NCAR R1 reanalysis wind loader
-|   +-- woa_data.py          # WOA2023 climatological initial fields
-|   +-- bench_climatology_global.py     # climatology scoring
-|   +-- fetch_sla_monthly.py / fetch_ssh_abs_monthly.py  # altimetry fetchers
-|   +-- erddap_fetch.py      # shared retry/backoff download helper for the above
-+-- tests/                   # pytest suite
-+-- docs/                    # Current mainline documentation (see docs/README.md)
-+-- archive/
-|   +-- regional/            # RETIRED regional spectral solver (not runnable, see its README)
-+-- scripts/                 # run_tests.py, status_board.py, publish_dashboard.py,
-|                            # make_synthetic_bathymetry.py
-+-- dashboard/               # web run dashboard
-+-- configs/                 # CDO target grid description
-+-- results/                 # run outputs + figure scripts (gitignored, a few report figures are tracked)
-+-- data/                    # bathymetry / climatology (gitignored, create it yourself)
-+-- scratch/                 # ignored local artifacts, probes, downloads, slides
-```
-
-## Documentation
-
-Index: [`docs/README.md`](docs/README.md). The mainline set:
-
-- [`docs/decisions.md`](docs/decisions.md) — **why the solver looks like this** (D1-D27)
-- [`docs/solver_technical_report_zh.md`](docs/solver_technical_report_zh.md) — solver technical report
-- [`docs/resolution_cfl_limits.md`](docs/resolution_cfl_limits.md) — resolution limits and the CFL fix
-- [`docs/deep-heat-poisoning-root-cause.md`](docs/deep-heat-poisoning-root-cause.md) — the column heat-leak root cause
-- [`docs/hydrostatic_primitive_equations.md`](docs/hydrostatic_primitive_equations.md) — the equations
-- [`docs/repositioning_memo_zh.md`](docs/repositioning_memo_zh.md) — project positioning
-
-## Legacy: regional spectral solver
-
-The original regional pseudospectral solver (FFT horizontal operators, IMEX
-Strang splitting) is retired and lives in
-[`archive/regional/`](archive/regional/README.md). It is **not runnable
-as-is** — the shared config classes it depended on (`GridConfig`,
-`TimeConfig`, `make_grid`) have been deleted. The current global FD solver
-supersedes it entirely.
-
-## Candidate diagnostic baseline
-
-The current diagnostic baseline is the reproduced 65N, 0.7-degree candidate:
+`ocean-solver` and `python src/run_long_integration_global.py` use the same
+entry point. Example CLI syntax, **not a qualified configuration**:
 
 ```bash
-bash scripts/run_candidate_baseline.sh
+ocean-solver --days 1 --dt 60 --dtype float64 --use-scan \
+  --tag smoke --out-dir results --log-dir logs
 ```
 
-Locked configuration: `lat-max=65`, 0.7-degree resolution, annual NCEP R1 2m
-air forcing, `lambda_bulk=80`, `kappa_v=1e-6`, `kappa_conv=0.01`, localized
-convective adjustment, `kappa_gm=0`, FCT/TVD transport, and projected stage-2
-advective velocity. This is a diagnostic baseline, not yet a changed default.
-Override days with `DAYS=30 bash scripts/run_candidate_baseline.sh`.
+For native Windows CPU / Linux or WSL CUDA details, see
+[GPU runtime and validation](docs/gpu_runtime_zh.md) and `environment-gpu.yml`.
+Data-dependent tests may skip. Test commands are not physical integrations.
+
+## Data, resolution and restart
+
+Bathymetry and climatology / reanalysis files are not bundled. Set
+`OCEAN_SOLVER_BATHYMETRY` or put the relief file in `data/`; missing relief
+fails explicitly. A synthetic **test-only**, non-ETOPO stand-in is available:
+
+```bash
+python scripts/make_synthetic_bathymetry.py
+python -m pytest tests/ -q
+```
+
+Default resolution accepts integer multiples of the 0.1-degree source grid;
+`--resolution-remap area` permits arbitrary positive spacing. The driver scales
+default `dt_bt/nu_h/nu_bi` with resolution, but vertical, advection and
+geometry-dependent limits still require validation.
+See [resolution evidence](docs/resolution_cfl_limits.md).
+Projection parameters and actual residuals must be verified; see the
+[projection review](research/experiments/projection_residual_control/review.md).
+
+`--checkpoint-days` writes versioned full-state restarts and must align with
+`--snap-days`. `--restart-from` verifies grid, parameters, forcing, source,
+dtype/backend and retained output identity. Old state-only files are not verified
+restarts. Use frozen original sources for historical replay, not current hashes.
+See [restart and budget limits](docs/debug_validation_zh.md).
+
+## Directory boundaries and reading order
+
+| Directory | Role |
+| --- | --- |
+| `src/` | Installed flat modules: production core, support and explicitly opt-in candidates |
+| `tests/` | Regression and independent numerical oracles; intentionally retained negative controls |
+| `docs/` | Current documentation index, decisions, plans and evidence |
+| `research/experiments/` | Isolated candidates / audits; use each experiment's README |
+| `research/plan.md` | Historical research log, **not** the current execution plan |
+| `archive/regional/`, `docs/archive/` | Retired solver and historical documents; not production imports |
+| `scripts/`, `dashboard/`, `configs/` | Utilities, run dashboard and remap grid descriptions |
+| `results/`, `data/`, `scratch/` | Mostly ignored evidence, inputs and local artifacts; do not delete failed witnesses as redundant code |
+
+Read this entry map, then [decisions](docs/decisions.md),
+[repair status](docs/legacy_core_repair_status_zh.md) and the relevant
+[experiment index](research/experiments/material_rstar_coordinates/README.md).
+[All documentation](docs/README.md) is indexed separately.
+The historical 65N/0.7-degree command is in `scripts/run_candidate_baseline.sh`;
+it remains a diagnostic recipe, not a default or qualification.

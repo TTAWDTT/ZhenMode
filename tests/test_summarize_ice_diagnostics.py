@@ -2,11 +2,12 @@
 import json
 
 import numpy as np
+import pytest
 
 from summarize_ice_diagnostics import summarize_ice_closed_loop
 
 
-def test_stage_i_manifest_records_ice_growth_and_budget(tmp_path):
+def _write_run(tmp_path):
     npz_path = tmp_path / "run.npz"
     benchmark_path = tmp_path / "benchmark.json"
     days = np.array([0.0, 10.0])
@@ -42,9 +43,43 @@ def test_stage_i_manifest_records_ice_growth_and_budget(tmp_path):
         "max_eta_last": 0.2,
     }
     benchmark_path.write_text(json.dumps(benchmark))
+    return npz_path, benchmark_path
+
+
+def test_stage_i_manifest_records_ice_growth_and_budget(tmp_path):
+    npz_path, benchmark_path = _write_run(tmp_path)
     result = summarize_ice_closed_loop(npz_path, benchmark_path, "stage_i_test")
     assert result["climate_score"]["global_a2_rmse_c"] == 0.9
     assert result["ice"]["growth_volume_m3"] > 0.0
     assert result["ice"]["melt_volume_m3"] == 0.0
     assert result["surface_budget"]["latent_heat_growth_J"] > 0.0
     assert result["stability"]["verdict"] == "PASS"
+    assert result["surface_budget"]["heat_budget_residual_J"] is None
+    assert result["surface_budget"]["mean_residual_W_m2"] is None
+
+
+@pytest.mark.parametrize("units,expected", [(None, 1e6), ("kg", 1e9)])
+def test_salt_change_respects_diagnostics_units(tmp_path, units, expected):
+    npz_path, benchmark_path = _write_run(tmp_path)
+    with np.load(npz_path) as saved:
+        fields = dict(saved)
+    fields["salt_content_kg"] = np.array([1e12, 1e12 + 1e9])
+    if units is not None:
+        fields["salt_content_units"] = units
+    np.savez(npz_path, **fields)
+    result = summarize_ice_closed_loop(npz_path, benchmark_path, "units")
+    assert result["brine_salt_flux"]["salt_content_change_kg"] == expected
+
+
+def test_residual_requires_and_subtracts_recorded_surface_input(tmp_path):
+    npz_path, benchmark_path = _write_run(tmp_path)
+    before = summarize_ice_closed_loop(npz_path, benchmark_path, "before")
+    with np.load(npz_path) as saved:
+        fields = dict(saved)
+    enthalpy_change = before["surface_budget"]["water_ice_enthalpy_change_J"]
+    fields["surface_heat_input_J"] = np.array([0., enthalpy_change])
+    np.savez(npz_path, **fields)
+    after = summarize_ice_closed_loop(npz_path, benchmark_path, "after")
+    assert after["surface_budget"]["heat_budget_residual_J"] == 0.
+    assert after["surface_budget"]["mean_residual_W_m2"] == 0.
+    assert after["surface_budget"]["budget_scope"] == "water_ice_enthalpy_minus_recorded_surface_heat_input"

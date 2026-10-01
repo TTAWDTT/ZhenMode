@@ -1,4 +1,6 @@
 """Tests for the pre-registered benchmark gate."""
+import pytest
+
 from benchmark_gate import evaluate_gate
 
 
@@ -31,3 +33,61 @@ def test_gate_rejects_global_worse_and_verdict_failure():
 def test_gate_requires_expected_duration():
     result = evaluate_gate(_run(), _run(days=30.0), expected_days=365.0)
     assert not result["pass"]
+
+
+@pytest.mark.parametrize("field", ["heat_drift_percent", "salt_drift_percent"])
+def test_gate_rejects_missing_budget(field):
+    candidate = _run()
+    candidate.pop(field)
+    assert not evaluate_gate(_run(), candidate)["pass"]
+    assert not evaluate_gate(candidate, _run())["pass"]
+
+
+@pytest.mark.parametrize("value", [float("nan"), float("inf"), -float("inf")])
+def test_gate_rejects_nonfinite_budget(value):
+    candidate = _run(heat=value)
+    assert not evaluate_gate(candidate, candidate)["pass"]
+
+
+def test_gate_rejects_bias_overshooting_into_warm_error():
+    assert not evaluate_gate(_run(wall=-0.5), _run(wall=5.0))["pass"]
+    assert evaluate_gate(_run(wall=-0.5), _run(wall=0.2))["pass"]
+
+
+def test_gate_rejects_incomplete_coverage():
+    candidate = dict(_run(), coverage_complete=False)
+    assert not evaluate_gate(_run(), candidate)["pass"]
+
+
+def test_gate_rejects_legacy_and_area_weighted_score_mixture():
+    candidate = dict(_run(), metric_definition="area_weighted_angular_box_v2",
+                     comparison_domain_sha256="a" * 64)
+    assert not evaluate_gate(_run(), candidate)["pass"]
+    assert not evaluate_gate(candidate, _run())["pass"]
+
+
+@pytest.mark.parametrize("domain", [None, "", "b" * 64])
+def test_v2_gate_rejects_missing_or_different_domain(domain):
+    control = dict(_run(), metric_definition="area_weighted_angular_box_v2",
+                   comparison_domain_sha256="a" * 64,
+                   comparison_reference_sha256="c" * 64)
+    candidate = dict(control, comparison_domain_sha256=domain)
+    assert not evaluate_gate(control, candidate)["pass"]
+
+
+def test_v2_comparison_pass_is_not_climate_qualification():
+    control = dict(_run(), metric_definition="area_weighted_angular_box_v2",
+                   comparison_domain_sha256="a" * 64,
+                   comparison_reference_sha256="c" * 64)
+    result = evaluate_gate(control, control)
+    assert result["pass"]
+    assert result["qualification_scope"] == "internal_sst_comparison_not_century_or_independent_climate"
+
+
+@pytest.mark.parametrize("reference", [None, "", "d" * 64])
+def test_v2_gate_rejects_missing_or_different_reference(reference):
+    control = dict(_run(), metric_definition="area_weighted_angular_box_v2",
+                   comparison_domain_sha256="a" * 64,
+                   comparison_reference_sha256="c" * 64)
+    candidate = dict(control, comparison_reference_sha256=reference)
+    assert not evaluate_gate(control, candidate)["pass"]

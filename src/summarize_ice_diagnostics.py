@@ -42,7 +42,14 @@ def summarize_ice_closed_loop(npz_path: str | Path,
                           - np.asarray(data["heat_content_J"], dtype=float)[0])
     surface_area = float(area[wet].sum())
     duration_s = float(days[-1] - days[0]) * 86400.0
-    residual_j = heat_change_j - latent_growth_j + latent_melt_j
+    enthalpy_change_j = heat_change_j - latent_growth_j + latent_melt_j
+    surface_input_j = (float(data["surface_heat_input_J"][-1] - data["surface_heat_input_J"][0])
+                       if "surface_heat_input_J" in data else None)
+    residual_j = enthalpy_change_j - surface_input_j if surface_input_j is not None else None
+    salt_units = str(data["salt_content_units"].item()) if "salt_content_units" in data else "legacy_psu_mass"
+    if salt_units == "legacy_psu_mass":
+        salt_change_kg /= 1000.0
+    data.close()
 
     benchmark = json.loads(Path(benchmark_path).read_text(encoding="utf-8"))
     return {
@@ -69,19 +76,25 @@ def summarize_ice_closed_loop(npz_path: str | Path,
             "melt_volume_m3": melt_m3,
             "latent_heat_growth_J": latent_growth_j,
             "latent_heat_melt_J": latent_melt_j,
+            "growth_melt_sampling": "net_changes_between_snapshots_not_gross_timestep_fluxes",
         },
         "mixed_layer": benchmark["mld"],
         "surface_budget": {
             "heat_content_change_J": heat_change_j,
+            "water_ice_enthalpy_change_J": enthalpy_change_j,
+            "surface_heat_input_J": surface_input_j,
             "latent_heat_growth_J": latent_growth_j,
             "latent_heat_melt_J": latent_melt_j,
             "heat_budget_residual_J": residual_j,
             "mean_residual_W_m2": residual_j / (duration_s * surface_area)
-            if duration_s > 0 and surface_area > 0 else None,
+            if residual_j is not None and duration_s > 0 and surface_area > 0 else None,
+            "budget_scope": ("water_ice_enthalpy_minus_recorded_surface_heat_input"
+                             if surface_input_j is not None
+                             else "enthalpy_change_only_without_recorded_external_heat_input"),
         },
         "brine_salt_flux": {
             "salt_content_change_kg": salt_change_kg,
-            "definition": "total wet-column salt change in a run with dynamic ice as the only surface salt source",
+            "definition": "wet-column salt content change including all enabled salt terms; not an isolated brine flux",
         },
         "stability": {
             "verdict": benchmark["verdict"],

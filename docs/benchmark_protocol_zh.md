@@ -4,6 +4,28 @@
 状态：draft  
 目的：把当前内部 A/B 实验放进可复现、可外推、可对接工业级模式讨论的坐标系。
 
+## 当前评分口径（2026-09-29）
+
+下文的历史候选和既有 JSON 属于旧格点等权/格点窗口诊断，不是当前完整
+模式的气候或百年验收结果，不能自动随代码修改升级。新共享评分器使用
+`area_weighted_angular_box_v2`：原始误差、纬向均值及相关系数按湿格面积
+加权；A2 对双方使用同一个湿区面积加权、经纬度各半宽 2 度的角度窗口。
+窗口不再以格点数量代替角度，也不让陆地哨兵进入湿区平滑；它并非恒定
+公里尺度滤波。`cell_area_m2` 可提供实际模型面积，否则中心推算边界被明确
+标记为 `inferred_center_edges`，不能声称已核实任意网格的真实几何。
+
+比较门槛拒绝新旧口径混用，也拒绝不同坐标、湿区、面积或参照场的比较。
+两份旧报告只能进行历史内部诊断；表格显示各行定义，旧分数原样保留。
+新生成 NPZ 报告把 `T_init` 标为初值参照，外部模式的共享 `T_init` 也不被
+自动认证为独立观测。现有按记录平均的时间统计和首末热盐百分比只是诊断，
+不是多年时间权重、完整收支残差或独立气候精度证明。新内部门槛 PASS 也不
+代表完整气候验收。
+
+预注册方法与反例见
+[评分修正协议](../research/experiments/climate_scoring/protocol.md)；完整验收仍须
+[工业对齐路线](industrial_alignment_roadmap_zh.md)所列生产迁移、实际预算、
+百年/敏感性、独立气候/预报、GPU/分布式和完整伴随证据，不缩减目标。
+
 ## 目标
 
 1. 固定数据、指标和运行方式，避免“每换一个 idea 就换一套 score”。
@@ -73,7 +95,7 @@ Report all of the following, not just the best-looking metric:
 | `global A2 RMSE` | 2-degree-smoothed SST RMSE vs WOA |
 | `NA 40..60N A2 RMSE` | regional 2-degree-smoothed SST RMSE |
 | `near-wall 55..60N bias` | raw coastal bias |
-| `raw global bias` | area-unweighted but ocean-only mean error |
+| `raw global bias` | new v2: wet-area weighted mean error; archived v1: equal-cell mean |
 | `ice extent` | area of cells below freezing point |
 | `heat drift` | relative heat-content drift |
 | `salt drift` | relative salt-content drift |
