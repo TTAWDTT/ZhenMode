@@ -37,3 +37,7 @@
 输入SHA256 `43ffb2c82f30638ac0b79b9199459c6fc1bb0922a76fee84b5fad7df8a0160f7`；生产源模块SHA256 `0ee5874cef57a318e534edb9b99690c797a4ecb1be95c4f0283f957e32ff4169`；33时刻CSV SHA256 `a2e8a8e25310daa08ddfb91c4910833679f18413d1022ed32ca2e2171785022d`。
 
 ocean点采样与MOM cell mean、collocated与C-grid、静态nodal与moving层数值含义不同。MOM既有原FAIL仍是FAIL，FILTER=0仅是单变量diagnostic。此结果可供独立审查各自离散行为，不能直接推出工业数值模式相同或更好质量同时显著更快。
+
+## 发布字节身份补充（2026-10-01 UTC）
+
+上述CSV的 `a2e8a8…` 是原始产物CRLF字节的SHA256。Git按既有规则规范为LF，公开CSV blob的SHA256为 `b0434e14f423c7f33bdd14e51a7e69b96f8907996bee3066802df1a07d315418`。仅行终止符变化，33行标量未变；scalar summary内原始产物身份也按原始字节解释。
