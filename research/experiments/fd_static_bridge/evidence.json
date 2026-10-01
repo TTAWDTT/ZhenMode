@@ -72,7 +72,7 @@
   "cost": "bounded CPU; no private scientific data, no integration; peak memory not measured",
   "hashes": {
     "research/experiments/fd_static_bridge/bridge.py": "cf18bd43d4ee2b00cc33dbfd6a27d38b486c2af539826e4fd8db0f5fd3ad192a",
-    "research/experiments/fd_static_bridge/CONTRACT.md": "e4df2aafa82b6017128bb532cdee52f5bc84225d46cb8367b8d8a76e0fbb9ccc",
+    "research/experiments/fd_static_bridge/CONTRACT.md": "47e91cb1b78a7b4d617bc62ac6baa787692db5e62649d95a0c8152403f5037a8",
     "tests/test_fd_static_bridge.py": "1829f7a31de00747cbe5b4eae01528b1f06c6e479a82c0ded1e5585c9e0d4daa"
   }
 }
