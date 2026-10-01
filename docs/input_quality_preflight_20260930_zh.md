@@ -1,0 +1,234 @@
+# 原输入质量预检与 provenance（2026-09-30）
+
+本改进增加独立、可选的预检入口，不修改 `woa_data.py` 的现有填充、插值或科学参数。
+默认诊断模式写出私有 sidecar；显式严格模式遇到任何缺测湿节点、未知网格映射、
+初态非有限值或原有效节点变化即返回退出码 2。供体重建一致性不自动转化为观测支持。
+本 PR 不修复或声称修复 30 小时失败，不验证封闭南边界的物理正确性。
+
+## 使用与支持范围
+
+```sh
+python scripts/preflight_initial_inputs.py \
+  --temperature data/woa/woa23_decav_t00_01.nc \
+  --salinity data/woa/woa23_decav_s00_01.nc \
+  --grid /private/archive/grid_used.npz \
+  --initial-state /private/archive/initial_state_used.npz \
+  --output /private/diagnostics/input_quality.json
+```
+
+加 `--strict` 即启用拒绝门槛。该命令不调用数值积分、不启动 GPU、不自动运行后续任务。
+JSON 与同名 `.masks.npz` 必须是新文件，不能覆盖输入或已有结果。
+这些私有产物不应提交 Git；掩膜保留原始缺测信息，不删除缺测标记，也不替换初态。
+
+- 记录实际读取的原文件 SHA256/bytes（包括 reader 优先选择的 `.npz` twin）、
+  网格和可选初态 SHA256、预检/reader/入口代码 SHA256、原缺测掩膜及目标支持已知掩膜。
+- 当前只支持与原 WOA **精确重合**的目标节点。未知插值/外推 lineage 显式标为不受支持，
+  不把近邻源节点当成实际原节点。经度周期、纬度封闭是此接口的全局网格约定。
+- 对 T、S **分别**记录第一轮原有效邻点的候选权重、坐标、深度、迭代、
+  域边界相容性、模型湿深度相容性、湿连通分量和直接湿路径。
+  纬度 clamp 导致重复供体时保留每次贡献，符合旧算子的计数合同。
+- `first_pass_matches_initial` 只表示候选第一轮平均与给定初态标量一致；
+  不证明历史原文件身份或完整历史 provenance。
+- **未实现**完整多轮供体树、垂向兜底、插值/外推 lineage、盆地/锋面识别和路径距离。
+  没有第一轮原有效供体时，供体/迭代为 null；垂向兜底状态为 unknown。
+  记录上限为 10000 个缺测目标，截断量单独记录；总缺测计数和严格拒绝不受截断影响。
+- 整柱缺测数、不受支持湿柱数和变更原有效节点数明确报告。掩膜之外的幽灵节点不参与湿节点计数。
+  严格模式是保守的输入支持门槛，不是新科学接受阈值。
+
+## 实际静态证据摘要（私有数组未收入本仓库）
+
+原场来自 `results/legacy_repair/m4_spatial_repair_1deg_retry_C_20260930T013600Z/1deg_dt300/`。
+历史数值源 `212df951c351f82dba74fbc43db5e52b0ad34c47` 的 35 个源码 hash 与归档一致。
+初态 SHA256 为 `fd0669b3dcc5bdd46b1331ab9184a91217b8ffb519e9b307dabe9a885b358cfc`。
+当前原 WOA 身份如下；**历史归档没有保存原 WOA hash，不能用当前身份冒充历史身份**：
+
+| 文件 | 当前 SHA256 |
+| --- | --- |
+| `woa23_decav_t00_01.nc` | `0bd98d3c9c20254e8fcf714aefdd23b4a191eacdfdc3ce5d019205e4a8bc41b5` |
+| `woa23_decav_s00_01.nc` | `3ab18000cea789a2b349cf6b08531f1ebf144f601d90a83f4c3508456003f019` |
+
+南端六行（60.5–65.5°S）有 440 个缺测湿节点、175 个含缺测的湿柱。
+其余 28350 个原有效温盐节点与归档初态逐值相同。
+417 个缺测目标可匹配历史第一轮邻点平均，其中 50 个目标含模型湿深度不相容或域外供体；
+供体重复贡献分别有 33 次模型深度不相容、33 次来自纬度域外。
+没有核实不同湿连通分量或双干角点跨越；其余 23 个目标多轮路径未重建。
+例如 299.5°E、62.5°S 表层利用模型水深为零的邻点；
+116.5°E、65.5°S、300m 利用南边界外 66.5°S 的供体。
+
+失败柱 302.5°E、63.5°S 的全部 11 个湿温盐节点在当前 WOA 中缺测，
+但该柱历史第一轮供体均湿、同连通分量，**不能归因于该柱跨陆地填充**。
+事先固定的诊断对照，仅在临时内存用同深度湿连通最近原有效 T/S 供体替换南端缺测节点；
+未修改源数据、海岸或海底。失败柱对照采用北侧 111.2km 的原有效剖面。
+
+| 初态柱均压力力，m/s² | 原输入 | 连通供体诊断对照 |
+| --- | ---: | ---: |
+| x | −1.143084e−7 | −2.370223e−6 |
+| y | +2.491796e−7 | +3.452426e−7 |
+
+力向量**变化量**范数为原力范数的 8.236 倍，而非控制后力恰为原来的 8.236 倍。
+122 个南端湿柱超过预先固定的敏感性提示（变化 ≥1e−7m/s² 且 ≥原力25%）。
+南端线性 EOS 密度倒置区间从 5219 变成 5203；失败柱 300→500m 的倒置反而从
+−0.06505 加重到 −0.09976kg/m³。该控制没有得到采用为修复的依据。
+连通关系只是必要诊断约束，不能证明同一水团或真实海盆；最大供体距离、
+剖面一致性、锋面/盆地约束需要另行科学审查。
+
+独立共同湿深度静水 oracle 最大面压差误差 3.73e−11Pa、3D 力误差 3.40e−19m/s²；
+水平一致稳定剖面保留原海岸/阶梯海底后水平力严格为零。
+数值算子一致不等于初始化或封闭南边界物理正确。
+诊断对照零时间步，单核 120s/2GiB 预算，实际 4.01s、峰值工作集 440713216 bytes。
+其结果摘要 SHA256：`514da73e4ef3e978dae89ac0f0516964de1bc5cebf5321023208fe736c27a763`。
+
+## 复核与后续门槛
+
+```sh
+python -m pytest tests/test_input_quality.py -q
+ruff check .
+```
+
+合成测试覆盖有效供体、干点供体、域外供体、多轮未实现、无供体、整柱缺测、
+未知映射、记录截断、MaskedArray 缺测、bool/uint8 湿掩膜、CLI 私有掩膜/身份落盘与禁止覆盖。
+本地 17 项测试通过，全仓库 ruff 通过，独立只读 code gate 通过。
+旧填充的固定小例结果保持一致，现有科学填充文件未改动。
+完整多轮 provenance 与非重合网格支持在独立审查后另行实现；本 PR 不自动替换任何填充。
+
+### 实际归档工程预检见证
+
+上述新入口对同一完整 1° 初态/网格执行一次严格预检，T、S 分别报告 9297 个缺测湿节点、
+363 个整柱缺测和 2891 个含缺测湿柱，记录均未截断。两变量计数不能相加当成独立节点数。
+按设计返回退出码 2，未执行填充或数值积分。单核 120s/2GiB 预算，实际 9.01s，
+峰值工作集 342720512 bytes。JSON 和原缺测掩膜只存于私有临时目录，不收入 Git。
+这些是全域计数，与前文南端六行的 440 节点/175 湿柱不同。
+
+## 2026-09-30 修订：六个 strict 反例与读取快照
+
+独立复审发现上一版 17 项测试没有覆盖格式身份、有限缺测码、网格合同和读取身份竞争。
+上一版 strict 门槛不充分；严格行为以本节修订及新增测试为准。
+科学 `woa_data.py` 与既有填充/插值代码仍未修改。
+
+1. **变量、单位和格式。** 新预检 reader 只接受有明确元数据的 typed twin 或
+   WOA-compatible NetCDF。无元数据 NPZ、同一温度 twin 用作盐度、未知单位/编码均拒绝。
+   NPZ 不得宣称自己已经通过 NetCDF mask/packing 解码。
+2. **有限缺测码。** NetCDF 必须声明 `_FillValue`，由 netCDF4 在解码时应用 mask/packing；
+   typed twin 的有限 fill code 必须显式声明。没有被声明编码解释的已知 WOA 哨兵值拒绝，
+   不能因为有限就视为有效。解码后的 packed NetCDF 不再次按原 encoded fill 误掩码。
+3. **网格合同。** 湿节点不能位于原水深之下或零水深柱；坐标单位/深度方向必须已知。
+4. **周期唯一性。** 原/目标经度周期归一后必须唯一，精确坐标映射必须单射；
+   `[0,360]` 不能映射为两个独立的源 0° 节点。
+5. **同一读取快照。** 源路径（含 twin 选择）只解析一次。源、网格和初态从不可变 bytes
+   解析，SHA256 绑定同一 bytes，而不是解析后另读路径生成 hash。
+   解析后及输出阶段复核路径当前内容；检测到改变返回 2。
+   身份是读取快照身份，变更检测只保证验证时点，不能保证文件未来不变。
+6. **公开严格检查。** `enforce_strict_quality` 重核元数据、映射/网格/编码 flags、
+   缺测/变更/非有限/截断计数、记录及变量字段；`status=supported` 本身不能放行。
+
+### typed twin 显式合同
+
+NPZ 不得使用 pickle/object 元数据。除原有 `lon/lat/depth/data` 外须保存标量：
+
+| 字段 | 已支持值 |
+| --- | --- |
+| `source_format` | `ocean.woa_twin.v1` |
+| `variable` | `temperature` 或 `salinity`，必须匹配用途 |
+| `units` | 温度 `degrees_celsius`；盐度 `1` 或 `psu` |
+| `longitude_units` / `latitude_units` | `degrees_east` / `degrees_north` |
+| `depth_units` / `depth_positive` | `m` 或 `meters` / `down` |
+| `missing_encoding` | `nan` 或 `fill_value` |
+| `fill_value` | `fill_value` 编码必需，有限且可由 data dtype 表示 |
+
+这是输入声明合同，不是自动元数据补全。既有无类型 twin 的科学复现路径未改动，
+但新预检拒绝猜测其含义。NetCDF 另须有 `t_an`/`s_an`、
+`time/depth/lat/lon` 维度与单一 time，及对应变量/坐标单位、向下深度和 `_FillValue`。
+未知格式在诊断和严格模式均清楚拒绝；已知格式的输入质量缺口仍可写诊断 sidecar。
+
+### 新验证
+
+本地 52 项测试通过、全仓 ruff 通过、只读 code gate 通过。
+全部六个反例已纳入；另覆盖正常 typed twin/NetCDF、合法 packed 解码、伪装 NetCDF 的 NPZ、
+错误坐标单位/方向、无法解释的已知哨兵值，以及源/网格/初态读后替换和输出阶段替换。
+本地 NumPy 2.5/netCDF4 写入合成文件产生 9 条第三方弃用警告，测试无失败。
+多轮 donor、垂向兜底、非重合网格及历史原 hash 的边界维持前文说明，不假称完整 provenance。
+
+新版对当前原 NetCDF 和同一归档进行一次快照预检，仍按设计返回 2；T/S 各自
+9297 个缺测湿节点、363 整柱缺测、2891 含缺测湿柱，原场和科学填充未改。
+单核 120s/2GiB 预算下实际 9.01s，峰值工作集 451698688 bytes，无积分步。
+
+
+## 2026-09-30 Correction: sidecar atomic publication
+
+The CLI now emits `ocean.input_quality_bundle.v2`: one private JSON containing
+all quality records and the compressed NPZ masks as `private_mask_artifact`
+(`storage=embedded_npz_base64`, `content_base64`, original NPZ bytes and SHA256).
+The previous separate `.masks.npz` publication is superseded. Consumers decode
+base64, verify bytes/SHA256, then load with `allow_pickle=False`; the suggested
+NPZ filename is metadata, not a second file that the CLI creates. Keep this JSON
+private: embedding masks does not make them suitable for Git or public sharing.
+
+Serialization occurs only in a new temporary directory next to the destination.
+After JSON serialization, source, grid and optional initial-state snapshots are
+rechecked. Only success permits an atomic no-clobber hard link of the single
+complete JSON. Filesystems without hard-link support fail closed. The CLI never
+unlinks a public destination, including a competing user's file. Temporary files
+are removed on failure; an existing report remains untouched. No two-file
+transaction or conditional public-file deletion is claimed.
+
+Raw audit reports carry `publication_state=uncommitted`. The public strict gate
+requires `committed` and still checks all scientific support fields. Strict CLI
+validation happens before serialization; unsupported input creates no new success
+artifact. Diagnostic mode may publish a committed *unsupported* report, which
+still cannot pass strict. The state marker is a publication contract, not a
+signature against intentional report forgery. Snapshot checks establish the
+validation-time identity, not immutability of source paths after publication.
+
+Regression witnesses include mutation immediately after JSON serialization,
+mutation during mask serialization, pre-existing report/mask preservation,
+no-clobber competition for the final JSON, publication failure with an unrelated
+user mask, and successful embedded-mask byte/hash recovery. Earlier scientific
+fill results, thresholds, donor limitations and missing historical hashes remain
+unchanged. No private input arrays were added to this repository.
+
+
+## 2026-09-30 Correction: strict bundle reader integrity
+
+Consumers must use the complete reader rather than validating each variable alone:
+
+```python
+from input_quality import load_strict_quality_bundle
+report, masks = load_strict_quality_bundle("quality.json")
+```
+
+`enforce_strict_quality_bundle(report)` is the corresponding already-parsed
+mapping entry point. `enforce_strict_quality(variable_report)` checks local
+variable support only; it does not validate a bundle or its embedded artifact.
+The strict CLI validates its serialized private staging JSON with the complete
+reader before final input-snapshot checks and atomic publication.
+
+The bundle reader requires v2, committed top-level and variable states, exactly
+T/S with matching roles, supported metadata/counts, valid base64, compressed byte
+length and SHA256, exactly eight boolean NPY masks, expected 3D shapes and
+canonical boolean payloads. New masks include each variable's target wet mask;
+reports record raw/target shapes, raw missing count, wet counts and exact-node
+source indices. It verifies source-to-target missing-mask mapping, known support,
+wet prefixes, per-variable missing/all-missing/unsupported counts and identical
+T/S wet geometry. Old v2 artifacts missing these fields fail closed and must be
+regenerated; original archives are not modified.
+
+Defaults limit report reads to 64 MiB, compressed NPZ to 32 MiB and total ZIP
+member expansion to 128 MiB. ZIP member count/names, compression and expansion
+are checked before reading; NPY headers, shapes, bool dtype and actual payload
+length are checked before NumPy allocation. Callers may explicitly choose other
+positive bounds; limits describe payload sizes, not total process RSS. Only
+stored/deflated ZIP and NPY v1/v2 are supported, with pickle disabled. JSON keys
+must be unique. Unsupported input is refused rather than repaired.
+
+This is narrow artifact format and internal-consistency validation, not generic
+safe parsing, source authenticity or scientific qualification. A party able to
+rewrite all fields and hashes can fabricate a consistent report; the reader has
+no signed provenance or original arrays. It does not resolve historical raw-hash
+gaps, incomplete donor lineage or physical validity of the southern boundary.
+
+Validation: 96 focused tests passed in 2.65s; full-repository ruff passed. Tests
+include successful mapping/file round trips, failed top/variable states, swapped
+T/S, corrupt base64/bytes/hash, recomputed-hash mask/key/dtype/shape/count
+contradictions, size bounds before allocation, forged huge NPY headers and
+duplicate JSON keys. The earlier publication/source-change tests remain passing.
+No solver step or scientific fill change was introduced.
