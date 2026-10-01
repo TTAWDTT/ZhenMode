@@ -286,3 +286,13 @@ def test_original_stage_clock_not_silently_replaced():
     out, ok, report = k.advance(s, p, g, forcing_sha="b" * 64)
     assert not ok and "original stage schedule" in report["rejection_reason"]
     assert out.n.tobytes() == s.n.tobytes()
+
+
+@pytest.mark.parametrize("bad_count", [5.9, True])
+def test_subcycle_count_cannot_be_truncated_or_boolean(bad_count):
+    g, p, s = configured()
+    p.n_subcyc = bad_count
+    s.identity["parameter_sha"] = k.parameter_digest(p)
+    out, ok, report = k.advance(s, p, g, forcing_sha="b" * 64)
+    assert not ok and "count must be an integer" in report["rejection_reason"]
+    assert out.n.tobytes() == s.n.tobytes()

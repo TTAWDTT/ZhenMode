@@ -521,6 +521,11 @@ def advance(s, p, grid, *, forcing_sha, max_subcycles=256):
             raise ValueError("parameter/forcing/clock snapshot changed")
         if type(max_subcycles) is not int or not 1 <= max_subcycles <= 256:
             raise ValueError("frozen max_subcycles bound")
+        if not isinstance(p.mode_split, (bool, np.bool_)):
+            raise ValueError("mode_split boolean required")
+        if p.mode_split and (isinstance(p.n_subcyc, (bool, np.bool_))
+                             or not isinstance(p.n_subcyc, (int, np.integer))):
+            raise ValueError("fast subcycle count must be an integer")
         count = int(p.n_subcyc) if p.mode_split else 1
         if count < 1 or count > max_subcycles or not np.isfinite(p.dt) or p.dt <= 0:
             raise ValueError("bounded timestep/subcycle contract")
