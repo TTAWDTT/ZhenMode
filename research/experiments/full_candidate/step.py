@@ -324,6 +324,19 @@ def bind_geometry(s, p, grid):
     shape = (grid.nx, grid.ny, grid.nz)
     if s.h.shape != shape:
         raise ValueError("candidate/grid shape mismatch")
+    for name, expected_shape in (("dx_2d", shape[:2]), ("dy", ()),
+                                 ("cos_lat", (grid.ny,))):
+        if any(np.ma.getmaskarray(getattr(owner, name, None)).any()
+               for owner in (p, grid)):
+            raise ValueError("unknown consumed horizontal metric: " + name)
+        parameter = np.asarray(getattr(p, name, None))
+        metric = np.asarray(getattr(grid, name, None))
+        if (parameter.shape != expected_shape or metric.shape != expected_shape
+                or parameter.dtype.kind not in "iuf" or metric.dtype.kind not in "iuf"
+                or not np.isfinite(parameter).all() or not np.isfinite(metric).all()
+                or np.any(parameter <= 0) or np.any(metric <= 0)
+                or not np.array_equal(parameter, metric)):
+            raise ValueError("consumed horizontal metric mismatch: " + name)
     if not np.array_equal(np.asarray(p.dz_node).ravel(), nodal_control_thickness(grid.z)):
         raise ValueError("original node geometry mismatch")
     ref = np.broadcast_to(np.asarray(p.dz_node), shape) * np.asarray(p.wet_mask_z)
@@ -333,6 +346,17 @@ def bind_geometry(s, p, grid):
         raise ValueError("candidate band-bottom changed")
     if not np.array_equal(np.asarray(p.wet_mask_z), grid.wet_mask_3d):
         raise ValueError("original wet geometry mismatch")
+
+
+def validate_dissipative_controls(p):
+    """Reject invalid scalar transport controls, including inactive coefficients."""
+    for name in ("kappa_h", "kappa_v", "kappa_conv", "nu_h", "nu_v", "r_bot"):
+        if np.ma.getmaskarray(getattr(p, name, None)).any():
+            raise ValueError("unknown dissipative control: " + name)
+        value = np.asarray(getattr(p, name, None))
+        if (value.shape != () or value.dtype.kind not in "iuf"
+                or not np.isfinite(value) or value < 0):
+            raise ValueError("finite nonnegative scalar required: " + name)
 
 
 def kick(s, p, grid, dt):
@@ -510,6 +534,7 @@ def advance(s, p, grid, *, forcing_sha, max_subcycles=256):
     try:
         validate(s)
         bind_geometry(s, p, grid)
+        validate_dissipative_controls(p)
         if getattr(p, "process_time_scheme", None) != TIME_SCHEME:
             raise ValueError("original stage schedule is not implemented by inventory KDK")
         missing = unsupported(p)
@@ -601,4 +626,7 @@ def load(path, *, expected_identity, p, grid):
                   identity, int(packet["step"]))
     validate(s)
     bind_geometry(s, p, grid)
+    validate_dissipative_controls(p)
+    if parameter_digest(p) != s.identity["parameter_sha"]:
+        raise ValueError("checkpoint parameter snapshot changed")
     return s
