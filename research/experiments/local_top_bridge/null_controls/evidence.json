@@ -1,0 +1,46 @@
+{
+  "parent_head": "4fb852aa67485053ba54e441298801b7146e53b9",
+  "quantity_passed": false,
+  "qualification_passed": false,
+  "test_result": "10 passed in 0.45s",
+  "rows": [
+    {
+      "layers": 8,
+      "max_source_remap_error_Pa": [
+        0.004335693145549158,
+        0.006501374034996843
+      ],
+      "remap_minus_source_base_Pa": 0.0
+    },
+    {
+      "layers": 16,
+      "max_source_remap_error_Pa": [
+        0.0005419616463768762,
+        0.0008121303362713661
+      ],
+      "remap_minus_source_base_Pa": 0.0
+    },
+    {
+      "layers": 32,
+      "max_source_remap_error_Pa": [
+        6.774520807084627e-05,
+        0.00010151629248866811
+      ],
+      "remap_minus_source_base_Pa": 0.0
+    },
+    {
+      "layers": 64,
+      "max_source_remap_error_Pa": [
+        8.468152373097837e-06,
+        1.268953928956762e-05
+      ],
+      "remap_minus_source_base_Pa": 0.0
+    }
+  ],
+  "cost": "bounded CPU; no integration/scientific inputs; peak RSS not measured",
+  "source": "analytic exact means only, no real private columns",
+  "hashes": {
+    "tests/test_top_pressure_null.py": "d0337874513579cba3f0785a4c2dae738375a73b1e2ce40fb074021c22752475",
+    "research/experiments/local_top_bridge/null_controls/CONTRACT.md": "d9ff734749e66967c0f3c643271ad960e6b340a30fe9746824d8332ba03e728f"
+  }
+}
