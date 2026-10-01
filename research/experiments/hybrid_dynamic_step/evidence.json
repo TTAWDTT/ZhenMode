@@ -1,0 +1,43 @@
+{
+  "base": "8ad3552ff651cf45dfec7ae9a119ac75eef28890",
+  "qualification_passed": false,
+  "test_result": "9 passed in0.20s",
+  "synthetic_report": {
+    "pressure_impulse_kg_per_m_s": [
+      10.052006909165842,
+      0.0
+    ],
+    "inventory_residual": [
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "inventory_bound": [
+      6.821210263296962e-10,
+      1.5916157281026244e-09,
+      2.2855617565178003e-12,
+      0.0
+    ],
+    "qualification_passed": false,
+    "pressure_work_J_per_m2": 0.0004928926835292638,
+    "band_bottom_volume_flux_m_s": [
+      1.3488749999997487e-06,
+      -1.3488749999997487e-06
+    ],
+    "water_residual_m": 0.0,
+    "source_inventory_change": [
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "transport_remap_KE_change_J_per_m2": -3.4752829411975605e-13
+  },
+  "cost": "bounded CPU; no private data/time integration beyond single synthetic step; peak RSS not measured",
+  "hashes": {
+    "research/experiments/hybrid_dynamic_step/step.py": "ed77ebcc5c6e855c6b433e331bfb14896affcdfbc3ddebe23b0b4af90c845469",
+    "research/experiments/hybrid_dynamic_step/README.md": "20f6a35df6c1eecf56e06115bcbcc90e3f99554083e77762a9c3c4e1048eeffc",
+    "tests/test_hybrid_dynamic_step.py": "ef990eaa73a03bb882afcc249b1a655f0bd4c06881d2fea04cf7405e0cbe944f"
+  }
+}
