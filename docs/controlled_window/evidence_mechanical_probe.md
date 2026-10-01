@@ -69,3 +69,8 @@ Total bounded execution including two uninstrumented witnesses:255.152721s, peak
 ## Validation before publication
 
 Three new AST projection contracts and three existing geometry contracts passed (6tests,0.45s); full-repository ruff and diff checks passed. Independent read-only code, numerical-result and final-publication reviews found no blocking issue. New-head full CI is reported separately and is not presumed successful.
+
+
+## Patch-format correction
+
+The initial staged format check flagged whitespace-only unified-diff context lines; source expressions and probe results were unaffected. The published patch now uses zero context (direct application would require --unidiff-zero); the source generator is the recommended reproduction entry. Numeric module hashes and the executed runner/protocol remain unchanged.

@@ -118,7 +118,7 @@ def main():
                               numerical_ast_unchanged=True)
         if output != content.decode('utf-8'):
             patches.extend(difflib.unified_diff(content.decode('utf-8').splitlines(True), output.splitlines(True),
-                                               fromfile='historical/'+name, tofile='instrumented/'+name))
+                                               fromfile='historical/'+name, tofile='instrumented/'+name, n=0))
     (args.output_dir / 'mechanical_source_manifest.json').write_text(json.dumps(manifest, indent=2)+'\n', encoding='utf-8')
     (args.output_dir / 'mechanical_instrumentation.patch').write_text(''.join(patches), encoding='utf-8')
     print('35 modules verified; diagnostic additions project back to original numerical AST')

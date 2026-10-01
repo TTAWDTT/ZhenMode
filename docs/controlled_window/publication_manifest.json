@@ -20,8 +20,8 @@
     "bytes": 90162
   },
   "docs/controlled_window/evidence_mechanical_probe.md": {
-    "sha256": "8dc540badc575467280f763515ad8cfc51effa41397930fb69f07dcd0aebce96",
-    "bytes": 8484
+    "sha256": "d9f6eeb869adc81ffdd652169439b42d33120064d13aab33039128bd2aa1d2c8",
+    "bytes": 8878
   },
   "docs/controlled_window/evidence_postprocess.json": {
     "sha256": "99c660827d87d1333db34d6630297a966297c50cbbff95b8222b9ea4572b695d",
@@ -40,8 +40,8 @@
     "bytes": 2728
   },
   "docs/controlled_window/mechanical_instrumentation.patch": {
-    "sha256": "632f2e606aa2d4f948e03c601f5505d5280270b638395a3a9634fbfff026f06b",
-    "bytes": 5748
+    "sha256": "8399f7f3d8130a905ee8effa2b9bfdf0ba369c5719a14159d31d69ff35c51c72",
+    "bytes": 2774
   },
   "docs/controlled_window/mechanical_record_audit.md": {
     "sha256": "3d8995f3a7126c494f5d49465f4cf82bf5a3a398bae8f4870e312f22b7e2184f",
@@ -88,8 +88,8 @@
     "bytes": 13188
   },
   "scripts/controlled_window/prepare_mechanical_source.py": {
-    "sha256": "31f99a47392ea4c4eed9a289413c8de682ae4404386204f9f27a00f8a206f89d",
-    "bytes": 7550
+    "sha256": "1076f7ac7dfdafbcf2f3ac3de578a2f660c0b4a9c68817e53ba0e259a8c40ffa",
+    "bytes": 7555
   },
   "scripts/controlled_window/prepare_source.py": {
     "sha256": "695d1e6f2535552503e8bf12285fee1a6eadce108335024d00ea41052d6ab0e9",
