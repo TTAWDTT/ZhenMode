@@ -1,0 +1,171 @@
+{
+  "contract": "flat_bottom_sigma_dual_shared_stock_force_v1",
+  "domain": "manufactured declared rectangular footprint; full 14-slot stocks",
+  "source_sha256": {
+    "force_geometry.py": "6df30daaff0d3a3dac133fb8ca29cccabc89f52b6deb36b4306c853d9c4732ef",
+    "force_contour_oracle.py": "96c0f0ca972d0c0bf7ebaa6387b5f95212d8e79f35a9ad84ba1ed89fcf5bf339",
+    "force_geometry_cases.py": "ee5d6a5327a67955ca4c94125d739bdf4cbd00c3a6545baaa0852ba0679a4802",
+    "force_geometry_evidence.py": "6474fa8dd233435e6cf9b7e9e12a0a41c345d267868717f8fab435dfb38b8e2a",
+    "test_pressure_force_geometry.py": "aeb2697b942bd3a37c27b86b52036710e07d3fc6482e105475ad9531f50bd732"
+  },
+  "time_step_executed": false,
+  "accepted_state_returned": false,
+  "default_production_entry_changed": false,
+  "original_physical_profile_recovered": false,
+  "periodic_H123": {
+    "new_force_N": [
+      4.092726157978177E-12,
+      0.0
+    ],
+    "old_Cmin_accepted": false,
+    "old_Cmin_failure_N": [
+      -20110.5,
+      0.0
+    ]
+  },
+  "nonzero_case": {
+    "slots": 14,
+    "columns": 3,
+    "segments": 77,
+    "column_flux": [
+      {
+        "column_Q_m3_s": 0.1819791666666667,
+        "depth_mean_Q_m3_s": 0.1819791666666667,
+        "roundoff_ratio": 0.0,
+        "dry_face": false
+      },
+      {
+        "column_Q_m3_s": 0.31232638888888886,
+        "depth_mean_Q_m3_s": 0.3123263888888889,
+        "roundoff_ratio": 0.0009765625,
+        "dry_face": false
+      },
+      {
+        "column_Q_m3_s": 0.2544444444444445,
+        "depth_mean_Q_m3_s": 0.2544444444444445,
+        "roundoff_ratio": 0.0,
+        "dry_face": false
+      }
+    ],
+    "eta_rate_m_s": [
+      0.036232638888888884,
+      -0.0651736111111111,
+      0.028940972222222222
+    ],
+    "band_R_m_s": [
+      -0.028749999999999998,
+      0.028977272727272727,
+      -0.01142045454545455
+    ],
+    "max_deep_h_rate_m_s": 0.0,
+    "max_deep_stock_rate": 0.21606534090909113,
+    "max_pressure_momentum_rate": 6973.263888888889,
+    "full_stock_transport_budget": {
+      "water_residual_m3_s": 5.204170427930421E-18,
+      "stock_residual_per_s": [
+        1.249000902703301E-16,
+        -1.0547118733938987E-15,
+        4.440892098500626E-16,
+        -4.85722573273506E-17
+      ]
+    },
+    "stock_PE_direction_W": -146.6390624999999,
+    "energy": {
+      "pressure_power_W": 151.1282986111111,
+      "gravity_PE_rate_W": -146.6390624999999,
+      "collapsed_barotropic_PE_rate_W": -146.63906249999977,
+      "stock_PE_direction": {
+        "direction_W": -146.6390624999999,
+        "absolute_local_contribution_W": 2474.70875,
+        "bound_W": 1.4067090603475661E-10
+      },
+      "stock_PE_binding_bound_W": 1.4900637168580031E-10,
+      "external_pressure_power_W": 4.489236111111108,
+      "bound_W": 1.7181298359345303E-11,
+      "full_stock_pairing_bound_W": 1.5785220439410191E-10,
+      "pairing_residual_ratio": 0.00047263823486774304
+    },
+    "kinetic_transport": {
+      "transport_kinetic_rate_W": -0.09720752257821272,
+      "upwind_loss_W": 0.09720752257821272,
+      "bound_W": 5.684341886080802E-14,
+      "residual_ratio": 0.0
+    },
+    "max_contour_roundoff_ratio": 0.0038597680572967186,
+    "midpoint": {
+      "algebraic_impulse_only": true,
+      "impulse_duration_s": 1.0,
+      "accepted_state_returned": false,
+      "time_step_executed": false,
+      "kinetic_change_J": 368920.1448890583,
+      "midpoint_work_J": 368920.14488905825,
+      "work_bound_J": 4.424649811560555E-08,
+      "work_roundoff_ratio": 0.001315531474635228
+    }
+  },
+  "stable_P1_flat_static": {
+    "segments": 27,
+    "max_oracle_roundoff_ratio": 0.028854000599705564,
+    "force_consumption_qualified": false
+  },
+  "explicit_refusals": {
+    "stable_P1_consumption": "general_P1: nonuniform density needs a proved stock-PE/contour/ALE coupling",
+    "step_bottom": "step_bottom: cut dual polygon and vertical solid contour are not implemented"
+  },
+  "scope_missing": [
+    "general P1 geometry-bound Ctranspose/stock-PE/ALE work coupling",
+    "step-bottom cut dual and solid faces",
+    "finite-step predict/12fast/replay integration on this geometry",
+    "FCT/filter/mixing/biharmonic/wind/heat/rotation/drag adapters",
+    "real grid momentum-dual geometry",
+    "fixed-endpoint order and equal-error speed comparison"
+  ],
+  "authenticity": "prototype synthetic static/discrete identities, not production evidence",
+  "baseline_main_commit": "4fcf3082a54a12206b6626920c7925da2f14c700",
+  "runtime_packages": {
+    "python": "3.13.5",
+    "numpy": "2.1.3",
+    "pytest": "8.3.4",
+    "ruff": "0.15.7"
+  },
+  "execution": {
+    "scalar_cli": {
+      "wall_s": 0.914,
+      "peak_interpreter_RSS_bytes": 39358464,
+      "peak_job_private_bytes": 39313408,
+      "single_CPU": true,
+      "memory_limit_bytes": 4294967296,
+      "wall_limit_s": 180,
+      "bound_stop": false,
+      "exit_code": 0
+    },
+    "final_targeted_regression": {
+      "wall_s": 74.537,
+      "peak_interpreter_RSS_bytes": 103219200,
+      "peak_job_private_bytes": 92909568,
+      "single_CPU": true,
+      "memory_limit_bytes": 4294967296,
+      "wall_limit_s": 180,
+      "bound_stop": false,
+      "exit_code": 0
+    },
+    "passed_tests": 171,
+    "new_contract_tests": 32,
+    "pytest_wall_s": 72.75,
+    "local_JAX_suite": "not executed; JAX is absent",
+    "archives_accessed_this_batch": 0,
+    "all_cases_total_job_wall_s_under": 300,
+    "inspector_probe_job_wall_s": 0.623,
+    "force_geometry_time_steps_executed": 0,
+    "existing_dynamic_synthetic_steps_exercised_by_regression": true
+  },
+  "independent_review": {
+    "status": "clean: static constant-density common-flat-bottom sigma-dual interface and instantaneous full-stock rates; frozen hashes verified",
+    "fixed_findings": [
+      "nonfinite intermediate and scalar ledger rejection",
+      "near-uniform density requires full inventory P1 directional pairing",
+      "strictly negative limiter room has zero derivative",
+      "absolute roundoff scale uses individual additive contributions"
+    ]
+  }
+}
