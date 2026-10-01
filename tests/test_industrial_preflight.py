@@ -27,6 +27,8 @@ def test_preflight_native_sampling_and_input_hashes(tmp_path):
     for name, identity in request['input_identities'].items():
         assert hashlib.sha256((directory / name).read_bytes()).hexdigest() == identity['sha256']
     assert '"native",100,"seconds"' in (directory / 'diag_table').read_text()
+    assert all(line.endswith(',1') for line in
+               (directory / 'diag_table').read_text().splitlines()[3:])
     with netCDF4.Dataset(directory / 'INPUT/initial.nc') as ds:
         assert ds['x'].cartesian_axis == 'X'
         assert ds['Interface'].cartesian_axis == 'Z'

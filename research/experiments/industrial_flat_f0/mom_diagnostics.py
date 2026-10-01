@@ -12,7 +12,8 @@ def write_native_diag_table(path, interval_s=1000):
     lines = ['"Frozen f=0 standing wave native diagnostics"', '1 1 1 0 0 0',
              f'"native",{interval_s},"seconds",1,"seconds","time",']
     for field in ('u', 'v', 'h', 'e', 'temp', 'salt', 'SSH'):
-        power = 1 if field == 'h' else 2
+        # Pinned FMS diag_table.F90:219-221: 1=double, 2=float.
+        power = 1
         lines.append(f'"ocean_model","{field}","{field}","native",'
                      f'"all",.false.,"none",{power}')
     with Path(path).open('x', encoding='utf-8') as stream:
