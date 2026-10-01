@@ -8,7 +8,7 @@ import pytest
 
 DIRECTORY = Path(__file__).parents[1] / 'research/experiments/industrial_flat_f0'
 sys.path.insert(0, str(DIRECTORY))
-from native_mom import read_field
+from native_mom import active_expected, read_field
 from prepare_mom import prepare, settings
 
 
@@ -46,3 +46,18 @@ def test_native_masked_coordinate_rejected(tmp_path):
         ds.createVariable('x', 'f8', ('x',), fill_value=-999.)[:] = [1., -999.]
     with netCDF4.Dataset(path) as ds, pytest.raises(ValueError, match='invalid native field'):
         read_field(ds, 'x', ('x',))
+
+
+def test_dormant_fields_require_explicit_runtime_disable_controls():
+    requested = settings(True)
+    resolved = dict(requested, LAPLACIAN=False)
+    for name in ('ISOTROPIC', 'KH', 'KH_VEL_SCALE', 'SMAGORINSKY_KH', 'SMAG_BI_CONST', 'KD'):
+        resolved.pop(name)
+    expected, evidence = active_expected(requested, resolved)
+    assert len(evidence) == 6
+    assert expected['LAPLACIAN'] is False
+    for control in ('GRID_CONFIG', 'LAPLACIAN', 'SMAGORINSKY_AH', 'ADIABATIC'):
+        changed = dict(resolved)
+        changed.pop(control)
+        with pytest.raises(ValueError, match='unproven dormant'):
+            active_expected(requested, changed)

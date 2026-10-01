@@ -50,9 +50,15 @@ def engineering_gate(state, inputs, frozen):
                 tracer_error=tracer_error, v_over_U=v_ratio)
 
 
-def run(directory):
+def run(directory, input_file):
     frozen = contract('coarse')
-    inputs = native_arrays(0.)
+    expected = native_arrays(0.)
+    with np.load(input_file, allow_pickle=False) as archive:
+        if set(archive.files) != set(expected):
+            raise ValueError('frozen input members differ')
+        inputs = {key: archive[key] for key in archive.files}
+    for name in expected:
+        np.testing.assert_array_equal(inputs[name], expected[name])
     grid = SimpleNamespace(nx=64, ny=8, nz=4, x_m=inputs['x_m'], y_m=inputs['y_m'],
                            z=inputs['z_m'], dz=inputs['dz_m'], dx_2d=inputs['dx_2d_m'],
                            dy=float(inputs['dy_m']), cos_lat=inputs['cos_metric'],
@@ -74,6 +80,7 @@ def run(directory):
     # Lower/compile executes no numerical step. There is no warm-up trajectory.
     compiled = step.lower(state).compile()
     configuration = dict(options=frozen['ocean_options'], physics=asdict(physics),
+                         input_sha256=hashlib.sha256(input_file.read_bytes()).hexdigest(),
                          source_module_sha256=hashlib.sha256((ROOT / 'src/jax_solver_global.py').read_bytes()).hexdigest(),
                          jax_version=jax.__version__, dt_s=100., steps=320,
                          devices=[str(device) for device in jax.devices()],
@@ -101,5 +108,6 @@ def run(directory):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--run-directory', type=Path, required=True)
+    parser.add_argument('--input-file', type=Path, required=True)
     args = parser.parse_args()
-    run(args.run_directory)
+    run(args.run_directory, args.input_file)

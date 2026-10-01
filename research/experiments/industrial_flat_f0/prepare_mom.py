@@ -32,7 +32,8 @@ def settings(preflight):
                   BOTTOMDRAGLAW=True, CDRAG=0., DRAG_BG_VEL=0., HBBL=10.,
                   FRAZIL=False, DO_GEOTHERMAL=False,
                   USE_IDEAL_AGE_TRACER=False, SAVE_INITIAL_CONDS=True,
-                  IC_OUTPUT_FILE='native_initial', RESTART_CONTROL=0,
+                  IC_OUTPUT_FILE='native_initial', RESTART_CONTROL=0 if preflight else 2,
+                  RESTINT=0. if preflight else 1000./86400.,
                   MAXTRUNC=0, MAXCPU=600., DAYMAX=(100. if preflight else 32000.)/86400.,
                   ENERGYSAVEDAYS=1000./86400., DEBUG=True)
     return values
