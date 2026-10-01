@@ -7,7 +7,7 @@ from pathlib import Path
 import numpy as np
 from summarize_mechanical_probe import unpack
 
-FACTOR = 4096 * np.finfo(np.float64).eps
+FACTOR = float(4096 * np.finfo(np.float64).eps)
 
 
 def component_work(first, second, u0, v0, un, vn, mass, dt):

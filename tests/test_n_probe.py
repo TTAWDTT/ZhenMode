@@ -43,3 +43,8 @@ def test_rejected_original_gate_blocks_interpretation():
         with pytest.raises(ValueError):
             module.require_accepted_record(record)
     module.require_accepted_record(dict(valid=True,checks={'finite':True},equivalence={'passed':True}))
+
+
+def test_frozen_bound_uses_serializable_boolean():
+    import json
+    assert json.loads(json.dumps({'passed':1. <= module.FACTOR*1e15}))['passed'] is True

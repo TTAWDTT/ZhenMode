@@ -1,0 +1,177 @@
+{
+  "air_reanalysis.py": {
+    "original_sha256": "e8226c5841c10c04b95ee850586ae19fe53b8822540fd90d58b8f7ed545d8da4",
+    "instrumented_sha256": "e8226c5841c10c04b95ee850586ae19fe53b8822540fd90d58b8f7ed545d8da4",
+    "numerical_ast_unchanged": true
+  },
+  "barotropic_transport.py": {
+    "original_sha256": "7d0685d4cad3bfba89af5243c5e9c917b5be8e0b9f675433eb7ee5d3a236f8d2",
+    "instrumented_sha256": "7d0685d4cad3bfba89af5243c5e9c917b5be8e0b9f675433eb7ee5d3a236f8d2",
+    "numerical_ast_unchanged": true
+  },
+  "bench_climatology_global.py": {
+    "original_sha256": "12384d569b6717c45dfc321b31da800cb24580ce883f678a53fc83675703f62b",
+    "instrumented_sha256": "12384d569b6717c45dfc321b31da800cb24580ce883f678a53fc83675703f62b",
+    "numerical_ast_unchanged": true
+  },
+  "benchmark_gate.py": {
+    "original_sha256": "ea1c2b90fd38d0f864f53c7ca09f3293845b9c7de7a5b9d766048d3cb7b1fde1",
+    "instrumented_sha256": "ea1c2b90fd38d0f864f53c7ca09f3293845b9c7de7a5b9d766048d3cb7b1fde1",
+    "numerical_ast_unchanged": true
+  },
+  "benchmark_manifest.py": {
+    "original_sha256": "fceeff7c3f2894452963f7cc4f712d550e993e16957bd424cfd3af0bf0b219e0",
+    "instrumented_sha256": "fceeff7c3f2894452963f7cc4f712d550e993e16957bd424cfd3af0bf0b219e0",
+    "numerical_ast_unchanged": true
+  },
+  "benchmark_metrics.py": {
+    "original_sha256": "0bbab7ce77841dec67d75311970cf41a36d6be47f1120548f786f1e14e901f39",
+    "instrumented_sha256": "0bbab7ce77841dec67d75311970cf41a36d6be47f1120548f786f1e14e901f39",
+    "numerical_ast_unchanged": true
+  },
+  "benchmark_table.py": {
+    "original_sha256": "02a7d27b870734a05561ce367d9944716c27750f61e824186de075953d940060",
+    "instrumented_sha256": "02a7d27b870734a05561ce367d9944716c27750f61e824186de075953d940060",
+    "numerical_ast_unchanged": true
+  },
+  "bounded_transport.py": {
+    "original_sha256": "4619e30e33e26aab5622f3466a0d3218e1817da2aed42217db3f40684566868d",
+    "instrumented_sha256": "4619e30e33e26aab5622f3466a0d3218e1817da2aed42217db3f40684566868d",
+    "numerical_ast_unchanged": true
+  },
+  "cgrid_momentum.py": {
+    "original_sha256": "f130ed62f7f87647df070cfbbca0f58720dbbbc529af79f4f6bc09fcff8aaa87",
+    "instrumented_sha256": "f130ed62f7f87647df070cfbbca0f58720dbbbc529af79f4f6bc09fcff8aaa87",
+    "numerical_ast_unchanged": true
+  },
+  "config.py": {
+    "original_sha256": "faf2a5da5f473ebc6db1e6e9e9eb269c576f2f9a3a7f266591516e31d110906a",
+    "instrumented_sha256": "faf2a5da5f473ebc6db1e6e9e9eb269c576f2f9a3a7f266591516e31d110906a",
+    "numerical_ast_unchanged": true
+  },
+  "diagnostics.py": {
+    "original_sha256": "f5abd85323f61294d7e463072df5e1100b057f2a2f47fcae7969da48008ed3f9",
+    "instrumented_sha256": "f5abd85323f61294d7e463072df5e1100b057f2a2f47fcae7969da48008ed3f9",
+    "numerical_ast_unchanged": true
+  },
+  "erddap_fetch.py": {
+    "original_sha256": "81435557452e9c916df173f12c6cb09bb5f39e70b4c467dd72ff4e8ae4abe2eb",
+    "instrumented_sha256": "81435557452e9c916df173f12c6cb09bb5f39e70b4c467dd72ff4e8ae4abe2eb",
+    "numerical_ast_unchanged": true
+  },
+  "export_mom6_air_temp_forcing.py": {
+    "original_sha256": "001ecbe2e12e265fb073c6881cba08307a1ccf01a20dfe4e972e60f99c208c8e",
+    "instrumented_sha256": "001ecbe2e12e265fb073c6881cba08307a1ccf01a20dfe4e972e60f99c208c8e",
+    "numerical_ast_unchanged": true
+  },
+  "export_mom6_sensible_forcing.py": {
+    "original_sha256": "63c3a2d109ae91e154e77a5d88d090c2996a3747673eabc35e9e586b71a2fb46",
+    "instrumented_sha256": "63c3a2d109ae91e154e77a5d88d090c2996a3747673eabc35e9e586b71a2fb46",
+    "numerical_ast_unchanged": true
+  },
+  "export_mom6_wind_forcing.py": {
+    "original_sha256": "72eef3892c42bbbf66cb17054884b485e980ba1173760944c82766aa18da1796",
+    "instrumented_sha256": "72eef3892c42bbbf66cb17054884b485e980ba1173760944c82766aa18da1796",
+    "numerical_ast_unchanged": true
+  },
+  "fetch_sla_monthly.py": {
+    "original_sha256": "dacc967e7f53e6b006db854cbced1324500562924d690d488247b253598dd46e",
+    "instrumented_sha256": "dacc967e7f53e6b006db854cbced1324500562924d690d488247b253598dd46e",
+    "numerical_ast_unchanged": true
+  },
+  "fetch_ssh_abs_monthly.py": {
+    "original_sha256": "21eaad2581e7c36a19624f67da6a63cdaa44bbf571380fd025675ceb595809c3",
+    "instrumented_sha256": "21eaad2581e7c36a19624f67da6a63cdaa44bbf571380fd025675ceb595809c3",
+    "numerical_ast_unchanged": true
+  },
+  "finite_volume.py": {
+    "original_sha256": "71e2cc033794af53a09810ddfda56fc6ee604fd35c55bdf30a721a17311efba5",
+    "instrumented_sha256": "71e2cc033794af53a09810ddfda56fc6ee604fd35c55bdf30a721a17311efba5",
+    "numerical_ast_unchanged": true
+  },
+  "forcing.py": {
+    "original_sha256": "c2a7c34e640ba4801353ed66f8bb41b37e087716b10c5483013609ed69e379b6",
+    "instrumented_sha256": "c2a7c34e640ba4801353ed66f8bb41b37e087716b10c5483013609ed69e379b6",
+    "numerical_ast_unchanged": true
+  },
+  "grid.py": {
+    "original_sha256": "1e3ed9805737dd2ca6541ec05c99748be7eaf8706254701e09b395029d2d8360",
+    "instrumented_sha256": "1e3ed9805737dd2ca6541ec05c99748be7eaf8706254701e09b395029d2d8360",
+    "numerical_ast_unchanged": true
+  },
+  "jax_solver_global.py": {
+    "original_sha256": "3d8f8d1cb850403ecdae6efb3bee66f6f2c2785c90fc564ef445a4e2a89a73ef",
+    "instrumented_sha256": "d726e71f867aff120085aa72c1bb870d0ab0e70da81b657e6fc9f96ddc9e8f3e",
+    "numerical_ast_unchanged": true
+  },
+  "material_top.py": {
+    "original_sha256": "f18e1c05994740f66916c19351fe69a1a0daecba649943eef3b2bf879a033a9a",
+    "instrumented_sha256": "fcfb3a73810c6cfce62077c4e5864046509a4c6b910f753a65531b1d998e5d20",
+    "numerical_ast_unchanged": true
+  },
+  "mixed_layer_ice.py": {
+    "original_sha256": "fce58f82d650147daa12c3378ade3282a0d29994c218da3baa36b1a784f699ea",
+    "instrumented_sha256": "fce58f82d650147daa12c3378ade3282a0d29994c218da3baa36b1a784f699ea",
+    "numerical_ast_unchanged": true
+  },
+  "nonlinear_dynamics.py": {
+    "original_sha256": "f1438695ecd40ff0498400477910763bcbadcc967b539ea39ee9d7560a198f40",
+    "instrumented_sha256": "f1438695ecd40ff0498400477910763bcbadcc967b539ea39ee9d7560a198f40",
+    "numerical_ast_unchanged": true
+  },
+  "paired_dynamics.py": {
+    "original_sha256": "adac8c8c5eb47596b8f242f701c9319439348ea333d590ddfa891c160898e777",
+    "instrumented_sha256": "adac8c8c5eb47596b8f242f701c9319439348ea333d590ddfa891c160898e777",
+    "numerical_ast_unchanged": true
+  },
+  "physical_velocity.py": {
+    "original_sha256": "0caf9d228d5892292d50c4f906b51a5aa2239c975efc487fcd338fdf84611cac",
+    "instrumented_sha256": "0caf9d228d5892292d50c4f906b51a5aa2239c975efc487fcd338fdf84611cac",
+    "numerical_ast_unchanged": true
+  },
+  "restart_contract.py": {
+    "original_sha256": "c02d1f8aad6634dae36e8a99e811ed57000ad809bf8db0bba6c301b5c423477a",
+    "instrumented_sha256": "c02d1f8aad6634dae36e8a99e811ed57000ad809bf8db0bba6c301b5c423477a",
+    "numerical_ast_unchanged": true
+  },
+  "run_long_integration_global.py": {
+    "original_sha256": "d80c7a55271f21c55a3cea81f3d87955a8a94a36eca86d3f048abfa8f633b1ca",
+    "instrumented_sha256": "d80c7a55271f21c55a3cea81f3d87955a8a94a36eca86d3f048abfa8f633b1ca",
+    "numerical_ast_unchanged": true
+  },
+  "score_external_model.py": {
+    "original_sha256": "8d0938946657205ea7ffc1f946a58d75db3530396d14ca4faa4546a495bbd8b5",
+    "instrumented_sha256": "8d0938946657205ea7ffc1f946a58d75db3530396d14ca4faa4546a495bbd8b5",
+    "numerical_ast_unchanged": true
+  },
+  "score_mom6_prog.py": {
+    "original_sha256": "92c9c16b4d8f28dcd7fd0495b6361265b6862f14cb5bc3fa9e45b802739af22e",
+    "instrumented_sha256": "92c9c16b4d8f28dcd7fd0495b6361265b6862f14cb5bc3fa9e45b802739af22e",
+    "numerical_ast_unchanged": true
+  },
+  "stage_budgets.py": {
+    "original_sha256": "d67925637836e154064ffbca5af6ecccd2fed9a72155e7d3b33b724de69ed28d",
+    "instrumented_sha256": "d67925637836e154064ffbca5af6ecccd2fed9a72155e7d3b33b724de69ed28d",
+    "numerical_ast_unchanged": true
+  },
+  "summarize_ice_diagnostics.py": {
+    "original_sha256": "587d47824d4cd507cfe53c2517d75ef3e059760b214ec6c9d083cd770fbca043",
+    "instrumented_sha256": "587d47824d4cd507cfe53c2517d75ef3e059760b214ec6c9d083cd770fbca043",
+    "numerical_ast_unchanged": true
+  },
+  "wet_fluxes.py": {
+    "original_sha256": "e092594115ca63c6a8ad88ebba84728ad84d68e6d9aa561629d6e5da7cad654c",
+    "instrumented_sha256": "e092594115ca63c6a8ad88ebba84728ad84d68e6d9aa561629d6e5da7cad654c",
+    "numerical_ast_unchanged": true
+  },
+  "wind_reanalysis.py": {
+    "original_sha256": "dbf06dbe69860d70516a0dcef747a911251d22bbbafb88cb4233f2f351cdd0a2",
+    "instrumented_sha256": "dbf06dbe69860d70516a0dcef747a911251d22bbbafb88cb4233f2f351cdd0a2",
+    "numerical_ast_unchanged": true
+  },
+  "woa_data.py": {
+    "original_sha256": "50124ce84babd8433f4d08228c9ebe56e6646d13cf36e2ea7e45429c2cba3c66",
+    "instrumented_sha256": "50124ce84babd8433f4d08228c9ebe56e6646d13cf36e2ea7e45429c2cba3c66",
+    "numerical_ast_unchanged": true
+  }
+}
