@@ -416,7 +416,12 @@ def _material_tracer_step(state, params, faces, *, subcycle_plan=None, max_subcy
 
 
 def _material_step(state, params, subcycle_scheme="reference_static_v1", max_subcycles=128,
-                   momentum_diffusion_scheme="legacy_component_v1"):
+                   momentum_diffusion_scheme="legacy_component_v1", *, stage_observer=None):
+    # Optional eager research observer; default/JIT production paths are unchanged.
+    def observe(name, current, diagnostics=None):
+        if stage_observer is not None:
+            stage_observer(name, current, diagnostics)
+
     for name, value in state._asdict().items():
         if value.dtype != jnp.float64:
             raise ValueError(f"{INVENTORY_SCHEME} requires float64 {name}")
@@ -430,29 +435,40 @@ def _material_step(state, params, subcycle_scheme="reference_static_v1", max_sub
         def momentum_diffusion(current, values, interval):
             return _joint_momentum_diffusion(current, values, interval, max_subcycles)
     start = _linear_bottom_drag_step(state, params, duration)
+    observe("bottom_drag_first", start)
     if scheduled:
         first, linear_rhs_1, absolute_1, fraction_1, linear_plan_1 = _linear_material_subcycle(
             start, params, duration, max_subcycles, momentum_diffusion=momentum_diffusion)
     else:
         first, linear_rhs_1, absolute_1, fraction_1 = _linear_material_step(start, params, duration)
+    observe("linear_first", first)
     nonlinear_predictor = _explicit_full_step(first, params, params.dt)
+    observe("nonlinear_predictor", nonlinear_predictor)
     predictor = _linear_half_step(nonlinear_predictor, params, duration, momentum_diffusion=momentum_diffusion)
+    observe("predictor_linear_second", predictor)
     dynamical, column_faces, filter_change = _barotropic_subcycle_transport(predictor, params)
+    observe("barotropic", dynamical)
     velocity_x = .5 * (first.u + nonlinear_predictor.u)
     velocity_y = .5 * (first.v + nonlinear_predictor.v)
     faces = _match_layer_face_transports(velocity_x, velocity_y, column_faces, params)
+    observe("transport_match", dynamical, {"faces": faces, "column_faces": column_faces,
+                                           "filter_change": filter_change})
     nonlinear_plan = _nonlinear_subcycle_plan(first, params, faces, max_subcycles, endpoint_eta=dynamical.eta) if scheduled else None
     middle, nonlinear_rhs, absolute_nonlinear, sources, advection, convection, fractions, minimum = _material_tracer_step(
         first, params, faces, subcycle_plan=nonlinear_plan, max_subcycles=max_subcycles,
         endpoint_eta=dynamical.eta if scheduled else None)
+    observe("accepted_tracer_replay", middle)
     if scheduled:
         end, linear_rhs_2, absolute_2, fraction_2, linear_plan_2 = _linear_material_subcycle(
             middle, params, duration, max_subcycles, momentum_diffusion=momentum_diffusion)
     else:
         end, linear_rhs_2, absolute_2, fraction_2 = _linear_material_step(middle, params, duration)
+    observe("linear_second", end)
     attempted = dynamical._replace(T=end.T, S=end.S)
     attempted = _linear_bottom_drag_step(attempted, params, duration)
+    observe("bottom_drag_second", attempted)
     attempted = attempted._replace(v=attempted.v * params.interior_mask_z)
+    observe("closed_wall", attempted)
     before, after = _contents(state, params), _contents(attempted, params)
     expected = linear_rhs_1 + nonlinear_rhs + linear_rhs_2
     absolute_rhs = absolute_1 + absolute_nonlinear + absolute_2
