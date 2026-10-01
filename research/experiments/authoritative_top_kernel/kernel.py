@@ -50,7 +50,56 @@ class State:
         return np.c_[self.eta, self.eta[:, None] - np.cumsum(self.h, axis=1)]
 
 
+def sha(value, length):
+    return (
+        isinstance(value, str)
+        and len(value) == length
+        and all(c in "0123456789abcdef" for c in value)
+    )
+
+
+def validate_deep(record):
+    required = {
+        "nodes",
+        "values",
+        "inventory",
+        "reference_weights",
+        "wet_mask",
+        "pressure_increment",
+    }
+    if not isinstance(record, dict) or set(record) != required:
+        raise ValueError("deep record fields")
+    if any(
+        not isinstance(record[k], np.ndarray)
+        or (record[k].dtype.kind not in "bif" if k == "wet_mask" else record[k].dtype != np.float64)
+        for k in required
+    ):
+        raise ValueError("deep arrays/dtype")
+    n = record["nodes"].size
+    if (
+        n < 1
+        or any(
+            record[k].shape != (n,)
+            for k in ["nodes", "reference_weights", "wet_mask", "pressure_increment"]
+        )
+        or any(record[k].shape != (n, 4) for k in ["values", "inventory"])
+    ):
+        raise ValueError("deep array shape")
+    finite(record)
+    if (
+        record["nodes"][0] <= -B
+        or np.any(np.diff(record["nodes"]) <= 0)
+        or np.any(record["reference_weights"] <= 0)
+    ):
+        raise ValueError("deep coordinates/weights")
+    wet = record["wet_mask"]
+    if wet[0] != 1 or not np.all((wet == 0) | (wet == 1)) or np.any(np.diff(wet) > 0):
+        raise ValueError("deep wet layout")
+
+
 def validate(s):
+    if not isinstance(s.h, np.ndarray) or not isinstance(s.inventory, np.ndarray):
+        raise ValueError("state arrays")
     if (
         s.h.shape != (2, 3)
         or s.inventory.shape != (2, 3, 4)
@@ -65,6 +114,19 @@ def validate(s):
         or s.reconstruction != "bounded_P1_v1"
     ):
         raise ValueError("state identity")
+    if not isinstance(s.migration, dict) or not sha(s.migration.get("geometry_report_sha256"), 64):
+        raise ValueError("migration geometry identity")
+    sources = s.migration.get("source_sha")
+    if not isinstance(sources, list) or len(sources) != 2 or not all(sha(v, 40) for v in sources):
+        raise ValueError("migration source identity")
+    if not isinstance(s.eos, dict) or any(
+        np.asarray(v).shape != () or np.asarray(v).dtype.kind not in "fi" for v in s.eos.values()
+    ):
+        raise ValueError("EOS finite numeric scalar required")
+    if not isinstance(s.deep, tuple) or len(s.deep) != 2:
+        raise ValueError("deep identity")
+    for record in s.deep:
+        validate_deep(record)
     finite([s.h, s.inventory, s.eos, s.deep, s.z, s.eta])
     if (
         set(s.eos) != {"rho0", "gravity", "alpha", "beta", "Tref", "Sref"}
@@ -123,8 +185,10 @@ def remap(s):
 
 @np.errstate(over="raise", invalid="raise", divide="raise")
 def migrate(columns, geometry_report_sha256):
-    if len(geometry_report_sha256) != 64 or any(
-        c not in "0123456789abcdef" for c in geometry_report_sha256
+    if (
+        not isinstance(geometry_report_sha256, str)
+        or len(geometry_report_sha256) != 64
+        or any(c not in "0123456789abcdef" for c in geometry_report_sha256)
     ):
         raise ValueError("external geometry report identity required")
     if len(columns) != 2:

@@ -33,6 +33,8 @@ def analytic(uniform=False):
             wet_mask=np.ones(3),
             pressure_increment=np.zeros(3),
             inventory=np.zeros((3, 4)),
+            values=np.tile([15.0, 35.0, 0.0, 0.0], (3, 1)),
+            reference_weights=np.ones(3),
         )
         for _ in range(2)
     )
@@ -136,3 +138,45 @@ def test_thin_old_momentum_migrates_without_velocity_extrapolation():
     s = k.migrate([p, fixture(-0.1)], "a" * 64)
     assert abs(k.velocity(s)).max() < 1
     assert s.migration["momentum_migration"].startswith("P0 overlap fractions")
+
+
+@pytest.mark.parametrize(
+    "damage",
+    [
+        "migration_hash",
+        "source_hash",
+        "Tref_array",
+        "deep_missing",
+        "deep_shape",
+        "deep_dtype",
+        "deep_order",
+    ],
+)
+def test_entry_fail_closed_identity_scalar_and_deep(damage):
+    s = analytic(True)
+    if damage == "migration_hash":
+        s.migration["geometry_report_sha256"] = "bad"
+    if damage == "source_hash":
+        s.migration["source_sha"][0] = "bad"
+    if damage == "Tref_array":
+        s.eos["Tref"] = np.array([15.0])
+    if damage == "deep_missing":
+        del s.deep[0]["pressure_increment"]
+    if damage == "deep_shape":
+        s.deep[0]["inventory"] = np.zeros((1, 4))
+    if damage == "deep_dtype":
+        s.deep[0]["nodes"] = np.array([30, 100, 400])
+    if damage == "deep_order":
+        s.deep[0]["nodes"][1] = 20
+    snap = s.copy()
+    out, ok, r = k.advance(s, [], np.zeros_like(s.inventory))
+    assert not ok and r["rejection_reason"]
+    assert out.inventory.tobytes() == snap.inventory.tobytes() == s.inventory.tobytes()
+    with pytest.raises(ValueError):
+        k.pressure(s, 0, -400.0)
+
+
+def test_migrate_invalid_geometry_identity_rejected():
+    fixture = __import__("runpy").run_path(str(ROOT / "tests/test_local_top_bridge.py"))["fixture"]
+    with pytest.raises(ValueError):
+        k.migrate([fixture(), fixture()], None)

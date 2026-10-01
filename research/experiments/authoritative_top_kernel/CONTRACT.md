@@ -26,3 +26,9 @@ state保存EOS、source身份、几何/重构版本与迁移报告身份，不�
 这会有显式混合代价，不假称原剪切保存。正厚目标后才恢复实际速度。
 后续已迁移状态的动量输运/重网格使用实际质量定义下的库存P1。
 几何报告SHA是外部审计身份引用，不代表本核重做全几何核验。
+
+入口小修：state migration报告SHA严格64hex、两个source SHA严格40hex；
+EOS全部有限数字scalar（非数组/布尔）。deep每列完整闭集字段、数组shape/
+dtype、节点严格增深、正参考weights、二进制连续wet与pressure_increment
+一致维度先验核验。不再等到pressure query才KeyError。非法状态advance
+拒绝深快照，pressure/velocity显式ValueError。仍只transport核资格。
