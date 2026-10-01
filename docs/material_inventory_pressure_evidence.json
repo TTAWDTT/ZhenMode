@@ -1,0 +1,831 @@
+{
+  "schema": "ocean.accepted353_inventory_pressure.v1",
+  "profile_contract": "inventory_mean_p1_hydrostatic_v1",
+  "profile_authority": "inventory_mean_control_volume_representation",
+  "observational_profile_recovered": false,
+  "original_FD_profile_equivalence": false,
+  "accepted_step": 353,
+  "input_slots": [
+    5,
+    14,
+    4
+  ],
+  "active_layers": [
+    11,
+    12,
+    11,
+    12,
+    0
+  ],
+  "all_original_snapshots_unchanged": true,
+  "all_original_arrays_unchanged": true,
+  "deep_stocks_unchanged": true,
+  "private_arrays_published": false,
+  "private_paths_published": false,
+  "time_step_executed": false,
+  "source_identities": {
+    "accepted": {
+      "filename": "cap256_last_authoritative_state.npz",
+      "sha256": "e93d4de5a4522407d510e3d473e306a5eab4f62e708a74dac46b9525b61a75d7",
+      "bytes": 13140109
+    },
+    "report": {
+      "filename": "report.json",
+      "sha256": "3e565a7af6bac9c973781393afbfc2a318a71f89a9ec5fc4c40526f0cad2cc6a",
+      "bytes": 20857
+    },
+    "grid": {
+      "filename": "grid_used.npz",
+      "sha256": "336899f3b5a7bf26299453e0b7811cb3c4b00d0350b7fa75ed258ca1640eec98",
+      "bytes": 277555
+    },
+    "params": {
+      "filename": "parameter_arrays_used.npz",
+      "sha256": "be8a8dd07dcb04d3ad2a80eb98245b6336a2c883405358e673015c6b1ce56320",
+      "bytes": 1194571
+    },
+    "manifest": {
+      "filename": "manifest_start.json",
+      "sha256": "3b06005f5fd497708a5b7455dc1efde60efc9bcdf25e541067bbfd55495c2342",
+      "bytes": 14941
+    },
+    "source_archive": {
+      "filename": "source_used.tar.gz",
+      "sha256": "1445c4cdcc1552ebfe1849015696317d0624d76ed2840d73a6da865273fd02d2",
+      "bytes": 284077
+    }
+  },
+  "historical_source_sha": "212df951c351f82dba74fbc43db5e52b0ad34c47",
+  "historical_modules_matched": 35,
+  "eos": {
+    "Tref": 15.0,
+    "Sref": 35.0,
+    "alpha": 0.0002,
+    "beta": 0.00076,
+    "rho0": 1025.0,
+    "gravity": 9.81
+  },
+  "original_observational_profile_rejections": {
+    "center": {
+      "surface": "surface boundary profile / physical sample support is missing",
+      "bottom": "bottom profile / physical sample support is missing"
+    },
+    "east": {
+      "surface": "surface boundary profile / physical sample support is missing",
+      "bottom": "bottom profile / physical sample support is missing"
+    },
+    "south": {
+      "surface": "surface boundary profile / physical sample support is missing",
+      "bottom": "bottom profile / physical sample support is missing"
+    },
+    "north": {
+      "surface": "surface boundary profile / physical sample support is missing",
+      "bottom": "bottom profile / physical sample support is missing"
+    }
+  },
+  "node0_above_surface": [
+    true,
+    true,
+    true,
+    true,
+    false
+  ],
+  "unsampled_bottom_m": [
+    250.0,
+    500.0,
+    250.0,
+    500.0,
+    0.0
+  ],
+  "slope_limited_components": 0,
+  "static_shared_pressure": {
+    "east": {
+      "segment_count": 13,
+      "sum_Q_m3_s": 331754.7762189941,
+      "maximum_abs_pressure_jump_Pa": 949.2741381780652,
+      "pressure_force_N": [
+        -77224127693.41035,
+        0.0
+      ]
+    },
+    "south": {
+      "segment_count": 13,
+      "sum_Q_m3_s": 67853.0411691352,
+      "maximum_abs_pressure_jump_Pa": 2479.016582628854,
+      "pressure_force_N": [
+        0.0,
+        89298810079.99904
+      ]
+    },
+    "north": {
+      "segment_count": 13,
+      "sum_Q_m3_s": -302503.4880387511,
+      "maximum_abs_pressure_jump_Pa": 3625.652727588791,
+      "pressure_force_N": [
+        0.0,
+        -113926427874.8918
+      ]
+    },
+    "west_dry": {
+      "segment_count": 0,
+      "sum_Q_m3_s": 0.0,
+      "maximum_abs_pressure_jump_Pa": 0.0,
+      "pressure_force_N": [
+        0.0,
+        0.0
+      ]
+    }
+  },
+  "new_vs_old_FD_physical_wet_node_pressure": {
+    "center": {
+      "compared_physical_wet_nodes": 10,
+      "node0_above_surface_excluded": true,
+      "minimum_new_minus_old_Pa": -64.35847896911582,
+      "maximum_new_minus_old_Pa": -9.496502772581152,
+      "maximum_abs_new_minus_old_Pa": 64.35847896911582
+    },
+    "east": {
+      "compared_physical_wet_nodes": 11,
+      "node0_above_surface_excluded": true,
+      "minimum_new_minus_old_Pa": -82.62739077566084,
+      "maximum_new_minus_old_Pa": -53.92472799130519,
+      "maximum_abs_new_minus_old_Pa": 82.62739077566084
+    },
+    "south": {
+      "compared_physical_wet_nodes": 10,
+      "node0_above_surface_excluded": true,
+      "minimum_new_minus_old_Pa": -60.33414194761281,
+      "maximum_new_minus_old_Pa": 36.342416118090114,
+      "maximum_abs_new_minus_old_Pa": 60.33414194761281
+    },
+    "north": {
+      "compared_physical_wet_nodes": 11,
+      "node0_above_surface_excluded": true,
+      "minimum_new_minus_old_Pa": -123.36509494297843,
+      "maximum_new_minus_old_Pa": -46.76949306726783,
+      "maximum_abs_new_minus_old_Pa": 123.36509494297843
+    }
+  },
+  "PE_definition": "rho0 free surface plus rho-prime gravitational first moment, excluding constant fixed-bottom datum",
+  "original_inventory_P0_PE_J": -4.3519973483270726e+17,
+  "remapped_inventory_P0_PE_J": -4.3519970188204883e+17,
+  "remapped_inventory_P1_PE_J": -4.3527376094276595e+17,
+  "P0_remap_PE_change_J": 32950658452.557007,
+  "P1_representation_moment_PE_change_J": -74059060717195.4,
+  "PE_change_computation": "Direct rho-prime first-moment difference on union physical intervals; free-surface term cancels on identical eta/bottom domains.",
+  "direct_PE_change_absolute_contribution_scale_J": [
+    174575211468.96265,
+    564807341890908.1
+  ],
+  "total_PE_subtraction_roundoff_difference_J": [
+    -20.5570068359375,
+    75.40625
+  ],
+  "reference_M_to_actual_mass_KE_cost_J": 2580623030265.8687,
+  "P0_momentum_remap_KE_change_J": -2452568683779.9834,
+  "algebraic_fixed_mass_trial": {
+    "algebraic_impulse_only": true,
+    "impulse_duration_s": 1.0,
+    "accepted_state_returned": false,
+    "time_step_executed": false,
+    "kinetic_change_J": 441690632.81055295,
+    "midpoint_work_J": 441690632.81053233,
+    "work_bound_J": 0.711134916371868,
+    "work_roundoff_ratio": 2.9000414151371567e-05
+  },
+  "physical_boundary_traction": {
+    "outer_solid_force_N": [
+      -1257344387530101.8,
+      -421303393165329.6
+    ],
+    "dry_wall_force_N": [
+      313258049389908.4,
+      0.0
+    ],
+    "staircase_solid_force_N": [
+      944009109196188.9,
+      421278746983313.94
+    ],
+    "external_surface_force_N": [
+      0.0,
+      0.0
+    ],
+    "surface_geometry_difference_N": [
+      4816311.15821946,
+      18564220.83850081
+    ],
+    "physical_boundary_force_N": [
+      -77228944004.5,
+      -24646182015.6875
+    ],
+    "solid_reaction_N": [
+      77228944004.5,
+      24646182015.6875
+    ],
+    "wall_work_J": 0.0,
+    "absolute_traction_scale_N": 7901219281157673.0,
+    "footprint_vector_closure_m": [
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ]
+    ],
+    "absolute_footprint_contribution_m": [
+      [
+        222389.85328911748,
+        99229.86619541542
+      ],
+      [
+        222389.85328911748,
+        99229.86619541542
+      ],
+      [
+        222389.85328911748,
+        99229.86619541542
+      ],
+      [
+        222389.85328911748,
+        99229.86619541542
+      ],
+      [
+        111194.92664455874,
+        0.0
+      ]
+    ]
+  },
+  "force_consumption_certificate": {
+    "accepted": false,
+    "Ctranspose_force_N": [
+      -77224127693.41035,
+      -24627617794.89276
+    ],
+    "physical_boundary_force_N": [
+      -77228944004.5,
+      -24646182015.6875
+    ],
+    "incompatibility_N": [
+      4816311.089645386,
+      18564220.79473877
+    ],
+    "bound_N": 449.1482588106988,
+    "footprint_closed": true,
+    "reason": "Ctranspose pressure force is incompatible with the independently integrated physical boundary/geometry ledger"
+  },
+  "pressure_force_consumer_status": "blocked_physical_force_incompatibility",
+  "independent_oracle_ratios": {
+    "shared_pressure": 0.0026261649873469605,
+    "PE": 0.0,
+    "direct_PE_change": 0.018980345288936773,
+    "physical_boundary": 0.0002783144192436339,
+    "geometric_cap": 8.29441604744297e-12,
+    "incompatibility_explained_by_cap": 0.00015268123010392455
+  },
+  "face_metric_scope": "Same explicitly bound archived center dual-width diagnostic faces as PR20; no production operator equivalence.",
+  "outer_boundary_scope": "Four wet-column closed local Cartesian star with explicit static outer sidewalls; outer sampled neighbors are not declared original land.",
+  "source_array_or_model_advanced": false,
+  "moving_pressure_enabled": false,
+  "physical_total_energy_qualified": false,
+  "synthetic_nonlinear_truncation": {
+    "case": "exact CV means of quadratic T(z), constant S; static analytic hydrostatic pressure",
+    "layers": [
+      4,
+      8,
+      16
+    ],
+    "maximum_pressure_error_Pa": [
+      0.0016110248565685548,
+      0.00020137810707304693,
+      2.4932527542542715e-05
+    ],
+    "errors_are_physical_truncation": true,
+    "full_method_order_claimed": false
+  },
+  "source_sha256": {
+    "inventory_pressure.py": "bcee2544c8e3fd1efe7c90a8289dae032a4c26937fcbe1dcb46233d912d371e9",
+    "pressure_oracle.py": "74e5681da89b47e6515dd4756ebf81488098a49638da048ea31e1a03b2fcc2ca",
+    "pressure_static_evidence.py": "148e4bc10b88de74d73456adfaffd53c01c874c19fd9867177f38e0b03595f3f"
+  },
+  "base_main_sha": "37719d7b0be57ce7f9ab99ac7242cf9ba7f14355",
+  "runtime": {
+    "python": "3.13.5",
+    "numpy": "2.1.3",
+    "pytest": "8.3.4",
+    "ruff": "0.15.7",
+    "project_local_venv": true,
+    "GPU_used": false,
+    "JAX_available_locally": false
+  },
+  "static_archive_resources": {
+    "wall_s": 4.028,
+    "peak_interpreter_RSS_bytes": 270680064,
+    "peak_job_private_bytes": 270745600,
+    "single_CPU": true,
+    "wall_limit_s": 180,
+    "memory_limit_bytes": 4294967296,
+    "bound_stop": false,
+    "exit_code": 0
+  },
+  "focused_pressure_resources": {
+    "passed": 24,
+    "pytest_wall_s": 0.32,
+    "job_wall_s": 2.019,
+    "peak_interpreter_RSS_bytes": 98013184,
+    "peak_job_private_bytes": 90189824,
+    "single_CPU": true,
+    "wall_limit_s": 180,
+    "memory_limit_bytes": 4294967296,
+    "exit_code": 0
+  },
+  "independent_inspector": {
+    "code_gate": "clean",
+    "frozen_source_hashes_verified": true,
+    "original_model_or_time_step_executed": false,
+    "final_review_read_only": true,
+    "numerical_probe_job_wall_s": 0.312,
+    "peak_interpreter_RSS_bytes": 33554432,
+    "peak_job_private_bytes": 29368320,
+    "single_CPU": true,
+    "wall_limit_s": 180,
+    "memory_limit_bytes": 4294967296
+  },
+  "test_sha256": "09d55e157d5b80a65360eea9fe07e14da44101d26d31be3a4e9f84f6b6d1bf5c",
+  "local_JAX_integration_attempt": {
+    "status": "collection_failed_missing_JAX",
+    "module": "tests/test_material_top_band_integration.py",
+    "job_wall_s": 2.322,
+    "peak_interpreter_RSS_bytes": 106770432,
+    "peak_job_private_bytes": 98983936,
+    "single_CPU": true,
+    "wall_limit_s": 180,
+    "memory_limit_bytes": 4294967296,
+    "exit_code": 2
+  },
+  "host_execution_recovered": true,
+  "publication_scope": "Scalar receipts and independently reviewed static inventory-pressure contract; force consumption blocked.",
+  "focused_material_regression": {
+    "passed": 116,
+    "pytest_wall_s": 69.87,
+    "job_wall_s": 71.614,
+    "peak_interpreter_RSS_bytes": 102146048,
+    "peak_job_private_bytes": 91926528,
+    "single_CPU": true,
+    "wall_limit_s": 180,
+    "memory_limit_bytes": 4294967296,
+    "bound_stop": false,
+    "exit_code": 0,
+    "modules": [
+      "tests/test_material_top_band_dynamic.py",
+      "tests/test_material_real_geometry.py",
+      "tests/test_inventory_pressure.py"
+    ]
+  },
+  "targeted_lint": "passed",
+  "initial_batch_budget_s": 1200,
+  "budget_exceeded": false,
+  "historical_snapshot_head": "00237a7d4fea3f45867a7bb63bee85449f309937",
+  "historical_qualification_status": "Superseded: empty/incomplete footprint and affine-density claims failed independent counterexamples. Historical scalar force FAIL is retained unchanged.",
+  "current_receipt_key": "qualification_correction",
+  "qualification_correction": {
+    "schema": "ocean.accepted353_inventory_pressure.v1",
+    "profile_contract": "inventory_mean_density_p1_hydrostatic_v1",
+    "profile_authority": "inventory_mean_control_volume_representation",
+    "observational_profile_recovered": false,
+    "original_FD_profile_equivalence": false,
+    "accepted_step": 353,
+    "input_slots": [
+      5,
+      14,
+      4
+    ],
+    "active_layers": [
+      11,
+      12,
+      11,
+      12,
+      0
+    ],
+    "all_original_snapshots_unchanged": true,
+    "all_original_arrays_unchanged": true,
+    "deep_stocks_unchanged": true,
+    "private_arrays_published": false,
+    "private_paths_published": false,
+    "time_step_executed": false,
+    "source_identities": {
+      "accepted": {
+        "filename": "cap256_last_authoritative_state.npz",
+        "sha256": "e93d4de5a4522407d510e3d473e306a5eab4f62e708a74dac46b9525b61a75d7",
+        "bytes": 13140109
+      },
+      "report": {
+        "filename": "report.json",
+        "sha256": "3e565a7af6bac9c973781393afbfc2a318a71f89a9ec5fc4c40526f0cad2cc6a",
+        "bytes": 20857
+      },
+      "grid": {
+        "filename": "grid_used.npz",
+        "sha256": "336899f3b5a7bf26299453e0b7811cb3c4b00d0350b7fa75ed258ca1640eec98",
+        "bytes": 277555
+      },
+      "params": {
+        "filename": "parameter_arrays_used.npz",
+        "sha256": "be8a8dd07dcb04d3ad2a80eb98245b6336a2c883405358e673015c6b1ce56320",
+        "bytes": 1194571
+      },
+      "manifest": {
+        "filename": "manifest_start.json",
+        "sha256": "3b06005f5fd497708a5b7455dc1efde60efc9bcdf25e541067bbfd55495c2342",
+        "bytes": 14941
+      },
+      "source_archive": {
+        "filename": "source_used.tar.gz",
+        "sha256": "1445c4cdcc1552ebfe1849015696317d0624d76ed2840d73a6da865273fd02d2",
+        "bytes": 284077
+      }
+    },
+    "historical_source_sha": "212df951c351f82dba74fbc43db5e52b0ad34c47",
+    "historical_modules_matched": 35,
+    "eos": {
+      "Tref": 15.0,
+      "Sref": 35.0,
+      "alpha": 0.0002,
+      "beta": 0.00076,
+      "rho0": 1025.0,
+      "gravity": 9.81
+    },
+    "original_observational_profile_rejections": {
+      "center": {
+        "surface": "surface boundary profile / physical sample support is missing",
+        "bottom": "bottom profile / physical sample support is missing"
+      },
+      "east": {
+        "surface": "surface boundary profile / physical sample support is missing",
+        "bottom": "bottom profile / physical sample support is missing"
+      },
+      "south": {
+        "surface": "surface boundary profile / physical sample support is missing",
+        "bottom": "bottom profile / physical sample support is missing"
+      },
+      "north": {
+        "surface": "surface boundary profile / physical sample support is missing",
+        "bottom": "bottom profile / physical sample support is missing"
+      }
+    },
+    "node0_above_surface": [
+      true,
+      true,
+      true,
+      true,
+      false
+    ],
+    "unsampled_bottom_m": [
+      250.0,
+      500.0,
+      250.0,
+      500.0,
+      0.0
+    ],
+    "slope_limited_components": 0,
+    "static_shared_pressure": {
+      "east": {
+        "segment_count": 13,
+        "sum_Q_m3_s": 331754.7762189941,
+        "maximum_abs_pressure_jump_Pa": 949.2741381780652,
+        "pressure_force_N": [
+          -77331336569.69095,
+          0.0
+        ]
+      },
+      "south": {
+        "segment_count": 13,
+        "sum_Q_m3_s": 67853.0411691352,
+        "maximum_abs_pressure_jump_Pa": 2479.016582628854,
+        "pressure_force_N": [
+          0.0,
+          89297440069.6595
+        ]
+      },
+      "north": {
+        "segment_count": 13,
+        "sum_Q_m3_s": -302503.4880387511,
+        "maximum_abs_pressure_jump_Pa": 3625.652727588791,
+        "pressure_force_N": [
+          0.0,
+          -113923623129.76825
+        ]
+      },
+      "west_dry": {
+        "segment_count": 0,
+        "sum_Q_m3_s": 0.0,
+        "maximum_abs_pressure_jump_Pa": 0.0,
+        "pressure_force_N": [
+          0.0,
+          0.0
+        ]
+      }
+    },
+    "density_authority": "direct_EOS_inventory_mean_P1",
+    "density_slope_limited_cells": 0,
+    "pointwise_density_equals_auxiliary_TS_reconstruction": false,
+    "new_vs_old_FD_physical_wet_node_pressure": {
+      "center": {
+        "compared_physical_wet_nodes": 10,
+        "node0_above_surface_excluded": true,
+        "minimum_new_minus_old_Pa": -64.35847896911582,
+        "maximum_new_minus_old_Pa": -9.496502772581152,
+        "maximum_abs_new_minus_old_Pa": 64.35847896911582
+      },
+      "east": {
+        "compared_physical_wet_nodes": 11,
+        "node0_above_surface_excluded": true,
+        "minimum_new_minus_old_Pa": -82.62739077566084,
+        "maximum_new_minus_old_Pa": -53.92472799130519,
+        "maximum_abs_new_minus_old_Pa": 82.62739077566084
+      },
+      "south": {
+        "compared_physical_wet_nodes": 10,
+        "node0_above_surface_excluded": true,
+        "minimum_new_minus_old_Pa": -60.33414194761281,
+        "maximum_new_minus_old_Pa": 36.342416118090114,
+        "maximum_abs_new_minus_old_Pa": 60.33414194761281
+      },
+      "north": {
+        "compared_physical_wet_nodes": 11,
+        "node0_above_surface_excluded": true,
+        "minimum_new_minus_old_Pa": -123.36509494297843,
+        "maximum_new_minus_old_Pa": -47.348042203204386,
+        "maximum_abs_new_minus_old_Pa": 123.36509494297843
+      }
+    },
+    "PE_definition": "rho0 free surface plus rho-prime gravitational first moment, excluding constant fixed-bottom datum",
+    "inventory_PE_KE_area_scope": "Original archived per-column dx_2d[index]*dy; separate from the diagnostic pressure patch.",
+    "pressure_work_PE_area_scope": "Declared equal-center-width rectangular footprint.area_m2, checked against physical box geometry.",
+    "maximum_relative_original_vs_diagnostic_area_difference": 0.035156416819221305,
+    "diagnostic_patch_PE_J": [
+      -4.307175821956329e+17,
+      -4.3071754943162e+17,
+      -4.307722083842672e+17
+    ],
+    "diagnostic_patch_PE_changes_J": [
+      32764012939.441505,
+      -54658952647241.23
+    ],
+    "original_inventory_P0_PE_J": -4.3519973483270726e+17,
+    "remapped_inventory_P0_PE_J": -4.3519970188204883e+17,
+    "remapped_inventory_P1_PE_J": -4.352680780702817e+17,
+    "P0_remap_PE_change_J": 32950658452.557007,
+    "P1_representation_moment_PE_change_J": -68376188232984.12,
+    "PE_change_computation": "Direct rho-prime first-moment difference on union physical intervals; free-surface term cancels on identical eta/bottom domains.",
+    "direct_PE_change_absolute_contribution_scale_J": [
+      174575211468.96265,
+      558297289878216.4
+    ],
+    "total_PE_subtraction_roundoff_difference_J": [
+      -20.5570068359375,
+      88.1171875
+    ],
+    "reference_M_to_actual_mass_KE_cost_J": 2580623030265.8687,
+    "P0_momentum_remap_KE_change_J": -2452568683779.9834,
+    "algebraic_fixed_mass_trial": {
+      "algebraic_impulse_only": true,
+      "impulse_duration_s": 1.0,
+      "accepted_state_returned": false,
+      "time_step_executed": false,
+      "kinetic_change_J": 441691314.58452207,
+      "midpoint_work_J": 441691314.58453906,
+      "work_bound_J": 0.6892306989536511,
+      "work_roundoff_ratio": 2.4646789219887435e-05
+    },
+    "physical_boundary_traction": {
+      "outer_solid_force_N": [
+        -1257344498938823.0,
+        -421303391730594.9
+      ],
+      "dry_wall_force_N": [
+        313258053589753.0,
+        0.0
+      ],
+      "staircase_solid_force_N": [
+        944009109196188.9,
+        421278746983313.94
+      ],
+      "external_surface_force_N": [
+        0.0,
+        0.0
+      ],
+      "surface_geometry_difference_N": [
+        4816311.15821946,
+        18564220.83850081
+      ],
+      "physical_boundary_force_N": [
+        -77336152881.125,
+        -24644747280.9375
+      ],
+      "solid_reaction_N": [
+        77336152881.125,
+        24644747280.9375
+      ],
+      "wall_work_J": 0.0,
+      "absolute_traction_scale_N": 7901219493846865.0,
+      "footprint_vector_closure_m": [
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ]
+      ],
+      "absolute_footprint_contribution_m": [
+        [
+          222389.85328911748,
+          99229.86619541542
+        ],
+        [
+          222389.85328911748,
+          99229.86619541542
+        ],
+        [
+          222389.85328911748,
+          99229.86619541542
+        ],
+        [
+          222389.85328911748,
+          99229.86619541542
+        ],
+        [
+          111194.92664455874,
+          0.0
+        ]
+      ]
+    },
+    "force_consumption_certificate": {
+      "accepted": false,
+      "Ctranspose_force_N": [
+        -77331336569.69095,
+        -24626183060.108753
+      ],
+      "physical_boundary_force_N": [
+        -77336152881.125,
+        -24644747280.9375
+      ],
+      "incompatibility_N": [
+        4816311.434051514,
+        18564220.828746796
+      ],
+      "bound_N": 449.1482767574913,
+      "footprint_closed": true,
+      "footprint_complete": true,
+      "footprint_geometry": {
+        "authority": "declared_rectangular_cardinal_footprint",
+        "complete": true,
+        "wet_columns": 4,
+        "covered_wet_sides": 16,
+        "nondegenerate": true,
+        "column_areas_bound": true,
+        "periodic_extent_m": [
+          0.0,
+          0.0
+        ],
+        "periodic_origin_m": [
+          0.0,
+          0.0
+        ]
+      },
+      "reason": "Ctranspose pressure force is incompatible with the independently integrated physical boundary/geometry ledger"
+    },
+    "pressure_force_consumer_status": "blocked_physical_force_incompatibility",
+    "independent_oracle_ratios": {
+      "shared_pressure": 0.003658135056736759,
+      "PE": 0.0,
+      "direct_PE_change": 0.03668010652853972,
+      "diagnostic_direct_PE_change": 0.0368525890898308,
+      "physical_boundary": 0.0008349432352554588,
+      "geometric_cap": 8.294415824169504e-12,
+      "incompatibility_explained_by_cap": 0.0006141442851938125
+    },
+    "face_metric_scope": "Same explicitly bound archived center dual-width diagnostic faces as PR20; no production operator equivalence.",
+    "outer_boundary_scope": "Four wet-column closed local Cartesian star with explicit static outer sidewalls; outer sampled neighbors are not declared original land.",
+    "source_array_or_model_advanced": false,
+    "moving_pressure_enabled": false,
+    "physical_total_energy_qualified": false,
+    "synthetic_nonlinear_truncation": {
+      "case": "exact CV means of quadratic T(z), constant S; static analytic hydrostatic pressure",
+      "layers": [
+        4,
+        8,
+        16
+      ],
+      "maximum_pressure_error_Pa": [
+        0.0016110248565685548,
+        0.00020137810707304693,
+        2.4932527542542715e-05
+      ],
+      "errors_are_physical_truncation": true,
+      "full_method_order_claimed": false
+    },
+    "source_sha256": {
+      "inventory_pressure.py": "64b6d4eaf08e4a1183482863829bb787822caf66d2aedc698b3d362a30ccb710",
+      "pressure_footprint.py": "33f636991b16271d95071977bfddc882851b86c086a921d500f04cd453db82ec",
+      "pressure_oracle.py": "74e5681da89b47e6515dd4756ebf81488098a49638da048ea31e1a03b2fcc2ca",
+      "pressure_static_evidence.py": "9bd54826289d02faa2be3baff7efb5c325732504512f4778785e528f6bb29fec"
+    },
+    "static_archive_resources": {
+      "wall_s": 4.433,
+      "peak_interpreter_RSS_bytes": 270671872,
+      "peak_job_private_bytes": 270897152,
+      "single_CPU": true,
+      "wall_limit_s": 180,
+      "memory_limit_bytes": 4294967296,
+      "bound_stop": false,
+      "exit_code": 0
+    },
+    "focused_pressure_resources": {
+      "passed": 47,
+      "pytest_wall_s": 0.41,
+      "job_wall_s": 2.12,
+      "peak_interpreter_RSS_bytes": 97972224,
+      "peak_job_private_bytes": 89878528,
+      "single_CPU": true,
+      "wall_limit_s": 180,
+      "memory_limit_bytes": 4294967296,
+      "exit_code": 0
+    },
+    "focused_material_regression": {
+      "passed": 139,
+      "pytest_wall_s": 73.05,
+      "job_wall_s": 74.844,
+      "peak_interpreter_RSS_bytes": 103088128,
+      "peak_job_private_bytes": 93032448,
+      "single_CPU": true,
+      "wall_limit_s": 180,
+      "memory_limit_bytes": 4294967296,
+      "bound_stop": false,
+      "exit_code": 0,
+      "modules": [
+        "tests/test_material_top_band_dynamic.py",
+        "tests/test_material_real_geometry.py",
+        "tests/test_inventory_pressure.py"
+      ]
+    },
+    "independent_inspector": {
+      "code_gate": "clean",
+      "final_review_read_only": true,
+      "numerical_probes_executed": 0,
+      "archive_executions": 0,
+      "simulation_executions": 0,
+      "all_source_and_test_hashes_verified": true
+    },
+    "test_sha256": "e8f62dc91f03a9879103191c2a9c46e21271ed95d87879a87d51a134d6131259",
+    "targeted_lint": "passed",
+    "counterexample_reproductions": {
+      "empty_wet_footprint": "wrongly accepted at historical head; now refused",
+      "missing_opposite_pair": "wrongly accepted at historical head; now refused",
+      "all_dry_empty": "mathematical zero formerly accepted; now no wet scientific qualification",
+      "huge_finite_area": "1e308 box area vs1.7e308 formerly admitted by overflow; now refused",
+      "nonlinear_TS_affine_density": {
+        "exact_density_gradient_kg_m4": 0.0615,
+        "eta": [
+          0.0,
+          -0.2
+        ],
+        "old_partition_pressure_jump_Pa": [
+          -0.04189687500183936,
+          -0.038545124999473046
+        ],
+        "current_partition_jump_assertion_Pa": 1e-12,
+        "analytic_pressure_and_PE_verified": true,
+        "T_and_S_mean_stocks_unchanged": true
+      },
+      "periodic_H123": "Complete geometry passes; original physical pressure-force mismatch remains refused"
+    }
+  }
+}
