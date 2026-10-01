@@ -1,11 +1,10 @@
 """Small launcher checks only; no ocean model or benchmark is run."""
 import importlib.util
-from pathlib import Path
 import sys
 import tempfile
 import unittest
+from pathlib import Path
 from unittest.mock import patch
-
 
 path = Path(__file__).with_name('run_guard.py')
 spec = importlib.util.spec_from_file_location('flat_guard', path)

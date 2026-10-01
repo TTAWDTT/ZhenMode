@@ -51,6 +51,8 @@ def test_native_area_and_metre_contract(tmp_path):
     with netCDF4.Dataset(path, 'w') as ds:
         ds.createDimension('y', 8)
         ds.createDimension('x', 64)
+        ds.createDimension('yq', 9)
+        ds.createDimension('xq', 65)
         for name, dim in [('lonh', 'x'), ('lath', 'y')]:
             v = ds.createVariable(name, 'f8', (dim,))
             v.units = 'm'
@@ -58,7 +60,8 @@ def test_native_area_and_metre_contract(tmp_path):
         for name, value in [('D', 100.), ('wet', 1.), ('f', 0.),
                             ('Ah', 1002269.4248554128 / 64 * 100000 / 8),
                             ('dxT', 1002269.4248554128 / 64), ('dyT', 100000 / 8)]:
-            ds.createVariable(name, 'f8', ('y', 'x'))[:] = value
+            dims = ('yq', 'xq') if name == 'f' else ('y', 'x')
+            ds.createVariable(name, 'f8', dims)[:] = value
     assert module.verify_mom_geometry(path)['geometry_contract_passed']
     with netCDF4.Dataset(path, 'a') as ds:
         ds['Ah'][0, 0] *= 2.

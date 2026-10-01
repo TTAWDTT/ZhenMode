@@ -4,12 +4,11 @@ The caller must supply the frozen full configuration contract. These checks
 do not establish complete physics equivalence or industrial qualification.
 """
 import hashlib
-from pathlib import Path
 import re
+from pathlib import Path
 
 import netCDF4
 import numpy as np
-
 
 BASE_MOM_CONTRACT = dict(
     GRID_CONFIG='cartesian', AXIS_UNITS='m', REENTRANT_X=True, REENTRANT_Y=False,
@@ -90,7 +89,8 @@ def verify_mom_geometry(path):
                                ('Ah', expected_area), ('dxT', 1002269.4248554128 / 64.),
                                ('dyT', 100000. / 8.)]:
             values = np.ma.asarray(ds[name][:])
-            if (values.shape != (8, 64) or np.any(np.ma.getmaskarray(values))
+            expected_shape = (9, 65) if name == 'f' else (8, 64)
+            if (values.shape != expected_shape or np.any(np.ma.getmaskarray(values))
                     or not np.all(np.isfinite(values))
                     or not np.allclose(values, expected, rtol=1.e-12, atol=0.)):
                 raise ValueError('native Cartesian geometry mismatch: ' + name)

@@ -10,12 +10,12 @@ import fcntl
 import hashlib
 import json
 import os
-from pathlib import Path
 import resource
 import signal
 import subprocess
 import time
 import uuid
+from pathlib import Path
 
 
 def effective_uid(directory):

@@ -50,7 +50,14 @@ def write_mom_initial(path, arrays):
         for label, key in [('x', 'x_m'), ('y', 'y_m')]:
             var = ds.createVariable(label, 'f8', (label,))
             var.units = 'm'
+            var.cartesian_axis = label.upper()
             var[:] = arrays[key]
+        for label, coordinates in [('Interface', np.array([0., -100/6, -50., -500/6, -100.])),
+                                   ('Layer', np.array([-100/12, -100/3, -200/3, -1100/12]))]:
+            var = ds.createVariable(label, 'f8', (label,))
+            var.units = 'm'
+            var.cartesian_axis = 'Z'
+            var[:] = coordinates
         for label, key, dim, units in [
                 ('eta', 'interfaces_m', 'Interface', 'm'),
                 ('PTEMP', 'T_degC', 'Layer', 'degC'),
