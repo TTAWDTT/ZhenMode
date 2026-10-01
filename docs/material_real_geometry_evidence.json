@@ -1,0 +1,336 @@
+{
+  "schema": "ocean.accepted353_geometry_inventory.v1",
+  "contract": "nodal_dual_stock_mean_bridge_v1",
+  "accepted_step": 353,
+  "archived_dt_s": 300,
+  "real_timestep_executed": false,
+  "production_step_invoked": false,
+  "full_domain_shape": [
+    360,
+    132,
+    14
+  ],
+  "active_layer_histogram": {
+    "0": 15433,
+    "11": 1407,
+    "12": 2294,
+    "13": 13321,
+    "14": 15065
+  },
+  "source_identities": {
+    "accepted": {
+      "filename": "cap256_last_authoritative_state.npz",
+      "sha256": "e93d4de5a4522407d510e3d473e306a5eab4f62e708a74dac46b9525b61a75d7",
+      "bytes": 13140109
+    },
+    "report": {
+      "filename": "report.json",
+      "sha256": "3e565a7af6bac9c973781393afbfc2a318a71f89a9ec5fc4c40526f0cad2cc6a",
+      "bytes": 20857
+    },
+    "grid": {
+      "filename": "grid_used.npz",
+      "sha256": "336899f3b5a7bf26299453e0b7811cb3c4b00d0350b7fa75ed258ca1640eec98",
+      "bytes": 277555
+    },
+    "params": {
+      "filename": "parameter_arrays_used.npz",
+      "sha256": "be8a8dd07dcb04d3ad2a80eb98245b6336a2c883405358e673015c6b1ce56320",
+      "bytes": 1194571
+    },
+    "manifest": {
+      "filename": "manifest_start.json",
+      "sha256": "3b06005f5fd497708a5b7455dc1efde60efc9bcdf25e541067bbfd55495c2342",
+      "bytes": 14941
+    },
+    "source_archive": {
+      "filename": "source_used.tar.gz",
+      "sha256": "1445c4cdcc1552ebfe1849015696317d0624d76ed2840d73a6da865273fd02d2",
+      "bytes": 284077
+    }
+  },
+  "historical_source_sha": "212df951c351f82dba74fbc43db5e52b0ad34c47",
+  "historical_modules_matched": 35,
+  "rho0_kg_m3": 1025.0,
+  "rho0_manifest_explicit": false,
+  "all_original_snapshots_unchanged": true,
+  "all_original_state_arrays_unchanged": true,
+  "original_ice_unchanged": true,
+  "private_arrays_published": false,
+  "private_paths_published": false,
+  "all_deep_inventory_slots_unchanged": true,
+  "candidate_minimum_wet_h_m": 2.223168971705403,
+  "independent_global_water_residual_m3": 0.0,
+  "independent_global_water_bound_m3": 59211.087963651866,
+  "independent_global_stock_residuals": [
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "independent_global_stock_bounds": [
+    270927.04491804156,
+    2055017.9125002087,
+    659156.7326767915,
+    437686.7800277531
+  ],
+  "global_stock_units": [
+    "degC*m3",
+    "psu*m3",
+    "kg*m/s",
+    "kg*m/s"
+  ],
+  "maximum_column_stock_roundoff_ratio": 0.007678489251399059,
+  "selected_columns": {
+    "center": {
+      "wet_layers": 11,
+      "eta_m": -2.4914792546513693,
+      "discrete_bottom_z_m": -750.0,
+      "band_bottom_z_m": -22.5,
+      "water_m": 747.5085207453486,
+      "minimum_wet_h_m": 2.223168971705403,
+      "inventory_residual_per_m2": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "inventory_bounds_per_m2": [
+        3.30050742062612e-11,
+        1.4672720374130977e-09,
+        1.927551192756721e-10,
+        2.7736709235384827e-10
+      ],
+      "cell_area_m2": 5516928846.274299,
+      "node0_above_surface": true,
+      "unsampled_bottom_m": 250.0,
+      "reference_kinetic_J_m2": 31.7504648276912,
+      "original_actual_kinetic_J_m2": 388.94812645431045,
+      "candidate_kinetic_J_m2": 34.340716723701924,
+      "reference_to_actual_kinetic_cost_J_m2": 357.19766162661927,
+      "remap_kinetic_change_J_m2": -354.60740973060854
+    },
+    "east": {
+      "wet_layers": 12,
+      "eta_m": -2.3987830964756194,
+      "discrete_bottom_z_m": -1500.0,
+      "band_bottom_z_m": -22.5,
+      "water_m": 1497.6012169035243,
+      "minimum_wet_h_m": 2.2334685448360423,
+      "inventory_residual_per_m2": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "inventory_bounds_per_m2": [
+        4.636210570824311e-11,
+        2.943915055318571e-09,
+        2.2865310151633018e-10,
+        4.5373313946965664e-10
+      ],
+      "cell_area_m2": 5516928846.274299,
+      "node0_above_surface": true,
+      "unsampled_bottom_m": 500.0,
+      "reference_kinetic_J_m2": 42.3110058278939,
+      "original_actual_kinetic_J_m2": 68.33218196085062,
+      "candidate_kinetic_J_m2": 44.55521360508755,
+      "reference_to_actual_kinetic_cost_J_m2": 26.021176132956718,
+      "remap_kinetic_change_J_m2": -23.776968355763067
+    },
+    "south": {
+      "wet_layers": 11,
+      "eta_m": -2.2563402988356613,
+      "discrete_bottom_z_m": -750.0,
+      "band_bottom_z_m": -22.5,
+      "water_m": 747.7436597011643,
+      "minimum_wet_h_m": 2.249295522351593,
+      "inventory_residual_per_m2": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "inventory_bounds_per_m2": [
+        3.507994010265338e-11,
+        1.467913195837542e-09,
+        8.875047181061645e-11,
+        1.3308323648582463e-10
+      ],
+      "cell_area_m2": 5322973396.192694,
+      "node0_above_surface": true,
+      "unsampled_bottom_m": 250.0,
+      "reference_kinetic_J_m2": 8.386191184495534,
+      "original_actual_kinetic_J_m2": 19.75115157272108,
+      "candidate_kinetic_J_m2": 8.845083596398707,
+      "reference_to_actual_kinetic_cost_J_m2": 11.364960388225548,
+      "remap_kinetic_change_J_m2": -10.906067976322374
+    },
+    "north": {
+      "wet_layers": 12,
+      "eta_m": -2.1315500929442783,
+      "discrete_bottom_z_m": -1500.0,
+      "band_bottom_z_m": -22.5,
+      "water_m": 1497.8684499070557,
+      "minimum_wet_h_m": 2.263161100783969,
+      "inventory_residual_per_m2": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "inventory_bounds_per_m2": [
+        2.2250244074138107e-11,
+        2.945182675877446e-09,
+        2.0229383891484226e-09,
+        5.027400101229879e-10
+      ],
+      "cell_area_m2": 5709203786.385641,
+      "node0_above_surface": true,
+      "unsampled_bottom_m": 500.0,
+      "reference_kinetic_J_m2": 993.6551257812062,
+      "original_actual_kinetic_J_m2": 1064.7572624691722,
+      "candidate_kinetic_J_m2": 1010.9850912300303,
+      "reference_to_actual_kinetic_cost_J_m2": 71.1021366879661,
+      "remap_kinetic_change_J_m2": -53.772171239141926
+    },
+    "west_dry": {
+      "wet_layers": 0,
+      "eta_m": 0.0,
+      "discrete_bottom_z_m": -0.0,
+      "band_bottom_z_m": -0.0,
+      "water_m": 0.0,
+      "minimum_wet_h_m": null,
+      "inventory_residual_per_m2": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "inventory_bounds_per_m2": [
+        5.684341886080802e-14,
+        5.684341886080802e-14,
+        5.684341886080802e-14,
+        5.684341886080802e-14
+      ],
+      "cell_area_m2": 5516928846.274299,
+      "node0_above_surface": false,
+      "unsampled_bottom_m": 0.0,
+      "reference_kinetic_J_m2": 0.0,
+      "original_actual_kinetic_J_m2": 0.0,
+      "candidate_kinetic_J_m2": 0.0,
+      "reference_to_actual_kinetic_cost_J_m2": 0.0,
+      "remap_kinetic_change_J_m2": 0.0
+    }
+  },
+  "static_shared_faces": {
+    "east": {
+      "common_upper_z_m": -2.4914792546513693,
+      "common_lower_z_m": -750.0,
+      "segment_count": 13,
+      "total_Q_m3_s": 331754.7762189941,
+      "unsupported_original_profile_segments": 4,
+      "interpretation": "candidate_stock_mean_p0_v1"
+    },
+    "south": {
+      "common_upper_z_m": -2.4914792546513693,
+      "common_lower_z_m": -750.0,
+      "segment_count": 13,
+      "total_Q_m3_s": 67853.0411691352,
+      "unsupported_original_profile_segments": 4,
+      "interpretation": "candidate_stock_mean_p0_v1"
+    },
+    "north": {
+      "common_upper_z_m": -2.4914792546513693,
+      "common_lower_z_m": -750.0,
+      "segment_count": 13,
+      "total_Q_m3_s": -302503.4880387511,
+      "unsupported_original_profile_segments": 4,
+      "interpretation": "candidate_stock_mean_p0_v1"
+    },
+    "west_dry": {
+      "common_upper_z_m": null,
+      "common_lower_z_m": null,
+      "segment_count": 0,
+      "total_Q_m3_s": 0.0,
+      "unsupported_original_profile_segments": 0,
+      "interpretation": "candidate_stock_mean_p0_v1"
+    }
+  },
+  "original_profile_rejections": {
+    "center": {
+      "surface": "surface boundary profile / physical sample support is missing",
+      "bottom": "bottom profile / physical sample support is missing"
+    },
+    "east": {
+      "surface": "surface boundary profile / physical sample support is missing",
+      "bottom": "bottom profile / physical sample support is missing"
+    },
+    "south": {
+      "surface": "surface boundary profile / physical sample support is missing",
+      "bottom": "bottom profile / physical sample support is missing"
+    },
+    "north": {
+      "surface": "surface boundary profile / physical sample support is missing",
+      "bottom": "bottom profile / physical sample support is missing"
+    }
+  },
+  "decisions": [
+    "Original nodal-dual discrete inventory is authoritative. Negative eta leaves node0 inventory valid but its FD sample above the physical surface unsupported.",
+    "Reference momentum is preserved. Its conversion to actual-h velocity exposes a kinetic cost, separately from conservative P0 remap energy change.",
+    "Candidate P0 common faces use max discrete bottom / min surface. Dry west has no segments and exactly zero Q; staircase faces exclude deeper unmatched water."
+  ],
+  "minimum_missing_information": [
+    "A surface boundary/reconstruction rule consistent with the node0 material inventory when node0 lies above eta.",
+    "A specified supported bottom profile or new boundary closure from deepest wet node to the discrete dual bottom.",
+    "Original WOA missing-input masks and donor lineage; finite archived values alone do not recover observational support."
+  ],
+  "original_physical_profile_recovered": false,
+  "pressure_consumer_qualified": false,
+  "coastal_dynamic_integration_qualified": false,
+  "biharmonic_enabled": false,
+  "momentum_filter_enabled": false,
+  "physical_total_energy_budget_qualified": false,
+  "source_sha256": {
+    "real_geometry.py": "74cc4e757955ca910f2d85ac0e2abb5ee0c2e2fbf0326cb4f9ddd785a9f7dc2a",
+    "accepted_geometry_audit.py": "7934e18aafbe132bd744058d959e4781033c620a0748a17889ae95077673d1a5"
+  },
+  "implementation_base_head": "bf03285c870a354442884d45f70a089fe84640b8",
+  "validation": {
+    "accepted_archive_static": {
+      "wall_s": 4.029,
+      "peak_interpreter_RSS_bytes": 267702272,
+      "peak_job_private_bytes": 261517312
+    },
+    "full_focused_before_final_archive_ledger_guards": {
+      "passed": 127,
+      "pytest_s": 70.39,
+      "wall_s": 72.123,
+      "peak_interpreter_RSS_bytes": 104157184,
+      "peak_job_private_bytes": 93954048,
+      "numerical_bridge_unchanged_afterward": true
+    },
+    "final_geometry_tests": {
+      "passed": 47,
+      "pytest_s": 0.34,
+      "wall_s": 2.224,
+      "peak_interpreter_RSS_bytes": 94932992,
+      "peak_job_private_bytes": 80596992,
+      "test_sha256": "47a50336872127d106a02a13cb3b5220c0041f9a952c262efb25cd3f7bc8f76d"
+    },
+    "independent_inspector": {
+      "status": "clean",
+      "bounded_synthetic_probes": 2,
+      "total_owned_job_wall_s": 0.524,
+      "peak_interpreter_RSS_bytes": 35885056,
+      "peak_job_private_bytes": 31084544,
+      "actual_archive_or_model_executed": false
+    },
+    "limits_per_owned_job": {
+      "single_CPU": true,
+      "wall_s": 180,
+      "job_private_bytes": 4294967296
+    },
+    "repository_and_explicit_new_module_ruff": "passed"
+  }
+}
