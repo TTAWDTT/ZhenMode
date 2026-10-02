@@ -53,3 +53,4 @@ never called physical loss. Alpha, horizontal density gradients, shear and
 sloped eta remain rejected. Original global CV identification, moving geometry,
 general transport, fast/replay, forcing/mixing adapters and industrial/equal-error
 speed qualification remain open.
+`n### Pre-execution time-flux and transverse-boundary clarification`n`nUse exact J1, J2 and J3 as frozen in the JSON, not Q times midpoint u for Mu. The sign-crossing control has zero water flux and positive transported Mu. The slice is xz extruded with periodic y; V has no unreported outer-wall source. All face fluxes are computed and consumed before checking the zero row divergence.
