@@ -1,11 +1,12 @@
 
-from tests.support.paths import REPOSITORY_ROOT
 import importlib.util
 import sys
-from pathlib import Path
 
 import numpy as np
 import pytest
+
+from tests.support.material.local_top_bridge import fixture
+from tests.support.paths import REPOSITORY_ROOT
 
 ROOT = REPOSITORY_ROOT
 spec = importlib.util.spec_from_file_location(
@@ -110,7 +111,6 @@ def test_nonzero_extensive_source():
 
 
 def test_migration_before_actual_velocity_recovery():
-    fixture = __import__("runpy").run_path(str(ROOT / "tests/test_local_top_bridge.py"))["fixture"]
     p = fixture(-2.4914792546513693)
     q = fixture(-0.1)
     s = k.migrate([p, q], "a" * 64)
@@ -125,7 +125,6 @@ def test_migration_before_actual_velocity_recovery():
 
 
 def test_pressure_join_anchors_band_bottom():
-    fixture = __import__("runpy").run_path(str(ROOT / "tests/test_local_top_bridge.py"))["fixture"]
     s = k.migrate([fixture(-2.49), fixture(-0.1)], "a" * 64)
     base = k.pressure(s, 0, -22.5)
     for depth in [-22.500001, -23.0, -29.0]:
@@ -134,7 +133,6 @@ def test_pressure_join_anchors_band_bottom():
 
 
 def test_thin_old_momentum_migrates_without_velocity_extrapolation():
-    fixture = __import__("runpy").run_path(str(ROOT / "tests/test_local_top_bridge.py"))["fixture"]
     p = fixture(-2.5 + 1e-10)
     p["values"][0, 2] = 0.1
     s = k.migrate([p, fixture(-0.1)], "a" * 64)
@@ -179,6 +177,5 @@ def test_entry_fail_closed_identity_scalar_and_deep(damage):
 
 
 def test_migrate_invalid_geometry_identity_rejected():
-    fixture = __import__("runpy").run_path(str(ROOT / "tests/test_local_top_bridge.py"))["fixture"]
     with pytest.raises(ValueError):
         k.migrate([fixture(), fixture()], None)

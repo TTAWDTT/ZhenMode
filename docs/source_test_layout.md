@@ -183,3 +183,41 @@ numerical invocation remained within one CPU, 180 seconds and 4 GiB; the largest
 capture used under 505 MB interpreter RSS. Local targeted regression is followed
 by complete GitHub CI on the final pushed head; no pending remote result is
 presented here as a pass.
+
+
+## CI consumer correction and platform accounting - 2026-10-02
+
+The first pushed head `ad3db9a5b4c5bf64f397a0682ee29527c0aa35af`
+failed complete CI: its push run had 1803 passes, 279 passing subtests and
+five failures (2262.44 seconds). Four dynamic `runpy` loads and one current
+audit hash consumer retained pre-migration test paths. The corresponding
+PR CI also failed. These failures are preserved in the machine-readable receipt.
+
+The unchanged independent column fixture now has its own support owner,
+`tests/support/material/local_top_bridge.py`; both test owners import it.
+The current top-band audit resolves actual files and records the complete
+source closure. A further offline review consumer now imports the exact
+existing controlled-driver helper directly. The architecture contract scans
+fully qualified static and dynamic test-owner dependencies in tests, reviews,
+scripts and sources. It first failed on the missed review consumer, then passed.
+
+The audit retains its Linux RSS/KiB expression and reports real Windows
+PeakWorkingSetSize/bytes, with explicit failure if measurement fails. The
+bounded Windows runner preserves the invoking venv interpreter identity for
+Python subprocesses while keeping its original one-CPU, 180-second, 4-GiB
+Job Object bounds. These platform/accounting changes do not alter numerical
+operators, audit calculations or scientific gates.
+
+All 85 targeted tests passed in 3.531 seconds, with peak interpreter RSS
+152428544 bytes and peak process-tree private memory 221839360 bytes.
+All original 1791 collection IDs remain in the same 1808-node collection;
+the seven offline review probes also collect. Independent read-only review
+confirmed exact fixture AST, unchanged audit numerical logic and review
+assertions, complete dynamic-consumer coverage, and clean diff checks.
+
+Correction to the preceding inventory: the added fixture owner makes 147
+test/support Python files and 45 additional test paths, with 138 source files
+and all other move/removal counts unchanged. No installed numerical source
+changed in this correction, so the completed four 275-record comparisons,
+344-record driver comparison and final wheel proof are retained without reruns.
+Complete CI must be checked on the final repaired head.

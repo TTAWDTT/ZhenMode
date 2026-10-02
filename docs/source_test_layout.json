@@ -368,6 +368,12 @@
       "names": [
         "_synth_grid"
       ]
+    },
+    "tests/test_local_top_bridge.py": {
+      "module": "tests.support.material.local_top_bridge",
+      "names": [
+        "fixture"
+      ]
     }
   },
   "package_files": 96,
@@ -651,6 +657,7 @@
     "tests/support/grid.py",
     "tests/support/material/__init__.py",
     "tests/support/material/joint_momentum.py",
+    "tests/support/material/local_top_bridge.py",
     "tests/support/material/process_time.py",
     "tests/support/material/reference_geometry.py",
     "tests/support/material/subcycled_rk.py",
@@ -679,9 +686,9 @@
     "test_module_moves": 100,
     "existing_helper_module_moves": 2,
     "current_source_files": 138,
-    "current_test_files": 146,
+    "current_test_files": 147,
     "additional_source_paths_beyond_declared_moves": 53,
-    "additional_test_paths_beyond_declared_moves": 44,
+    "additional_test_paths_beyond_declared_moves": 45,
     "additional_script_paths": 1,
     "additional_document_paths": 3,
     "whole_file_removals_beyond_relocations": 0,

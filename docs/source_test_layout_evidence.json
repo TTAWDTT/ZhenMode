@@ -230,14 +230,56 @@
     "test_module_moves": 100,
     "existing_helper_module_moves": 2,
     "current_source_files": 138,
-    "current_test_files": 146,
+    "current_test_files": 147,
     "additional_source_paths_beyond_declared_moves": 53,
-    "additional_test_paths_beyond_declared_moves": 44,
+    "additional_test_paths_beyond_declared_moves": 45,
     "additional_script_paths": 1,
     "additional_document_paths": 3,
     "whole_file_removals_beyond_relocations": 0,
     "duplicate_fixture_bodies_removed": 1,
     "duplicate_body_lines": 23
   },
-  "wheel_final": "Rebuilt and reinstalled after the separate MMS source change; all 136 file bytes, 121 actual hashes and 40 aliases rechecked outside checkout."
+  "wheel_final": "Rebuilt and reinstalled after the separate MMS source change; all 136 file bytes, 121 actual hashes and 40 aliases rechecked outside checkout.",
+  "runtime_versions": {
+    "python": "3.12.14",
+    "jax": "0.11.2",
+    "jaxlib": "0.11.2",
+    "numpy": "2.5.3",
+    "pytest": "9.1.1",
+    "ruff": "0.16.8"
+  },
+  "CI_dynamic_consumer_repair": {
+    "first_head": "ad3db9a5b4c5bf64f397a0682ee29527c0aa35af",
+    "first_push_run": "https://github.com/TTAWDTT/ZhenMode/actions/runs/36992714593",
+    "first_PR_run": "https://github.com/TTAWDTT/ZhenMode/actions/runs/36992878293",
+    "first_push_result": {
+      "passed": 1803,
+      "failed": 5,
+      "subtests_passed": 279,
+      "wall_s": 2262.44
+    },
+    "cause": "Four runpy loads and one current audit hash consumer retained pre-migration test paths.",
+    "additional_review_consumer": "research/reviews/test_driver_contract_review.py now imports the same driver/helper from tests.support.driver.",
+    "guard": "Existing architecture case covers fully qualified static imports and dynamic loading in tests, research/reviews, scripts and src.",
+    "unchanged_numeric_logic": true,
+    "targeted_validation": {
+      "passed": 85,
+      "wall_s": 3.531,
+      "peak_interpreter_RSS_bytes": 152428544,
+      "peak_job_private_bytes": 221839360,
+      "single_CPU": true,
+      "memory_limit_bytes": 4294967296,
+      "wall_limit_s": 180,
+      "bound_stop": false,
+      "exit_code": 0
+    },
+    "offline_review_collection": 7,
+    "independent_read_only_code_gate": "passed; exact fixture AST, review assertions and numerical audit logic retained",
+    "platform_exceptions": [
+      "The top-band audit keeps Linux ru_maxrss/KiB and reports real Win32 PeakWorkingSetSize/bytes on Windows; metric failure raises rather than fabricating a value.",
+      "The Windows bounded runner preserves the invoking venv sys.executable for descendant Python processes while retaining direct interpreter measurement and the original Job Object limits."
+    ],
+    "existing_capture_and_wheel_evidence": "No installed numerical source changed; completed 275/344 comparisons and final installed wheel proof were not repeated.",
+    "final_head_CI": "Required after the repair commit; pending results are not asserted as passes."
+  }
 }

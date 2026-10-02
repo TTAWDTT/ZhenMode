@@ -39,12 +39,23 @@ def test_legacy_imports_alias_the_same_canonical_module_and_pickle_definitions()
 
 
 def test_tests_use_support_instead_of_importing_other_test_files():
-    for path in (repository() / "tests").rglob("*.py"):
-        for node in ast.walk(ast.parse(path.read_text(encoding="utf-8"))):
-            if isinstance(node, ast.ImportFrom):
-                assert not (node.module or "").startswith("test_"), path
-            elif isinstance(node, ast.Import):
-                assert not any(alias.name.startswith("test_") for alias in node.names), path
+    def is_test_owner(module):
+        return any(part.startswith("test_") for part in module.replace("\\", "/").replace("/", ".").split("."))
+
+    for directory in ("tests", "research/reviews", "scripts", "src"):
+        for path in (repository() / directory).rglob("*.py"):
+            for node in ast.walk(ast.parse(path.read_text(encoding="utf-8"))):
+                if isinstance(node, ast.ImportFrom):
+                    assert not is_test_owner(node.module or ""), path
+                elif isinstance(node, ast.Import):
+                    assert not any(is_test_owner(alias.name) for alias in node.names), path
+                elif isinstance(node, ast.Call):
+                    function = node.func
+                    name = function.attr if isinstance(function, ast.Attribute) else getattr(function, "id", "")
+                    if name in {"run_path", "run_module", "spec_from_file_location", "import_module", "__import__"}:
+                        strings = [part.value for arg in node.args for part in ast.walk(arg)
+                                   if isinstance(part, ast.Constant) and isinstance(part.value, str)]
+                        assert not any(is_test_owner(value) for value in strings), path
 
 
 def test_checkout_data_roots_stay_at_the_repository():
