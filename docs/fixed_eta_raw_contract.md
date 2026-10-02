@@ -85,3 +85,114 @@ KE/PE flux diagnostics do not add a new prognostic energy stock. The accepted
 raw h/IT/IS/Mu/Mv state remains the single authority.
 
 The accepted family also requires inactive actual TS and density limiters. Actual P1 T/S endpoints must bind the common affine EOS field; the independent face gate integrates the actual auxiliary T/S reconstruction separately from direct EOS density P1.
+
+## 2026-10-02: measured fixed-eta raw commits
+
+The implemented pilot accepts actual raw `ColumnStocks` on the new manufactured
+two-half-prism patch, with 14 layers per half-prism. This is a restricted finite
+pressure step, not a generic raw transport integrator. The independently reviewed
+scientific source is `713a893d4e84b589eb5744ec3ce4a71d77d80fe6`, based on merged
+main `9ed44b18fa6af4edb18e20bcccd0d1b6e8dacadd`. The pre-execution protocol commits
+are `95e850989e5c3c2df1f61436e24daf9b89df5a84` and
+`e6fd14818a73097dd59fd7196867a13d9d0f8dbe`.
+
+Each positive/negative pressure case actually commits two successive steps,
+0.01 and 0.02 s. The second step rebinds the returned raw stocks. Geometry,
+thermodynamic stocks and transverse momentum remain byte-identical, while all
+28 raw Mu rows, including deep rows, change. All five authority fields are
+prepared on one copy and committed once per accepted step. Independent local
+raw water/TS/M impulse ledgers, face pressure, inverse backward error, raw and
+physical KE, unchanged PE, and consumed KE/PE flux ledgers pass before commit.
+
+| Positive case | 0.01 s step | following 0.02 s step |
+|---|---:|---:|
+| Actual raw total x impulse change, kg m/s | -0.5040000000000036 | -1.0080000000000071 |
+| Maximum actual deep Mu change, kg/(m s) | 0.0223999999999958 | 0.0447999999999933 |
+| Actual raw KE change, J | -0.0151052487804879 | -0.0301219902439023 |
+| Independent pressure boundary work, J | -0.0151052487804879 | -0.0301219902439026 |
+| Actual PE change, J | 0 | 0 |
+| Maximum shared water transport, m3 | 0.000123275885814303 | 0.000245829451985163 |
+| Maximum shared IS transport | 0.00458718541085338 | 0.00914749278219004 |
+
+Each case resolves 27 shared physical-depth segments. The negative case has the
+opposite impulse sign. The zero-pressure case retains actual raw stocks and
+nonzero verified face transport. In the sign-crossing case, maximum shared water
+transport is 5.5744e-23 m3 while transported Mu reaches 9.63093e-9 kg m/s:
+J2 remains positive when J1 is zero. No division by Q or false zero momentum
+transport is used. Maximum inverse residual in actual total raw momentum is
+1.4210854715202004e-14 kg m/s.
+
+[The scalar evidence](fixed_eta_raw_evidence.json) records four cases, six
+accepted manufactured raw steps, 32 case gates and 5928 comparisons. The largest
+residual-to-local-bound ratio is 0.0016224057112475569. These are the frozen
+512-eps primitive-operation roundoff gates; pressure difference cancellation
+uses its own actual face-operation bounds. There is no physical truncation or
+generic second-order claim. The receipt contains 248 portable source hashes,
+Python/package versions and the clean scientific source commit. Later docs-only
+publication commits do not change the scientific witness source.
+
+The moving snapshots remain unaccepted. They expose local raw-minus-physical
+storage change 0.0021150701988617016 kg m/s and a changing raw-minus-physical KE
+gap -4.407614762769185e-5 J. Omitting Wdot or Rdot yields maximum raw derivative
+defects 1.776368379499018 and 0.743168379499018 respectively. The separately
+tested changing-mass KE identity has nonzero mass work for both actual D and W;
+using a fixed-mass formula fails. The sloped same-velocity inverse still has
+raw-vs-physical Mu gap 4.10000000000008 kg m/s, IS gap 50/779 and PE gap
+629.1704812499999 J. These defects are reported as representation obstructions,
+not physical losses.
+
+### Validation, resources and reproduction
+
+Independent code/math review passed before the scientific commit. The final
+six-file related regression passed 229 tests in 25.42 pytest seconds; the final
+three added receipt-scale controls passed separately in 0.22 s (41 deselected).
+Together they cover the current 44 new-slice tests and 188 related tests.
+Targeted Ruff and `git diff --check` passed. Full local production suite was not
+run in this round; existing push/PR CI runs it on the exact published head.
+
+[The resource ledger](fixed_eta_raw_resources.json) retains all nine serial
+bounded numerical/test invocations, including the expected missing-module
+collection failure, the implementation list-abs failure, and an incorrect
+related-test filename collection failure. Total bounded wall time is 77.624 s.
+Peak owned process-tree private memory is 75,214,848 bytes. The clean scalar
+witness took 4.531 s, with 40,685,568-byte peak sampled interpreter RSS and
+68,268,032-byte peak process-tree private memory. Every invocation used one CPU,
+a 180 s hard wall and a 4 GiB process-tree memory cap. No real archive step,
+large production integration, GPU or alternate model was run. These resource
+figures are reproduction costs, not equal-error speed evidence.
+
+From a clean checkout of the scientific commit, use a project-local Python
+3.12.14 environment and `research/experiments/material_top_band/affine_requirements.lock`.
+On Windows, the bounded witness command is:
+
+```powershell
+.venv\Scripts\python.exe scripts/run_bounded_research_tests.py --module research.experiments.material_top_band.fixed_eta_raw_evidence --output logs/fixed_eta_raw/scientific_receipt.json
+```
+
+Create the ignored output directory first. The targeted test command is:
+
+```powershell
+.venv\Scripts\python.exe scripts/run_bounded_research_tests.py tests/research/contracts/test_fixed_eta_raw.py tests/research/contracts/test_slope_dual_stock.py tests/research/contracts/test_affine_physical_pressure.py tests/research/contracts/test_pressure_force_geometry.py tests/research/contracts/test_inventory_pressure.py tests/research/contracts/test_material_real_geometry.py -q
+```
+
+The pure scientific module and pytest tests are portable; the bounded launcher
+uses Windows Job Objects. Other platforms must provide equivalent external
+single-CPU, memory and wall limits. Reproduction on a later clean docs-only head
+will record that later commit; numerical gates remain unchanged if the
+scientific source hashes match. Raw source arrays, local private paths and
+credentials are absent from the published receipts.
+
+### Remaining qualification boundary
+
+`qualification_passed`, `production_force_consumption_qualified` and
+`original_global_CV_identified` remain false; moving accepted steps are zero.
+Still missing are the original global momentum CV and its mean-preserving
+Q/Psi reconstruction, general conservative inverse/local transport adapter,
+moving raw metric/storage transfer, nonuniform shear and horizontal density
+pressure gradients, and legal P0/FCT/filter/mixing/biharmonic/wind/heat/rotation/
+drag adapters. The original 8x4x6 moving top-band predict/12fast/replay task is
+not fulfilled by this restricted pilot. No full-stage, generic time-order,
+industrial-quality, mature-model parity or equal-error speed claim is made.
+Default production code and historical qualification records are unchanged.
+
+Resource lineage: only the scientific_receipt invocation captures a clean source commit (713a893d4e84b589eb5744ec3ce4a71d77d80fe6). The other eight invocations are development runs without per-run source capture and are not retrospectively bound to that final commit. The resource ledger identifies the bounded runner with its portable relative path, SHA256 and scientific commit, and verifies that it is unchanged from the merged base.
