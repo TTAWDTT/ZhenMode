@@ -1,0 +1,179 @@
+{
+  "scope": "Serial manufactured physical B/Bdot and contract checks; no accepted or real archive steps",
+  "final_scientific_commit": "c24ebcdd3d6a2116e187d033234786104fd23332",
+  "limits": {
+    "single_CPU": true,
+    "wall_limit_s": 180,
+    "memory_limit_bytes": 4294967296
+  },
+  "source_binding": "Only named clean-source runs executed from the scientific commit. Earlier failure/success logs are retained as implementation history, without a per-run source manifest.",
+  "runs": [
+    {
+      "wall_s": 180.156,
+      "peak_interpreter_RSS_bytes": 1062567936,
+      "peak_job_private_bytes": 1217372160,
+      "single_CPU": true,
+      "memory_limit_bytes": 4294967296,
+      "wall_limit_s": 180,
+      "bound_stop": true,
+      "exit_code": 124,
+      "local_log_name": "adjacent_regression.log",
+      "local_log_SHA256": "2a741441958cc036c78a0e3ea630408e583b01b370e819bd29bff52d1bec0666",
+      "clean_source_commit": "c24ebcdd3d6a2116e187d033234786104fd23332"
+    },
+    {
+      "wall_s": 0.719,
+      "peak_interpreter_RSS_bytes": 48275456,
+      "peak_job_private_bytes": 37285888,
+      "single_CPU": true,
+      "memory_limit_bytes": 4294967296,
+      "wall_limit_s": 180,
+      "bound_stop": false,
+      "exit_code": 1,
+      "local_log_name": "EOS_gate_red.log",
+      "local_log_SHA256": "3bc8203a8f9bceef6d2f3e1d54a7cd5c0172932f9df15c94257a527304f21f2d",
+      "source_lineage": "Uncommitted implementation iteration before the scientific commit; not rebound to final source."
+    },
+    {
+      "wall_s": 10.359,
+      "peak_interpreter_RSS_bytes": 55664640,
+      "peak_job_private_bytes": 71397376,
+      "single_CPU": true,
+      "memory_limit_bytes": 4294967296,
+      "wall_limit_s": 180,
+      "bound_stop": false,
+      "exit_code": 0,
+      "local_log_name": "final_code_green.log",
+      "local_log_SHA256": "43321430e78882243428a34b8a521599b74f06b48fdb21b750e2c4de40189b02",
+      "source_lineage": "Uncommitted implementation iteration before the scientific commit; not rebound to final source."
+    },
+    {
+      "wall_s": 7.734,
+      "peak_interpreter_RSS_bytes": 52629504,
+      "peak_job_private_bytes": 69881856,
+      "single_CPU": true,
+      "memory_limit_bytes": 4294967296,
+      "wall_limit_s": 180,
+      "bound_stop": false,
+      "exit_code": 0,
+      "local_log_name": "first_implementation.log",
+      "local_log_SHA256": "33682f28c86ea5c3dbf900206451cd62348b70962d096bf26531a02926b3a6d8",
+      "source_lineage": "Uncommitted implementation iteration before the scientific commit; not rebound to final source."
+    },
+    {
+      "wall_s": 14.781,
+      "peak_interpreter_RSS_bytes": 59035648,
+      "peak_job_private_bytes": 75292672,
+      "single_CPU": true,
+      "memory_limit_bytes": 4294967296,
+      "wall_limit_s": 180,
+      "bound_stop": false,
+      "exit_code": 0,
+      "local_log_name": "focused_adjacent_regression.log",
+      "local_log_SHA256": "0e78c9afbc0fbe0daa588c53c5f77cb533f22546b5ab2adbcd52cd8db525f157",
+      "clean_source_commit": "c24ebcdd3d6a2116e187d033234786104fd23332"
+    },
+    {
+      "wall_s": 2.329,
+      "peak_interpreter_RSS_bytes": 49524736,
+      "peak_job_private_bytes": 37625856,
+      "single_CPU": true,
+      "memory_limit_bytes": 4294967296,
+      "wall_limit_s": 180,
+      "bound_stop": false,
+      "exit_code": 1,
+      "local_log_name": "independent_controls_red.log",
+      "local_log_SHA256": "bbea09ad0f29f9633184a574bb6164e8167fd87d816adf8af164de65e7530d29",
+      "source_lineage": "Uncommitted implementation iteration before the scientific commit; not rebound to final source."
+    },
+    {
+      "wall_s": 10.156,
+      "peak_interpreter_RSS_bytes": 55488512,
+      "peak_job_private_bytes": 71335936,
+      "single_CPU": true,
+      "memory_limit_bytes": 4294967296,
+      "wall_limit_s": 180,
+      "bound_stop": false,
+      "exit_code": 0,
+      "local_log_name": "material_binding_green.log",
+      "local_log_SHA256": "6029bd15e64f71d5d74cafafe21b5356fbe5f191aee4ed3d61ae62ea32da7126",
+      "source_lineage": "Uncommitted implementation iteration before the scientific commit; not rebound to final source."
+    },
+    {
+      "wall_s": 10.36,
+      "peak_interpreter_RSS_bytes": 56803328,
+      "peak_job_private_bytes": 72871936,
+      "single_CPU": true,
+      "memory_limit_bytes": 4294967296,
+      "wall_limit_s": 180,
+      "bound_stop": false,
+      "exit_code": 1,
+      "local_log_name": "paired_partition_green.log",
+      "local_log_SHA256": "03af39d8f4f78679e63ca029b76ecd759aa989af85e97598c2fbcb05d2b05210",
+      "source_lineage": "Uncommitted implementation iteration before the scientific commit; not rebound to final source."
+    },
+    {
+      "wall_s": 9.75,
+      "peak_interpreter_RSS_bytes": 53411840,
+      "peak_job_private_bytes": 71380992,
+      "single_CPU": true,
+      "memory_limit_bytes": 4294967296,
+      "wall_limit_s": 180,
+      "bound_stop": false,
+      "exit_code": 0,
+      "local_log_name": "rigorous_oracle_green.log",
+      "local_log_SHA256": "a63e66d716b78a0051858a594e0fa7595d8ac5f28b9d1234e4eb586c2298f212",
+      "source_lineage": "Uncommitted implementation iteration before the scientific commit; not rebound to final source."
+    },
+    {
+      "wall_s": 14.265,
+      "peak_interpreter_RSS_bytes": 39849984,
+      "peak_job_private_bytes": 67354624,
+      "single_CPU": true,
+      "memory_limit_bytes": 4294967296,
+      "wall_limit_s": 180,
+      "bound_stop": false,
+      "exit_code": 0,
+      "local_log_name": "scalar_witness.log",
+      "local_log_SHA256": "bea4282850dd2a55586363626e53ad9e7585d5a4a6a8b677147fcbfca8f4fc87",
+      "clean_source_commit": "c24ebcdd3d6a2116e187d033234786104fd23332"
+    },
+    {
+      "wall_s": 0.812,
+      "peak_interpreter_RSS_bytes": 56422400,
+      "peak_job_private_bytes": 45031424,
+      "single_CPU": true,
+      "memory_limit_bytes": 4294967296,
+      "wall_limit_s": 180,
+      "bound_stop": false,
+      "exit_code": 2,
+      "local_log_name": "tdd_red.log",
+      "local_log_SHA256": "5ead02b311bd50cb97c88ed174790626f99725e79dbc0d39836b055df8639801",
+      "source_lineage": "Uncommitted implementation iteration before the scientific commit; not rebound to final source."
+    },
+    {
+      "wall_s": 9.844,
+      "peak_interpreter_RSS_bytes": 55824384,
+      "peak_job_private_bytes": 71589888,
+      "single_CPU": true,
+      "memory_limit_bytes": 4294967296,
+      "wall_limit_s": 180,
+      "bound_stop": false,
+      "exit_code": 0,
+      "local_log_name": "topology_final_green.log",
+      "local_log_SHA256": "ccae162480437d1007bcacb57ca151c13c5d0dd1106719222a8278641dfd11ef",
+      "source_lineage": "Uncommitted implementation iteration before the scientific commit; not rebound to final source."
+    }
+  ],
+  "retained_failures": {
+    "tdd_red": "Missing new module at initial collection.",
+    "EOS_gate_red": "Existing EOS refusal worked; test expected the wrong error regex.",
+    "independent_controls_red": "Missing raw-owner/missing-strip/mixed-sign absolute remainder refusals.",
+    "paired_partition_green": "Historical filename: run actually failed only because the earlier topology guard raised a different valid refusal message.",
+    "adjacent_regression": "Full research-contract directory reached the unchanged 180-second wall limit; incomplete, not a scientific pass. Follow-up directly scoped regression is recorded separately."
+  },
+  "resource_runner": {
+    "source_path": "scripts/run_bounded_research_tests.py",
+    "SHA256": "844c81b1f8185d33bcb79872bd83213807ad0e1f708746ccee52f4a41e00ac03"
+  }
+}
