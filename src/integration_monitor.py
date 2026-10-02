@@ -5,7 +5,7 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
-from stage_budgets import accumulate_budget
+from ocean_solver.audit.schema import accumulate_budget
 
 
 class StateMetrics(NamedTuple):

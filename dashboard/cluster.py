@@ -19,6 +19,7 @@ import time
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import paramiko  # from the same Python env as ~/.research helper
+from channel_io import drain as drain
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 SECRET = json.load(io.open(os.path.join(HERE, "secret.json"), encoding="utf-8"))
@@ -28,18 +29,6 @@ sys.stdout.reconfigure(encoding="utf-8")
 _lock = threading.Lock()
 _cli = None
 _sh = None
-
-
-def drain(sh, timeout=4.0):
-    buf = b""
-    end = time.time() + timeout
-    while time.time() < end:
-        if sh.recv_ready():
-            buf += sh.recv(65536)
-            end = time.time() + 1.0
-        else:
-            time.sleep(0.15)
-    return buf
 
 
 def to_ascii(s):

@@ -34,6 +34,7 @@ ROOT = os.path.dirname(HERE)
 sys.path.insert(0, os.path.join(ROOT, "dashboard"))
 
 import numpy as np  # noqa: E402
+from channel_io import drain as drain  # noqa: E402
 
 try:
     import paramiko  # noqa: E402  (private-gateway dependency, not a project dep)
@@ -63,18 +64,6 @@ SECRET = _load_secret()
 
 def _log(m):
     print(time.strftime("[%H:%M:%S] ") + m, flush=True)
-
-
-def drain(sh, timeout=4.0):
-    buf = b""
-    end = time.time() + timeout
-    while time.time() < end:
-        if sh.recv_ready():
-            buf += sh.recv(65536)
-            end = time.time() + 1.0
-        else:
-            time.sleep(0.15)
-    return buf
 
 
 def to_ascii(s):

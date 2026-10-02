@@ -45,6 +45,7 @@ py-modules = [
     "run_long_integration_global",
     "restart_contract",
     "runtime_validation",
+    "source_identity",
     "integration_monitor",
     "forcing",
     "wind_reanalysis",
@@ -70,6 +71,10 @@ py-modules = [
     "fetch_ssh_abs_monthly",
     "erddap_fetch",
 ]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["ocean_solver*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

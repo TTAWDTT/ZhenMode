@@ -12,26 +12,33 @@ import jax.numpy as jnp
 import numpy as np
 
 from config import C_P, RHO_0
-from jax_solver_global import (
-    _barotropic_subcycle_transport,
+from ocean_solver.fd.barotropic import _barotropic_subcycle_transport
+from ocean_solver.fd.horizontal import (
     _biharmonic_h,
-    _compute_tracer_tendency,
-    _convective_mask,
-    _d2_dz2_flux,
-    _effective_kappa_v,
-    _explicit_full_step,
-    _face_transport_divergence,
     _horizontal_biharmonic_tracer,
     _horizontal_tracer_diffusion,
     _laplacian_h,
+)
+from ocean_solver.fd.integration import _explicit_full_step
+from ocean_solver.fd.processes import (
+    _compute_tracer_tendency,
     _linear_bottom_drag_step,
     _linear_half_step,
+)
+from ocean_solver.fd.sources import _surface_heat_weights
+from ocean_solver.fd.transport import (
+    _face_transport_divergence,
     _match_layer_face_transports,
-    _surface_heat_weights,
-    _vertical_momentum_diffusion,
     _vertical_transport_iface,
 )
+from ocean_solver.fd.vertical import (
+    _convective_mask,
+    _d2_dz2_flux,
+    _effective_kappa_v,
+    _vertical_momentum_diffusion,
+)
 from restart_contract import make_restart_contract
+from source_identity import solver_source_modules, source_paths
 
 INVENTORY_SCHEME = "material_top_v1"
 SOURCE_NAMES = ("prescribed_heat", "bulk_heat", "coastal_bulk_heat",
@@ -570,7 +577,6 @@ def make_material_top_restart_contract(grid, params, *, forcing, controls, execu
     source_directory = Path(__file__).resolve().parent
     contract = make_restart_contract(
         grid, params, dtype="float64", forcing=forcing, controls=controls,
-        code_paths={name: source_directory / f"{name}.py"
-                    for name in ("material_top", "jax_solver_global", "restart_contract", "config", "grid")}, execution=execution)
+        code_paths=source_paths(source_directory, solver_source_modules()), execution=execution)
     contract["state_family"] = "FD_point_samples_material_top_mass_lumped_linear_momentum_v1"
     return contract

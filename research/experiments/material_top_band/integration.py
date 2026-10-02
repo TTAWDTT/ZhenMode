@@ -23,6 +23,7 @@ from jax_solver_global import (
     make_fd_params,
 )
 from research.experiments.fd_static_bridge.bridge import integrate
+from source_identity import solver_source_modules
 
 STAGES = ('bottom_drag_first', 'linear_first', 'nonlinear_predictor',
           'predictor_linear_second', 'barotropic', 'transport_match', 'accepted_tracer_replay',
@@ -50,6 +51,8 @@ def source_digest():
              'src/grid.py', 'src/runtime_validation.py',
              'research/experiments/fd_static_bridge/bridge.py',
              'research/experiments/material_top_band/integration.py']
+    paths += ["src/" + name + ".py" for name in solver_source_modules()
+              if "src/" + name + ".py" not in paths]
     return {name: hashlib.sha256((root / name).read_bytes()).hexdigest() for name in paths}
 
 
