@@ -54,3 +54,34 @@ sloped eta remain rejected. Original global CV identification, moving geometry,
 general transport, fast/replay, forcing/mixing adapters and industrial/equal-error
 speed qualification remain open.
 `n### Pre-execution time-flux and transverse-boundary clarification`n`nUse exact J1, J2 and J3 as frozen in the JSON, not Q times midpoint u for Mu. The sign-crossing control has zero water flux and positive transported Mu. The slice is xz extruded with periodic y; V has no unreported outer-wall source. All face fluxes are computed and consumed before checking the zero row divergence.
+
+## 2026-10-02: readable time-flux clarification and absolute face gates
+
+The preceding pre-execution clarification contains literal newline escape
+characters from serialization. Its mathematical meaning is restated here;
+the historical prefix is preserved.
+
+Use the frozen exact J1, J2 and J3 time integrals. Mu flux is rho0*L*dz*J2,
+including a sign crossing with J1=0 and J2>0. The slice is xz extruded with
+periodic y, so opposing transverse transports and pressure forces cancel.
+
+The actual left and right inventory P1 hydrostatic pressures are integrated
+with two-point Gauss; the common pressure is their arithmetic mean, once.
+Actual pressure integrals, water/TS/M transport and KE/gravitational PE flux
+at each shared and each outer face are independently bound before any raw
+commit using seven-point time/depth quadrature. This gate reads actual raw
+P1 fields and integrates overlying raw layers, and does not call the candidate
+pressure primitive or candidate polynomial time moments. Each raw row consumes
+its separate signed outer and common fluxes, including KE/PE diagnostic fluxes.
+The frozen common affine thermodynamic field is qualified against every actual
+raw stock; roundoff in reconstructing that field is covered only by primitive
+EOS operation bounds. No residual is fitted or repaired.
+
+Common flux errors that preserve zero divergence are explicitly rejected:
+shared and both outer stock fluxes set to zero or P0, all three pressure values
+given a common offset, and shared/outer KE or PE jointly erased. The entire
+state, time, count and last receipt remain unchanged on these failures.
+KE/PE flux diagnostics do not add a new prognostic energy stock. The accepted
+raw h/IT/IS/Mu/Mv state remains the single authority.
+
+The accepted family also requires inactive actual TS and density limiters. Actual P1 T/S endpoints must bind the common affine EOS field; the independent face gate integrates the actual auxiliary T/S reconstruction separately from direct EOS density P1.
