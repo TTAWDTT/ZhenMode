@@ -276,3 +276,59 @@ files" should be read as 256 source hashes. Using the repository's canonical
 `verify_current_source_hashes` resolver verifies all 256 with zero mismatches.
 All published source hashes remain unchanged; this corrects counting and path
 interpretation, not numerical evidence.
+
+### 2026-10-02 23:44 UTC: exact execution-byte boundary
+
+The archived scientific receipt hashes the actual Windows execution checkout
+bytes, not Git's normalized blob bytes. Git reported a clean working tree with
+`core.autocrlf=input`, but the protocol had been written with CRLF before its
+frozen commit. Git normalized that text to LF when storing it. The scientific
+commit and the published head retain the same protocol Git blob
+`07e0f43cdfc04e3d282ae05907c5b182735cee78`; no scientific or protocol content
+drift occurred.
+
+The two independently verified SHA256 values for
+`docs/moving_raw_protocol.json` are:
+
+| Representation | Byte length | Line endings | SHA256 |
+|---|---:|---|---|
+| Actual Windows execution checkout, retained in the original receipt | 10672 | 166 CRLF | `e51975d35ccd14f777ebec5dba5d56db2d8d7b29fc07dac7f030995b9387f95d` |
+| Scientific Git blob and GitHub raw content | 10506 | 166 LF | `f76bfd745cf52fac88812a6edff91d688082f8e70ed10ea87e051de5fdabf369` |
+
+Converting the Git blob's LF to CRLF in memory produces exactly the retained
+execution bytes and their recorded SHA256; the decoded JSON objects are also
+equal. This diagnosis did not rewrite the protocol, alter the original
+receipt, or rerun numerical work. The earlier zero-mismatch verification
+describes the retained Windows execution checkout specifically. The earlier
+byte-identical published-copy statement describes its local working-tree copy;
+Git also normalizes text artifact line endings for the public repository.
+
+Strict hash verification of the archived receipt will correctly fail for this
+one label in a fresh LF checkout, including Linux and a Windows checkout using
+Git's LF content. A clean Git status alone does not establish byte equality.
+The numerical modules and tests remain portable, but that does not imply
+platform-independent identity of archived source digests. A fresh execution
+must record its own actual checkout-byte hashes and commit. It must not replace
+the archived receipt or present new hashes as hashes of the old execution.
+The original receipt, frozen protocol, repository-wide attributes and strict
+hash checks remain unchanged.
+
+### 2026-10-02 23:50 UTC: expanding-face majorant review correction
+
+Independent review found that the original input-area factor used the initial
+top-segment height plus input geometry perturbation, omitting canonical top
+expansion for negative alpha. For alpha=-0.08 and dt=0.02 the smallest top
+segment grows from 0.0266667 to 0.0311538 m. Its initial height is not the
+required time-interval maximum. This finding limits the earlier claim that
+the archived negative-case input majorants were fully proved. It does not
+establish that an observed residual exceeded the overall old budget.
+
+The original scientific receipt and resource ledger remain historical records
+bound to their original source. The corrected factor will use the signed-q
+analytic supremum H*max(0,-q/(1+q)) only for moving-top segments, plus input
+geometry uncertainty and separately justified operation rounding. A new
+frozen expansion protocol and independent tests cover negative alpha near
+the legal duration/ratio limits, positive/zero alpha and fixed interior faces.
+General positive-surface domains also require the PE-content z bound to include
+the largest canonical eta. Corrected numerical evidence will have its own
+precise source and new receipt, preserving the archived record.
