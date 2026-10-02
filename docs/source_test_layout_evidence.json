@@ -150,7 +150,7 @@
   ],
   "collection": {
     "reference_nodes": 1791,
-    "candidate_nodes": 1808,
+    "candidate_nodes": 1832,
     "preserved_nodes": 1791,
     "new_nodes": [
       "tests/infrastructure/test_collection_mapping.py::test_mapping_preserves_full_parameter_identifiers_and_records_new_nodes",
@@ -160,9 +160,33 @@
       "tests/infrastructure/test_current_archives.py::test_current_archive_rejects_missing_declared_test",
       "tests/infrastructure/test_current_archives.py::test_current_archive_rejects_missing_implementation_instead_of_hash_fallback",
       "tests/infrastructure/test_current_archives.py::test_current_archive_resolves_legacy_keys_and_contains_complete_source_closure",
+      "tests/infrastructure/test_current_archives.py::test_current_attribution_cli_verifies_new_receipt_sources_without_model[False]",
+      "tests/infrastructure/test_current_archives.py::test_current_attribution_cli_verifies_new_receipt_sources_without_model[True]",
+      "tests/infrastructure/test_current_archives.py::test_current_manifest_requires_actual_hashes_and_complete_current_closure[None]",
+      "tests/infrastructure/test_current_archives.py::test_current_manifest_requires_actual_hashes_and_complete_current_closure[different_bytes]",
+      "tests/infrastructure/test_current_archives.py::test_current_manifest_requires_actual_hashes_and_complete_current_closure[missing_canonical]",
+      "tests/infrastructure/test_current_archives.py::test_current_manifest_requires_actual_hashes_and_complete_current_closure[missing_marker]",
+      "tests/infrastructure/test_current_archives.py::test_current_producer_hashes_real_complete_source_closure_without_model_run[verify_debug_integration]",
+      "tests/infrastructure/test_current_archives.py::test_current_producer_hashes_real_complete_source_closure_without_model_run[verify_production_restart_cpu]",
+      "tests/infrastructure/test_current_archives.py::test_current_source_resolver_maps_logical_labels_to_actual_files[src/config.py-src/compat/config.py]",
+      "tests/infrastructure/test_current_archives.py::test_current_source_resolver_maps_logical_labels_to_actual_files[src/ocean_solver/configuration.py-src/ocean_solver/configuration.py]",
+      "tests/infrastructure/test_current_archives.py::test_current_source_resolver_maps_logical_labels_to_actual_files[tests/_driver_helpers.py-tests/support/driver.py]",
+      "tests/infrastructure/test_current_archives.py::test_current_source_resolver_maps_logical_labels_to_actual_files[tests/_helpers.py-tests/support/grid.py]",
+      "tests/infrastructure/test_current_archives.py::test_current_source_resolver_maps_logical_labels_to_actual_files[tests/test_cgrid_pressure_work.py-tests/candidates/fv/test_cgrid_pressure_work.py]",
+      "tests/infrastructure/test_current_archives.py::test_current_source_resolver_rejects_absolute_and_mapped_outside_paths",
+      "tests/infrastructure/test_current_archives.py::test_current_source_resolver_rejects_traversal_and_missing_files[../outside.py]",
+      "tests/infrastructure/test_current_archives.py::test_current_source_resolver_rejects_traversal_and_missing_files[src/missing_module.py]",
+      "tests/infrastructure/test_current_archives.py::test_rotation_probe_keeps_current_ledger_and_executed_operator_separate",
       "tests/infrastructure/test_mms_cli_status.py::test_mms_cli_returns_failure_when_either_gate_fails[False-True-1]",
       "tests/infrastructure/test_mms_cli_status.py::test_mms_cli_returns_failure_when_either_gate_fails[True-False-1]",
       "tests/infrastructure/test_mms_cli_status.py::test_mms_cli_returns_failure_when_either_gate_fails[True-True-0]",
+      "tests/infrastructure/test_source_layout.py::test_canonical_import_contract_rejects_empty_scan",
+      "tests/infrastructure/test_source_layout.py::test_canonical_import_contract_rejects_forbidden_imports[from config import PhysicsConfig]",
+      "tests/infrastructure/test_source_layout.py::test_canonical_import_contract_rejects_forbidden_imports[from ocean_solver.audit.legacy import budget]",
+      "tests/infrastructure/test_source_layout.py::test_canonical_import_contract_rejects_forbidden_imports[from ocean_solver.fd.legacy import FDState]",
+      "tests/infrastructure/test_source_layout.py::test_canonical_import_contract_rejects_forbidden_imports[import config]",
+      "tests/infrastructure/test_source_layout.py::test_canonical_import_contract_rejects_forbidden_imports[import ocean_solver.audit.legacy]",
+      "tests/infrastructure/test_source_layout.py::test_canonical_import_contract_rejects_forbidden_imports[import ocean_solver.fd.legacy]",
       "tests/infrastructure/test_source_layout.py::test_canonical_modules_do_not_import_legacy_facades",
       "tests/infrastructure/test_source_layout.py::test_checkout_data_roots_stay_at_the_repository",
       "tests/infrastructure/test_source_layout.py::test_legacy_imports_alias_the_same_canonical_module_and_pickle_definitions",
@@ -239,7 +263,7 @@
     "duplicate_fixture_bodies_removed": 1,
     "duplicate_body_lines": 23
   },
-  "wheel_final": "Rebuilt and reinstalled after the separate MMS source change; all 136 file bytes, 121 actual hashes and 40 aliases rechecked outside checkout.",
+  "wheel_final": "Rebuilt and externally reinstalled after the final provenance module change; 136 actual file bytes, 121 actual hashes, 40 aliases, pickle/pytree and CLI help passed without checkout source insertion.",
   "runtime_versions": {
     "python": "3.12.14",
     "jax": "0.11.2",
@@ -281,5 +305,66 @@
     ],
     "existing_capture_and_wheel_evidence": "No installed numerical source changed; completed 275/344 comparisons and final installed wheel proof were not repeated.",
     "final_head_CI": "Required after the repair commit; pending results are not asserted as passes."
+  },
+  "followup_provenance_repair": {
+    "superseded_head": "930eb5b90136709b1d7232276eb60fbab0dde932",
+    "superseded_CI_runs": [
+      37000803922,
+      37000807329
+    ],
+    "superseded_CI_policy": "Cancelled after independent review found further current producer/consumer omissions; no complete pass claimed.",
+    "guard_enhancement": "The previous relocated parents[2] root was correct and scanned 96 files. Unified repository(), explicit nonempty scan, and six forbidden-import plus one empty-scan negative controls strengthen the contract.",
+    "actual_fixes": [
+      "Production restart witness tail now hashes complete current sources and real moved support helpers.",
+      "Debug integration producer hashes all 96 canonical and 40 compatibility files plus support owners, instead of only two root launchers.",
+      "C-grid, physical-velocity, wet-trace and bounded reference verification use the shared contained current-source hash contract; snapshot path checks remain unchanged.",
+      "The generic nonlinear attribution consumer verifies current logical labels against actual current files.",
+      "Partial rotation keeps every current source ledger hash consistent with its mapped file; executed current operator or frozen Git blob hashes have a separate field."
+    ],
+    "security_and_completeness": "Require complete current source closure unconditionally, validate containment before/after mapping, reject missing files and hash differences. Historical receipts require their original commit; no old hash is invented.",
+    "negative_controls": [
+      "forbidden imports",
+      "empty canonical scan",
+      "source traversal",
+      "absolute or mapped outside source",
+      "missing file",
+      "different bytes",
+      "missing canonical entry",
+      "removed layout marker and canonical entries",
+      "tampered attribution source"
+    ],
+    "missing_marker_TDD": "A real DID NOT RAISE failure was reproduced before removing the conditional completeness gate.",
+    "metadata_only_validation": {
+      "passed": 34,
+      "wall_s": 5.532,
+      "peak_interpreter_RSS_bytes": 151273472,
+      "peak_job_private_bytes": 132464640,
+      "single_CPU": true,
+      "memory_limit_bytes": 4294967296,
+      "wall_limit_s": 180,
+      "bound_stop": false,
+      "exit_code": 0
+    },
+    "numerical_replays": 0,
+    "frozen_boundaries_retained": [
+      "registered historical projection actual reports",
+      "registered historical staggered rain receipt"
+    ],
+    "new_nodes_since_1808_checkpoint": 24,
+    "independent_read_only_code_gate": "Numerical ASTs, gates, snapshot checks and frozen dependency/Git blob checks unchanged; source verification and ledger repairs reviewed."
+  },
+  "installed_wheel_latest": {
+    "Python_files_checked": 136,
+    "legacy_alias_identities": 40,
+    "production_source_files_checked": 121,
+    "imports_inside_real_installation": true,
+    "checkout_source_insertions": 0,
+    "pickle_and_pytree_verified": true,
+    "console_and_module_help_exit": 0,
+    "wheel_sha256": "511fd3485a75d3ca3a924ca8ea3f3f7cb39c0b50978c08f48909a9db649c86fe",
+    "validation_wall_s": 2.422,
+    "peak_interpreter_RSS_bytes": 195006464,
+    "peak_job_private_bytes": 179814400,
+    "source_bytes_refreshed_after_provenance_change": true
   }
 }

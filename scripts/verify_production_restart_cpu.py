@@ -13,8 +13,16 @@ import sys
 import time
 from pathlib import Path
 
+from ocean_solver.provenance.archives import current_source_files
+
 ROOT = Path(__file__).resolve().parents[1]
 sys.path[:0] = [str(ROOT)]
+
+
+def source_hashes():
+    """Current producer hashes real implementations and all moved support owners."""
+    files = current_source_files(ROOT, [Path(__file__).resolve()])
+    return {name: hashlib.sha256(path.read_bytes()).hexdigest() for name, path in files.items()}
 
 
 def worker(directory, phase):
@@ -100,8 +108,7 @@ def main():
               'all_saved_fields_byte_equal': all(equal.values()), 'field_byte_equal': equal,
               'process_wall_seconds': durations, 'artifact_sha256': files,
               'accepted_ocean_steps': 16, 'industrial_qualification': False,
-              'source_sha256': {str(path.relative_to(ROOT)): hashlib.sha256(path.read_bytes()).hexdigest()
-                                for path in [Path(__file__), ROOT / 'tests/_driver_helpers.py', ROOT / 'tests/_helpers.py']}}
+              'source_sha256': source_hashes()}
     (args.output / 'report.json').write_text(json.dumps(report, indent=2, sort_keys=True))
     print(json.dumps({'all_saved_fields_byte_equal': all(equal.values()), 'process_wall_seconds': durations}))
     if not all(equal.values()):

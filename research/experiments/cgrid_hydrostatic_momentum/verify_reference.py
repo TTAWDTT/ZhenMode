@@ -7,6 +7,8 @@ from pathlib import Path
 
 import numpy as np
 
+from ocean_solver.provenance.archives import verify_current_source_hashes
+
 ROOT = Path(__file__).resolve().parents[3]
 
 
@@ -37,9 +39,7 @@ def verify(report):
     manifest = report["provenance"]["source_sha256"]
     if not required.issubset(manifest):
         raise ValueError("incomplete runtime source manifest")
-    for relative, expected in manifest.items():
-        if hashlib.sha256(_path(relative).read_bytes()).hexdigest() != expected:
-            raise ValueError(f"runtime source mismatch: {relative}")
+    verify_current_source_hashes(ROOT, manifest)
     if report["reference_coefficients"] != [1., 1e-3, 1e-7]:
         raise ValueError("reference density profile changed")
     expected_groups = {(geometry, dtype, disturbed) for geometry in ("prior_smoothed", "unsmoothed")

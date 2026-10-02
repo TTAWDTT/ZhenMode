@@ -1,4 +1,5 @@
 """Collect complete current sources without rewriting historical receipts."""
+import hashlib
 import json
 from pathlib import Path
 
@@ -41,3 +42,40 @@ def current_source_files(repository, selected):
             result[path.relative_to(root).as_posix()] = path
     result["docs/source_test_layout.json"] = declaration
     return result
+
+
+def _checked_source_name(root, name):
+    if not isinstance(name, str):
+        raise ValueError("source label must be a relative string")
+    name = name.replace("\\", "/")
+    requested = Path(name)
+    if requested.is_absolute() or ".." in requested.parts or not (root / requested).resolve().is_relative_to(root):
+        raise ValueError("outside-workspace source: " + name)
+    return name
+
+
+def _checked_source_file(root, path):
+    actual = path.resolve()
+    if not actual.is_relative_to(root) or not actual.is_file():
+        raise ValueError("missing or outside-workspace source: " + str(path))
+    return actual
+
+
+def current_source_path(repository, name):
+    """Resolve a logical current source label with containment before and after mapping."""
+    root = Path(repository).resolve()
+    name = _checked_source_name(root, name)
+    return _checked_source_file(root, current_source_files(root, [name])[name])
+
+
+def verify_current_source_hashes(repository, manifest):
+    """Verify a complete current closure; historical receipts require their old commit."""
+    root = Path(repository).resolve()
+    names = {name: _checked_source_name(root, name) for name in manifest}
+    files = current_source_files(root, list(names.values()))
+    if not set(current_source_files(root, [])).issubset(names.values()):
+        raise ValueError("incomplete current source manifest")
+    for name, expected in manifest.items():
+        path = _checked_source_file(root, files[names[name]])
+        if hashlib.sha256(path.read_bytes()).hexdigest() != expected:
+            raise ValueError("runtime source mismatch: " + name)

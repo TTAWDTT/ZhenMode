@@ -127,3 +127,9 @@ an unverified acceleration. Read the [repair status](docs/legacy_core_repair_sta
 [research index](research/README.md) for evidence and remaining limitations.
 Historical receipts and independent oracles remain bound to their original
 protocols and commits; test counts do not override failed scientific gates.
+
+
+Current research receipt verifiers require the full current implementation
+and support source set, resolve legacy logical labels to actual files, and
+reject missing, mismatched or outside-checkout sources. Historical receipts
+remain bound to their historical commit and artifacts.

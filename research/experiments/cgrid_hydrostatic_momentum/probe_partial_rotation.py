@@ -23,6 +23,20 @@ from finite_volume import build_geometry
 jax.config.update("jax_enable_x64", True)
 
 
+def source_provenance(operator_source, frozen_revision=None):
+    """Keep current source-file hashes separate from the executed operator bytes."""
+    sources = [ROOT / "src" / name for name in ("cgrid_momentum.py", "finite_volume.py")]
+    sources += [Path(__file__).resolve(), Path(__file__).with_name("partial_rotation_protocol.md")]
+    ledger = {name: hashlib.sha256(path.read_bytes()).hexdigest()
+              for name, path in current_source_files(ROOT, sources).items()}
+    if frozen_revision is None:
+        executed = {"kind": "current_file", "path": Path(cgrid_momentum.__file__).resolve().relative_to(ROOT).as_posix()}
+    else:
+        executed = {"kind": "git_blob", "revision": frozen_revision, "path": "src/cgrid_momentum.py"}
+    executed["sha256"] = hashlib.sha256(operator_source).hexdigest()
+    return ledger, executed
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--revision")
@@ -55,10 +69,7 @@ def main():
     error = float(np.max(np.abs(selected / expected - 1.)))
     rotated = operator.rotate_coriolis(geometry, east, north, 60., coriolis=.001)
     passed = error <= 1e-8 and bool(rotated.valid)
-    sources = [ROOT / "src" / name for name in ("cgrid_momentum.py", "finite_volume.py")]
-    sources += [Path(__file__), Path(__file__).with_name("partial_rotation_protocol.md")]
-    source_hashes = {name: hashlib.sha256(path.read_bytes()).hexdigest() for name, path in current_source_files(ROOT, sources).items()}
-    source_hashes["src/cgrid_momentum.py"] = hashlib.sha256(operator_source).hexdigest()
+    source_hashes, executed_operator = source_provenance(operator_source, frozen_revision)
     report = {"scope": "local_common_wet_depth_coriolis_consistency_not_whole_model",
               "status": "PASS" if passed else "FAIL", "expected_acceleration_m_s2": expected,
               "measured_acceleration_m_s2": selected.tolist(), "maximum_relative_error": error,
@@ -66,7 +77,7 @@ def main():
               "rotation_energy_relative": float(rotated.energy_relative_change),
               "rotation_solve_relative": float(rotated.solve_relative_residual),
               "git_head": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip(),
-              "source_sha256": source_hashes, "frozen_core_revision": frozen_revision,
+              "source_sha256": source_hashes, "executed_operator": executed_operator, "frozen_core_revision": frozen_revision,
               "jax_version": jax.__version__, "backend": jax.default_backend()}
     output.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
     print(json.dumps(report, indent=2))

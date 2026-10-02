@@ -221,3 +221,54 @@ and all other move/removal counts unchanged. No installed numerical source
 changed in this correction, so the completed four 275-record comparisons,
 344-record driver comparison and final wheel proof are retained without reruns.
 Complete CI must be checked on the final repaired head.
+
+
+## Complete current provenance and negative controls - 2026-10-02
+
+Independent review of the next checkpoint found further current-source
+consumers outside the complete pytest suite. The restart witness's final
+hash block still named the two old helper paths; debug integration's
+nonrecursive source glob recorded only the two root launchers. Both producers
+now hash the complete actual current source/support closure. No numerical
+witness was rerun to fix these metadata paths.
+
+The C-grid reference verifier (also used by physical-velocity and wet-trace
+verification), bounded reference verifier and generic nonlinear attribution
+consumer now use the same contained current-source hash contract. Logical
+labels resolve to real current files. Missing, outside-checkout or mismatched
+files reject, and complete current closure is mandatory even if a receipt's
+layout marker is deleted. That deletion bypass was first reproduced by a
+failing negative control, then repaired. Existing snapshot path containment,
+hash checks, scientific thresholds and independent NumPy formulas are retained.
+
+The rotation probe records an `executed_operator` descriptor separately from
+the current-file ledger. A current operator has its canonical path and actual
+bytes; a frozen operator has its explicit Git revision/blob path and actual
+blob hash. Neither overwrites a compatibility-file hash in the current ledger.
+Existing frozen dependency comparisons are unchanged. The metadata test uses
+synthetic blob bytes and does not establish a historical numerical replay.
+
+The relocated architecture check's old `parents[2]` root was already correct
+and scanned 96 files. Shared repository lookup, explicit nonempty scanning,
+six forbidden-import controls and one empty-scan control are enhancements,
+not a correction of an empty scan. Direct `import` of the two canonical legacy
+export modules is now covered along with bare facades and `from` imports.
+
+Final lightweight validation: 34 passes, 5.532 seconds, peak interpreter RSS
+151273472 bytes and peak process-tree private memory 132464640 bytes, within
+one CPU, 180 seconds and 4 GiB. Final collection is 1832: all original 1791,
+14 architecture, four collection mapping, 20 current archive/provenance and
+three MMS exit controls. Source/test file counts and move/removal counts are
+unchanged. The wheel was rebuilt after the provenance-source byte change;
+external installation rechecked 136 files, 40 aliases and 121 hashes in 2.422
+seconds, with no checkout path insertion. Unchanged 275/344-record numerical
+comparisons were not repeated. Source identities remain tied to their real
+version; a new metadata source hash never masquerades as an old envelope.
+
+Registered historical projection actual reports and the staggered rain
+receipt remain fixed historical analyses. Reproduce those with their original
+commit and artifacts; they are not relabeled as current-source receipts.
+The historical coastal/viscosity/resolution/restoring analysis scripts and
+all 455 frozen evidence/document files remain unchanged. The 930eb5b CI runs
+were cancelled when these review findings required a new final head; they are
+not complete passing evidence. Assess complete CI on the final repair head.

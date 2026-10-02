@@ -12,19 +12,49 @@ def repository():
     return REPOSITORY_ROOT
 
 
-def test_canonical_modules_do_not_import_legacy_facades():
-    # This also fails before the migration without depending on its manifest.
-    root = Path(__file__).resolve().parents[2]
-    legacy = {path.stem for path in (root / "src/compat").glob("*.py")}
-    if not legacy:
-        legacy = {path.stem for path in (root / "src").glob("*.py")}
-    for path in (root / "src/ocean_solver").rglob("*.py"):
+def assert_canonical_import_contract(root):
+    modules = sorted((root / "src/ocean_solver").rglob("*.py"))
+    assert modules, "No canonical implementation files were found"
+    forbidden = {path.stem for path in (root / "src/compat").glob("*.py")}
+    forbidden |= {"ocean_solver.fd.legacy", "ocean_solver.audit.legacy"}
+    for path in modules:
         for node in ast.walk(ast.parse(path.read_text(encoding="utf-8"))):
             if isinstance(node, ast.Import):
-                assert not {alias.name for alias in node.names} & legacy, path
+                assert not {alias.name for alias in node.names} & forbidden, path
             elif isinstance(node, ast.ImportFrom):
-                assert node.module not in legacy, path
-                assert node.module not in {"ocean_solver.fd.legacy", "ocean_solver.audit.legacy"}, path
+                assert node.module not in forbidden, path
+                assert not {f"{node.module}.{alias.name}" for alias in node.names} & forbidden, path
+
+
+def test_canonical_modules_do_not_import_legacy_facades():
+    assert_canonical_import_contract(repository())
+
+
+@pytest.mark.parametrize("forbidden_import", [
+    "import config",
+    "import ocean_solver.fd.legacy",
+    "import ocean_solver.audit.legacy",
+    "from config import PhysicsConfig",
+    "from ocean_solver.fd.legacy import FDState",
+    "from ocean_solver.audit.legacy import budget",
+])
+def test_canonical_import_contract_rejects_forbidden_imports(tmp_path, forbidden_import):
+    canonical = tmp_path / "src/ocean_solver"
+    facades = tmp_path / "src/compat"
+    canonical.mkdir(parents=True)
+    facades.mkdir(parents=True)
+    (facades / "config.py").write_text("", encoding="utf-8")
+    (canonical / "consumer.py").write_text(forbidden_import + "\n", encoding="utf-8")
+    with pytest.raises(AssertionError, match="consumer.py"):
+        assert_canonical_import_contract(tmp_path)
+
+
+def test_canonical_import_contract_rejects_empty_scan(tmp_path):
+    facades = tmp_path / "src/compat"
+    facades.mkdir(parents=True)
+    (facades / "config.py").write_text("", encoding="utf-8")
+    with pytest.raises(AssertionError, match="No canonical implementation files"):
+        assert_canonical_import_contract(tmp_path)
 
 
 def test_legacy_imports_alias_the_same_canonical_module_and_pickle_definitions():

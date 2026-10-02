@@ -8,7 +8,10 @@ import time
 from dataclasses import asdict, replace
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
+from ocean_solver.provenance.archives import current_source_files
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "src"))
 
 import jax
 import jax.numpy as jnp
@@ -29,6 +32,12 @@ from stage_budgets import (
     empty_budget,
     make_budget_step,
 )
+
+
+def source_hashes():
+    """Current producer hashes real implementations and all moved support owners."""
+    files = current_source_files(ROOT, [Path(__file__).resolve()])
+    return {name: hashlib.sha256(path.read_bytes()).hexdigest() for name, path in files.items()}
 
 
 def make_smoke_fixture(resolution, bathymetry, kappa_bi):
@@ -121,7 +130,6 @@ def main():
     batch_steps = max(1, int(21600. / args.dt))
     results = []
     root = Path(__file__).resolve().parents[1]
-    sources = sorted((root / "src").glob("*.py")) + [Path(__file__).resolve()]
     output = Path(args.out)
     output.parent.mkdir(parents=True, exist_ok=True)
     report = {
@@ -133,8 +141,7 @@ def main():
         "provenance": {
             "git_head": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=root, text=True).strip(),
             "git_status": subprocess.check_output(["git", "status", "--porcelain"], cwd=root, text=True).splitlines(),
-            "source_sha256": {str(path.relative_to(root)): hashlib.sha256(path.read_bytes()).hexdigest()
-                              for path in sources},
+            "source_sha256": source_hashes(),
             "bathymetry_sha256": hashlib.sha256(Path(args.bathy).read_bytes()).hexdigest(),
             "additional_input_sha256": additional_inputs,
             "jax_version": jax.__version__, "backend": jax.default_backend(),
