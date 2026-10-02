@@ -9,6 +9,8 @@ from pathlib import Path
 
 import numpy as np
 
+from ocean_solver.provenance.archives import current_source_files
+
 ROOT = Path(__file__).resolve().parents[3]
 EPS = 64. * np.finfo(float).eps
 
@@ -171,7 +173,8 @@ def main():
     def sha(filename):
         return hashlib.sha256(filename.read_bytes()).hexdigest()
 
-    if any(sha(ROOT / name) != value for name, value in report["provenance"]["source_sha256"].items()):
+    files = current_source_files(ROOT, report["provenance"]["source_sha256"])
+    if any(sha(files[name]) != value for name, value in report["provenance"]["source_sha256"].items()):
         raise ValueError("runtime source hashes changed")
     if sha(ROOT / report["provenance"]["input_report"]) != report["provenance"]["input_report_sha256"]:
         raise ValueError("immutable input report hash")

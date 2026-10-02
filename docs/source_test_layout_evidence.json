@@ -1,0 +1,418 @@
+{
+  "reference_commit": "5bb8879aa0894af441c483f34a57451f9e9df681",
+  "scope": "synthetic regression equivalence only; no physical, industrial or speed qualification",
+  "limits": {
+    "CPU_count": 1,
+    "wall_seconds_per_invocation": 180,
+    "memory_bytes_per_process_tree": 4294967296
+  },
+  "captures": [
+    {
+      "case": "float64_scan",
+      "reference": {
+        "wall_s": 20.687,
+        "peak_interpreter_RSS_bytes": 441819136,
+        "peak_job_private_bytes": 420048896,
+        "single_CPU": true,
+        "memory_limit_bytes": 4294967296,
+        "wall_limit_s": 180,
+        "bound_stop": false,
+        "exit_code": 0
+      },
+      "candidate": {
+        "wall_s": 20.188,
+        "peak_interpreter_RSS_bytes": 439431168,
+        "peak_job_private_bytes": 418607104,
+        "single_CPU": true,
+        "memory_limit_bytes": 4294967296,
+        "wall_limit_s": 180,
+        "bound_stop": false,
+        "exit_code": 0
+      },
+      "comparison": {
+        "records": 275,
+        "different_records": [],
+        "normalization": "selected_files.path under the declared source parent only; checksums and effective arrays retained"
+      }
+    },
+    {
+      "case": "float64_eager",
+      "reference": {
+        "wall_s": 19.188,
+        "peak_interpreter_RSS_bytes": 437334016,
+        "peak_job_private_bytes": 416366592,
+        "single_CPU": true,
+        "memory_limit_bytes": 4294967296,
+        "wall_limit_s": 180,
+        "bound_stop": false,
+        "exit_code": 0
+      },
+      "candidate": {
+        "wall_s": 20.593,
+        "peak_interpreter_RSS_bytes": 439111680,
+        "peak_job_private_bytes": 418385920,
+        "single_CPU": true,
+        "memory_limit_bytes": 4294967296,
+        "wall_limit_s": 180,
+        "bound_stop": false,
+        "exit_code": 0
+      },
+      "comparison": {
+        "records": 275,
+        "different_records": [],
+        "normalization": "selected_files.path under the declared source parent only; checksums and effective arrays retained"
+      }
+    },
+    {
+      "case": "float32_scan",
+      "reference": {
+        "wall_s": 22.203,
+        "peak_interpreter_RSS_bytes": 503435264,
+        "peak_job_private_bytes": 486248448,
+        "single_CPU": true,
+        "memory_limit_bytes": 4294967296,
+        "wall_limit_s": 180,
+        "bound_stop": false,
+        "exit_code": 0
+      },
+      "candidate": {
+        "wall_s": 23.0,
+        "peak_interpreter_RSS_bytes": 500805632,
+        "peak_job_private_bytes": 483561472,
+        "single_CPU": true,
+        "memory_limit_bytes": 4294967296,
+        "wall_limit_s": 180,
+        "bound_stop": false,
+        "exit_code": 0
+      },
+      "comparison": {
+        "records": 275,
+        "different_records": [],
+        "normalization": "selected_files.path under the declared source parent only; checksums and effective arrays retained"
+      }
+    },
+    {
+      "case": "float32_eager",
+      "reference": {
+        "wall_s": 21.296,
+        "peak_interpreter_RSS_bytes": 504922112,
+        "peak_job_private_bytes": 487178240,
+        "single_CPU": true,
+        "memory_limit_bytes": 4294967296,
+        "wall_limit_s": 180,
+        "bound_stop": false,
+        "exit_code": 0
+      },
+      "candidate": {
+        "wall_s": 23.0,
+        "peak_interpreter_RSS_bytes": 505696256,
+        "peak_job_private_bytes": 487972864,
+        "single_CPU": true,
+        "memory_limit_bytes": 4294967296,
+        "wall_limit_s": 180,
+        "bound_stop": false,
+        "exit_code": 0
+      },
+      "comparison": {
+        "records": 275,
+        "different_records": [],
+        "normalization": "selected_files.path under the declared source parent only; checksums and effective arrays retained"
+      }
+    },
+    {
+      "case": "driver_jit",
+      "reference": {
+        "wall_s": 45.578,
+        "peak_interpreter_RSS_bytes": 443138048,
+        "peak_job_private_bytes": 401674240,
+        "single_CPU": true,
+        "memory_limit_bytes": 4294967296,
+        "wall_limit_s": 180,
+        "bound_stop": false,
+        "exit_code": 0
+      },
+      "candidate": {
+        "wall_s": 46.703,
+        "peak_interpreter_RSS_bytes": 435630080,
+        "peak_job_private_bytes": 394448896,
+        "single_CPU": true,
+        "memory_limit_bytes": 4294967296,
+        "wall_limit_s": 180,
+        "bound_stop": false,
+        "exit_code": 0
+      },
+      "comparison": {
+        "records": 344,
+        "different_records": [],
+        "normalization": "selected_files.path under the declared source parent only; checksums and effective arrays retained"
+      }
+    }
+  ],
+  "collection": {
+    "reference_nodes": 1791,
+    "candidate_nodes": 1836,
+    "preserved_nodes": 1791,
+    "new_nodes": [
+      "tests/infrastructure/test_collection_mapping.py::test_mapping_preserves_full_parameter_identifiers_and_records_new_nodes",
+      "tests/infrastructure/test_collection_mapping.py::test_mapping_refuses_missing_changed_duplicate_or_unmapped_nodes[candidate0-moves0-missing original]",
+      "tests/infrastructure/test_collection_mapping.py::test_mapping_refuses_missing_changed_duplicate_or_unmapped_nodes[candidate1-moves1-duplicate]",
+      "tests/infrastructure/test_collection_mapping.py::test_mapping_refuses_missing_changed_duplicate_or_unmapped_nodes[candidate2-moves2-no declared move]",
+      "tests/infrastructure/test_current_archives.py::test_current_archive_rejects_missing_declared_test",
+      "tests/infrastructure/test_current_archives.py::test_current_archive_rejects_missing_implementation_instead_of_hash_fallback",
+      "tests/infrastructure/test_current_archives.py::test_current_archive_resolves_legacy_keys_and_contains_complete_source_closure",
+      "tests/infrastructure/test_current_archives.py::test_current_attribution_cli_verifies_new_receipt_sources_without_model[False]",
+      "tests/infrastructure/test_current_archives.py::test_current_attribution_cli_verifies_new_receipt_sources_without_model[True]",
+      "tests/infrastructure/test_current_archives.py::test_current_closure_records_checkout_launchers_separately_from_compatibility[jax_solver_global]",
+      "tests/infrastructure/test_current_archives.py::test_current_closure_records_checkout_launchers_separately_from_compatibility[run_long_integration_global]",
+      "tests/infrastructure/test_current_archives.py::test_current_manifest_rejects_actual_checkout_launcher_byte_changes[jax_solver_global]",
+      "tests/infrastructure/test_current_archives.py::test_current_manifest_rejects_actual_checkout_launcher_byte_changes[run_long_integration_global]",
+      "tests/infrastructure/test_current_archives.py::test_current_manifest_requires_actual_hashes_and_complete_current_closure[None]",
+      "tests/infrastructure/test_current_archives.py::test_current_manifest_requires_actual_hashes_and_complete_current_closure[different_bytes]",
+      "tests/infrastructure/test_current_archives.py::test_current_manifest_requires_actual_hashes_and_complete_current_closure[missing_canonical]",
+      "tests/infrastructure/test_current_archives.py::test_current_manifest_requires_actual_hashes_and_complete_current_closure[missing_marker]",
+      "tests/infrastructure/test_current_archives.py::test_current_producer_hashes_real_complete_source_closure_without_model_run[verify_debug_integration]",
+      "tests/infrastructure/test_current_archives.py::test_current_producer_hashes_real_complete_source_closure_without_model_run[verify_production_restart_cpu]",
+      "tests/infrastructure/test_current_archives.py::test_current_source_resolver_maps_logical_labels_to_actual_files[src/config.py-src/compat/config.py]",
+      "tests/infrastructure/test_current_archives.py::test_current_source_resolver_maps_logical_labels_to_actual_files[src/ocean_solver/configuration.py-src/ocean_solver/configuration.py]",
+      "tests/infrastructure/test_current_archives.py::test_current_source_resolver_maps_logical_labels_to_actual_files[tests/_driver_helpers.py-tests/support/driver.py]",
+      "tests/infrastructure/test_current_archives.py::test_current_source_resolver_maps_logical_labels_to_actual_files[tests/_helpers.py-tests/support/grid.py]",
+      "tests/infrastructure/test_current_archives.py::test_current_source_resolver_maps_logical_labels_to_actual_files[tests/test_cgrid_pressure_work.py-tests/candidates/fv/test_cgrid_pressure_work.py]",
+      "tests/infrastructure/test_current_archives.py::test_current_source_resolver_rejects_absolute_and_mapped_outside_paths",
+      "tests/infrastructure/test_current_archives.py::test_current_source_resolver_rejects_traversal_and_missing_files[../outside.py]",
+      "tests/infrastructure/test_current_archives.py::test_current_source_resolver_rejects_traversal_and_missing_files[src/missing_module.py]",
+      "tests/infrastructure/test_current_archives.py::test_rotation_probe_keeps_current_ledger_and_executed_operator_separate",
+      "tests/infrastructure/test_mms_cli_status.py::test_mms_cli_returns_failure_when_either_gate_fails[False-True-1]",
+      "tests/infrastructure/test_mms_cli_status.py::test_mms_cli_returns_failure_when_either_gate_fails[True-False-1]",
+      "tests/infrastructure/test_mms_cli_status.py::test_mms_cli_returns_failure_when_either_gate_fails[True-True-0]",
+      "tests/infrastructure/test_source_layout.py::test_canonical_import_contract_rejects_empty_scan",
+      "tests/infrastructure/test_source_layout.py::test_canonical_import_contract_rejects_forbidden_imports[from config import PhysicsConfig]",
+      "tests/infrastructure/test_source_layout.py::test_canonical_import_contract_rejects_forbidden_imports[from ocean_solver.audit.legacy import budget]",
+      "tests/infrastructure/test_source_layout.py::test_canonical_import_contract_rejects_forbidden_imports[from ocean_solver.fd.legacy import FDState]",
+      "tests/infrastructure/test_source_layout.py::test_canonical_import_contract_rejects_forbidden_imports[import config]",
+      "tests/infrastructure/test_source_layout.py::test_canonical_import_contract_rejects_forbidden_imports[import ocean_solver.audit.legacy]",
+      "tests/infrastructure/test_source_layout.py::test_canonical_import_contract_rejects_forbidden_imports[import ocean_solver.fd.legacy]",
+      "tests/infrastructure/test_source_layout.py::test_canonical_modules_do_not_import_legacy_facades",
+      "tests/infrastructure/test_source_layout.py::test_checkout_data_roots_stay_at_the_repository",
+      "tests/infrastructure/test_source_layout.py::test_legacy_imports_alias_the_same_canonical_module_and_pickle_definitions",
+      "tests/infrastructure/test_source_layout.py::test_source_root_supports_installed_paths_and_external_source_directory[compat]",
+      "tests/infrastructure/test_source_layout.py::test_source_root_supports_installed_paths_and_external_source_directory[installed]",
+      "tests/infrastructure/test_source_layout.py::test_source_root_supports_installed_paths_and_external_source_directory[ocean_solver]",
+      "tests/infrastructure/test_source_layout.py::test_tests_use_support_instead_of_importing_other_test_files"
+    ],
+    "preserved_mapping_sha256": "67647342ea1c6d09eee77fe750d7df33551c7bafa8468b23c96d574c5fad1f27"
+  },
+  "frozen": {
+    "reference_commit": "5bb8879aa0894af441c483f34a57451f9e9df681",
+    "historical_files_checked": 455,
+    "changed_files": [],
+    "sha256_ledger": "383a66a9e68341d6b82e8c3e73f0fda85115b2c6f8d0d31607e392dd84af4f5c",
+    "selected_suffixes": [
+      ".md",
+      ".json",
+      ".csv",
+      ".tsv",
+      ".yaml",
+      ".yml",
+      ".npz",
+      ".npy"
+    ]
+  },
+  "installed_wheel": {
+    "Python_files_checked": 136,
+    "legacy_alias_identities": 40,
+    "production_source_files_checked": 121,
+    "imports_inside_real_installation": true,
+    "checkout_source_insertions": 0,
+    "pickle_and_pytree_verified": true,
+    "console_and_module_help_exit": 0
+  },
+  "local_failures_retained": [
+    "Initial Windows collection could not import POSIX resource; import deferred to actual POSIX CLI without fabricated RSS.",
+    "First editable validation was shadowed by inherited external checkout; only owned venv path ordering corrected; genuine wheel proof is independent.",
+    "Ruff removed WIDTHS re-export from test owner; consumer now imports actual support owner.",
+    "Old data-test CLI cwd broke after relocation; corrected to repository fixture and affected test passed."
+  ],
+  "MMS_behavior_exception": {
+    "separate_commit": "2822a4570bb1013136d8e101f380056bd51df72b",
+    "formula_or_threshold_changes": false,
+    "status_controls": 3,
+    "all_pass_status": 0,
+    "operator_failure_status": 1,
+    "convergence_failure_status": 1,
+    "actual_spatial_ratio": 4.3,
+    "does_not_establish_full_step_temporal_order": true
+  },
+  "test_file_categories": {
+    "candidates/fv": 8,
+    "candidates/material": 13,
+    "data": 7,
+    "fd": 22,
+    "infrastructure": 10,
+    "research/contracts": 18,
+    "research/rstar": 11,
+    "runtime": 5,
+    "validation": 6
+  },
+  "layout_counts": {
+    "source_implementation_moves": 40,
+    "test_module_moves": 100,
+    "existing_helper_module_moves": 2,
+    "current_source_files": 138,
+    "current_test_files": 147,
+    "additional_source_paths_beyond_declared_moves": 53,
+    "additional_test_paths_beyond_declared_moves": 45,
+    "additional_script_paths": 1,
+    "additional_document_paths": 3,
+    "whole_file_removals_beyond_relocations": 0,
+    "duplicate_fixture_bodies_removed": 1,
+    "duplicate_body_lines": 23
+  },
+  "wheel_final": "Rebuilt after the checkout launcher source-closure repair; externally checked all 136 installed Python bytes, 121 actual registry hashes, 40 aliases, pickle/pytree and CLI help. The two checkout-only launchers are not required inside the wheel.",
+  "runtime_versions": {
+    "python": "3.12.14",
+    "jax": "0.11.2",
+    "jaxlib": "0.11.2",
+    "numpy": "2.5.3",
+    "pytest": "9.1.1",
+    "ruff": "0.16.8"
+  },
+  "CI_dynamic_consumer_repair": {
+    "first_head": "ad3db9a5b4c5bf64f397a0682ee29527c0aa35af",
+    "first_push_run": "https://github.com/TTAWDTT/ZhenMode/actions/runs/36992714593",
+    "first_PR_run": "https://github.com/TTAWDTT/ZhenMode/actions/runs/36992878293",
+    "first_push_result": {
+      "passed": 1803,
+      "failed": 5,
+      "subtests_passed": 279,
+      "wall_s": 2262.44
+    },
+    "cause": "Four runpy loads and one current audit hash consumer retained pre-migration test paths.",
+    "additional_review_consumer": "research/reviews/test_driver_contract_review.py now imports the same driver/helper from tests.support.driver.",
+    "guard": "Existing architecture case covers fully qualified static imports and dynamic loading in tests, research/reviews, scripts and src.",
+    "unchanged_numeric_logic": true,
+    "targeted_validation": {
+      "passed": 85,
+      "wall_s": 3.531,
+      "peak_interpreter_RSS_bytes": 152428544,
+      "peak_job_private_bytes": 221839360,
+      "single_CPU": true,
+      "memory_limit_bytes": 4294967296,
+      "wall_limit_s": 180,
+      "bound_stop": false,
+      "exit_code": 0
+    },
+    "offline_review_collection": 7,
+    "independent_read_only_code_gate": "passed; exact fixture AST, review assertions and numerical audit logic retained",
+    "platform_exceptions": [
+      "The top-band audit keeps Linux ru_maxrss/KiB and reports real Win32 PeakWorkingSetSize/bytes on Windows; metric failure raises rather than fabricating a value.",
+      "The Windows bounded runner preserves the invoking venv sys.executable for descendant Python processes while retaining direct interpreter measurement and the original Job Object limits."
+    ],
+    "existing_capture_and_wheel_evidence": "No installed numerical source changed; completed 275/344 comparisons and final installed wheel proof were not repeated.",
+    "final_head_CI": "Required after the repair commit; pending results are not asserted as passes."
+  },
+  "followup_provenance_repair": {
+    "superseded_head": "930eb5b90136709b1d7232276eb60fbab0dde932",
+    "superseded_CI_runs": [
+      37000803922,
+      37000807329
+    ],
+    "superseded_CI_policy": "Cancelled after independent review found further current producer/consumer omissions; no complete pass claimed.",
+    "guard_enhancement": "The previous relocated parents[2] root was correct and scanned 96 files. Unified repository(), explicit nonempty scan, and six forbidden-import plus one empty-scan negative controls strengthen the contract.",
+    "actual_fixes": [
+      "Production restart witness tail now hashes complete current sources and real moved support helpers.",
+      "Debug integration producer hashes all 96 canonical and 40 compatibility files plus support owners, instead of only two root launchers.",
+      "C-grid, physical-velocity, wet-trace and bounded reference verification use the shared contained current-source hash contract; snapshot path checks remain unchanged.",
+      "The generic nonlinear attribution consumer verifies current logical labels against actual current files.",
+      "Partial rotation keeps every current source ledger hash consistent with its mapped file; executed current operator or frozen Git blob hashes have a separate field."
+    ],
+    "security_and_completeness": "Require complete current source closure unconditionally, validate containment before/after mapping, reject missing files and hash differences. Historical receipts require their original commit; no old hash is invented.",
+    "negative_controls": [
+      "forbidden imports",
+      "empty canonical scan",
+      "source traversal",
+      "absolute or mapped outside source",
+      "missing file",
+      "different bytes",
+      "missing canonical entry",
+      "removed layout marker and canonical entries",
+      "tampered attribution source"
+    ],
+    "missing_marker_TDD": "A real DID NOT RAISE failure was reproduced before removing the conditional completeness gate.",
+    "metadata_only_validation": {
+      "passed": 34,
+      "wall_s": 5.532,
+      "peak_interpreter_RSS_bytes": 151273472,
+      "peak_job_private_bytes": 132464640,
+      "single_CPU": true,
+      "memory_limit_bytes": 4294967296,
+      "wall_limit_s": 180,
+      "bound_stop": false,
+      "exit_code": 0
+    },
+    "numerical_replays": 0,
+    "frozen_boundaries_retained": [
+      "registered historical projection actual reports",
+      "registered historical staggered rain receipt"
+    ],
+    "new_nodes_since_1808_checkpoint": 24,
+    "independent_read_only_code_gate": "Numerical ASTs, gates, snapshot checks and frozen dependency/Git blob checks unchanged; source verification and ledger repairs reviewed."
+  },
+  "installed_wheel_latest": {
+    "Python_files_checked": 136,
+    "legacy_alias_identities": 40,
+    "production_source_files_checked": 121,
+    "imports_inside_real_installation": true,
+    "checkout_source_insertions": 0,
+    "pickle_and_pytree_verified": true,
+    "console_and_module_help_exit": 0,
+    "wheel_sha256": "679cb1cab55771751aaeb055d84b7173e471ba0b066c438b9b1a0ba1464a86e2",
+    "validation_limits_and_resource": {
+      "wall_s": 2.234,
+      "peak_interpreter_RSS_bytes": 195538944,
+      "peak_job_private_bytes": 180473856,
+      "single_CPU": true,
+      "memory_limit_bytes": 4294967296,
+      "wall_limit_s": 180,
+      "bound_stop": false,
+      "exit_code": 0
+    },
+    "source_bytes_refreshed_after_checkout_provenance_change": true,
+    "checkout_launchers_required_in_wheel": false
+  },
+  "checkout_launcher_source_repair": {
+    "superseded_head": "f744516c2a55654855d8799504c1339ace9763a5",
+    "superseded_CI_runs": [
+      37003868731,
+      37003873733
+    ],
+    "superseded_CI_policy": "Cancelled when review confirmed the two omitted executed checkout launchers; no complete pass claimed.",
+    "explicit_actual_file_keys": {
+      "checkout/src/jax_solver_global.py": "src/jax_solver_global.py",
+      "checkout/src/run_long_integration_global.py": "src/run_long_integration_global.py"
+    },
+    "legacy_alias_keys_unchanged": {
+      "src/jax_solver_global.py": "src/compat/jax_solver_global.py",
+      "src/run_long_integration_global.py": "src/compat/run_long_integration_global.py"
+    },
+    "actual_checkout_Python_source_files": 138,
+    "installed_source_registry_unchanged": {
+      "canonical_files": 96,
+      "production_files": 121,
+      "material_files": 103
+    },
+    "TDD": "Four controls failed first; two actual launcher byte changes produced DID NOT RAISE. Both current keys and actual-byte rejection pass after the repair.",
+    "metadata_only_validation": {
+      "passed": 38,
+      "wall_s": 8.453,
+      "peak_interpreter_RSS_bytes": 151613440,
+      "peak_job_private_bytes": 133152768,
+      "single_CPU": true,
+      "memory_limit_bytes": 4294967296,
+      "wall_limit_s": 180,
+      "bound_stop": false,
+      "exit_code": 0
+    },
+    "independent_read_only_code_gate": "passed; real launcher keys do not overwrite compatibility hashes, containment retained, installation requires no checkout launchers",
+    "numerical_replays": 0
+  }
+}

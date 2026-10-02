@@ -1,5 +1,5 @@
 """Canonical barotropic definitions; legacy operations unchanged."""
-from config import G_EARTH, RHO_0
+from ocean_solver.configuration import G_EARTH, RHO_0
 from ocean_solver.fd.backend import jnp
 from ocean_solver.fd.horizontal import (
     _apply_polar_cap,

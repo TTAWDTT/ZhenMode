@@ -6,6 +6,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+from ocean_solver.provenance.archives import current_source_files
+
 ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT / "src"))
 
@@ -29,7 +31,8 @@ def main():
         raise FileExistsError("retain previous witness; choose new output")
     sources = [Path(__file__), Path(__file__).with_name("nonlinear_source_witness.md")]
     sources.extend(ROOT / "src" / name for name in ("paired_dynamics.py", "cgrid_momentum.py", "finite_volume.py", "bounded_transport.py"))
-    hashes = {path.relative_to(ROOT).as_posix(): hashlib.sha256(path.read_bytes()).hexdigest() for path in sources}
+    files = current_source_files(ROOT, sources)
+    hashes = {name: hashlib.sha256(path.read_bytes()).hexdigest() for name, path in files.items()}
     head = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip()
     longitude = np.array([0., 37., 131., 206., 298., 360.])
     latitude = np.array([-60., -27., -3., 15., 56.])
@@ -61,7 +64,7 @@ def main():
     floor = 64. * np.finfo(float).eps * (abs(kinetic0) + abs(kinetic1))
     if abs(kinetic1 - kinetic0 - recorded) > 1e-11 * abs(recorded) + floor:
         raise ValueError("independent moving energy witness disagrees")
-    unchanged = all(hashlib.sha256((ROOT / name).read_bytes()).hexdigest() == value for name, value in hashes.items())
+    unchanged = all(hashlib.sha256(files[name].read_bytes()).hexdigest() == value for name, value in hashes.items())
     record = {"scope": "new_zero_incoming_momentum_source_contract_not_frozen_reference_qualification",
               "provenance": {"git_head_at_launch": head, "source_sha256_at_launch": hashes,
                              "source_hashes_unchanged_at_end": unchanged},

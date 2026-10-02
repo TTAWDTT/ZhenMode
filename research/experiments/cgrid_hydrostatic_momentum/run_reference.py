@@ -7,6 +7,8 @@ import sys
 from dataclasses import replace
 from pathlib import Path
 
+from ocean_solver.provenance.archives import current_source_files
+
 ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT / "src"))
 
@@ -18,8 +20,8 @@ from cgrid_momentum import LayerState, linear_momentum_surface_step
 from config import DEFAULT_CONFIG, GlobalGridConfig
 from finite_volume import ExtensiveState, _physical_surface_height, build_geometry, surface_volume
 from grid import global_grid_dims, make_global_grid
-from wet_fluxes import evaluate_wet_flux
 from physical_velocity import evaluate_physical_velocity
+from wet_fluxes import evaluate_wet_flux
 
 jax.config.update("jax_enable_x64", True)
 
@@ -63,7 +65,7 @@ def main():
               "status": "running", "reference_coefficients": [1., 1e-3, 1e-7],
               "provenance": {"git_head": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip(),
                              "git_status": subprocess.check_output(["git", "status", "--porcelain"], cwd=ROOT, text=True).splitlines(),
-                             "source_sha256": {path.relative_to(ROOT).as_posix(): hashlib.sha256(path.read_bytes()).hexdigest() for path in sources},
+                             "source_sha256": {name: hashlib.sha256(path.read_bytes()).hexdigest() for name, path in current_source_files(ROOT, sources).items()},
                              "bathymetry_sha256": hashlib.sha256(Path(args.bathy).read_bytes()).hexdigest(),
                              "jax_version": jax.__version__, "backend": jax.default_backend(),
                              "devices": [str(device) for device in jax.devices()]}, "geometries": [], "runs": []}

@@ -2,17 +2,46 @@
 import argparse
 import hashlib
 import json
+import os
 import platform
-import resource
 import time
 from pathlib import Path
 
 import component as m
 import numpy as np
 
+from ocean_solver.provenance.archives import current_source_files
+
 
 def digest(path):
     return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def process_peak_memory():
+    """Retain Linux RSS units; report real Windows peak working-set bytes."""
+    if os.name != "nt":
+        import resource
+
+        return {"peak_rss_KiB_linux": resource.getrusage(resource.RUSAGE_SELF).ru_maxrss}
+    import ctypes
+    from ctypes import wintypes
+
+    class MemoryCounters(ctypes.Structure):
+        _fields_ = [("size", wintypes.DWORD), ("faults", wintypes.DWORD)] + [
+            (name, ctypes.c_size_t) for name in
+            ("peak_rss", "rss", "peak_paged", "paged", "peak_nonpaged", "nonpaged",
+             "pagefile_usage", "peak_pagefile_usage")]
+
+    kernel = ctypes.WinDLL("kernel32", use_last_error=True)
+    memory = ctypes.WinDLL("psapi", use_last_error=True)
+    kernel.GetCurrentProcess.restype = wintypes.HANDLE
+    memory.GetProcessMemoryInfo.argtypes = [wintypes.HANDLE, ctypes.POINTER(MemoryCounters), wintypes.DWORD]
+    memory.GetProcessMemoryInfo.restype = wintypes.BOOL
+    counters = MemoryCounters()
+    counters.size = ctypes.sizeof(counters)
+    if not memory.GetProcessMemoryInfo(kernel.GetCurrentProcess(), ctypes.byref(counters), counters.size):
+        raise ctypes.WinError(ctypes.get_last_error())
+    return {"peak_rss_bytes_windows": int(counters.peak_rss)}
 
 
 def main():
@@ -79,11 +108,14 @@ def main():
     report["rejection_scope"] = {"absent_neighbor_and_negative_band_entries": "invalid input controls",
                                   "valid_input_exhaustion_request": "outflow_cfl rejects first; exhaustion operator not exercised"}
     root = Path(__file__).resolve().parents[3]
+    files = current_source_files(root, [Path(__file__).resolve(), Path(__file__).with_name("component.py"),
+                                       "tests/test_top_band_controls.py"])
     paths = [Path(__file__).resolve(), Path(__file__).with_name("component.py"),
-             root / "tests/test_top_band_controls.py", config_path]
+             files["tests/test_top_band_controls.py"], config_path]
     report["sha256"] = {path.name: digest(path) for path in paths}
+    report["source_sha256"] = {name: digest(path) for name, path in files.items()}
     report["cost"] = {"wall_s": time.perf_counter() - began,
-                      "peak_rss_KiB_linux": resource.getrusage(resource.RUSAGE_SELF).ru_maxrss,
+                      **process_peak_memory(),
                       "python": platform.python_version(), "numpy": np.__version__,
                       "device": "CPU", "billing_cost": "not_visible"}
     (args.output / "report.json").write_text(json.dumps(report, indent=2, sort_keys=True) + "\n")

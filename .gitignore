@@ -22,7 +22,7 @@ env/
 # Data & results (never commit large files).
 # results/* rather than results/ so the checked-in guide below can be
 # re-included; a whole-directory exclusion cannot be negated per-file.
-data/
+/data/
 results/*
 !results/README.md
 logs/

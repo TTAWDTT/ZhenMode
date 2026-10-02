@@ -10,10 +10,10 @@ from pathlib import Path
 import jax.numpy as jnp
 import numpy as np
 
+from ocean_solver.provenance.archives import current_source_files
+
 ROOT = Path(__file__).resolve().parents[3]
 sys.path[:0] = [str(ROOT / "src"), str(ROOT / "tests")]
-
-from _helpers import all_wet_grid
 
 from config import C_P, R_EARTH, RHO_0, PhysicsConfig
 from jax_solver_global import (
@@ -23,7 +23,8 @@ from jax_solver_global import (
     _laplacian_h,
     make_solver_global,
 )
-from test_horizontal_tracer_diffusion import _parameters
+from tests.support.fd.horizontal_diffusion import _parameters
+from tests.support.grid import all_wet_grid
 
 
 def budget(tendency, volume):
@@ -81,9 +82,8 @@ def main():
         "spherical_relative_errors": errors,
         "spherical_refinement_ratios": [errors[index] / errors[index + 1] for index in range(2)],
         "git_head": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip(),
-        "source_sha256": {str(path.relative_to(ROOT)): hashlib.sha256(path.read_bytes()).hexdigest()
-                          for path in [ROOT / "src/jax_solver_global.py", ROOT / "tests/_helpers.py",
-                                       ROOT / "tests/test_horizontal_tracer_diffusion.py", Path(__file__).resolve()]},
+        "source_sha256": {name: hashlib.sha256(path.read_bytes()).hexdigest() for name, path in current_source_files(ROOT, [ROOT / "src/jax_solver_global.py", ROOT / "tests/_helpers.py",
+                                       ROOT / "tests/test_horizontal_tracer_diffusion.py", Path(__file__).resolve()]).items()},
     }
     output = Path(args.out)
     output.parent.mkdir(parents=True, exist_ok=True)

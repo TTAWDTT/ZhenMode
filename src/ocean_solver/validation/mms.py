@@ -1,5 +1,5 @@
 """Canonical mms definitions; legacy operations unchanged."""
-from config import OMEGA, R_EARTH
+from ocean_solver.configuration import OMEGA, R_EARTH
 from ocean_solver.fd.backend import jnp, np
 from ocean_solver.fd.geometry import make_fd_params
 from ocean_solver.fd.horizontal import _d_dx, _d_dy, _divergence_h, _laplacian_h

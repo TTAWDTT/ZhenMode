@@ -6,6 +6,8 @@ from pathlib import Path
 
 import numpy as np
 
+from ocean_solver.provenance.archives import verify_current_source_hashes
+
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
@@ -17,10 +19,7 @@ def main():
     report = json.loads(input_path.read_text(encoding="utf-8"))
     if report["status"] != "complete" or not report["arguments"]["audit_budget"]:
         raise ValueError("a completed actual-stage audit is required")
-    changed_sources = [name for name, digest in report["provenance"]["source_sha256"].items()
-                       if hashlib.sha256((root / name).read_bytes()).hexdigest() != digest]
-    if changed_sources:
-        raise ValueError(f"runtime source hashes no longer match: {changed_sources}")
+    verify_current_source_hashes(root, report["provenance"]["source_sha256"])
     summaries = []
     for case in report["cases"]:
         ledger = case["stage_budget"]

@@ -1,5 +1,5 @@
 """Mechanically preserved FD pressure implementation."""
-from config import G_EARTH, RHO_0
+from ocean_solver.configuration import G_EARTH, RHO_0
 
 from .backend import jnp
 from .eos import _density_anomaly

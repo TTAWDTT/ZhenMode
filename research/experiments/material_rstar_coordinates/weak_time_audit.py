@@ -23,18 +23,21 @@ def main():
                  ("kernel.py", "nodal_mass.py", "pressure_work.py", "weak_transport.py", "weak_oracle.py", "bed_completion.py",
                   "weak_momentum.py", "pressure_accuracy.py", "sparse_diffusion.py", "weak_sparse.py", "weak_bounded.py",
                   "weak_bounded_protocol.json", "weak_time.py", "weak_time_protocol.json", "weak_time_audit.py"))
-    hashes = {name: hashlib.sha256((root / name).read_bytes()).hexdigest() for name in names}
-    for name in names:
+    from ocean_solver.provenance.archives import current_source_files
+    files = current_source_files(root, names)
+    hashes = {name: hashlib.sha256(source.read_bytes()).hexdigest() for name, source in files.items()}
+    for name, source in files.items():
         destination = output / "sources" / name
         destination.parent.mkdir(parents=True, exist_ok=True)
-        destination.write_bytes((root / name).read_bytes())
+        destination.write_bytes(files[name].read_bytes())
     (output / "source_hashes.json").write_text(json.dumps(hashes, indent=2) + "\n")
     for folder in (root, root / "src", root / "tests"):
         sys.path.insert(0, str(folder))
 
     import jax
     import numpy as np
-    from test_rstar_weak_time import _moving_time_diagnostic, _time_diagnostic
+
+    from tests.support.rstar.weak_time import _moving_time_diagnostic, _time_diagnostic
 
     report = {"started_at_utc": datetime.datetime.now(datetime.timezone.utc).isoformat(),
               "backend": jax.default_backend(), "devices": [str(device) for device in jax.devices()],
@@ -56,7 +59,7 @@ def main():
         report["cases"].append(record)
         (output / "report.json").write_text(json.dumps(report, indent=2, allow_nan=False) + "\n")
         print(json.dumps(record, allow_nan=False), flush=True)
-    report["source_hashes_unchanged"] = all(hashlib.sha256((root / name).read_bytes()).hexdigest() == value for name, value in hashes.items())
+    report["source_hashes_unchanged"] = all(hashlib.sha256(files[name].read_bytes()).hexdigest() == value for name, value in hashes.items())
     report["finished_at_utc"] = datetime.datetime.now(datetime.timezone.utc).isoformat()
     report["all_registered_time_gates_passed"] = all(case["time_order_passed"] for case in report["cases"])
     (output / "report.json").write_text(json.dumps(report, indent=2, allow_nan=False) + "\n")

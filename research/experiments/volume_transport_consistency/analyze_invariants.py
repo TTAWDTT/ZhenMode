@@ -12,12 +12,15 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
+from ocean_solver.provenance.archives import current_source_files
+
 ROOT = Path(__file__).resolve().parents[3]
 sys.path[:0] = [str(ROOT / "src"), str(ROOT / "scripts")]
 
+from verify_debug_integration import make_smoke_fixture
+
 from config import DEFAULT_CONFIG, R_EARTH, PhysicsConfig
 from grid import GlobalOceanGrid
-from verify_debug_integration import make_smoke_fixture
 
 FROZEN_KERNEL = "2042ce1"
 FROZEN_SOURCE = subprocess.check_output(["git", "show", f"{FROZEN_KERNEL}:src/jax_solver_global.py"], cwd=ROOT)
@@ -66,7 +69,7 @@ def main():
                   "frozen_kernel_sha256": hashlib.sha256(FROZEN_SOURCE).hexdigest(),
                   "git_head": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip(),
                   "git_status": subprocess.check_output(["git", "status", "--porcelain"], cwd=ROOT, text=True).splitlines(),
-                  "source_sha256": {str(path.relative_to(ROOT)): hashlib.sha256(path.read_bytes()).hexdigest() for path in sources},
+                  "source_sha256": {name: hashlib.sha256(path.read_bytes()).hexdigest() for name, path in current_source_files(ROOT, sources).items()},
                   "bathymetry_sha256": hashlib.sha256(Path(args.bathy).read_bytes()).hexdigest(),
                   "jax_version": jax.__version__, "backend": jax.default_backend()}, "ideal": []}
     grid, physics, params = fixture()

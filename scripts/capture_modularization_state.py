@@ -18,6 +18,7 @@ def main():
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--scheme', choices=('legacy', 'symmetric_fast_v3'), default='legacy')
     parser.add_argument('--dtype', choices=('float64', 'float32'), default='float64')
+    parser.add_argument("--no-scan", action="store_true", help="Exercise the eager subcycle branch.")
     arguments = parser.parse_args()
     source_root = arguments.source_root.resolve()
     sys.path.insert(0, str(source_root))
@@ -49,7 +50,7 @@ def main():
                             kappa_conv=.01, nu_bi=100., kappa_bi=20., kappa_gm=.1,
                             kappa_redi=.1, r_bot=.0001, tau_x=.02, tau_y=.003, Q_heat=35.)
     options = dict(dtype=arguments.dtype, mode_split=True, dt_bt=5., nu_nsub=1,
-                   use_scan=True, conservative_kv=True, localize_conv=True,
+                   use_scan=not arguments.no_scan, conservative_kv=True, localize_conv=True,
                    monotone_adv=True, fct_adv=True, column_geometry='nodal_dual_v1',
                    process_time_scheme=arguments.scheme,
                    match_barotropic_transport=arguments.scheme == 'symmetric_fast_v3',

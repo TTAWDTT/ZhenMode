@@ -46,14 +46,13 @@ def parameter_digest(params):
 
 
 def source_digest():
+    from ocean_solver.provenance.archives import current_source_files
+
     root = Path(__file__).resolve().parents[3]
-    paths = ['src/material_top.py', 'src/jax_solver_global.py', 'src/config.py',
-             'src/grid.py', 'src/runtime_validation.py',
-             'research/experiments/fd_static_bridge/bridge.py',
-             'research/experiments/material_top_band/integration.py']
-    paths += ["src/" + name + ".py" for name in solver_source_modules()
-              if "src/" + name + ".py" not in paths]
-    return {name: hashlib.sha256((root / name).read_bytes()).hexdigest() for name in paths}
+    selected = ["research/experiments/fd_static_bridge/bridge.py",
+                "research/experiments/material_top_band/integration.py"]
+    return {name: hashlib.sha256(path.read_bytes()).hexdigest()
+            for name, path in current_source_files(root, selected).items()}
 
 
 def state_digest(state):

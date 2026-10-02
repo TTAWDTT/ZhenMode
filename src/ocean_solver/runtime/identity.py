@@ -7,8 +7,9 @@ import subprocess
 from pathlib import Path
 
 from ocean_solver.fd.backend import np
-from restart_contract import file_sha256
-from source_identity import production_source_modules
+from ocean_solver.provenance.locations import source_root
+from ocean_solver.provenance.restart import file_sha256
+from ocean_solver.provenance.sources import production_source_modules, source_paths
 
 SOURCE_MODULES = production_source_modules()
 
@@ -19,6 +20,7 @@ def _source_identity(source_directory=None):
         if source_directory is not None
         else Path(__file__).resolve().parents[2]
     )
+    source_dir = source_root(source_dir)
     root = source_dir.parent
     try:
         head = subprocess.check_output(
@@ -29,7 +31,7 @@ def _source_identity(source_directory=None):
     return {
         "git_head": head,
         "source_sha256": {
-            name + ".py": file_sha256(source_dir / (name + ".py")) for name in SOURCE_MODULES
+            name + ".py": file_sha256(path) for name, path in source_paths(source_dir, SOURCE_MODULES).items()
         },
     }
 

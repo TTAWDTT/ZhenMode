@@ -6,6 +6,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+from ocean_solver.provenance.archives import current_source_files
+
 ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT / "src"))
 
@@ -139,7 +141,7 @@ def main():
               "status": "PASS" if controls_pass and all(values["ordinary_mac"]["pass"] for row in rows for values in row["directions"].values()) else "FAIL",
               "controls_pass": controls_pass, "dt_seconds": 60., "barotropic_substeps": 4, "rows": rows,
               "git_head": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip(),
-              "source_sha256": {path.relative_to(ROOT).as_posix(): hashlib.sha256(path.read_bytes()).hexdigest() for path in sources},
+              "source_sha256": {name: hashlib.sha256(path.read_bytes()).hexdigest() for name, path in current_source_files(ROOT, sources).items()},
               "jax_version": jax.__version__, "backend": jax.default_backend()}
     output.write_text(json.dumps(report, indent=2, allow_nan=False) + "\n", encoding="utf-8")
     print("status", report["status"], "controls_pass", controls_pass)

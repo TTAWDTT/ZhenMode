@@ -29,7 +29,7 @@ def main():
     args = parser.parse_args()
     if args.out.exists():
         parser.error("baseline destination already exists")
-    sources = sorted({*ROOT.glob("src/*.py"), *ROOT.glob("tests/*.py"),
+    sources = sorted({*(ROOT / "src").rglob("*.py"), *(ROOT / "tests").rglob("*.py"),
                       ROOT / "pyproject.toml", Path(__file__).resolve(),
                       ROOT / "docs/production_delivery_protocol.json",
                       ROOT / "docs/production_delivery_plan_zh.md",

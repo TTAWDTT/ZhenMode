@@ -1,5 +1,4 @@
 """Offline CLI contract probes: stubbed states, no ocean integration or downloads."""
-import importlib.util
 import sys
 from pathlib import Path
 
@@ -9,17 +8,12 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "src"))
-sys.path.insert(0, str(ROOT / "tests"))
-
-from _helpers import all_wet_grid
+sys.path.insert(0, str(ROOT))
 
 from config import PhysicsConfig
 from jax_solver_global import make_solver_global
-
-spec = importlib.util.spec_from_file_location("restart_test_fixture", ROOT / "tests/test_production_restart.py")
-fixture = importlib.util.module_from_spec(spec)
-spec.loader.exec_module(fixture)
-driver = fixture.driver
+from tests.support.driver import driver, run_controlled_driver
+from tests.support.grid import all_wet_grid
 
 
 @pytest.mark.parametrize("scenario", ["persistent_v", "transient_u", "transient_nonfinite", "persistent_u"])
@@ -46,10 +40,10 @@ def test_production_cli_rejects_first_invalid_step(tmp_path, monkeypatch, scenar
     monkeypatch.setattr(driver, "make_solver_global", factory)
     if scenario == "persistent_u":
         with pytest.raises(SystemExit) as raised:
-            fixture._run_driver(monkeypatch, tmp_path)
+            run_controlled_driver(monkeypatch, tmp_path)
         assert raised.value.code != 0
         return
-    fixture._run_driver(monkeypatch, tmp_path)
+    run_controlled_driver(monkeypatch, tmp_path)
     with np.load(tmp_path / "global_controlled.npz", allow_pickle=False) as saved:
         observed = {"verdict": str(saved["verdict"]), "max_u_peak": float(saved["max_u_peak"]),
                     "days_end": float(saved["days"][-1])}
@@ -72,7 +66,7 @@ def test_production_cli_does_not_report_negative_duration_as_success(tmp_path, m
         return original_main()
 
     monkeypatch.setattr(driver, "main", negative_duration_main)
-    fixture._run_driver(monkeypatch, tmp_path)
+    run_controlled_driver(monkeypatch, tmp_path)
     with np.load(tmp_path / "global_controlled.npz", allow_pickle=False) as saved:
         print("OBSERVED negative_days", str(saved["verdict"]), saved["days"].tolist())
         assert str(saved["verdict"]) != "PASS"

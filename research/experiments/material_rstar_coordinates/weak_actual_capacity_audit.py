@@ -50,11 +50,13 @@ def main():
     names += ["research/experiments/material_rstar_coordinates/" + name for name in
               ("kernel.py", "bed_completion.py", "nodal_mass.py", "pressure_work.py", "weak_transport.py", "weak_sparse.py", "weak_bounded.py", "sparse_diffusion.py", "weak_bounded_protocol.json", "real_geometry_protocol.json")]
     names += [str(Path(__file__).relative_to(ROOT)).replace("\\", "/"), "research/experiments/material_rstar_coordinates/weak_actual_protocol.json"]
-    hashes = {name: digest(ROOT / name) for name in names}
-    for name in names:
+    from ocean_solver.provenance.archives import current_source_files
+    files = current_source_files(ROOT, names)
+    hashes = {name: digest(source) for name, source in files.items()}
+    for name, source in files.items():
         destination = output / "sources" / name
         destination.parent.mkdir(parents=True, exist_ok=True)
-        destination.write_bytes((ROOT / name).read_bytes())
+        destination.write_bytes(files[name].read_bytes())
     report = {"started_at_utc": datetime.datetime.now(datetime.timezone.utc).isoformat(), "backend": jax.default_backend(),
               "devices": [str(device) for device in jax.devices()], "x64_enabled": bool(jax.config.x64_enabled),
               "jax": jax.__version__, "numpy": np.__version__, "source_hashes": hashes, "cases": [],
@@ -132,7 +134,7 @@ def main():
             print(json.dumps(record), flush=True)
         record["inputs_unchanged"] = all(digest(ROOT / name) == value for name, value in inputs.items())
         report["cases"].append(record)
-        report["source_hashes_unchanged"] = all(digest(ROOT / name) == value for name, value in hashes.items())
+        report["source_hashes_unchanged"] = all(digest(files[name]) == value for name, value in hashes.items())
         (output / "report.json").write_text(json.dumps(report, indent=2, allow_nan=False) + "\n")
     report["finished_at_utc"] = datetime.datetime.now(datetime.timezone.utc).isoformat()
     report["phase"] = "finished"

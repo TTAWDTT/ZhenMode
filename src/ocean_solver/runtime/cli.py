@@ -5,9 +5,9 @@ from __future__ import annotations
 import argparse
 from dataclasses import dataclass
 
-from forcing import BULK_LAMBDA_DEFAULT
+from ocean_solver.audit.validation import finite_number, integer_count
+from ocean_solver.data.forcing import BULK_LAMBDA_DEFAULT
 from ocean_solver.fd.backend import np
-from runtime_validation import finite_number, integer_count
 
 DT_DEFAULT = 60.0
 

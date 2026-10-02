@@ -5,11 +5,11 @@ from __future__ import annotations
 import os
 from dataclasses import dataclass, field
 
-from diagnostics import BudgetDiagnostics, compute_budget_diagnostics
 from ocean_solver.audit.schema import empty_budget
+from ocean_solver.diagnostics.state import BudgetDiagnostics, compute_budget_diagnostics
 from ocean_solver.fd.backend import jax, jnp, np
+from ocean_solver.provenance.restart import file_sha256
 from ocean_solver.runtime.metrics import total_kinetic_energy
-from restart_contract import file_sha256
 
 
 @dataclass

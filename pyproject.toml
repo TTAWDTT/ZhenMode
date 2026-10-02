@@ -21,14 +21,13 @@ dev = [
 ]
 
 [project.scripts]
-ocean-solver = "run_long_integration_global:main"
+ocean-solver = "ocean_solver.runtime.entry:main"
 
-# Flat-module src layout: the modules live directly in src/ and are imported
-# by their bare names (``import config``), so they are declared as top-level
-# py-modules rather than as a ``src`` package. archive/regional/ is a retired
-# solver and is deliberately not installed (or linted).
+# Canonical implementations live in ocean_solver. Historical bare imports
+# are installed from src/compat as aliases to the same canonical module objects.
+# archive/regional is historical and is deliberately not installed or linted.
 [tool.setuptools]
-package-dir = { "" = "src" }
+package-dir = { "" = "src/compat", "ocean_solver" = "src/ocean_solver" }
 py-modules = [
     "config",
     "grid",
@@ -78,7 +77,6 @@ include = ["ocean_solver*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-pythonpath = ["src"]
 
 [tool.ruff]
 line-length = 100
@@ -91,7 +89,7 @@ respect-gitignore = false
 extend-exclude = [
     "archive",       # retired regional spectral solver (not runnable)
     "results",       # archival figure / provenance scripts (machine-specific)
-    "data", "logs", "checkpoints",   # local run I/O
+    "data/**", "logs/**", "checkpoints/**",   # local run I/O
     "dashboard/node_modules",
     "research",       # autonomous-research workspace / literature snapshots
     "scratch",        # local probes and legacy artifacts
@@ -108,6 +106,9 @@ ignore = [
 # jax.config.update('jax_enable_x64') must run before the jnp import.
 "src/jax_solver_global.py" = ["E402"]
 "src/run_long_integration_global.py" = ["E402"]
-# These insert ../src on sys.path before importing the flat src modules.
-"tests/*.py" = ["E402"]
+# Test support imports use the installed package and repository fixtures.
+"tests/**/*.py" = ["E402"]
 "scripts/*.py" = ["E402"]
+
+[tool.ruff.lint.isort]
+known-first-party = ['config', 'grid', 'jax_solver_global', 'run_long_integration_global', 'stage_budgets', 'source_identity', 'restart_contract', 'runtime_validation', 'integration_monitor', 'forcing', 'wind_reanalysis', 'air_reanalysis', 'woa_data', 'input_quality', 'input_sources', 'erddap_fetch', 'fetch_sla_monthly', 'fetch_ssh_abs_monthly', 'diagnostics', 'mixed_layer_ice', 'benchmark_metrics', 'benchmark_gate', 'benchmark_manifest', 'benchmark_table', 'score_external_model', 'score_mom6_prog', 'bench_climatology_global', 'summarize_ice_diagnostics', 'export_mom6_air_temp_forcing', 'export_mom6_sensible_forcing', 'export_mom6_wind_forcing', 'finite_volume', 'bounded_transport', 'cgrid_momentum', 'wet_fluxes', 'physical_velocity', 'paired_dynamics', 'nonlinear_dynamics', 'barotropic_transport', 'material_top', 'ocean_solver', 'tests', 'research', 'scripts', 'dashboard']

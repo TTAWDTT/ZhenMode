@@ -6,6 +6,8 @@ from pathlib import Path
 
 import numpy as np
 
+from ocean_solver.provenance.archives import verify_current_source_hashes
+
 ROOT = Path(__file__).resolve().parents[3]
 
 
@@ -30,9 +32,7 @@ def verify(report_path):
     manifest_paths = {relative.replace("\\", "/") for relative in report["provenance"]["source_sha256"]}
     if not required_sources.issubset(manifest_paths):
         raise ValueError("runtime source manifest is incomplete")
-    for relative, expected in report["provenance"]["source_sha256"].items():
-        if hashlib.sha256(_workspace_path(relative).read_bytes()).hexdigest() != expected:
-            raise ValueError(f"runtime source changed: {relative}")
+    verify_current_source_hashes(ROOT, report["provenance"]["source_sha256"])
     groups = set()
     rows = []
     for run in report["runs"]:

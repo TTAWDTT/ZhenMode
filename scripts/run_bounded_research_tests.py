@@ -74,7 +74,9 @@ def run(arguments):
         limits.basic.affinity = mask.value & -mask.value
         limits.job_memory = 4 * 1024 ** 3
         checked(kernel.SetInformationJobObject(job, 9, ctypes.byref(limits), ctypes.sizeof(limits)))
-        bootstrap = 'import sys; sys.path[:]=' + repr([os.getcwd(), *sys.path]) + '; sys.stdin.read(1); '
+        # Preserve the invoking venv for subprocesses, while measuring the real interpreter.
+        bootstrap = ('import sys; sys.executable=' + repr(sys.executable) + '; sys.path[:]='
+                     + repr([os.getcwd(), *sys.path]) + '; sys.stdin.read(1); ')
         if arguments and arguments[0] == '--module':
             if len(arguments) < 2:
                 raise ValueError('--module requires a module name')

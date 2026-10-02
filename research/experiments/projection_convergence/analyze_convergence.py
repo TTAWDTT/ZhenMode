@@ -13,13 +13,16 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
+from ocean_solver.provenance.archives import current_source_files
+
 ROOT = Path(__file__).resolve().parents[3]
 sys.path[:0] = [str(ROOT / "src"), str(ROOT / "scripts")]
+
+from verify_debug_integration import make_smoke_fixture
 
 import jax_solver_global as current
 from config import DEFAULT_CONFIG
 from stage_budgets import _StageRecorder
-from verify_debug_integration import make_smoke_fixture
 
 
 class PredictorRecorder(_StageRecorder):
@@ -52,7 +55,7 @@ def main():
         "provenance": {
             "git_head": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip(),
             "git_status": subprocess.check_output(["git", "status", "--porcelain"], cwd=ROOT, text=True).splitlines(),
-            "source_sha256": {str(path.relative_to(ROOT)): hashlib.sha256(path.read_bytes()).hexdigest() for path in sources},
+            "source_sha256": {name: hashlib.sha256(path.read_bytes()).hexdigest() for name, path in current_source_files(ROOT, sources).items()},
             "frozen_git_blob_sha256": hashlib.sha256(frozen_source).hexdigest(),
             "bathymetry_sha256": hashlib.sha256(Path(args.bathy).read_bytes()).hexdigest(),
             "jax_version": jax.__version__, "backend": jax.default_backend(),

@@ -6,6 +6,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+from ocean_solver.provenance.archives import current_source_files
+
 ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT / "src"))
 
@@ -14,10 +16,14 @@ import jax.numpy as jnp
 import numpy as np
 
 from barotropic_transport import subcycle_barotropic
-from cgrid_momentum import momentum_geometry
-from cgrid_momentum import hydrostatic_pressure_force
+from cgrid_momentum import hydrostatic_pressure_force, momentum_geometry
 from config import R_EARTH
-from finite_volume import _physical_surface_height, build_geometry, horizontal_divergence, surface_volume
+from finite_volume import (
+    _physical_surface_height,
+    build_geometry,
+    horizontal_divergence,
+    surface_volume,
+)
 
 jax.config.update("jax_enable_x64", True)
 
@@ -115,7 +121,7 @@ def main():
               "status": "PASS" if all(row["pass"] and row["gravity_response_valid"] for row in actual) and mms["pass"] else "FAIL",
               "spatial_mms": mms,
               "rows": rows, "git_head": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip(),
-              "source_sha256": {path.relative_to(ROOT).as_posix(): hashlib.sha256(path.read_bytes()).hexdigest() for path in sources},
+              "source_sha256": {name: hashlib.sha256(path.read_bytes()).hexdigest() for name, path in current_source_files(ROOT, sources).items()},
               "jax_version": jax.__version__, "backend": jax.default_backend()}
     output.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
     print(json.dumps(report, indent=2))

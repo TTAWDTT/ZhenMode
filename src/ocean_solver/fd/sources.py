@@ -1,5 +1,5 @@
 """Canonical sources definitions; legacy operations unchanged."""
-from config import C_P, RHO_0
+from ocean_solver.configuration import C_P, RHO_0
 from ocean_solver.fd.backend import jnp
 from ocean_solver.fd.types import JaxStateG
 

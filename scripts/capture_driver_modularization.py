@@ -74,9 +74,9 @@ def run_synthetic_driver(source_root, directory, wind_jit):
     import pytest
 
     repository = Path(__file__).resolve().parents[1]
-    sys.path.insert(0, str(repository / "tests"))
+    sys.path.insert(0, str(repository))
     sys.path.insert(0, str(source_root.resolve()))
-    from _driver_helpers import run_controlled_driver
+    from tests.support.driver import run_controlled_driver
 
     directory.mkdir(parents=True, exist_ok=False)
     options = ("--budget-audit",) + (("--wind-jit",) if wind_jit else ())

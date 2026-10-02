@@ -12,6 +12,7 @@ import jax.numpy as jnp
 import numpy as np
 from jax.scipy.sparse.linalg import cg
 
+import cgrid_momentum
 from cgrid_momentum import _rotation_system
 from finite_volume import build_geometry
 
@@ -54,7 +55,7 @@ def main():
             print(rows[-1], flush=True)
     report = {"scope": "same_physical_rotation_matrix_solver_parameter_controls_not_full_adjoint",
               "tool_sha256": hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
-              "operator_source_sha256": hashlib.sha256((ROOT / "src/cgrid_momentum.py").read_bytes()).hexdigest(),
+              "operator_source_sha256": hashlib.sha256(Path(cgrid_momentum.__file__).read_bytes()).hexdigest(),
               "jax_version": jax.__version__, "backend": jax.default_backend(), "rows": rows}
     output = ROOT / "results/industrial_alignment/cgrid_rotation_adjoint_controls_rechecked.json"
     output.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")

@@ -126,7 +126,7 @@ def main():
     if Path(args.out).exists():
         raise FileExistsError(args.out)
     sources = {str(path.relative_to(ROOT)): file_digest(path)
-               for path in sorted((ROOT / 'src').glob('*.py'))}
+               for path in sorted((ROOT / 'src').rglob('*.py'))}
     sources.update({str(path.relative_to(ROOT)): file_digest(path)
                     for path in sorted(Path(__file__).parent.glob('*.py'))})
     report = dict(status='BLOCKED', qualification_scope='synthetic_cpu_monitor_overhead_only',

@@ -11,12 +11,14 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
+from ocean_solver.provenance.archives import current_source_files
+
 ROOT = Path(__file__).resolve().parents[3]
 sys.path[:0] = [str(ROOT / "src"), str(ROOT / "tests")]
 
 from jax_solver_global import JaxStateG
 from stage_budgets import make_budget_step
-from test_horizontal_tracer_diffusion import _parameters
+from tests.support.fd.horizontal_diffusion import _parameters
 
 
 def main():
@@ -58,9 +60,8 @@ def main():
                             "maximum_absolute_errors": maximum_errors})
     report = {"scope": "read_only_instrumentation_compatibility_not_climate_qualification",
               "frozen_kernel": args.ref, "results": results,
-              "source_sha256": {str(path.relative_to(ROOT)): hashlib.sha256(path.read_bytes()).hexdigest()
-                                for path in [ROOT / "src/jax_solver_global.py", ROOT / "src/stage_budgets.py",
-                                             ROOT / "tests/test_horizontal_tracer_diffusion.py", Path(__file__).resolve()]}}
+              "source_sha256": {name: hashlib.sha256(path.read_bytes()).hexdigest() for name, path in current_source_files(ROOT, [ROOT / "src/jax_solver_global.py", ROOT / "src/stage_budgets.py",
+                                             ROOT / "tests/test_horizontal_tracer_diffusion.py", Path(__file__).resolve()]).items()}}
     output = Path(args.out)
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")

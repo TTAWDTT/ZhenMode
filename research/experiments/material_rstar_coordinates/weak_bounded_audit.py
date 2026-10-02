@@ -26,17 +26,20 @@ def main():
                   "weak_momentum.py", "pressure_accuracy.py", "sparse_diffusion.py", "weak_sparse.py", "weak_bounded.py",
                   "weak_bounded_protocol.json", "weak_bounded_audit.py"))
     hashes = {}
-    for name in names:
+    from ocean_solver.provenance.archives import current_source_files
+    files = current_source_files(root, names)
+    for name, source in files.items():
         target = output / "sources" / name
         target.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copyfile(root / name, target)
-        hashes[name] = hashlib.sha256((root / name).read_bytes()).hexdigest()
+        shutil.copyfile(source, target)
+        hashes[name] = hashlib.sha256(source.read_bytes()).hexdigest()
     (output / "source_hashes.json").write_text(json.dumps(hashes, indent=2) + "\n", encoding="utf-8")
     for folder in (root, root / "src", root / "tests"):
         sys.path.insert(0, str(folder))
     import jax
     import numpy as np
-    from test_rstar_weak_bounded import _bounded_diagnostic
+
+    from tests.support.rstar.weak_bounded import _bounded_diagnostic
 
     cases = []
     for flat in (False, True):
@@ -46,7 +49,7 @@ def main():
             np.savez_compressed(output / name, **arrays)
             record.update(witness=name, witness_sha256=hashlib.sha256((output / name).read_bytes()).hexdigest())
             cases.append(record)
-    unchanged = all(hashlib.sha256((root / name).read_bytes()).hexdigest() == digest for name, digest in hashes.items())
+    unchanged = all(hashlib.sha256(files[name].read_bytes()).hexdigest() == digest for name, digest in hashes.items())
     passed = all(case["valid"] and case["independent_stage_passed"]
                  and abs(case["inventory_residual"]) <= case["inventory_64eps_floor"] for case in cases)
     report = {"scope": "prescribed nodal velocities: physical sparse transport, bounded consistent content and source controls; not a solved ocean step",

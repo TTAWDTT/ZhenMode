@@ -5,7 +5,7 @@ from __future__ import annotations
 from collections.abc import Callable
 from dataclasses import dataclass
 
-from config import Config
+from ocean_solver.configuration import Config
 
 
 @dataclass

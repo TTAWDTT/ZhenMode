@@ -1,5 +1,5 @@
 """Mechanically preserved FD eos implementation."""
-from config import ALPHA_T, BETA_S, RHO_0
+from ocean_solver.configuration import ALPHA_T, BETA_S, RHO_0
 
 
 def _density_anomaly(T, S, p):

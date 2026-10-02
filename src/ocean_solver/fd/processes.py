@@ -1,5 +1,5 @@
 """Canonical processes definitions; legacy operations unchanged."""
-from config import C_P, G_EARTH, RHO_0
+from ocean_solver.configuration import C_P, G_EARTH, RHO_0
 from ocean_solver.fd.backend import jax, jnp
 from ocean_solver.fd.barotropic import _free_surface_step_fd
 from ocean_solver.fd.closures import _isopycnal_closure

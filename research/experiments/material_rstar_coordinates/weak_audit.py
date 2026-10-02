@@ -23,17 +23,20 @@ def main():
                  ("kernel.py", "pressure_work.py", "nodal_mass.py", "weak_transport.py", "weak_oracle.py", "weak_protocol.json", "weak_audit.py",
                   "bed_completion.py", "bed_completion_protocol.json"))
     hashes = {}
-    for name in names:
+    from ocean_solver.provenance.archives import current_source_files
+    files = current_source_files(root, names)
+    for name, source in files.items():
         target = output / "sources" / name
         target.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copyfile(root / name, target)
-        hashes[name] = hashlib.sha256((root / name).read_bytes()).hexdigest()
+        shutil.copyfile(source, target)
+        hashes[name] = hashlib.sha256(source.read_bytes()).hexdigest()
     (output / "source_hashes.json").write_text(json.dumps(hashes, indent=2) + "\n", encoding="utf-8")
     for folder in (root, root / "src", root / "tests"):
         sys.path.insert(0, str(folder))
     import jax
     import numpy as np
-    from test_rstar_weak_transport import _weak_diagnostic
+
+    from tests.support.rstar.weak_transport import _weak_diagnostic
 
     cases = []
     for truncate in ((False,) if arguments.complete_bed else (False, True)):
@@ -46,7 +49,7 @@ def main():
                     result["witness"] = name
                     result["witness_sha256"] = hashlib.sha256((output / name).read_bytes()).hexdigest()
                     cases.append(result)
-    unchanged = all(hashlib.sha256((root / name).read_bytes()).hexdigest() == digest for name, digest in hashes.items())
+    unchanged = all(hashlib.sha256(files[name].read_bytes()).hexdigest() == digest for name, digest in hashes.items())
     original = [case for case in cases if not case["truncate"]]
     original_passed = all(case["rhs_numpy_passed"] and case["eta_numpy_passed"] and case["pressure_work_passed"]
                           and abs(case["global_inventory_residual_kg_per_s"]) <= case["global_inventory_floor_kg_per_s"]

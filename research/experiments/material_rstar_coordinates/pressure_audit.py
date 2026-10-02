@@ -23,22 +23,18 @@ def main():
              "research/experiments/material_rstar_coordinates/pressure_protocol.json",
              "research/experiments/material_rstar_coordinates/pressure_audit.py"]
     hashes = {}
-    for name in names:
+    from ocean_solver.provenance.archives import current_source_files
+    files = current_source_files(root, names)
+    for name, source in files.items():
         target = output / "sources" / name
         target.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copyfile(root / name, target)
-        hashes[name] = hashlib.sha256((root / name).read_bytes()).hexdigest()
+        shutil.copyfile(source, target)
+        hashes[name] = hashlib.sha256(source.read_bytes()).hexdigest()
     (output / "source_hashes.json").write_text(json.dumps(hashes, indent=2) + "\n", encoding="utf-8")
     for folder in (root, root / "src", root / "tests"):
         sys.path.insert(0, str(folder))
     import jax
     import numpy as np
-    from test_rstar_pressure_work import (
-        _candidate_diagnostics,
-        _case,
-        _numpy_rates,
-        _vertical_refinement,
-    )
 
     from config import G_EARTH, RHO_0
     from research.experiments.material_rstar_coordinates.kernel import (
@@ -49,6 +45,12 @@ def main():
         energy_adjoint_force,
         paired_chain_rule_force,
         potential_conjugates,
+    )
+    from tests.support.rstar.pressure_work import (
+        _candidate_diagnostics,
+        _case,
+        _numpy_rates,
+        _vertical_refinement,
     )
 
     cases = [_candidate_diagnostics(stairs, flat, kind) for stairs in (False, True) for flat in (False, True)
@@ -77,7 +79,7 @@ def main():
         arrays[f"{name}_force_x_m_per_s2"], arrays[f"{name}_force_y_m_per_s2"] = forces
     np.savez_compressed(output / "affine_stair_witness.npz", **{name: np.asarray(value) for name, value in arrays.items()})
     refinement = _vertical_refinement()
-    unchanged = all(hashlib.sha256((root / name).read_bytes()).hexdigest() == digest for name, digest in hashes.items())
+    unchanged = all(hashlib.sha256(files[name].read_bytes()).hexdigest() == digest for name, digest in hashes.items())
     report = {"scope": "instantaneous original-node rstar pressure and declared coordinate-band transport, not an ocean step",
               "backend": jax.default_backend(), "devices": [str(device) for device in jax.devices()],
               "runtime": {"python": sys.version, "platform": platform.platform(), "jax": jax.__version__, "numpy": np.__version__,

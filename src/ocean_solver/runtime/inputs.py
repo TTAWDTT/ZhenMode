@@ -5,10 +5,9 @@ from __future__ import annotations
 from dataclasses import dataclass, replace
 from pathlib import Path
 
-from benchmark_metrics import mixed_layer_depth
-from config import DEFAULT_CONFIG, GlobalGridConfig, PhysicsConfig
-from grid import global_grid_dims, land_distance_from_land_mask
+from ocean_solver.configuration import DEFAULT_CONFIG, GlobalGridConfig, PhysicsConfig
 from ocean_solver.fd.backend import np
+from ocean_solver.geometry.grid import global_grid_dims, land_distance_from_land_mask
 from ocean_solver.geometry.types import GlobalOceanGrid
 from ocean_solver.runtime.cli import (
     DT_BT_DEFAULT,
@@ -17,14 +16,15 @@ from ocean_solver.runtime.cli import (
     NY_DEFAULT,
     scaled_physics_for_resolution,
 )
+from ocean_solver.validation.benchmarks.metrics import mixed_layer_depth
 
 
 def _input_files(args, *, seasonal=None, air=None, default_config=DEFAULT_CONFIG):
     """Selected loader paths, including WOA's documented npz precedence."""
-    import air_reanalysis
-    import grid as grid_module
-    import wind_reanalysis
-    import woa_data
+    from ocean_solver.data import air as air_reanalysis
+    from ocean_solver.data import climatology as woa_data
+    from ocean_solver.data import wind as wind_reanalysis
+    from ocean_solver.geometry import grid as grid_module
 
     bathy = Path(default_config.bathymetry_file)
     if (not bathy.is_file() or grid_module.Dataset is None) and Path(str(bathy) + ".npz").is_file():

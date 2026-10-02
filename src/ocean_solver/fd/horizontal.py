@@ -1,5 +1,5 @@
 """Mechanically preserved FD horizontal implementation."""
-from config import OMEGA, R_EARTH
+from ocean_solver.configuration import OMEGA, R_EARTH
 
 from .backend import jnp
 
