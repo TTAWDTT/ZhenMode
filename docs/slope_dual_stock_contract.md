@@ -116,3 +116,117 @@ endpoint inventory/PE functionals, source authority and qualification boundary
 remain as frozen above.
 
 Global strip pairing is also verified in a common bottom-to-top order at both endpoints, with continuous paired boundaries and exactly one final actual top. Independent endpoint width closure alone cannot prove that linear strips partition the interior physical domain.
+
+## 2026-10-02: reviewed physical projection witness
+
+Scientific implementation commit:
+`c24ebcdd3d6a2116e187d033234786104fd23332`, following the protocol-only commit
+`ca523ba6ae63e54d30a32d086a7acf3dcdb2b651`. The public scalar witness is
+[slope_dual_stock_evidence.json](slope_dual_stock_evidence.json). It binds 245
+source files, the frozen protocol and resource runner to the clean scientific
+commit. Seven manufactured cases pass 11,362 independent gate rows. No private
+archive arrays or machine paths are included. Documentation commits preserve
+that original source lineage instead of rebinding earlier runs.
+
+The positive sloped case retains the original endpoint PE 723.2564745000001 J
+and physical PE 94.08599325 J. Their 629.1704812500001 J gap comprises reference
+free-PE 628.453125 J and anomaly PE 0.7173562500000799 J. Its raw-minus-projected
+IS defect is 0.06418485237486493 PSU*m^3 (analytic 50/779); Mu defect is
+4.100000000000023 kg*m/s. The corresponding material defects are
+-0.0015404364570024143 PSU*m^3/s and -0.09839999999999982 N. Endpoint PE direction
+-80.2357884045 W remains separate from physical direction -60.08473631700005 W:
+the -20.15105208749995 W discrepancy is still present. B is an auxiliary
+physical projection, not a raw conservative remap that removes these gaps.
+
+Independent per-basis Bdot and weighted local ALE balances have maximum
+residuals 8.881784197001252e-16 and 7.216449660063518e-16 across both flow signs
+and flat/sloped surfaces. Every row uses the frozen absolute-operation scale.
+Removing actual-top shape, the weighted basis term, gravity vertical-motion
+source or an active virtual cut produces a resolved local failure. Rebuilding
+the moving normalized chart gives a different per-basis mass direction and
+fails the frozen-chart comparison. Deep projected stocks change: positive
+sloped maximum deep IS and Mu directions are 0.007660110300787457 and
+0.17434297054710574 in their integrated stock units per second.
+
+For the same case, the 0.01-second fixed-W auxiliary scratch has KE change
+-5.984089514795747 J and independent midpoint pressure work
+-5.9840895147957465 J. The actual projected initial momentum and solved final
+momentum bind to the physical Gram matrix; maximum solve residual is
+8.881784197001252e-16 and minimum eigenvalue 15.760350644769114. Arbitrary
+vertical shear passes static B/W/KE and pressure-work probes but refuses the
+material transport tangent. Pressure force depends on geometry/thermodynamic
+state, never on velocity or a fitted energy residual.
+
+The separate zero-depth-flux shear initially has both endpoint depth fluxes
+exactly 0 m^2/s, independently bounded by 1.1368683772161603e-13 each. Its
+initial volume pressure power is 0.1720679005106298 W versus roundoff bound
+3.5836715509484527e-10 W. This is measured before the scratch impulse; its
+later auxiliary kick work 2.847058124059359 J is a different quantity.
+
+Positive sloped one-sided PE directions at epsilon 2^-8, 2^-9, 2^-10 s are
+-60.01663586075301, -60.050686088448856, -60.06771120248595 W. Their analytic
+truncation bounds are 0.06810045972572783, 0.03405022942760192,
+0.017025114604988928 W, with total bounds 0.06810097871820923,
+0.03405126742073915, 0.01702719059944372 W. This is an affine-preserving
+parameter derivative test with physical shape truncation, not a fixed-endpoint
+time integration or second-order claim. A valid static a0=0 case intentionally
+refuses the restricted one-sign remainder certificate.
+
+The independent inspector's code/mathematical gate passed before the scientific
+commit. Controls cover forged raw owners, missing strips, equal overlap/gap,
+crossed left/right pairing, thermodynamic-spec mismatch, actual material shear,
+derived division overflow, changed raw interiors and crossing. Retained failures
+and successes are recorded in [slope_dual_stock_resources.json](slope_dual_stock_resources.json).
+Early 14-test passes were superseded by stronger independent controls. Initial
+TDD collection lacked the new module; three oracle refusal controls then failed
+before their fixes. Two later red runs were error-message regex mismatches:
+existing EOS refusal and the stronger topology refusal both worked. No frozen
+scientific threshold was relaxed to make these pass.
+
+Reproduce in a project-local Python 3.12 environment with existing dependencies
+and `research/experiments/material_top_band/affine_requirements.lock` constraints:
+
+```text
+python -m pytest tests/research/contracts/test_slope_dual_stock.py -q
+python -m ruff check .
+```
+
+From a clean committed checkout, the measured Windows Job Object runner enforces
+one CPU, 180 seconds and 4 GiB process-tree private memory. Save new receipts to
+the ignored logs directory so that source provenance remains clean:
+
+```text
+.venv\Scripts\python.exe scripts\run_bounded_research_tests.py --module research.experiments.material_top_band.slope_dual_stock_evidence --output logs/slope_dual_stock/reproduced_witness.json
+.venv\Scripts\python.exe scripts\run_bounded_research_tests.py tests/research/contracts/test_slope_dual_stock.py tests/research/contracts/test_affine_physical_pressure.py tests/research/contracts/test_inventory_pressure.py tests/research/contracts/test_material_real_geometry.py tests/research/contracts/test_fd_static_bridge.py tests/research/contracts/test_pressure_force_geometry.py -q
+```
+
+Qualification remains false, accepted steps and real-archive steps remain zero.
+There is no inverse/conservative raw projection, original momentum-CV adapter,
+variable-mass total-energy compatibility, general P1/limiter, full moving sigma,
+complete predict/12fast/replay, real353 failure step, dt300/600, GPU, MOM6
+same-condition/equal-error speed result or default-production switch. Those
+industrial requirements remain open.
+
+
+### Final bounded validation and review
+
+The final focused suite passed **26 tests**, 9.45 s pytest / 9.844 s job,
+peak interpreter RSS 55,824,384 bytes and tree private memory 71,589,888 bytes.
+The clean-source scalar witness took **14.265 s**, RSS 39,849,984 bytes,
+private 67,354,624 bytes. Independent evidence review verified all 245 actual
+source hashes, the unmodified frozen protocol, all finite gate results and
+qualification boundaries. Its gate passed without running another numerical
+worker. Across the witness, 84 gates and 11,362 rows pass; maximum observed
+residual/bound ratio is 0.9999983919163277, in the analytic FD envelope tests.
+
+The full `tests/research/contracts` directory was attempted once and stopped at
+the unchanged 180-second wall limit: job 180.156 s including termination,
+RSS 1,062,567,936 bytes, private 1,217,372,160 bytes, exit 124. It is incomplete
+and is not reported as a passing regression. The directly related six-file
+command above subsequently passed **210 tests**, 14.31 s pytest / 14.781 s job,
+RSS 59,035,648 bytes and private 75,292,672 bytes. Both official runs used the
+clean scientific commit. Repository Ruff and patch whitespace checks pass.
+All numerical invocations were serial with one CPU, 180 seconds and 4 GiB;
+there were no accepted model steps or real archive integration.
+
+The final source remains a research diagnostic with zero accepted states; the broader production and industrial gaps above remain open.
