@@ -42,6 +42,8 @@ def test_two_actual_moving_steps(sign):
         assert np.linalg.norm(receipt.R_after - receipt.R_before) > 0.
         assert receipt.physical_KE_change_J != receipt.raw_KE_change_J
         assert abs(receipt.midpoint_pressure_work_J - receipt.true_pressure_work_J) > 100. * receipt.work_error_bound_J
+        for chain in (receipt.raw_mass_chain,receipt.physical_mass_chain):
+            assert abs(chain['mass_work']) > 100.*512.*np.finfo(float).eps*max(1.,chain['scale'])
         assert receipt.accepted_moving_geometry
         assert not receipt.production_qualified
         assert not receipt.original_global_CV_identified
@@ -131,6 +133,29 @@ def test_raw_owner_corruption_refuses_before_consumption(monkeypatch):
         integrator.step(.02)
     unchanged(integrator.profile,saved)
     assert integrator.accepted_raw_steps == 0 and integrator.last_receipt is None
+    assert integrator.time_s == 0. and np.all(integrator.cumulative_gcl == 0.) and np.all(integrator.cumulative_gcl_bound == 0.)
+
+
+def test_raw_mean_KE_substitution_refuses_after_good_faces(monkeypatch):
+    from research.experiments.material_top_band import moving_raw_characteristic as candidate
+    profile,_ = manufactured_mean_case()
+    integrator = MovingRawSlice(profile,authority=AUTHORITY)
+    original_energy = candidate.local_energy
+    saved = snapshot(integrator.profile)
+
+    def without_covariance(geometry):
+        energy = original_energy(geometry)
+        energy[...,0] = (.5*geometry.D.diagonal()*np.sum(geometry.means**2,axis=-1)).reshape(2,14)
+        return energy
+
+    monkeypatch.setattr(candidate,'local_energy',without_covariance)
+    with pytest.raises(ValueError) as failure:
+        integrator.step(.02)
+    ratio = re.search(r'ratio ([0-9.e+\-]+)',str(failure.value))
+    assert ratio is not None and float(ratio.group(1)) > 100.
+    unchanged(integrator.profile,saved)
+    assert integrator.accepted_raw_steps == 0 and integrator.last_receipt is None
+    assert integrator.time_s == 0. and np.all(integrator.cumulative_gcl == 0.) and np.all(integrator.cumulative_gcl_bound == 0.)
 
 
 @pytest.mark.parametrize('dt', [True, 0., -.01, .051, np.nan, np.inf, 1j])

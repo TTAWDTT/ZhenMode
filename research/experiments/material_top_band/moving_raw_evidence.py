@@ -15,6 +15,7 @@ from .moving_raw_characteristic import MovingRawSlice
 from .moving_raw_oracle import audit_receipt
 
 ROOT = Path(__file__).resolve().parents[3]
+CHANNELS = ('water_m3','IT_temperature_m3','IS_salinity_m3','Mu_kg_m_s','Mv_kg_m_s','physical_KE_J','gravity_PE_J')
 
 
 def case_evidence(parameters, durations):
@@ -50,10 +51,11 @@ def case_evidence(parameters, durations):
                          maximum_face_bound_ratio=receipt.maximum_face_bound_ratio,
                          maximum_time_numerator_degree=max(int(np.max(row[key+'_degree'])) for row in horizontal for key in ('transport','pressure','pressure_energy')),
                          maximum_time_lambda_power=max(int(np.max(row[key+'_power'])) for row in horizontal for key in ('transport','pressure','pressure_energy')),
-                         maximum_face_truncation_bound=max(float(np.max(row['transport_truncation'])) for row in horizontal),
-                         maximum_face_input_reconstruction_bound=max(float(np.max(row['transport_input'])) for row in horizontal),
+                         maximum_face_truncation_bounds={name:max(float(np.max(row['transport_truncation'][...,channel])) for row in [*horizontal,*vertical]) for channel,name in enumerate(CHANNELS)},
+                         maximum_face_input_reconstruction_bounds={name:max(float(np.max(row['transport_input'][...,channel])) for row in [*horizontal,*vertical]) for channel,name in enumerate(CHANNELS)},
                          accepted_moving_geometry=receipt.accepted_moving_geometry))
-    return dict(parameters=parameters,steps=rows)
+    return dict(parameters=parameters,steps=rows,accepted_raw_steps=integrator.accepted_raw_steps,
+                accepted_moving_steps=sum(int(row['accepted_moving_geometry']) for row in rows))
 
 
 def provenance():
@@ -76,7 +78,8 @@ def build_evidence():
     cases = dict(positive=case_evidence({},(.02,.03)),negative=case_evidence(dict(U=-.03,alpha=-.08,external=(200.,80.)),(.02,.03)),
                  zero_pressure=case_evidence(dict(external=(80.,80.)),(.02,)),fixed_eta=case_evidence(dict(alpha=0.),(.02,)))
     return dict(contract=protocol['contract'],restricted_manufactured_raw_mean_ALE_passed=True,
-                accepted_raw_steps=6,accepted_moving_steps=5,cases=cases,qualification_passed=False,original_global_CV_identified=False,
+                accepted_raw_steps=sum(case['accepted_raw_steps'] for case in cases.values()),
+                accepted_moving_steps=sum(case['accepted_moving_steps'] for case in cases.values()),cases=cases,qualification_passed=False,original_global_CV_identified=False,
                 production_force_consumption_qualified=False,real_archive_steps=0,
                 numerical_scope='Canonical affine characteristic FV reconstruction qualified against actual raw means/P1 endpoints. First-slot ALE only. No original CV/top-three band/predict12fastreplay, source adapters, generic order or speed qualification.')
 

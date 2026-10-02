@@ -79,8 +79,12 @@ def test_frame_derivatives_with_predetermined_fd_envelopes(epsilon):
         envelope = geometry.fd_envelope(name, epsilon)
         assert np.linalg.norm(derivative - direction[name], 2) <= envelope < 1.
     omitted = geometry.inverse.T @ direction['endpoint_metric'] @ geometry.inverse
-    assert np.linalg.norm(direction['M'] - omitted) > 100. * geometry.fd_envelope('M', epsilon)
-    assert np.linalg.norm(direction['R']) > 100. * geometry.fd_envelope('R', epsilon)
+    assert np.linalg.norm(direction['M'] - omitted,2) > 100. * geometry.fd_envelope('M', epsilon)
+    for term in (direction['inverse'].T @ geometry.endpoint_metric @ geometry.inverse,
+                 geometry.inverse.T @ geometry.endpoint_metric @ direction['inverse'],
+                 geometry.inverse.T @ direction['endpoint_metric'] @ geometry.inverse):
+        assert np.linalg.norm(term,2) > 100. * geometry.fd_envelope('M',epsilon)
+    assert np.linalg.norm(direction['R'],2) > 100. * geometry.fd_envelope('R', epsilon)
 
 
 @pytest.mark.parametrize('authority', [None, 'original', 'endpoint'])

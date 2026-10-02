@@ -305,6 +305,6 @@ def audit_receipt(spec, receipt):
     assert_bound(-spec.alpha*(spec.eta-spec.bottom)/lam**2+alpha*H, 0., 2.*abs(alpha*H), label='Eulerian continuity')
     return dict(passed=True, maximum_bound_ratio=maximum, accepted_raw_steps=receipt.accepted_raw_steps,
                 moving=receipt.accepted_moving_geometry, independent_time_points=32, independent_space_points=7,
-                maximum_independent_stock_ledger_residual=float(np.max(abs(change))),
+                maximum_independent_stock_ledger_residuals={name:float(np.max(abs(change[...,channel]))) for channel,name in enumerate(('IT_temperature_m3','IS_salinity_m3','Mu_kg_m_s','Mv_kg_m_s'))},
                 maximum_independent_local_energy_residual_J=float(np.max(abs(np.sum(actual1-actual0+flow[...,5:7],axis=-1)-pressure_work))),
                 independent_global_energy_residual_J=math.fsum((np.sum(actual1-actual0+flow[...,5:7],axis=-1)-pressure_work).ravel()))
