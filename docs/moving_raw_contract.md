@@ -142,3 +142,137 @@ z intercept, so q_b=a0+s*b. Inherited inventory EOS is rho0=1025 kg/m3,
 Tref=15, Sref=35, alpha=2e-4, beta=7.6e-4, g=9.81 m/s2.
 The nonzero V direction is periodic extrusion; its paired transverse faces
 cancel. These choices are frozen inputs, not inferred from candidate results.
+
+### 2026-10-02 UTC: accepted numerical pilot
+
+Scientific source `d3d29200cf0b09fccb5451e1a2b3e5aa7fb97401` produced
+[the scalar witness](moving_raw_evidence.json): six actual raw commits in four
+cases, of which five move the first raw slot. Positive and negative affine
+flows each take successive 0.02 and 0.03 s steps. The zero-pressure moving
+case and alpha=0 fixed-eta control also pass. The latter preserves actual eta
+exactly. This is a restricted manufactured numerical pilot, not industrial,
+original-CV or production qualification.
+
+The accepted geometry is defined by the flow map before integration. Every
+actual h row closes the ALE GCL within its predetermined envelope. Stocks
+IT/IS/Mu/Mv are only changed by signed horizontal/vertical stock fluxes and
+actual pressure impulse. No closed-form end stock is assigned. Cumulative
+GCL bounds retain the sum of all prior per-step budgets and accumulation
+roundoff; they are committed atomically with the raw state. Canonical
+reconstruction errors use pre-step actual P1 endpoints, absolute open-inflow
+extrapolation weights, a positive exact quotient denominator, neighbor/global
+P1 bounds and Q-inverse bounds for local physical kinetic energy.
+
+For the positive case, the observed actual changes are:
+
+| dt (s) | eta change (m) | maximum deep IS change per area | maximum deep Mu change (kg/(m s)) | physical KE change (J) | raw KE change (J) | PE change (J) |
+|---|---:|---:|---:|---:|---:|---:|
+| 0.02 | -0.00447284345048 | 0.000379163377874 | 0.490432374867 | -1.39442561263 | -1.38343998537 | 27.3994944396 |
+| 0.03 | -0.00668253503558 | 0.000568745066809 | 0.734056336952 | -2.04977899314 | -2.03343157572 | 42.0614650215 |
+
+Actual M changes have Frobenius norms 11.5448651566 and 17.2514802878; actual
+R changes have norms 0.00193173076488 and 0.00296452776997. Covariance KE
+changes are -0.0109856272590 and -0.0163474174135 J. Internal pressure-energy
+face integrals are nonzero, reaching 47.6838114637 and 71.1145219545 J;
+moving-surface external pressure work is 1.87859424920 and 2.80666471494 J.
+These are physical full-KE face and inventory accounts; no owner-dependent
+variance face is falsely shared.
+
+True pressure time work is -1.10113769189 and -1.62308735913 J. Actual
+midpoint mean velocity times the integrated pressure impulse differs by
+-2.34534057286e-7 and -7.74737985543e-7 J, against predeclared work bounds
+6.16586991411e-12 and 9.26551290750e-12 J. The nonlinear difference is
+resolved and is not called loss. Actual raw/physical variable-mass chains
+separately retain nonzero mass work; replacing them by a fixed-mass identity
+fails the frozen omission criterion.
+
+The independent Eulerian oracle imports no candidate characteristic,
+polynomial, mean-metric, face consumer or after-stock helper. It binds actual
+end-CV inventories with seven-point volume rules, all absolute faces with
+32-time/seven-space rules, and derives separate fsum water/TS/impulse and
+local/global energy ledgers. The largest positive-case local GCL residual is
+7.45931094670e-17 m3; two-step cumulative residual is at most
+4.85722573274e-17 m3. Independent local total-energy residuals are at most
+5.01554353605e-12 J. These finite physical ledgers use dimensional input,
+roundoff and time-tail budgets; their residuals are not labeled roundoff-only
+identities. The positive-case largest independent bound ratio is
+0.000750823958750. Algebraic mass-chain identities use only operation
+roundoff. There is no generic second-order or equal-error speed claim.
+
+Executed horizontal rational numerators reach degree 7 and lambda power 4,
+within the frozen per-channel table. The positive second-step maximum gravity
+PE face tail bound is 1.15169085934e-53 J, separately reported from its
+8.75534980943e-10 J input reconstruction bound and operation roundoff.
+Agreement of the two Gauss rules is not substituted for the analytic tail
+proof. The witness binds 256 actual source files by relative-path SHA256 and
+records Python 3.12.14, NumPy 2.5.3, pytest 9.1.1 and Ruff 0.16.8.
+
+### Validation, failures and reproduction
+
+Independent design/code review passed before each scientific execution. The
+final related regression passed 282 tests: 50 new geometry/time/actual-moving
+tests and 232 related tests. It includes absolute paired-stock, common-Pa
+offset, ALE R, internal/cap Pa energy and full KE face deletion controls;
+raw KE substitution after valid physical faces; frame and changing-mass
+omissions; invalid numerical scales; unsupported a1/shear/nonflat/nonaffine
+or limiter-active states; and full rollback of every raw array, time/count,
+receipt and cumulative GCL state/bound. Targeted Ruff and diff checks pass.
+
+[The resource ledger](moving_raw_resources.json) retains all five serial
+bounded invocations and their actual source commits. The TDD RED is retained
+as tool-transcript-only without a fabricated logfile hash. The first
+implementation run passed 44 and failed four witness checks because an
+independent eta regrouping changed its last bits; that failure remains bound
+to its original commit. Stable oracle eta and the frozen moving-top geometry
+operation bound fixed it, while internal cuts retain strict equality. No
+numerical threshold was enlarged after results. The later 49-test run,
+282-test regression and source-bound witness all passed.
+
+Total bounded wall time is 127.390 s, including both failures. Maximum owned
+process-tree private memory is 78,422,016 bytes. The final scalar witness took
+12.266 s, with 41,238,528-byte sampled interpreter RSS and 68,096,000-byte
+owned-tree private memory. Each invocation used one CPU, hard 180 s and 4 GiB
+limits. The existing bounded runner hash is unchanged from merged base7223.
+No real archive step, GPU, production integration or alternate model was run.
+Timings measure reproduction cost only.
+
+Reproduce from the clean scientific commit in a local Python 3.12.14 venv
+using `research/experiments/material_top_band/affine_requirements.lock`.
+Create the ignored output directory before running the bounded witness:
+
+```powershell
+.venv\Scripts\python.exe scripts/run_bounded_research_tests.py --module research.experiments.material_top_band.moving_raw_evidence --output logs/moving_raw/scientific_receipt.json
+```
+
+The related regression command is:
+
+```powershell
+.venv\Scripts\python.exe scripts/run_bounded_research_tests.py tests/research/contracts/test_raw_mean_geometry.py tests/research/contracts/test_rational_time_integral.py tests/research/contracts/test_moving_raw_characteristic.py tests/research/contracts/test_fixed_eta_raw.py tests/research/contracts/test_slope_dual_stock.py tests/research/contracts/test_affine_physical_pressure.py tests/research/contracts/test_pressure_force_geometry.py tests/research/contracts/test_inventory_pressure.py tests/research/contracts/test_material_real_geometry.py -q
+```
+
+The numerical modules/tests are portable; the resource launcher uses Windows
+Job Objects. Other platforms need equivalent external limits. A later clean
+docs-only head records its own commit on reproduction, while identical
+scientific file hashes preserve the numerical source. Published receipts
+contain manufactured scalar evidence and relative hashes, without private
+arrays, local paths or credentials.
+
+### Remaining scope
+
+Original global momentum CV, general mean/inverse reconstruction, nonuniform
+shear, horizontal density-gradient a1, nonflat/coast geometry, original moving
+top-three band and predict/12fast/replay remain unsupported. Legal mixing,
+biharmonic, FCT/filter, wind, bulkheat, rotation and drag adapters are absent.
+The 8x4x6 end-to-end original task, mature-mode parity, generic second-order
+fixed-endpoint convergence and equal-error speed qualification remain open.
+Default production remains unchanged. No merge or license change is made.
+
+### 2026-10-02 UTC: provenance counting correction
+
+The witness has 256 source labels resolving to 216 distinct actual files;
+legacy `src/` labels and reserved `checkout/src/` labels are logical archive
+aliases, not literal checkout paths. The earlier phrase "256 actual source
+files" should be read as 256 source hashes. Using the repository's canonical
+`verify_current_source_hashes` resolver verifies all 256 with zero mismatches.
+All published source hashes remain unchanged; this corrects counting and path
+interpretation, not numerical evidence.
