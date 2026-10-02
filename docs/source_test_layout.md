@@ -272,3 +272,37 @@ The historical coastal/viscosity/resolution/restoring analysis scripts and
 all 455 frozen evidence/document files remain unchanged. The 930eb5b CI runs
 were cancelled when these review findings required a new final head; they are
 not complete passing evidence. Assess complete CI on the final repair head.
+
+
+## Actual checkout launcher bytes - 2026-10-02
+
+The debug diagnostic prepends checkout `src` and can execute the two retained
+direct-file launchers. Recording only their compatibility aliases omitted
+those actual executed bytes. Current checkout diagnostics now include all 138
+Python source files, with two reserved keys that do not collide with legacy
+logical labels:
+
+| Receipt key | Actual hashed file |
+| --- | --- |
+| `src/jax_solver_global.py` | `src/compat/jax_solver_global.py` |
+| `checkout/src/jax_solver_global.py` | `src/jax_solver_global.py` |
+| `src/run_long_integration_global.py` | `src/compat/run_long_integration_global.py` |
+| `checkout/src/run_long_integration_global.py` | `src/run_long_integration_global.py` |
+
+Both direct-file sources are mandatory in the current checkout closure.
+Containment is checked before and after key resolution. Their actual file
+hashes never replace compatibility-file hashes. Four new controls first
+failed, including two real launcher mutations that previously did not reject;
+all now pass. No launcher execution or model witness was required for this
+source-only check.
+
+Final collection is 1836, preserving all original 1791 nodes: 14 architecture,
+four collection mapping, 24 current archive/provenance and three MMS controls
+are additional. The 38 metadata/architecture tests pass in 8.453 seconds,
+with peak interpreter RSS 151613440 and tree-private memory 133152768 bytes.
+The installed registry is unchanged: 96 canonical files, 121 production and
+103 material files. The rebuilt external wheel still verifies 136 installed
+files, 40 aliases and 121 hashes; it does not require repository launchers.
+All existing numerical captures remain unchanged and were not rerun.
+The superseded f744516 CI runs were cancelled for this source-coverage repair;
+complete CI remains required on the next final head.

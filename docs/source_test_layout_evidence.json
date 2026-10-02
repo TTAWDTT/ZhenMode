@@ -150,7 +150,7 @@
   ],
   "collection": {
     "reference_nodes": 1791,
-    "candidate_nodes": 1832,
+    "candidate_nodes": 1836,
     "preserved_nodes": 1791,
     "new_nodes": [
       "tests/infrastructure/test_collection_mapping.py::test_mapping_preserves_full_parameter_identifiers_and_records_new_nodes",
@@ -162,6 +162,10 @@
       "tests/infrastructure/test_current_archives.py::test_current_archive_resolves_legacy_keys_and_contains_complete_source_closure",
       "tests/infrastructure/test_current_archives.py::test_current_attribution_cli_verifies_new_receipt_sources_without_model[False]",
       "tests/infrastructure/test_current_archives.py::test_current_attribution_cli_verifies_new_receipt_sources_without_model[True]",
+      "tests/infrastructure/test_current_archives.py::test_current_closure_records_checkout_launchers_separately_from_compatibility[jax_solver_global]",
+      "tests/infrastructure/test_current_archives.py::test_current_closure_records_checkout_launchers_separately_from_compatibility[run_long_integration_global]",
+      "tests/infrastructure/test_current_archives.py::test_current_manifest_rejects_actual_checkout_launcher_byte_changes[jax_solver_global]",
+      "tests/infrastructure/test_current_archives.py::test_current_manifest_rejects_actual_checkout_launcher_byte_changes[run_long_integration_global]",
       "tests/infrastructure/test_current_archives.py::test_current_manifest_requires_actual_hashes_and_complete_current_closure[None]",
       "tests/infrastructure/test_current_archives.py::test_current_manifest_requires_actual_hashes_and_complete_current_closure[different_bytes]",
       "tests/infrastructure/test_current_archives.py::test_current_manifest_requires_actual_hashes_and_complete_current_closure[missing_canonical]",
@@ -263,7 +267,7 @@
     "duplicate_fixture_bodies_removed": 1,
     "duplicate_body_lines": 23
   },
-  "wheel_final": "Rebuilt and externally reinstalled after the final provenance module change; 136 actual file bytes, 121 actual hashes, 40 aliases, pickle/pytree and CLI help passed without checkout source insertion.",
+  "wheel_final": "Rebuilt after the checkout launcher source-closure repair; externally checked all 136 installed Python bytes, 121 actual registry hashes, 40 aliases, pickle/pytree and CLI help. The two checkout-only launchers are not required inside the wheel.",
   "runtime_versions": {
     "python": "3.12.14",
     "jax": "0.11.2",
@@ -361,10 +365,54 @@
     "checkout_source_insertions": 0,
     "pickle_and_pytree_verified": true,
     "console_and_module_help_exit": 0,
-    "wheel_sha256": "511fd3485a75d3ca3a924ca8ea3f3f7cb39c0b50978c08f48909a9db649c86fe",
-    "validation_wall_s": 2.422,
-    "peak_interpreter_RSS_bytes": 195006464,
-    "peak_job_private_bytes": 179814400,
-    "source_bytes_refreshed_after_provenance_change": true
+    "wheel_sha256": "679cb1cab55771751aaeb055d84b7173e471ba0b066c438b9b1a0ba1464a86e2",
+    "validation_limits_and_resource": {
+      "wall_s": 2.234,
+      "peak_interpreter_RSS_bytes": 195538944,
+      "peak_job_private_bytes": 180473856,
+      "single_CPU": true,
+      "memory_limit_bytes": 4294967296,
+      "wall_limit_s": 180,
+      "bound_stop": false,
+      "exit_code": 0
+    },
+    "source_bytes_refreshed_after_checkout_provenance_change": true,
+    "checkout_launchers_required_in_wheel": false
+  },
+  "checkout_launcher_source_repair": {
+    "superseded_head": "f744516c2a55654855d8799504c1339ace9763a5",
+    "superseded_CI_runs": [
+      37003868731,
+      37003873733
+    ],
+    "superseded_CI_policy": "Cancelled when review confirmed the two omitted executed checkout launchers; no complete pass claimed.",
+    "explicit_actual_file_keys": {
+      "checkout/src/jax_solver_global.py": "src/jax_solver_global.py",
+      "checkout/src/run_long_integration_global.py": "src/run_long_integration_global.py"
+    },
+    "legacy_alias_keys_unchanged": {
+      "src/jax_solver_global.py": "src/compat/jax_solver_global.py",
+      "src/run_long_integration_global.py": "src/compat/run_long_integration_global.py"
+    },
+    "actual_checkout_Python_source_files": 138,
+    "installed_source_registry_unchanged": {
+      "canonical_files": 96,
+      "production_files": 121,
+      "material_files": 103
+    },
+    "TDD": "Four controls failed first; two actual launcher byte changes produced DID NOT RAISE. Both current keys and actual-byte rejection pass after the repair.",
+    "metadata_only_validation": {
+      "passed": 38,
+      "wall_s": 8.453,
+      "peak_interpreter_RSS_bytes": 151613440,
+      "peak_job_private_bytes": 133152768,
+      "single_CPU": true,
+      "memory_limit_bytes": 4294967296,
+      "wall_limit_s": 180,
+      "bound_stop": false,
+      "exit_code": 0
+    },
+    "independent_read_only_code_gate": "passed; real launcher keys do not overwrite compatibility hashes, containment retained, installation requires no checkout launchers",
+    "numerical_replays": 0
   }
 }

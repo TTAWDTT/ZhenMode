@@ -10,18 +10,23 @@ def current_source_files(repository, selected):
     """Resolve moved files and retain logical archive names for old replay readers.
 
     Current canonical implementations, bridges, support/oracle helpers and the
-    layout declaration are all included. Archived historical manifests stay
+    layout declaration are all included. The reserved checkout/src labels bind
+    the two real direct-file launchers without replacing legacy alias labels. Archived historical manifests stay
     bound to their historical commit; this helper never invents their hashes.
     """
     root = Path(repository)
     declaration = root / "docs/source_test_layout.json"
     layout = json.loads(declaration.read_text(encoding="utf-8"))
+    entrypoints = {"checkout/src/" + name + ".py": root / "src" / (name + ".py")
+                   for name in ("jax_solver_global", "run_long_integration_global")}
     result = {}
     for item in selected:
         name = Path(item).relative_to(root).as_posix() if isinstance(item, Path) else str(item)
         if name.startswith("src/") and name.count("/") == 1:
             module = Path(name).stem
             path = source_paths(root / "src", (module,))[module]
+        elif name in entrypoints:
+            path = entrypoints[name]
         elif name in layout["test_moves"]:
             path = root / layout["test_moves"][name]
         elif name == "tests/_helpers.py":
@@ -32,6 +37,10 @@ def current_source_files(repository, selected):
             path = root / name
         if not path.is_file():
             raise ValueError("missing declared current source: " + name)
+        result[name] = path
+    for name, path in entrypoints.items():
+        if not path.is_file():
+            raise ValueError("missing required checkout entrypoint: " + name)
         result[name] = path
     required = tuple(dict.fromkeys((*production_source_modules(), *layout["legacy_modules"])))
     for name, path in source_paths(root / "src", required).items():

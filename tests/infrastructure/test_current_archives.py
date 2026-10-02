@@ -153,3 +153,33 @@ def test_current_attribution_cli_verifies_new_receipt_sources_without_model(tmp_
         result = json.loads(output_path.read_text(encoding="utf-8"))
         assert result["runtime_source_hashes_match"] is True
         assert result["cases"] == []
+
+
+@pytest.mark.parametrize("launcher", ["jax_solver_global", "run_long_integration_global"])
+def test_current_closure_records_checkout_launchers_separately_from_compatibility(launcher):
+    from ocean_solver.provenance.archives import current_source_path
+
+    files = current_source_files(REPOSITORY_ROOT, [])
+    direct_label = f"checkout/src/{launcher}.py"
+    legacy_label = f"src/{launcher}.py"
+    assert files[direct_label] == REPOSITORY_ROOT / f"src/{launcher}.py"
+    assert files[legacy_label] == REPOSITORY_ROOT / f"src/compat/{launcher}.py"
+    assert current_source_path(REPOSITORY_ROOT, direct_label) == files[direct_label].resolve()
+    assert hashlib.sha256(files[direct_label].read_bytes()).digest() != hashlib.sha256(files[legacy_label].read_bytes()).digest()
+
+
+@pytest.mark.parametrize("launcher", ["jax_solver_global", "run_long_integration_global"])
+def test_current_manifest_rejects_actual_checkout_launcher_byte_changes(tmp_path, launcher):
+    from ocean_solver.provenance.archives import verify_current_source_hashes
+
+    shutil.copytree(REPOSITORY_ROOT / "src", tmp_path / "src", ignore=shutil.ignore_patterns("__pycache__"))
+    shutil.copytree(REPOSITORY_ROOT / "tests", tmp_path / "tests", ignore=shutil.ignore_patterns("__pycache__"))
+    (tmp_path / "docs").mkdir()
+    shutil.copyfile(REPOSITORY_ROOT / "docs/source_test_layout.json", tmp_path / "docs/source_test_layout.json")
+    files = current_source_files(tmp_path, [])
+    hashes = {name: hashlib.sha256(path.read_bytes()).hexdigest() for name, path in files.items()}
+    verify_current_source_hashes(tmp_path, hashes)
+    actual = tmp_path / f"src/{launcher}.py"
+    actual.write_bytes(actual.read_bytes() + b"\n# source-only negative control\n")
+    with pytest.raises(ValueError, match=f"runtime source mismatch: checkout/src/{launcher}"):
+        verify_current_source_hashes(tmp_path, hashes)
