@@ -31,4 +31,3 @@ def fixture(eta=-2.49, profile="linear"):
         source_sha=np.array("2" * 40),
         terrain_sha=np.array("a" * 64),
     )
-
