@@ -8,7 +8,6 @@ import argparse
 import hashlib
 import json
 import platform
-import resource
 import subprocess
 import sys
 import time
@@ -164,6 +163,8 @@ def sha256(path):
 
 
 def run(output):
+    import resource  # POSIX process receipt is required only by this CLI.
+
     if jax.default_backend() != "cpu":
         raise ValueError("this bounded reproduction requires JAX_PLATFORMS=cpu")
     output.mkdir(parents=True, exist_ok=False)
