@@ -14,17 +14,17 @@ import time
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-sys.path[:0] = [str(ROOT / 'src'), str(ROOT / 'tests')]
+sys.path[:0] = [str(ROOT)]
 
 
 def worker(directory, phase):
     import jax
     import numpy as np
     import pytest
-    from _driver_helpers import run_controlled_driver
 
     import run_long_integration_global as driver
     from restart_contract import fingerprint
+    from tests.support.driver import run_controlled_driver
 
     if jax.default_backend() != 'cpu':
         raise RuntimeError('CPU witness must run on CPU')

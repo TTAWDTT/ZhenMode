@@ -1,7 +1,7 @@
 """Reproduce dimensioned metric diagnostics with archived harness/source hashes."""
 import argparse
 import hashlib
-import importlib.util
+import importlib
 import json
 import shutil
 import sys
@@ -23,16 +23,15 @@ def main():
                     root / "research/experiments/material_rstar_coordinates/dense_oracle.py",
                     root / "research/experiments/material_rstar_coordinates/protocol.json", Path(__file__).resolve()]
     hashes = {}
-    for source in source_files:
-        name = source.relative_to(root).as_posix()
+    from ocean_solver.provenance.archives import current_source_files
+    files = current_source_files(root, source_files)
+    for name, source in files.items():
         target = output / "sources" / name
         target.parent.mkdir(parents=True, exist_ok=True)
         shutil.copyfile(source, target)
         hashes[name] = hashlib.sha256(source.read_bytes()).hexdigest()
     (output / "source_hashes.json").write_text(json.dumps(hashes, indent=2) + "\n", encoding="utf-8")
-    specification = importlib.util.spec_from_file_location("metric_controls", root / "tests/test_rstar_metric_controls.py")
-    controls = importlib.util.module_from_spec(specification)
-    specification.loader.exec_module(controls)
+    controls = importlib.import_module("tests.support.rstar.metric_controls")
     import jax
     import jax.numpy as jnp
     import numpy as np
@@ -80,7 +79,7 @@ def main():
     matrix_floor = 64. * np.finfo(float).eps * np.linalg.norm(dense.stiffness, ord=np.inf)
     constant_residual = float(np.max(np.abs(dense.stiffness.sum(axis=1))))
     inventory_residual = float(np.max(np.abs(dense.stiffness.sum(axis=0))))
-    source_unchanged = all(hashlib.sha256((root / name).read_bytes()).hexdigest() == digest for name, digest in hashes.items())
+    source_unchanged = all(hashlib.sha256(files[name].read_bytes()).hexdigest() == digest for name, digest in hashes.items())
     report = {
         "scope": "isolated metric control, not a qualified actual trajectory or industrial comparison",
         "backend": jax.default_backend(), "devices": [str(device) for device in jax.devices()],

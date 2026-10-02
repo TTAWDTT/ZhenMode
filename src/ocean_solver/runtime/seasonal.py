@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
+from ocean_solver.data.wind import real_wind_forcing
 from ocean_solver.fd.backend import jnp, np
-from wind_reanalysis import real_wind_forcing
 
 
 def marine_smooth_2d(field, ocean_mask, passes=0):

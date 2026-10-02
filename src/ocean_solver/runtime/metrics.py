@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from integration_monitor import classify_state
+from ocean_solver.audit.monitor import classify_state
 from ocean_solver.fd.backend import np
 
 

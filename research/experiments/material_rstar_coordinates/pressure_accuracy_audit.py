@@ -23,12 +23,14 @@ def main():
                   "pressure_accuracy.py", "pressure_accuracy_protocol.json", "pressure_accuracy_audit.py"))
     names.extend("research/experiments/material_rstar_coordinates/" + name for name in
                  ("weak_momentum.py", "consistent_velocity_protocol.json"))
+    from ocean_solver.provenance.archives import current_source_files
+    files = current_source_files(root, names)
     hashes = {}
-    for name in names:
+    for name, source in files.items():
         destination = output / "sources" / name
         destination.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copyfile(root / name, destination)
-        hashes[name] = hashlib.sha256((root / name).read_bytes()).hexdigest()
+        shutil.copyfile(source, destination)
+        hashes[name] = hashlib.sha256(files[name].read_bytes()).hexdigest()
     (output / "source_hashes.json").write_text(json.dumps(hashes, indent=2) + "\n", encoding="utf-8")
     sys.path.insert(0, str(root))
     sys.path.insert(0, str(root / "src"))
@@ -46,7 +48,7 @@ def main():
         np.savez_compressed(target, **arrays)
         next(record for record in diagnostic["records"] if name == f"nx{record['longitude_count']}_nz{record['node_count']}").update(
             witness=target.name, witness_sha256=hashlib.sha256(target.read_bytes()).hexdigest())
-    unchanged = all(hashlib.sha256((root / name).read_bytes()).hexdigest() == digest for name, digest in hashes.items())
+    unchanged = all(hashlib.sha256(files[name].read_bytes()).hexdigest() == digest for name, digest in hashes.items())
     report = {"scope": "operator pressure accuracy only, not a full PDE or ocean step", **diagnostic,
               "backend": jax.default_backend(), "devices": [str(device) for device in jax.devices()],
               "runtime": {"python": sys.version, "platform": platform.platform(), "jax": jax.__version__, "numpy": np.__version__,

@@ -6,6 +6,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+from ocean_solver.provenance.archives import current_source_files
+
 ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT / "src"))
 
@@ -47,7 +49,8 @@ def main():
                     Path(__file__).with_name("verify_paired_reference.py"),
                     Path(__file__).with_name("analyze_physical_kinetic.py"),
                     ROOT / "tests/test_paired_dynamics.py"))
-    hashes = {path.relative_to(ROOT).as_posix(): hashlib.sha256(path.read_bytes()).hexdigest() for path in sources}
+    files = current_source_files(ROOT, sources)
+    hashes = {name: hashlib.sha256(path.read_bytes()).hexdigest() for name, path in files.items()}
     report = {"status": "running", "scope": "actual_frozen_paired_layer_surface_inventory_not_nonlinear_ocean",
               "kinetic_norm": "physical_wet_contact_horizontal_field_L2",
               "time_scheme": "simultaneous_implicit_midpoint_rotation_pressure_surface_mean_q",
@@ -154,7 +157,7 @@ def main():
         run["status"] = "PASS" if run["completed_steps"] == args.steps and np.all(budget <= 1e-12) and (not run["disturbed"] or active_motion > 1e-9) else "FAIL"
         print("FINISHED", key, original["velocity_dtype"], original["disturbed"], run["status"], flush=True)
         save()
-    unchanged = all(hashlib.sha256((ROOT / name).read_bytes()).hexdigest() == value for name, value in hashes.items())
+    unchanged = all(hashlib.sha256(files[name].read_bytes()).hexdigest() == value for name, value in hashes.items())
     report["source_hashes_unchanged"] = unchanged
     report["status"] = "PASS" if unchanged and all(run["status"] == "PASS" for run in report["runs"]) else "FAIL"
     save()

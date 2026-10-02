@@ -28,9 +28,10 @@ def main():
              "research/experiments/material_rstar_coordinates/sparse_protocol.json",
              "research/experiments/material_rstar_coordinates/moving_protocol.json",
              "research/experiments/material_rstar_coordinates/sparse_audit.py"]
+    from ocean_solver.provenance.archives import current_source_files
+    files = current_source_files(root, names)
     hashes = {}
-    for name in names:
-        source = root / name
+    for name, source in files.items():
         target = output / "sources" / name
         target.parent.mkdir(parents=True, exist_ok=True)
         shutil.copyfile(source, target)
@@ -39,7 +40,7 @@ def main():
     sys.path.insert(0, str(root))
     import pytest
 
-    result = int(pytest.main([str(root / names[0]), str(root / names[1]), "-q", "-o", "junit_family=legacy",
+    result = int(pytest.main([str(files[names[0]]), str(files[names[1]]), "-q", "-o", "junit_family=legacy",
                               f"--junitxml={output / 'controls.xml'}"]))
     import jax
     import jaxlib
@@ -58,7 +59,7 @@ def main():
         cases.append({"name": case.attrib["name"], "seconds": float(case.attrib["time"]),
                       "passed": not any(case.find(kind) is not None for kind in ("failure", "error", "skipped")),
                       "properties": properties})
-    unchanged = all(hashlib.sha256((root / name).read_bytes()).hexdigest() == digest for name, digest in hashes.items())
+    unchanged = all(hashlib.sha256(files[name].read_bytes()).hexdigest() == digest for name, digest in hashes.items())
     report = {"scope": "isolated sparse diffusion and prescribed-transport moving-content controls, not an ocean integration",
               "backend": jax.default_backend(), "devices": [str(device) for device in jax.devices()],
               "runtime": {"python": sys.version, "platform": platform.platform(), "jax": jax.__version__,

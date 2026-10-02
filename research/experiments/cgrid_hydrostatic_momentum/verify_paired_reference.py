@@ -5,8 +5,9 @@ import json
 from pathlib import Path
 
 import numpy as np
-
 from analyze_physical_kinetic import angular_gram
+
+from ocean_solver.provenance.archives import current_source_files
 
 ROOT = Path(__file__).resolve().parents[3]
 OMEGA = 7.2921e-5
@@ -157,7 +158,8 @@ def verify(path, negative=False):
     provenance = report["provenance"]
     if provenance["git_status"]:
         raise ValueError("paired reference did not start at clean revision")
-    if any(hashlib.sha256((ROOT / name).read_bytes()).hexdigest() != value for name, value in provenance["source_sha256"].items()):
+    files = current_source_files(ROOT, provenance["source_sha256"])
+    if any(hashlib.sha256(files[name].read_bytes()).hexdigest() != value for name, value in provenance["source_sha256"].items()):
         raise ValueError("current source differs from paired runtime manifest")
     input_report = ROOT / provenance["input_report"]
     if hashlib.sha256(input_report.read_bytes()).hexdigest() != provenance["input_report_sha256"]:

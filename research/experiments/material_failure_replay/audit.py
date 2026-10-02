@@ -18,6 +18,8 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
+from ocean_solver.provenance.archives import current_source_files
+
 ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT / "src"))
 
@@ -214,7 +216,7 @@ def run(output):
         "synthetic_full_step_attempts": 3, "synthetic_full_step_accepts": sum(c["accepted"] for c in cases),
         "checkout_head_at_execution": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip(),
         "worktree_status_at_execution": subprocess.check_output(["git", "status", "--short"], cwd=ROOT, text=True),
-        "source_sha256": {str(p.relative_to(ROOT)): sha256(p) for p in source_paths},
+        "source_sha256": {name: sha256(p) for name, p in current_source_files(ROOT, source_paths).items()},
         "config_sha256": sha256(output / "config.json"),
         "packet_sha256": {p.name: sha256(p) for p in sorted(output.glob("*.npz"))},
         "environment": {"python": platform.python_version(), "jax": jax.__version__,

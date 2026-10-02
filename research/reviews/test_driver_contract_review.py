@@ -11,10 +11,9 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "src"))
 sys.path.insert(0, str(ROOT / "tests"))
 
-from _helpers import all_wet_grid
-
 from config import PhysicsConfig
 from jax_solver_global import make_solver_global
+from tests.support.grid import all_wet_grid
 
 spec = importlib.util.spec_from_file_location("restart_test_fixture", ROOT / "tests/test_production_restart.py")
 fixture = importlib.util.module_from_spec(spec)

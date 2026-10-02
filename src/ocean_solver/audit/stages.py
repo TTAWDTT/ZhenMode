@@ -10,7 +10,6 @@ not necessarily zero physical drag in older schemes.
 import jax
 import jax.numpy as jnp
 
-from config import C_P, RHO_0
 from ocean_solver.audit.schema import MAXIMUM_BUDGET_FIELDS as MAXIMUM_BUDGET_FIELDS
 from ocean_solver.audit.schema import METRIC_NAMES as METRIC_NAMES
 from ocean_solver.audit.schema import NONLINEAR_PROCESS_NAMES as NONLINEAR_PROCESS_NAMES
@@ -19,6 +18,7 @@ from ocean_solver.audit.schema import STAGE_NAMES as STAGE_NAMES
 from ocean_solver.audit.schema import TRANSPORT_METRIC_NAMES as TRANSPORT_METRIC_NAMES
 from ocean_solver.audit.schema import accumulate_budget as accumulate_budget
 from ocean_solver.audit.schema import empty_budget as empty_budget
+from ocean_solver.configuration import C_P, RHO_0
 from ocean_solver.fd.integration import (
     _step_impl,
 )

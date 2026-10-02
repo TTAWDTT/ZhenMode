@@ -11,12 +11,13 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
+from ocean_solver.provenance.archives import current_source_files
+
 ROOT = Path(__file__).resolve().parents[3]
 sys.path[:0] = [str(ROOT / "src"), str(ROOT / "tests")]
 
-from test_horizontal_tracer_diffusion import _parameters
-
 import jax_solver_global as current
+from tests.support.fd.horizontal_diffusion import _parameters
 
 
 def finite_number(value):
@@ -57,9 +58,8 @@ def main():
                                     "finite": bool(np.all(np.isfinite(top_after)) and np.isfinite(energy_after))})
     report = {"scope": "native_projection_not_complete_free_surface_tracer_coupling",
               "frozen_kernel": "ab56075", "frozen_git_blob_sha256": hashlib.sha256(frozen_source).hexdigest(),
-              "source_sha256": {str(path.relative_to(ROOT)): hashlib.sha256(path.read_bytes()).hexdigest()
-                                for path in [ROOT / "src/jax_solver_global.py", ROOT / "src/stage_budgets.py",
-                                             ROOT / "tests/test_horizontal_tracer_diffusion.py", Path(__file__).resolve()]},
+              "source_sha256": {name: hashlib.sha256(path.read_bytes()).hexdigest() for name, path in current_source_files(ROOT, [ROOT / "src/jax_solver_global.py", ROOT / "src/stage_budgets.py",
+                                             ROOT / "tests/test_horizontal_tracer_diffusion.py", Path(__file__).resolve()]).items()},
               "results": results}
     destination = ROOT / args.out
     destination.parent.mkdir(parents=True, exist_ok=True)

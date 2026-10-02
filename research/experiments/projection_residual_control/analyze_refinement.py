@@ -12,11 +12,14 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
+from ocean_solver.provenance.archives import current_source_files
+
 ROOT = Path(__file__).resolve().parents[3]
 sys.path[:0] = [str(ROOT / "src"), str(ROOT / "scripts")]
 
-from config import DEFAULT_CONFIG, G_EARTH
 from verify_debug_integration import make_smoke_fixture
+
+from config import DEFAULT_CONFIG, G_EARTH
 
 FROZEN_KERNEL = "8e51726"
 FROZEN_SOURCE = subprocess.check_output(["git", "show", f"{FROZEN_KERNEL}:src/jax_solver_global.py"], cwd=ROOT)
@@ -138,8 +141,8 @@ def main():
               "inputs": inputs, "diagnoses": [], "results": [], "provenance": {
                   "git_head": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip(),
                   "git_status": subprocess.check_output(["git", "status", "--porcelain"], cwd=ROOT, text=True).splitlines(),
-                  "source_sha256": {str(path.relative_to(ROOT)): hashlib.sha256(path.read_bytes()).hexdigest() for path in sources},
-                  "manifest_sha256": {str(path.relative_to(ROOT)): hashlib.sha256(path.read_bytes()).hexdigest() for path in manifests},
+                  "source_sha256": {name: hashlib.sha256(path.read_bytes()).hexdigest() for name, path in current_source_files(ROOT, sources).items()},
+                  "manifest_sha256": {name: hashlib.sha256(path.read_bytes()).hexdigest() for name, path in current_source_files(ROOT, manifests).items()},
                   "frozen_kernel": FROZEN_KERNEL,
                   "frozen_kernel_sha256": hashlib.sha256(FROZEN_SOURCE).hexdigest(),
                   "bathymetry_sha256": hashlib.sha256(Path(args.bathy).read_bytes()).hexdigest(),

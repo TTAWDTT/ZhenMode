@@ -10,13 +10,21 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
+from ocean_solver.provenance.archives import current_source_files
+
 ROOT = Path(__file__).resolve().parents[3]
 sys.path[:0] = [str(ROOT / "src"), str(ROOT / "scripts")]
 
-from config import DEFAULT_CONFIG
-from jax_solver_global import _project_column_divergence, _step_impl, _vertical_transport_iface, make_solver_global
-from stage_budgets import _StageRecorder, make_budget_step
 from verify_debug_integration import make_smoke_fixture
+
+from config import DEFAULT_CONFIG
+from jax_solver_global import (
+    _project_column_divergence,
+    _step_impl,
+    _vertical_transport_iface,
+    make_solver_global,
+)
+from stage_budgets import _StageRecorder, make_budget_step
 
 
 class PrecisionRecorder(_StageRecorder):
@@ -38,7 +46,7 @@ def main():
               "threshold": 5e-5, "cases": [], "provenance": {
                   "git_head": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip(),
                   "git_status": subprocess.check_output(["git", "status", "--porcelain"], cwd=ROOT, text=True).splitlines(),
-                  "source_sha256": {str(path.relative_to(ROOT)): hashlib.sha256(path.read_bytes()).hexdigest() for path in sources},
+                  "source_sha256": {name: hashlib.sha256(path.read_bytes()).hexdigest() for name, path in current_source_files(ROOT, sources).items()},
                   "bathymetry_sha256": hashlib.sha256(Path(args.bathy).read_bytes()).hexdigest(),
                   "jax_version": jax.__version__, "backend": jax.default_backend(),
               }}

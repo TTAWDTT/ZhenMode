@@ -1,5 +1,5 @@
 """Mechanically preserved FD projection implementation."""
-from config import G_EARTH
+from ocean_solver.configuration import G_EARTH
 
 from .backend import jax, jnp
 from .horizontal import _gradient_conservative_3d

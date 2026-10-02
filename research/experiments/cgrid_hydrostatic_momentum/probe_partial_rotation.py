@@ -1,11 +1,14 @@
 """Uniform velocity on common wet depths distinguishes physical from skew rotation."""
 import argparse
 import hashlib
+import importlib
 import json
 import subprocess
 import sys
 import types
 from pathlib import Path
+
+from ocean_solver.provenance.archives import current_source_files
 
 ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT / "src"))
@@ -29,13 +32,13 @@ def main():
     if output.exists():
         raise FileExistsError("retain previous evidence; choose a new --out")
     operator = cgrid_momentum
-    operator_source = (ROOT / "src/cgrid_momentum.py").read_bytes()
+    operator_source = Path(cgrid_momentum.__file__).read_bytes()
     frozen_revision = None
     if args.revision:
         frozen_revision = subprocess.check_output(["git", "rev-parse", "--verify", "--end-of-options", f"{args.revision}^{{commit}}"], cwd=ROOT, text=True).strip()
         for dependency in ("config.py", "finite_volume.py", "barotropic_transport.py", "bounded_transport.py"):
             frozen = subprocess.check_output(["git", "show", f"{frozen_revision}:src/{dependency}"], cwd=ROOT)
-            if frozen != (ROOT / "src" / dependency).read_bytes():
+            if frozen != Path(importlib.import_module(Path(dependency).stem).__file__).read_bytes():
                 raise ValueError(f"frozen replay requires isolated dependency: {dependency}")
         operator_source = subprocess.check_output(["git", "show", f"{frozen_revision}:src/cgrid_momentum.py"], cwd=ROOT)
         operator = types.ModuleType("frozen_cgrid_momentum")
@@ -54,7 +57,7 @@ def main():
     passed = error <= 1e-8 and bool(rotated.valid)
     sources = [ROOT / "src" / name for name in ("cgrid_momentum.py", "finite_volume.py")]
     sources += [Path(__file__), Path(__file__).with_name("partial_rotation_protocol.md")]
-    source_hashes = {path.relative_to(ROOT).as_posix(): hashlib.sha256(path.read_bytes()).hexdigest() for path in sources}
+    source_hashes = {name: hashlib.sha256(path.read_bytes()).hexdigest() for name, path in current_source_files(ROOT, sources).items()}
     source_hashes["src/cgrid_momentum.py"] = hashlib.sha256(operator_source).hexdigest()
     report = {"scope": "local_common_wet_depth_coriolis_consistency_not_whole_model",
               "status": "PASS" if passed else "FAIL", "expected_acceleration_m_s2": expected,

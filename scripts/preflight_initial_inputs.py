@@ -111,10 +111,8 @@ def write_preflight(args, snapshots, grid_snapshot, initial_snapshot, masks_path
         report['variables'][label] = quality
         masks.update({f'{label}_{key}': value for key, value in variable_masks.items()})
     report['grid_identity'] = grid_snapshot.identity()
-    report['processor_sha256'] = file_identity(Path(__file__).parents[1] /
-                                             'src/input_quality.py')['sha256']
-    report['reader_sha256'] = file_identity(Path(__file__).parents[1] /
-                                          'src/input_sources.py')['sha256']
+    report['processor_sha256'] = file_identity(Path(audit_woa_variable.__code__.co_filename))['sha256']
+    report['reader_sha256'] = file_identity(Path(load_climatology_snapshot.__code__.co_filename))['sha256']
     report['entrypoint_sha256'] = file_identity(Path(__file__))['sha256']
     if initial_snapshot is not None:
         report['initial_state_identity'] = initial_snapshot.identity()

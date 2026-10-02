@@ -7,13 +7,14 @@ from dataclasses import dataclass
 from dataclasses import field as dataclass_field
 from pathlib import Path
 
-from diagnostics import BudgetDiagnostics
 from ocean_solver.audit.schema import empty_budget
+from ocean_solver.diagnostics.state import BudgetDiagnostics
 from ocean_solver.fd.backend import jnp, np
 from ocean_solver.fd.types import JaxStateG
+from ocean_solver.provenance.restart import RestartRecord, file_sha256, load_restart
+from ocean_solver.provenance.sources import source_paths
 from ocean_solver.runtime.cli import ETA_BLOWUP_M, MAX_U_BOUND
 from ocean_solver.runtime.identity import SOURCE_MODULES
-from restart_contract import RestartRecord, file_sha256, load_restart
 
 SNAPSHOT_SCALARS = (
     "days",
@@ -168,7 +169,7 @@ def prepare_recovery(args, requested_steps, context, paths, services, source_dir
                 "velocity_limit": MAX_U_BOUND,
                 "eta_limit": ETA_BLOWUP_M,
             },
-            code_paths={name: source_dir / f"{name}.py" for name in source_names},
+            code_paths=source_paths(source_dir, source_names),
             execution=context.forcing.execution_identity,
         )
     start_step = 0

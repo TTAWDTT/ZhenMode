@@ -1,7 +1,8 @@
 """Canonical factory definitions; legacy operations unchanged."""
 import os
 
-from config import RHO_0
+from ocean_solver.audit.validation import finite_number, integer_count, validate_grid
+from ocean_solver.configuration import RHO_0
 from ocean_solver.fd.backend import jax, jnp, np
 from ocean_solver.fd.eos import _density_anomaly
 from ocean_solver.fd.geometry import make_fd_params
@@ -12,7 +13,6 @@ from ocean_solver.fd.projection import _column_projection_diagonal
 from ocean_solver.fd.stability import nu_nsub_for_2d_cfl
 from ocean_solver.fd.transport import _compute_vertical_velocity
 from ocean_solver.fd.types import FDPhysParams, JaxStateG
-from runtime_validation import finite_number, integer_count, validate_grid
 
 
 def make_solver_global(grid, physics, dt, forcing=None,

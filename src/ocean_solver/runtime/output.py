@@ -6,18 +6,18 @@ import json
 import os
 from dataclasses import dataclass
 
-from diagnostics import diagnostics_to_arrays
 from ocean_solver.audit.schema import (
     METRIC_NAMES,
     NONLINEAR_PROCESS_NAMES,
     SOURCE_NAMES,
     STAGE_NAMES,
 )
+from ocean_solver.diagnostics.state import diagnostics_to_arrays
 from ocean_solver.fd.backend import np
 from ocean_solver.fd.projection import projection_config
 from ocean_solver.fd.types import JaxStateG
+from ocean_solver.provenance.restart import fingerprint
 from ocean_solver.runtime.identity import _state_identity
-from restart_contract import fingerprint
 
 
 @dataclass

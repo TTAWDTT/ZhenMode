@@ -1,0 +1,204 @@
+{
+  "reference_commit": "5bb8879aa0894af441c483f34a57451f9e9df681",
+  "scope": "synthetic regression equivalence only; no physical, industrial or speed qualification",
+  "limits": {
+    "CPU_count": 1,
+    "wall_seconds_per_invocation": 180,
+    "memory_bytes_per_process_tree": 4294967296
+  },
+  "captures": [
+    {
+      "case": "float64_scan",
+      "reference": {
+        "wall_s": 20.687,
+        "peak_interpreter_RSS_bytes": 441819136,
+        "peak_job_private_bytes": 420048896,
+        "single_CPU": true,
+        "memory_limit_bytes": 4294967296,
+        "wall_limit_s": 180,
+        "bound_stop": false,
+        "exit_code": 0
+      },
+      "candidate": {
+        "wall_s": 20.188,
+        "peak_interpreter_RSS_bytes": 439431168,
+        "peak_job_private_bytes": 418607104,
+        "single_CPU": true,
+        "memory_limit_bytes": 4294967296,
+        "wall_limit_s": 180,
+        "bound_stop": false,
+        "exit_code": 0
+      },
+      "comparison": {
+        "records": 275,
+        "different_records": [],
+        "normalization": "selected_files.path under the declared source parent only; checksums and effective arrays retained"
+      }
+    },
+    {
+      "case": "float64_eager",
+      "reference": {
+        "wall_s": 19.188,
+        "peak_interpreter_RSS_bytes": 437334016,
+        "peak_job_private_bytes": 416366592,
+        "single_CPU": true,
+        "memory_limit_bytes": 4294967296,
+        "wall_limit_s": 180,
+        "bound_stop": false,
+        "exit_code": 0
+      },
+      "candidate": {
+        "wall_s": 20.593,
+        "peak_interpreter_RSS_bytes": 439111680,
+        "peak_job_private_bytes": 418385920,
+        "single_CPU": true,
+        "memory_limit_bytes": 4294967296,
+        "wall_limit_s": 180,
+        "bound_stop": false,
+        "exit_code": 0
+      },
+      "comparison": {
+        "records": 275,
+        "different_records": [],
+        "normalization": "selected_files.path under the declared source parent only; checksums and effective arrays retained"
+      }
+    },
+    {
+      "case": "float32_scan",
+      "reference": {
+        "wall_s": 22.203,
+        "peak_interpreter_RSS_bytes": 503435264,
+        "peak_job_private_bytes": 486248448,
+        "single_CPU": true,
+        "memory_limit_bytes": 4294967296,
+        "wall_limit_s": 180,
+        "bound_stop": false,
+        "exit_code": 0
+      },
+      "candidate": {
+        "wall_s": 23.0,
+        "peak_interpreter_RSS_bytes": 500805632,
+        "peak_job_private_bytes": 483561472,
+        "single_CPU": true,
+        "memory_limit_bytes": 4294967296,
+        "wall_limit_s": 180,
+        "bound_stop": false,
+        "exit_code": 0
+      },
+      "comparison": {
+        "records": 275,
+        "different_records": [],
+        "normalization": "selected_files.path under the declared source parent only; checksums and effective arrays retained"
+      }
+    },
+    {
+      "case": "float32_eager",
+      "reference": {
+        "wall_s": 21.296,
+        "peak_interpreter_RSS_bytes": 504922112,
+        "peak_job_private_bytes": 487178240,
+        "single_CPU": true,
+        "memory_limit_bytes": 4294967296,
+        "wall_limit_s": 180,
+        "bound_stop": false,
+        "exit_code": 0
+      },
+      "candidate": {
+        "wall_s": 23.0,
+        "peak_interpreter_RSS_bytes": 505696256,
+        "peak_job_private_bytes": 487972864,
+        "single_CPU": true,
+        "memory_limit_bytes": 4294967296,
+        "wall_limit_s": 180,
+        "bound_stop": false,
+        "exit_code": 0
+      },
+      "comparison": {
+        "records": 275,
+        "different_records": [],
+        "normalization": "selected_files.path under the declared source parent only; checksums and effective arrays retained"
+      }
+    },
+    {
+      "case": "driver_jit",
+      "reference": {
+        "wall_s": 45.578,
+        "peak_interpreter_RSS_bytes": 443138048,
+        "peak_job_private_bytes": 401674240,
+        "single_CPU": true,
+        "memory_limit_bytes": 4294967296,
+        "wall_limit_s": 180,
+        "bound_stop": false,
+        "exit_code": 0
+      },
+      "candidate": {
+        "wall_s": 46.703,
+        "peak_interpreter_RSS_bytes": 435630080,
+        "peak_job_private_bytes": 394448896,
+        "single_CPU": true,
+        "memory_limit_bytes": 4294967296,
+        "wall_limit_s": 180,
+        "bound_stop": false,
+        "exit_code": 0
+      },
+      "comparison": {
+        "records": 344,
+        "different_records": [],
+        "normalization": "selected_files.path under the declared source parent only; checksums and effective arrays retained"
+      }
+    }
+  ],
+  "collection": {
+    "reference_nodes": 1791,
+    "candidate_nodes": 1805,
+    "preserved_nodes": 1791,
+    "new_nodes": [
+      "tests/infrastructure/test_collection_mapping.py::test_mapping_preserves_full_parameter_identifiers_and_records_new_nodes",
+      "tests/infrastructure/test_collection_mapping.py::test_mapping_refuses_missing_changed_duplicate_or_unmapped_nodes[candidate0-moves0-missing original]",
+      "tests/infrastructure/test_collection_mapping.py::test_mapping_refuses_missing_changed_duplicate_or_unmapped_nodes[candidate1-moves1-duplicate]",
+      "tests/infrastructure/test_collection_mapping.py::test_mapping_refuses_missing_changed_duplicate_or_unmapped_nodes[candidate2-moves2-no declared move]",
+      "tests/infrastructure/test_current_archives.py::test_current_archive_rejects_missing_declared_test",
+      "tests/infrastructure/test_current_archives.py::test_current_archive_rejects_missing_implementation_instead_of_hash_fallback",
+      "tests/infrastructure/test_current_archives.py::test_current_archive_resolves_legacy_keys_and_contains_complete_source_closure",
+      "tests/infrastructure/test_source_layout.py::test_canonical_modules_do_not_import_legacy_facades",
+      "tests/infrastructure/test_source_layout.py::test_checkout_data_roots_stay_at_the_repository",
+      "tests/infrastructure/test_source_layout.py::test_legacy_imports_alias_the_same_canonical_module_and_pickle_definitions",
+      "tests/infrastructure/test_source_layout.py::test_source_root_supports_installed_paths_and_external_source_directory[compat]",
+      "tests/infrastructure/test_source_layout.py::test_source_root_supports_installed_paths_and_external_source_directory[installed]",
+      "tests/infrastructure/test_source_layout.py::test_source_root_supports_installed_paths_and_external_source_directory[ocean_solver]",
+      "tests/infrastructure/test_source_layout.py::test_tests_use_support_instead_of_importing_other_test_files"
+    ],
+    "preserved_mapping_sha256": "67647342ea1c6d09eee77fe750d7df33551c7bafa8468b23c96d574c5fad1f27"
+  },
+  "frozen": {
+    "reference_commit": "5bb8879aa0894af441c483f34a57451f9e9df681",
+    "historical_files_checked": 455,
+    "changed_files": [],
+    "sha256_ledger": "383a66a9e68341d6b82e8c3e73f0fda85115b2c6f8d0d31607e392dd84af4f5c",
+    "selected_suffixes": [
+      ".md",
+      ".json",
+      ".csv",
+      ".tsv",
+      ".yaml",
+      ".yml",
+      ".npz",
+      ".npy"
+    ]
+  },
+  "installed_wheel": {
+    "Python_files_checked": 136,
+    "legacy_alias_identities": 40,
+    "production_source_files_checked": 121,
+    "imports_inside_real_installation": true,
+    "checkout_source_insertions": 0,
+    "pickle_and_pytree_verified": true,
+    "console_and_module_help_exit": 0
+  },
+  "local_failures_retained": [
+    "Initial Windows collection could not import POSIX resource; import deferred to actual POSIX CLI without fabricated RSS.",
+    "First editable validation was shadowed by inherited external checkout; only owned venv path ordering corrected; genuine wheel proof is independent.",
+    "Ruff removed WIDTHS re-export from test owner; consumer now imports actual support owner.",
+    "Old data-test CLI cwd broke after relocation; corrected to repository fixture and affected test passed."
+  ]
+}

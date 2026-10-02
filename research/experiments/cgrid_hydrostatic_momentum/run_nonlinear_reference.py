@@ -6,6 +6,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+from ocean_solver.provenance.archives import current_source_files
+
 ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT / "src"))
 
@@ -42,7 +44,8 @@ def main():
     source_paths = [ROOT / "src" / name for name in ("nonlinear_dynamics.py", "finite_volume.py", "bounded_transport.py", "cgrid_momentum.py", "wet_fluxes.py", "config.py")]
     source_paths.extend((Path(__file__), Path(__file__).with_name("verify_nonlinear_reference.py"),
                          Path(__file__).with_name("nonlinear_dual_protocol.md"), ROOT / "tests/test_nonlinear_dynamics.py"))
-    hashes = {path.relative_to(ROOT).as_posix(): sha(path) for path in source_paths}
+    files = current_source_files(ROOT, source_paths)
+    hashes = {name: sha(path) for name, path in files.items()}
     report = {"status": "running", "scope": "actual_nonlinear_dual_momentum_surface_inventory_not_complete_thermodynamics_or_production",
               "kinetic_norm": "finite_volume_full_half_prism_dual_not_physical_field_L2", "curvature": True, "upwind": False,
               "source_policy": "zero_in_real_reference_explicit_signed_in_direct_tests", "dt_seconds": 60.,
@@ -116,7 +119,7 @@ def main():
         run.update(status="PASS" if run["completed_steps"] == args.steps else "FAIL",
                    snapshot_path=snapshot.relative_to(ROOT).as_posix(), snapshot_sha256=sha(snapshot))
         save()
-    report["source_hashes_unchanged"] = all(sha(ROOT / name) == value for name, value in hashes.items())
+    report["source_hashes_unchanged"] = all(sha(files[name]) == value for name, value in hashes.items())
     report["status"] = "PASS" if report["source_hashes_unchanged"] and all(run["status"] == "PASS" for run in report["runs"]) else "FAIL"
     save()
     print(report["status"], flush=True)
