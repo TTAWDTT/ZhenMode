@@ -1,5 +1,6 @@
 """Actual moving raw commits, independent finite ledgers and full rollback."""
 import copy
+import re
 from dataclasses import fields, replace
 
 import numpy as np
@@ -65,6 +66,7 @@ def test_absolute_face_faults_reject_with_full_rollback(monkeypatch, fault):
     original_faces = integrator._faces
     saved = (integrator.profile, integrator.time_s, integrator.accepted_raw_steps, integrator.last_receipt, integrator.cumulative_gcl.copy())
     arrays = snapshot(integrator.profile)
+    saved_bound = integrator.cumulative_gcl_bound.copy()
 
     def corrupted(binding, dt):
         result = copy.deepcopy(original_faces(binding, dt))
@@ -85,12 +87,15 @@ def test_absolute_face_faults_reject_with_full_rollback(monkeypatch, fault):
         return result
 
     monkeypatch.setattr(integrator, '_faces', corrupted)
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError) as failure:
         integrator.step(.02)
+    ratio = re.search(r'ratio ([0-9.e+\-]+)', str(failure.value))
+    assert ratio is not None and float(ratio.group(1)) > 100.
     assert integrator.profile is saved[0] and integrator.last_receipt is saved[3]
     assert (integrator.time_s, integrator.accepted_raw_steps) == saved[1:3]
     assert np.array_equal(integrator.cumulative_gcl, saved[4])
     unchanged(integrator.profile, arrays)
+    assert np.array_equal(integrator.cumulative_gcl_bound,saved_bound)
 
 
 def test_postprepare_audit_failure_preserves_every_field(monkeypatch):
@@ -99,6 +104,7 @@ def test_postprepare_audit_failure_preserves_every_field(monkeypatch):
     integrator.step(.02)
     saved = (integrator.profile, integrator.time_s, integrator.accepted_raw_steps, integrator.last_receipt, integrator.cumulative_gcl.copy())
     arrays = snapshot(integrator.profile)
+    saved_bound = integrator.cumulative_gcl_bound.copy()
     monkeypatch.setattr(integrator, '_audit', lambda *_: (_ for _ in ()).throw(ValueError('injected final audit')))
     with pytest.raises(ValueError, match='injected'):
         integrator.step(.03)
@@ -106,6 +112,7 @@ def test_postprepare_audit_failure_preserves_every_field(monkeypatch):
     assert (integrator.time_s, integrator.accepted_raw_steps) == saved[1:3]
     assert np.array_equal(integrator.cumulative_gcl, saved[4])
     unchanged(integrator.profile, arrays)
+    assert np.array_equal(integrator.cumulative_gcl_bound,saved_bound)
 
 
 @pytest.mark.parametrize('dt', [True, 0., -.01, .051, np.nan, np.inf, 1j])
@@ -142,3 +149,20 @@ def test_unsupported_family_refuses(fault):
     profile = inventory.reconstruct(replace(state, stocks=stocks), external_pressure_Pa=profile.external_pressure_Pa)
     with pytest.raises(ValueError):
         MovingRawSlice(profile, authority=AUTHORITY)
+
+
+@pytest.mark.parametrize('bad', [np.nan, -1., 1j, np.ma.array(1.,mask=True)])
+def test_bad_receipt_scale_rejects_before_floor(bad):
+    from research.experiments.material_top_band.moving_raw_oracle import assert_bound
+    with pytest.raises(ValueError):
+        assert_bound(0.,0.,bad)
+
+
+def test_nonfinite_bound_or_difference_cannot_pass():
+    from research.experiments.material_top_band.moving_raw_oracle import assert_bound
+    with pytest.raises(ValueError):
+        assert_bound(0.,0.,1.7e308,extra=1.7976931348623157e308)
+    with pytest.raises(ValueError):
+        assert_bound(1.7e308,-1.7e308,1.)
+    with pytest.raises(ValueError):
+        assert_bound(np.iinfo(np.int64).min,0,1.)

@@ -47,3 +47,9 @@ def test_degree_and_power_are_executed_guards():
 def test_invalid_time_ratio(bad):
     with pytest.raises(ValueError):
         RationalTimePolynomial([1.], bad)
+
+
+@pytest.mark.parametrize('coefficients', [[np.nan], [1j], np.ma.array([1.], mask=[True])])
+def test_real_finite_unmasked_coefficients_required(coefficients):
+    with pytest.raises(ValueError):
+        RationalTimePolynomial(coefficients, .02)
