@@ -27,3 +27,9 @@ python scripts/run_bounded_research_tests.py tests/test_modularization_contracts
 ```
 
 Reference arrays and source snapshots are ignored local validation artifacts. No private model input, archive array, filesystem path, or secret is committed. The default production method and CLI remain unchanged. Driver orchestration and the remaining solver process/step/factory decomposition are subsequent units; this entry does not claim that larger refactor is finished.
+
+## 2026-10-02 — process, integration, factory, and audit extraction
+
+The remaining 29 solver definitions move into subcycles, closures, sources, barotropic dynamics, processes, integration, factory, and manufactured-solution validation. Both closure constants retain their original values. `material_top` consumes canonical execution modules; `audit.stages` records the actual integration step without a core-to-audit dependency. Legacy solver and budget modules directly re-export these implementations. Independent review confirms all 95 extracted definitions/assignments match immutable main AST, the dependency graph is acyclic, and the registry covers all 27 package files. Existing private fault tests now patch the production process/factory globals and still detect injected diffusion and preconstruction violations.
+
+All 275 records in each of legacy float64, legacy float32, and symmetric_fast_v3 float64 match their immutable-reference captures by dtype, shape, and bytes. Ten real JAX targeted contracts passed in 38.43 seconds (bounded wall 39.187 seconds, RSS 667,615,232 bytes). Captures executed concurrently, each with its own one-CPU bound; elapsed times are validation receipts, not speed comparisons. No production default or physical method changed. Driver configuration, forcing, and records remain the next unit.

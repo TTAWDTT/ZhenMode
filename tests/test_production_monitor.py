@@ -162,9 +162,8 @@ def test_state_monitor_does_not_change_an_actual_legal_step():
 
 
 def test_factory_rejects_overlapping_polar_bands_before_constructing_arrays(monkeypatch):
-    import jax_solver_global as solver
-
-    monkeypatch.setattr(solver, 'make_fd_params', lambda *args, **kwargs:
+    from ocean_solver.fd import factory
+    monkeypatch.setattr(factory, 'make_fd_params', lambda *args, **kwargs:
                         pytest.fail('overlapping caps reached array construction'))
     with pytest.raises(ValueError, match='polar cap bands'):
         make_solver_global(all_wet_grid(nx=8, ny=8, nz=4), PhysicsConfig(), 10.)

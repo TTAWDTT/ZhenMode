@@ -12,20 +12,20 @@ import jax.numpy as jnp
 import numpy as np
 
 from config import C_P, RHO_0
-from jax_solver_global import (
-    _barotropic_subcycle_transport,
-    _compute_tracer_tendency,
-    _explicit_full_step,
-    _linear_bottom_drag_step,
-    _linear_half_step,
-    _surface_heat_weights,
-)
+from ocean_solver.fd.barotropic import _barotropic_subcycle_transport
 from ocean_solver.fd.horizontal import (
     _biharmonic_h,
     _horizontal_biharmonic_tracer,
     _horizontal_tracer_diffusion,
     _laplacian_h,
 )
+from ocean_solver.fd.integration import _explicit_full_step
+from ocean_solver.fd.processes import (
+    _compute_tracer_tendency,
+    _linear_bottom_drag_step,
+    _linear_half_step,
+)
+from ocean_solver.fd.sources import _surface_heat_weights
 from ocean_solver.fd.transport import (
     _face_transport_divergence,
     _match_layer_face_transports,
