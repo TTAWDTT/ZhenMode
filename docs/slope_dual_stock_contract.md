@@ -89,3 +89,30 @@ Owner-cut jumps of phi are retained in per-strip edge fluxes; the inside-strip
 phi_x volume term does not replace them. The total PE parameter-difference
 bound adds the reference free-PE remainder
 `epsilon*g*rho0*L*integral(eta_dot^2/2 dx)` to the anomaly-moment remainder.
+
+## 2026-10-02: verification implementation clarification
+
+The frozen JSON formulas and thresholds are unchanged. Absolute polynomial
+remainders are evaluated by exact rational arithmetic on the binary input
+numbers. Each C2/C3/C4 polynomial must have a one-sign Bernstein coefficient
+hull over [0,d]; then its nonnegative-basis absolute integral is an exact
+signed polynomial integral. Conversion to a floating upper bound rounds
+upward. A mixed hull refuses instead of replacing the absolute integral by
+sampled Gauss values. The additional a0=0 control is a valid static projection
+but deliberately cannot obtain this restricted finite-difference certificate.
+
+The independent oracle binds every actual T and historical-EOS anomaly mean
+to the declared affine specification. Material Bdot and FD certification also
+bind every actual u and v to the declared affine/constant family. Static shear
+remains supported for B/W/KE/pressure work, while material shear refuses.
+Derived specific stocks, density bounds and expected velocity must be finite.
+
+Raw-owner resolution and raw width sums are supplemented by sorted interval
+adjacency for every endpoint-layer. Equal overlap and gap cannot be accepted
+because their total widths happen to cancel. Local arithmetic bounds include
+absolute quadrature terms before cancellation, actual raw-to-specific/EOS-fit
+chains, moving-top operations and pressure traction operations. The original
+endpoint inventory/PE functionals, source authority and qualification boundary
+remain as frozen above.
+
+Global strip pairing is also verified in a common bottom-to-top order at both endpoints, with continuous paired boundaries and exactly one final actual top. Independent endpoint width closure alone cannot prove that linear strips partition the interior physical domain.
