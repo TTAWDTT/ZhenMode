@@ -1,0 +1,199 @@
+{
+  "scope": "Serial manufactured and contract checks; no accepted or real-archive steps",
+  "limits": {
+    "single_CPU": true,
+    "wall_limit_s": 180,
+    "memory_limit_bytes": 4294967296
+  },
+  "runs": [
+    {
+      "wall_s": 1.922,
+      "peak_interpreter_RSS_bytes": 52375552,
+      "peak_job_private_bytes": 36814848,
+      "single_CPU": true,
+      "memory_limit_bytes": 4294967296,
+      "wall_limit_s": 180,
+      "bound_stop": false,
+      "exit_code": 0,
+      "local_log_name": "actual_momentum_green.log",
+      "local_log_SHA256": "b5dbfa37267c4459deef694df2bf240057b0f05a4253c4984ef4d64c7d0053f5"
+    },
+    {
+      "wall_s": 1.109,
+      "peak_interpreter_RSS_bytes": 54087680,
+      "peak_job_private_bytes": 38162432,
+      "single_CPU": true,
+      "memory_limit_bytes": 4294967296,
+      "wall_limit_s": 180,
+      "bound_stop": false,
+      "exit_code": 1,
+      "local_log_name": "actual_momentum_red.log",
+      "local_log_SHA256": "6b6fd9a0f1f6bdd0e6ab6335bf158748d2b2f11c7020fe5e0371514554a60933"
+    },
+    {
+      "wall_s": 119.391,
+      "peak_interpreter_RSS_bytes": 60518400,
+      "peak_job_private_bytes": 42090496,
+      "single_CPU": true,
+      "memory_limit_bytes": 4294967296,
+      "wall_limit_s": 180,
+      "bound_stop": false,
+      "exit_code": 0,
+      "local_log_name": "adjacent_regression.log",
+      "local_log_SHA256": "922997262471210c9a18bfca2ef84981e6d2c72a7dac794832278d6bc358a4b1"
+    },
+    {
+      "wall_s": 1.015,
+      "peak_interpreter_RSS_bytes": 48762880,
+      "peak_job_private_bytes": 36249600,
+      "single_CPU": true,
+      "memory_limit_bytes": 4294967296,
+      "wall_limit_s": 180,
+      "bound_stop": false,
+      "exit_code": 1,
+      "local_log_name": "common_slope_red.log",
+      "local_log_SHA256": "827220b08aa9acfecd9bd907aaf7a4a82cf7fac87957762f43820febd3774447"
+    },
+    {
+      "wall_s": 2.109,
+      "peak_interpreter_RSS_bytes": 52563968,
+      "peak_job_private_bytes": 36335616,
+      "single_CPU": true,
+      "memory_limit_bytes": 4294967296,
+      "wall_limit_s": 180,
+      "bound_stop": false,
+      "exit_code": 0,
+      "local_log_name": "first_implementation.log",
+      "local_log_SHA256": "d1f3b90f31e101880e0f3bcffbbd7fe8612c71be4199cbdbb09774d3635ab3f7"
+    },
+    {
+      "wall_s": 1.719,
+      "peak_interpreter_RSS_bytes": 52469760,
+      "peak_job_private_bytes": 36335616,
+      "single_CPU": true,
+      "memory_limit_bytes": 4294967296,
+      "wall_limit_s": 180,
+      "bound_stop": false,
+      "exit_code": 0,
+      "local_log_name": "map_crossing_green.log",
+      "local_log_SHA256": "375fb236b83ffe91f1551e45459eaf4d6412c25b51e720c7c0f6cfd8866d2423"
+    },
+    {
+      "wall_s": 1.031,
+      "peak_interpreter_RSS_bytes": 48812032,
+      "peak_job_private_bytes": 36229120,
+      "single_CPU": true,
+      "memory_limit_bytes": 4294967296,
+      "wall_limit_s": 180,
+      "bound_stop": false,
+      "exit_code": 1,
+      "local_log_name": "map_crossing_red.log",
+      "local_log_SHA256": "9651105d1dac864c4588d3c57cf2ce55769575c1a116f6a1525295a41731261a"
+    },
+    {
+      "wall_s": 3.328,
+      "peak_interpreter_RSS_bytes": 53993472,
+      "peak_job_private_bytes": 36990976,
+      "single_CPU": true,
+      "memory_limit_bytes": 4294967296,
+      "wall_limit_s": 180,
+      "bound_stop": false,
+      "exit_code": 0,
+      "local_log_name": "receipt_green.log",
+      "local_log_SHA256": "dbb266ef22cda194f2abc08d40116d757dfc11bc5105cacb78e1e699ccef01ba"
+    },
+    {
+      "wall_s": 1.015,
+      "peak_interpreter_RSS_bytes": 47792128,
+      "peak_job_private_bytes": 36392960,
+      "single_CPU": true,
+      "memory_limit_bytes": 4294967296,
+      "wall_limit_s": 180,
+      "bound_stop": false,
+      "exit_code": 1,
+      "local_log_name": "receipt_red.log",
+      "local_log_SHA256": "7e3a1e2f2c99242d513628777557a489a377497c687b49a4169cae2feaaf3695"
+    },
+    {
+      "wall_s": 1.016,
+      "peak_interpreter_RSS_bytes": 49217536,
+      "peak_job_private_bytes": 37507072,
+      "single_CPU": true,
+      "memory_limit_bytes": 4294967296,
+      "wall_limit_s": 180,
+      "bound_stop": false,
+      "exit_code": 1,
+      "local_log_name": "resolved_geometry_red.log",
+      "local_log_SHA256": "5558dd418faab260a4cb6d218a8f06de884e9e8aba755e99858d7f05ba96ac30"
+    },
+    {
+      "wall_s": 1.718,
+      "peak_interpreter_RSS_bytes": 52977664,
+      "peak_job_private_bytes": 36790272,
+      "single_CPU": true,
+      "memory_limit_bytes": 4294967296,
+      "wall_limit_s": 180,
+      "bound_stop": false,
+      "exit_code": 0,
+      "local_log_name": "review_controls_corrected.log",
+      "local_log_SHA256": "c31d22f2a6ad9fdff428a43d7c77d5fcfab4ca764b8aa328ecd2979da008839e"
+    },
+    {
+      "wall_s": 2.515,
+      "peak_interpreter_RSS_bytes": 52297728,
+      "peak_job_private_bytes": 41181184,
+      "single_CPU": true,
+      "memory_limit_bytes": 4294967296,
+      "wall_limit_s": 180,
+      "bound_stop": false,
+      "exit_code": 1,
+      "local_log_name": "review_controls_green.log",
+      "local_log_SHA256": "ba21c31c50d131638420ea2bee08104486bca4aa7a40778958961a1cb83976b8"
+    },
+    {
+      "wall_s": 1.625,
+      "peak_interpreter_RSS_bytes": 54947840,
+      "peak_job_private_bytes": 38772736,
+      "single_CPU": true,
+      "memory_limit_bytes": 4294967296,
+      "wall_limit_s": 180,
+      "bound_stop": false,
+      "exit_code": 1,
+      "local_log_name": "review_controls_red.log",
+      "local_log_SHA256": "56862eb21d0545f99db0f5f8f6a58794f3d1560db0f1add0a74631c73cd91259"
+    },
+    {
+      "wall_s": 1.922,
+      "peak_interpreter_RSS_bytes": 38633472,
+      "peak_job_private_bytes": 66121728,
+      "single_CPU": true,
+      "memory_limit_bytes": 4294967296,
+      "wall_limit_s": 180,
+      "bound_stop": false,
+      "exit_code": 0,
+      "local_log_name": "scalar_witness.log",
+      "clean_source_commit": "7fc3c6404fbc4edd32119bcad2434f5d94278109",
+      "local_log_SHA256": "f9f8673df44f678173f9915d213d58f4ddc1f3cbddbbca0582e948d03be05258"
+    },
+    {
+      "wall_s": 0.812,
+      "peak_interpreter_RSS_bytes": 55537664,
+      "peak_job_private_bytes": 44851200,
+      "single_CPU": true,
+      "memory_limit_bytes": 4294967296,
+      "wall_limit_s": 180,
+      "bound_stop": false,
+      "exit_code": 2,
+      "local_log_name": "tdd_red.log",
+      "local_log_SHA256": "38183081abdfc651f25c7a9e75e632d0551cc62a70c8e8de925cbba1b97e2489"
+    }
+  ],
+  "final_code_commit": "7fc3c6404fbc4edd32119bcad2434f5d94278109",
+  "source_binding": "Only scalar_witness.log ran from the clean final_code_commit. Other retained runs were uncommitted implementation iterations preceding that commit; their history is not rebound to final code. The final green and adjacent regression used the reviewed source subsequently committed, with no separate per-run source manifest.",
+  "resource_runner": {
+    "source_path": "scripts/run_bounded_research_tests.py",
+    "SHA256": "844c81b1f8185d33bcb79872bd83213807ad0e1f708746ccee52f4a41e00ac03",
+    "code_commit": "7fc3c6404fbc4edd32119bcad2434f5d94278109",
+    "source_lineage": "Unchanged from base main throughout the retained implementation runs."
+  }
+}
