@@ -84,3 +84,24 @@ limit, with exit 0 and no bound stop. Timing differences are verification
 receipts, not a speed claim. Installed production sources, numerical research
 modules, frozen source preparers/manifests, quality gates and existing evidence
 documents are unchanged.
+
+## 2026-10-02: synchronize the final main baseline
+
+After the independent pressure/force geometry PR merged upstream, the cleanup
+branch normally merged main `4bcb3e4002a4b276ac740d5768eb26d965bb77e1`.
+The upstream change adds seven files only; it does not change any existing input
+to the before/after checks above. Those seven files are inherited unchanged and
+absent from the cleanup diff against the final base.
+
+At this final base, the same regression command again reports 198 passed,
+1 deselected: 84.282 seconds, peak RSS 114,229,248 bytes. The new alias controls
+and inherited pressure/force tests also pass together, 47 tests in a bounded
+3.727 seconds, peak RSS 99,426,304 bytes:
+
+```powershell
+python scripts/run_bounded_research_tests.py tests/test_dashboard_channel_io.py tests/test_pressure_force_geometry.py -q
+```
+
+Both runs retain the one-CPU / 180-second / 4-GiB limits, exit 0 and no bound stop.
+Full-repository Ruff passes at the synchronized head. The installed source,
+candidate numerics and frozen evidence have no cleanup diff against this base.
