@@ -73,6 +73,7 @@ from restart_contract import (
     save_restart,
 )
 from runtime_validation import finite_number, integer_count
+from source_identity import production_source_modules
 from stage_budgets import (
     METRIC_NAMES,
     NONLINEAR_PROCESS_NAMES,
@@ -331,13 +332,7 @@ SNAPSHOT_SCALARS = ("days", "max_u", "max_velocity", "max_T", "max_eta", "ssh_st
 SNAPSHOT_FIELDS = ("eta", "T_top", "ice_top")
 
 
-SOURCE_MODULES = (
-    "run_long_integration_global", "jax_solver_global", "restart_contract", "config", "grid",
-    "diagnostics", "forcing", "wind_reanalysis", "air_reanalysis", "woa_data", "benchmark_metrics",
-    "mixed_layer_ice", "integration_monitor", "runtime_validation", "stage_budgets",
-    "finite_volume", "bounded_transport", "cgrid_momentum", "wet_fluxes", "physical_velocity",
-    "paired_dynamics", "nonlinear_dynamics", "barotropic_transport", "material_top",
-)
+SOURCE_MODULES = production_source_modules()
 
 
 def _state_identity(state):

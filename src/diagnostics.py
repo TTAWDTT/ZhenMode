@@ -16,7 +16,7 @@ from dataclasses import dataclass
 import numpy as np
 
 from config import C_P, RHO_0
-from grid import nodal_control_thickness
+from ocean_solver.geometry.columns import nodal_control_thickness
 
 
 @dataclass(frozen=True)
