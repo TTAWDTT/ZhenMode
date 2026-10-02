@@ -71,7 +71,7 @@ def solution(spec, t, x, z):
 def evolved(spec, time):
     a = (spec.external[1] - spec.external[0]) / (RHO * spec.distance)
     lam = 1. + spec.alpha * time
-    return MeanFlowSpecification(distance=spec.distance, length=spec.length, eta=spec.bottom+(spec.eta-spec.bottom)/lam,
+    return MeanFlowSpecification(distance=spec.distance, length=spec.length, eta=spec.eta-(spec.eta-spec.bottom)*(spec.alpha*time)/lam,
                                  bottom=spec.bottom, U=(spec.U-a*time-.5*a*spec.alpha*time**2)/lam,
                                  alpha=spec.alpha/lam, V=spec.V, density_intercept=(spec.density_intercept+spec.density_slope*spec.bottom)-spec.density_slope*lam*spec.bottom,
                                  density_slope=spec.density_slope*lam, external=spec.external, interior_interfaces=spec.interior_interfaces)
@@ -79,7 +79,7 @@ def evolved(spec, time):
 
 def direct_volumes(spec, time):
     """Seven-point raw half-CV integrals from declared initial physical inputs."""
-    eta = spec.bottom + (spec.eta - spec.bottom) / (1. + spec.alpha * time)
+    eta = spec.eta-(spec.eta-spec.bottom)*(spec.alpha*time)/(1.+spec.alpha*time)
     zcuts = np.array([[eta, *column] for column in spec.interior_interfaces])
     nodes, weights = np.polynomial.legendre.leggauss(7)
     h = -np.diff(zcuts, axis=1)
@@ -197,9 +197,16 @@ def check_faces(spec, faces, dt):
     if len(faces['horizontal']) != len(independent['horizontal']) or len(faces['vertical']) != 30:
         raise ValueError('absolute face partition count failed')
     maximum = 0.
+    interfaces = np.array([[spec.eta,*column] for column in spec.interior_interfaces])
     for actual, expected in zip(faces['horizontal'], independent['horizontal']):
-        if (actual['lower'], actual['upper']) != (expected['lower'], expected['upper']):
+        if actual['lower'] != expected['lower'] or (expected['upper'] != spec.eta and actual['upper'] != expected['upper']):
             raise ValueError('absolute physical partition changed')
+        if expected['upper'] == spec.eta:
+            maximum = max(maximum,assert_bound(actual['upper'],spec.eta,abs(spec.eta)+abs(spec.bottom)+(spec.eta-spec.bottom),label='absolute moving-top geometry'))
+        middle = (expected['lower']+expected['upper'])/2.
+        owners = tuple(int(np.flatnonzero((interfaces[side,1:] < middle)&(middle < interfaces[side,:-1]))[0]) for side in range(2))
+        if actual['owners'] != owners:
+            raise ValueError('absolute raw face ownership changed')
         for key, tail_key in [('transport','horizontal_tail'), ('pressure','pressure_tail'), ('pressure_energy','pressure_energy_tail')]:
             maximum = max(maximum, assert_bound(actual[key], expected[key], actual[key+'_scale']+abs(expected[key]),
                                                extra=actual[key+'_truncation']+independent[tail_key]+actual[key+'_input'], label='absolute horizontal '+key))

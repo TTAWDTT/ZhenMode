@@ -115,6 +115,24 @@ def test_postprepare_audit_failure_preserves_every_field(monkeypatch):
     assert np.array_equal(integrator.cumulative_gcl_bound,saved_bound)
 
 
+def test_raw_owner_corruption_refuses_before_consumption(monkeypatch):
+    profile,_ = manufactured_mean_case()
+    integrator = MovingRawSlice(profile,authority=AUTHORITY)
+    original_faces = integrator._faces
+    saved = snapshot(integrator.profile)
+
+    def corrupted(binding,dt):
+        faces = original_faces(binding,dt)
+        faces['horizontal'][0]['owners'] = (0,0)
+        return faces
+
+    monkeypatch.setattr(integrator,'_faces',corrupted)
+    with pytest.raises(ValueError,match='ownership'):
+        integrator.step(.02)
+    unchanged(integrator.profile,saved)
+    assert integrator.accepted_raw_steps == 0 and integrator.last_receipt is None
+
+
 @pytest.mark.parametrize('dt', [True, 0., -.01, .051, np.nan, np.inf, 1j])
 def test_invalid_duration_refuses(dt):
     profile, _ = manufactured_mean_case()
