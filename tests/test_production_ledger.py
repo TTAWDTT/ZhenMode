@@ -189,7 +189,9 @@ def test_source_hashes_survive_flat_wheel_layout(tmp_path, monkeypatch):
     installed = tmp_path / 'site-packages'
     installed.mkdir()
     for name in driver.SOURCE_MODULES:
-        shutil.copyfile(source / f'{name}.py', installed / f'{name}.py')
+        target = installed / f'{name}.py'
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(source / f'{name}.py', target)
     monkeypatch.setattr(driver, '__file__', str(installed / 'run_long_integration_global.py'))
     identity = driver._source_identity()
     assert len(identity['source_sha256']) == len(driver.SOURCE_MODULES)

@@ -30,6 +30,8 @@ from ocean_solver.fd.barotropic import _filter_barotropic_eta as _filter_barotro
 from ocean_solver.fd.barotropic import _free_surface_step_fd as _free_surface_step_fd
 from ocean_solver.fd.barotropic import _refill_volume as _refill_volume
 from ocean_solver.fd.barotropic import _symmetric_free_surface_step as _symmetric_free_surface_step
+from ocean_solver.fd.closures import _GM_RHOZ_FLOOR as _GM_RHOZ_FLOOR
+from ocean_solver.fd.closures import _REDI_CFL_TARGET as _REDI_CFL_TARGET
 from ocean_solver.fd.closures import _isopycnal_closure as _isopycnal_closure
 from ocean_solver.fd.closures import _isopycnal_slope as _isopycnal_slope
 from ocean_solver.fd.closures import _redi_skew_flux_tendency as _redi_skew_flux_tendency
@@ -128,6 +130,3 @@ if __name__ == "__main__":
         all_pass = False
     print()
     print("ALL PASS" if all_pass else "SOME FAILED")
-
-from ocean_solver.fd.closures import _GM_RHOZ_FLOOR as _GM_RHOZ_FLOOR
-from ocean_solver.fd.closures import _REDI_CFL_TARGET as _REDI_CFL_TARGET

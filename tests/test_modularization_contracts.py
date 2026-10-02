@@ -1,6 +1,10 @@
 """Compatibility and dependency boundaries of the production module migration."""
+import json
+import os
 import pickle
 import shutil
+import subprocess
+import sys
 from pathlib import Path
 
 import jax
@@ -46,7 +50,8 @@ def test_pickle_and_jax_pytree_keep_legacy_type_and_field_order():
     assert shapes.T.dtype == np.dtype('float64')
 
 
-def test_new_execution_module_change_rejects_restart_and_missing_source_fails(tmp_path):
+@pytest.mark.parametrize("module", ["ocean_solver/fd/horizontal.py", "ocean_solver/fd/integration.py", "ocean_solver/runtime/forcing.py"])
+def test_new_execution_module_change_rejects_restart_and_missing_source_fails(tmp_path, module):
     from test_legacy_reference_geometry import _fixture
 
     from restart_contract import load_restart, make_restart_contract, save_restart
@@ -68,7 +73,7 @@ def test_new_execution_module_change_rejects_restart_and_missing_source_fails(tm
     original = contract()
     checkpoint = tmp_path / 'restart.npz'
     save_restart(checkpoint, initialize(), original, step=1, counters={}, cumulative={}, history={})
-    modified = copied / 'ocean_solver/fd/horizontal.py'
+    modified = copied / module
     modified.write_bytes(modified.read_bytes() + b'\n# changed source identity\n')
     changed = contract()
     assert original['sources'] != changed['sources']
@@ -77,3 +82,35 @@ def test_new_execution_module_change_rejects_restart_and_missing_source_fails(tm
     modified.unlink()
     with pytest.raises(ValueError, match='missing required source'):
         contract()
+
+
+def test_source_registry_covers_every_installed_execution_module():
+    from source_identity import PACKAGE_SOURCE_MODULES, production_source_modules, source_paths
+
+    source = Path(__file__).resolve().parents[1] / 'src'
+    actual = {path.relative_to(source).with_suffix('').as_posix()
+              for path in (source / 'ocean_solver').rglob('*.py')}
+    assert set(PACKAGE_SOURCE_MODULES) == actual
+    assert len(production_source_modules()) == len(set(production_source_modules()))
+    source_paths(source, production_source_modules())
+
+
+@pytest.mark.parametrize('override', [None, 'true'])
+def test_monitor_import_preserves_runtime_default_without_solver_assembly(override):
+    environment = dict(os.environ)
+    source = Path(__file__).resolve().parents[1] / "src"
+    environment["PYTHONPATH"] = str(source) + os.pathsep + environment.get("PYTHONPATH", "")
+    if override is None:
+        environment.pop('XLA_PYTHON_CLIENT_PREALLOCATE', None)
+    else:
+        environment['XLA_PYTHON_CLIENT_PREALLOCATE'] = override
+    probe = subprocess.run([sys.executable, '-c',
+        "import integration_monitor, os, sys, json, jax; "
+        "print(json.dumps({'allocation': os.environ['XLA_PYTHON_CLIENT_PREALLOCATE'], "
+        "'precision': jax.config.jax_enable_x64, "
+        "'solver_loaded': 'jax_solver_global' in sys.modules, "
+        "'audit_loaded': 'ocean_solver.audit.stages' in sys.modules}))"],
+        env=environment, check=True, capture_output=True, text=True, timeout=20)
+    result = json.loads(probe.stdout)
+    assert result == {'allocation': override or 'false', 'precision': True,
+                      'solver_loaded': False, 'audit_loaded': False}
