@@ -134,3 +134,4 @@ if __name__ == "__main__":
         all_pass = False
     print()
     print("ALL PASS" if all_pass else "SOME FAILED")
+    raise SystemExit(0 if all_pass else 1)
