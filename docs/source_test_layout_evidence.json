@@ -150,7 +150,7 @@
   ],
   "collection": {
     "reference_nodes": 1791,
-    "candidate_nodes": 1805,
+    "candidate_nodes": 1808,
     "preserved_nodes": 1791,
     "new_nodes": [
       "tests/infrastructure/test_collection_mapping.py::test_mapping_preserves_full_parameter_identifiers_and_records_new_nodes",
@@ -160,6 +160,9 @@
       "tests/infrastructure/test_current_archives.py::test_current_archive_rejects_missing_declared_test",
       "tests/infrastructure/test_current_archives.py::test_current_archive_rejects_missing_implementation_instead_of_hash_fallback",
       "tests/infrastructure/test_current_archives.py::test_current_archive_resolves_legacy_keys_and_contains_complete_source_closure",
+      "tests/infrastructure/test_mms_cli_status.py::test_mms_cli_returns_failure_when_either_gate_fails[False-True-1]",
+      "tests/infrastructure/test_mms_cli_status.py::test_mms_cli_returns_failure_when_either_gate_fails[True-False-1]",
+      "tests/infrastructure/test_mms_cli_status.py::test_mms_cli_returns_failure_when_either_gate_fails[True-True-0]",
       "tests/infrastructure/test_source_layout.py::test_canonical_modules_do_not_import_legacy_facades",
       "tests/infrastructure/test_source_layout.py::test_checkout_data_roots_stay_at_the_repository",
       "tests/infrastructure/test_source_layout.py::test_legacy_imports_alias_the_same_canonical_module_and_pickle_definitions",
@@ -200,5 +203,41 @@
     "First editable validation was shadowed by inherited external checkout; only owned venv path ordering corrected; genuine wheel proof is independent.",
     "Ruff removed WIDTHS re-export from test owner; consumer now imports actual support owner.",
     "Old data-test CLI cwd broke after relocation; corrected to repository fixture and affected test passed."
-  ]
+  ],
+  "MMS_behavior_exception": {
+    "separate_commit": "2822a4570bb1013136d8e101f380056bd51df72b",
+    "formula_or_threshold_changes": false,
+    "status_controls": 3,
+    "all_pass_status": 0,
+    "operator_failure_status": 1,
+    "convergence_failure_status": 1,
+    "actual_spatial_ratio": 4.3,
+    "does_not_establish_full_step_temporal_order": true
+  },
+  "test_file_categories": {
+    "candidates/fv": 8,
+    "candidates/material": 13,
+    "data": 7,
+    "fd": 22,
+    "infrastructure": 10,
+    "research/contracts": 18,
+    "research/rstar": 11,
+    "runtime": 5,
+    "validation": 6
+  },
+  "layout_counts": {
+    "source_implementation_moves": 40,
+    "test_module_moves": 100,
+    "existing_helper_module_moves": 2,
+    "current_source_files": 138,
+    "current_test_files": 146,
+    "additional_source_paths_beyond_declared_moves": 53,
+    "additional_test_paths_beyond_declared_moves": 44,
+    "additional_script_paths": 1,
+    "additional_document_paths": 3,
+    "whole_file_removals_beyond_relocations": 0,
+    "duplicate_fixture_bodies_removed": 1,
+    "duplicate_body_lines": 23
+  },
+  "wheel_final": "Rebuilt and reinstalled after the separate MMS source change; all 136 file bytes, 121 actual hashes and 40 aliases rechecked outside checkout."
 }

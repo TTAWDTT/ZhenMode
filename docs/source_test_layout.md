@@ -146,3 +146,40 @@ filename/SHA-256 ledger digest is
 `383a66a9e68341d6b82e8c3e73f0fda85115b2c6f8d0d31607e392dd84af4f5c`.
 The license is unchanged. Public evidence contains relative names and synthetic
 receipts only; external inputs, local absolute paths and secrets are excluded.
+
+
+## Final local checks and separate behavior change — 2026-10-02
+
+The mechanical migration is commit `421bd3c42ce0247148213dc945f425fc1d9faae3`.
+A separate change, `2822a4570bb1013136d8e101f380056bd51df72b`, makes the MMS
+command exit 1 when either the existing operator gate or convergence gate fails,
+and 0 when both pass. Its formulas and thresholds are unchanged. Three negative/
+success controls first failed on the old behavior and then passed; actual MMS
+also passed with spatial convergence ratio 4.30. This is a CLI exit-status repair,
+not a numerical-method or temporal-order claim.
+
+Final collection has 1808 nodes: all original 1791, the seven architecture cases,
+four collection controls, three archive contracts and three MMS exit-status
+controls. The full Python file inventory is 138 source and 146 test/support files.
+Source/test moves total 40/100, plus two existing helper moves. Additional paths
+beyond these relocations are 53 source bridges/helpers/initializers, 44 test/
+support/initializer files, one script and three documents. Whole-file removals
+beyond relocations: zero. Removed duplicate bodies: one (23 lines). Git rename
+heuristics can classify heavily rewritten metadata/packaging files differently;
+the explicit file map and preserved collection describe the semantic changes.
+
+For capture reproduction, pass the complete source root `--source-root src`
+in the candidate checkout; `src/compat` denotes where the installed bare-import
+bridges live, not the complete source envelope. This includes canonical source
+bytes in the capture's restart contract. Baseline capture uses the immutable
+baseline `src` directory. The real wheel was rebuilt and reinstalled after the
+MMS change, and the external-directory 136-file/40-alias/121-hash proof passed
+again. Earlier 275/344-record numerical captures remain applicable because
+subsequent changes affect source bookkeeping or the MMS command exit only.
+
+Machine-readable synthetic/resource/collection receipts are in
+[source_test_layout_evidence.json](source_test_layout_evidence.json). Each local
+numerical invocation remained within one CPU, 180 seconds and 4 GiB; the largest
+capture used under 505 MB interpreter RSS. Local targeted regression is followed
+by complete GitHub CI on the final pushed head; no pending remote result is
+presented here as a pass.
