@@ -332,3 +332,103 @@ the legal duration/ratio limits, positive/zero alpha and fixed interior faces.
 General positive-surface domains also require the PE-content z bound to include
 the largest canonical eta. Corrected numerical evidence will have its own
 precise source and new receipt, preserving the archived record.
+
+### 2026-10-03 UTC: proved expansion and cap-input correction
+
+The correction is bound to scientific source
+`0f2c14fc7d52e55cfc798713c59d77ccb63e293a` and the additional frozen
+`docs/moving_raw_expansion_protocol.json`. The historical protocol, receipt
+and resource ledger retain their original bytes and source identities.
+The new receipt and resources are `docs/moving_raw_expansion_evidence.json`
+and `docs/moving_raw_expansion_resources.json`; they do not replace the old
+execution. All qualification flags remain false.
+
+The original area omission also affected the full-column force-work input
+volume. Independent review additionally found that the moving cap had used
+the fixed-cut velocity sensitivity, and that positive-surface domains needed
+their expanded cap in both the PE content and end-state PE error extent.
+These are missing components of the old a priori proof, not evidence that an
+observed old overall residual exceeded its budget. No threshold was enlarged
+in response to a measured residual.
+
+For H=eta0-b and signed q=alpha*dt, the canonical cap has
+eta_dot=-H*alpha/(1+alpha*t)^2. It is monotone on the frozen positive-lambda
+domain. Its maximum expansion is H*max(0,-q/(1+q)); only the top union segment
+adds this expansion to its initial width. Its input area-time factor is
+L*dt*(maximum_canonical_width+delta_eta). Fixed interior segments retain their
+fixed width. Positive products, sums and quotients forming this bound are
+rounded outward at each primitive operation; the direct expansion expression
+avoids subtracting two nearly equal eta endpoints.
+
+The cap-rate alpha derivative is -H*(1-alpha*t)/(1+alpha*t)^3. With
+delta_alpha=4*delta_velocity_u/distance and
+q_star=dt*(abs(alpha)+delta_alpha)<1, the cap-rate error is bounded by
+H*delta_alpha*(1+q_star)/(1-q_star)^3. Top pressure-work input uses this
+separate rate bound. Internal fixed-depth interfaces retain their own
+H*delta_alpha/(1-q_star)^2 bound. Every lambda-sensitive input envelope now
+covers the complete alpha perturbation interval; nonfinite primitives and
+nonpositive lower denominators reject before they can become accepted bounds.
+
+Both PE paths share the maximum of absolute bottom, initial cap and maximum
+canonical cap, plus cap uncertainty. The actual force-work consumer uses
+the full-column height maximum plus cap uncertainty for its velocity-error
+volume product, with a separate displaced-cap term. These changes affect
+error budgets and their recorded scalars. Accepted stock, face flux, pressure
+impulse and unique atomic state-commit formulas remain unchanged.
+
+The first frozen correction run at `e23ae6f35e748fb2ae44ec20500c9c87d4eec16f`
+had six failures and one pass; its area probes stopped at missing bottom-row
+diagnostics. The extended controls were committed at
+`a4f14d19524baebe2278de856b8c57af0bfd4a02`. Its clean RED had thirteen failures
+and one pass. It exposed the actual old top-area consumer: at alpha=-0.08,
+dt=0.02 the independent integrated area is 0.0008672717661262416 m2*s,
+larger than the used 0.0008000000000003836 m2*s. At alpha=-0.398, dt=0.05,
+the corresponding areas are 0.004117641129176092 and 0.0020000000000042328.
+The cap derivative control also failed by many orders over its predeclared
+small-operand roundoff bound. Both failures and their exact sources/resources
+are retained. No unit floor masks these tiny rate uncertainties.
+
+At the corrected clean source, all sixteen new controls pass. The combined
+regression has 298 passes: the original 282 plus sixteen correction controls.
+The new source-bound witness repeats the original six actual commits and adds
+one alpha=-0.398, dt=0.05 step: seven raw accepted commits, six moving.
+All 258 source labels resolve and verify against the retained execution bytes,
+covering 218 distinct actual files and both frozen protocols. Across the
+original six steps, 102 recorded physical-result fields are exactly unchanged.
+The maximum independent residual-to-declared-bound ratio is
+0.0007508239587500171.
+
+The added step changes eta by 0.05685134169982656 m; maximum deep IS and Mu
+changes are 0.004715844512292122 and 3.109571429425074. The smallest top segment
+uses a maximum width of 0.08351800836649328 m and area-time bound
+0.00626385062749168 m2*s. Actual moving-surface pressure energy is
+-23.877563513927143 J. True horizontal pressure work is -10.966964545678515 J;
+midpoint-times-impulse differs by -0.0003692524707457068 J, far above its
+3.332572811323066e-11 J integration/input bound. This difference remains
+separate from dissipation. Maximum local GCL residual is
+8.326672684688674e-17 m3; independent local and global energy residuals are
+2.8279600883251987e-12 and 5.987654816408394e-12 J.
+
+Five serial correction invocations, including both RED failures, cost
+163.922 s in total. The targeted GREEN takes 26.125 s, the 298-test regression
+83.969 s, and the seven-commit witness 14.453 s. Maximum owned-tree private
+memory is 77,189,120 bytes. Including the retained five historical invocations,
+total bounded wall time is 291.312 s, below the 1200 s first-batch limit.
+Every invocation uses the unchanged one-CPU, hard180s, 4GiB Job Object runner;
+no real archive or GPU step was executed. Timings are reproduction costs.
+
+Reproduce the new witness from the clean scientific commit and its local
+locked Python environment, after creating the ignored output directory:
+
+```powershell
+.venv\Scripts\python.exe scripts/run_bounded_research_tests.py --module research.experiments.material_top_band.moving_raw_evidence --include-expansion-limit --output logs/moving_raw/expansion_receipt.json
+```
+
+The earlier regression command gains
+`tests/research/contracts/test_moving_raw_expansion.py`. A fresh execution
+records its own source commit and checkout-byte hashes. The retained Windows
+protocol still has CRLF SHA256 e51975d35ccd14f777ebec5dba5d56db2d8d7b29fc07dac7f030995b9387f95d;
+its unchanged Git LF blob has SHA256 f76bfd745cf52fac88812a6edff91d688082f8e70ed10ea87e051de5fdabf369.
+The execution-byte limitation described above still applies; strict checks
+are preserved. Original 8x4x6/global-CV/top-three/predict12fastreplay, adapters,
+generic order, mature-mode parity and equal-error speed remain open.
