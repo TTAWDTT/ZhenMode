@@ -72,7 +72,7 @@ flowchart TD
 
 ## 文件归属与依赖
 
-完整逐文件、逐函数映射在 [production_migrations.json](production_migrations.json)。
+当前逐文件迁移映射在 [工程清单](research_engineering_layout.json)。
 下表解释职责，而非用目录名自动认定所有实现为推荐配置。
 
 | 当前实现 owner | 原 owner | 负责内容 |

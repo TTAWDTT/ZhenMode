@@ -3,8 +3,8 @@
 下列清理回归对应 `2069035`。随后真实全球验证及单独的输入接线修复记录在
 [全球回归报告](global_regression_validation_zh.md)，不把后续结果补写成此前已完成的验证。
 
-本报告描述删除转接层后的版本。完整机器记录、实际源码和产物 hash 见 [validation.json](research_engineering_validation.json)；
-删除与迁移依据见 [清理清单](cleanup_manifest.json)。第一阶段报告原字节在 [独立证据目录](../archive/evidence/reorganization/phase1/README.md)，不改写成当前结果。
+本报告描述删除转接层后的版本，删除与迁移依据见 [清理清单](cleanup_manifest.json)。
+完整机器记录、实际源码及产物 hash 留在本地验证输出中；仓库保留当前报告和复现工具。
 
 ## 已完成的独立本地检查
 
@@ -67,13 +67,13 @@ python scripts/verify_historical_evidence.py --cleanup
 
 记录捕获器拒绝覆盖已有全状态记录；复跑比较应保留每次的新输出及来源 sidecar。
 历史基准与原工具可从第一阶段提交和 main 冻结；不能让改过的工具同时产生参考与候选后称为独立对比。
-原始数值参考数组的路径与 SHA 保存在机器报告，本机 `logs/reorganization` 保留冻结产物。
+本机 `logs/reorganization` 保留冻结产物及路径、SHA 和机器记录。
 
 此前自动启动的 CI `37104386941`、`37104383953` 已确认 cancelled。
 当前自动 CI 只运行 Ruff，全套 2101 项与 MMS 需要人工验收后手动选择 `full_validation`。
 本轮没有重跑 MOM6 构建/积分、全球 30/365 天、GPU 或百年气候。
-第一阶段 MOM6 缓存小例及其构建身份限制见原报告，不作为本轮新运行。
+第一阶段 MOM6 缓存小例不作为本轮新运行，其记录属于第一阶段提交 `0fcd7c0`。
 
 工程回归不建立新的长期气候精度、工业级资格或同等误差速度优势。
 旧 raw/A2 保持旧协议；面积 v2、共享网格要求和成本口径没有在本轮清理中改动。
-Git 换行过滤可能使 Git blob 与实际 checkout 字节不同，执行来源始终校验实际文件；历史报告同时保留来源提交和原字节身份。
+Git 换行过滤可能使 Git blob 与实际 checkout 字节不同，执行来源始终校验实际文件。

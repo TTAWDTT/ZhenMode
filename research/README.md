@@ -20,7 +20,6 @@ python -m pip install -e ./research
 
 从 [r-star 实验索引](experiments/material_rstar_coordinates/README.md)、[重启回放](experiments/material_restart_replay/README.md) 查具体研究。
 原 controlled-window 工具移到 [历史工具区](../archive/tools/README.md)，它们校验并执行指定历史源码包。
-旧过程记录与导航原字节见 [第一阶段研究索引](../archive/evidence/reorganization/phase1/research-index.md)。
 
 生产运行使用 `zhenmode model`；生产实验与研究原型的执行状态、协议及结论各自记录。
 候选 353→354 步失败不否定历史百年稳定成果；PR29 不在本次交付中。

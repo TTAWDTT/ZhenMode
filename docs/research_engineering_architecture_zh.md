@@ -1,6 +1,6 @@
 # ZhenMode 研究工程架构
 
-实施基线是远端 main `25258950905f9d1aa84509c4c99ebad9ef33ba2b`。本地旧研究分支 `82e1ca4` 保留，独立分支为 `ttawdtt/zhenmode-research-engineering`。本次冻结了该 main 的完整 Git 快照、2008 个实际收集的测试节点、275 项非零小网格生产记录，以及 344 项连续运行和两次中断重启记录。冻结证据与完成后的实测记录见 `research_engineering_validation.json`。
+实施基线是远端 main `25258950905f9d1aa84509c4c99ebad9ef33ba2b`。本地旧研究分支 `82e1ca4` 保留，独立分支为 `ttawdtt/zhenmode-research-engineering`。本次冻结了该 main 的完整 Git 快照、2008 个实际收集的测试节点、275 项非零小网格生产记录，以及 344 项连续运行和两次中断重启记录。实测结果和复现命令见 [当前工程验证报告](research_engineering_validation_zh.md)。
 
 ## 实际调用图与目标
 
