@@ -138,3 +138,10 @@ def test_pressure_force_work_input_covers_expanded_column_volume(alpha,dt):
     quadrature = math.fsum(float(row['truncation'][0]) for row in receipt.faces['body_work'])
     quadrature += 512.*np.finfo(float).eps*max(1.,math.fsum(float(row['scale'][0]) for row in receipt.faces['body_work']))
     assert receipt.work_error_bound_J == quadrature+used
+
+
+@pytest.mark.parametrize('helper,value', [('upper_round',-math.inf),('lower_positive',math.inf)])
+def test_outward_rounding_refuses_infinite_primitive_before_nextafter(helper,value):
+    from research.experiments.material_top_band import moving_raw_characteristic as candidate
+    with pytest.raises(ValueError,match='nonfinite'):
+        getattr(candidate,helper)(value)

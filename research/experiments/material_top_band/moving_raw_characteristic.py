@@ -21,6 +21,49 @@ from .slope_dual_stock import readonly
 EPS = np.finfo(float).eps
 
 
+def upper_round(value):
+    """Outward upper rounding of one finite primitive operation."""
+    value = float(value)
+    if not math.isfinite(value):
+        raise ValueError('nonfinite input extent')
+    result = math.nextafter(value,math.inf)
+    if not math.isfinite(result):
+        raise ValueError('nonfinite input extent')
+    return result
+
+
+def lower_positive(value):
+    """Outward lower rounding for a strictly positive denominator."""
+    value = float(value)
+    if not math.isfinite(value):
+        raise ValueError('nonfinite input extent denominator')
+    result = math.nextafter(value,-math.inf)
+    if not math.isfinite(result) or result <= 0.:
+        raise ValueError('input extent leaves positive denominator domain')
+    return result
+
+
+def upper_product(*factors):
+    """Upper product of nonnegative factors, rounded at every operation."""
+    result = 1.
+    for factor in factors:
+        if not math.isfinite(float(factor)) or factor < 0.:
+            raise ValueError('nonfinite or negative input extent factor')
+        result = 0. if result == 0. or factor == 0. else upper_round(result*factor)
+    return result
+
+
+def canonical_cap_extent(spec,dt):
+    """Nominal monotone cap expansion; no endpoint-subtraction cancellation."""
+    if spec.alpha >= 0.:
+        return 0.,spec.eta
+    height = upper_round(spec.eta-spec.bottom)
+    ratio = upper_product(-spec.alpha,dt)
+    denominator = lower_positive(1.-ratio)
+    expansion = upper_round(upper_product(height,ratio)/denominator)
+    return expansion,upper_round(spec.eta+expansion)
+
+
 def local_energy(geometry):
     """Own exact half-prism moments; independent oracle uses seven-point volume rules."""
     state, eos = geometry.profile.state, geometry.profile.eos
@@ -136,22 +179,30 @@ class MovingRawSlice:
     def _input_envelope(binding, dt):
         """A priori product/quotient bounds from pre-step actual P1 discrepancies."""
         spec, eos = binding['spec'], binding['geometry'].profile.eos
-        H, q = spec.eta-spec.bottom, abs(spec.alpha*dt)
-        lower, upper = 1.-q, 1.+q
+        H = upper_round(spec.eta-spec.bottom)
         acceleration = abs((spec.external[1]-spec.external[0])/(eos.rho0*spec.distance))
         du0, dv = binding['delta_velocity']
-        da = 4.*du0/spec.distance
+        da = upper_round(upper_product(4.,du0)/spec.distance)
+        alpha_abs = upper_round(abs(spec.alpha)+da)
+        q = upper_product(dt,alpha_abs)
+        lower, upper = lower_positive(1.-q),upper_round(1.+q)
+        lower_squared = lower_positive(lower*lower)
+        lower_cubed = lower_positive(lower_squared*lower)
+        expansion,eta_max = canonical_cap_extent(spec,dt)
+        U_abs = upper_round(abs(spec.U)+du0)
         # Outside [0,d], the initial affine extension uses absolute endpoint weights.
-        excursion = (abs(spec.U)*dt+.5*acceleration*dt*dt+abs(spec.alpha)*dt*spec.distance)/lower
+        excursion = (U_abs*dt+.5*acceleration*dt*dt+alpha_abs*dt*spec.distance)/lower
         extrapolation = 1.+2.*excursion/spec.distance
-        du = du0*extrapolation/lower+da*(spec.distance+abs(spec.U)*dt+.5*acceleration*dt*dt)/lower**2
+        du = du0*extrapolation/lower+da*(spec.distance+U_abs*dt+.5*acceleration*dt*dt)/lower_squared
         dv *= extrapolation
-        dw = da*H/lower**2
-        deta = H*dt*da/lower**2
+        dw = upper_round(upper_product(da,H)/lower_squared)
+        deta = upper_round(upper_product(H,dt,da)/lower_squared)
+        # Fixed-cut w has a different alpha derivative from material cap eta_dot.
+        cap_rate_error = upper_round(upper_product(H,da,upper)/lower_cubed)
         drho = binding['delta_rho']*extrapolation + abs(spec.density_slope)*upper*deta + 2.*binding['delta_rho']*dt*da
         umax = (abs(spec.U)+abs(spec.alpha)*spec.distance+acceleration*dt*(1.+.5*q))/lower
-        wmax = abs(spec.alpha)*H/lower**2
-        zmax = max(abs(spec.bottom), abs(spec.eta))+deta
+        wmax = abs(spec.alpha)*H/lower_squared
+        zmax = upper_round(max(abs(spec.bottom),abs(spec.eta),abs(eta_max))+deta)
         rhomax = abs(spec.density_intercept+spec.density_slope*spec.bottom)+abs(spec.density_slope)*upper*H/lower
         dS = binding['delta_S']*extrapolation+drho/(eos.rho0*eos.beta)
         content = np.array([1.,eos.Tref,eos.Sref+rhomax/(eos.rho0*eos.beta),eos.rho0*umax,eos.rho0*abs(spec.V),
@@ -160,7 +211,8 @@ class MovingRawSlice:
                            eos.rho0*(umax*du+.5*du**2+abs(spec.V)*dv+.5*dv**2),eos.gravity*(drho*zmax+(eos.rho0+rhomax)*deta)])
         pressure = max(abs(v) for v in spec.external)+eos.gravity*(eos.rho0+rhomax)*H/lower
         dp = eos.gravity*((eos.rho0+rhomax)*deta+drho*H/lower)
-        return dict(content=content, change=change, du=du, dw=dw, deta=deta, drho=drho, umax=umax, wmax=wmax, pressure=pressure, dp=dp)
+        return dict(content=content,change=change,du=du,dw=dw,deta=deta,drho=drho,umax=umax,wmax=wmax,pressure=pressure,dp=dp,
+                    cap_rate_error=cap_rate_error,alpha_interval_q_max=q,canonical_cap_expansion_m=expansion,zmax=zmax)
 
     def _faces(self, binding, dt):
         spec, geometry = binding['spec'], binding['geometry']
@@ -215,7 +267,12 @@ class MovingRawSlice:
                 for suffix in ('value','scale','truncation','degree','power'):
                     array = np.array([value[suffix] for value in values])
                     row[key if suffix == 'value' else key+'_'+suffix] = array if key == 'transport' else array[:,0]
-            measure_max = spec.length*(hi-lo+envelope['deta'])*dt
+            maximum_width = upper_round(hi-lo)
+            if hi == spec.eta:
+                maximum_width = upper_round(maximum_width+envelope['canonical_cap_expansion_m'])
+            measure_max = upper_product(spec.length,dt,upper_round(maximum_width+envelope['deta']))
+            row['canonical_max_width_m'] = maximum_width
+            row['input_area_time_bound_m2_s'] = measure_max
             flux_input = measure_max*(envelope['du']*envelope['content']+envelope['umax']*envelope['change']+envelope['du']*envelope['change'])
             flux_input += spec.length*dt*envelope['deta']*(envelope['umax']+envelope['du'])*(envelope['content']+envelope['change'])
             row['transport_input'] = np.tile(flux_input,(3,1))
@@ -244,7 +301,8 @@ class MovingRawSlice:
                     for suffix in ('value','scale','truncation','degree','power'):
                         row[key if suffix == 'value' else key+'_'+suffix] = result[suffix] if key == 'transport' else float(result[suffix][0])
                 row['transport_input'] = geometry.area*dt*(envelope['dw']*envelope['content']+envelope['wmax']*envelope['change']+envelope['dw']*envelope['change']) if 0 < k < 14 else np.zeros(7)
-                row['pressure_energy_input'] = geometry.area*dt*(envelope['dp']*(envelope['wmax']+envelope['dw'])+envelope['pressure']*envelope['dw']) if k < 14 else 0.
+                rate_error = envelope['cap_rate_error'] if k == 0 else envelope['dw']
+                row['pressure_energy_input'] = geometry.area*dt*(envelope['dp']*(envelope['wmax']+rate_error)+envelope['pressure']*rate_error) if k < 14 else 0.
                 vertical.append(row)
         force_work = []
         for side in range(2):
@@ -253,7 +311,10 @@ class MovingRawSlice:
             for k in range(14):
                 h = eta-state.interfaces[side,1] if k == 0 else polynomial(state.h[side,k])
                 force_work.append(integrate([-eos.rho0*acceleration*geometry.area*h*u],[(3,2)]))
-        return dict(horizontal=horizontal,vertical=vertical,body_work=force_work)
+        height_max = upper_round(upper_round(H+envelope['canonical_cap_expansion_m'])+envelope['deta'])
+        work_product = upper_round(upper_product(height_max,envelope['du'])+upper_product(envelope['deta'],envelope['umax']))
+        body_work_input = upper_product(abs((spec.external[1]-spec.external[0])/spec.distance),spec.distance,spec.length,dt,work_product)
+        return dict(horizontal=horizontal,vertical=vertical,body_work=force_work,body_work_input_J=body_work_input)
 
     @staticmethod
     def _consume(faces):
@@ -333,7 +394,7 @@ class MovingRawSlice:
         work_scale = math.fsum(float(value['scale'][0]) for value in body)
         envelope = self._input_envelope(binding,dt)
         work_error = math.fsum(float(value['truncation'][0]) for value in body)+512.*EPS*max(1.,work_scale)
-        work_error += abs((spec.external[1]-spec.external[0])/spec.distance)*self.distance*self.length*dt*((spec.eta-spec.bottom)*envelope['du']+envelope['deta']*envelope['umax'])
+        work_error += faces['body_work_input_J']
         midpoint = math.fsum((.5*(geometry0.means[:,0]+geometry1.means[:,0])*consumed['impulse'].ravel()).ravel())
         stock_error = (error[...,1:5]+512.*EPS*(area*abs(state.stocks)+scale[...,1:5]))/area
         stock_error[...,2] += (consumed['impulse_error']+512.*EPS*consumed['impulse_scale'])/area
@@ -346,7 +407,7 @@ class MovingRawSlice:
         rho_error = geometry0.profile.eos.rho0*(geometry0.profile.eos.alpha*quotient_error[...,0]+geometry0.profile.eos.beta*quotient_error[...,1])
         # Inactive P1 endpoint reconstruction has Lipschitz factor <=3 on ordered adjacent cells.
         global_rho_error = float(np.max(rho_error))
-        zmax = max(abs(spec.bottom),abs(spec.eta))+envelope['deta']
+        zmax = envelope['zmax']
         PE_error = area*geometry0.profile.eos.gravity*zmax*((h+state.h)*3.*(global_rho_error+binding['delta_rho'])+
                                                           envelope['content'][6]/(geometry0.profile.eos.gravity*zmax)*volume_error)
         # J is an inverse strictly diagonally dominant mean map, ||J||infinity<=2.

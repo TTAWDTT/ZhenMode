@@ -41,6 +41,7 @@ def case_evidence(parameters, durations):
                          maximum_internal_R_water_transport_m3=max(abs(row['transport'][0]) for row in vertical if 0 < row['interface'] < 14),
                          maximum_internal_pressure_energy_J=max(abs(row['pressure_energy']) for row in vertical if 0 < row['interface'] < 14),
                          moving_surface_pressure_energy_J=math.fsum(row['pressure_energy'] for row in vertical if row['interface'] == 0),
+                         moving_surface_pressure_energy_input_bound_J=math.fsum(row['pressure_energy_input'] for row in vertical if row['interface'] == 0),
                          M_change_norm=float(np.linalg.norm(receipt.M_after-receipt.M_before)),R_change_norm=float(np.linalg.norm(receipt.R_after-receipt.R_before)),
                          physical_KE_change_J=receipt.physical_KE_change_J,raw_KE_change_J=receipt.raw_KE_change_J,PE_change_J=receipt.PE_change_J,
                          covariance_change_J=receipt.covariance_change_J,true_pressure_work_J=receipt.true_pressure_work_J,
@@ -53,30 +54,44 @@ def case_evidence(parameters, durations):
                          maximum_time_lambda_power=max(int(np.max(row[key+'_power'])) for row in horizontal for key in ('transport','pressure','pressure_energy')),
                          maximum_face_truncation_bounds={name:max(float(np.max(row['transport_truncation'][...,channel])) for row in [*horizontal,*vertical]) for channel,name in enumerate(CHANNELS)},
                          maximum_face_input_reconstruction_bounds={name:max(float(np.max(row['transport_input'][...,channel])) for row in [*horizontal,*vertical]) for channel,name in enumerate(CHANNELS)},
+                         maximum_canonical_horizontal_width_m=max(row['canonical_max_width_m'] for row in horizontal),
+                         top_segment_canonical_width_m=[row['canonical_max_width_m'] for row in horizontal if row['upper'] == before.state.eta[0]],
+                         top_segment_area_time_bound_m2_s=[row['input_area_time_bound_m2_s'] for row in horizontal if row['upper'] == before.state.eta[0]],
+                         pressure_force_work_input_bound_J=receipt.faces['body_work_input_J'],
                          accepted_moving_geometry=receipt.accepted_moving_geometry))
     return dict(parameters=parameters,steps=rows,accepted_raw_steps=integrator.accepted_raw_steps,
                 accepted_moving_steps=sum(int(row['accepted_moving_geometry']) for row in rows))
 
 
-def provenance():
+def provenance(*,include_expansion_limit=False):
     from ocean_solver.provenance.archives import current_source_files
     if subprocess.check_output(['git','status','--porcelain'],cwd=ROOT,text=True).strip():
         raise ValueError('committed clean scientific source required')
     selected = list((ROOT/'research/experiments/material_top_band').glob('*.py'))
     selected += [ROOT/'docs/moving_raw_protocol.json',ROOT/'scripts/run_bounded_research_tests.py',ROOT/'research/experiments/material_top_band/affine_requirements.lock']
     selected += [ROOT/'tests/research/contracts'/name for name in ('test_raw_mean_geometry.py','test_rational_time_integral.py','test_moving_raw_characteristic.py')]
+    if include_expansion_limit:
+        selected += [ROOT/'docs/moving_raw_expansion_protocol.json',ROOT/'tests/research/contracts/test_moving_raw_expansion.py']
     files = current_source_files(ROOT,selected)
     return dict(source_commit=subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip(),
                 source_sha256={label:hashlib.sha256(path.read_bytes()).hexdigest() for label,path in sorted(files.items())},
                 Python=platform.python_version(),package_versions={name:importlib.metadata.version(name) for name in ('numpy','pytest','ruff')})
 
 
-def build_evidence():
+def build_evidence(*,include_expansion_limit=False):
     protocol = json.loads((ROOT/'docs/moving_raw_protocol.json').read_text(encoding='utf-8-sig'))
     if protocol['frozen_thresholds']['roundoff_eps_multiplier'] != 512 or protocol['qualification_passed']:
         raise ValueError('frozen gate or qualification boundary changed')
     cases = dict(positive=case_evidence({},(.02,.03)),negative=case_evidence(dict(U=-.03,alpha=-.08,external=(200.,80.)),(.02,.03)),
                  zero_pressure=case_evidence(dict(external=(80.,80.)),(.02,)),fixed_eta=case_evidence(dict(alpha=0.),(.02,)))
+    if include_expansion_limit:
+        expansion = json.loads((ROOT/'docs/moving_raw_expansion_protocol.json').read_text(encoding='utf-8-sig'))
+        if expansion['qualification_passed'] or expansion['frozen_thresholds']['roundoff_eps_multiplier'] != 512:
+            raise ValueError('expansion gate or qualification boundary changed')
+        parameters = expansion['additional_accepted_case']
+        cases['negative_near_limit'] = case_evidence({key:parameters[key] for key in ('U','alpha','V')} | {'external':tuple(parameters['external_Pa'])},(parameters['duration_s'],))
+        if sum(case['accepted_raw_steps'] for case in cases.values()) != expansion['expected_actual_raw_commits'] or sum(case['accepted_moving_steps'] for case in cases.values()) != expansion['expected_actual_moving_commits']:
+            raise ValueError('frozen expansion witness commit count changed')
     return dict(contract=protocol['contract'],restricted_manufactured_raw_mean_ALE_passed=True,
                 accepted_raw_steps=sum(case['accepted_raw_steps'] for case in cases.values()),
                 accepted_moving_steps=sum(case['accepted_moving_steps'] for case in cases.values()),cases=cases,qualification_passed=False,original_global_CV_identified=False,
@@ -87,9 +102,12 @@ def build_evidence():
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--output',type=Path)
+    parser.add_argument('--include-expansion-limit',action='store_true',help='Use the additional frozen expansion protocol and retain historical receipts.')
     arguments = parser.parse_args()
-    source = provenance()
-    result = dict(build_evidence(),provenance=source)
+    source = provenance(include_expansion_limit=arguments.include_expansion_limit)
+    result = dict(build_evidence(include_expansion_limit=arguments.include_expansion_limit),provenance=source)
+    if arguments.include_expansion_limit:
+        result['expansion_protocol'] = 'docs/moving_raw_expansion_protocol.json'
     text = json.dumps(result,indent=2,sort_keys=True,allow_nan=False)+'\n'
     if arguments.output:
         arguments.output.write_text(text,encoding='utf-8')
