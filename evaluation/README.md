@@ -20,7 +20,7 @@ zhenmode evaluate compare outputs/RUN_A/evaluation/report.json outputs/RUN_B/eva
 旧证据可以原样导入：
 
 ```sh
-zhenmode evaluate import-historical --input research/experiments/ice_proxy_045/benchmark_365d_repeat.json --out outputs/historical-evidence.json
+zhenmode evaluate import-historical --input OLD_RESULT.json --out outputs/historical-evidence.json
 ```
 
 缺少 `metric_definition` 的历史报告保持 `legacy_equal_cell_index_box_v1`，不自动成为 v2。详细口径与边界见 [统一评价说明](../docs/evaluation_zh.md)。

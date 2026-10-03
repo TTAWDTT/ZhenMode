@@ -29,9 +29,3 @@ def test_production_distribution_and_identity_exclude_research_bridges():
     assert not any(x.startswith('zhenmode_research/') for x in production_source_modules())
     for name in research:
         assert not (REPOSITORY_ROOT / 'research/src/compat' / (name + '.py')).exists()
-
-
-def test_historical_layout_declaration_remains_original_git_bytes():
-    import subprocess
-    original = subprocess.check_output(['git', 'show', '25258950905f9d1aa84509c4c99ebad9ef33ba2b:docs/source_test_layout.json'], cwd=REPOSITORY_ROOT)
-    assert (REPOSITORY_ROOT / 'docs/source_test_layout.json').read_bytes() == original

@@ -1,3 +1,0 @@
-# Frozen evidence must not acquire platform-dependent newline conversions.
-archive/campaigns/*.sh -text whitespace=cr-at-eol
-archive/tools/controlled_window/** -text whitespace=cr-at-eol

@@ -1,6 +1,6 @@
 # 统一评价：运行完成、指标验收与公平比较分开
 
-正式生产方法是既有全球有限差分谱系。百年稳定轨迹和低 RMSE 历史证据保留原身份；新的工程整理没有重新授予这些历史成绩，也没有把材料库存候选第353步失败当成生产故障。历史记录见 `archive` 的证据索引及 `docs/legacy_core_repair_status_zh.md` §23。
+正式模型使用既有全球有限差分方法。运行完成、指标达标和比较资格分别记录。
 
 ## 一个评分入口，一份指标实现
 
@@ -45,11 +45,11 @@ zhenmode evaluate score --input outputs/RUN/model/global_run.npz --protocol eval
 ## 历史证据
 
 ```sh
-zhenmode evaluate import-historical --input research/experiments/ice_proxy_045/benchmark_365d_repeat.json --out outputs/ice-proxy-historical.json
+zhenmode evaluate import-historical --input OLD_RESULT.json --out outputs/ice-proxy-historical.json
 ```
 
 导入保存原路径、原字节 hash、原指标和旧协议，原文件不变。bb7ba23 快照的365日重复 PASS、评分280–365日、raw约0.91364293°C、A2约1.11257074°C 属旧湿格等权协议，不与新面积 v2 混排。长期 PASS 支持历史数值稳定，部分 OHC/AMOC 警告仍保留；不扩大成所有气候指标达标或同一源码从零连续325年。
 
 ## 有界验证
 
-`tests/evaluation` 覆盖错误单位、未知/重复字段、窗口、非 binary/NaN 掩膜、NaN 峰值、参考 hash、借用结果、来源门面/缺项、协议变更及不兼容比较。`tests/baselines` 验转换/原生产物 tamper、原生单位、记录身份和 POSIX 监控异常清理；这些夹具不冒充真实模型运行。实际执行与结果参见此次重构验证报告，跳过/未运行和失败单列。
+`tests/evaluation` 覆盖错误单位、未知/重复字段、窗口、非 binary/NaN 掩膜、NaN 峰值、参考 hash、借用结果、来源门面/缺项、协议变更及不兼容比较。`tests/baselines` 验转换/原生产物 tamper、原生单位、记录身份和 POSIX 监控异常清理；这些夹具不冒充真实模型运行。

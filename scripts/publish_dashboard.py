@@ -231,13 +231,13 @@ def refresh_drift_curves(sh, tags):
 
     Runs launched without --save-3d never produce 3-D snaps, so the full
     analysis (which needs them) is impossible and their charts would stay
-    blank forever. results/_curves_from_drift.py rebuilds the 1-D payload
+    blank forever. dashboard/curves_from_drift.py rebuilds the 1-D payload
     from the checkpoint drift log instead; re-running it each cycle is what
     keeps the in-flight runs' curves advancing. Cheap (~2 s for 12 tags) and
     harmless for --save-3d runs, which keep their own richer npz when the
     analysis has already written one newer than the CSV.
     """
-    gen = ("/data/tmp/ocean/results/_curves_from_drift.py")
+    gen = ("/data/tmp/ocean/dashboard/curves_from_drift.py")
     cmd = ("test -f %s && docker exec -w /data/tmp/ocean jaxtest2 "
            "/opt/conda/envs/py/bin/python %s %s || true"
            % (gen, gen, " ".join(tags)))

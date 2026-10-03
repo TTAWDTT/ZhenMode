@@ -46,4 +46,4 @@ manifest 的执行状态为 `proposed / running / completed / failed`。一次�
 python -m pytest tests/experiments -q
 ```
 
-这组测试不运行 JAX 数值，覆盖未知字段、重复 key、错误单位、循环继承、歧义覆盖、单因素/组合定义、case/协议负例、sweep 只展开、不覆盖 run、真实实现来源覆盖、失败状态保持和执行完成不等于验收。`test_evaluation_bridge.py` 直接串联配置展开、run manifest 与真实评分器，用明确声明的数组 fixture 核对协议文件字节及规范内容身份，并拒绝冻结后改变协议；它不是模式数值参考解。实际数值、重启、安装后执行和评价报告由总交付验证报告列出结果与限制。
+这组测试不运行 JAX 数值，覆盖未知字段、重复 key、错误单位、循环继承、歧义覆盖、单因素/组合定义、case/协议负例、sweep 只展开、不覆盖 run、真实实现来源覆盖、失败状态保持和执行完成不等于验收。`test_evaluation_bridge.py` 直接串联配置展开、run manifest 与真实评分器，用明确声明的数组 fixture 核对协议文件字节及规范内容身份，并拒绝冻结后改变协议；它不是模式数值参考解。

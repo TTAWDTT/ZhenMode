@@ -149,7 +149,7 @@ def test_gm_and_redi_are_the_same_operator():
     """kappa_gm and kappa_redi drive the SAME skew-flux operator, so the
     closure tendency for (kappa_gm=k, kappa_redi=0) is identical to the one
     for (kappa_gm=0, kappa_redi=k). That is why enabling BOTH doubles the
-    closure strength ("Defect 5", docs/deep-heat-poisoning-root-cause.md).
+    closure strength (GM/Redi closure convention, docs/decisions.md D18).
     """
     g = _synth_grid()
     nx, ny, nz = g.nx, g.ny, g.nz

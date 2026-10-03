@@ -1,9 +1,0 @@
-run,region,count,mean_error,rmse,sse_share
-lambda1_baseline,near_wall,1416,0.150,2.330,5.56
-lambda1_baseline,coast,3508,-2.234,3.532,31.63
-lambda1_baseline,shallow_interior,97,-0.570,1.835,0.24
-lambda1_baseline,deep_interior,25896,-0.614,1.828,62.57
-lambdaglobal_real_air_2m_repeat,near_wall,1416,-0.318,2.402,7.43
-lambdaglobal_real_air_2m_repeat,coast,3508,-2.559,3.383,36.52
-lambdaglobal_real_air_2m_repeat,shallow_interior,97,-0.916,1.388,0.17
-lambdaglobal_real_air_2m_repeat,deep_interior,25896,-1.202,1.540,55.88
