@@ -182,3 +182,134 @@ source edits and no active Python/test process. Its local package installation
 was completed. The design protocol below remains the pre-implementation frozen
 snapshot; subsequent implementation and execution status belongs to a separate
 append-only evidence section and receipt, not a rewrite of these initial flags.
+
+## 2026-10-03: implemented original-interface milestone and bounded evidence
+
+The original native interface is now implemented in
+[original_native.py](../research/experiments/material_top_band/original_native.py).
+It captures the actual six original fields, first-slot material tracer stocks,
+reference momentum/mass, original EOS/reference Pa/PGF and native faces.
+Immutable byte-backed snapshots retain the original authority. The two optional
+observer seams record the actual original driver and its generic fast loop;
+their default None path retains the old call shape and numerical operators.
+
+The pre-implementation flags in the frozen protocol above are a historical
+snapshot. This section and the new
+[receipt](original_small_grid_integration_receipt.json) record the implemented
+milestone. They do not promote the unfinished joint-moving protocol.
+
+### Source and validation
+
+The scientific source is
+`fddda45b39fcdcf752bef756d4c52e90541a40f1`, descended from the audited
+main `25258950905f9d1aa84509c4c99ebad9ef33ba2b`. The original factory case
+and independent signed-face/work assembly have their own
+[support owner](../tests/support/original_native.py); the capture script imports
+that owner normally rather than loading a test file dynamically.
+
+The independent Code/Design Gate passed before the clean implementation commit.
+The bounded GREEN passed 47 native-interface and directly relevant architecture
+controls in 53.98 s pytest time, 55.109 s supervisor time. They cover:
+
+- True native state/metric/tracer/reference-momentum binding and independent
+  linear EOS, reference Pa, volume-face transpose and fixed-mass work.
+- Ten actual original stages and twelve calls of the original generic fast
+  function, with default/observed original output byte identity.
+- Moving-mass-only reinterpretation, top-three local geometry and half-prism
+  identity counterexamples; joint handoff refusal.
+- Masked/nonfinite/large-finite derived-overflow inputs, actual rebuilt-factory
+  inconsistent spherical metrics, forged area/mass and invalid durations.
+- Early/late full six-field rollback and preservation of a previous successful
+  diagnostic receipt after a later failure.
+- Independent impulse-work, native transport-work and per-fast continuity
+  bad-ledger refusals, including zero-bound and nonfinite-bound cases.
+
+A deliberately huge finite-u input emitted one expected NumPy overflow warning;
+the derived finite guard rejected that input. No valid-case numerical warning
+or bound stop occurred. All reported witness identities are actively checked
+against the frozen dimensional primitive-operation bounds, with no unit floor.
+
+### Actual nonzero original diagnostic endpoint
+
+The original material driver returned valid=true. It retained predictor,
+twelve fast calls, explicit native layer matcher and accepted tracer replay
+in their original order. The retained audit entry state stayed byte-identical
+in all six fields; the separately labelled original diagnostic endpoint moved.
+
+| Quantity | Observed value |
+| --- | ---: |
+| eta maximum absolute change | 1.64628050636e-8 m |
+| u maximum absolute change | 9.65141245691e-7 m/s |
+| T maximum absolute change | 2.47579310653e-5 C |
+| S maximum absolute change | 5.88460359552e-7 PSU |
+| deep IT maximum absolute change | 8.16033486117e-6 C m |
+| deep IS maximum absolute change | 2.04012380323e-7 PSU m |
+| deep reference Mu maximum absolute change | 6.47160763975e-4 kg/(m s) |
+| per-fast independent continuity residual maximum | 2.77197166123e-17 m |
+| per-fast continuity / primitive bound maximum | 3.05158695332e-4 |
+
+The scratch reference-pressure kick had a nonzero maximum actual stock impulse
+of 7.7875182625e7 kg m/s. Its independently assembled transpose residual / bound
+maximum was 9.92844416878e-4. Actual before/after KE change was
+2.437093244596e7 J; frozen-Pa force work was 2.437093226325e7 J. Their
+0.182714369148 J difference is inside the 818.485379167 J roundoff envelope
+derived from uncancelled before/after KE operands. It is not a physical loss,
+PE balance, truncation estimate or relative-pressure-work accuracy claim.
+Actual impulse work and native C(midpoint-u) transport work were separately
+checked against the independent force work; their maximum bound ratios were
+9.26031132917e-5 and 5.48304260641e-5.
+
+The first mathematical blocker remains quantitative: at eta=-0.4 m and
+reference top width 2.5 m, interpreting the original reference momentum as
+moving momentum changes decoded u by factor 25/21. Native e0 and target
+top-three f differ locally by [8/9,-1/3,-5/9]*eta_dot despite equal column sums.
+The implementation exposes and refuses this incompatible handoff; it does
+not repair moving momentum by changing a divisor.
+
+### Reproduction and resource record
+
+Use the project-local environment with Python 3.12.14, NumPy 2.5.3,
+JAX/JAXlib 0.11.2, pytest 9.1.1 and Ruff 0.16.8. On Windows, explicitly bind
+the checkout source paths when using the supervisor's underlying interpreter:
+
+```powershell
+$env:PYTHONPATH = (Join-Path (Get-Location).Path 'src') + [IO.Path]::PathSeparator + (Join-Path (Get-Location).Path 'src\compat')
+.venv\Scripts\python.exe scripts\run_bounded_research_tests.py tests\research\contracts\test_original_native_integration.py tests\infrastructure\test_source_layout.py -q
+.venv\Scripts\python.exe scripts\run_bounded_research_tests.py --module scripts.capture_original_native_contract --output docs\original_small_grid_integration_receipt.json
+```
+
+Numerical invocation requires a clean committed source tree. Commit or move any
+locally produced artifact before another invocation. The new
+[resource record](original_small_grid_integration_resources.json) includes
+the initial environment import failure, corrected expected TDD RED, GREEN
+and witness: total supervisor wall 75.515 s, peak owned private memory
+638128128 bytes. Every invocation used one CPU, hard 180 s and 4 GiB; all
+bound_stop flags were false. The unchanged bounded runner SHA256 is
+844c81b1f8185d33bcb79872bd83213807ad0e1f708746ccee52f4a41e00ac03.
+
+The witness binds 229 source labels to 189 actual files and separately records
+actual executed byte hashes, Git blob hashes, lengths and line-ending counts.
+This checkout's actual byte hashes all equal their committed Git blob hashes;
+the equivalence was checked, not inferred from clean status. All resolved
+parameters have scalar values or dtype/shape/hash descriptors, and the frozen
+case settings and factory-derived counts are explicitly checked. Published
+evidence contains generated-case scalar summaries and relative source labels,
+not raw private input arrays, machine paths or raw local logs.
+
+### Remaining migration gaps
+
+Accepted joint moving-stock steps remain zero. Original point-sample/reference
+momentum is still incompatible with the requested top-three moving-stock
+authority and the half-prism raw-mean basis. A chosen original-grid DOF/basis,
+its actual moving metric, common physical faces/pressure transpose and finite
+variable-mass work must be derived together before a joint handoff can accept.
+
+The original mean-face matcher still explicitly changes layer Q, predictor
+density remains lagged through the fast clock, and tracer replay remains a
+separate history. Current-mass conservative diffusion/biharmonic, shared limiter
+and filter/source impulses, moving-cap Pa and total PE/ALE closure are not
+qualified. The reported convection RHS entry preview is an activity diagnostic
+only; the actual applied replay mixing ledger gate remains false. Physical
+moving pressure, fixed-endpoint order >=1.9, mature-mode parity and equal-error
+speed remain unqualified. Production defaults and the original user checkout
+were not changed.

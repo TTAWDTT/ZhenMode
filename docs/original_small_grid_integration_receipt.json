@@ -1,0 +1,3270 @@
+{
+  "contract": "original_nodal_reference_stock_and_fast_clock_handoff_gate",
+  "frozen_reference_identity_gates": {
+    "identity_roundoff_ratios": {
+      "native_velocity": 0.0006383815922276878,
+      "native_momentum": 0.0,
+      "before_stock_quotient": 0.0,
+      "after_stock_quotient": 0.0008157008609628838,
+      "pressure_transpose": 0.000992844416877913,
+      "actual_stock_kick": 0.0004597563825502218,
+      "kinetic_value": 0.0,
+      "fixed_mass_work": 0.0002232347334153828,
+      "reported_fixed_mass_work": 0.00022323473796682672,
+      "impulse_work": 9.260311329166485e-05,
+      "dt_force_work": 9.138404344014288e-06,
+      "native_transport_work": 5.483042606408573e-05
+    },
+    "per_fast_continuity_roundoff_ratio_max": 0.0003051586953323093,
+    "per_fast_continuity_residual_max_m": 2.7719716612291704e-17,
+    "independent_pressure_work_J": 24370932.26324599,
+    "fixed_mass_work_roundoff_bound_J": 818.4853791669638
+  },
+  "scientific_source_commit": "fddda45b39fcdcf752bef756d4c52e90541a40f1",
+  "case_source": "tests/support/original_native.py::make_original_native_case",
+  "backend": "cpu",
+  "execution_versions": {
+    "python": "3.12.14",
+    "numpy": "2.5.3",
+    "jax": "0.11.2",
+    "jaxlib": "0.11.2",
+    "pytest": "9.1.1",
+    "ruff": "0.16.8"
+  },
+  "grid_shape": [
+    8,
+    4,
+    6
+  ],
+  "native_state_authority": "FD_point_samples_material_top_mass_lumped_linear_momentum_v1",
+  "parameter_digest": "f00971a5d40182ebfdcad12ebe523bf32bcc1d8a9306538375637232008979f4",
+  "resolved_parameter_manifest": {
+    "dx_2d": {
+      "dtype": "<f8",
+      "shape": [
+        8,
+        4
+      ],
+      "sha256": "7063ef45da726924c4deb2ddffabe0358bfaccc6e0a2957c07db7333563f68ba"
+    },
+    "dy": {
+      "dtype": "<f8",
+      "shape": [],
+      "sha256": "245e84374e3c07fe5b61537dc13565e458cf116fedc237438117928236b7a189",
+      "value": 2223898.532891175
+    },
+    "cos_lat": {
+      "dtype": "<f8",
+      "shape": [
+        4
+      ],
+      "sha256": "e22d166fdf8a146d6169142f3111c99641b0c22fbbac6795baa7138d3ea707b5"
+    },
+    "inv_dx": {
+      "dtype": "<f8",
+      "shape": [
+        8,
+        4,
+        1
+      ],
+      "sha256": "68fc4e9e0513815fcf83ae7a44f6f165b324e74da2029e4e2307df2bcb2b1520"
+    },
+    "inv_dy": {
+      "dtype": "<f8",
+      "shape": [],
+      "sha256": "e072f13fc7b093214ee8077b9ef33118cf859b4a20e9e73a3ace60471eea44fb",
+      "value": 4.4966080295936525e-07
+    },
+    "inv_dx2": {
+      "dtype": "<f8",
+      "shape": [
+        8,
+        4,
+        1
+      ],
+      "sha256": "be14d3b5181e3a68aaf4e503f88f275ed4877fe1ae8e85e0424b24a24dcdedce"
+    },
+    "inv_dy2": {
+      "dtype": "<f8",
+      "shape": [],
+      "sha256": "2e6462f5ab3ed660115ba551f483c8d40a16c98cd4165e924eeacae7cfff3da2",
+      "value": 2.021948377180611e-13
+    },
+    "f": {
+      "dtype": "<f8",
+      "shape": [
+        8,
+        4
+      ],
+      "sha256": "1025e5ff7ee9e6ea19ffa072aa580e3ae524ac1931246c9f226aac0c55c60094"
+    },
+    "wet_mask": {
+      "dtype": "<f8",
+      "shape": [
+        8,
+        4
+      ],
+      "sha256": "acfc7c36fce590b14adfc8a479e0dcd297e910a7212694c976c8b4284d34c144"
+    },
+    "wet_mask_z": {
+      "dtype": "<f8",
+      "shape": [
+        8,
+        4,
+        6
+      ],
+      "sha256": "9ea77139a1584321c11c9b7ed81b372a4da7d0cdd71d467ff0c43730d9fd1c18"
+    },
+    "interior_mask_z": {
+      "dtype": "<f8",
+      "shape": [
+        8,
+        4,
+        1
+      ],
+      "sha256": "31a1e87b05c0289282cb359a7e6a65167c440fd380af5526f7d8813f5118c559"
+    },
+    "dz_denom_interior": {
+      "dtype": "<f8",
+      "shape": [
+        1,
+        1,
+        4
+      ],
+      "sha256": "71dce7d281497b58baadee8ddf90c9dab495cf0c2e993b8dfd22c98ed76c8ad0"
+    },
+    "dz_bnd_top": {
+      "dtype": "<f8",
+      "shape": [],
+      "sha256": "575c974d7b0db3c3e53a3bd11f8a7b64040aa38cf2b3e2d414eff7c45df868df",
+      "value": -5.0
+    },
+    "dz_bnd_bot": {
+      "dtype": "<f8",
+      "shape": [],
+      "sha256": "559d586cd4c76e39c82f72fec621853b5dc9a12df5ec3181304a8c138037345a",
+      "value": -30.0
+    },
+    "d2z_hm": {
+      "dtype": "<f8",
+      "shape": [
+        1,
+        1,
+        4
+      ],
+      "sha256": "ba599ff5f5e57f34e31d370a685e055857ee412ed86815c7eaa5eddf87172974"
+    },
+    "d2z_hp": {
+      "dtype": "<f8",
+      "shape": [
+        1,
+        1,
+        4
+      ],
+      "sha256": "6f4da32c99deff5042aa96bd96a40bcecfd147b7c6c03d0d960e1c135b3eabae"
+    },
+    "d2z_denom": {
+      "dtype": "<f8",
+      "shape": [
+        1,
+        1,
+        4
+      ],
+      "sha256": "4e15ba8d90c1af53f6b18dfd57ff7080a691301a3e404f487f432f2ef13fd178"
+    },
+    "d2z_h0_top": {
+      "dtype": "<f8",
+      "shape": [],
+      "sha256": "a7ca1349517e14c0690dccc98bf9a515019b2018116a3191f6c7d53831c0432a",
+      "value": 5.0
+    },
+    "d2z_h0_bot": {
+      "dtype": "<f8",
+      "shape": [],
+      "sha256": "a6eb657cf3aab7d4083b6f0eca93d6e4726d1db995b090f29decf45f2376682d",
+      "value": 30.0
+    },
+    "dz_3d": {
+      "dtype": "<f8",
+      "shape": [
+        1,
+        1,
+        5
+      ],
+      "sha256": "1e059ea521a385f371825bdd139a49eebe51ad5c56772153a9d5f351b1a652a2"
+    },
+    "dz_surface": {
+      "dtype": "<f8",
+      "shape": [],
+      "sha256": "5caaabe50da77f59f448b3edf650d68fbca7b858390664c251c52b3f458a881c",
+      "value": 2.5
+    },
+    "dz_iface": {
+      "dtype": "<f8",
+      "shape": [
+        1,
+        1,
+        5
+      ],
+      "sha256": "1e059ea521a385f371825bdd139a49eebe51ad5c56772153a9d5f351b1a652a2"
+    },
+    "dz_node": {
+      "dtype": "<f8",
+      "shape": [
+        1,
+        1,
+        6
+      ],
+      "sha256": "7112e876f958f89c6440baabf3cab6c8c984e569ed09f687372b932372b142a9"
+    },
+    "surface_mask": {
+      "dtype": "<f8",
+      "shape": [
+        1,
+        1,
+        6
+      ],
+      "sha256": "78c19f52f7328f8e639debdb3ea64e9779c3cc7d7c0690bf387009355df4bc2c"
+    },
+    "bottom_mask": {
+      "dtype": "<f8",
+      "shape": [
+        8,
+        4,
+        6
+      ],
+      "sha256": "9ef4d9e7447aafbd3c1e3d0837aa299618acb03951f22636fed1f7970f23e308"
+    },
+    "nx": {
+      "dtype": "<i8",
+      "shape": [],
+      "sha256": "6cc16abd70eefb90dc0ba0d14fb088630873b2c6ad943f7442356735984c35a3",
+      "value": 8
+    },
+    "ny": {
+      "dtype": "<i8",
+      "shape": [],
+      "sha256": "f0a0278e4372459cca6159cd5e71cfee638302a7b9ca9b05c34181ac0a65ac5d",
+      "value": 4
+    },
+    "nz": {
+      "dtype": "<i8",
+      "shape": [],
+      "sha256": "23d7f42b1cdc1f0d492ebd756ed0fe8003995dda554d99418d47a81813650207",
+      "value": 6
+    },
+    "nu_h": {
+      "dtype": "<f8",
+      "shape": [],
+      "sha256": "3f710ac088db33363087de2b9a657541fe5447821debaa9fe5cbd538eb1a5f29",
+      "value": 2.0
+    },
+    "nu_v": {
+      "dtype": "<f8",
+      "shape": [],
+      "sha256": "dd18bf0624c62a5ad06c856ee8355dd933d830322bb81b2758f148e03ffeed7b",
+      "value": 0.0003
+    },
+    "kappa_h": {
+      "dtype": "<f8",
+      "shape": [],
+      "sha256": "76ac2cde7665454a2feeeb3ff8bf3c4b85272509b98228dbc1e8f7a8c979a647",
+      "value": 0.4
+    },
+    "kappa_v": {
+      "dtype": "<f8",
+      "shape": [],
+      "sha256": "67943f99dfdbe54456eb583710aa02bf9f448b92446645524e29ac8036509582",
+      "value": 0.0002
+    },
+    "kappa_conv": {
+      "dtype": "<f8",
+      "shape": [],
+      "sha256": "c738dd99fada954a0be83cb94069e65973256ed5a199cd293841c789ad3b0910",
+      "value": 0.01
+    },
+    "nu_bi": {
+      "dtype": "<f8",
+      "shape": [],
+      "sha256": "00754a39f7de30495780d4c6242f680316f56bf4bf735c3681b3ac1d14f1512e",
+      "value": 100.0
+    },
+    "kappa_bi": {
+      "dtype": "<f8",
+      "shape": [],
+      "sha256": "055e7dd5bc7591c950c5683cab13f99a935400b719798b39b6152f8c1bf71555",
+      "value": 20.0
+    },
+    "T_ref": {
+      "dtype": "<f8",
+      "shape": [],
+      "sha256": "950b4cbf64175991383c55306a9f2f1ff88eb265e5bf3762f380a7da00088927",
+      "value": 15.0
+    },
+    "S_ref": {
+      "dtype": "<f8",
+      "shape": [],
+      "sha256": "bb4007f8126e5a402cce0c3978bbcfa6b0acdf4f1be565f266350c539071bcfc",
+      "value": 35.0
+    },
+    "r_bot": {
+      "dtype": "<f8",
+      "shape": [],
+      "sha256": "244daf676b076b34d5be3f723196f6a9a2fa7e81a05c781394a14fa645e1d6d8",
+      "value": 0.0001
+    },
+    "cd": {
+      "dtype": "<f8",
+      "shape": [],
+      "sha256": "c69e0d175a14988acae820a28db44d4be5f284fd6ac14ef97e3fe4dbb7e0be45",
+      "value": 0.0025
+    },
+    "bottom_friction": {
+      "dtype": "<U6",
+      "shape": [],
+      "sha256": "4dd7fccb21cfcaa7eac6ac5281a45c1c8c70d06a1135686131915508fb4ab95e",
+      "value": "linear"
+    },
+    "tau_x_2d": {
+      "dtype": "<f8",
+      "shape": [
+        8,
+        4
+      ],
+      "sha256": "e507890edca92174b6cb4af1b33d9b2ba61a7fce5db3bc16b7441c6fa381c402"
+    },
+    "tau_y_2d": {
+      "dtype": "<f8",
+      "shape": [
+        8,
+        4
+      ],
+      "sha256": "0354b79ca9f506b734f2a0b9070f5c2f8b26dced4f0069cf5452aedd1f0c3cd8"
+    },
+    "Q_heat_2d": {
+      "dtype": "<f8",
+      "shape": [
+        8,
+        4
+      ],
+      "sha256": "b6c52ee819c632591ea40d98564d1dc2e64b69eabe16997cda9e6f4897799a92"
+    },
+    "H_sw": {
+      "dtype": "<f8",
+      "shape": [
+        8,
+        4
+      ],
+      "sha256": "87d6559d99ec050ba3df069281014ea4abc1026d50b2a9c1a426727818d4ab46"
+    },
+    "dz_norm": {
+      "dtype": "<f8",
+      "shape": [
+        8,
+        4,
+        6
+      ],
+      "sha256": "37a4453b71f926719ba621fb5edb22087d35a95d7a8bd92e81d13cbc0c666395"
+    },
+    "dt": {
+      "dtype": "<f8",
+      "shape": [],
+      "sha256": "7762a446e2cee860b090b945cd7c3a502b7fe4a2d29f0f0889175de5ba4ae752",
+      "value": 0.12
+    },
+    "T_atm_3d": {
+      "dtype": "<f8",
+      "shape": [
+        8,
+        4,
+        1
+      ],
+      "sha256": "062bf959b1684d722c5f7a961dc78bc137f79c63f01b983b2391047051a5719b"
+    },
+    "lambda_bulk": {
+      "dtype": "<f8",
+      "shape": [],
+      "sha256": "fe555d486cc8379252e92fe7c97b5e5b603a97a9f965105cfd169a1ab4327fb9",
+      "value": 50.0
+    },
+    "S_ref_2d": {
+      "dtype": "<f8",
+      "shape": [
+        8,
+        4
+      ],
+      "sha256": "5341e6b2646979a70e57653007a1f310169421ec9bdd9f1a5648f75ade005af1"
+    },
+    "restore_coef_S": {
+      "dtype": "<f8",
+      "shape": [],
+      "sha256": "af5570f5a1810b7af78caf4bc70a660f0df51e42baf91d4de5b2328de0e83dfc",
+      "value": 0.0
+    },
+    "coastal_restore_coef_2d": {
+      "dtype": "<f8",
+      "shape": [
+        8,
+        4
+      ],
+      "sha256": "5341e6b2646979a70e57653007a1f310169421ec9bdd9f1a5648f75ade005af1"
+    },
+    "coastal_restore_T_2d": {
+      "dtype": "<f8",
+      "shape": [
+        8,
+        4
+      ],
+      "sha256": "5341e6b2646979a70e57653007a1f310169421ec9bdd9f1a5648f75ade005af1"
+    },
+    "coastal_bulk_lambda_2d": {
+      "dtype": "<f8",
+      "shape": [
+        8,
+        4
+      ],
+      "sha256": "5341e6b2646979a70e57653007a1f310169421ec9bdd9f1a5648f75ade005af1"
+    },
+    "coastal_kappa_h_2d": {
+      "dtype": "<f8",
+      "shape": [
+        8,
+        4
+      ],
+      "sha256": "5341e6b2646979a70e57653007a1f310169421ec9bdd9f1a5648f75ade005af1"
+    },
+    "coastal_kappa_v_2d": {
+      "dtype": "<f8",
+      "shape": [
+        8,
+        4
+      ],
+      "sha256": "5341e6b2646979a70e57653007a1f310169421ec9bdd9f1a5648f75ade005af1"
+    },
+    "sponge_rate": {
+      "dtype": "<f8",
+      "shape": [
+        8,
+        4,
+        1
+      ],
+      "sha256": "5341e6b2646979a70e57653007a1f310169421ec9bdd9f1a5648f75ade005af1"
+    },
+    "sponge_rate_2d": {
+      "dtype": "<f8",
+      "shape": [
+        8,
+        4
+      ],
+      "sha256": "5341e6b2646979a70e57653007a1f310169421ec9bdd9f1a5648f75ade005af1"
+    },
+    "T_clim_3d": {
+      "dtype": "<f8",
+      "shape": [
+        8,
+        4,
+        6
+      ],
+      "sha256": "80422bc3d307b4a25bdafcc84ac7fb01cb55a09810e8b0f37bb12e0edb5c48ca"
+    },
+    "S_clim_3d": {
+      "dtype": "<f8",
+      "shape": [
+        8,
+        4,
+        6
+      ],
+      "sha256": "80422bc3d307b4a25bdafcc84ac7fb01cb55a09810e8b0f37bb12e0edb5c48ca"
+    },
+    "polar_cap_rows": {
+      "dtype": "<i8",
+      "shape": [],
+      "sha256": "af5570f5a1810b7af78caf4bc70a660f0df51e42baf91d4de5b2328de0e83dfc",
+      "value": 0
+    },
+    "polar_cap_taper": {
+      "dtype": "<i8",
+      "shape": [],
+      "sha256": "af5570f5a1810b7af78caf4bc70a660f0df51e42baf91d4de5b2328de0e83dfc",
+      "value": 0
+    },
+    "dealias_lon_mask": {
+      "dtype": "<f8",
+      "shape": [
+        8,
+        1,
+        1
+      ],
+      "sha256": "8a9d020d865f5eb0d5519a10b868f6eb56c389b01fc6744a2db879ec80165f61"
+    },
+    "kappa_gm": {
+      "dtype": "<f8",
+      "shape": [],
+      "sha256": "af5570f5a1810b7af78caf4bc70a660f0df51e42baf91d4de5b2328de0e83dfc",
+      "value": 0.0
+    },
+    "gm_slope_max": {
+      "dtype": "<f8",
+      "shape": [],
+      "sha256": "c738dd99fada954a0be83cb94069e65973256ed5a199cd293841c789ad3b0910",
+      "value": 0.01
+    },
+    "kappa_redi": {
+      "dtype": "<f8",
+      "shape": [],
+      "sha256": "af5570f5a1810b7af78caf4bc70a660f0df51e42baf91d4de5b2328de0e83dfc",
+      "value": 0.0
+    },
+    "eta_relax_mask": {
+      "dtype": "<f8",
+      "shape": [
+        8,
+        4
+      ],
+      "sha256": "5341e6b2646979a70e57653007a1f310169421ec9bdd9f1a5648f75ade005af1"
+    },
+    "eta_relax_rate": {
+      "dtype": "<f8",
+      "shape": [],
+      "sha256": "af5570f5a1810b7af78caf4bc70a660f0df51e42baf91d4de5b2328de0e83dfc",
+      "value": 0.0
+    },
+    "mode_split": {
+      "dtype": "|b1",
+      "shape": [],
+      "sha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a",
+      "value": true
+    },
+    "dt_bt": {
+      "dtype": "<f8",
+      "shape": [],
+      "sha256": "c738dd99fada954a0be83cb94069e65973256ed5a199cd293841c789ad3b0910",
+      "value": 0.01
+    },
+    "n_subcyc": {
+      "dtype": "<i8",
+      "shape": [],
+      "sha256": "220dde27afee4d537cac96d85d6546f825153b90e828931b74e103807541bc42",
+      "value": 12
+    },
+    "conv_nsub": {
+      "dtype": "<i8",
+      "shape": [],
+      "sha256": "7c9fa136d4413fa6173637e883b6998d32e1d675f88cddff9dcbcf331820f4b8",
+      "value": 1
+    },
+    "adv_nsub": {
+      "dtype": "<i8",
+      "shape": [],
+      "sha256": "7c9fa136d4413fa6173637e883b6998d32e1d675f88cddff9dcbcf331820f4b8",
+      "value": 1
+    },
+    "nu_nsub": {
+      "dtype": "<i8",
+      "shape": [],
+      "sha256": "d86e8112f3c4c4442126f8e9f44f16867da487f29052bf91b810457db34209a4",
+      "value": 2
+    },
+    "use_scan": {
+      "dtype": "|b1",
+      "shape": [],
+      "sha256": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+      "value": false
+    },
+    "freeze_adv_vel": {
+      "dtype": "|b1",
+      "shape": [],
+      "sha256": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+      "value": false
+    },
+    "conservative_kv": {
+      "dtype": "|b1",
+      "shape": [],
+      "sha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a",
+      "value": true
+    },
+    "project_adv_vel": {
+      "dtype": "|b1",
+      "shape": [],
+      "sha256": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+      "value": false
+    },
+    "localize_conv": {
+      "dtype": "|b1",
+      "shape": [],
+      "sha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a",
+      "value": true
+    },
+    "monotone_adv": {
+      "dtype": "|b1",
+      "shape": [],
+      "sha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a",
+      "value": true
+    },
+    "fct_adv": {
+      "dtype": "|b1",
+      "shape": [],
+      "sha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a",
+      "value": true
+    },
+    "mixed_layer_depth_m": {
+      "dtype": "<f8",
+      "shape": [],
+      "sha256": "af5570f5a1810b7af78caf4bc70a660f0df51e42baf91d4de5b2328de0e83dfc",
+      "value": 0.0
+    },
+    "mixed_layer_mask_2d": {
+      "dtype": "<f8",
+      "shape": [
+        8,
+        4
+      ],
+      "sha256": "acfc7c36fce590b14adfc8a479e0dcd297e910a7212694c976c8b4284d34c144"
+    },
+    "mixed_layer_depth_2d": null,
+    "ice_freeze_temp_c": {
+      "dtype": "<f8",
+      "shape": [],
+      "sha256": "83a265b1e241286d815273dffde67695ebec8266ae823f73048757d06135da58",
+      "value": -1.8
+    },
+    "ice_salt_flux": {
+      "dtype": "<f8",
+      "shape": [],
+      "sha256": "af5570f5a1810b7af78caf4bc70a660f0df51e42baf91d4de5b2328de0e83dfc",
+      "value": 0.0
+    },
+    "dynamic_ice": {
+      "dtype": "|b1",
+      "shape": [],
+      "sha256": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+      "value": false
+    },
+    "ice_insulation_scale_m": {
+      "dtype": "<f8",
+      "shape": [],
+      "sha256": "6c3c396ed6b5c36dcae172271f462051b1266b851e92df3deea8ac65478fd712",
+      "value": 1.0
+    },
+    "projection_niter": {
+      "dtype": "<i8",
+      "shape": [],
+      "sha256": "5545412ee9a21a04712910d53fc1447c73ff94a29ddd1268131b4ed30d1dbe07",
+      "value": 150
+    },
+    "projection_rtol": {
+      "dtype": "<f8",
+      "shape": [],
+      "sha256": "25d3fe6c302000983bcc638f762b53983f1047c91c8d461d93376f277ccf74f3",
+      "value": 1e-12
+    },
+    "projection_preconditioner": {
+      "dtype": "<U4",
+      "shape": [],
+      "sha256": "59df4a758bd5506698d3448bec4c55a9a882a80c06e6818c90f0e0224584e374",
+      "value": "none"
+    },
+    "projection_inv_diagonal": null,
+    "projection_niter_source": {
+      "dtype": "<U8",
+      "shape": [],
+      "sha256": "c9875a6b719ced950427d4e6808610fef759e003a94494d61a0b7540a674ad3d",
+      "value": "explicit"
+    },
+    "projection_max_refinements": {
+      "dtype": "<i8",
+      "shape": [],
+      "sha256": "d86e8112f3c4c4442126f8e9f44f16867da487f29052bf91b810457db34209a4",
+      "value": 2
+    },
+    "column_geometry": {
+      "dtype": "<U13",
+      "shape": [],
+      "sha256": "f46cda9a818c32614d9df2f35539b6b38a246a8ff02d9568d31e3d8f61ea9a4e",
+      "value": "nodal_dual_v1"
+    },
+    "match_barotropic_transport": {
+      "dtype": "|b1",
+      "shape": [],
+      "sha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a",
+      "value": true
+    },
+    "process_time_scheme": {
+      "dtype": "<U17",
+      "shape": [],
+      "sha256": "7ad1c746c27d6159fdf3cb001564e1155553820b4f093f66e75078812f64f57a",
+      "value": "symmetric_fast_v3"
+    }
+  },
+  "frozen_case_parameter_binding_passed": true,
+  "source_sha256": {
+    "research/experiments/material_top_band/original_native.py": "d6f832927a53e99a18e1957713783e340e7426cf8917049a157f3395d3a1f0e6",
+    "research/experiments/material_top_band/integration.py": "9533cd9aff8bbdd10eb69f53324b5c335697dc6332984917df0672deaad44e6f",
+    "research/experiments/fd_static_bridge/bridge.py": "d2749cdd5c64280630e740ebb35cb2477cede330a78680179e9376b68a07344e",
+    "tests/research/contracts/test_original_native_integration.py": "cfe4c1a53bb3e326b0d20c7efd8ac111de609a9caa1da98282676259bb62d2d3",
+    "docs/original_small_grid_integration_protocol.json": "bffbf48be67c1ba3a98375bd8f0c744f0f68af5ed6847ef798c720fb69cb4b3d",
+    "scripts/run_bounded_research_tests.py": "844c81b1f8185d33bcb79872bd83213807ad0e1f708746ccee52f4a41e00ac03",
+    "scripts/capture_original_native_contract.py": "c72e09c23a9a9b13cae8fa6caac75b51330a5467db736aff40f98667d3b44297",
+    "checkout/src/jax_solver_global.py": "72fa6702cdaa0bbb0db94f133d1187782ff3a2f54af06641335f806a3b4c9ee6",
+    "checkout/src/run_long_integration_global.py": "7b98e51ca147228d448b77ef84c6510d4bde7fbbeb2d628e2fc7a25db6c99769",
+    "src/run_long_integration_global.py": "6b73e9dec108c4c30876fcd5851d58c559f42704d9c8a63c96d38d008b9615eb",
+    "src/compat/run_long_integration_global.py": "6b73e9dec108c4c30876fcd5851d58c559f42704d9c8a63c96d38d008b9615eb",
+    "src/jax_solver_global.py": "f4cad1cb3afd5bc3d50b5b78223b8d4b3e0f295488c8c346b1381abaaddd6191",
+    "src/compat/jax_solver_global.py": "f4cad1cb3afd5bc3d50b5b78223b8d4b3e0f295488c8c346b1381abaaddd6191",
+    "src/restart_contract.py": "7a498b4b211062ec61d530ac68d6899577effe9ad5e3383109733d3f60ed2ad2",
+    "src/compat/restart_contract.py": "7a498b4b211062ec61d530ac68d6899577effe9ad5e3383109733d3f60ed2ad2",
+    "src/config.py": "6e74bfb8d157297f6f2fcc96e8641c76398fa78d65a78c530252a7b8b49c999d",
+    "src/compat/config.py": "6e74bfb8d157297f6f2fcc96e8641c76398fa78d65a78c530252a7b8b49c999d",
+    "src/grid.py": "3a1d6eb3aef94dfcbe4190e44afd115ba24f6694739bc1af6ff8552cb35e6671",
+    "src/compat/grid.py": "3a1d6eb3aef94dfcbe4190e44afd115ba24f6694739bc1af6ff8552cb35e6671",
+    "src/diagnostics.py": "669ac8d22a7791dc7129fc0ad97bd4429780895e6cc8846431e4f45744a7711b",
+    "src/compat/diagnostics.py": "669ac8d22a7791dc7129fc0ad97bd4429780895e6cc8846431e4f45744a7711b",
+    "src/forcing.py": "5f6814f7858f6557a65758531ac2ef6d4831a4386c15a60e29946777e7756cc3",
+    "src/compat/forcing.py": "5f6814f7858f6557a65758531ac2ef6d4831a4386c15a60e29946777e7756cc3",
+    "src/wind_reanalysis.py": "6388ac1ece81292d4261fdf6a3ba3b6f4eb725e900cf20a9cef434ac6bfa81e9",
+    "src/compat/wind_reanalysis.py": "6388ac1ece81292d4261fdf6a3ba3b6f4eb725e900cf20a9cef434ac6bfa81e9",
+    "src/air_reanalysis.py": "49df2075381f338e28aa016046c5e017f922d6ddbb1c6bba84a9777f4912bade",
+    "src/compat/air_reanalysis.py": "49df2075381f338e28aa016046c5e017f922d6ddbb1c6bba84a9777f4912bade",
+    "src/woa_data.py": "fed8532af4adbed947754bb3904e4ac95d73add51d4b2edfc44f40c4bbac3514",
+    "src/compat/woa_data.py": "fed8532af4adbed947754bb3904e4ac95d73add51d4b2edfc44f40c4bbac3514",
+    "src/benchmark_metrics.py": "b466f91dd94a121460fc97f3c6e62854aad1c9d5fa4eb41e1cb871dd6c048b19",
+    "src/compat/benchmark_metrics.py": "b466f91dd94a121460fc97f3c6e62854aad1c9d5fa4eb41e1cb871dd6c048b19",
+    "src/mixed_layer_ice.py": "cf670a239e01e390d738591ae7dad8d6a037e61715d4f224b20a535b654e8e3d",
+    "src/compat/mixed_layer_ice.py": "cf670a239e01e390d738591ae7dad8d6a037e61715d4f224b20a535b654e8e3d",
+    "src/integration_monitor.py": "fd07977550f8e43b4807841857524acb8c83457b02d8e47efcc8a6e727984f85",
+    "src/compat/integration_monitor.py": "fd07977550f8e43b4807841857524acb8c83457b02d8e47efcc8a6e727984f85",
+    "src/runtime_validation.py": "f0ae28048a605b01099b2852e486f15f7bbdf752691ba0b5ca645c63484b422e",
+    "src/compat/runtime_validation.py": "f0ae28048a605b01099b2852e486f15f7bbdf752691ba0b5ca645c63484b422e",
+    "src/stage_budgets.py": "3d0a3ede8a50c3df860df7de7dea7a27c5d2b8b3a2a9aac048f68043f4a78937",
+    "src/compat/stage_budgets.py": "3d0a3ede8a50c3df860df7de7dea7a27c5d2b8b3a2a9aac048f68043f4a78937",
+    "src/finite_volume.py": "5a4cafab3938ee3718ce7d83811b4177ce4ada7c82d809cdd1d66faebd72d13b",
+    "src/compat/finite_volume.py": "5a4cafab3938ee3718ce7d83811b4177ce4ada7c82d809cdd1d66faebd72d13b",
+    "src/bounded_transport.py": "1f365330dfe5b98c4046987d849ef91ac6319652255d6f7fd79834f5fa5531e3",
+    "src/compat/bounded_transport.py": "1f365330dfe5b98c4046987d849ef91ac6319652255d6f7fd79834f5fa5531e3",
+    "src/cgrid_momentum.py": "856e37749b9dc987e75621ff954c3c70c209b4e3b6d168d6a6f43f34f130c918",
+    "src/compat/cgrid_momentum.py": "856e37749b9dc987e75621ff954c3c70c209b4e3b6d168d6a6f43f34f130c918",
+    "src/wet_fluxes.py": "00f77ffd61b5a2b470d1a69cfa3b0349d2b0938f5194553e2c20dfefd72fbce5",
+    "src/compat/wet_fluxes.py": "00f77ffd61b5a2b470d1a69cfa3b0349d2b0938f5194553e2c20dfefd72fbce5",
+    "src/physical_velocity.py": "abb9fb157ab2b21f6c87c8307d3d68642265e2521c08aa3d436cc9dafa26dd2b",
+    "src/compat/physical_velocity.py": "abb9fb157ab2b21f6c87c8307d3d68642265e2521c08aa3d436cc9dafa26dd2b",
+    "src/paired_dynamics.py": "0b3611262a55ac055470f5e1bd9094ad73627fa32450211ca17a8c3a920a4424",
+    "src/compat/paired_dynamics.py": "0b3611262a55ac055470f5e1bd9094ad73627fa32450211ca17a8c3a920a4424",
+    "src/nonlinear_dynamics.py": "83eb0ff3b8fe6e0b4e61fe82bed8ce450ef303bd4e77fdf207f29867f55ac014",
+    "src/compat/nonlinear_dynamics.py": "83eb0ff3b8fe6e0b4e61fe82bed8ce450ef303bd4e77fdf207f29867f55ac014",
+    "src/barotropic_transport.py": "fb0be136c999b95c30ae893ef21c71d421cd2fdf5a5f2b58c3a591cc561d5e86",
+    "src/compat/barotropic_transport.py": "fb0be136c999b95c30ae893ef21c71d421cd2fdf5a5f2b58c3a591cc561d5e86",
+    "src/material_top.py": "6806206acdee7b4da72d8d532fb6e3d4e751faafe6872fbc97993e312c996ad7",
+    "src/compat/material_top.py": "6806206acdee7b4da72d8d532fb6e3d4e751faafe6872fbc97993e312c996ad7",
+    "src/source_identity.py": "557d3eb4f37076d516cae0fb40248b41dd9fa4d685db2ab140564704f524fbb6",
+    "src/compat/source_identity.py": "557d3eb4f37076d516cae0fb40248b41dd9fa4d685db2ab140564704f524fbb6",
+    "src/ocean_solver/__init__.py": "f67b2c1be5145fab5569a6252d8469fd471bef7c065e6a95ab646ca49d461e91",
+    "src/ocean_solver/_compat.py": "7410d4fcb0e1f5856b1e5a43b5e89226cbb36c7c7698ea2c804bcdccab87c937",
+    "src/ocean_solver/audit/__init__.py": "365e8fb36dc5b1368212433b3be926559b2a9450d1d10e30d9f910c247737518",
+    "src/ocean_solver/audit/legacy.py": "16ce5f791867986665fffabc1a75216ead712ca94b919f59ae73c126aa8f0430",
+    "src/ocean_solver/audit/monitor.py": "5e44b499a9227ca9a3c7a13387bff816156a8bc6d7e9417ef32f88e8274dc26f",
+    "src/ocean_solver/audit/schema.py": "4a1ef5ffe5717c8f8f66cda6e322b454e1d9273675a967119dabeb7de048390a",
+    "src/ocean_solver/audit/stages.py": "2aaa89b3223751f0727238806f1fde101ce6d85f44f0936ccadcd71767a1f2d3",
+    "src/ocean_solver/audit/validation.py": "1e6b081376511d144387262bbfef7db5b29c5a184fb065b4a67589f15a261472",
+    "src/ocean_solver/candidates/__init__.py": "4f9f5b981b1ca8ffa2a127f2e0682bbdc6d038fb9f348bf4a9fccb24c734e753",
+    "src/ocean_solver/candidates/fv/__init__.py": "f7362661a614cfc149861e736e0c7a3a2eda3efa3b8f1aab93e6817ff7cbfd71",
+    "src/ocean_solver/candidates/fv/barotropic.py": "64d19788a42dd98c3bb14fac2a01f2d04ab719e04b9acc3042752a0ec0a7b657",
+    "src/ocean_solver/candidates/fv/fluxes.py": "f4ee440c291e714b70bd83fdaa26fb0d182c34df8fd56be328b6ec13a01115a7",
+    "src/ocean_solver/candidates/fv/geometry.py": "c4ecada8653fe9a723db942b903cb0ec6a93e3b4d298af96e5184b1dad7a77f8",
+    "src/ocean_solver/candidates/fv/momentum.py": "ec55146da679b6d2cf4964a7f6452f136cfc489c55435d100b146e0d08dc6304",
+    "src/ocean_solver/candidates/fv/nonlinear.py": "1804809332649292ef2e87a806ec91e0060de4c082da1ae4e44a01cc6b63fb7c",
+    "src/ocean_solver/candidates/fv/paired.py": "fc2e1b94afdd57d274ff30ad530414391baf4e25cbf02f9e1553e039cf8c99ff",
+    "src/ocean_solver/candidates/fv/transport.py": "f30578ceee79087872b24b1b09413845f6d06179f8a53145ba34bb93d0959ae4",
+    "src/ocean_solver/candidates/fv/velocity.py": "4481c5f2031500833dddeb105acb80fe45b6a9fc8886f9fd7ce0a06a2907b387",
+    "src/ocean_solver/candidates/material/__init__.py": "771d61564fd13e1a6824e69e9dc1d41e149eb3cac31c177b86ff62faf1ebc21d",
+    "src/ocean_solver/candidates/material/solver.py": "9318110b633351a39913aa8257f563d95124fc9d9e0ebb165bbd8a452ca7b948",
+    "src/ocean_solver/configuration.py": "fdf09ee3eb84fb658f7baef5a6e274bbb5788aea1163f8007d3180b171284ff7",
+    "src/ocean_solver/data/__init__.py": "6a9a1048e2fd4fca90347ffe23515911aaa9bb03787b4982142b63e49856c265",
+    "src/ocean_solver/data/air.py": "aa3c2a1df6793a19d34b7f73b75c3ba8caf9e5933f828c5c56754e1758b14ac4",
+    "src/ocean_solver/data/climatology.py": "a5c964bea2dd62b246f614d19e77efab5bbbd6d314adebe83839a86d551d5787",
+    "src/ocean_solver/data/erddap.py": "632b797b368f8373847b7712c0100441b23ac1c15967d6ef47fd0cb89baf970c",
+    "src/ocean_solver/data/forcing.py": "cea97d1d6976d1bdb7d9727f6aa86cca9abeaab15561dfa9cf289b2d9d120fed",
+    "src/ocean_solver/data/quality.py": "216dacfe88cde849078c4a190819ce9d68d4e501fa2edea28a471a2bc6835bf8",
+    "src/ocean_solver/data/sla.py": "ab1c91b104caa6723af259bf6104c9a25e73ddf002e0fbda9da4010dd2eb190a",
+    "src/ocean_solver/data/sources.py": "458bfd6624bc9e930b8580432487404cfcee2380e19714716ec50272ba3d2530",
+    "src/ocean_solver/data/ssh.py": "db15ff98d3014d4f7d7aae1d2588c44951ee7c243917b03348b5cc5a9fe9ca8d",
+    "src/ocean_solver/data/wind.py": "df2455609db566ddc158cc4ff46277af3ff36001385f23076e1986acc870ea57",
+    "src/ocean_solver/diagnostics/__init__.py": "5ca047a90cda202d35398c4e29a76262e0c344b05a83ab18c734c72827d41402",
+    "src/ocean_solver/diagnostics/ice.py": "5b981b7ec837b91b7b2754141d50b6880bad68b0fdb3e4ffdcc455a572c24254",
+    "src/ocean_solver/diagnostics/state.py": "534532e59241020daa750d649289652a59d7546414ad5a7e2c19ae481c955922",
+    "src/ocean_solver/fd/__init__.py": "1cacd12c77c084661ecb2826dc09970f9b6d18d53f4c62ad752b11e2f3e0a3dd",
+    "src/ocean_solver/fd/backend.py": "6248c13eb4d61561677b66b828268957bf8cd8fa0aa1fdb2abfb84839bc4e4fb",
+    "src/ocean_solver/fd/barotropic.py": "0778624c6aa42e030cb896588d087f219479215d3a98b7147699e97f659105a3",
+    "src/ocean_solver/fd/closures.py": "22322c1be9b1b91cf30c1d1723bce841c78922dc726548fe097225164a53a151",
+    "src/ocean_solver/fd/eos.py": "0f677d562275c55280814f72f56c14b2a97cd6e9b09ed2dfcb8d8c22e30ab086",
+    "src/ocean_solver/fd/factory.py": "0aa0de72bb66c4ab5fac59b6a26979b67fa11f5667bc2ade1263198da9fef65f",
+    "src/ocean_solver/fd/geometry.py": "13c390db76f5a3fa2b20c551d99d20cc3f2d24497c576bab0822606c622ddbd7",
+    "src/ocean_solver/fd/horizontal.py": "de7722aa2081cd36ea2ab7557728585497c99627ab6ab0f3fc3c83b17666e116",
+    "src/ocean_solver/fd/integration.py": "982fd55b903185f92bb45e906268161d4b5a21f78cde52865784ea9fa6321120",
+    "src/ocean_solver/fd/legacy.py": "bbb39aa3240cd81e8c94d006b4fdb1e27ae521b90d2b4ec507311a147941be7e",
+    "src/ocean_solver/fd/pressure.py": "dc21d64847b987725bbc71b2e8d29077f6673b39837585fbe66bc3fa69b14e25",
+    "src/ocean_solver/fd/processes.py": "957a8c953bd33a5bc7cd47cff200eb199d0822600cda1f37b283e27514791313",
+    "src/ocean_solver/fd/projection.py": "d39a40cf09506b2dc0f7adca5c634aadeab1fdc314089fbdfd443cc051a945ff",
+    "src/ocean_solver/fd/sources.py": "2c7b328af4939e3f7831ef533b75d18b454209f0bad05df62a819f0bb4cd4997",
+    "src/ocean_solver/fd/stability.py": "04fe0ff1d97e77dc333fa3df218dba419c2831234d7f5e70d4dc9a846771de0a",
+    "src/ocean_solver/fd/subcycles.py": "064462f391e4df3c0dbc9a98236a9afc2ff5c486025eb1f726f6753633f8cca9",
+    "src/ocean_solver/fd/transport.py": "bb36d5e7df01b5a72837b31da703f17f87cb4c732ffc2e68908120d521eea2a6",
+    "src/ocean_solver/fd/types.py": "6bf64ac80fbbb80b921a52b8676bbe2b26bd1a592e22c28a9538f6621482d681",
+    "src/ocean_solver/fd/vertical.py": "5018ebdb005caee7338b699b112645d2a30447bd553ca4fd96d91bb4b84b7b10",
+    "src/ocean_solver/geometry/__init__.py": "0c3344876147123a6a0902e31ee37cbdaa083cdcbde3447152053e733c160502",
+    "src/ocean_solver/geometry/columns.py": "e1f1846c1b6f4497ea5b07aa27956cbdc829a5a57367db6ad4e7220148c05748",
+    "src/ocean_solver/geometry/grid.py": "4c8c820971cc1c4e8e8b02037b2df08511da34c46d17ab72e682998fc6c7e9c1",
+    "src/ocean_solver/geometry/types.py": "e89e6fe7e066563c7820397928dcde2b340cebbfd1958ddfeee023dba52c599d",
+    "src/ocean_solver/interop/__init__.py": "4cb6aa36fe61958cc70abc0ae53106753fe26d4b3f89acab326b1f7a1f5d1bfe",
+    "src/ocean_solver/interop/mom6/__init__.py": "4213703126cd5561fef0c72b3b3059b0eb5d6b3d31a80bf326ce667551e3a322",
+    "src/ocean_solver/interop/mom6/air_temperature.py": "e080e7d71fecbe4beb5b19c275608e7bc3d9e7bbe4adc1c29237299ffef74f8f",
+    "src/ocean_solver/interop/mom6/sensible_heat.py": "8384a07eb65197a7bbf4df905cb982a025cfe32972b1ace887a799cf1c12749b",
+    "src/ocean_solver/interop/mom6/wind.py": "16d959f3c1e9c126ccfe1f474f52f3d4f44696cf3ff7fbfe03ab1b94f0507460",
+    "src/ocean_solver/physics/__init__.py": "f35613f8ec9b91e2d87c1014ae3a0f572f9e69bdb34d384c7c23feef02eaf30c",
+    "src/ocean_solver/physics/ice.py": "33f25a47c69aad8ffe2075c5171b3d3ae34251e4421076c44b60e56cdac60b31",
+    "src/ocean_solver/provenance/__init__.py": "daf5d6bfcecc2b278842a3426572a906a824b2a1f520668da6bb8992e35bd64e",
+    "src/ocean_solver/provenance/archives.py": "fdac38e46000c5ac36dbd359a99e08f828ff46a719ca80a260bdedbb6dee1cad",
+    "src/ocean_solver/provenance/locations.py": "3fe45664b300e670d7986bc265eca63eecdbc6e6a02355df6f3e08fb433521ff",
+    "src/ocean_solver/provenance/restart.py": "d3d405a5356e7fe614e95fac348bdbde4d58b6f840e138caa94fd1b568f43c46",
+    "src/ocean_solver/provenance/sources.py": "580ee60faaafb8139c668a0002b7bfe427e322bbeb4c78be098ff4e27b398409",
+    "src/ocean_solver/runtime/__init__.py": "399879107e3a2f1267bb2f1f70afb15984a9832c8fbdd83222c9d30fed5eacd7",
+    "src/ocean_solver/runtime/application.py": "dd6c17389495d3e5c83d45e156ae1de586204f42cb620a00b21fa1c0db1b14b3",
+    "src/ocean_solver/runtime/cli.py": "8fa7b7f15d5bcc81f209fdc9102a3cfb7bd4333d14aad74ef5beaff4a50dcc3d",
+    "src/ocean_solver/runtime/context.py": "cfd078c304e76828e58472bbbfdf81cced287b07cd5903f8467d19af5439e102",
+    "src/ocean_solver/runtime/entry.py": "1726747b46ec87bf14fd46eca5a7b6fcff897bfa7c75f38885bac315b1a80982",
+    "src/ocean_solver/runtime/forcing.py": "653be3b4567d4a2c6678abc605b26adfcef21086dac3eb45799737e98926b2fe",
+    "src/ocean_solver/runtime/identity.py": "b18e0c902fdd4e2580e1bc8e52fa533a693fd1be5ef257694f1178bc538054fa",
+    "src/ocean_solver/runtime/inputs.py": "1e4116540283c9b451b58d57505a1a3d1be38429defca6934cc7a97c5a82d6c4",
+    "src/ocean_solver/runtime/integration.py": "1e43f101d0ef983a6afa74d9e9c17772789cd6630a044fbde2fb1967233ea107",
+    "src/ocean_solver/runtime/metrics.py": "bbbba9e644d0483cc3d690892374a0810bb8916c9eaa54fade1a46e8fb6498a0",
+    "src/ocean_solver/runtime/output.py": "924fb1fc0e4f955f84e6d3a90d22ab2e0d711ad350540c2eb6a0d38cc768acab",
+    "src/ocean_solver/runtime/paths.py": "dd6988ef02863aa5015f7aa1503145567a5626e1d18bdfb969ebe31f73e6c255",
+    "src/ocean_solver/runtime/records.py": "a03bfb5e9dd920ad6aed9665aaf4d596eb05b447c6dafa58de0a8628066dfc85",
+    "src/ocean_solver/runtime/recovery.py": "90504c3eacb427f16ce95f15caaf332385877c59ee1f1fed0080a304edb8bd92",
+    "src/ocean_solver/runtime/reporting.py": "4b4642be4c61003117895a9f6823efb622d5257fb63c6a48731055b83ecbb8ce",
+    "src/ocean_solver/runtime/seasonal.py": "b9d11758ad3ac4a33938ac48e3061c27c3e682b8ff3b132718baa457c870c31c",
+    "src/ocean_solver/runtime/services.py": "8b51179b8e34b61322b0998fe7171cae40366bcbefd9e87e1db7080953695ffd",
+    "src/ocean_solver/validation/__init__.py": "88494f817870d4d2e410079bb9b420a590dde9c5f805d0486ca3405e08f9b5b1",
+    "src/ocean_solver/validation/benchmarks/__init__.py": "a56607a9eceb94e3a9735762c1509bf6d15cf130060ffa46797b942e23bb02dd",
+    "src/ocean_solver/validation/benchmarks/climatology.py": "bfa9d92ce2227cfcd220b2976718b4f2c866ac685e998fb80cfcdcbdb538a1e9",
+    "src/ocean_solver/validation/benchmarks/external.py": "7ca03232b0620ef79eb339a96add5967dd169a6707878055095fc4f8cb157a21",
+    "src/ocean_solver/validation/benchmarks/gate.py": "4bf7ecce899e61f91f7ad6455a77863efbceddc35d10201adbb39e07fbffe81a",
+    "src/ocean_solver/validation/benchmarks/manifest.py": "ac17a861d25bd64fc4fedf0f6e8dc7e97d19cde17e3e9cea6194d32612ae61ee",
+    "src/ocean_solver/validation/benchmarks/metrics.py": "e0c85c68c4c1f8c6de10fe1aede6715077337f347217cd0142a99b2d4b6e6c3b",
+    "src/ocean_solver/validation/benchmarks/mom6.py": "fe3684a79c10bfde0b79ec98b2b1bc252b5f4e0b48ad50449cf6a0e853002784",
+    "src/ocean_solver/validation/benchmarks/table.py": "fb041c667c705dabfa4f1df800eb2466cd52f2d7cb448092f4d8e6bbbb2f67c9",
+    "src/ocean_solver/validation/mms.py": "ce215f54dbba1aa252a96ba4afb60819efe1fd9ccb4da5af86354334f72a8a1f",
+    "src/input_quality.py": "e8181f17a415b080703e18bf350f8582b843b2a08b0ebf2c6d05ea4e3af2e2ee",
+    "src/compat/input_quality.py": "e8181f17a415b080703e18bf350f8582b843b2a08b0ebf2c6d05ea4e3af2e2ee",
+    "src/input_sources.py": "038727537190abadc9b35e7027f3e831c4bac6cf5395b0f4637d132454f4b3a2",
+    "src/compat/input_sources.py": "038727537190abadc9b35e7027f3e831c4bac6cf5395b0f4637d132454f4b3a2",
+    "src/erddap_fetch.py": "48201eba22231a8d4ae988a0258305c64c43bbe1e2bc60d1ed8a3e0c8b08f817",
+    "src/compat/erddap_fetch.py": "48201eba22231a8d4ae988a0258305c64c43bbe1e2bc60d1ed8a3e0c8b08f817",
+    "src/fetch_sla_monthly.py": "1b2591fd3a893ef86fabd6f858f01367b4e6fc389bd05d914d7e273b6c8735d3",
+    "src/compat/fetch_sla_monthly.py": "1b2591fd3a893ef86fabd6f858f01367b4e6fc389bd05d914d7e273b6c8735d3",
+    "src/fetch_ssh_abs_monthly.py": "cffef716c8cad50c5cce337da8fd85be18a92e2579fb059fc5df1298c9a33279",
+    "src/compat/fetch_ssh_abs_monthly.py": "cffef716c8cad50c5cce337da8fd85be18a92e2579fb059fc5df1298c9a33279",
+    "src/benchmark_gate.py": "cad410e8af4e7c4a3eff453c00af30b8fe7a34b0956739b6c2e902abf6d22499",
+    "src/compat/benchmark_gate.py": "cad410e8af4e7c4a3eff453c00af30b8fe7a34b0956739b6c2e902abf6d22499",
+    "src/benchmark_manifest.py": "5039dd0e2e6491c522fa4052bc2c912df39014dd87bfa972241b0ae043992ef7",
+    "src/compat/benchmark_manifest.py": "5039dd0e2e6491c522fa4052bc2c912df39014dd87bfa972241b0ae043992ef7",
+    "src/benchmark_table.py": "59037e4e9f9980479228521c793dfe1b7de6ae34ed47afa3f36649ed6c6eea1d",
+    "src/compat/benchmark_table.py": "59037e4e9f9980479228521c793dfe1b7de6ae34ed47afa3f36649ed6c6eea1d",
+    "src/score_external_model.py": "b25f575e0334a51c90bafa3a6ffee363c35836813a877b1e6a815dabeeadc93e",
+    "src/compat/score_external_model.py": "b25f575e0334a51c90bafa3a6ffee363c35836813a877b1e6a815dabeeadc93e",
+    "src/score_mom6_prog.py": "9276fcb1a6db450460e32e051336847530b1afe8c61e8381a64f9b58c1747fed",
+    "src/compat/score_mom6_prog.py": "9276fcb1a6db450460e32e051336847530b1afe8c61e8381a64f9b58c1747fed",
+    "src/bench_climatology_global.py": "c83b6f32fa488cfb3d55065638e147d540ed68c02060d3c61023b7a3e75caae4",
+    "src/compat/bench_climatology_global.py": "c83b6f32fa488cfb3d55065638e147d540ed68c02060d3c61023b7a3e75caae4",
+    "src/summarize_ice_diagnostics.py": "d6de4dedbfbe4dee0f574847bb70c056b0f4fbf03e1b9a2da5aeacef8c3be260",
+    "src/compat/summarize_ice_diagnostics.py": "d6de4dedbfbe4dee0f574847bb70c056b0f4fbf03e1b9a2da5aeacef8c3be260",
+    "src/export_mom6_air_temp_forcing.py": "249d8f8497e6afc9c11bc709ddefcd33175cbd70d6148646338b9e50d9b5641a",
+    "src/compat/export_mom6_air_temp_forcing.py": "249d8f8497e6afc9c11bc709ddefcd33175cbd70d6148646338b9e50d9b5641a",
+    "src/export_mom6_sensible_forcing.py": "b0c7d6893a7b25a5faeb7db0d99cee78371d9f6967b3de2e426bfcbbdab2c6ec",
+    "src/compat/export_mom6_sensible_forcing.py": "b0c7d6893a7b25a5faeb7db0d99cee78371d9f6967b3de2e426bfcbbdab2c6ec",
+    "src/export_mom6_wind_forcing.py": "2600bff82308c5a472b364736912bb4c8cb9d9581f18b02c78003cf72dfe86af",
+    "src/compat/export_mom6_wind_forcing.py": "2600bff82308c5a472b364736912bb4c8cb9d9581f18b02c78003cf72dfe86af",
+    "tests/__init__.py": "fb5605542c68fd10404450044a9a00b581566251620f147d67111d9713388efb",
+    "tests/candidates/__init__.py": "4f9f5b981b1ca8ffa2a127f2e0682bbdc6d038fb9f348bf4a9fccb24c734e753",
+    "tests/candidates/fv/__init__.py": "f7362661a614cfc149861e736e0c7a3a2eda3efa3b8f1aab93e6817ff7cbfd71",
+    "tests/candidates/material/__init__.py": "771d61564fd13e1a6824e69e9dc1d41e149eb3cac31c177b86ff62faf1ebc21d",
+    "tests/data/__init__.py": "6a9a1048e2fd4fca90347ffe23515911aaa9bb03787b4982142b63e49856c265",
+    "tests/fd/__init__.py": "aae47d986ccea134d5789ce495b7d30e7daf2363930cd52bd9b6cbde62f85f40",
+    "tests/infrastructure/__init__.py": "3c0e3b40a2425e7728cff81f55b1ab803ed91213209841a9d831be5f4c8eff74",
+    "tests/research/__init__.py": "70bfe784ffe2d3b9ff0bc98fa62ef747e85d14b18c683f47964682577745b3ce",
+    "tests/research/contracts/__init__.py": "a5ed159851ef06e5b90d04207746aeb04fc9c3f0b30afe7da5325bdf1b2c2845",
+    "tests/research/rstar/__init__.py": "748ee066b9587c510ca2d8866c32c16a54dd324a2eeb5f07ecddc2c400d180fe",
+    "tests/runtime/__init__.py": "303f7fb3c086e6a87a713bdfa7a4b03bd600edfc7cb348dec69f10401f7bbac0",
+    "tests/support/__init__.py": "3e6fa5bd095067bc605dadee192481713e837f7a4ffef2680f99bbf5155e5cb0",
+    "tests/support/data/__init__.py": "6a9a1048e2fd4fca90347ffe23515911aaa9bb03787b4982142b63e49856c265",
+    "tests/support/data/input_quality.py": "d62d5e05fbe0e4338f7c0800055d203168c6566e0190b3d4b9e8fd718b9a8512",
+    "tests/support/data/input_sources.py": "b6d98903d5bcb5fd9bc61811a54df78d163ec50b9e9e3f495e185312c3225511",
+    "tests/support/driver.py": "45eb7393e52edd128a52fe337bf466449b171e4e43a4d98be5502c26ef6c50ba",
+    "tests/support/fd/__init__.py": "aae47d986ccea134d5789ce495b7d30e7daf2363930cd52bd9b6cbde62f85f40",
+    "tests/support/fd/advection.py": "2285fc578867502b052a40f1655a7a3989315a87113b8c251781dd03483a5980",
+    "tests/support/fd/column_projection.py": "e2540cc361c6d9f329acfd1d0a318cca1b4917c867c1ec5a2b26064185ebd02b",
+    "tests/support/fd/horizontal_diffusion.py": "20afc9802e59d13ad032d1b1ad08b9639666eece6d42166b412202448f4baabe",
+    "tests/support/fd/nonlinear_budgets.py": "4285de27ba559c28b6b3090208b429aa8b05216977f273c53b1e883d84443891",
+    "tests/support/fd/surface_energy.py": "45a947f5e377beff68616757cb924a2e27eb55776a0a0fa4f05fa7097ea44a98",
+    "tests/support/grid.py": "e41229ec9bb445f734960b0591b231f4dfbacaf16e9c5ea7e5f92bcc871645cd",
+    "tests/support/material/__init__.py": "771d61564fd13e1a6824e69e9dc1d41e149eb3cac31c177b86ff62faf1ebc21d",
+    "tests/support/material/joint_momentum.py": "6e3f279d3fdd9e347146da38900df20a1fb6adc2c4978029d5c754e5e7f83c2c",
+    "tests/support/material/local_top_bridge.py": "bb27dbfe89065d62c690aa2b5b2fb0bc8637a2542464f802fb8117c59a45d3a3",
+    "tests/support/material/process_time.py": "4df5645a96c7cda2d72e62de3b795bd4bc5612a113d222558cc3df5b5e9a991b",
+    "tests/support/material/reference_geometry.py": "a980c573e73a19eda3136bf72bfe05567a13ea01ec671e80e7dad3ea154ef1c3",
+    "tests/support/material/subcycled_rk.py": "24a8dc37a3cf58ec3fde454b617e3b295b4986443f20b99582f6e4c0fc2a95f8",
+    "tests/support/material/subcycles.py": "0352ff46e6c3e05d877a24c7c79a7648a134a4178a0e71ea83d3fbe79c800cc5",
+    "tests/support/material/top.py": "c63d7f3086f7dff3292c7504201f0558762d3c7281983b932f35d2826fb1850b",
+    "tests/support/original_native.py": "cf33ad0f91ff8613c3696198c46a9d86c5794a9e57bd7d894b1d3191bb8a9b4e",
+    "tests/support/paths.py": "78fffa648dfee6ae0fa6059a3d99fbad677fafe1fc96feda688f66ea4061c96b",
+    "tests/support/rstar/__init__.py": "748ee066b9587c510ca2d8866c32c16a54dd324a2eeb5f07ecddc2c400d180fe",
+    "tests/support/rstar/metric_controls.py": "1babfb969623531d40d0629cae47c0ea87e1b6cd4ed44af3bc13e47069a67cc4",
+    "tests/support/rstar/pressure_work.py": "99f55dd77cc0222a95d26d09cf14763a6e5e5400d486fd424e5376f76dc32dcf",
+    "tests/support/rstar/representation.py": "cfbb550337a4853f17f51aabdfae8fca774c3ef3f6b35770b5f0fbe7a8f628fd",
+    "tests/support/rstar/sparse_diffusion.py": "bd0f289db1f5855de565da0fac6b1903c9c29bf19541b51e46e92ed86a133a87",
+    "tests/support/rstar/weak_bounded.py": "e61ccd6dddea94a4a4102c05403b25d4ccc0d8a120fa00e3618178df1dc5f9f9",
+    "tests/support/rstar/weak_momentum.py": "16a83be30975b7373aeb2ba5bca86f1539a1ecf54863cff28761b7c4c3955860",
+    "tests/support/rstar/weak_time.py": "63bbf0ddc0e8ff1f5bd2329308200a6fdf71f825577b6f750685eb45af506a12",
+    "tests/support/rstar/weak_transport.py": "29989b98a8cc59000aa9050dfc5d26f91020c2bfdc25d495fe3d89964d0f031b",
+    "tests/validation/__init__.py": "edf76e03fd7e09d7118146af929d09ef716d66fd2eaa718421b12e9950d3c1b1",
+    "docs/source_test_layout.json": "14e1d6f05414a951d50939da8eeeda04540a083bfad03f5ded493b03f1e7d43c"
+  },
+  "source_byte_metadata": {
+    "research/experiments/material_top_band/original_native.py": {
+      "checkout_path": "research/experiments/material_top_band/original_native.py",
+      "actual_byte_sha256": "d6f832927a53e99a18e1957713783e340e7426cf8917049a157f3395d3a1f0e6",
+      "byte_count": 15027,
+      "CRLF_count": 0,
+      "LF_count": 312,
+      "git_blob_sha1": "f1214dfabfe5f46eacbed200e1f05d16652cece3",
+      "git_blob_sha256": "d6f832927a53e99a18e1957713783e340e7426cf8917049a157f3395d3a1f0e6",
+      "equal_after_CRLF_to_LF": true
+    },
+    "research/experiments/material_top_band/integration.py": {
+      "checkout_path": "research/experiments/material_top_band/integration.py",
+      "actual_byte_sha256": "9533cd9aff8bbdd10eb69f53324b5c335697dc6332984917df0672deaad44e6f",
+      "byte_count": 19755,
+      "CRLF_count": 0,
+      "LF_count": 353,
+      "git_blob_sha1": "34b7103873fb2d6d542df16dc91b7a853ce90f00",
+      "git_blob_sha256": "9533cd9aff8bbdd10eb69f53324b5c335697dc6332984917df0672deaad44e6f",
+      "equal_after_CRLF_to_LF": true
+    },
+    "research/experiments/fd_static_bridge/bridge.py": {
+      "checkout_path": "research/experiments/fd_static_bridge/bridge.py",
+      "actual_byte_sha256": "d2749cdd5c64280630e740ebb35cb2477cede330a78680179e9376b68a07344e",
+      "byte_count": 6118,
+      "CRLF_count": 0,
+      "LF_count": 165,
+      "git_blob_sha1": "32a6ba45270187ca828a2faa3232c92e3af2c9b0",
+      "git_blob_sha256": "d2749cdd5c64280630e740ebb35cb2477cede330a78680179e9376b68a07344e",
+      "equal_after_CRLF_to_LF": true
+    },
+    "tests/research/contracts/test_original_native_integration.py": {
+      "checkout_path": "tests/research/contracts/test_original_native_integration.py",
+      "actual_byte_sha256": "cfe4c1a53bb3e326b0d20c7efd8ac111de609a9caa1da98282676259bb62d2d3",
+      "byte_count": 14774,
+      "CRLF_count": 0,
+      "LF_count": 319,
+      "git_blob_sha1": "b52452cc2cfd637d7a6d9df414861330ecbd763b",
+      "git_blob_sha256": "cfe4c1a53bb3e326b0d20c7efd8ac111de609a9caa1da98282676259bb62d2d3",
+      "equal_after_CRLF_to_LF": true
+    },
+    "docs/original_small_grid_integration_protocol.json": {
+      "checkout_path": "docs/original_small_grid_integration_protocol.json",
+      "actual_byte_sha256": "bffbf48be67c1ba3a98375bd8f0c744f0f68af5ed6847ef798c720fb69cb4b3d",
+      "byte_count": 7829,
+      "CRLF_count": 0,
+      "LF_count": 202,
+      "git_blob_sha1": "ee48804dc2edf7e3ee910b469e9b48337aa40cd7",
+      "git_blob_sha256": "bffbf48be67c1ba3a98375bd8f0c744f0f68af5ed6847ef798c720fb69cb4b3d",
+      "equal_after_CRLF_to_LF": true
+    },
+    "scripts/run_bounded_research_tests.py": {
+      "checkout_path": "scripts/run_bounded_research_tests.py",
+      "actual_byte_sha256": "844c81b1f8185d33bcb79872bd83213807ad0e1f708746ccee52f4a41e00ac03",
+      "byte_count": 6320,
+      "CRLF_count": 0,
+      "LF_count": 125,
+      "git_blob_sha1": "c7c94c6f70096fb5d3021dbdd5bfbf19b7213bae",
+      "git_blob_sha256": "844c81b1f8185d33bcb79872bd83213807ad0e1f708746ccee52f4a41e00ac03",
+      "equal_after_CRLF_to_LF": true
+    },
+    "scripts/capture_original_native_contract.py": {
+      "checkout_path": "scripts/capture_original_native_contract.py",
+      "actual_byte_sha256": "c72e09c23a9a9b13cae8fa6caac75b51330a5467db736aff40f98667d3b44297",
+      "byte_count": 9529,
+      "CRLF_count": 0,
+      "LF_count": 156,
+      "git_blob_sha1": "3945508c789ed23789050d9fc0861c9f4c432ea5",
+      "git_blob_sha256": "c72e09c23a9a9b13cae8fa6caac75b51330a5467db736aff40f98667d3b44297",
+      "equal_after_CRLF_to_LF": true
+    },
+    "checkout/src/jax_solver_global.py": {
+      "checkout_path": "src/jax_solver_global.py",
+      "actual_byte_sha256": "72fa6702cdaa0bbb0db94f133d1187782ff3a2f54af06641335f806a3b4c9ee6",
+      "byte_count": 371,
+      "CRLF_count": 0,
+      "LF_count": 12,
+      "git_blob_sha1": "14ead52f594eb235199cf4cf3d26e36bc5f7ae68",
+      "git_blob_sha256": "72fa6702cdaa0bbb0db94f133d1187782ff3a2f54af06641335f806a3b4c9ee6",
+      "equal_after_CRLF_to_LF": true
+    },
+    "checkout/src/run_long_integration_global.py": {
+      "checkout_path": "src/run_long_integration_global.py",
+      "actual_byte_sha256": "7b98e51ca147228d448b77ef84c6510d4bde7fbbeb2d628e2fc7a25db6c99769",
+      "byte_count": 389,
+      "CRLF_count": 0,
+      "LF_count": 12,
+      "git_blob_sha1": "372c12f4a9bde34065b709d42d33e723fb75ecd5",
+      "git_blob_sha256": "7b98e51ca147228d448b77ef84c6510d4bde7fbbeb2d628e2fc7a25db6c99769",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/run_long_integration_global.py": {
+      "checkout_path": "src/compat/run_long_integration_global.py",
+      "actual_byte_sha256": "6b73e9dec108c4c30876fcd5851d58c559f42704d9c8a63c96d38d008b9615eb",
+      "byte_count": 294,
+      "CRLF_count": 0,
+      "LF_count": 9,
+      "git_blob_sha1": "f6eef3436d43f0d3074d6d25cd9a000896483e4a",
+      "git_blob_sha256": "6b73e9dec108c4c30876fcd5851d58c559f42704d9c8a63c96d38d008b9615eb",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/compat/run_long_integration_global.py": {
+      "checkout_path": "src/compat/run_long_integration_global.py",
+      "actual_byte_sha256": "6b73e9dec108c4c30876fcd5851d58c559f42704d9c8a63c96d38d008b9615eb",
+      "byte_count": 294,
+      "CRLF_count": 0,
+      "LF_count": 9,
+      "git_blob_sha1": "f6eef3436d43f0d3074d6d25cd9a000896483e4a",
+      "git_blob_sha256": "6b73e9dec108c4c30876fcd5851d58c559f42704d9c8a63c96d38d008b9615eb",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/jax_solver_global.py": {
+      "checkout_path": "src/compat/jax_solver_global.py",
+      "actual_byte_sha256": "f4cad1cb3afd5bc3d50b5b78223b8d4b3e0f295488c8c346b1381abaaddd6191",
+      "byte_count": 282,
+      "CRLF_count": 0,
+      "LF_count": 9,
+      "git_blob_sha1": "b0ff58471a2e1ed76686cf5ded07cd332c77535a",
+      "git_blob_sha256": "f4cad1cb3afd5bc3d50b5b78223b8d4b3e0f295488c8c346b1381abaaddd6191",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/compat/jax_solver_global.py": {
+      "checkout_path": "src/compat/jax_solver_global.py",
+      "actual_byte_sha256": "f4cad1cb3afd5bc3d50b5b78223b8d4b3e0f295488c8c346b1381abaaddd6191",
+      "byte_count": 282,
+      "CRLF_count": 0,
+      "LF_count": 9,
+      "git_blob_sha1": "b0ff58471a2e1ed76686cf5ded07cd332c77535a",
+      "git_blob_sha256": "f4cad1cb3afd5bc3d50b5b78223b8d4b3e0f295488c8c346b1381abaaddd6191",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/restart_contract.py": {
+      "checkout_path": "src/compat/restart_contract.py",
+      "actual_byte_sha256": "7a498b4b211062ec61d530ac68d6899577effe9ad5e3383109733d3f60ed2ad2",
+      "byte_count": 309,
+      "CRLF_count": 0,
+      "LF_count": 9,
+      "git_blob_sha1": "dcb534ed5788d853c78a518f49ed3733024f52a5",
+      "git_blob_sha256": "7a498b4b211062ec61d530ac68d6899577effe9ad5e3383109733d3f60ed2ad2",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/compat/restart_contract.py": {
+      "checkout_path": "src/compat/restart_contract.py",
+      "actual_byte_sha256": "7a498b4b211062ec61d530ac68d6899577effe9ad5e3383109733d3f60ed2ad2",
+      "byte_count": 309,
+      "CRLF_count": 0,
+      "LF_count": 9,
+      "git_blob_sha1": "dcb534ed5788d853c78a518f49ed3733024f52a5",
+      "git_blob_sha256": "7a498b4b211062ec61d530ac68d6899577effe9ad5e3383109733d3f60ed2ad2",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/config.py": {
+      "checkout_path": "src/compat/config.py",
+      "actual_byte_sha256": "6e74bfb8d157297f6f2fcc96e8641c76398fa78d65a78c530252a7b8b49c999d",
+      "byte_count": 294,
+      "CRLF_count": 0,
+      "LF_count": 9,
+      "git_blob_sha1": "d4651d89f38775e00ad60cece1635ec58d83dd61",
+      "git_blob_sha256": "6e74bfb8d157297f6f2fcc96e8641c76398fa78d65a78c530252a7b8b49c999d",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/compat/config.py": {
+      "checkout_path": "src/compat/config.py",
+      "actual_byte_sha256": "6e74bfb8d157297f6f2fcc96e8641c76398fa78d65a78c530252a7b8b49c999d",
+      "byte_count": 294,
+      "CRLF_count": 0,
+      "LF_count": 9,
+      "git_blob_sha1": "d4651d89f38775e00ad60cece1635ec58d83dd61",
+      "git_blob_sha256": "6e74bfb8d157297f6f2fcc96e8641c76398fa78d65a78c530252a7b8b49c999d",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/grid.py": {
+      "checkout_path": "src/compat/grid.py",
+      "actual_byte_sha256": "3a1d6eb3aef94dfcbe4190e44afd115ba24f6694739bc1af6ff8552cb35e6671",
+      "byte_count": 294,
+      "CRLF_count": 0,
+      "LF_count": 9,
+      "git_blob_sha1": "9cbca0955287fd4f15679e574e23be15a4ce8abc",
+      "git_blob_sha256": "3a1d6eb3aef94dfcbe4190e44afd115ba24f6694739bc1af6ff8552cb35e6671",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/compat/grid.py": {
+      "checkout_path": "src/compat/grid.py",
+      "actual_byte_sha256": "3a1d6eb3aef94dfcbe4190e44afd115ba24f6694739bc1af6ff8552cb35e6671",
+      "byte_count": 294,
+      "CRLF_count": 0,
+      "LF_count": 9,
+      "git_blob_sha1": "9cbca0955287fd4f15679e574e23be15a4ce8abc",
+      "git_blob_sha256": "3a1d6eb3aef94dfcbe4190e44afd115ba24f6694739bc1af6ff8552cb35e6671",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/diagnostics.py": {
+      "checkout_path": "src/compat/diagnostics.py",
+      "actual_byte_sha256": "669ac8d22a7791dc7129fc0ad97bd4429780895e6cc8846431e4f45744a7711b",
+      "byte_count": 306,
+      "CRLF_count": 0,
+      "LF_count": 9,
+      "git_blob_sha1": "63bb54209ba0be96e9458143d5c28e27a7c343c5",
+      "git_blob_sha256": "669ac8d22a7791dc7129fc0ad97bd4429780895e6cc8846431e4f45744a7711b",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/compat/diagnostics.py": {
+      "checkout_path": "src/compat/diagnostics.py",
+      "actual_byte_sha256": "669ac8d22a7791dc7129fc0ad97bd4429780895e6cc8846431e4f45744a7711b",
+      "byte_count": 306,
+      "CRLF_count": 0,
+      "LF_count": 9,
+      "git_blob_sha1": "63bb54209ba0be96e9458143d5c28e27a7c343c5",
+      "git_blob_sha256": "669ac8d22a7791dc7129fc0ad97bd4429780895e6cc8846431e4f45744a7711b",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/forcing.py": {
+      "checkout_path": "src/compat/forcing.py",
+      "actual_byte_sha256": "5f6814f7858f6557a65758531ac2ef6d4831a4386c15a60e29946777e7756cc3",
+      "byte_count": 291,
+      "CRLF_count": 0,
+      "LF_count": 9,
+      "git_blob_sha1": "c50369bef9a19213c48d37c3b15b358da4a6b764",
+      "git_blob_sha256": "5f6814f7858f6557a65758531ac2ef6d4831a4386c15a60e29946777e7756cc3",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/compat/forcing.py": {
+      "checkout_path": "src/compat/forcing.py",
+      "actual_byte_sha256": "5f6814f7858f6557a65758531ac2ef6d4831a4386c15a60e29946777e7756cc3",
+      "byte_count": 291,
+      "CRLF_count": 0,
+      "LF_count": 9,
+      "git_blob_sha1": "c50369bef9a19213c48d37c3b15b358da4a6b764",
+      "git_blob_sha256": "5f6814f7858f6557a65758531ac2ef6d4831a4386c15a60e29946777e7756cc3",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/wind_reanalysis.py": {
+      "checkout_path": "src/compat/wind_reanalysis.py",
+      "actual_byte_sha256": "6388ac1ece81292d4261fdf6a3ba3b6f4eb725e900cf20a9cef434ac6bfa81e9",
+      "byte_count": 282,
+      "CRLF_count": 0,
+      "LF_count": 9,
+      "git_blob_sha1": "6c4c798e13c25522f3ac1688dfb7aafb61c0b38e",
+      "git_blob_sha256": "6388ac1ece81292d4261fdf6a3ba3b6f4eb725e900cf20a9cef434ac6bfa81e9",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/compat/wind_reanalysis.py": {
+      "checkout_path": "src/compat/wind_reanalysis.py",
+      "actual_byte_sha256": "6388ac1ece81292d4261fdf6a3ba3b6f4eb725e900cf20a9cef434ac6bfa81e9",
+      "byte_count": 282,
+      "CRLF_count": 0,
+      "LF_count": 9,
+      "git_blob_sha1": "6c4c798e13c25522f3ac1688dfb7aafb61c0b38e",
+      "git_blob_sha256": "6388ac1ece81292d4261fdf6a3ba3b6f4eb725e900cf20a9cef434ac6bfa81e9",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/air_reanalysis.py": {
+      "checkout_path": "src/compat/air_reanalysis.py",
+      "actual_byte_sha256": "49df2075381f338e28aa016046c5e017f922d6ddbb1c6bba84a9777f4912bade",
+      "byte_count": 279,
+      "CRLF_count": 0,
+      "LF_count": 9,
+      "git_blob_sha1": "4e3d11d791d9ce1ef502c9af012ce59f44a670ae",
+      "git_blob_sha256": "49df2075381f338e28aa016046c5e017f922d6ddbb1c6bba84a9777f4912bade",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/compat/air_reanalysis.py": {
+      "checkout_path": "src/compat/air_reanalysis.py",
+      "actual_byte_sha256": "49df2075381f338e28aa016046c5e017f922d6ddbb1c6bba84a9777f4912bade",
+      "byte_count": 279,
+      "CRLF_count": 0,
+      "LF_count": 9,
+      "git_blob_sha1": "4e3d11d791d9ce1ef502c9af012ce59f44a670ae",
+      "git_blob_sha256": "49df2075381f338e28aa016046c5e017f922d6ddbb1c6bba84a9777f4912bade",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/woa_data.py": {
+      "checkout_path": "src/compat/woa_data.py",
+      "actual_byte_sha256": "fed8532af4adbed947754bb3904e4ac95d73add51d4b2edfc44f40c4bbac3514",
+      "byte_count": 303,
+      "CRLF_count": 0,
+      "LF_count": 9,
+      "git_blob_sha1": "8923705531b16b4c116969aa0bc6c2d813de9e51",
+      "git_blob_sha256": "fed8532af4adbed947754bb3904e4ac95d73add51d4b2edfc44f40c4bbac3514",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/compat/woa_data.py": {
+      "checkout_path": "src/compat/woa_data.py",
+      "actual_byte_sha256": "fed8532af4adbed947754bb3904e4ac95d73add51d4b2edfc44f40c4bbac3514",
+      "byte_count": 303,
+      "CRLF_count": 0,
+      "LF_count": 9,
+      "git_blob_sha1": "8923705531b16b4c116969aa0bc6c2d813de9e51",
+      "git_blob_sha256": "fed8532af4adbed947754bb3904e4ac95d73add51d4b2edfc44f40c4bbac3514",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/benchmark_metrics.py": {
+      "checkout_path": "src/compat/benchmark_metrics.py",
+      "actual_byte_sha256": "b466f91dd94a121460fc97f3c6e62854aad1c9d5fa4eb41e1cb871dd6c048b19",
+      "byte_count": 342,
+      "CRLF_count": 0,
+      "LF_count": 9,
+      "git_blob_sha1": "f0da7bb673f28f47000c5d0ee06c6b9aad2b5bd5",
+      "git_blob_sha256": "b466f91dd94a121460fc97f3c6e62854aad1c9d5fa4eb41e1cb871dd6c048b19",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/compat/benchmark_metrics.py": {
+      "checkout_path": "src/compat/benchmark_metrics.py",
+      "actual_byte_sha256": "b466f91dd94a121460fc97f3c6e62854aad1c9d5fa4eb41e1cb871dd6c048b19",
+      "byte_count": 342,
+      "CRLF_count": 0,
+      "LF_count": 9,
+      "git_blob_sha1": "f0da7bb673f28f47000c5d0ee06c6b9aad2b5bd5",
+      "git_blob_sha256": "b466f91dd94a121460fc97f3c6e62854aad1c9d5fa4eb41e1cb871dd6c048b19",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/mixed_layer_ice.py": {
+      "checkout_path": "src/compat/mixed_layer_ice.py",
+      "actual_byte_sha256": "cf670a239e01e390d738591ae7dad8d6a037e61715d4f224b20a535b654e8e3d",
+      "byte_count": 288,
+      "CRLF_count": 0,
+      "LF_count": 9,
+      "git_blob_sha1": "27d47043df639d4604bf73c427cc893b578397cd",
+      "git_blob_sha256": "cf670a239e01e390d738591ae7dad8d6a037e61715d4f224b20a535b654e8e3d",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/compat/mixed_layer_ice.py": {
+      "checkout_path": "src/compat/mixed_layer_ice.py",
+      "actual_byte_sha256": "cf670a239e01e390d738591ae7dad8d6a037e61715d4f224b20a535b654e8e3d",
+      "byte_count": 288,
+      "CRLF_count": 0,
+      "LF_count": 9,
+      "git_blob_sha1": "27d47043df639d4604bf73c427cc893b578397cd",
+      "git_blob_sha256": "cf670a239e01e390d738591ae7dad8d6a037e61715d4f224b20a535b654e8e3d",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/integration_monitor.py": {
+      "checkout_path": "src/compat/integration_monitor.py",
+      "actual_byte_sha256": "fd07977550f8e43b4807841857524acb8c83457b02d8e47efcc8a6e727984f85",
+      "byte_count": 294,
+      "CRLF_count": 0,
+      "LF_count": 9,
+      "git_blob_sha1": "75581284273e5d6339e643ede5cdaac1ae8ba886",
+      "git_blob_sha256": "fd07977550f8e43b4807841857524acb8c83457b02d8e47efcc8a6e727984f85",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/compat/integration_monitor.py": {
+      "checkout_path": "src/compat/integration_monitor.py",
+      "actual_byte_sha256": "fd07977550f8e43b4807841857524acb8c83457b02d8e47efcc8a6e727984f85",
+      "byte_count": 294,
+      "CRLF_count": 0,
+      "LF_count": 9,
+      "git_blob_sha1": "75581284273e5d6339e643ede5cdaac1ae8ba886",
+      "git_blob_sha256": "fd07977550f8e43b4807841857524acb8c83457b02d8e47efcc8a6e727984f85",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/runtime_validation.py": {
+      "checkout_path": "src/compat/runtime_validation.py",
+      "actual_byte_sha256": "f0ae28048a605b01099b2852e486f15f7bbdf752691ba0b5ca645c63484b422e",
+      "byte_count": 303,
+      "CRLF_count": 0,
+      "LF_count": 9,
+      "git_blob_sha1": "fff1fe62ee0776b51e68196929e92f2d8ff49f20",
+      "git_blob_sha256": "f0ae28048a605b01099b2852e486f15f7bbdf752691ba0b5ca645c63484b422e",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/compat/runtime_validation.py": {
+      "checkout_path": "src/compat/runtime_validation.py",
+      "actual_byte_sha256": "f0ae28048a605b01099b2852e486f15f7bbdf752691ba0b5ca645c63484b422e",
+      "byte_count": 303,
+      "CRLF_count": 0,
+      "LF_count": 9,
+      "git_blob_sha1": "fff1fe62ee0776b51e68196929e92f2d8ff49f20",
+      "git_blob_sha256": "f0ae28048a605b01099b2852e486f15f7bbdf752691ba0b5ca645c63484b422e",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/stage_budgets.py": {
+      "checkout_path": "src/compat/stage_budgets.py",
+      "actual_byte_sha256": "3d0a3ede8a50c3df860df7de7dea7a27c5d2b8b3a2a9aac048f68043f4a78937",
+      "byte_count": 291,
+      "CRLF_count": 0,
+      "LF_count": 9,
+      "git_blob_sha1": "daf6298825c8c9ba3414a5304bdfeedf9eaac235",
+      "git_blob_sha256": "3d0a3ede8a50c3df860df7de7dea7a27c5d2b8b3a2a9aac048f68043f4a78937",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/compat/stage_budgets.py": {
+      "checkout_path": "src/compat/stage_budgets.py",
+      "actual_byte_sha256": "3d0a3ede8a50c3df860df7de7dea7a27c5d2b8b3a2a9aac048f68043f4a78937",
+      "byte_count": 291,
+      "CRLF_count": 0,
+      "LF_count": 9,
+      "git_blob_sha1": "daf6298825c8c9ba3414a5304bdfeedf9eaac235",
+      "git_blob_sha256": "3d0a3ede8a50c3df860df7de7dea7a27c5d2b8b3a2a9aac048f68043f4a78937",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/finite_volume.py": {
+      "checkout_path": "src/compat/finite_volume.py",
+      "actual_byte_sha256": "5a4cafab3938ee3718ce7d83811b4177ce4ada7c82d809cdd1d66faebd72d13b",
+      "byte_count": 321,
+      "CRLF_count": 0,
+      "LF_count": 9,
+      "git_blob_sha1": "15d6e02d4e5b263da495ddb48f52617d0fc51487",
+      "git_blob_sha256": "5a4cafab3938ee3718ce7d83811b4177ce4ada7c82d809cdd1d66faebd72d13b",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/compat/finite_volume.py": {
+      "checkout_path": "src/compat/finite_volume.py",
+      "actual_byte_sha256": "5a4cafab3938ee3718ce7d83811b4177ce4ada7c82d809cdd1d66faebd72d13b",
+      "byte_count": 321,
+      "CRLF_count": 0,
+      "LF_count": 9,
+      "git_blob_sha1": "15d6e02d4e5b263da495ddb48f52617d0fc51487",
+      "git_blob_sha256": "5a4cafab3938ee3718ce7d83811b4177ce4ada7c82d809cdd1d66faebd72d13b",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/bounded_transport.py": {
+      "checkout_path": "src/compat/bounded_transport.py",
+      "actual_byte_sha256": "1f365330dfe5b98c4046987d849ef91ac6319652255d6f7fd79834f5fa5531e3",
+      "byte_count": 324,
+      "CRLF_count": 0,
+      "LF_count": 9,
+      "git_blob_sha1": "ea7e43c66db26a4d3162aaea670df735d0702afb",
+      "git_blob_sha256": "1f365330dfe5b98c4046987d849ef91ac6319652255d6f7fd79834f5fa5531e3",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/compat/bounded_transport.py": {
+      "checkout_path": "src/compat/bounded_transport.py",
+      "actual_byte_sha256": "1f365330dfe5b98c4046987d849ef91ac6319652255d6f7fd79834f5fa5531e3",
+      "byte_count": 324,
+      "CRLF_count": 0,
+      "LF_count": 9,
+      "git_blob_sha1": "ea7e43c66db26a4d3162aaea670df735d0702afb",
+      "git_blob_sha256": "1f365330dfe5b98c4046987d849ef91ac6319652255d6f7fd79834f5fa5531e3",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/cgrid_momentum.py": {
+      "checkout_path": "src/compat/cgrid_momentum.py",
+      "actual_byte_sha256": "856e37749b9dc987e75621ff954c3c70c209b4e3b6d168d6a6f43f34f130c918",
+      "byte_count": 321,
+      "CRLF_count": 0,
+      "LF_count": 9,
+      "git_blob_sha1": "0a50c01d99650dd07bd56c473051045daf8e1734",
+      "git_blob_sha256": "856e37749b9dc987e75621ff954c3c70c209b4e3b6d168d6a6f43f34f130c918",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/compat/cgrid_momentum.py": {
+      "checkout_path": "src/compat/cgrid_momentum.py",
+      "actual_byte_sha256": "856e37749b9dc987e75621ff954c3c70c209b4e3b6d168d6a6f43f34f130c918",
+      "byte_count": 321,
+      "CRLF_count": 0,
+      "LF_count": 9,
+      "git_blob_sha1": "0a50c01d99650dd07bd56c473051045daf8e1734",
+      "git_blob_sha256": "856e37749b9dc987e75621ff954c3c70c209b4e3b6d168d6a6f43f34f130c918",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/wet_fluxes.py": {
+      "checkout_path": "src/compat/wet_fluxes.py",
+      "actual_byte_sha256": "00f77ffd61b5a2b470d1a69cfa3b0349d2b0938f5194553e2c20dfefd72fbce5",
+      "byte_count": 315,
+      "CRLF_count": 0,
+      "LF_count": 9,
+      "git_blob_sha1": "88e8b522cc65bbafa607eb4dbf304e1c264b6e12",
+      "git_blob_sha256": "00f77ffd61b5a2b470d1a69cfa3b0349d2b0938f5194553e2c20dfefd72fbce5",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/compat/wet_fluxes.py": {
+      "checkout_path": "src/compat/wet_fluxes.py",
+      "actual_byte_sha256": "00f77ffd61b5a2b470d1a69cfa3b0349d2b0938f5194553e2c20dfefd72fbce5",
+      "byte_count": 315,
+      "CRLF_count": 0,
+      "LF_count": 9,
+      "git_blob_sha1": "88e8b522cc65bbafa607eb4dbf304e1c264b6e12",
+      "git_blob_sha256": "00f77ffd61b5a2b470d1a69cfa3b0349d2b0938f5194553e2c20dfefd72fbce5",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/physical_velocity.py": {
+      "checkout_path": "src/compat/physical_velocity.py",
+      "actual_byte_sha256": "abb9fb157ab2b21f6c87c8307d3d68642265e2521c08aa3d436cc9dafa26dd2b",
+      "byte_count": 321,
+      "CRLF_count": 0,
+      "LF_count": 9,
+      "git_blob_sha1": "8602a77b9b3451d89fb0a4b95f5b83e81b5bf91b",
+      "git_blob_sha256": "abb9fb157ab2b21f6c87c8307d3d68642265e2521c08aa3d436cc9dafa26dd2b",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/compat/physical_velocity.py": {
+      "checkout_path": "src/compat/physical_velocity.py",
+      "actual_byte_sha256": "abb9fb157ab2b21f6c87c8307d3d68642265e2521c08aa3d436cc9dafa26dd2b",
+      "byte_count": 321,
+      "CRLF_count": 0,
+      "LF_count": 9,
+      "git_blob_sha1": "8602a77b9b3451d89fb0a4b95f5b83e81b5bf91b",
+      "git_blob_sha256": "abb9fb157ab2b21f6c87c8307d3d68642265e2521c08aa3d436cc9dafa26dd2b",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/paired_dynamics.py": {
+      "checkout_path": "src/compat/paired_dynamics.py",
+      "actual_byte_sha256": "0b3611262a55ac055470f5e1bd9094ad73627fa32450211ca17a8c3a920a4424",
+      "byte_count": 315,
+      "CRLF_count": 0,
+      "LF_count": 9,
+      "git_blob_sha1": "6536b4da6861df5658b7e2e4fd1367f1a3777a40",
+      "git_blob_sha256": "0b3611262a55ac055470f5e1bd9094ad73627fa32450211ca17a8c3a920a4424",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/compat/paired_dynamics.py": {
+      "checkout_path": "src/compat/paired_dynamics.py",
+      "actual_byte_sha256": "0b3611262a55ac055470f5e1bd9094ad73627fa32450211ca17a8c3a920a4424",
+      "byte_count": 315,
+      "CRLF_count": 0,
+      "LF_count": 9,
+      "git_blob_sha1": "6536b4da6861df5658b7e2e4fd1367f1a3777a40",
+      "git_blob_sha256": "0b3611262a55ac055470f5e1bd9094ad73627fa32450211ca17a8c3a920a4424",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/nonlinear_dynamics.py": {
+      "checkout_path": "src/compat/nonlinear_dynamics.py",
+      "actual_byte_sha256": "83eb0ff3b8fe6e0b4e61fe82bed8ce450ef303bd4e77fdf207f29867f55ac014",
+      "byte_count": 324,
+      "CRLF_count": 0,
+      "LF_count": 9,
+      "git_blob_sha1": "c2d7197ee9feeb4e448d2b2226cfcab47a44e7f3",
+      "git_blob_sha256": "83eb0ff3b8fe6e0b4e61fe82bed8ce450ef303bd4e77fdf207f29867f55ac014",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/compat/nonlinear_dynamics.py": {
+      "checkout_path": "src/compat/nonlinear_dynamics.py",
+      "actual_byte_sha256": "83eb0ff3b8fe6e0b4e61fe82bed8ce450ef303bd4e77fdf207f29867f55ac014",
+      "byte_count": 324,
+      "CRLF_count": 0,
+      "LF_count": 9,
+      "git_blob_sha1": "c2d7197ee9feeb4e448d2b2226cfcab47a44e7f3",
+      "git_blob_sha256": "83eb0ff3b8fe6e0b4e61fe82bed8ce450ef303bd4e77fdf207f29867f55ac014",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/barotropic_transport.py": {
+      "checkout_path": "src/compat/barotropic_transport.py",
+      "actual_byte_sha256": "fb0be136c999b95c30ae893ef21c71d421cd2fdf5a5f2b58c3a591cc561d5e86",
+      "byte_count": 327,
+      "CRLF_count": 0,
+      "LF_count": 9,
+      "git_blob_sha1": "16a9c72c26118b63ef485862ec2cc5bd689dd9d0",
+      "git_blob_sha256": "fb0be136c999b95c30ae893ef21c71d421cd2fdf5a5f2b58c3a591cc561d5e86",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/compat/barotropic_transport.py": {
+      "checkout_path": "src/compat/barotropic_transport.py",
+      "actual_byte_sha256": "fb0be136c999b95c30ae893ef21c71d421cd2fdf5a5f2b58c3a591cc561d5e86",
+      "byte_count": 327,
+      "CRLF_count": 0,
+      "LF_count": 9,
+      "git_blob_sha1": "16a9c72c26118b63ef485862ec2cc5bd689dd9d0",
+      "git_blob_sha256": "fb0be136c999b95c30ae893ef21c71d421cd2fdf5a5f2b58c3a591cc561d5e86",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/material_top.py": {
+      "checkout_path": "src/compat/material_top.py",
+      "actual_byte_sha256": "6806206acdee7b4da72d8d532fb6e3d4e751faafe6872fbc97993e312c996ad7",
+      "byte_count": 333,
+      "CRLF_count": 0,
+      "LF_count": 9,
+      "git_blob_sha1": "3697eef7be715e8e25f31e608498ec4dea3a3317",
+      "git_blob_sha256": "6806206acdee7b4da72d8d532fb6e3d4e751faafe6872fbc97993e312c996ad7",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/compat/material_top.py": {
+      "checkout_path": "src/compat/material_top.py",
+      "actual_byte_sha256": "6806206acdee7b4da72d8d532fb6e3d4e751faafe6872fbc97993e312c996ad7",
+      "byte_count": 333,
+      "CRLF_count": 0,
+      "LF_count": 9,
+      "git_blob_sha1": "3697eef7be715e8e25f31e608498ec4dea3a3317",
+      "git_blob_sha256": "6806206acdee7b4da72d8d532fb6e3d4e751faafe6872fbc97993e312c996ad7",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/source_identity.py": {
+      "checkout_path": "src/compat/source_identity.py",
+      "actual_byte_sha256": "557d3eb4f37076d516cae0fb40248b41dd9fa4d685db2ab140564704f524fbb6",
+      "byte_count": 309,
+      "CRLF_count": 0,
+      "LF_count": 9,
+      "git_blob_sha1": "52b6c49c40b1cfd906b6877ec34efa41ab1ea731",
+      "git_blob_sha256": "557d3eb4f37076d516cae0fb40248b41dd9fa4d685db2ab140564704f524fbb6",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/compat/source_identity.py": {
+      "checkout_path": "src/compat/source_identity.py",
+      "actual_byte_sha256": "557d3eb4f37076d516cae0fb40248b41dd9fa4d685db2ab140564704f524fbb6",
+      "byte_count": 309,
+      "CRLF_count": 0,
+      "LF_count": 9,
+      "git_blob_sha1": "52b6c49c40b1cfd906b6877ec34efa41ab1ea731",
+      "git_blob_sha256": "557d3eb4f37076d516cae0fb40248b41dd9fa4d685db2ab140564704f524fbb6",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/ocean_solver/__init__.py": {
+      "checkout_path": "src/ocean_solver/__init__.py",
+      "actual_byte_sha256": "f67b2c1be5145fab5569a6252d8469fd471bef7c065e6a95ab646ca49d461e91",
+      "byte_count": 39,
+      "CRLF_count": 0,
+      "LF_count": 1,
+      "git_blob_sha1": "287a2a299c6bfb62e340716a55fa64b00ae1415a",
+      "git_blob_sha256": "f67b2c1be5145fab5569a6252d8469fd471bef7c065e6a95ab646ca49d461e91",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/ocean_solver/_compat.py": {
+      "checkout_path": "src/ocean_solver/_compat.py",
+      "actual_byte_sha256": "7410d4fcb0e1f5856b1e5a43b5e89226cbb36c7c7698ea2c804bcdccab87c937",
+      "byte_count": 465,
+      "CRLF_count": 0,
+      "LF_count": 10,
+      "git_blob_sha1": "9ab33dc32c3575197e6d1a7672690357ad9b7f65",
+      "git_blob_sha256": "7410d4fcb0e1f5856b1e5a43b5e89226cbb36c7c7698ea2c804bcdccab87c937",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/ocean_solver/audit/__init__.py": {
+      "checkout_path": "src/ocean_solver/audit/__init__.py",
+      "actual_byte_sha256": "365e8fb36dc5b1368212433b3be926559b2a9450d1d10e30d9f910c247737518",
+      "byte_count": 45,
+      "CRLF_count": 0,
+      "LF_count": 1,
+      "git_blob_sha1": "c28b0f00baf2610d1ca93862fedc8e10de1676a8",
+      "git_blob_sha256": "365e8fb36dc5b1368212433b3be926559b2a9450d1d10e30d9f910c247737518",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/ocean_solver/audit/legacy.py": {
+      "checkout_path": "src/ocean_solver/audit/legacy.py",
+      "actual_byte_sha256": "16ce5f791867986665fffabc1a75216ead712ca94b919f59ae73c126aa8f0430",
+      "byte_count": 1387,
+      "CRLF_count": 0,
+      "LF_count": 23,
+      "git_blob_sha1": "b072787a559b8587c3326cd23d9594f7c274f237",
+      "git_blob_sha256": "16ce5f791867986665fffabc1a75216ead712ca94b919f59ae73c126aa8f0430",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/ocean_solver/audit/monitor.py": {
+      "checkout_path": "src/ocean_solver/audit/monitor.py",
+      "actual_byte_sha256": "5e44b499a9227ca9a3c7a13387bff816156a8bc6d7e9417ef32f88e8274dc26f",
+      "byte_count": 4411,
+      "CRLF_count": 0,
+      "LF_count": 85,
+      "git_blob_sha1": "946bce368508386e89e2942eb6ac95de878371a5",
+      "git_blob_sha256": "5e44b499a9227ca9a3c7a13387bff816156a8bc6d7e9417ef32f88e8274dc26f",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/ocean_solver/audit/schema.py": {
+      "checkout_path": "src/ocean_solver/audit/schema.py",
+      "actual_byte_sha256": "4a1ef5ffe5717c8f8f66cda6e322b454e1d9273675a967119dabeb7de048390a",
+      "byte_count": 3164,
+      "CRLF_count": 0,
+      "LF_count": 50,
+      "git_blob_sha1": "24f5c3621b5489a05eee2f3349770d86955b12d5",
+      "git_blob_sha256": "4a1ef5ffe5717c8f8f66cda6e322b454e1d9273675a967119dabeb7de048390a",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/ocean_solver/audit/stages.py": {
+      "checkout_path": "src/ocean_solver/audit/stages.py",
+      "actual_byte_sha256": "2aaa89b3223751f0727238806f1fde101ce6d85f44f0936ccadcd71767a1f2d3",
+      "byte_count": 15173,
+      "CRLF_count": 0,
+      "LF_count": 233,
+      "git_blob_sha1": "2861673040d1477fcd70de6ff1c919d6b187dd1b",
+      "git_blob_sha256": "2aaa89b3223751f0727238806f1fde101ce6d85f44f0936ccadcd71767a1f2d3",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/ocean_solver/audit/validation.py": {
+      "checkout_path": "src/ocean_solver/audit/validation.py",
+      "actual_byte_sha256": "1e6b081376511d144387262bbfef7db5b29c5a184fb065b4a67589f15a261472",
+      "byte_count": 1798,
+      "CRLF_count": 0,
+      "LF_count": 42,
+      "git_blob_sha1": "fa70833706897d6c20e7db5d33b59a021feda064",
+      "git_blob_sha256": "1e6b081376511d144387262bbfef7db5b29c5a184fb065b4a67589f15a261472",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/ocean_solver/candidates/__init__.py": {
+      "checkout_path": "src/ocean_solver/candidates/__init__.py",
+      "actual_byte_sha256": "4f9f5b981b1ca8ffa2a127f2e0682bbdc6d038fb9f348bf4a9fccb24c734e753",
+      "byte_count": 29,
+      "CRLF_count": 0,
+      "LF_count": 1,
+      "git_blob_sha1": "cff55c7fa5c7a4a1aff8efe31572ad57322381e5",
+      "git_blob_sha256": "4f9f5b981b1ca8ffa2a127f2e0682bbdc6d038fb9f348bf4a9fccb24c734e753",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/ocean_solver/candidates/fv/__init__.py": {
+      "checkout_path": "src/ocean_solver/candidates/fv/__init__.py",
+      "actual_byte_sha256": "f7362661a614cfc149861e736e0c7a3a2eda3efa3b8f1aab93e6817ff7cbfd71",
+      "byte_count": 21,
+      "CRLF_count": 0,
+      "LF_count": 1,
+      "git_blob_sha1": "9b90078398bed6a66a0831a4bce0b52321564823",
+      "git_blob_sha256": "f7362661a614cfc149861e736e0c7a3a2eda3efa3b8f1aab93e6817ff7cbfd71",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/ocean_solver/candidates/fv/barotropic.py": {
+      "checkout_path": "src/ocean_solver/candidates/fv/barotropic.py",
+      "actual_byte_sha256": "64d19788a42dd98c3bb14fac2a01f2d04ab719e04b9acc3042752a0ec0a7b657",
+      "byte_count": 10087,
+      "CRLF_count": 0,
+      "LF_count": 163,
+      "git_blob_sha1": "91a3b299f7ae294e17d3558847e21573d5dfc9f8",
+      "git_blob_sha256": "64d19788a42dd98c3bb14fac2a01f2d04ab719e04b9acc3042752a0ec0a7b657",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/ocean_solver/candidates/fv/fluxes.py": {
+      "checkout_path": "src/ocean_solver/candidates/fv/fluxes.py",
+      "actual_byte_sha256": "f4ee440c291e714b70bd83fdaa26fb0d182c34df8fd56be328b6ec13a01115a7",
+      "byte_count": 13833,
+      "CRLF_count": 0,
+      "LF_count": 226,
+      "git_blob_sha1": "25144399eecc673054428d1afffeb466f9ba8cc2",
+      "git_blob_sha256": "f4ee440c291e714b70bd83fdaa26fb0d182c34df8fd56be328b6ec13a01115a7",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/ocean_solver/candidates/fv/geometry.py": {
+      "checkout_path": "src/ocean_solver/candidates/fv/geometry.py",
+      "actual_byte_sha256": "c4ecada8653fe9a723db942b903cb0ec6a93e3b4d298af96e5184b1dad7a77f8",
+      "byte_count": 14880,
+      "CRLF_count": 0,
+      "LF_count": 278,
+      "git_blob_sha1": "38ff0e8ba8a38d9d51bee472846d461aa6c35c6f",
+      "git_blob_sha256": "c4ecada8653fe9a723db942b903cb0ec6a93e3b4d298af96e5184b1dad7a77f8",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/ocean_solver/candidates/fv/momentum.py": {
+      "checkout_path": "src/ocean_solver/candidates/fv/momentum.py",
+      "actual_byte_sha256": "ec55146da679b6d2cf4964a7f6452f136cfc489c55435d100b146e0d08dc6304",
+      "byte_count": 22941,
+      "CRLF_count": 0,
+      "LF_count": 372,
+      "git_blob_sha1": "bb09630c4a7dfcc0616dd2dc531f10c4ae1063b9",
+      "git_blob_sha256": "ec55146da679b6d2cf4964a7f6452f136cfc489c55435d100b146e0d08dc6304",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/ocean_solver/candidates/fv/nonlinear.py": {
+      "checkout_path": "src/ocean_solver/candidates/fv/nonlinear.py",
+      "actual_byte_sha256": "1804809332649292ef2e87a806ec91e0060de4c082da1ae4e44a01cc6b63fb7c",
+      "byte_count": 22900,
+      "CRLF_count": 0,
+      "LF_count": 357,
+      "git_blob_sha1": "d05203c1763e3037ab3dc3c7567dc8593c2a61e7",
+      "git_blob_sha256": "1804809332649292ef2e87a806ec91e0060de4c082da1ae4e44a01cc6b63fb7c",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/ocean_solver/candidates/fv/paired.py": {
+      "checkout_path": "src/ocean_solver/candidates/fv/paired.py",
+      "actual_byte_sha256": "fc2e1b94afdd57d274ff30ad530414391baf4e25cbf02f9e1553e039cf8c99ff",
+      "byte_count": 20473,
+      "CRLF_count": 0,
+      "LF_count": 338,
+      "git_blob_sha1": "e2201afecd6f0b329e06dd344aa74e04cc4837ac",
+      "git_blob_sha256": "fc2e1b94afdd57d274ff30ad530414391baf4e25cbf02f9e1553e039cf8c99ff",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/ocean_solver/candidates/fv/transport.py": {
+      "checkout_path": "src/ocean_solver/candidates/fv/transport.py",
+      "actual_byte_sha256": "f30578ceee79087872b24b1b09413845f6d06179f8a53145ba34bb93d0959ae4",
+      "byte_count": 8220,
+      "CRLF_count": 0,
+      "LF_count": 137,
+      "git_blob_sha1": "9ae2d7b5fa7191984d6350258c8ce77148ad2f30",
+      "git_blob_sha256": "f30578ceee79087872b24b1b09413845f6d06179f8a53145ba34bb93d0959ae4",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/ocean_solver/candidates/fv/velocity.py": {
+      "checkout_path": "src/ocean_solver/candidates/fv/velocity.py",
+      "actual_byte_sha256": "4481c5f2031500833dddeb105acb80fe45b6a9fc8886f9fd7ce0a06a2907b387",
+      "byte_count": 7672,
+      "CRLF_count": 0,
+      "LF_count": 127,
+      "git_blob_sha1": "a5e5c7cc3e52ef33d98b8f0b4d32e847eaf3c449",
+      "git_blob_sha256": "4481c5f2031500833dddeb105acb80fe45b6a9fc8886f9fd7ce0a06a2907b387",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/ocean_solver/candidates/material/__init__.py": {
+      "checkout_path": "src/ocean_solver/candidates/material/__init__.py",
+      "actual_byte_sha256": "771d61564fd13e1a6824e69e9dc1d41e149eb3cac31c177b86ff62faf1ebc21d",
+      "byte_count": 27,
+      "CRLF_count": 0,
+      "LF_count": 1,
+      "git_blob_sha1": "252d5dbe3925f4faccf986b448414c16aa1f85d2",
+      "git_blob_sha256": "771d61564fd13e1a6824e69e9dc1d41e149eb3cac31c177b86ff62faf1ebc21d",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/ocean_solver/candidates/material/solver.py": {
+      "checkout_path": "src/ocean_solver/candidates/material/solver.py",
+      "actual_byte_sha256": "9318110b633351a39913aa8257f563d95124fc9d9e0ebb165bbd8a452ca7b948",
+      "byte_count": 32991,
+      "CRLF_count": 0,
+      "LF_count": 592,
+      "git_blob_sha1": "34d3486bde6884055521921dbb741ceb7efbc378",
+      "git_blob_sha256": "9318110b633351a39913aa8257f563d95124fc9d9e0ebb165bbd8a452ca7b948",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/ocean_solver/configuration.py": {
+      "checkout_path": "src/ocean_solver/configuration.py",
+      "actual_byte_sha256": "fdf09ee3eb84fb658f7baef5a6e274bbb5788aea1163f8007d3180b171284ff7",
+      "byte_count": 9115,
+      "CRLF_count": 0,
+      "LF_count": 209,
+      "git_blob_sha1": "eb604125c8cd0e1a4b405db2bc1da4b7afd0eef8",
+      "git_blob_sha256": "fdf09ee3eb84fb658f7baef5a6e274bbb5788aea1163f8007d3180b171284ff7",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/ocean_solver/data/__init__.py": {
+      "checkout_path": "src/ocean_solver/data/__init__.py",
+      "actual_byte_sha256": "6a9a1048e2fd4fca90347ffe23515911aaa9bb03787b4982142b63e49856c265",
+      "byte_count": 23,
+      "CRLF_count": 0,
+      "LF_count": 1,
+      "git_blob_sha1": "27f2e1d67309d9d8c4dd4ed7f6f63c6594371be7",
+      "git_blob_sha256": "6a9a1048e2fd4fca90347ffe23515911aaa9bb03787b4982142b63e49856c265",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/ocean_solver/data/air.py": {
+      "checkout_path": "src/ocean_solver/data/air.py",
+      "actual_byte_sha256": "aa3c2a1df6793a19d34b7f73b75c3ba8caf9e5933f828c5c56754e1758b14ac4",
+      "byte_count": 5718,
+      "CRLF_count": 0,
+      "LF_count": 131,
+      "git_blob_sha1": "2852a89f93a51ce2dcbbfb772703eda8ea6bd5df",
+      "git_blob_sha256": "aa3c2a1df6793a19d34b7f73b75c3ba8caf9e5933f828c5c56754e1758b14ac4",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/ocean_solver/data/climatology.py": {
+      "checkout_path": "src/ocean_solver/data/climatology.py",
+      "actual_byte_sha256": "a5c964bea2dd62b246f614d19e77efab5bbbd6d314adebe83839a86d551d5787",
+      "byte_count": 14595,
+      "CRLF_count": 0,
+      "LF_count": 360,
+      "git_blob_sha1": "2f62a97a36ce733c047f13073109d664d63a29a9",
+      "git_blob_sha256": "a5c964bea2dd62b246f614d19e77efab5bbbd6d314adebe83839a86d551d5787",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/ocean_solver/data/erddap.py": {
+      "checkout_path": "src/ocean_solver/data/erddap.py",
+      "actual_byte_sha256": "632b797b368f8373847b7712c0100441b23ac1c15967d6ef47fd0cb89baf970c",
+      "byte_count": 1767,
+      "CRLF_count": 0,
+      "LF_count": 45,
+      "git_blob_sha1": "240802f23d782b351e2e3c62acf05f219231527e",
+      "git_blob_sha256": "632b797b368f8373847b7712c0100441b23ac1c15967d6ef47fd0cb89baf970c",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/ocean_solver/data/forcing.py": {
+      "checkout_path": "src/ocean_solver/data/forcing.py",
+      "actual_byte_sha256": "cea97d1d6976d1bdb7d9727f6aa86cca9abeaab15561dfa9cf289b2d9d120fed",
+      "byte_count": 9527,
+      "CRLF_count": 0,
+      "LF_count": 213,
+      "git_blob_sha1": "eb53a3aa6063fbd1e610cc5414cf1d222304fc33",
+      "git_blob_sha256": "cea97d1d6976d1bdb7d9727f6aa86cca9abeaab15561dfa9cf289b2d9d120fed",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/ocean_solver/data/quality.py": {
+      "checkout_path": "src/ocean_solver/data/quality.py",
+      "actual_byte_sha256": "216dacfe88cde849078c4a190819ce9d68d4e501fa2edea28a471a2bc6835bf8",
+      "byte_count": 24841,
+      "CRLF_count": 0,
+      "LF_count": 491,
+      "git_blob_sha1": "7bd1a1240474c90c2ca44cded6d8ed25d576edfe",
+      "git_blob_sha256": "216dacfe88cde849078c4a190819ce9d68d4e501fa2edea28a471a2bc6835bf8",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/ocean_solver/data/sla.py": {
+      "checkout_path": "src/ocean_solver/data/sla.py",
+      "actual_byte_sha256": "ab1c91b104caa6723af259bf6104c9a25e73ddf002e0fbda9da4010dd2eb190a",
+      "byte_count": 2413,
+      "CRLF_count": 0,
+      "LF_count": 64,
+      "git_blob_sha1": "56f51c01083c36b88cdbc84339957c003ba77966",
+      "git_blob_sha256": "ab1c91b104caa6723af259bf6104c9a25e73ddf002e0fbda9da4010dd2eb190a",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/ocean_solver/data/sources.py": {
+      "checkout_path": "src/ocean_solver/data/sources.py",
+      "actual_byte_sha256": "458bfd6624bc9e930b8580432487404cfcee2380e19714716ec50272ba3d2530",
+      "byte_count": 4339,
+      "CRLF_count": 0,
+      "LF_count": 95,
+      "git_blob_sha1": "6d5f13e8c8870fcbddf1fb5de14599774db606d1",
+      "git_blob_sha256": "458bfd6624bc9e930b8580432487404cfcee2380e19714716ec50272ba3d2530",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/ocean_solver/data/ssh.py": {
+      "checkout_path": "src/ocean_solver/data/ssh.py",
+      "actual_byte_sha256": "db15ff98d3014d4f7d7aae1d2588c44951ee7c243917b03348b5cc5a9fe9ca8d",
+      "byte_count": 1923,
+      "CRLF_count": 0,
+      "LF_count": 54,
+      "git_blob_sha1": "ed4ae53112cd07b7c64c0db0e82903bc3c055cdd",
+      "git_blob_sha256": "db15ff98d3014d4f7d7aae1d2588c44951ee7c243917b03348b5cc5a9fe9ca8d",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/ocean_solver/data/wind.py": {
+      "checkout_path": "src/ocean_solver/data/wind.py",
+      "actual_byte_sha256": "df2455609db566ddc158cc4ff46277af3ff36001385f23076e1986acc870ea57",
+      "byte_count": 7715,
+      "CRLF_count": 0,
+      "LF_count": 180,
+      "git_blob_sha1": "bb4c87440c1c72f4cf2205080cfa91eabf19169b",
+      "git_blob_sha256": "df2455609db566ddc158cc4ff46277af3ff36001385f23076e1986acc870ea57",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/ocean_solver/diagnostics/__init__.py": {
+      "checkout_path": "src/ocean_solver/diagnostics/__init__.py",
+      "actual_byte_sha256": "5ca047a90cda202d35398c4e29a76262e0c344b05a83ab18c734c72827d41402",
+      "byte_count": 30,
+      "CRLF_count": 0,
+      "LF_count": 1,
+      "git_blob_sha1": "8fdd1303b370e1738beef710106355b920e26b90",
+      "git_blob_sha256": "5ca047a90cda202d35398c4e29a76262e0c344b05a83ab18c734c72827d41402",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/ocean_solver/diagnostics/ice.py": {
+      "checkout_path": "src/ocean_solver/diagnostics/ice.py",
+      "actual_byte_sha256": "5b981b7ec837b91b7b2754141d50b6880bad68b0fdb3e4ffdcc455a572c24254",
+      "byte_count": 5411,
+      "CRLF_count": 0,
+      "LF_count": 123,
+      "git_blob_sha1": "5849eb5a33d783594cb70c6081f25f019abbaa62",
+      "git_blob_sha256": "5b981b7ec837b91b7b2754141d50b6880bad68b0fdb3e4ffdcc455a572c24254",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/ocean_solver/diagnostics/state.py": {
+      "checkout_path": "src/ocean_solver/diagnostics/state.py",
+      "actual_byte_sha256": "534532e59241020daa750d649289652a59d7546414ad5a7e2c19ae481c955922",
+      "byte_count": 4690,
+      "CRLF_count": 0,
+      "LF_count": 124,
+      "git_blob_sha1": "77b145e45d8afdb7fe0d67428901b7bd7fe83a8d",
+      "git_blob_sha256": "534532e59241020daa750d649289652a59d7546414ad5a7e2c19ae481c955922",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/ocean_solver/fd/__init__.py": {
+      "checkout_path": "src/ocean_solver/fd/__init__.py",
+      "actual_byte_sha256": "1cacd12c77c084661ecb2826dc09970f9b6d18d53f4c62ad752b11e2f3e0a3dd",
+      "byte_count": 42,
+      "CRLF_count": 0,
+      "LF_count": 1,
+      "git_blob_sha1": "e89eaba3f5b737a9906bdecbdecffbc364b72456",
+      "git_blob_sha256": "1cacd12c77c084661ecb2826dc09970f9b6d18d53f4c62ad752b11e2f3e0a3dd",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/ocean_solver/fd/backend.py": {
+      "checkout_path": "src/ocean_solver/fd/backend.py",
+      "actual_byte_sha256": "6248c13eb4d61561677b66b828268957bf8cd8fa0aa1fdb2abfb84839bc4e4fb",
+      "byte_count": 361,
+      "CRLF_count": 0,
+      "LF_count": 13,
+      "git_blob_sha1": "b36ae2b360fac72c9d29210be29daa5f4d904af3",
+      "git_blob_sha256": "6248c13eb4d61561677b66b828268957bf8cd8fa0aa1fdb2abfb84839bc4e4fb",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/ocean_solver/fd/barotropic.py": {
+      "checkout_path": "src/ocean_solver/fd/barotropic.py",
+      "actual_byte_sha256": "0778624c6aa42e030cb896588d087f219479215d3a98b7147699e97f659105a3",
+      "byte_count": 16994,
+      "CRLF_count": 0,
+      "LF_count": 304,
+      "git_blob_sha1": "5990f9b4940b9c6cd26dfe70982364b247801065",
+      "git_blob_sha256": "0778624c6aa42e030cb896588d087f219479215d3a98b7147699e97f659105a3",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/ocean_solver/fd/closures.py": {
+      "checkout_path": "src/ocean_solver/fd/closures.py",
+      "actual_byte_sha256": "22322c1be9b1b91cf30c1d1723bce841c78922dc726548fe097225164a53a151",
+      "byte_count": 7286,
+      "CRLF_count": 0,
+      "LF_count": 145,
+      "git_blob_sha1": "2412e4379d2320d1bac45dea7c04b46138554e2a",
+      "git_blob_sha256": "22322c1be9b1b91cf30c1d1723bce841c78922dc726548fe097225164a53a151",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/ocean_solver/fd/eos.py": {
+      "checkout_path": "src/ocean_solver/fd/eos.py",
+      "actual_byte_sha256": "0f677d562275c55280814f72f56c14b2a97cd6e9b09ed2dfcb8d8c22e30ab086",
+      "byte_count": 640,
+      "CRLF_count": 0,
+      "LF_count": 14,
+      "git_blob_sha1": "79fdf5baee7f568c9391aee44bc4facce03ababf",
+      "git_blob_sha256": "0f677d562275c55280814f72f56c14b2a97cd6e9b09ed2dfcb8d8c22e30ab086",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/ocean_solver/fd/factory.py": {
+      "checkout_path": "src/ocean_solver/fd/factory.py",
+      "actual_byte_sha256": "0aa0de72bb66c4ab5fac59b6a26979b67fa11f5667bc2ade1263198da9fef65f",
+      "byte_count": 29069,
+      "CRLF_count": 0,
+      "LF_count": 518,
+      "git_blob_sha1": "a91cf7e25386079f69b154b637db48074b5166d9",
+      "git_blob_sha256": "0aa0de72bb66c4ab5fac59b6a26979b67fa11f5667bc2ade1263198da9fef65f",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/ocean_solver/fd/geometry.py": {
+      "checkout_path": "src/ocean_solver/fd/geometry.py",
+      "actual_byte_sha256": "13c390db76f5a3fa2b20c551d99d20cc3f2d24497c576bab0822606c622ddbd7",
+      "byte_count": 4806,
+      "CRLF_count": 0,
+      "LF_count": 102,
+      "git_blob_sha1": "68612a643c54c2af34af9cafe8485c691fe468ce",
+      "git_blob_sha256": "13c390db76f5a3fa2b20c551d99d20cc3f2d24497c576bab0822606c622ddbd7",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/ocean_solver/fd/horizontal.py": {
+      "checkout_path": "src/ocean_solver/fd/horizontal.py",
+      "actual_byte_sha256": "de7722aa2081cd36ea2ab7557728585497c99627ab6ab0f3fc3c83b17666e116",
+      "byte_count": 19891,
+      "CRLF_count": 0,
+      "LF_count": 368,
+      "git_blob_sha1": "efc1cff186cc07cb4d417a801cc9b6e6c8df7bf0",
+      "git_blob_sha256": "de7722aa2081cd36ea2ab7557728585497c99627ab6ab0f3fc3c83b17666e116",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/ocean_solver/fd/integration.py": {
+      "checkout_path": "src/ocean_solver/fd/integration.py",
+      "actual_byte_sha256": "982fd55b903185f92bb45e906268161d4b5a21f78cde52865784ea9fa6321120",
+      "byte_count": 16259,
+      "CRLF_count": 0,
+      "LF_count": 284,
+      "git_blob_sha1": "933a02b50cfed436a69be15e304632af68b08361",
+      "git_blob_sha256": "982fd55b903185f92bb45e906268161d4b5a21f78cde52865784ea9fa6321120",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/ocean_solver/fd/legacy.py": {
+      "checkout_path": "src/ocean_solver/fd/legacy.py",
+      "actual_byte_sha256": "bbb39aa3240cd81e8c94d006b4fdb1e27ae521b90d2b4ec507311a147941be7e",
+      "byte_count": 8736,
+      "CRLF_count": 0,
+      "LF_count": 137,
+      "git_blob_sha1": "6a89112e627c9dc487c900a5bd8b96e74f77a06e",
+      "git_blob_sha256": "bbb39aa3240cd81e8c94d006b4fdb1e27ae521b90d2b4ec507311a147941be7e",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/ocean_solver/fd/pressure.py": {
+      "checkout_path": "src/ocean_solver/fd/pressure.py",
+      "actual_byte_sha256": "dc21d64847b987725bbc71b2e8d29077f6673b39837585fbe66bc3fa69b14e25",
+      "byte_count": 3493,
+      "CRLF_count": 0,
+      "LF_count": 73,
+      "git_blob_sha1": "b27c4e20cf7f0f5fb3d37e2c4302dab7a6bce97a",
+      "git_blob_sha256": "dc21d64847b987725bbc71b2e8d29077f6673b39837585fbe66bc3fa69b14e25",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/ocean_solver/fd/processes.py": {
+      "checkout_path": "src/ocean_solver/fd/processes.py",
+      "actual_byte_sha256": "957a8c953bd33a5bc7cd47cff200eb199d0822600cda1f37b283e27514791313",
+      "byte_count": 22300,
+      "CRLF_count": 0,
+      "LF_count": 442,
+      "git_blob_sha1": "456847b028bd2e7edd5161f1f9df4e92dabe696c",
+      "git_blob_sha256": "957a8c953bd33a5bc7cd47cff200eb199d0822600cda1f37b283e27514791313",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/ocean_solver/fd/projection.py": {
+      "checkout_path": "src/ocean_solver/fd/projection.py",
+      "actual_byte_sha256": "d39a40cf09506b2dc0f7adca5c634aadeab1fdc314089fbdfd443cc051a945ff",
+      "byte_count": 5125,
+      "CRLF_count": 0,
+      "LF_count": 106,
+      "git_blob_sha1": "a34ba0a72800af8e39b3ac55be0821c6b4a3658c",
+      "git_blob_sha256": "d39a40cf09506b2dc0f7adca5c634aadeab1fdc314089fbdfd443cc051a945ff",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/ocean_solver/fd/sources.py": {
+      "checkout_path": "src/ocean_solver/fd/sources.py",
+      "actual_byte_sha256": "2c7b328af4939e3f7831ef533b75d18b454209f0bad05df62a819f0bb4cd4997",
+      "byte_count": 3547,
+      "CRLF_count": 0,
+      "LF_count": 74,
+      "git_blob_sha1": "482598377a378d167ba15803f1753816d138180b",
+      "git_blob_sha256": "2c7b328af4939e3f7831ef533b75d18b454209f0bad05df62a819f0bb4cd4997",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/ocean_solver/fd/stability.py": {
+      "checkout_path": "src/ocean_solver/fd/stability.py",
+      "actual_byte_sha256": "04fe0ff1d97e77dc333fa3df218dba419c2831234d7f5e70d4dc9a846771de0a",
+      "byte_count": 2113,
+      "CRLF_count": 0,
+      "LF_count": 36,
+      "git_blob_sha1": "530ec1faf63770f1d94a6b5dd6f11499dacd59e3",
+      "git_blob_sha256": "04fe0ff1d97e77dc333fa3df218dba419c2831234d7f5e70d4dc9a846771de0a",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/ocean_solver/fd/subcycles.py": {
+      "checkout_path": "src/ocean_solver/fd/subcycles.py",
+      "actual_byte_sha256": "064462f391e4df3c0dbc9a98236a9afc2ff5c486025eb1f726f6753633f8cca9",
+      "byte_count": 1092,
+      "CRLF_count": 0,
+      "LF_count": 25,
+      "git_blob_sha1": "95d57b534f8ca61129a01b36e5bd2f6b2ea2f41c",
+      "git_blob_sha256": "064462f391e4df3c0dbc9a98236a9afc2ff5c486025eb1f726f6753633f8cca9",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/ocean_solver/fd/transport.py": {
+      "checkout_path": "src/ocean_solver/fd/transport.py",
+      "actual_byte_sha256": "bb36d5e7df01b5a72837b31da703f17f87cb4c732ffc2e68908120d521eea2a6",
+      "byte_count": 14462,
+      "CRLF_count": 0,
+      "LF_count": 260,
+      "git_blob_sha1": "6d1741b36150bbb4797b6cef57648fc8fcfcec1a",
+      "git_blob_sha256": "bb36d5e7df01b5a72837b31da703f17f87cb4c732ffc2e68908120d521eea2a6",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/ocean_solver/fd/types.py": {
+      "checkout_path": "src/ocean_solver/fd/types.py",
+      "actual_byte_sha256": "6bf64ac80fbbb80b921a52b8676bbe2b26bd1a592e22c28a9538f6621482d681",
+      "byte_count": 8948,
+      "CRLF_count": 0,
+      "LF_count": 166,
+      "git_blob_sha1": "c3e860f2ea564168c16e5cb2c5f10c5b2ac52629",
+      "git_blob_sha256": "6bf64ac80fbbb80b921a52b8676bbe2b26bd1a592e22c28a9538f6621482d681",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/ocean_solver/fd/vertical.py": {
+      "checkout_path": "src/ocean_solver/fd/vertical.py",
+      "actual_byte_sha256": "5018ebdb005caee7338b699b112645d2a30447bd553ca4fd96d91bb4b84b7b10",
+      "byte_count": 6936,
+      "CRLF_count": 0,
+      "LF_count": 142,
+      "git_blob_sha1": "e8b440af6e947a64bf5861211acad58307995193",
+      "git_blob_sha256": "5018ebdb005caee7338b699b112645d2a30447bd553ca4fd96d91bb4b84b7b10",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/ocean_solver/geometry/__init__.py": {
+      "checkout_path": "src/ocean_solver/geometry/__init__.py",
+      "actual_byte_sha256": "0c3344876147123a6a0902e31ee37cbdaa083cdcbde3447152053e733c160502",
+      "byte_count": 48,
+      "CRLF_count": 0,
+      "LF_count": 1,
+      "git_blob_sha1": "9a55c4e54c03baa8b2f77da9f8b8dc499f18f53c",
+      "git_blob_sha256": "0c3344876147123a6a0902e31ee37cbdaa083cdcbde3447152053e733c160502",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/ocean_solver/geometry/columns.py": {
+      "checkout_path": "src/ocean_solver/geometry/columns.py",
+      "actual_byte_sha256": "e1f1846c1b6f4497ea5b07aa27956cbdc829a5a57367db6ad4e7220148c05748",
+      "byte_count": 908,
+      "CRLF_count": 0,
+      "LF_count": 18,
+      "git_blob_sha1": "117b39258db29093e737619bb554e430a5bbccbe",
+      "git_blob_sha256": "e1f1846c1b6f4497ea5b07aa27956cbdc829a5a57367db6ad4e7220148c05748",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/ocean_solver/geometry/grid.py": {
+      "checkout_path": "src/ocean_solver/geometry/grid.py",
+      "actual_byte_sha256": "4c8c820971cc1c4e8e8b02037b2df08511da34c46d17ab72e682998fc6c7e9c1",
+      "byte_count": 18077,
+      "CRLF_count": 0,
+      "LF_count": 413,
+      "git_blob_sha1": "6055dac957246266f594a7dd687b886cf04c5e1e",
+      "git_blob_sha256": "4c8c820971cc1c4e8e8b02037b2df08511da34c46d17ab72e682998fc6c7e9c1",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/ocean_solver/geometry/types.py": {
+      "checkout_path": "src/ocean_solver/geometry/types.py",
+      "actual_byte_sha256": "e89e6fe7e066563c7820397928dcde2b340cebbfd1958ddfeee023dba52c599d",
+      "byte_count": 2510,
+      "CRLF_count": 0,
+      "LF_count": 57,
+      "git_blob_sha1": "347db42cf8253334bd63fc01a69282fb68183444",
+      "git_blob_sha256": "e89e6fe7e066563c7820397928dcde2b340cebbfd1958ddfeee023dba52c599d",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/ocean_solver/interop/__init__.py": {
+      "checkout_path": "src/ocean_solver/interop/__init__.py",
+      "actual_byte_sha256": "4cb6aa36fe61958cc70abc0ae53106753fe26d4b3f89acab326b1f7a1f5d1bfe",
+      "byte_count": 26,
+      "CRLF_count": 0,
+      "LF_count": 1,
+      "git_blob_sha1": "13f111c60a5c24a2f536c1a8b3351104bb9d2227",
+      "git_blob_sha256": "4cb6aa36fe61958cc70abc0ae53106753fe26d4b3f89acab326b1f7a1f5d1bfe",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/ocean_solver/interop/mom6/__init__.py": {
+      "checkout_path": "src/ocean_solver/interop/mom6/__init__.py",
+      "actual_byte_sha256": "4213703126cd5561fef0c72b3b3059b0eb5d6b3d31a80bf326ce667551e3a322",
+      "byte_count": 23,
+      "CRLF_count": 0,
+      "LF_count": 1,
+      "git_blob_sha1": "b2f816fa476aee5e3ce18c968cf15d5e186f4f3d",
+      "git_blob_sha256": "4213703126cd5561fef0c72b3b3059b0eb5d6b3d31a80bf326ce667551e3a322",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/ocean_solver/interop/mom6/air_temperature.py": {
+      "checkout_path": "src/ocean_solver/interop/mom6/air_temperature.py",
+      "actual_byte_sha256": "e080e7d71fecbe4beb5b19c275608e7bc3d9e7bbe4adc1c29237299ffef74f8f",
+      "byte_count": 2571,
+      "CRLF_count": 0,
+      "LF_count": 63,
+      "git_blob_sha1": "f2e568734826ffb88944e47ea127963feaa88a73",
+      "git_blob_sha256": "e080e7d71fecbe4beb5b19c275608e7bc3d9e7bbe4adc1c29237299ffef74f8f",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/ocean_solver/interop/mom6/sensible_heat.py": {
+      "checkout_path": "src/ocean_solver/interop/mom6/sensible_heat.py",
+      "actual_byte_sha256": "8384a07eb65197a7bbf4df905cb982a025cfe32972b1ace887a799cf1c12749b",
+      "byte_count": 2959,
+      "CRLF_count": 0,
+      "LF_count": 71,
+      "git_blob_sha1": "f4f2c0974e26a65863fe18b8b88b372862ca2bbc",
+      "git_blob_sha256": "8384a07eb65197a7bbf4df905cb982a025cfe32972b1ace887a799cf1c12749b",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/ocean_solver/interop/mom6/wind.py": {
+      "checkout_path": "src/ocean_solver/interop/mom6/wind.py",
+      "actual_byte_sha256": "16d959f3c1e9c126ccfe1f474f52f3d4f44696cf3ff7fbfe03ab1b94f0507460",
+      "byte_count": 3022,
+      "CRLF_count": 0,
+      "LF_count": 73,
+      "git_blob_sha1": "210be488b5ead6ba8ddea6bc9a16888fc7836702",
+      "git_blob_sha256": "16d959f3c1e9c126ccfe1f474f52f3d4f44696cf3ff7fbfe03ab1b94f0507460",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/ocean_solver/physics/__init__.py": {
+      "checkout_path": "src/ocean_solver/physics/__init__.py",
+      "actual_byte_sha256": "f35613f8ec9b91e2d87c1014ae3a0f572f9e69bdb34d384c7c23feef02eaf30c",
+      "byte_count": 26,
+      "CRLF_count": 0,
+      "LF_count": 1,
+      "git_blob_sha1": "d2d9cd84309fa7df10b48e669385a4d35ff4ad44",
+      "git_blob_sha256": "f35613f8ec9b91e2d87c1014ae3a0f572f9e69bdb34d384c7c23feef02eaf30c",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/ocean_solver/physics/ice.py": {
+      "checkout_path": "src/ocean_solver/physics/ice.py",
+      "actual_byte_sha256": "33f25a47c69aad8ffe2075c5171b3d3ae34251e4421076c44b60e56cdac60b31",
+      "byte_count": 4428,
+      "CRLF_count": 0,
+      "LF_count": 110,
+      "git_blob_sha1": "81bd75ba0a46c71e7e05805d3948986dfe93c263",
+      "git_blob_sha256": "33f25a47c69aad8ffe2075c5171b3d3ae34251e4421076c44b60e56cdac60b31",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/ocean_solver/provenance/__init__.py": {
+      "checkout_path": "src/ocean_solver/provenance/__init__.py",
+      "actual_byte_sha256": "daf5d6bfcecc2b278842a3426572a906a824b2a1f520668da6bb8992e35bd64e",
+      "byte_count": 29,
+      "CRLF_count": 0,
+      "LF_count": 1,
+      "git_blob_sha1": "a8e56ea827e8a2b859625f6c06a9d3e6d49f3a38",
+      "git_blob_sha256": "daf5d6bfcecc2b278842a3426572a906a824b2a1f520668da6bb8992e35bd64e",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/ocean_solver/provenance/archives.py": {
+      "checkout_path": "src/ocean_solver/provenance/archives.py",
+      "actual_byte_sha256": "fdac38e46000c5ac36dbd359a99e08f828ff46a719ca80a260bdedbb6dee1cad",
+      "byte_count": 4186,
+      "CRLF_count": 0,
+      "LF_count": 90,
+      "git_blob_sha1": "161ac258303b578a331585adb60015775c995502",
+      "git_blob_sha256": "fdac38e46000c5ac36dbd359a99e08f828ff46a719ca80a260bdedbb6dee1cad",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/ocean_solver/provenance/locations.py": {
+      "checkout_path": "src/ocean_solver/provenance/locations.py",
+      "actual_byte_sha256": "3fe45664b300e670d7986bc265eca63eecdbc6e6a02355df6f3e08fb433521ff",
+      "byte_count": 939,
+      "CRLF_count": 0,
+      "LF_count": 21,
+      "git_blob_sha1": "0c18acc8dc7f18992c52c61fb07906e9840df187",
+      "git_blob_sha256": "3fe45664b300e670d7986bc265eca63eecdbc6e6a02355df6f3e08fb433521ff",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/ocean_solver/provenance/restart.py": {
+      "checkout_path": "src/ocean_solver/provenance/restart.py",
+      "actual_byte_sha256": "d3d405a5356e7fe614e95fac348bdbde4d58b6f840e138caa94fd1b568f43c46",
+      "byte_count": 10245,
+      "CRLF_count": 0,
+      "LF_count": 218,
+      "git_blob_sha1": "d62b2f3afeae3f63a8fa5081d1d352aedc772ba1",
+      "git_blob_sha256": "d3d405a5356e7fe614e95fac348bdbde4d58b6f840e138caa94fd1b568f43c46",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/ocean_solver/provenance/sources.py": {
+      "checkout_path": "src/ocean_solver/provenance/sources.py",
+      "actual_byte_sha256": "580ee60faaafb8139c668a0002b7bfe427e322bbeb4c78be098ff4e27b398409",
+      "byte_count": 5372,
+      "CRLF_count": 0,
+      "LF_count": 164,
+      "git_blob_sha1": "e9eee66de8fe98b1aacdd02317833504b22d13ed",
+      "git_blob_sha256": "580ee60faaafb8139c668a0002b7bfe427e322bbeb4c78be098ff4e27b398409",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/ocean_solver/runtime/__init__.py": {
+      "checkout_path": "src/ocean_solver/runtime/__init__.py",
+      "actual_byte_sha256": "399879107e3a2f1267bb2f1f70afb15984a9832c8fbdd83222c9d30fed5eacd7",
+      "byte_count": 81,
+      "CRLF_count": 0,
+      "LF_count": 1,
+      "git_blob_sha1": "39169b99d410f0222bc44f77139df48b556d84c2",
+      "git_blob_sha256": "399879107e3a2f1267bb2f1f70afb15984a9832c8fbdd83222c9d30fed5eacd7",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/ocean_solver/runtime/application.py": {
+      "checkout_path": "src/ocean_solver/runtime/application.py",
+      "actual_byte_sha256": "dd6c17389495d3e5c83d45e156ae1de586204f42cb620a00b21fa1c0db1b14b3",
+      "byte_count": 1090,
+      "CRLF_count": 0,
+      "LF_count": 24,
+      "git_blob_sha1": "7de73456658c0cdc508d26f7799ee699b0177d7d",
+      "git_blob_sha256": "dd6c17389495d3e5c83d45e156ae1de586204f42cb620a00b21fa1c0db1b14b3",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/ocean_solver/runtime/cli.py": {
+      "checkout_path": "src/ocean_solver/runtime/cli.py",
+      "actual_byte_sha256": "8fa7b7f15d5bcc81f209fdc9102a3cfb7bd4333d14aad74ef5beaff4a50dcc3d",
+      "byte_count": 22401,
+      "CRLF_count": 0,
+      "LF_count": 581,
+      "git_blob_sha1": "87f0cbecd49b4606f6ef046cca9ac9f5b1d1b034",
+      "git_blob_sha256": "8fa7b7f15d5bcc81f209fdc9102a3cfb7bd4333d14aad74ef5beaff4a50dcc3d",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/ocean_solver/runtime/context.py": {
+      "checkout_path": "src/ocean_solver/runtime/context.py",
+      "actual_byte_sha256": "cfd078c304e76828e58472bbbfdf81cced287b07cd5903f8467d19af5439e102",
+      "byte_count": 4462,
+      "CRLF_count": 0,
+      "LF_count": 119,
+      "git_blob_sha1": "4118213b89edf4829bc027c9231d871de5c29efc",
+      "git_blob_sha256": "cfd078c304e76828e58472bbbfdf81cced287b07cd5903f8467d19af5439e102",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/ocean_solver/runtime/entry.py": {
+      "checkout_path": "src/ocean_solver/runtime/entry.py",
+      "actual_byte_sha256": "1726747b46ec87bf14fd46eca5a7b6fcff897bfa7c75f38885bac315b1a80982",
+      "byte_count": 8796,
+      "CRLF_count": 0,
+      "LF_count": 153,
+      "git_blob_sha1": "342f04c884e9ed4c8f13ebcfa4bc093ac049cd54",
+      "git_blob_sha256": "1726747b46ec87bf14fd46eca5a7b6fcff897bfa7c75f38885bac315b1a80982",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/ocean_solver/runtime/forcing.py": {
+      "checkout_path": "src/ocean_solver/runtime/forcing.py",
+      "actual_byte_sha256": "653be3b4567d4a2c6678abc605b26adfcef21086dac3eb45799737e98926b2fe",
+      "byte_count": 12667,
+      "CRLF_count": 0,
+      "LF_count": 295,
+      "git_blob_sha1": "204588926a13f5d426f002bef1bde0fe634487ca",
+      "git_blob_sha256": "653be3b4567d4a2c6678abc605b26adfcef21086dac3eb45799737e98926b2fe",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/ocean_solver/runtime/identity.py": {
+      "checkout_path": "src/ocean_solver/runtime/identity.py",
+      "actual_byte_sha256": "b18e0c902fdd4e2580e1bc8e52fa533a693fd1be5ef257694f1178bc538054fa",
+      "byte_count": 1957,
+      "CRLF_count": 0,
+      "LF_count": 60,
+      "git_blob_sha1": "9a5f2fc874e2d60a101604a3cf5693133420dd6b",
+      "git_blob_sha256": "b18e0c902fdd4e2580e1bc8e52fa533a693fd1be5ef257694f1178bc538054fa",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/ocean_solver/runtime/inputs.py": {
+      "checkout_path": "src/ocean_solver/runtime/inputs.py",
+      "actual_byte_sha256": "1e4116540283c9b451b58d57505a1a3d1be38429defca6934cc7a97c5a82d6c4",
+      "byte_count": 11649,
+      "CRLF_count": 0,
+      "LF_count": 265,
+      "git_blob_sha1": "79184bd1ae6b2ed2a420dd511a14c8048183df04",
+      "git_blob_sha256": "1e4116540283c9b451b58d57505a1a3d1be38429defca6934cc7a97c5a82d6c4",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/ocean_solver/runtime/integration.py": {
+      "checkout_path": "src/ocean_solver/runtime/integration.py",
+      "actual_byte_sha256": "1e43f101d0ef983a6afa74d9e9c17772789cd6630a044fbde2fb1967233ea107",
+      "byte_count": 8430,
+      "CRLF_count": 0,
+      "LF_count": 183,
+      "git_blob_sha1": "c2740d8fe67b77f90dc4ec3a9c4b979e2da712bf",
+      "git_blob_sha256": "1e43f101d0ef983a6afa74d9e9c17772789cd6630a044fbde2fb1967233ea107",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/ocean_solver/runtime/metrics.py": {
+      "checkout_path": "src/ocean_solver/runtime/metrics.py",
+      "actual_byte_sha256": "bbbba9e644d0483cc3d690892374a0810bb8916c9eaa54fade1a46e8fb6498a0",
+      "byte_count": 463,
+      "CRLF_count": 0,
+      "LF_count": 17,
+      "git_blob_sha1": "80f98f15c45325e6aaf27d3de0b487aaeaa2c751",
+      "git_blob_sha256": "bbbba9e644d0483cc3d690892374a0810bb8916c9eaa54fade1a46e8fb6498a0",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/ocean_solver/runtime/output.py": {
+      "checkout_path": "src/ocean_solver/runtime/output.py",
+      "actual_byte_sha256": "924fb1fc0e4f955f84e6d3a90d22ab2e0d711ad350540c2eb6a0d38cc768acab",
+      "byte_count": 10013,
+      "CRLF_count": 0,
+      "LF_count": 229,
+      "git_blob_sha1": "3220aae3a25b693344d3f37ec17ec19cacde5e49",
+      "git_blob_sha256": "924fb1fc0e4f955f84e6d3a90d22ab2e0d711ad350540c2eb6a0d38cc768acab",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/ocean_solver/runtime/paths.py": {
+      "checkout_path": "src/ocean_solver/runtime/paths.py",
+      "actual_byte_sha256": "dd6988ef02863aa5015f7aa1503145567a5626e1d18bdfb969ebe31f73e6c255",
+      "byte_count": 1769,
+      "CRLF_count": 0,
+      "LF_count": 59,
+      "git_blob_sha1": "27ad598f3a51d3a5e700fda6f6d154c40d943de1",
+      "git_blob_sha256": "dd6988ef02863aa5015f7aa1503145567a5626e1d18bdfb969ebe31f73e6c255",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/ocean_solver/runtime/records.py": {
+      "checkout_path": "src/ocean_solver/runtime/records.py",
+      "actual_byte_sha256": "a03bfb5e9dd920ad6aed9665aaf4d596eb05b447c6dafa58de0a8628066dfc85",
+      "byte_count": 7182,
+      "CRLF_count": 0,
+      "LF_count": 172,
+      "git_blob_sha1": "9595e518267c8c3705422d90a919118f1d642666",
+      "git_blob_sha256": "a03bfb5e9dd920ad6aed9665aaf4d596eb05b447c6dafa58de0a8628066dfc85",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/ocean_solver/runtime/recovery.py": {
+      "checkout_path": "src/ocean_solver/runtime/recovery.py",
+      "actual_byte_sha256": "90504c3eacb427f16ce95f15caaf332385877c59ee1f1fed0080a304edb8bd92",
+      "byte_count": 8748,
+      "CRLF_count": 0,
+      "LF_count": 213,
+      "git_blob_sha1": "3db62da578365cf8884db611e1a30ce2206fdc67",
+      "git_blob_sha256": "90504c3eacb427f16ce95f15caaf332385877c59ee1f1fed0080a304edb8bd92",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/ocean_solver/runtime/reporting.py": {
+      "checkout_path": "src/ocean_solver/runtime/reporting.py",
+      "actual_byte_sha256": "4b4642be4c61003117895a9f6823efb622d5257fb63c6a48731055b83ecbb8ce",
+      "byte_count": 5068,
+      "CRLF_count": 0,
+      "LF_count": 104,
+      "git_blob_sha1": "9f5de2be0550d7b43db646666aa5da424a40b8a5",
+      "git_blob_sha256": "4b4642be4c61003117895a9f6823efb622d5257fb63c6a48731055b83ecbb8ce",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/ocean_solver/runtime/seasonal.py": {
+      "checkout_path": "src/ocean_solver/runtime/seasonal.py",
+      "actual_byte_sha256": "b9d11758ad3ac4a33938ac48e3061c27c3e682b8ff3b132718baa457c870c31c",
+      "byte_count": 5478,
+      "CRLF_count": 0,
+      "LF_count": 138,
+      "git_blob_sha1": "1e550e5807ca54ef7740ea735b95aedcee72b9b5",
+      "git_blob_sha256": "b9d11758ad3ac4a33938ac48e3061c27c3e682b8ff3b132718baa457c870c31c",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/ocean_solver/runtime/services.py": {
+      "checkout_path": "src/ocean_solver/runtime/services.py",
+      "actual_byte_sha256": "8b51179b8e34b61322b0998fe7171cae40366bcbefd9e87e1db7080953695ffd",
+      "byte_count": 727,
+      "CRLF_count": 0,
+      "LF_count": 26,
+      "git_blob_sha1": "11f251909f0947db7dc31a83642e5311097f0e88",
+      "git_blob_sha256": "8b51179b8e34b61322b0998fe7171cae40366bcbefd9e87e1db7080953695ffd",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/ocean_solver/validation/__init__.py": {
+      "checkout_path": "src/ocean_solver/validation/__init__.py",
+      "actual_byte_sha256": "88494f817870d4d2e410079bb9b420a590dde9c5f805d0486ca3405e08f9b5b1",
+      "byte_count": 88,
+      "CRLF_count": 0,
+      "LF_count": 1,
+      "git_blob_sha1": "2bb499be3e7cc5d803245dd2c6e60995cd685a04",
+      "git_blob_sha256": "88494f817870d4d2e410079bb9b420a590dde9c5f805d0486ca3405e08f9b5b1",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/ocean_solver/validation/benchmarks/__init__.py": {
+      "checkout_path": "src/ocean_solver/validation/benchmarks/__init__.py",
+      "actual_byte_sha256": "a56607a9eceb94e3a9735762c1509bf6d15cf130060ffa46797b942e23bb02dd",
+      "byte_count": 29,
+      "CRLF_count": 0,
+      "LF_count": 1,
+      "git_blob_sha1": "ac7518ca55c924ccf32ca97ca0703179822e5b88",
+      "git_blob_sha256": "a56607a9eceb94e3a9735762c1509bf6d15cf130060ffa46797b942e23bb02dd",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/ocean_solver/validation/benchmarks/climatology.py": {
+      "checkout_path": "src/ocean_solver/validation/benchmarks/climatology.py",
+      "actual_byte_sha256": "bfa9d92ce2227cfcd220b2976718b4f2c866ac685e998fb80cfcdcbdb538a1e9",
+      "byte_count": 16880,
+      "CRLF_count": 0,
+      "LF_count": 368,
+      "git_blob_sha1": "8496c95fb6d353bda3a14a412148fc9a5e9bd3bd",
+      "git_blob_sha256": "bfa9d92ce2227cfcd220b2976718b4f2c866ac685e998fb80cfcdcbdb538a1e9",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/ocean_solver/validation/benchmarks/external.py": {
+      "checkout_path": "src/ocean_solver/validation/benchmarks/external.py",
+      "actual_byte_sha256": "7ca03232b0620ef79eb339a96add5967dd169a6707878055095fc4f8cb157a21",
+      "byte_count": 8929,
+      "CRLF_count": 0,
+      "LF_count": 178,
+      "git_blob_sha1": "0c0a6b15f436752173d19e8f07676d0662a1d0b8",
+      "git_blob_sha256": "7ca03232b0620ef79eb339a96add5967dd169a6707878055095fc4f8cb157a21",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/ocean_solver/validation/benchmarks/gate.py": {
+      "checkout_path": "src/ocean_solver/validation/benchmarks/gate.py",
+      "actual_byte_sha256": "4bf7ecce899e61f91f7ad6455a77863efbceddc35d10201adbb39e07fbffe81a",
+      "byte_count": 5159,
+      "CRLF_count": 0,
+      "LF_count": 124,
+      "git_blob_sha1": "60cb8a97d6c479abff3e34c6de419a37bb782d2c",
+      "git_blob_sha256": "4bf7ecce899e61f91f7ad6455a77863efbceddc35d10201adbb39e07fbffe81a",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/ocean_solver/validation/benchmarks/manifest.py": {
+      "checkout_path": "src/ocean_solver/validation/benchmarks/manifest.py",
+      "actual_byte_sha256": "ac17a861d25bd64fc4fedf0f6e8dc7e97d19cde17e3e9cea6194d32612ae61ee",
+      "byte_count": 2701,
+      "CRLF_count": 0,
+      "LF_count": 76,
+      "git_blob_sha1": "5e17a22221d42000601195c0db392b09a31a4f2e",
+      "git_blob_sha256": "ac17a861d25bd64fc4fedf0f6e8dc7e97d19cde17e3e9cea6194d32612ae61ee",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/ocean_solver/validation/benchmarks/metrics.py": {
+      "checkout_path": "src/ocean_solver/validation/benchmarks/metrics.py",
+      "actual_byte_sha256": "e0c85c68c4c1f8c6de10fe1aede6715077337f347217cd0142a99b2d4b6e6c3b",
+      "byte_count": 18521,
+      "CRLF_count": 0,
+      "LF_count": 396,
+      "git_blob_sha1": "c565d5040e2cb16cca77a9a54166e2adb606eb2e",
+      "git_blob_sha256": "e0c85c68c4c1f8c6de10fe1aede6715077337f347217cd0142a99b2d4b6e6c3b",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/ocean_solver/validation/benchmarks/mom6.py": {
+      "checkout_path": "src/ocean_solver/validation/benchmarks/mom6.py",
+      "actual_byte_sha256": "fe3684a79c10bfde0b79ec98b2b1bc252b5f4e0b48ad50449cf6a0e853002784",
+      "byte_count": 1791,
+      "CRLF_count": 0,
+      "LF_count": 49,
+      "git_blob_sha1": "93364835ae1e3e64d6901c260999654f29fb8b8c",
+      "git_blob_sha256": "fe3684a79c10bfde0b79ec98b2b1bc252b5f4e0b48ad50449cf6a0e853002784",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/ocean_solver/validation/benchmarks/table.py": {
+      "checkout_path": "src/ocean_solver/validation/benchmarks/table.py",
+      "actual_byte_sha256": "fb041c667c705dabfa4f1df800eb2466cd52f2d7cb448092f4d8e6bbbb2f67c9",
+      "byte_count": 3196,
+      "CRLF_count": 0,
+      "LF_count": 82,
+      "git_blob_sha1": "8dbac1783958c4d993b875fc606b3a7db7dafc60",
+      "git_blob_sha256": "fb041c667c705dabfa4f1df800eb2466cd52f2d7cb448092f4d8e6bbbb2f67c9",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/ocean_solver/validation/mms.py": {
+      "checkout_path": "src/ocean_solver/validation/mms.py",
+      "actual_byte_sha256": "ce215f54dbba1aa252a96ba4afb60819efe1fd9ccb4da5af86354334f72a8a1f",
+      "byte_count": 6394,
+      "CRLF_count": 0,
+      "LF_count": 133,
+      "git_blob_sha1": "2a1eac4a699b058833cfea41eb80b957dec792c9",
+      "git_blob_sha256": "ce215f54dbba1aa252a96ba4afb60819efe1fd9ccb4da5af86354334f72a8a1f",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/input_quality.py": {
+      "checkout_path": "src/compat/input_quality.py",
+      "actual_byte_sha256": "e8181f17a415b080703e18bf350f8582b843b2a08b0ebf2c6d05ea4e3af2e2ee",
+      "byte_count": 291,
+      "CRLF_count": 0,
+      "LF_count": 9,
+      "git_blob_sha1": "859feacfade13c88a6322c8b6a32d653c1f8a219",
+      "git_blob_sha256": "e8181f17a415b080703e18bf350f8582b843b2a08b0ebf2c6d05ea4e3af2e2ee",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/compat/input_quality.py": {
+      "checkout_path": "src/compat/input_quality.py",
+      "actual_byte_sha256": "e8181f17a415b080703e18bf350f8582b843b2a08b0ebf2c6d05ea4e3af2e2ee",
+      "byte_count": 291,
+      "CRLF_count": 0,
+      "LF_count": 9,
+      "git_blob_sha1": "859feacfade13c88a6322c8b6a32d653c1f8a219",
+      "git_blob_sha256": "e8181f17a415b080703e18bf350f8582b843b2a08b0ebf2c6d05ea4e3af2e2ee",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/input_sources.py": {
+      "checkout_path": "src/compat/input_sources.py",
+      "actual_byte_sha256": "038727537190abadc9b35e7027f3e831c4bac6cf5395b0f4637d132454f4b3a2",
+      "byte_count": 291,
+      "CRLF_count": 0,
+      "LF_count": 9,
+      "git_blob_sha1": "3ecd89de28bd1b1bb621318d4189acc02ddd2bcf",
+      "git_blob_sha256": "038727537190abadc9b35e7027f3e831c4bac6cf5395b0f4637d132454f4b3a2",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/compat/input_sources.py": {
+      "checkout_path": "src/compat/input_sources.py",
+      "actual_byte_sha256": "038727537190abadc9b35e7027f3e831c4bac6cf5395b0f4637d132454f4b3a2",
+      "byte_count": 291,
+      "CRLF_count": 0,
+      "LF_count": 9,
+      "git_blob_sha1": "3ecd89de28bd1b1bb621318d4189acc02ddd2bcf",
+      "git_blob_sha256": "038727537190abadc9b35e7027f3e831c4bac6cf5395b0f4637d132454f4b3a2",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/erddap_fetch.py": {
+      "checkout_path": "src/compat/erddap_fetch.py",
+      "actual_byte_sha256": "48201eba22231a8d4ae988a0258305c64c43bbe1e2bc60d1ed8a3e0c8b08f817",
+      "byte_count": 288,
+      "CRLF_count": 0,
+      "LF_count": 9,
+      "git_blob_sha1": "3c76a29b5809e3d6e18501166d92ccd885d78939",
+      "git_blob_sha256": "48201eba22231a8d4ae988a0258305c64c43bbe1e2bc60d1ed8a3e0c8b08f817",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/compat/erddap_fetch.py": {
+      "checkout_path": "src/compat/erddap_fetch.py",
+      "actual_byte_sha256": "48201eba22231a8d4ae988a0258305c64c43bbe1e2bc60d1ed8a3e0c8b08f817",
+      "byte_count": 288,
+      "CRLF_count": 0,
+      "LF_count": 9,
+      "git_blob_sha1": "3c76a29b5809e3d6e18501166d92ccd885d78939",
+      "git_blob_sha256": "48201eba22231a8d4ae988a0258305c64c43bbe1e2bc60d1ed8a3e0c8b08f817",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/fetch_sla_monthly.py": {
+      "checkout_path": "src/compat/fetch_sla_monthly.py",
+      "actual_byte_sha256": "1b2591fd3a893ef86fabd6f858f01367b4e6fc389bd05d914d7e273b6c8735d3",
+      "byte_count": 279,
+      "CRLF_count": 0,
+      "LF_count": 9,
+      "git_blob_sha1": "fba0085eb016f141e36ff94a94977260ed5e61d9",
+      "git_blob_sha256": "1b2591fd3a893ef86fabd6f858f01367b4e6fc389bd05d914d7e273b6c8735d3",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/compat/fetch_sla_monthly.py": {
+      "checkout_path": "src/compat/fetch_sla_monthly.py",
+      "actual_byte_sha256": "1b2591fd3a893ef86fabd6f858f01367b4e6fc389bd05d914d7e273b6c8735d3",
+      "byte_count": 279,
+      "CRLF_count": 0,
+      "LF_count": 9,
+      "git_blob_sha1": "fba0085eb016f141e36ff94a94977260ed5e61d9",
+      "git_blob_sha256": "1b2591fd3a893ef86fabd6f858f01367b4e6fc389bd05d914d7e273b6c8735d3",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/fetch_ssh_abs_monthly.py": {
+      "checkout_path": "src/compat/fetch_ssh_abs_monthly.py",
+      "actual_byte_sha256": "cffef716c8cad50c5cce337da8fd85be18a92e2579fb059fc5df1298c9a33279",
+      "byte_count": 279,
+      "CRLF_count": 0,
+      "LF_count": 9,
+      "git_blob_sha1": "24f95b435a4c9d330a39793bb9757bbf62b42258",
+      "git_blob_sha256": "cffef716c8cad50c5cce337da8fd85be18a92e2579fb059fc5df1298c9a33279",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/compat/fetch_ssh_abs_monthly.py": {
+      "checkout_path": "src/compat/fetch_ssh_abs_monthly.py",
+      "actual_byte_sha256": "cffef716c8cad50c5cce337da8fd85be18a92e2579fb059fc5df1298c9a33279",
+      "byte_count": 279,
+      "CRLF_count": 0,
+      "LF_count": 9,
+      "git_blob_sha1": "24f95b435a4c9d330a39793bb9757bbf62b42258",
+      "git_blob_sha256": "cffef716c8cad50c5cce337da8fd85be18a92e2579fb059fc5df1298c9a33279",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/benchmark_gate.py": {
+      "checkout_path": "src/compat/benchmark_gate.py",
+      "actual_byte_sha256": "cad410e8af4e7c4a3eff453c00af30b8fe7a34b0956739b6c2e902abf6d22499",
+      "byte_count": 333,
+      "CRLF_count": 0,
+      "LF_count": 9,
+      "git_blob_sha1": "77eb0e97675f59a05c4dd3fe511bfc176d0d1d6e",
+      "git_blob_sha256": "cad410e8af4e7c4a3eff453c00af30b8fe7a34b0956739b6c2e902abf6d22499",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/compat/benchmark_gate.py": {
+      "checkout_path": "src/compat/benchmark_gate.py",
+      "actual_byte_sha256": "cad410e8af4e7c4a3eff453c00af30b8fe7a34b0956739b6c2e902abf6d22499",
+      "byte_count": 333,
+      "CRLF_count": 0,
+      "LF_count": 9,
+      "git_blob_sha1": "77eb0e97675f59a05c4dd3fe511bfc176d0d1d6e",
+      "git_blob_sha256": "cad410e8af4e7c4a3eff453c00af30b8fe7a34b0956739b6c2e902abf6d22499",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/benchmark_manifest.py": {
+      "checkout_path": "src/compat/benchmark_manifest.py",
+      "actual_byte_sha256": "5039dd0e2e6491c522fa4052bc2c912df39014dd87bfa972241b0ae043992ef7",
+      "byte_count": 345,
+      "CRLF_count": 0,
+      "LF_count": 9,
+      "git_blob_sha1": "58fbaf16402ef7bbf894625adfa5a3a33eaf330a",
+      "git_blob_sha256": "5039dd0e2e6491c522fa4052bc2c912df39014dd87bfa972241b0ae043992ef7",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/compat/benchmark_manifest.py": {
+      "checkout_path": "src/compat/benchmark_manifest.py",
+      "actual_byte_sha256": "5039dd0e2e6491c522fa4052bc2c912df39014dd87bfa972241b0ae043992ef7",
+      "byte_count": 345,
+      "CRLF_count": 0,
+      "LF_count": 9,
+      "git_blob_sha1": "58fbaf16402ef7bbf894625adfa5a3a33eaf330a",
+      "git_blob_sha256": "5039dd0e2e6491c522fa4052bc2c912df39014dd87bfa972241b0ae043992ef7",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/benchmark_table.py": {
+      "checkout_path": "src/compat/benchmark_table.py",
+      "actual_byte_sha256": "59037e4e9f9980479228521c793dfe1b7de6ae34ed47afa3f36649ed6c6eea1d",
+      "byte_count": 336,
+      "CRLF_count": 0,
+      "LF_count": 9,
+      "git_blob_sha1": "21dacff6a587409bcd77c44034c28ba3d2034300",
+      "git_blob_sha256": "59037e4e9f9980479228521c793dfe1b7de6ae34ed47afa3f36649ed6c6eea1d",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/compat/benchmark_table.py": {
+      "checkout_path": "src/compat/benchmark_table.py",
+      "actual_byte_sha256": "59037e4e9f9980479228521c793dfe1b7de6ae34ed47afa3f36649ed6c6eea1d",
+      "byte_count": 336,
+      "CRLF_count": 0,
+      "LF_count": 9,
+      "git_blob_sha1": "21dacff6a587409bcd77c44034c28ba3d2034300",
+      "git_blob_sha256": "59037e4e9f9980479228521c793dfe1b7de6ae34ed47afa3f36649ed6c6eea1d",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/score_external_model.py": {
+      "checkout_path": "src/compat/score_external_model.py",
+      "actual_byte_sha256": "b25f575e0334a51c90bafa3a6ffee363c35836813a877b1e6a815dabeeadc93e",
+      "byte_count": 345,
+      "CRLF_count": 0,
+      "LF_count": 9,
+      "git_blob_sha1": "532ee27baeb3bbbdd524805b843d739beb1cde96",
+      "git_blob_sha256": "b25f575e0334a51c90bafa3a6ffee363c35836813a877b1e6a815dabeeadc93e",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/compat/score_external_model.py": {
+      "checkout_path": "src/compat/score_external_model.py",
+      "actual_byte_sha256": "b25f575e0334a51c90bafa3a6ffee363c35836813a877b1e6a815dabeeadc93e",
+      "byte_count": 345,
+      "CRLF_count": 0,
+      "LF_count": 9,
+      "git_blob_sha1": "532ee27baeb3bbbdd524805b843d739beb1cde96",
+      "git_blob_sha256": "b25f575e0334a51c90bafa3a6ffee363c35836813a877b1e6a815dabeeadc93e",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/score_mom6_prog.py": {
+      "checkout_path": "src/compat/score_mom6_prog.py",
+      "actual_byte_sha256": "9276fcb1a6db450460e32e051336847530b1afe8c61e8381a64f9b58c1747fed",
+      "byte_count": 333,
+      "CRLF_count": 0,
+      "LF_count": 9,
+      "git_blob_sha1": "c896e5fd78a017e7f441fa919aa7264379df8f79",
+      "git_blob_sha256": "9276fcb1a6db450460e32e051336847530b1afe8c61e8381a64f9b58c1747fed",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/compat/score_mom6_prog.py": {
+      "checkout_path": "src/compat/score_mom6_prog.py",
+      "actual_byte_sha256": "9276fcb1a6db450460e32e051336847530b1afe8c61e8381a64f9b58c1747fed",
+      "byte_count": 333,
+      "CRLF_count": 0,
+      "LF_count": 9,
+      "git_blob_sha1": "c896e5fd78a017e7f441fa919aa7264379df8f79",
+      "git_blob_sha256": "9276fcb1a6db450460e32e051336847530b1afe8c61e8381a64f9b58c1747fed",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/bench_climatology_global.py": {
+      "checkout_path": "src/compat/bench_climatology_global.py",
+      "actual_byte_sha256": "c83b6f32fa488cfb3d55065638e147d540ed68c02060d3c61023b7a3e75caae4",
+      "byte_count": 354,
+      "CRLF_count": 0,
+      "LF_count": 9,
+      "git_blob_sha1": "df69001ce66b9e04491b1ed70464db5c27837595",
+      "git_blob_sha256": "c83b6f32fa488cfb3d55065638e147d540ed68c02060d3c61023b7a3e75caae4",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/compat/bench_climatology_global.py": {
+      "checkout_path": "src/compat/bench_climatology_global.py",
+      "actual_byte_sha256": "c83b6f32fa488cfb3d55065638e147d540ed68c02060d3c61023b7a3e75caae4",
+      "byte_count": 354,
+      "CRLF_count": 0,
+      "LF_count": 9,
+      "git_blob_sha1": "df69001ce66b9e04491b1ed70464db5c27837595",
+      "git_blob_sha256": "c83b6f32fa488cfb3d55065638e147d540ed68c02060d3c61023b7a3e75caae4",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/summarize_ice_diagnostics.py": {
+      "checkout_path": "src/compat/summarize_ice_diagnostics.py",
+      "actual_byte_sha256": "d6de4dedbfbe4dee0f574847bb70c056b0f4fbf03e1b9a2da5aeacef8c3be260",
+      "byte_count": 300,
+      "CRLF_count": 0,
+      "LF_count": 9,
+      "git_blob_sha1": "4990cb32900b3869b91c42491d2869e2e320ad6b",
+      "git_blob_sha256": "d6de4dedbfbe4dee0f574847bb70c056b0f4fbf03e1b9a2da5aeacef8c3be260",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/compat/summarize_ice_diagnostics.py": {
+      "checkout_path": "src/compat/summarize_ice_diagnostics.py",
+      "actual_byte_sha256": "d6de4dedbfbe4dee0f574847bb70c056b0f4fbf03e1b9a2da5aeacef8c3be260",
+      "byte_count": 300,
+      "CRLF_count": 0,
+      "LF_count": 9,
+      "git_blob_sha1": "4990cb32900b3869b91c42491d2869e2e320ad6b",
+      "git_blob_sha256": "d6de4dedbfbe4dee0f574847bb70c056b0f4fbf03e1b9a2da5aeacef8c3be260",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/export_mom6_air_temp_forcing.py": {
+      "checkout_path": "src/compat/export_mom6_air_temp_forcing.py",
+      "actual_byte_sha256": "249d8f8497e6afc9c11bc709ddefcd33175cbd70d6148646338b9e50d9b5641a",
+      "byte_count": 339,
+      "CRLF_count": 0,
+      "LF_count": 9,
+      "git_blob_sha1": "e611342c26f49e3b283d6fa068f3530353b386a4",
+      "git_blob_sha256": "249d8f8497e6afc9c11bc709ddefcd33175cbd70d6148646338b9e50d9b5641a",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/compat/export_mom6_air_temp_forcing.py": {
+      "checkout_path": "src/compat/export_mom6_air_temp_forcing.py",
+      "actual_byte_sha256": "249d8f8497e6afc9c11bc709ddefcd33175cbd70d6148646338b9e50d9b5641a",
+      "byte_count": 339,
+      "CRLF_count": 0,
+      "LF_count": 9,
+      "git_blob_sha1": "e611342c26f49e3b283d6fa068f3530353b386a4",
+      "git_blob_sha256": "249d8f8497e6afc9c11bc709ddefcd33175cbd70d6148646338b9e50d9b5641a",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/export_mom6_sensible_forcing.py": {
+      "checkout_path": "src/compat/export_mom6_sensible_forcing.py",
+      "actual_byte_sha256": "b0c7d6893a7b25a5faeb7db0d99cee78371d9f6967b3de2e426bfcbbdab2c6ec",
+      "byte_count": 333,
+      "CRLF_count": 0,
+      "LF_count": 9,
+      "git_blob_sha1": "ea8ba08268986016278412a584866b8d07aec188",
+      "git_blob_sha256": "b0c7d6893a7b25a5faeb7db0d99cee78371d9f6967b3de2e426bfcbbdab2c6ec",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/compat/export_mom6_sensible_forcing.py": {
+      "checkout_path": "src/compat/export_mom6_sensible_forcing.py",
+      "actual_byte_sha256": "b0c7d6893a7b25a5faeb7db0d99cee78371d9f6967b3de2e426bfcbbdab2c6ec",
+      "byte_count": 333,
+      "CRLF_count": 0,
+      "LF_count": 9,
+      "git_blob_sha1": "ea8ba08268986016278412a584866b8d07aec188",
+      "git_blob_sha256": "b0c7d6893a7b25a5faeb7db0d99cee78371d9f6967b3de2e426bfcbbdab2c6ec",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/export_mom6_wind_forcing.py": {
+      "checkout_path": "src/compat/export_mom6_wind_forcing.py",
+      "actual_byte_sha256": "2600bff82308c5a472b364736912bb4c8cb9d9581f18b02c78003cf72dfe86af",
+      "byte_count": 306,
+      "CRLF_count": 0,
+      "LF_count": 9,
+      "git_blob_sha1": "5f80322e0e198c2ee8fdd19708986edaac407bb5",
+      "git_blob_sha256": "2600bff82308c5a472b364736912bb4c8cb9d9581f18b02c78003cf72dfe86af",
+      "equal_after_CRLF_to_LF": true
+    },
+    "src/compat/export_mom6_wind_forcing.py": {
+      "checkout_path": "src/compat/export_mom6_wind_forcing.py",
+      "actual_byte_sha256": "2600bff82308c5a472b364736912bb4c8cb9d9581f18b02c78003cf72dfe86af",
+      "byte_count": 306,
+      "CRLF_count": 0,
+      "LF_count": 9,
+      "git_blob_sha1": "5f80322e0e198c2ee8fdd19708986edaac407bb5",
+      "git_blob_sha256": "2600bff82308c5a472b364736912bb4c8cb9d9581f18b02c78003cf72dfe86af",
+      "equal_after_CRLF_to_LF": true
+    },
+    "tests/__init__.py": {
+      "checkout_path": "tests/__init__.py",
+      "actual_byte_sha256": "fb5605542c68fd10404450044a9a00b581566251620f147d67111d9713388efb",
+      "byte_count": 24,
+      "CRLF_count": 0,
+      "LF_count": 1,
+      "git_blob_sha1": "23ab502fe9132969c57278c58835356324a9142f",
+      "git_blob_sha256": "fb5605542c68fd10404450044a9a00b581566251620f147d67111d9713388efb",
+      "equal_after_CRLF_to_LF": true
+    },
+    "tests/candidates/__init__.py": {
+      "checkout_path": "tests/candidates/__init__.py",
+      "actual_byte_sha256": "4f9f5b981b1ca8ffa2a127f2e0682bbdc6d038fb9f348bf4a9fccb24c734e753",
+      "byte_count": 29,
+      "CRLF_count": 0,
+      "LF_count": 1,
+      "git_blob_sha1": "cff55c7fa5c7a4a1aff8efe31572ad57322381e5",
+      "git_blob_sha256": "4f9f5b981b1ca8ffa2a127f2e0682bbdc6d038fb9f348bf4a9fccb24c734e753",
+      "equal_after_CRLF_to_LF": true
+    },
+    "tests/candidates/fv/__init__.py": {
+      "checkout_path": "tests/candidates/fv/__init__.py",
+      "actual_byte_sha256": "f7362661a614cfc149861e736e0c7a3a2eda3efa3b8f1aab93e6817ff7cbfd71",
+      "byte_count": 21,
+      "CRLF_count": 0,
+      "LF_count": 1,
+      "git_blob_sha1": "9b90078398bed6a66a0831a4bce0b52321564823",
+      "git_blob_sha256": "f7362661a614cfc149861e736e0c7a3a2eda3efa3b8f1aab93e6817ff7cbfd71",
+      "equal_after_CRLF_to_LF": true
+    },
+    "tests/candidates/material/__init__.py": {
+      "checkout_path": "tests/candidates/material/__init__.py",
+      "actual_byte_sha256": "771d61564fd13e1a6824e69e9dc1d41e149eb3cac31c177b86ff62faf1ebc21d",
+      "byte_count": 27,
+      "CRLF_count": 0,
+      "LF_count": 1,
+      "git_blob_sha1": "252d5dbe3925f4faccf986b448414c16aa1f85d2",
+      "git_blob_sha256": "771d61564fd13e1a6824e69e9dc1d41e149eb3cac31c177b86ff62faf1ebc21d",
+      "equal_after_CRLF_to_LF": true
+    },
+    "tests/data/__init__.py": {
+      "checkout_path": "tests/data/__init__.py",
+      "actual_byte_sha256": "6a9a1048e2fd4fca90347ffe23515911aaa9bb03787b4982142b63e49856c265",
+      "byte_count": 23,
+      "CRLF_count": 0,
+      "LF_count": 1,
+      "git_blob_sha1": "27f2e1d67309d9d8c4dd4ed7f6f63c6594371be7",
+      "git_blob_sha256": "6a9a1048e2fd4fca90347ffe23515911aaa9bb03787b4982142b63e49856c265",
+      "equal_after_CRLF_to_LF": true
+    },
+    "tests/fd/__init__.py": {
+      "checkout_path": "tests/fd/__init__.py",
+      "actual_byte_sha256": "aae47d986ccea134d5789ce495b7d30e7daf2363930cd52bd9b6cbde62f85f40",
+      "byte_count": 21,
+      "CRLF_count": 0,
+      "LF_count": 1,
+      "git_blob_sha1": "5372b8fe0fd2ff3ecbaf804e8e71f441bd5f1c5d",
+      "git_blob_sha256": "aae47d986ccea134d5789ce495b7d30e7daf2363930cd52bd9b6cbde62f85f40",
+      "equal_after_CRLF_to_LF": true
+    },
+    "tests/infrastructure/__init__.py": {
+      "checkout_path": "tests/infrastructure/__init__.py",
+      "actual_byte_sha256": "3c0e3b40a2425e7728cff81f55b1ab803ed91213209841a9d831be5f4c8eff74",
+      "byte_count": 33,
+      "CRLF_count": 0,
+      "LF_count": 1,
+      "git_blob_sha1": "6db044052046480cae14c6b9164d7c19b2084193",
+      "git_blob_sha256": "3c0e3b40a2425e7728cff81f55b1ab803ed91213209841a9d831be5f4c8eff74",
+      "equal_after_CRLF_to_LF": true
+    },
+    "tests/research/__init__.py": {
+      "checkout_path": "tests/research/__init__.py",
+      "actual_byte_sha256": "70bfe784ffe2d3b9ff0bc98fa62ef747e85d14b18c683f47964682577745b3ce",
+      "byte_count": 27,
+      "CRLF_count": 0,
+      "LF_count": 1,
+      "git_blob_sha1": "d61b1a665c0f02ab5cbd8322862169ad94807fb1",
+      "git_blob_sha256": "70bfe784ffe2d3b9ff0bc98fa62ef747e85d14b18c683f47964682577745b3ce",
+      "equal_after_CRLF_to_LF": true
+    },
+    "tests/research/contracts/__init__.py": {
+      "checkout_path": "tests/research/contracts/__init__.py",
+      "actual_byte_sha256": "a5ed159851ef06e5b90d04207746aeb04fc9c3f0b30afe7da5325bdf1b2c2845",
+      "byte_count": 28,
+      "CRLF_count": 0,
+      "LF_count": 1,
+      "git_blob_sha1": "9454672595b445dc238b1d3e9e54297314534981",
+      "git_blob_sha256": "a5ed159851ef06e5b90d04207746aeb04fc9c3f0b30afe7da5325bdf1b2c2845",
+      "equal_after_CRLF_to_LF": true
+    },
+    "tests/research/rstar/__init__.py": {
+      "checkout_path": "tests/research/rstar/__init__.py",
+      "actual_byte_sha256": "748ee066b9587c510ca2d8866c32c16a54dd324a2eeb5f07ecddc2c400d180fe",
+      "byte_count": 24,
+      "CRLF_count": 0,
+      "LF_count": 1,
+      "git_blob_sha1": "13eb5aefc42ad5c95e299fe191e8b5cdafedc3dc",
+      "git_blob_sha256": "748ee066b9587c510ca2d8866c32c16a54dd324a2eeb5f07ecddc2c400d180fe",
+      "equal_after_CRLF_to_LF": true
+    },
+    "tests/runtime/__init__.py": {
+      "checkout_path": "tests/runtime/__init__.py",
+      "actual_byte_sha256": "303f7fb3c086e6a87a713bdfa7a4b03bd600edfc7cb348dec69f10401f7bbac0",
+      "byte_count": 26,
+      "CRLF_count": 0,
+      "LF_count": 1,
+      "git_blob_sha1": "78656770af4a416d88d4487f4e41f4855bd8f911",
+      "git_blob_sha256": "303f7fb3c086e6a87a713bdfa7a4b03bd600edfc7cb348dec69f10401f7bbac0",
+      "equal_after_CRLF_to_LF": true
+    },
+    "tests/support/__init__.py": {
+      "checkout_path": "tests/support/__init__.py",
+      "actual_byte_sha256": "3e6fa5bd095067bc605dadee192481713e837f7a4ffef2680f99bbf5155e5cb0",
+      "byte_count": 26,
+      "CRLF_count": 0,
+      "LF_count": 1,
+      "git_blob_sha1": "6d76d526bf559fe308f015e389ecf8c74985de9d",
+      "git_blob_sha256": "3e6fa5bd095067bc605dadee192481713e837f7a4ffef2680f99bbf5155e5cb0",
+      "equal_after_CRLF_to_LF": true
+    },
+    "tests/support/data/__init__.py": {
+      "checkout_path": "tests/support/data/__init__.py",
+      "actual_byte_sha256": "6a9a1048e2fd4fca90347ffe23515911aaa9bb03787b4982142b63e49856c265",
+      "byte_count": 23,
+      "CRLF_count": 0,
+      "LF_count": 1,
+      "git_blob_sha1": "27f2e1d67309d9d8c4dd4ed7f6f63c6594371be7",
+      "git_blob_sha256": "6a9a1048e2fd4fca90347ffe23515911aaa9bb03787b4982142b63e49856c265",
+      "equal_after_CRLF_to_LF": true
+    },
+    "tests/support/data/input_quality.py": {
+      "checkout_path": "tests/support/data/input_quality.py",
+      "actual_byte_sha256": "d62d5e05fbe0e4338f7c0800055d203168c6566e0190b3d4b9e8fd718b9a8512",
+      "byte_count": 1197,
+      "CRLF_count": 0,
+      "LF_count": 35,
+      "git_blob_sha1": "88f11422f346b1b8709d1a2f43135fc7b914b805",
+      "git_blob_sha256": "d62d5e05fbe0e4338f7c0800055d203168c6566e0190b3d4b9e8fd718b9a8512",
+      "equal_after_CRLF_to_LF": true
+    },
+    "tests/support/data/input_sources.py": {
+      "checkout_path": "tests/support/data/input_sources.py",
+      "actual_byte_sha256": "b6d98903d5bcb5fd9bc61811a54df78d163ec50b9e9e3f495e185312c3225511",
+      "byte_count": 1828,
+      "CRLF_count": 0,
+      "LF_count": 41,
+      "git_blob_sha1": "0d32cd8377cdc7e0d08044a54b12e603290e36fa",
+      "git_blob_sha256": "b6d98903d5bcb5fd9bc61811a54df78d163ec50b9e9e3f495e185312c3225511",
+      "equal_after_CRLF_to_LF": true
+    },
+    "tests/support/driver.py": {
+      "checkout_path": "tests/support/driver.py",
+      "actual_byte_sha256": "45eb7393e52edd128a52fe337bf466449b171e4e43a4d98be5502c26ef6c50ba",
+      "byte_count": 3263,
+      "CRLF_count": 0,
+      "LF_count": 77,
+      "git_blob_sha1": "0560884027671e494d64d899cdafd3a31b1617cb",
+      "git_blob_sha256": "45eb7393e52edd128a52fe337bf466449b171e4e43a4d98be5502c26ef6c50ba",
+      "equal_after_CRLF_to_LF": true
+    },
+    "tests/support/fd/__init__.py": {
+      "checkout_path": "tests/support/fd/__init__.py",
+      "actual_byte_sha256": "aae47d986ccea134d5789ce495b7d30e7daf2363930cd52bd9b6cbde62f85f40",
+      "byte_count": 21,
+      "CRLF_count": 0,
+      "LF_count": 1,
+      "git_blob_sha1": "5372b8fe0fd2ff3ecbaf804e8e71f441bd5f1c5d",
+      "git_blob_sha256": "aae47d986ccea134d5789ce495b7d30e7daf2363930cd52bd9b6cbde62f85f40",
+      "equal_after_CRLF_to_LF": true
+    },
+    "tests/support/fd/advection.py": {
+      "checkout_path": "tests/support/fd/advection.py",
+      "actual_byte_sha256": "2285fc578867502b052a40f1655a7a3989315a87113b8c251781dd03483a5980",
+      "byte_count": 1073,
+      "CRLF_count": 0,
+      "LF_count": 29,
+      "git_blob_sha1": "d3506cefcaa754e05d760d653cccb69669fa0877",
+      "git_blob_sha256": "2285fc578867502b052a40f1655a7a3989315a87113b8c251781dd03483a5980",
+      "equal_after_CRLF_to_LF": true
+    },
+    "tests/support/fd/column_projection.py": {
+      "checkout_path": "tests/support/fd/column_projection.py",
+      "actual_byte_sha256": "e2540cc361c6d9f329acfd1d0a318cca1b4917c867c1ec5a2b26064185ebd02b",
+      "byte_count": 341,
+      "CRLF_count": 0,
+      "LF_count": 11,
+      "git_blob_sha1": "8d07af92235f6cf83cca8b3f44068972068963d2",
+      "git_blob_sha256": "e2540cc361c6d9f329acfd1d0a318cca1b4917c867c1ec5a2b26064185ebd02b",
+      "equal_after_CRLF_to_LF": true
+    },
+    "tests/support/fd/horizontal_diffusion.py": {
+      "checkout_path": "tests/support/fd/horizontal_diffusion.py",
+      "actual_byte_sha256": "20afc9802e59d13ad032d1b1ad08b9639666eece6d42166b412202448f4baabe",
+      "byte_count": 1685,
+      "CRLF_count": 0,
+      "LF_count": 37,
+      "git_blob_sha1": "4587639a79d76256685b582eb6d1651295f11743",
+      "git_blob_sha256": "20afc9802e59d13ad032d1b1ad08b9639666eece6d42166b412202448f4baabe",
+      "equal_after_CRLF_to_LF": true
+    },
+    "tests/support/fd/nonlinear_budgets.py": {
+      "checkout_path": "tests/support/fd/nonlinear_budgets.py",
+      "actual_byte_sha256": "4285de27ba559c28b6b3090208b429aa8b05216977f273c53b1e883d84443891",
+      "byte_count": 647,
+      "CRLF_count": 0,
+      "LF_count": 19,
+      "git_blob_sha1": "9e99da3539aed93821ad817f7ff4ee202e224223",
+      "git_blob_sha256": "4285de27ba559c28b6b3090208b429aa8b05216977f273c53b1e883d84443891",
+      "equal_after_CRLF_to_LF": true
+    },
+    "tests/support/fd/surface_energy.py": {
+      "checkout_path": "tests/support/fd/surface_energy.py",
+      "actual_byte_sha256": "45a947f5e377beff68616757cb924a2e27eb55776a0a0fa4f05fa7097ea44a98",
+      "byte_count": 1233,
+      "CRLF_count": 0,
+      "LF_count": 29,
+      "git_blob_sha1": "a77c3da8bb8ac5f17159a04be97a4ec76a5b1686",
+      "git_blob_sha256": "45a947f5e377beff68616757cb924a2e27eb55776a0a0fa4f05fa7097ea44a98",
+      "equal_after_CRLF_to_LF": true
+    },
+    "tests/support/grid.py": {
+      "checkout_path": "tests/support/grid.py",
+      "actual_byte_sha256": "e41229ec9bb445f734960b0591b231f4dfbacaf16e9c5ea7e5f92bcc871645cd",
+      "byte_count": 1367,
+      "CRLF_count": 0,
+      "LF_count": 35,
+      "git_blob_sha1": "335f2a7fceb9f39d4ee897cbeef358445d57e6b4",
+      "git_blob_sha256": "e41229ec9bb445f734960b0591b231f4dfbacaf16e9c5ea7e5f92bcc871645cd",
+      "equal_after_CRLF_to_LF": true
+    },
+    "tests/support/material/__init__.py": {
+      "checkout_path": "tests/support/material/__init__.py",
+      "actual_byte_sha256": "771d61564fd13e1a6824e69e9dc1d41e149eb3cac31c177b86ff62faf1ebc21d",
+      "byte_count": 27,
+      "CRLF_count": 0,
+      "LF_count": 1,
+      "git_blob_sha1": "252d5dbe3925f4faccf986b448414c16aa1f85d2",
+      "git_blob_sha256": "771d61564fd13e1a6824e69e9dc1d41e149eb3cac31c177b86ff62faf1ebc21d",
+      "equal_after_CRLF_to_LF": true
+    },
+    "tests/support/material/joint_momentum.py": {
+      "checkout_path": "tests/support/material/joint_momentum.py",
+      "actual_byte_sha256": "6e3f279d3fdd9e347146da38900df20a1fb6adc2c4978029d5c754e5e7f83c2c",
+      "byte_count": 3796,
+      "CRLF_count": 0,
+      "LF_count": 64,
+      "git_blob_sha1": "e282d13c0cf9f8f8ea785cae6729f5971c099e72",
+      "git_blob_sha256": "6e3f279d3fdd9e347146da38900df20a1fb6adc2c4978029d5c754e5e7f83c2c",
+      "equal_after_CRLF_to_LF": true
+    },
+    "tests/support/material/local_top_bridge.py": {
+      "checkout_path": "tests/support/material/local_top_bridge.py",
+      "actual_byte_sha256": "bb27dbfe89065d62c690aa2b5b2fb0bc8637a2542464f802fb8117c59a45d3a3",
+      "byte_count": 963,
+      "CRLF_count": 0,
+      "LF_count": 33,
+      "git_blob_sha1": "d66356929b869d2c062ae3648ecd11d54b942278",
+      "git_blob_sha256": "bb27dbfe89065d62c690aa2b5b2fb0bc8637a2542464f802fb8117c59a45d3a3",
+      "equal_after_CRLF_to_LF": true
+    },
+    "tests/support/material/process_time.py": {
+      "checkout_path": "tests/support/material/process_time.py",
+      "actual_byte_sha256": "4df5645a96c7cda2d72e62de3b795bd4bc5612a113d222558cc3df5b5e9a991b",
+      "byte_count": 1786,
+      "CRLF_count": 0,
+      "LF_count": 41,
+      "git_blob_sha1": "0164ff7dfe799ca734646ab517f9ca59519e51b2",
+      "git_blob_sha256": "4df5645a96c7cda2d72e62de3b795bd4bc5612a113d222558cc3df5b5e9a991b",
+      "equal_after_CRLF_to_LF": true
+    },
+    "tests/support/material/reference_geometry.py": {
+      "checkout_path": "tests/support/material/reference_geometry.py",
+      "actual_byte_sha256": "a980c573e73a19eda3136bf72bfe05567a13ea01ec671e80e7dad3ea154ef1c3",
+      "byte_count": 2343,
+      "CRLF_count": 0,
+      "LF_count": 56,
+      "git_blob_sha1": "b35fe2a78e3099374bdb3895d3a3e0f0b9a35fcf",
+      "git_blob_sha256": "a980c573e73a19eda3136bf72bfe05567a13ea01ec671e80e7dad3ea154ef1c3",
+      "equal_after_CRLF_to_LF": true
+    },
+    "tests/support/material/subcycled_rk.py": {
+      "checkout_path": "tests/support/material/subcycled_rk.py",
+      "actual_byte_sha256": "24a8dc37a3cf58ec3fde454b617e3b295b4986443f20b99582f6e4c0fc2a95f8",
+      "byte_count": 4695,
+      "CRLF_count": 0,
+      "LF_count": 87,
+      "git_blob_sha1": "d450935feac7a3977fea13ed292c9a449a15f801",
+      "git_blob_sha256": "24a8dc37a3cf58ec3fde454b617e3b295b4986443f20b99582f6e4c0fc2a95f8",
+      "equal_after_CRLF_to_LF": true
+    },
+    "tests/support/material/subcycles.py": {
+      "checkout_path": "tests/support/material/subcycles.py",
+      "actual_byte_sha256": "0352ff46e6c3e05d877a24c7c79a7648a134a4178a0e71ea83d3fbe79c800cc5",
+      "byte_count": 3952,
+      "CRLF_count": 0,
+      "LF_count": 66,
+      "git_blob_sha1": "075ac1260b39972ffbc73eb3c64cef6052e3de52",
+      "git_blob_sha256": "0352ff46e6c3e05d877a24c7c79a7648a134a4178a0e71ea83d3fbe79c800cc5",
+      "equal_after_CRLF_to_LF": true
+    },
+    "tests/support/material/top.py": {
+      "checkout_path": "tests/support/material/top.py",
+      "actual_byte_sha256": "c63d7f3086f7dff3292c7504201f0558762d3c7281983b932f35d2826fb1850b",
+      "byte_count": 1811,
+      "CRLF_count": 0,
+      "LF_count": 38,
+      "git_blob_sha1": "e852719edb599eeb6e2896933ac0f0346737e7c0",
+      "git_blob_sha256": "c63d7f3086f7dff3292c7504201f0558762d3c7281983b932f35d2826fb1850b",
+      "equal_after_CRLF_to_LF": true
+    },
+    "tests/support/original_native.py": {
+      "checkout_path": "tests/support/original_native.py",
+      "actual_byte_sha256": "cf33ad0f91ff8613c3696198c46a9d86c5794a9e57bd7d894b1d3191bb8a9b4e",
+      "byte_count": 8145,
+      "CRLF_count": 0,
+      "LF_count": 153,
+      "git_blob_sha1": "6739f337dd8a934c41a66b7bc38fe56083de38f4",
+      "git_blob_sha256": "cf33ad0f91ff8613c3696198c46a9d86c5794a9e57bd7d894b1d3191bb8a9b4e",
+      "equal_after_CRLF_to_LF": true
+    },
+    "tests/support/paths.py": {
+      "checkout_path": "tests/support/paths.py",
+      "actual_byte_sha256": "78fffa648dfee6ae0fa6059a3d99fbad677fafe1fc96feda688f66ea4061c96b",
+      "byte_count": 197,
+      "CRLF_count": 0,
+      "LF_count": 5,
+      "git_blob_sha1": "e060f1dce0937752d547f87eb4d257d9d1857b3a",
+      "git_blob_sha256": "78fffa648dfee6ae0fa6059a3d99fbad677fafe1fc96feda688f66ea4061c96b",
+      "equal_after_CRLF_to_LF": true
+    },
+    "tests/support/rstar/__init__.py": {
+      "checkout_path": "tests/support/rstar/__init__.py",
+      "actual_byte_sha256": "748ee066b9587c510ca2d8866c32c16a54dd324a2eeb5f07ecddc2c400d180fe",
+      "byte_count": 24,
+      "CRLF_count": 0,
+      "LF_count": 1,
+      "git_blob_sha1": "13eb5aefc42ad5c95e299fe191e8b5cdafedc3dc",
+      "git_blob_sha256": "748ee066b9587c510ca2d8866c32c16a54dd324a2eeb5f07ecddc2c400d180fe",
+      "equal_after_CRLF_to_LF": true
+    },
+    "tests/support/rstar/metric_controls.py": {
+      "checkout_path": "tests/support/rstar/metric_controls.py",
+      "actual_byte_sha256": "1babfb969623531d40d0629cae47c0ea87e1b6cd4ed44af3bc13e47069a67cc4",
+      "byte_count": 3366,
+      "CRLF_count": 0,
+      "LF_count": 71,
+      "git_blob_sha1": "6198b4694960ba8a12af1c5e96dbea030b964633",
+      "git_blob_sha256": "1babfb969623531d40d0629cae47c0ea87e1b6cd4ed44af3bc13e47069a67cc4",
+      "equal_after_CRLF_to_LF": true
+    },
+    "tests/support/rstar/pressure_work.py": {
+      "checkout_path": "tests/support/rstar/pressure_work.py",
+      "actual_byte_sha256": "99f55dd77cc0222a95d26d09cf14763a6e5e5400d486fd424e5376f76dc32dcf",
+      "byte_count": 11595,
+      "CRLF_count": 0,
+      "LF_count": 187,
+      "git_blob_sha1": "ae006ac0fd053fea61d8187139b01f329ccde3d0",
+      "git_blob_sha256": "99f55dd77cc0222a95d26d09cf14763a6e5e5400d486fd424e5376f76dc32dcf",
+      "equal_after_CRLF_to_LF": true
+    },
+    "tests/support/rstar/representation.py": {
+      "checkout_path": "tests/support/rstar/representation.py",
+      "actual_byte_sha256": "cfbb550337a4853f17f51aabdfae8fca774c3ef3f6b35770b5f0fbe7a8f628fd",
+      "byte_count": 5939,
+      "CRLF_count": 0,
+      "LF_count": 100,
+      "git_blob_sha1": "c6a0cc82b4e76537aee01a48cea1ea4225c312f2",
+      "git_blob_sha256": "cfbb550337a4853f17f51aabdfae8fca774c3ef3f6b35770b5f0fbe7a8f628fd",
+      "equal_after_CRLF_to_LF": true
+    },
+    "tests/support/rstar/sparse_diffusion.py": {
+      "checkout_path": "tests/support/rstar/sparse_diffusion.py",
+      "actual_byte_sha256": "bd0f289db1f5855de565da0fac6b1903c9c29bf19541b51e46e92ed86a133a87",
+      "byte_count": 1325,
+      "CRLF_count": 0,
+      "LF_count": 34,
+      "git_blob_sha1": "61eff0bf4f7dbb7c55a7e3b8d69ed0de2a59509c",
+      "git_blob_sha256": "bd0f289db1f5855de565da0fac6b1903c9c29bf19541b51e46e92ed86a133a87",
+      "equal_after_CRLF_to_LF": true
+    },
+    "tests/support/rstar/weak_bounded.py": {
+      "checkout_path": "tests/support/rstar/weak_bounded.py",
+      "actual_byte_sha256": "e61ccd6dddea94a4a4102c05403b25d4ccc0d8a120fa00e3618178df1dc5f9f9",
+      "byte_count": 8648,
+      "CRLF_count": 0,
+      "LF_count": 137,
+      "git_blob_sha1": "1cc9f681a801e44c19f42a19fff138144024f2c6",
+      "git_blob_sha256": "e61ccd6dddea94a4a4102c05403b25d4ccc0d8a120fa00e3618178df1dc5f9f9",
+      "equal_after_CRLF_to_LF": true
+    },
+    "tests/support/rstar/weak_momentum.py": {
+      "checkout_path": "tests/support/rstar/weak_momentum.py",
+      "actual_byte_sha256": "16a83be30975b7373aeb2ba5bca86f1539a1ecf54863cff28761b7c4c3955860",
+      "byte_count": 2920,
+      "CRLF_count": 0,
+      "LF_count": 47,
+      "git_blob_sha1": "58f0006790584b104d8e86cd9a0baf1309e07e4a",
+      "git_blob_sha256": "16a83be30975b7373aeb2ba5bca86f1539a1ecf54863cff28761b7c4c3955860",
+      "equal_after_CRLF_to_LF": true
+    },
+    "tests/support/rstar/weak_time.py": {
+      "checkout_path": "tests/support/rstar/weak_time.py",
+      "actual_byte_sha256": "63bbf0ddc0e8ff1f5bd2329308200a6fdf71f825577b6f750685eb45af506a12",
+      "byte_count": 7824,
+      "CRLF_count": 0,
+      "LF_count": 142,
+      "git_blob_sha1": "b62e036e81201529c0a346f6ffc3ac8cd08088b2",
+      "git_blob_sha256": "63bbf0ddc0e8ff1f5bd2329308200a6fdf71f825577b6f750685eb45af506a12",
+      "equal_after_CRLF_to_LF": true
+    },
+    "tests/support/rstar/weak_transport.py": {
+      "checkout_path": "tests/support/rstar/weak_transport.py",
+      "actual_byte_sha256": "29989b98a8cc59000aa9050dfc5d26f91020c2bfdc25d495fe3d89964d0f031b",
+      "byte_count": 7777,
+      "CRLF_count": 0,
+      "LF_count": 120,
+      "git_blob_sha1": "858b903faf1334c1a205034fe959e6139f415373",
+      "git_blob_sha256": "29989b98a8cc59000aa9050dfc5d26f91020c2bfdc25d495fe3d89964d0f031b",
+      "equal_after_CRLF_to_LF": true
+    },
+    "tests/validation/__init__.py": {
+      "checkout_path": "tests/validation/__init__.py",
+      "actual_byte_sha256": "edf76e03fd7e09d7118146af929d09ef716d66fd2eaa718421b12e9950d3c1b1",
+      "byte_count": 29,
+      "CRLF_count": 0,
+      "LF_count": 1,
+      "git_blob_sha1": "77bdf44dc939a119527557abc67e08f1e50b8c85",
+      "git_blob_sha256": "edf76e03fd7e09d7118146af929d09ef716d66fd2eaa718421b12e9950d3c1b1",
+      "equal_after_CRLF_to_LF": true
+    },
+    "docs/source_test_layout.json": {
+      "checkout_path": "docs/source_test_layout.json",
+      "actual_byte_sha256": "14e1d6f05414a951d50939da8eeeda04540a083bfad03f5ded493b03f1e7d43c",
+      "byte_count": 33377,
+      "CRLF_count": 0,
+      "LF_count": 698,
+      "git_blob_sha1": "03ff00ddf2f73a99efc47a8835dd565e81c77674",
+      "git_blob_sha256": "14e1d6f05414a951d50939da8eeeda04540a083bfad03f5ded493b03f1e7d43c",
+      "equal_after_CRLF_to_LF": true
+    }
+  },
+  "input_field_sha256": {
+    "u": "7140309156b448f1a03575e3bee9d35f12b84d388cfd8ef80f1ca61b6ea025dc",
+    "v": "e61fbbd794e4268759226dca994e3b84925d927c1552fd6f7057826b30230122",
+    "T": "369c1ff6a41cf653024edcef1574929224e233e90bc02751a0e66ff2ec069123",
+    "S": "c84f912713692acda36256c9969ab1f6419e113fff541e2c36d2c2eeb3f8e940",
+    "eta": "9f642dfb65cf2475b0a5cc60dba93021d3a14730a526b593f318018b68dde350",
+    "ice": "5341e6b2646979a70e57653007a1f310169421ec9bdd9f1a5648f75ade005af1"
+  },
+  "original_result_valid": true,
+  "original_stage_names": [
+    "bottom_drag_first",
+    "linear_first",
+    "nonlinear_predictor",
+    "predictor_linear_second",
+    "barotropic",
+    "transport_match",
+    "accepted_tracer_replay",
+    "linear_second",
+    "bottom_drag_second",
+    "closed_wall"
+  ],
+  "original_generic_fast_calls": 12,
+  "per_fast_continuity_residual_max_m": 2.7719716612291704e-17,
+  "eta_change_abs_max_m": 1.6462805063621744e-08,
+  "u_change_abs_max_m_per_s": 9.651412456908315e-07,
+  "T_change_abs_max_C": 2.4757931065266803e-05,
+  "deep_T_change_abs_max_C": 5.440223240782416e-07,
+  "deep_IT_change_abs_max_C_m": 8.160334861173624e-06,
+  "deep_IS_change_abs_max_PSU_m": 2.040123803226379e-07,
+  "deep_reference_Mu_change_abs_max_kg_per_m_s": 0.0006471607639752072,
+  "S_change_abs_max_PSU": 5.884603595518456e-07,
+  "reference_pressure_impulse_abs_max_kg_m_per_s": 77875182.625,
+  "reference_pressure_transpose_roundoff_ratio_max": 0.000992844416877913,
+  "reference_pressure_kick_delta_KE_J": 24370932.445960354,
+  "reference_pressure_kick_actual_impulse_work_J": 24370932.1116574,
+  "reference_pressure_kick_dt_force_work_J": 24370932.263245985,
+  "reference_pressure_kick_native_transport_work_J": 24370932.263245966,
+  "reference_pressure_kick_work_residual_J": 0.18271436914801598,
+  "reference_pressure_kick_work_roundoff_bound_J": 818.4853791669638,
+  "convection_entry_RHS_preview_abs_max": 0.00039999999999999866,
+  "convection_actual_applied_ledger_qualified": false,
+  "accepted_joint_moving_stock_steps": 0,
+  "physical_moving_pressure_qualified": false,
+  "order_qualified": false,
+  "equal_error_speed_qualified": false,
+  "original_state_six_fields_unchanged": true,
+  "scope": "Original native diagnostic step and reference fixed-mass pressure identity only."
+}
