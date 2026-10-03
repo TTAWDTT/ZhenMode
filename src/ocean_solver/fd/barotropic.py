@@ -244,7 +244,7 @@ def _free_surface_step_fd(eta, u, v, p, F_rho_x=None, F_rho_y=None, dt_half=None
     v_new = v_new * p.interior_mask_z
     return eta_new, u_new, v_new
 
-def _barotropic_subcycle_transport(state, params):
+def _barotropic_subcycle_transport(state, params, *, fast_observer=None):
     """Return actual OLD-face time mean and eta changes not caused by transport.
 
     The shear is frozen at the post-L/N/L predictor. Each OLD barotropic value
@@ -252,6 +252,9 @@ def _barotropic_subcycle_transport(state, params):
     optional transport-matched path drives eta with those same faces. Filtering,
     sponge and eta relaxation are recorded separately, not fitted into a flux.
     """
+    if fast_observer is not None and params.use_scan:
+        raise ValueError('eager fast observation requires use_scan=False')
+    observed_count = 0
     if params.process_time_scheme == 'symmetric_fast_v3':
         state = state._replace(v=state.v * params.interior_mask_z)
     forcing_x, forcing_y = _compute_bt_rho_pgf(state, params)
@@ -261,11 +264,13 @@ def _barotropic_subcycle_transport(state, params):
     zero = jnp.zeros_like(state.eta)
 
     def advance(carry):
+        nonlocal observed_count
         eta, mean_u, mean_v, total_x, total_y, filter_change = carry
         velocity_x = state.u + (mean_u - initial_u)[..., None] * params.wet_mask_z
         velocity_y = state.v + (mean_v - initial_v)[..., None] * params.wet_mask_z
         layers = _layer_face_transports(velocity_x, velocity_y, params)
         faces = tuple(jnp.sum(flux, axis=-1) for flux in layers)
+        first_faces = faces
         if params.match_barotropic_transport:
             divergence = _face_transport_divergence(*faces, params)
         else:
@@ -281,6 +286,12 @@ def _barotropic_subcycle_transport(state, params):
                 column_face_transport=faces if params.match_barotropic_transport else None)
         eta_new, mean_u_new, mean_v_new = updated
         nontransport_change = eta_new - (eta - params.dt_bt * divergence)
+        if fast_observer is not None:
+            fast_observer({'index': observed_count, 'before': (eta, mean_u, mean_v),
+                           'after': updated, 'first_faces': first_faces, 'mean_faces': faces,
+                           'first_layer_faces': layers, 'filter_change': nontransport_change,
+                           'density_forcing': (forcing_x, forcing_y), 'duration': params.dt_bt})
+            observed_count += 1
         return (eta_new, mean_u_new, mean_v_new, total_x + faces[0], total_y + faces[1],
                 filter_change + nontransport_change), None
 

@@ -1,0 +1,202 @@
+{
+  "contract": "original_nodal_reference_stock_and_fast_clock_handoff_gate",
+  "phase": "design_freeze_before_interface_implementation",
+  "source_audit_base": "25258950905f9d1aa84509c4c99ebad9ef33ba2b",
+  "native_state_family": "FD_point_samples_material_top_mass_lumped_linear_momentum_v1",
+  "implemented": false,
+  "numerical_runs": 0,
+  "qualification_passed": false,
+  "original_joint_moving_stock_accepted": false,
+  "physical_moving_pressure_qualified": false,
+  "order_qualified": false,
+  "equal_error_speed_qualified": false,
+  "native_authority": {
+    "tracer_h": "h_ref+eta*e0",
+    "tracer_stocks": "h_tracer*T,h_tracer*S",
+    "momentum_per_area": "rho0*h_ref*u,rho0*h_ref*v",
+    "metric": "D0=diag(rho0*A*h_ref)",
+    "pressure": "original linear reference dynamic Pa",
+    "raw_mean_identity_transfer": false
+  },
+  "case": {
+    "grid_shape": [
+      8,
+      4,
+      6
+    ],
+    "all_wet": true,
+    "periodic_x": true,
+    "closed_y": true,
+    "z_nodes_m": [
+      0,
+      -5,
+      -15,
+      -30,
+      -50,
+      -80
+    ],
+    "bottom_m": -80,
+    "latitudes_deg": [
+      -30,
+      -10,
+      10,
+      30
+    ],
+    "longitude_rule": "centers=(index+.5)*360/8; dx=R*(2*pi/8)*cos(lat), dy=R*20*pi/180",
+    "macro_dt_s": 0.12,
+    "fast_dt_s": 0.01,
+    "fast_substeps": 12,
+    "use_scan": false,
+    "eta_rule_m": "-.4+.02*cos(2*pi*x/8)",
+    "temperature_rule_C": "15+.2*k+.03*cos(2*pi*x/8)",
+    "salinity_rule_PSU": "35+.005*k+.004*sin(pi*y/3)",
+    "velocity_rule": "u=(.02+.01*sin(2*pi*x/8))*[1,1.2,1.4,.6,.3,.1]; v=.003*sin(pi*y/3)*(1+k/20)",
+    "nu_h": 2,
+    "nu_v": 0.0003,
+    "nu_bi": 100,
+    "kappa_h": 0.4,
+    "kappa_v": 0.0002,
+    "kappa_bi": 20,
+    "kappa_conv": 0.01,
+    "r_bot": 0.0001,
+    "tau_x": 0.02,
+    "tau_y": 0.003,
+    "Q_heat": 35,
+    "lambda_bulk": 50,
+    "air_temperature_C": 16,
+    "FCT": true,
+    "original_nonlinear_filter": true,
+    "existing_material_scope": "GM/Redi/ice/sponge/eta_relax/polar caps disabled by the declared original material policy, not changed by the adapter",
+    "T_ref_C": 15,
+    "S_ref_PSU": 35,
+    "ice_initial_m": 0,
+    "column_geometry": "nodal_dual_v1",
+    "mode_split": true,
+    "match_barotropic_transport": true,
+    "process_time_scheme": "symmetric_fast_v3",
+    "tracer_transport_scheme": "actual_geometry_v2",
+    "momentum_process_scheme": "joint_heun_v1",
+    "conservative_kv": true,
+    "localize_conv": true,
+    "bottom_friction": "linear",
+    "nu_nsub": 2,
+    "dtype": "float64",
+    "projection_niter": 150,
+    "projection_rtol": 1e-12,
+    "projection_preconditioner": "none",
+    "projection_max_refinements": 2,
+    "projection_override_source": "explicit (environment overrides are rejected)",
+    "other_factory_arguments": "Pinned-source defaults are recorded verbatim in the implementation receipt; unresolved/default-dependent settings reject before numerical execution.",
+    "reference_pressure_probe_dt_s": 0.01,
+    "convection_activity_requirement": "Initial density is unstable with depth under the original EOS; acceptance requires an actual nonzero instability mask and actual nonzero applied mixing term, otherwise this activity gate rejects.",
+    "factory_derived_counts": {
+      "adv_nsub": {
+        "expected": 1,
+        "rule": "Original factory derives this field; record and verify, never pass as a factory keyword or override it."
+      },
+      "conv_nsub": {
+        "expected": 1,
+        "rule": "Original factory derives this field from kappa_conv=0.01, dt=0.12 and fixed native z metrics; record and verify, never pass as a keyword or override it."
+      },
+      "material_tracer_linear_subcycles": "Computed by the unchanged original material driver and recorded at each stage; no manual replacement.",
+      "nu_nsub": {
+        "expected": 2,
+        "rule": "The explicit original factory nu_nsub keyword."
+      }
+    }
+  },
+  "thresholds": {
+    "identity_machine_eps_multiplier": 512,
+    "false_control_minimum_bound_ratio": 100,
+    "maximum_reference_pressure_probe_duration_s": 0.01,
+    "maximum_process_subcycles": 16
+  },
+  "required_acceptance": [
+    "native state/grid/param and source identity",
+    "native fields exact capture/restore, derived-stock roundtrip within primitive bounds, and finite/masked input refusal",
+    "independent NumPy original EOS/reference-pressure/native-face assembly",
+    "same constrained wall projector in pressure transpose and flux",
+    "actual fixed-reference momentum impulse and midpoint work",
+    "default versus eager-observed original result identity",
+    "ten original stages and twelve original fast calls",
+    "per-fast native continuity using actual mean faces and separate filter change",
+    "exact moving-mass and barotropic-average defects",
+    "top-three local GCL/ALE mismatch despite column closure",
+    "forbidden original-to-half-prism identity transfer",
+    "six-field full rollback including late failure",
+    "final original result.valid distinct from joint acceptance",
+    "each claimed active native process has a nonzero applied contribution; convection requires its actual mask and mixing term"
+  ],
+  "prohibited": [
+    "analytic affine replacement fast clock",
+    "original CV renamed as half-prism mean CV",
+    "silently disabled coefficient or edited clock",
+    "source/evidence/license or user-checkout overwrite",
+    "real353 or dt300/dt600 step",
+    "GPU or unrelated numerical cases",
+    "order/physical-energy/industrial/speed acceptance inferred from identities"
+  ],
+  "resource_limits": {
+    "CPU_count": 1,
+    "wall_seconds_per_invocation": 180,
+    "memory_bytes_per_process_tree": 4294967296,
+    "serial": true
+  },
+  "evidence_policy": "Reviewed clean committed implementation precedes bounded runs. New receipts bind actual source bytes, case/parameters and resource logs. Historical receipts remain unchanged.",
+  "reference_pressure_probe": {
+    "authority": "Scratch fixed-reference-mass pressure-only kick, frozen original Pa; not original combined fast-stage energy.",
+    "before_momentum": "rho0*A*h_ref*u_before",
+    "force": "F0=B0.T*p with the same constrained wall projector",
+    "after_momentum": "before_momentum+0.01*F0",
+    "midpoint": "(u_before+u_after)/2 from the actual scratch before/after arrays",
+    "identity": "DeltaK=0.01*u_mid.T*F0=0.01*p.T*B0*u_mid",
+    "required": "nonzero impulse and independent native operator assembly",
+    "excluded": "combined wind/rotation/fast work, continuous time-integrated pressure work, variable-mass physical Pa/PE acceptance"
+  },
+  "constructor_binding": {
+    "PhysicsConfig": [
+      "nu_h",
+      "nu_v",
+      "nu_bi",
+      "kappa_h",
+      "kappa_v",
+      "kappa_bi",
+      "kappa_conv",
+      "r_bot",
+      "bottom_friction",
+      "T_ref",
+      "S_ref"
+    ],
+    "make_solver_global": [
+      "nu_nsub",
+      "dtype",
+      "column_geometry",
+      "mode_split",
+      "match_barotropic_transport",
+      "process_time_scheme",
+      "conservative_kv",
+      "localize_conv",
+      "use_scan",
+      "fct_adv",
+      "projection_niter",
+      "projection_rtol",
+      "projection_preconditioner",
+      "projection_max_refinements"
+    ],
+    "material_builder": [
+      "actual_geometry_v2 transport choice",
+      "joint_heun_v1 momentum choice"
+    ],
+    "derived_params_only": [
+      "adv_nsub",
+      "conv_nsub",
+      "material tracer/linear counts"
+    ],
+    "forcing": "tau_x/tau_y/Q_heat actual 2D arrays passed in the original forcing tuple; T_atm and lambda_bulk passed through their original interface"
+  },
+  "design_gate": {
+    "status": "passed",
+    "scope": "Independent pinned-source mathematical/interface design audit only; no CodeGate or numerical acceptance.",
+    "convection_EOS_density_increment_kg_m3_per_deeper_node": -0.037105
+  }
+}

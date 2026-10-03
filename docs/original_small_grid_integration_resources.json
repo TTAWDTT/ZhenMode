@@ -1,0 +1,91 @@
+{
+  "source_commit": "f0d1cbc329967e659efc64edc149b803d193f4da",
+  "invocations": [
+    {
+      "wall_s": 2.015,
+      "peak_interpreter_RSS_bytes": 111484928,
+      "peak_job_private_bytes": 106754048,
+      "single_CPU": true,
+      "memory_limit_bytes": 4294967296,
+      "wall_limit_s": 180,
+      "bound_stop": false,
+      "exit_code": 2,
+      "log": "original_native_red.log",
+      "log_byte_sha256": "f4dd4abed4038267fa7ebff10c595b80e9deed0086f908c3bb8d211012127e48",
+      "source_commit": "4daf4c82a87c422e2e86ad7c2811529b8cd0b361",
+      "classification": "environment_failure"
+    },
+    {
+      "wall_s": 1.422,
+      "peak_interpreter_RSS_bytes": 114806784,
+      "peak_job_private_bytes": 109707264,
+      "single_CPU": true,
+      "memory_limit_bytes": 4294967296,
+      "wall_limit_s": 180,
+      "bound_stop": false,
+      "exit_code": 2,
+      "log": "original_native_red_bound.log",
+      "log_byte_sha256": "484f1a0b2b6f7ccf4f78e4aec5a998c514eebc1a22edab2e488a5f3269144c99",
+      "source_commit": "4daf4c82a87c422e2e86ad7c2811529b8cd0b361",
+      "classification": "expected_TDD_RED"
+    },
+    {
+      "wall_s": 55.109,
+      "peak_interpreter_RSS_bytes": 566243328,
+      "peak_job_private_bytes": 638128128,
+      "single_CPU": true,
+      "memory_limit_bytes": 4294967296,
+      "wall_limit_s": 180,
+      "bound_stop": false,
+      "exit_code": 0,
+      "log": "original_native_green.log",
+      "log_byte_sha256": "26960662401a91b3a54850e852b28ae482cc9c4187caca15c080b65c4be67a78",
+      "source_commit": "fddda45b39fcdcf752bef756d4c52e90541a40f1",
+      "classification": "passed"
+    },
+    {
+      "wall_s": 16.969,
+      "peak_interpreter_RSS_bytes": 362622976,
+      "peak_job_private_bytes": 406499328,
+      "single_CPU": true,
+      "memory_limit_bytes": 4294967296,
+      "wall_limit_s": 180,
+      "bound_stop": false,
+      "exit_code": 0,
+      "log": "original_native_witness.log",
+      "log_byte_sha256": "5b5c39ba7232b2e9cd2c7a94e67549409bf37177bf2ad0da400166e81d93a2ce",
+      "source_commit": "fddda45b39fcdcf752bef756d4c52e90541a40f1",
+      "classification": "passed"
+    },
+    {
+      "wall_s": 54.172,
+      "peak_interpreter_RSS_bytes": 579403776,
+      "peak_job_private_bytes": 651431936,
+      "single_CPU": true,
+      "memory_limit_bytes": 4294967296,
+      "wall_limit_s": 180,
+      "bound_stop": false,
+      "exit_code": 0,
+      "log": "original_native_green_final.log",
+      "log_byte_sha256": "3ac26650f27fd6412c7344efa7bc9fdf4c576797dc71572ae3cab6228a22a57b",
+      "source_commit": "f0d1cbc329967e659efc64edc149b803d193f4da",
+      "classification": "passed_final_source_binding"
+    },
+    {
+      "wall_s": 17.062,
+      "peak_interpreter_RSS_bytes": 369061888,
+      "peak_job_private_bytes": 409767936,
+      "single_CPU": true,
+      "memory_limit_bytes": 4294967296,
+      "wall_limit_s": 180,
+      "bound_stop": false,
+      "exit_code": 0,
+      "log": "original_native_witness_final.log",
+      "log_byte_sha256": "7c894599961b5c16596f53a7ab390750c4b4cece74f6d3677a8921175cace167",
+      "source_commit": "f0d1cbc329967e659efc64edc149b803d193f4da",
+      "classification": "passed_final_source_binding"
+    }
+  ],
+  "total_wall_s": 146.749,
+  "bounded_runner_sha256": "844c81b1f8185d33bcb79872bd83213807ad0e1f708746ccee52f4a41e00ac03"
+}
