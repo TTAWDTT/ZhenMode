@@ -10,8 +10,6 @@ from pathlib import Path, PurePosixPath
 
 import numpy as np
 
-from ocean_solver._compat import preserve_legacy_names
-
 SCHEMA_VERSION = 1
 STATE_FIELDS = ("u", "v", "T", "S", "eta", "ice")
 
@@ -214,5 +212,3 @@ def load_restart(path, expected_contract):
     state = _validate_state(arrays["state"], expected_contract)
     return RestartRecord(state, step, elapsed, counters, arrays["cumulative"],
                          arrays["history"], metadata["outputs"])
-
-preserve_legacy_names(globals(), 'restart_contract')

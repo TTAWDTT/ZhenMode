@@ -8,7 +8,7 @@ from tests.support.rstar.metric_controls import _fixture
 from tests.support.rstar.representation import _gauss_mass
 from tests.support.rstar.weak_transport import _weak_case, _weak_diagnostic
 
-from config import G_EARTH, RHO_0
+from ocean_solver.config.definitions import G_EARTH, RHO_0
 from research.experiments.material_rstar_coordinates.bed_completion import complete_bed_reference
 from research.experiments.material_rstar_coordinates.nodal_mass import make_nodal_mass
 from research.experiments.material_rstar_coordinates.pressure_work import potential_energy

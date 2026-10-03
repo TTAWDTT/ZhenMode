@@ -21,7 +21,6 @@ import os
 
 import numpy as np
 
-from ocean_solver._compat import preserve_legacy_names
 from ocean_solver.provenance.locations import source_root
 
 try:
@@ -327,7 +326,7 @@ def _fill_ocean_horizontal(field, wet_mask, max_pass=50):
 
 # ── Smoke test ───────────────────────────────────────────────────────
 
-preserve_legacy_names(globals(), 'woa_data')
+
 
 if __name__ == "__main__":
     from ocean_solver.config.definitions import DEFAULT_CONFIG, GlobalGridConfig

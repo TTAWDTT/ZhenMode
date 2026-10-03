@@ -6,13 +6,13 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from config import R_EARTH
-from jax_solver_global import (
-    JaxStateG,
+from ocean_solver.config.definitions import R_EARTH
+from ocean_solver.dynamics.processes import _linear_half_step
+from ocean_solver.numerics.horizontal import (
     _horizontal_biharmonic_tracer,
     _horizontal_tracer_diffusion,
-    _linear_half_step,
 )
+from ocean_solver.state.types import JaxStateG
 from tests.support.fd.horizontal_diffusion import _parameters
 
 

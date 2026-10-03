@@ -7,12 +7,13 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from config import R_EARTH
-from jax_solver_global import _biharmonic_h, _laplacian_h, make_fd_params
-from material_top import _momentum_diffusion_norm_bound
+from ocean_solver.config.definitions import R_EARTH
+from ocean_solver.geometry.fd import make_fd_params
+from ocean_solver.numerics.horizontal import _biharmonic_h, _laplacian_h
 from tests.support.grid import all_wet_grid
 from tests.support.material.joint_momentum import _controlled_factory, _numpy_operators
 from tests.support.material.reference_geometry import WIDTHS
+from zhenmode_research.candidates.material.solver import _momentum_diffusion_norm_bound
 
 
 def _face_quadratic(velocity, params):

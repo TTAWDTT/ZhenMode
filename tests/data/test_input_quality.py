@@ -7,9 +7,9 @@ from io import BytesIO
 import numpy as np
 import pytest
 
-from input_quality import audit_woa_variable, enforce_strict_quality
+from ocean_solver.io.climatology import _fill_nan_horizontal_per_level
+from ocean_solver.io.data_quality import audit_woa_variable, enforce_strict_quality
 from tests.support.data.input_quality import cli, example
-from woa_data import _fill_nan_horizontal_per_level
 
 
 def test_original_valid_input_is_supported_and_unchanged():

@@ -16,7 +16,7 @@ import numpy as np
 REPO = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(REPO / "src"))
 
-from bench_climatology_global import smooth_2d_global
+from ocean_solver.validation.benchmarks.climatology import smooth_2d_global
 
 
 def sst_climatology(path: Path) -> dict:

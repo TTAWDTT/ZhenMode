@@ -13,7 +13,7 @@ from tests.support.rstar.representation import _gauss_mass
 
 from tests.support.rstar.weak_bounded import _bounded_case
 
-from config import C_P, RHO_0
+from ocean_solver.config.definitions import C_P, RHO_0
 
 from research.experiments.material_rstar_coordinates.kernel import rstar_geometry
 

@@ -12,7 +12,7 @@ import jax.numpy as jnp
 import numpy as np
 from jax.scipy.sparse.linalg import gmres
 
-from ocean_solver._compat import preserve_legacy_names
+
 from zhenmode_research.candidates.fv.fluxes import (
     HalfPrismTransport,
     WetFluxReconstruction,
@@ -36,7 +36,7 @@ from zhenmode_research.candidates.fv.velocity import (
     PhysicalVelocityReconstruction,
     physical_velocity_from_fluxes,
 )
-from ocean_solver.configuration import OMEGA
+from ocean_solver.config.definitions import OMEGA
 
 
 class VelocityPair(NamedTuple):
@@ -334,5 +334,3 @@ def paired_momentum_surface_step(geometry, state, density_anomaly, dt, nsub,
              & jnp.all(source[..., 1:] == 0.))
     return PairedStepResult(LayerState(transport.state, *surface.velocity), pressure, held_force, surface,
                             transport, fluxes, reconstruction, dual, physical, surface_error, moving_work, valid)
-
-preserve_legacy_names(globals(), 'paired_dynamics')

@@ -2,7 +2,12 @@
 import numpy as np
 import pytest
 
-from benchmark_metrics import cell_area, mixed_layer_depth, regional_masks, sea_ice_metrics
+from ocean_solver.validation.benchmarks.metrics import (
+    cell_area,
+    mixed_layer_depth,
+    regional_masks,
+    sea_ice_metrics,
+)
 
 
 def test_regional_masks_are_reproducible():
@@ -47,7 +52,7 @@ def test_mixed_layer_depth_uses_density_threshold():
     assert mld[1, 1] == 100.0
 
 def test_score_npz_reports_stable_fields(tmp_path):
-    from benchmark_metrics import score_npz
+    from ocean_solver.validation.benchmarks.metrics import score_npz
 
     npz_path = tmp_path / "run.npz"
     days = np.array([0.0, 180.0, 365.0])
@@ -88,8 +93,8 @@ def test_cell_area_is_physical():
 
 
 def test_internal_and_external_budget_drift_share_validation():
-    from benchmark_metrics import _relative_drift
-    from score_external_model import _relative_drift as external_drift
+    from ocean_solver.validation.benchmarks.external import _relative_drift as external_drift
+    from ocean_solver.validation.benchmarks.metrics import _relative_drift
 
     assert external_drift is _relative_drift
     assert np.isnan(_relative_drift(np.array([0., 1.])))
@@ -98,7 +103,7 @@ def test_internal_and_external_budget_drift_share_validation():
 
 
 def test_snapshot_scores_wet_area_not_number_of_cells():
-    from benchmark_metrics import score_snapshot
+    from ocean_solver.validation.benchmarks.metrics import score_snapshot
 
     lat, lon = np.array([0., 60.]), np.array([0., 180.])
     reference = np.zeros((2, 2))
@@ -110,7 +115,7 @@ def test_snapshot_scores_wet_area_not_number_of_cells():
 
 
 def test_explicit_area_weights_apply_to_global_and_regional_scores():
-    from benchmark_metrics import score_snapshot
+    from ocean_solver.validation.benchmarks.metrics import score_snapshot
 
     lat, lon = np.array([45., 58.]), np.array([310., 330.])
     area = np.array([[1., 2.], [3., 4.]])
@@ -124,7 +129,7 @@ def test_explicit_area_weights_apply_to_global_and_regional_scores():
 
 
 def test_angular_filter_uses_coordinates_and_excludes_land():
-    from benchmark_metrics import smooth_2d_global
+    from ocean_solver.validation.benchmarks.metrics import smooth_2d_global
 
     lat, lon = np.array([0., 1.]), np.array([0., 1., 20., 359.])
     ocean = np.ones((4, 2), bool)
@@ -154,7 +159,7 @@ def test_area_geometry_uses_spherical_edges_and_preserves_order():
 @pytest.mark.parametrize("area", [np.zeros((2, 2)), np.full((2, 2), -1.),
                                  np.full((2, 2), np.nan), np.ones((2, 3))])
 def test_spatial_score_rejects_invalid_wet_weights(area):
-    from benchmark_metrics import score_snapshot
+    from ocean_solver.validation.benchmarks.metrics import score_snapshot
 
     with pytest.raises(ValueError, match="area|weight|shape"):
         score_snapshot(np.ones((2, 2)), np.zeros((2, 2)), np.ones((2, 2), bool),
@@ -162,7 +167,7 @@ def test_spatial_score_rejects_invalid_wet_weights(area):
 
 
 def test_wet_missing_value_is_not_removed_to_improve_score():
-    from benchmark_metrics import score_snapshot
+    from ocean_solver.validation.benchmarks.metrics import score_snapshot
 
     model = np.array([[0., 0.], [0., np.nan]])
     result = score_snapshot(model, np.zeros((2, 2)), np.ones((2, 2), bool),
@@ -173,7 +178,7 @@ def test_wet_missing_value_is_not_removed_to_improve_score():
 
 
 def test_weighted_pattern_matches_independent_small_grid():
-    from benchmark_metrics import score_snapshot
+    from ocean_solver.validation.benchmarks.metrics import score_snapshot
 
     model = np.array([[1., 4.], [2., 8.]])
     reference = np.array([[2., 3.], [4., 7.]])
@@ -189,7 +194,7 @@ def test_weighted_pattern_matches_independent_small_grid():
 
 
 def test_snapshot_domain_hash_identifies_mask_and_area_changes():
-    from benchmark_metrics import score_snapshot
+    from ocean_solver.validation.benchmarks.metrics import score_snapshot
 
     model, ocean, area = np.zeros((2, 2)), np.ones((2, 2), bool), np.ones((2, 2))
     arguments = (model, model, ocean, np.array([0., 30.]), np.array([0., 180.]))
@@ -202,7 +207,7 @@ def test_snapshot_domain_hash_identifies_mask_and_area_changes():
 
 
 def test_snapshot_reference_hash_changes_only_with_scored_reference_values():
-    from benchmark_metrics import score_snapshot
+    from ocean_solver.validation.benchmarks.metrics import score_snapshot
 
     model, reference, ocean = np.zeros((2, 2)), np.ones((2, 2)), np.ones((2, 2), bool)
     ocean[0, 0] = False
@@ -217,7 +222,7 @@ def test_snapshot_reference_hash_changes_only_with_scored_reference_values():
 
 
 def test_constant_patterns_do_not_get_a_perfect_roundoff_correlation():
-    from benchmark_metrics import score_snapshot
+    from ocean_solver.validation.benchmarks.metrics import score_snapshot
 
     model, ocean = np.full((3, 3), 20.), np.ones((3, 3), bool)
     result = score_snapshot(model, model, ocean, np.array([30., 45., 55.]),
@@ -227,7 +232,7 @@ def test_constant_patterns_do_not_get_a_perfect_roundoff_correlation():
 
 
 def test_masked_wet_error_and_weight_fail_closed():
-    from benchmark_metrics import score_snapshot
+    from ocean_solver.validation.benchmarks.metrics import score_snapshot
 
     ocean = np.ones((2, 2), bool)
     masked = np.ma.array(np.ones((2, 2)), mask=[[True, False], [False, False]])

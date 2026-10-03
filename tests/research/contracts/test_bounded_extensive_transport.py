@@ -4,9 +4,9 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from barotropic_transport import coupled_surface_step
-from bounded_transport import advance_bounded_contents, euler_fct_step
-from finite_volume import (
+from zhenmode_research.candidates.fv.barotropic import coupled_surface_step
+from zhenmode_research.candidates.fv.transport import advance_bounded_contents, euler_fct_step
+from zhenmode_research.candidates.fv.geometry import (
     ExtensiveState,
     advance_contents,
     build_geometry,

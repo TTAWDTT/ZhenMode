@@ -6,9 +6,9 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-import run_long_integration_global as driver
-from config import C_P, RHO_0
-from restart_contract import load_restart
+import ocean_solver.runtime.entry as driver
+from ocean_solver.config.definitions import C_P, RHO_0
+from ocean_solver.io.restart import load_restart
 from tests.support.driver import run_controlled_driver
 
 
@@ -186,7 +186,7 @@ def test_source_hashes_survive_flat_wheel_layout(tmp_path, monkeypatch):
     import shutil
 
     from ocean_solver.provenance.locations import source_root
-    from source_identity import source_paths
+    from ocean_solver.provenance.sources import source_paths
     source = source_root(driver.__file__)
     paths = source_paths(source, driver.SOURCE_MODULES)
     installed = tmp_path / 'site-packages'
@@ -204,7 +204,7 @@ def test_source_hashes_survive_flat_wheel_layout(tmp_path, monkeypatch):
 def test_bathymetry_provenance_follows_offline_loader_precedence(tmp_path, monkeypatch):
     from types import SimpleNamespace
 
-    import grid
+    import ocean_solver.io.grid as grid
     bathy = tmp_path / 'bathy.nc'
     bathy.write_bytes(b'nc sentinel')
     twin = tmp_path / 'bathy.nc.npz'

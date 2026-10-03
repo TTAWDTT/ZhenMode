@@ -18,8 +18,6 @@ All fields are (nx, ny) shaped, matching the solver axis convention
 
 import numpy as np
 
-from ocean_solver._compat import preserve_legacy_names
-
 # Edge-taper width [grid cells] for the idealized forcing fields
 # (meridional heat flux, wind stress). Ramping them to zero over the
 # outermost rows stops them fighting the polar-edge sponge / cap band.
@@ -209,5 +207,3 @@ def air_temp_profile(grid, sst_clim):
     """
     profile = ocean_zonal_mean(grid, sst_clim)
     return np.broadcast_to(profile[None, :], (grid.nx, grid.ny)).copy()
-
-preserve_legacy_names(globals(), 'forcing')

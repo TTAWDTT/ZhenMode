@@ -21,8 +21,8 @@ from dataclasses import replace
 import numpy as np
 import pytest
 
-from config import DEFAULT_CONFIG, GlobalGridConfig
-from grid import _read_etopo_global, global_grid_dims, make_global_grid
+from ocean_solver.config.definitions import DEFAULT_CONFIG, GlobalGridConfig
+from ocean_solver.io.grid import _read_etopo_global, global_grid_dims, make_global_grid
 from tests.support.paths import REPOSITORY_ROOT
 
 BATHY = DEFAULT_CONFIG.bathymetry_file
@@ -247,7 +247,7 @@ def test_legacy_ny_path_still_rejects_inconsistent_ny():
 def test_physics_autoscale_matches_dx_powers():
     """scaled_physics_for_resolution maps 1 deg -> (dt_bt, nu_h, nu_bi)
     with exponents 1, 2, 4 and is a no-op at 1.0 deg."""
-    from run_long_integration_global import (
+    from ocean_solver.runtime.entry import (
         DT_BT_DEFAULT,
         NU_BI_REF_1DEG,
         NU_H_REF_1DEG,
@@ -274,7 +274,7 @@ def test_physics_autoscale_matches_dx_powers():
 
 def test_physics_autoscale_respects_explicit_override():
     """An explicitly-passed value is never overwritten by the scaling."""
-    from run_long_integration_global import scaled_physics_for_resolution
+    from ocean_solver.runtime.entry import scaled_physics_for_resolution
 
     dt_bt, nu_h, nu_bi = scaled_physics_for_resolution(
         0.25, 999.0, 123.0, 456.0)

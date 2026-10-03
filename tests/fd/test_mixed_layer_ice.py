@@ -2,7 +2,7 @@
 
 import numpy as np
 
-from mixed_layer_ice import MLIceConfig, mixed_layer_ice_step, surface_heat_flux
+from ocean_solver.physics.ice import MLIceConfig, mixed_layer_ice_step, surface_heat_flux
 
 CFG = MLIceConfig(mixed_layer_depth_m=50.0, freeze_temp_c=-1.8,
                   bulk_lambda=80.0)
@@ -45,8 +45,8 @@ def test_surface_flux_is_weakened_under_ice():
 def test_solver_accepts_mixed_layer_depth():
     from dataclasses import replace
 
-    from config import PhysicsConfig
-    from jax_solver_global import make_solver_global
+    from ocean_solver.config.definitions import PhysicsConfig
+    from ocean_solver.model.factory import make_solver_global
     from tests.support.grid import all_wet_grid
 
     grid = all_wet_grid(nx=16, ny=8, nz=4)

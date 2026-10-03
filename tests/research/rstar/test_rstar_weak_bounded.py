@@ -16,7 +16,7 @@ from tests.support.rstar.representation import _gauss_mass
 
 from tests.support.rstar.weak_momentum import _consistent_case
 
-from config import ALPHA_T, C_P, RHO_0
+from ocean_solver.config.definitions import ALPHA_T, C_P, RHO_0
 
 from research.experiments.material_rstar_coordinates.bed_completion import complete_bed_reference
 

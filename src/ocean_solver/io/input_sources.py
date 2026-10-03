@@ -13,7 +13,6 @@ from zipfile import BadZipFile
 import numpy as np
 from netCDF4 import Dataset
 
-from ocean_solver._compat import preserve_legacy_names
 from ocean_solver.io.data_quality import normalize_source
 
 
@@ -91,5 +90,3 @@ def load_climatology_snapshot(snapshot, variable):
     if not identity_ok or not encoding_ok:
         raise ValueError('unsupported NetCDF variable, units or missing encoding')
     return raw
-
-preserve_legacy_names(globals(), 'input_sources')

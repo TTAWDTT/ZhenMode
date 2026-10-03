@@ -3,7 +3,6 @@ from collections import deque
 
 import numpy as np
 
-from ocean_solver._compat import preserve_legacy_names
 from ocean_solver.config.definitions import OMEGA, R_EARTH
 from ocean_solver.geometry.types import GlobalOceanGrid
 
@@ -269,6 +268,3 @@ def build_global_grid(grid_config, depth, lon, lat, smooth_passes=0,
         wet_mask_3d=wet_mask_3d,
         nx=nx, ny=ny,
     )
-
-
-preserve_legacy_names(globals(), 'grid')

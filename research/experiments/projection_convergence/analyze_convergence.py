@@ -20,9 +20,11 @@ sys.path[:0] = [str(ROOT / "src"), str(ROOT / "scripts")]
 
 from verify_debug_integration import make_smoke_fixture
 
-import jax_solver_global as current
-from config import DEFAULT_CONFIG
-from stage_budgets import _StageRecorder
+import ocean_solver.dynamics.projection as current_projection
+import ocean_solver.dynamics.transport as current_transport
+import ocean_solver.model.factory as current_factory
+from ocean_solver.config.definitions import DEFAULT_CONFIG
+from ocean_solver.audit.stages import _StageRecorder
 
 
 class PredictorRecorder(_StageRecorder):
@@ -96,10 +98,10 @@ def main():
             differences = [float(jnp.max(jnp.abs(first - second))) for first, second in zip(audited_first, ordinary_first, strict=True)]
             if any(differences):
                 raise ValueError(f"frozen capture changed state: {differences}")
-            params_by_preconditioner = {name: current.make_solver_global(
+            params_by_preconditioner = {name: current_factory.make_solver_global(
                 grid, physics, 600., projection_niter=150, projection_preconditioner=name, **settings)[3]
                 for name in ("none", "jacobi")}
-            solvers = {name: jax.jit(lambda velocity_x, velocity_y, cap, params=params: current._project_column_divergence(
+            solvers = {name: jax.jit(lambda velocity_x, velocity_y, cap, params=params: current_projection._project_column_divergence(
                 velocity_x, velocity_y, params, params.dt, n_iter=cap)) for name, params in params_by_preconditioner.items()}
             area = np.asarray(frozen_params.dx_2d, dtype=np.float64) * frozen_params.dy * np.asarray(frozen_params.wet_mask)
             volume = area[..., None] * np.asarray(frozen_params.dz_node, dtype=np.float64) * np.asarray(frozen_params.wet_mask_z)
@@ -116,7 +118,7 @@ def main():
                                          "path": str(input_path.relative_to(ROOT)),
                                          "sha256": hashlib.sha256(input_path.read_bytes()).hexdigest(),
                                          "first_capture_state_max_differences": differences})
-                top_before = np.asarray(current._vertical_transport_iface(*predictor, frozen_params)[..., 0], dtype=np.float64)
+                top_before = np.asarray(current_transport._vertical_transport_iface(*predictor, frozen_params)[..., 0], dtype=np.float64)
                 norm_before = np.sum(top_before ** 2 * area)
                 energy_before = sum(np.sum(np.asarray(field, dtype=np.float64) ** 2 * volume) for field in predictor)
                 for name, project in solvers.items():
@@ -129,7 +131,7 @@ def main():
                             corrected = project(*predictor, cap)
                             corrected[0].block_until_ready()
                         elapsed = (time.perf_counter() - started) / 3.
-                        top_after = np.asarray(current._vertical_transport_iface(*corrected, params)[..., 0], dtype=np.float64)
+                        top_after = np.asarray(current_transport._vertical_transport_iface(*corrected, params)[..., 0], dtype=np.float64)
                         ratio = float(np.sqrt(np.sum(top_after ** 2 * area) / norm_before)) if norm_before > 0. else 0.
                         energy_after = sum(np.sum(np.asarray(field, dtype=np.float64) ** 2 * volume) for field in corrected)
                         energy_ratio = float(energy_after / energy_before) if energy_before > 0. else 1.
@@ -137,7 +139,7 @@ def main():
                         threshold = 1e-9 if dtype == "float64" else 5e-5
                         energy_margin = 1e-12 if dtype == "float64" else 5e-6
                         result = {"dtype": dtype, "case": case, "step": sample_step,
-                                  "preconditioner": name, "cap": cap, "rtol": current.projection_config(params)["rtol"],
+                                  "preconditioner": name, "cap": cap, "rtol": current_projection.projection_config(params)["rtol"],
                                   "native_area_l2_relative_residual": ratio if np.isfinite(ratio) else None,
                                   "wet_energy_ratio": energy_ratio if np.isfinite(energy_ratio) else None,
                                   "compiled_cpu_seconds": elapsed, "finite": finite,

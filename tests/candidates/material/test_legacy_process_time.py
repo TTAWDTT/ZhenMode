@@ -5,16 +5,13 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from config import C_P, G_EARTH, RHO_0, PhysicsConfig
-from jax_solver_global import (
-    _barotropic_velocity,
-    _compute_tracer_residual,
-    _free_surface_step_fd,
-    _reference_depth_gradient,
-    _rotate_baroclinic_shear,
-    _step_impl,
-    make_solver_global,
-)
+from ocean_solver.config.definitions import C_P, G_EARTH, RHO_0, PhysicsConfig
+from ocean_solver.dynamics.barotropic import _free_surface_step_fd
+from ocean_solver.dynamics.pressure import _reference_depth_gradient
+from ocean_solver.dynamics.processes import _compute_tracer_residual, _rotate_baroclinic_shear
+from ocean_solver.dynamics.transport import _barotropic_velocity
+from ocean_solver.model.factory import make_solver_global
+from ocean_solver.timestepping.integration import _step_impl
 from tests.support.material.process_time import (
     _candidate,
     _inertial_source_path,

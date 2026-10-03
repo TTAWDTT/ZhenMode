@@ -4,10 +4,10 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from cgrid_momentum import LayerState
-from config import OMEGA
-from finite_volume import ExtensiveState, build_geometry, surface_volume
-from paired_dynamics import (
+from ocean_solver.config.definitions import OMEGA
+from zhenmode_research.candidates.fv.geometry import ExtensiveState, build_geometry, surface_volume
+from zhenmode_research.candidates.fv.momentum import LayerState
+from zhenmode_research.candidates.fv.paired import (
     VelocityPair,
     advance_paired_surface,
     column_outflow,

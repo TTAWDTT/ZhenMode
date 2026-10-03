@@ -5,7 +5,7 @@ from dataclasses import replace
 import jax.numpy as jnp
 import numpy as np
 
-from config import ALPHA_T, BETA_S, C_P, RHO_0, PhysicsConfig
+from ocean_solver.config.definitions import ALPHA_T, BETA_S, C_P, RHO_0, PhysicsConfig
 from tests.support.material.top import (
     _material_fixture,
     _numpy_divergence,

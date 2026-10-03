@@ -35,9 +35,8 @@ def main(argv=None):
         from ocean_solver.baselines.cli import main as execute
         return execute(remaining)
     if command == "mms":
-        import runpy
-        runpy.run_module("ocean_solver.validation.mms", run_name="__main__")
-        return 0
+        from ocean_solver.validation.mms import main as execute
+        return execute()
     if command == "model" or command.startswith("-"):
         from ocean_solver.runtime.entry import main as execute
         previous = sys.argv

@@ -15,7 +15,6 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from ocean_solver._compat import preserve_legacy_names
 from ocean_solver.config.definitions import C_P, RHO_0
 from ocean_solver.geometry.columns import nodal_control_thickness
 
@@ -120,5 +119,3 @@ def diagnostics_to_arrays(rows: list[BudgetDiagnostics]) -> dict[str, np.ndarray
         key: np.array([getattr(row, key) for row in rows], dtype=np.float64)
         for key in BudgetDiagnostics.__dataclass_fields__
     }
-
-preserve_legacy_names(globals(), 'diagnostics')

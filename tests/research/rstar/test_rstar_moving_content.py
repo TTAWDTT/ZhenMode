@@ -5,7 +5,7 @@ import numpy as np
 import pytest
 from tests.support.rstar.sparse_diffusion import _case
 
-from config import C_P, RHO_0
+from ocean_solver.config.definitions import C_P, RHO_0
 from research.experiments.material_rstar_coordinates.moving_content import (
     moving_euler,
     moving_heun,

@@ -17,7 +17,6 @@ import os
 import netCDF4
 import numpy as np
 
-from ocean_solver._compat import preserve_legacy_names
 from ocean_solver.forcing.wind import _bilinear
 from ocean_solver.provenance.locations import source_root
 
@@ -127,5 +126,3 @@ def load_annual_mean_air_temp(grid, year: int = 2023,
     if not np.all(np.isfinite(air_c)):
         raise ValueError("interpolated NCEP air temperature contains non-finite values")
     return air_c
-
-preserve_legacy_names(globals(), 'air_reanalysis')

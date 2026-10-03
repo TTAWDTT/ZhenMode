@@ -9,7 +9,7 @@ from typing import NamedTuple
 import jax
 import jax.numpy as jnp
 
-from ocean_solver._compat import preserve_legacy_names
+
 from zhenmode_research.candidates.fv.geometry import VolumeFluxes
 from zhenmode_research.candidates.fv.transport import _neighbor
 
@@ -222,5 +222,3 @@ def reconstruct_half_prism_transport(geometry, volume, fluxes):
         valid = valid & jnp.all(error <= (1e-12 + 64. * jnp.finfo(jnp.float64).eps) * scale)
     return HalfPrismTransport(_half_prism_map(volume, south_fraction, "east"),
                               _half_prism_map(volume, south_fraction, "north"), east_fluxes, north_fluxes, relative, valid)
-
-preserve_legacy_names(globals(), 'wet_fluxes')

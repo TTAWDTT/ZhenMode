@@ -4,8 +4,8 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from config import ALPHA_T, BETA_S, RHO_0
-from jax_solver_global import _conv_flux_tendency, _convective_mask
+from ocean_solver.config.definitions import ALPHA_T, BETA_S, RHO_0
+from ocean_solver.physics.vertical import _conv_flux_tendency, _convective_mask
 from tests.support.material.top import _material_fixture, _state
 
 

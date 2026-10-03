@@ -9,13 +9,13 @@ from dataclasses import replace
 import numpy as np
 import pytest
 
-from jax_solver_global import JaxStateG
-from restart_contract import (
+from ocean_solver.io.restart import (
     file_sha256,
     load_restart,
     make_restart_contract,
     save_restart,
 )
+from ocean_solver.state.types import JaxStateG
 from tests.support.grid import all_wet_grid
 from tests.support.paths import REPOSITORY_ROOT
 
@@ -29,7 +29,7 @@ def _fixture(dtype="float64"):
     contract = make_restart_contract(
         grid, namedtuple("Params", ["dt"])(60.), dtype=dtype,
         forcing={"heat": np.zeros((8, 8))}, controls={"calendar": "360_day"},
-        code_paths={"solver": REPOSITORY_ROOT / "src/jax_solver_global.py"},
+        code_paths={"solver": REPOSITORY_ROOT / "src/ocean_solver/timestepping/integration.py"},
         execution={"backend": "cpu"})
     return grid, state, contract
 
@@ -94,7 +94,7 @@ def test_same_dimensions_but_changed_geometry_fails(tmp_path, field):
     new_contract = make_restart_contract(
         new_grid, namedtuple("Params", ["dt"])(60.), dtype="float64", forcing={"heat": np.zeros((8, 8))},
         controls={"calendar": "360_day"},
-        code_paths={"solver": REPOSITORY_ROOT / "src/jax_solver_global.py"},
+        code_paths={"solver": REPOSITORY_ROOT / "src/ocean_solver/timestepping/integration.py"},
         execution={"backend": "cpu"})
     path = tmp_path / "checkpoint.npz"
     _save(path, state, contract)
@@ -173,7 +173,7 @@ def test_valid_json_checksum_does_not_hide_invalid_progress(tmp_path, corruption
 
 @pytest.mark.parametrize("failure", ["write", "replace"])
 def test_failed_atomic_save_keeps_previous_checkpoint_and_removes_temporary(tmp_path, monkeypatch, failure):
-    import restart_contract
+    import ocean_solver.io.restart as restart_contract
 
     _, state, contract = _fixture()
     path = tmp_path / "checkpoint.npz"

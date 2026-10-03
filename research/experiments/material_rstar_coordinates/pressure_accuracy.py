@@ -5,7 +5,7 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
-from config import G_EARTH, R_EARTH, RHO_0
+from ocean_solver.config.definitions import G_EARTH, R_EARTH, RHO_0
 from research.experiments.material_rstar_coordinates.kernel import rstar_geometry
 from research.experiments.material_rstar_coordinates.nodal_mass import (
     apply_nodal_mass,

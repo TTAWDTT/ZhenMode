@@ -17,8 +17,6 @@ from io import BytesIO
 
 import numpy as np
 
-from ocean_solver._compat import preserve_legacy_names
-
 _OFFSETS = ((-1, -1), (-1, 0), (-1, 1), (0, -1),
             (0, 1), (1, -1), (1, 0), (1, 1))
 
@@ -487,5 +485,3 @@ def load_strict_quality_bundle(path, *, max_report_bytes=_MAX_REPORT_BYTES, **li
     except (UnicodeError, json.JSONDecodeError) as error:
         raise ValueError('unsupported bundle: invalid JSON') from error
     return bundle, enforce_strict_quality_bundle(bundle, **limits)
-
-preserve_legacy_names(globals(), 'input_quality')

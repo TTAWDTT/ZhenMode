@@ -12,8 +12,8 @@ sys.path.insert(0, str(REPOSITORY_ROOT / "scripts"))
 
 from verify_debug_integration import load_initial_fixture, make_monitored_advance
 
-from jax_solver_global import JaxStateG
-from stage_budgets import empty_budget
+from ocean_solver.audit.schema import empty_budget
+from ocean_solver.state.types import JaxStateG
 
 
 def _state():
@@ -107,7 +107,8 @@ def test_invalid_negative_infinite_metric_cannot_be_hidden_by_maximum_accumulati
 
 
 def test_healthy_actual_candidate_matches_unmonitored_steps_and_ledgers():
-    from stage_budgets import accumulate_budget, make_budget_step
+    from ocean_solver.audit.schema import accumulate_budget
+    from ocean_solver.audit.stages import make_budget_step
     from tests.support.material.process_time import _candidate
 
     _, (_, initialize, _, params, _) = _candidate(use_scan=True)

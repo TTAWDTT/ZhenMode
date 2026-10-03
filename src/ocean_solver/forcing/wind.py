@@ -37,7 +37,6 @@ import os
 import netCDF4
 import numpy as np
 
-from ocean_solver._compat import preserve_legacy_names
 from ocean_solver.forcing.fields import FORCING_TAPER_CELLS, taper_2d_y
 from ocean_solver.provenance.locations import source_root
 
@@ -163,7 +162,7 @@ def real_wind_forcing(grid, month_idx=-1, taper_cells=None):
     return tau_x, tau_y
 
 
-preserve_legacy_names(globals(), 'wind_reanalysis')
+
 
 if __name__ == "__main__":
     from ocean_solver.config.definitions import DEFAULT_CONFIG, GlobalGridConfig

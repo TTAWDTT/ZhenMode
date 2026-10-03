@@ -5,15 +5,15 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from jax_solver_global import (
+from ocean_solver.audit.stages import make_budget_step
+from ocean_solver.dynamics.projection import _project_column_divergence
+from ocean_solver.dynamics.transport import (
     _advection_scalar,
     _column_divergence,
-    _gradient_conservative_3d,
-    _project_column_divergence,
-    _step_impl,
     _vertical_transport_iface,
 )
-from stage_budgets import make_budget_step
+from ocean_solver.numerics.horizontal import _gradient_conservative_3d
+from ocean_solver.timestepping.integration import _step_impl
 from tests.support.fd.column_projection import _velocities
 from tests.support.fd.horizontal_diffusion import _parameters
 

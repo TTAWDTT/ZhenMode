@@ -1,7 +1,7 @@
 """Tests for the pre-registered benchmark gate."""
 import pytest
 
-from benchmark_gate import evaluate_gate
+from ocean_solver.validation.benchmarks.gate import evaluate_gate
 
 
 def _run(verdict="PASS", global_a2=1.0, na=0.9, wall=-1.0,

@@ -6,12 +6,10 @@ from types import SimpleNamespace
 import jax.numpy as jnp
 import numpy as np
 
-from config import ALPHA_T, G_EARTH, R_EARTH, RHO_0
-from jax_solver_global import (
-    JaxStateG,
-    _gradient_conservative_3d,
-    make_fd_params,
-)
+from ocean_solver.config.definitions import ALPHA_T, G_EARTH, R_EARTH, RHO_0
+from ocean_solver.geometry.fd import make_fd_params
+from ocean_solver.numerics.horizontal import _gradient_conservative_3d
+from ocean_solver.state.types import JaxStateG
 from research.experiments.material_rstar_coordinates.kernel import (
     coordinate_pressure_gradient,
     hydrostatic_pressure,

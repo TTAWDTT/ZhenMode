@@ -2,7 +2,7 @@
 import jax
 import jax.numpy as jnp
 
-from config import RHO_0
+from ocean_solver.config.definitions import RHO_0
 from research.experiments.material_rstar_coordinates.nodal_mass import (
     apply_nodal_mass,
     solve_nodal_mass,

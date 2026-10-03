@@ -14,6 +14,7 @@ def test_mms_cli_returns_failure_when_either_gate_fails(monkeypatch, operator_ok
     monkeypatch.setattr(mms, '_mms_convergence', lambda: {
         'ddy_coarse': 0.04, 'ddy_fine': 0.01, 'convergence_ratio': 4., 'passes': convergence_ok,
     })
+    monkeypatch.setattr('sys.argv', ['zhenmode', 'mms'])
     with pytest.raises(SystemExit) as result:
-        runpy.run_module('ocean_solver.fd.legacy', run_name='__main__')
+        runpy.run_module('ocean_solver', run_name='__main__')
     assert result.value.code == status

@@ -16,12 +16,12 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
-from cgrid_momentum import LayerState, linear_momentum_surface_step
-from config import DEFAULT_CONFIG, GlobalGridConfig
-from finite_volume import ExtensiveState, _physical_surface_height, build_geometry, surface_volume
-from grid import global_grid_dims, make_global_grid
-from physical_velocity import evaluate_physical_velocity
-from wet_fluxes import evaluate_wet_flux
+from zhenmode_research.candidates.fv.momentum import LayerState, linear_momentum_surface_step
+from ocean_solver.config.definitions import DEFAULT_CONFIG, GlobalGridConfig
+from zhenmode_research.candidates.fv.geometry import ExtensiveState, _physical_surface_height, build_geometry, surface_volume
+from ocean_solver.io.grid import global_grid_dims, make_global_grid
+from zhenmode_research.candidates.fv.velocity import evaluate_physical_velocity
+from zhenmode_research.candidates.fv.fluxes import evaluate_wet_flux
 
 jax.config.update("jax_enable_x64", True)
 

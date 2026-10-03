@@ -7,7 +7,6 @@ from dataclasses import replace
 import numpy as np
 from netCDF4 import Dataset
 
-from ocean_solver._compat import preserve_legacy_names
 from ocean_solver.config.definitions import GlobalGridConfig
 from ocean_solver.forcing.air import load_monthly_mean_air_temp
 from ocean_solver.io.climatology import get_initial_fields
@@ -64,8 +63,7 @@ def main():
     print(f"wrote {args.out}: 12 x {ny} x {nx}")
 
 
-preserve_legacy_names(globals(), 'export_mom6_sensible_forcing')
+
 
 if __name__ == "__main__":
     main()
-

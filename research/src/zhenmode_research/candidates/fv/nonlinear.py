@@ -13,7 +13,7 @@ import jax
 import jax.numpy as jnp
 from jax.scipy.sparse.linalg import gmres
 
-from ocean_solver._compat import preserve_legacy_names
+
 from zhenmode_research.candidates.fv.fluxes import _half_prism_map, reconstruct_half_prism_transport
 from zhenmode_research.candidates.fv.geometry import (
     TransportResult,
@@ -27,7 +27,7 @@ from zhenmode_research.candidates.fv.momentum import (
     momentum_geometry,
 )
 from zhenmode_research.candidates.fv.transport import _neighbor, advance_bounded_contents
-from ocean_solver.configuration import OMEGA
+from ocean_solver.config.definitions import OMEGA
 
 
 class DualVelocity(NamedTuple):
@@ -353,5 +353,3 @@ def nonlinear_momentum_surface_step(geometry, state, density_anomaly, dt, refere
                                        energy_residual, energy_tolerance, cast_work)
     return NonlinearStepResult(LayerState(transport.state, stored.east, stored.north[:, 1:]), eta, initial_eta, mean_eta, velocity,
                                uncast, held, reaction, transport, fluxes, diagnostics, valid)
-
-preserve_legacy_names(globals(), 'nonlinear_dynamics')

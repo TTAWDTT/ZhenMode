@@ -4,7 +4,9 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from cgrid_momentum import (
+from ocean_solver.config.definitions import OMEGA
+from zhenmode_research.candidates.fv.geometry import ExtensiveState, build_geometry, surface_volume
+from zhenmode_research.candidates.fv.momentum import (
     LayerState,
     coriolis_tendency,
     hydrostatic_pressure_force,
@@ -12,8 +14,6 @@ from cgrid_momentum import (
     momentum_geometry,
     rotate_coriolis,
 )
-from config import OMEGA
-from finite_volume import ExtensiveState, build_geometry, surface_volume
 
 jax.config.update("jax_enable_x64", True)
 

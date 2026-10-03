@@ -4,7 +4,7 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
-from config import RHO_0
+from ocean_solver.config.definitions import RHO_0
 from research.experiments.material_rstar_coordinates.nodal_mass import make_nodal_mass
 from research.experiments.material_rstar_coordinates.weak_momentum import (
     consistent_pressure_force,

@@ -5,16 +5,13 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from config import C_P, RHO_0
-from jax_solver_global import (
-    _advection_scalar,
-    _compute_tracer_tendency,
-    _conv_flux_tendency,
-    _convective_mask,
-    _isopycnal_closure,
-    _vertical_transport_iface,
-)
-from stage_budgets import NONLINEAR_PROCESS_NAMES, _StageRecorder, make_budget_step
+from ocean_solver.audit.schema import NONLINEAR_PROCESS_NAMES
+from ocean_solver.audit.stages import _StageRecorder, make_budget_step
+from ocean_solver.config.definitions import C_P, RHO_0
+from ocean_solver.dynamics.processes import _compute_tracer_tendency
+from ocean_solver.dynamics.transport import _advection_scalar, _vertical_transport_iface
+from ocean_solver.physics.isopycnal import _isopycnal_closure
+from ocean_solver.physics.vertical import _conv_flux_tendency, _convective_mask
 from tests.support.fd.horizontal_diffusion import _parameters
 from tests.support.fd.nonlinear_budgets import _state
 

@@ -5,7 +5,7 @@ from typing import NamedTuple
 import jax
 import jax.numpy as jnp
 
-from ocean_solver._compat import preserve_legacy_names
+
 from zhenmode_research.candidates.fv.fluxes import WetFluxReconstruction, _expand, evaluate_wet_flux
 
 
@@ -123,5 +123,3 @@ def evaluate_physical_velocity(reconstruction, longitude_fraction, latitude_area
     fields = (east, north, downward, grid_downward, relative_downward, divergence)
     valid = point.valid & reconstruction.valid & jnp.all(jnp.stack(tuple(jnp.isfinite(field) for field in fields)), axis=0)
     return PhysicalVelocityPoint(*(jnp.where(valid, field, 0.) for field in fields), valid)
-
-preserve_legacy_names(globals(), 'physical_velocity')

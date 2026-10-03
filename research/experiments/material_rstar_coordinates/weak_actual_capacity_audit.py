@@ -24,7 +24,7 @@ def main():
     import jax.numpy as jnp
     import numpy as np
 
-    from config import C_P, RHO_0
+    from ocean_solver.config.definitions import C_P, RHO_0
     from research.experiments.material_rstar_coordinates.bed_completion import (
         complete_bed_reference,
     )

@@ -19,7 +19,7 @@ sys.path[:0] = [str(ROOT / "src"), str(ROOT / "scripts")]
 
 from verify_debug_integration import make_smoke_fixture
 
-from config import DEFAULT_CONFIG, G_EARTH
+from ocean_solver.config.definitions import DEFAULT_CONFIG, G_EARTH
 
 FROZEN_KERNEL = "8e51726"
 FROZEN_SOURCE = subprocess.check_output(["git", "show", f"{FROZEN_KERNEL}:src/jax_solver_global.py"], cwd=ROOT)

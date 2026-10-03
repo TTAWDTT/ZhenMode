@@ -12,7 +12,6 @@ from pathlib import Path
 
 import numpy as np
 
-from ocean_solver._compat import preserve_legacy_names
 from ocean_solver.validation.benchmarks.metrics import cell_area
 
 RHO_ICE = 917.0
@@ -117,7 +116,7 @@ def main() -> None:
     print(json.dumps(result, indent=2))
 
 
-preserve_legacy_names(globals(), 'summarize_ice_diagnostics')
+
 
 if __name__ == "__main__":
     main()

@@ -4,8 +4,8 @@ from dataclasses import replace
 import numpy as np
 import pytest
 
-import run_long_integration_global as driver
-from restart_contract import load_restart
+import ocean_solver.runtime.entry as driver
+from ocean_solver.io.restart import load_restart
 from tests.support.driver import run_controlled_driver as _run_driver
 
 

@@ -11,35 +11,35 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
-from ocean_solver._compat import preserve_legacy_names
-from ocean_solver.configuration import C_P, RHO_0
-from ocean_solver.fd.barotropic import _barotropic_subcycle_transport
-from ocean_solver.fd.horizontal import (
+
+from ocean_solver.config.definitions import C_P, RHO_0
+from ocean_solver.dynamics.barotropic import _barotropic_subcycle_transport
+from ocean_solver.numerics.horizontal import (
     _biharmonic_h,
     _horizontal_biharmonic_tracer,
     _horizontal_tracer_diffusion,
     _laplacian_h,
 )
-from ocean_solver.fd.integration import _explicit_full_step
-from ocean_solver.fd.processes import (
+from ocean_solver.timestepping.integration import _explicit_full_step
+from ocean_solver.dynamics.processes import (
     _compute_tracer_tendency,
     _linear_bottom_drag_step,
     _linear_half_step,
 )
-from ocean_solver.fd.sources import _surface_heat_weights
-from ocean_solver.fd.transport import (
+from ocean_solver.physics.surface import _surface_heat_weights
+from ocean_solver.dynamics.transport import (
     _face_transport_divergence,
     _match_layer_face_transports,
     _vertical_transport_iface,
 )
-from ocean_solver.fd.vertical import (
+from ocean_solver.physics.vertical import (
     _convective_mask,
     _d2_dz2_flux,
     _effective_kappa_v,
     _vertical_momentum_diffusion,
 )
 from ocean_solver.provenance.locations import source_root
-from ocean_solver.provenance.restart import make_restart_contract
+from ocean_solver.io.restart import make_restart_contract
 from zhenmode_research.provenance import solver_source_modules, source_paths
 
 INVENTORY_SCHEME = "material_top_v1"
@@ -582,5 +582,3 @@ def make_material_top_restart_contract(grid, params, *, forcing, controls, execu
         code_paths=source_paths(source_directory, solver_source_modules()), execution=execution)
     contract["state_family"] = "FD_point_samples_material_top_mass_lumped_linear_momentum_v1"
     return contract
-
-preserve_legacy_names(globals(), 'material_top')

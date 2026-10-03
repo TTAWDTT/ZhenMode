@@ -11,8 +11,8 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
-from ocean_solver._compat import preserve_legacy_names
-from ocean_solver.configuration import R_EARTH
+
+from ocean_solver.config.definitions import R_EARTH
 
 
 class FiniteVolumeGeometry(NamedTuple):
@@ -274,5 +274,3 @@ def checked_transport_step(geometry, state, fluxes, dt, volume_source=None, cont
     if not bool(result.valid):
         raise ValueError(f"invalid extensive transport step; outflow fraction={float(result.max_outflow_fraction)}")
     return result
-
-preserve_legacy_names(globals(), 'finite_volume')

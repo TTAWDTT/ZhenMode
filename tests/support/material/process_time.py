@@ -4,11 +4,9 @@
 import jax.numpy as jnp
 import numpy as np
 
-from jax_solver_global import (
-    _barotropic_velocity,
-    _free_surface_step_fd,
-    _linear_half_step,
-)
+from ocean_solver.dynamics.barotropic import _free_surface_step_fd
+from ocean_solver.dynamics.processes import _linear_half_step
+from ocean_solver.dynamics.transport import _barotropic_velocity
 from tests.support.material.reference_geometry import WIDTHS, _fixture
 
 

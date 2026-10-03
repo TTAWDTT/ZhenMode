@@ -7,7 +7,7 @@ Registered gates and method choice: bounded_extensive_transport protocol.
 
 import jax.numpy as jnp
 
-from ocean_solver._compat import preserve_legacy_names
+
 from zhenmode_research.candidates.fv.geometry import ExtensiveState, TransportResult, advance_contents
 
 
@@ -133,5 +133,3 @@ def advance_bounded_contents(geometry, state, fluxes, dt, volume_source=None, co
                            .5 * state.content + .5 * second.state.content)
     valid = first.valid & second.valid & jnp.all(jnp.isfinite(final.volume)) & jnp.all(jnp.isfinite(final.content))
     return TransportResult(final, jnp.maximum(first.max_outflow_fraction, second.max_outflow_fraction), valid)
-
-preserve_legacy_names(globals(), 'bounded_transport')

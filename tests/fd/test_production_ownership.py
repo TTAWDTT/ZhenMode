@@ -51,17 +51,7 @@ def forbidden_dependencies(text, *, array_owner=False):
 
 
 def canonical_sources():
-    for path in PACKAGE.rglob("*.py"):
-        relative = path.relative_to(PACKAGE).as_posix()
-        # These old paths contain only same-object import aliases. The legacy
-        # export facade intentionally retains its public API and MMS command.
-        if relative.startswith(("fd/", "data/")) or relative in {
-            "configuration.py", "geometry/grid.py", "provenance/restart.py",
-            "runtime/seasonal.py", "runtime/records.py", "runtime/output.py",
-            "runtime/paths.py", "runtime/recovery.py", "runtime/metrics.py",
-        }:
-            continue
-        yield path
+    yield from PACKAGE.rglob("*.py")
 
 
 def test_formal_owners_do_not_import_research_or_old_implementation_paths():
@@ -73,8 +63,7 @@ def test_formal_owners_do_not_import_research_or_old_implementation_paths():
 
 
 def test_array_owners_do_not_load_external_inputs():
-    paths = [path for owner in PURE_OWNERS for path in (PACKAGE / owner).rglob("*.py")
-             if path != PACKAGE / "geometry" / "grid.py"]
+    paths = [path for owner in PURE_OWNERS for path in (PACKAGE / owner).rglob("*.py")]
     assert all((PACKAGE / owner).is_dir() for owner in PURE_OWNERS)
     assert paths
     failures = {str(path.relative_to(PACKAGE)): forbidden_dependencies(

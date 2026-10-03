@@ -13,8 +13,8 @@ sys.path.insert(0, str(REPOSITORY_ROOT / "scripts"))
 
 import verify_debug_integration as smoke
 
-from config import PhysicsConfig
-from stage_budgets import empty_budget
+from ocean_solver.audit.schema import empty_budget
+from ocean_solver.config.definitions import PhysicsConfig
 
 
 @pytest.mark.parametrize("nonfinite", [False, True])

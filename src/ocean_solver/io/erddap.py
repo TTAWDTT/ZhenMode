@@ -10,8 +10,6 @@ import os
 import time
 import urllib.request
 
-from ocean_solver._compat import preserve_legacy_names
-
 POLITENESS_S = 10.0        # sleep after a good fetch (429 avoidance)
 BACKOFF_BASE_S = 30.0      # wait = BACKOFF_BASE_S * (attempt + 1)
 TIMEOUT_S = 240
@@ -41,5 +39,3 @@ def fetch(url, path, min_bytes, retries=6, politeness_s=POLITENESS_S, label=""):
                   flush=True)
             time.sleep(wait)
     raise RuntimeError(f"fetch failed for {label or url}")
-
-preserve_legacy_names(globals(), 'erddap_fetch')

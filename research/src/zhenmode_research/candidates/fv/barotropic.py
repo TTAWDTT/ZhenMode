@@ -9,7 +9,7 @@ from typing import NamedTuple
 import jax
 import jax.numpy as jnp
 
-from ocean_solver._compat import preserve_legacy_names
+
 from zhenmode_research.candidates.fv.geometry import (
     TransportResult,
     _physical_surface_height,
@@ -159,5 +159,3 @@ def coupled_surface_step(geometry, state, eta, east_velocity, north_velocity,
              & (surface_error <= tolerance) & (lower_error <= tolerance)
              & jnp.all(source[..., 1:] == 0.))
     return CoupledResult(barotropic, transport, surface_error, valid)
-
-preserve_legacy_names(globals(), 'barotropic_transport')

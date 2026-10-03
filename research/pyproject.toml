@@ -10,8 +10,7 @@ requires-python = ">=3.12"
 dependencies = ["ocean-solver==0.1.0"]
 
 [tool.setuptools]
-package-dir = { "" = "src/compat", "zhenmode_research" = "src/zhenmode_research" }
-py-modules = ["finite_volume", "bounded_transport", "cgrid_momentum", "wet_fluxes", "physical_velocity", "paired_dynamics", "nonlinear_dynamics", "barotropic_transport", "material_top"]
+package-dir = { "" = "src" }
 
 [tool.setuptools.packages.find]
 where = ["src"]

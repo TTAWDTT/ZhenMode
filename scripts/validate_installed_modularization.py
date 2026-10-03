@@ -1,6 +1,5 @@
 """Verify a real installed wheel outside the checkout, without path insertion."""
 import argparse
-import ast
 import hashlib
 import importlib
 import json
@@ -18,9 +17,9 @@ def main():
 
     installed = (args.installed_root or Path(ocean_solver.__file__).parent.parent).resolve()
     source = args.source_root.resolve()
-    expected = {path.name: path for path in (source / 'compat').glob('*.py')}
-    expected.update({path.relative_to(source).as_posix(): path
-                     for path in (source / 'ocean_solver').rglob('*.py')})
+    assert not list((source / 'compat').glob('*.py'))
+    expected = {path.relative_to(source).as_posix(): path
+                for path in (source / 'ocean_solver').rglob('*.py')}
     installed_package = {path.relative_to(installed).as_posix()
                          for path in (installed / 'ocean_solver').rglob('*.py')}
     expected_package = {name for name in expected if name.startswith('ocean_solver/')}
@@ -36,29 +35,21 @@ def main():
     for relative, original in expected.items():
         assert (installed / relative).read_bytes() == original.read_bytes(), relative
     assert source not in [Path(value).resolve() for value in sys.path if value]
-    aliases = 0
-    for bridge in (source / 'compat').glob('*.py'):
-        target = next(node.args[0].value for node in ast.walk(ast.parse(bridge.read_text()))
-                      if isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute)
-                      and node.func.attr == 'import_module')
-        legacy = importlib.import_module(bridge.stem)
-        canonical = importlib.import_module(target)
-        assert legacy is canonical, bridge.stem
-        assert Path(canonical.__file__).resolve().is_relative_to(installed), target
-        aliases += 1
+    for name in ('config', 'grid', 'jax_solver_global', 'run_long_integration_global',
+                 'stage_budgets', 'source_identity', 'ocean_solver.fd', 'ocean_solver.data'):
+        assert importlib.util.find_spec(name) is None, name
 
     import jax
     import jax.numpy as jnp
     import numpy as np
 
-    import jax_solver_global as legacy
-    import run_long_integration_global as driver
-    from ocean_solver.fd.factory import make_solver_global
-    from ocean_solver.fd.types import JaxStateG
+    import ocean_solver.runtime.entry as driver
+    from ocean_solver.geometry.types import GlobalOceanGrid
     from ocean_solver.provenance.sources import source_paths
+    from ocean_solver.state.types import JaxStateG
 
-    assert legacy.make_solver_global is make_solver_global
-    assert legacy.JaxStateG is JaxStateG
+    assert JaxStateG.__module__ == 'ocean_solver.state.types'
+    assert GlobalOceanGrid.__module__ == 'ocean_solver.geometry.types'
     state = JaxStateG(*(jnp.arange(3, dtype=jnp.float64) + index for index in range(5)))
     restored = pickle.loads(pickle.dumps(state, protocol=4))
     assert type(restored) is JaxStateG
@@ -85,7 +76,7 @@ def main():
     finally:
         sys.argv = previous
     print(json.dumps({'installed_modules': len(expected), 'source_identity_files': len(identity),
-                      'legacy_aliases': aliases, 'pickle_and_pytree': True,
+                      'legacy_aliases': 0, 'pickle_and_pytree': True,
                       'all_imports_inside_wheel': True, 'cli_help': True,
                       'exact_package_payload': True, 'research_absent': True,
                       'checkout_inserted_in_sys_path': False}))

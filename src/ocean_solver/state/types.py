@@ -159,8 +159,3 @@ FDPhysParams = namedtuple('FDPhysParams', [
 ])
 
 FDPhysParams.__new__.__defaults__ = (None, False, False, False, False, False, False, False, None, None, None, -1.8, 0.0, False, 1.0, 150, None, 'none', None, 'default', 2, 'legacy', False, 'legacy')
-
-# Preserve historical pickle references; the facade exports these same objects.
-JaxStateG.__module__ = 'jax_solver_global'
-FDParams.__module__ = 'jax_solver_global'
-FDPhysParams.__module__ = 'jax_solver_global'

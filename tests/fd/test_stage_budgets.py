@@ -4,9 +4,12 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-import jax_solver_global as solver
-from config import C_P, RHO_0
-from stage_budgets import SOURCE_NAMES, STAGE_NAMES, make_budget_step
+import ocean_solver.numerics.horizontal as solver_horizontal
+import ocean_solver.state.types as solver_types
+import ocean_solver.timestepping.integration as solver_integration
+from ocean_solver.audit.schema import SOURCE_NAMES, STAGE_NAMES
+from ocean_solver.audit.stages import make_budget_step
+from ocean_solver.config.definitions import C_P, RHO_0
 from tests.support.fd.surface_energy import _setup
 
 
@@ -32,8 +35,8 @@ def test_audited_step_is_the_actual_solver_step(split, scan, ice, dtype):
                              n_subcyc=2, dt_bt=30., nu_nsub=1)
     params = params._replace(**{name: value.astype(dtype) for name, value in params._asdict().items()
                               if isinstance(value, jnp.ndarray) and jnp.issubdtype(value.dtype, jnp.floating)})
-    state = solver.JaxStateG(*(field.astype(dtype) for field in state))
-    normal = jax.jit(lambda current: solver._step_impl(current, params))(state)
+    state = solver_types.JaxStateG(*(field.astype(dtype) for field in state))
+    normal = jax.jit(lambda current: solver_integration._step_impl(current, params))(state)
     audited, ledger = make_budget_step(params)(state)
     for name in state._fields:
         np.testing.assert_allclose(getattr(audited, name), getattr(normal, name),
@@ -107,9 +110,9 @@ def test_ice_source_closes_enthalpy_without_double_counting(initial_ice, heat):
 
 def test_internal_diffusion_source_is_detected_not_declared(monkeypatch):
     _, params, state, _ = _setup(heat=0.)
-    original = solver._horizontal_tracer_diffusion
+    original = solver_horizontal._horizontal_tracer_diffusion
     injected_rate = 1e-6
-    from ocean_solver.fd import processes
+    import ocean_solver.dynamics.processes as processes
     monkeypatch.setattr(processes, "_horizontal_tracer_diffusion",
                         lambda tracer, configured: original(tracer, configured) + injected_rate * configured.wet_mask_z)
     _, ledger = make_budget_step(params)(state)
@@ -135,7 +138,7 @@ def test_runtime_heat_and_air_targets_do_not_use_old_closure():
 
 def test_subquantum_float32_heat_is_a_nonzero_residual():
     _, params, state, _ = _setup(heat=1e-6)
-    state = solver.JaxStateG(*(field.astype(jnp.float32) for field in state))
+    state = solver_types.JaxStateG(*(field.astype(jnp.float32) for field in state))
     params = params._replace(**{name: value.astype(jnp.float32) for name, value in params._asdict().items()
                               if isinstance(value, jnp.ndarray) and jnp.issubdtype(value.dtype, jnp.floating)})
     updated, ledger = make_budget_step(params)(state)

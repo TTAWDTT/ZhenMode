@@ -4,8 +4,8 @@ from dataclasses import replace
 
 import numpy as np
 
-from config import PhysicsConfig
-from jax_solver_global import make_solver_global
+from ocean_solver.config.definitions import PhysicsConfig
+from ocean_solver.model.factory import make_solver_global
 from tests.support.grid import all_wet_grid
 
 

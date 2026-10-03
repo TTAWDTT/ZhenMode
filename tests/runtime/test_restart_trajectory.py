@@ -6,11 +6,12 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from jax_solver_global import JaxStateG
-from restart_contract import load_restart, make_restart_contract, save_restart
-from run_long_integration_global import interp_monthly_field_jit, interp_seasonal_wind_jit
-from source_identity import source_paths
-from stage_budgets import accumulate_budget, empty_budget, make_budget_step
+from ocean_solver.audit.schema import accumulate_budget, empty_budget
+from ocean_solver.audit.stages import make_budget_step
+from ocean_solver.io.restart import load_restart, make_restart_contract, save_restart
+from ocean_solver.provenance.sources import source_paths
+from ocean_solver.runtime.entry import interp_monthly_field_jit, interp_seasonal_wind_jit
+from ocean_solver.state.types import JaxStateG
 from tests.support.material.reference_geometry import _fixture
 from tests.support.paths import REPOSITORY_ROOT
 
@@ -37,7 +38,8 @@ def test_two_actual_restarts_preserve_state_seasonal_phase_and_every_budget_fiel
     contract = make_restart_contract(
         grid, params, dtype=dtype, forcing={"wind": wind, "air": atmosphere, "heat": heat},
         controls={"calendar": "360_day", "blend_days": 5., "ledger": "actual_stage_budget"},
-        code_paths=source_paths(REPOSITORY_ROOT / "src", ('jax_solver_global', 'stage_budgets', 'restart_contract')),
+        code_paths=source_paths(REPOSITORY_ROOT / "src", (
+            'ocean_solver/timestepping/integration', 'ocean_solver/audit/stages', 'ocean_solver/io/restart')),
         execution={"backend": jax.default_backend(), "jax": jax.__version__})
     advance = make_budget_step(params)
     accumulate = jax.jit(accumulate_budget)

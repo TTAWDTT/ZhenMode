@@ -366,9 +366,10 @@ def test_full_solver_preserves_tangential_wall_velocity():
     import sys
     from dataclasses import replace
 
-    from config import PhysicsConfig
-    from grid import GlobalOceanGrid
-    from jax_solver_global import _step_impl, make_solver_global
+    from ocean_solver.config.definitions import PhysicsConfig
+    from ocean_solver.io.grid import GlobalOceanGrid
+    from ocean_solver.timestepping.integration import _step_impl
+    from ocean_solver.model.factory import make_solver_global
 
     c = w.contract()
     nx, ny, nz = 4, 4, 4

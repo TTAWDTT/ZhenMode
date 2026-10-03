@@ -5,8 +5,6 @@ import argparse
 import json
 from pathlib import Path
 
-from ocean_solver._compat import preserve_legacy_names
-
 
 def _label(path: str | Path, explicit: str | None) -> str:
     return explicit or Path(path).parent.name + "/" + Path(path).stem
@@ -75,8 +73,7 @@ def main() -> None:
     print(table)
 
 
-preserve_legacy_names(globals(), 'benchmark_table')
+
 
 if __name__ == "__main__":
     main()
-

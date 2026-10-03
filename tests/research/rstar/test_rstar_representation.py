@@ -16,7 +16,7 @@ from tests.support.rstar.metric_controls import _geometry
 
 from tests.support.rstar.pressure_work import _case, _numpy_rates, _work
 
-from config import G_EARTH, RHO_0
+from ocean_solver.config.definitions import G_EARTH, RHO_0
 
 from research.experiments.material_rstar_coordinates.kernel import hydrostatic_pressure
 

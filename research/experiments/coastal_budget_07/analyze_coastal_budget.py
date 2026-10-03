@@ -11,9 +11,9 @@ import numpy as np
 REPO = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(REPO / "src"))
 
-from air_reanalysis import load_annual_mean_air_temp
-from config import GlobalGridConfig, RHO_0, C_P
-from grid import make_global_grid
+from ocean_solver.forcing.air import load_annual_mean_air_temp
+from ocean_solver.config.definitions import GlobalGridConfig, RHO_0, C_P
+from ocean_solver.io.grid import make_global_grid
 
 
 def find_bathymetry():

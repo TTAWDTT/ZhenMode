@@ -8,19 +8,20 @@ import numpy as np
 import pytest
 from scipy.linalg import expm
 
-from config import RHO_0, PhysicsConfig
-from jax_solver_global import JaxStateG, _linear_half_step
-from material_top import (
+from ocean_solver.config.definitions import RHO_0, PhysicsConfig
+from ocean_solver.dynamics.processes import _linear_half_step
+from ocean_solver.io.restart import load_restart, save_restart
+from ocean_solver.state.types import JaxStateG
+from tests.support.material.joint_momentum import POLICY, _controlled_factory, _numpy_operators
+from tests.support.material.reference_geometry import WIDTHS
+from tests.support.material.subcycles import _flowing_case
+from zhenmode_research.candidates.material.solver import (
     _joint_momentum_diffusion,
     _momentum_diffusion_norm_bound,
     _momentum_diffusion_plan,
     make_material_top_restart_contract,
     make_material_top_step,
 )
-from restart_contract import load_restart, save_restart
-from tests.support.material.joint_momentum import POLICY, _controlled_factory, _numpy_operators
-from tests.support.material.reference_geometry import WIDTHS
-from tests.support.material.subcycles import _flowing_case
 
 
 @pytest.mark.parametrize("stairs,metric", [(False, False), (True, False), (True, True)])

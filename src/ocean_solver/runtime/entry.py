@@ -20,14 +20,13 @@ Output:
   - results/global_<tag>_3d/   (streamed 3D T/U/V snapshots, one .npy each)
 
 Usage:
-  python src/run_long_integration_global.py --days 365 --seasonal-wind --tag g365d
-  python src/run_long_integration_global.py --days 200 --tag g200d_smoke   # shorter probe
+  zhenmode model --days 365 --seasonal-wind --tag g365d
+  zhenmode model --days 200 --tag g200d_smoke   # shorter probe
 """
 
 import argparse as argparse
 import sys
 
-from ocean_solver._compat import preserve_legacy_names
 from ocean_solver.provenance.locations import source_root
 
 try:
@@ -147,7 +146,7 @@ def main():
     return run_main(services, source_root(__file__))
 
 
-preserve_legacy_names(globals(), 'run_long_integration_global')
+
 
 if __name__ == "__main__":
     sys.exit(main())

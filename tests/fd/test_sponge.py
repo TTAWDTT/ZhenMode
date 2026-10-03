@@ -32,10 +32,10 @@ from dataclasses import replace
 
 import jax.numpy as jnp
 
-import jax_solver_global as G
-from config import PhysicsConfig
-from grid import GlobalOceanGrid
-from jax_solver_global import make_solver_global
+import ocean_solver.dynamics.processes as G_processes
+from ocean_solver.config.definitions import PhysicsConfig
+from ocean_solver.io.grid import GlobalOceanGrid
+from ocean_solver.model.factory import make_solver_global
 
 T_REF = PhysicsConfig().T_ref      # 15.0
 S_REF = PhysicsConfig().S_ref      # 35.0
@@ -107,7 +107,7 @@ def _build(grid, T0, S0, sponge_days, sponge_cells):
 
 def _half_steps(state, params, n=5):
     for _ in range(n):
-        state = G._linear_half_step(state, params, DT_HALF)
+        state = G_processes._linear_half_step(state, params, DT_HALF)
     return state
 
 

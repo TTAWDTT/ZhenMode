@@ -1,7 +1,7 @@
 """Identical passive-advection fixture shared by the two limiter suites."""
 import numpy as np
 
-from grid import GlobalOceanGrid
+from ocean_solver.io.grid import GlobalOceanGrid
 
 
 def _synth_grid():

@@ -12,9 +12,10 @@ import pytest
 
 from tests.support.rstar.metric_controls import _fixture, _geometry
 
-from config import G_EARTH, RHO_0
+from ocean_solver.config.definitions import G_EARTH, RHO_0
 
-from jax_solver_global import _advection_scalar, _face_transport_divergence
+from ocean_solver.dynamics.transport import _advection_scalar
+from ocean_solver.dynamics.transport import _face_transport_divergence
 
 from research.experiments.material_rstar_coordinates.kernel import (
     coordinate_pressure_gradient,

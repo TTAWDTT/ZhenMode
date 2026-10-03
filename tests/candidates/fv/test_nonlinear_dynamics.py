@@ -4,9 +4,14 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from cgrid_momentum import LayerState, momentum_geometry
-from finite_volume import ExtensiveState, VolumeFluxes, build_geometry, surface_volume
-from nonlinear_dynamics import (
+from zhenmode_research.candidates.fv.geometry import (
+    ExtensiveState,
+    VolumeFluxes,
+    build_geometry,
+    surface_volume,
+)
+from zhenmode_research.candidates.fv.momentum import LayerState, momentum_geometry
+from zhenmode_research.candidates.fv.nonlinear import (
     DualVelocity,
     dual_advection,
     dual_rotation,

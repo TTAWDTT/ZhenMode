@@ -11,12 +11,12 @@ from tempfile import TemporaryDirectory
 import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'src'))
-from input_quality import (  # noqa: E402
+from ocean_solver.io.data_quality import (  # noqa: E402
     audit_woa_variable,
     load_strict_quality_bundle,
     validate_quality_fields,
 )
-from input_sources import (  # noqa: E402
+from ocean_solver.io.input_sources import (  # noqa: E402
     InputSnapshot,
     load_climatology_snapshot,
     load_snapshot_npz,

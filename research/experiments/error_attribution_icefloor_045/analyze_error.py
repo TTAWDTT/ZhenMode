@@ -11,7 +11,7 @@ import numpy as np
 
 REPO = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(REPO / "src"))
-from bench_climatology_global import smooth_2d_global
+from ocean_solver.validation.benchmarks.climatology import smooth_2d_global
 
 
 def distance_to_land(ocean):
@@ -88,8 +88,8 @@ def main():
     # Build physical area independently below.
     import os
     from dataclasses import replace
-    from config import GlobalGridConfig
-    from grid import make_global_grid
+    from ocean_solver.config.definitions import GlobalGridConfig
+    from ocean_solver.io.grid import make_global_grid
     bathy = os.environ.get("OCEAN_SOLVER_BATHYMETRY", str(Path.home() / "Desktop" / "ETOPO_2022_v1_r3600x1800_surface.nc"))
     grid = make_global_grid(replace(GlobalGridConfig(), lat_max=65.0, ny=288, nx=800, resolution=0.45),
                             bathy, smooth_passes=80, min_depth=500.0, remap="area")

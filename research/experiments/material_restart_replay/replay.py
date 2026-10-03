@@ -23,10 +23,11 @@ def main():
     import jax.numpy as jnp
     import numpy as np
 
-    from grid import GlobalOceanGrid
-    from jax_solver_global import FDPhysParams, JaxStateG
-    from material_top import make_material_top_restart_contract, make_material_top_step
-    from restart_contract import file_sha256, load_restart, save_restart
+    from ocean_solver.io.grid import GlobalOceanGrid
+    from ocean_solver.state.types import FDPhysParams
+    from ocean_solver.state.types import JaxStateG
+    from zhenmode_research.candidates.material.solver import make_material_top_restart_contract, make_material_top_step
+    from ocean_solver.io.restart import file_sha256, load_restart, save_restart
 
     if jax.default_backend() != "gpu":
         raise ValueError("registered replay requires the original CUDA execution contract")

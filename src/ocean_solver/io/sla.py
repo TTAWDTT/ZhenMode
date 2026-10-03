@@ -13,7 +13,6 @@ import os
 import netCDF4
 import numpy as np
 
-from ocean_solver._compat import preserve_legacy_names
 from ocean_solver.io.erddap import fetch
 
 CACHE_DIR = "data/sla_npac"
@@ -58,7 +57,7 @@ def main() -> None:
     print(f"saved stack {np.stack(means,0).shape} -> sla_npac_monthly_2023.npz")
 
 
-preserve_legacy_names(globals(), 'fetch_sla_monthly')
+
 
 if __name__ == "__main__":
     main()

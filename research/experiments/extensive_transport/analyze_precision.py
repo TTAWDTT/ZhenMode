@@ -14,8 +14,8 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
-from config import DEFAULT_CONFIG, GlobalGridConfig
-from grid import global_grid_dims, make_global_grid
+from ocean_solver.config.definitions import DEFAULT_CONFIG, GlobalGridConfig
+from ocean_solver.io.grid import global_grid_dims, make_global_grid
 
 jax.config.update("jax_enable_x64", True)
 

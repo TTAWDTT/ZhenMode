@@ -186,7 +186,7 @@ def test_fd_oracle_matches_original_node_operator(coef, partial):
     import jax
     import jax.numpy as jnp
 
-    from jax_solver_global import _compute_hydrostatic_pressure
+    from ocean_solver.dynamics.pressure import _compute_hydrostatic_pressure
 
     jax.config.update("jax_enable_x64", True)
     nodes = np.array([0.0, -5.0, -15.0, -30.0])

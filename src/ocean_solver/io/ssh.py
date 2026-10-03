@@ -11,7 +11,6 @@ import os
 import netCDF4
 import numpy as np
 
-from ocean_solver._compat import preserve_legacy_names
 from ocean_solver.io.erddap import fetch
 
 CACHE_DIR = "data/sla_npac"
@@ -48,7 +47,7 @@ def main() -> None:
     print(f"saved {np.stack(means,0).shape} -> ssh_abs_npac_monthly_2012.npz")
 
 
-preserve_legacy_names(globals(), 'fetch_ssh_abs_monthly')
+
 
 if __name__ == "__main__":
     main()

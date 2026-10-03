@@ -129,11 +129,12 @@ ETOPO 的 bathymetry 预处理不是评价中的隐式结果重网格。
 
 ## 兼容策略及工程例外
 
-35 个旧 canonical 模块路径成为 `sys.modules` 同对象 alias，保留历史导入和私有
-故障消费边界；所有新正式消费者直接导入 owner，alias 无数值实现副本。
-`fd.legacy` 是保留的历史符号导出门面；MMS 报告正文只有 `validation.mms.main()`
-一份，旧 CLI 转调它，operator/convergence 任一失败仍退出 1。
-旧 bare 导入入口由 `src/compat` 保留的生产桥接文件实现。
+正式包直接使用职责模块，旧 `fd`/`data` 转接包、bare-module 桥及汇总门面已删除。
+测试和当前工具已迁移到实际 owner，包括对真实实现的故障注入。
+MMS 正文只有 `validation.mms.main()` 一份，`zhenmode mms` 调用它，
+operator/convergence 任一失败仍退出 1。
+状态和网格类型恢复所属模块名；旧 bare-module pickle 需在原提交读取，
+不再通过伪装类型来源保持旧导入。字段、defaults、JAX pytree 和数值状态不变。
 跨旧源码身份的严格 checkpoint 不绕过原实际执行源码校验，历史复跑使用原 commit。
 
 以下工程接口拆分明确记录，不改变默认正式数值路径：
@@ -141,7 +142,7 @@ ETOPO 的 bathymetry 预处理不是评价中的隐式结果重网格。
 1. `geometry.grid.make_global_grid` 分为 `io.grid` 的读入 wrapper 与
    `geometry.mesh.build_global_grid`。后者收到数组后执行原计算语句及顺序。
 2. 原 ETOPO reader 收到显式 `dataset_factory`；`io.grid` 传入原可替换 `Dataset`
-   钩子，所以 `grid.Dataset=None` 仍控制实际读取优先级，真实 NC/NPZ 优先级不变。
+   钩子，所以 `io.grid.Dataset=None` 仍控制实际读取优先级，真实 NC/NPZ 优先级不变。
 3. `runtime.cli.build_run_parser()` 独立创建原 87 条参数声明，便于配置工具读取
    schema 而不加载 JAX；`parse_run_configuration(argv=None)` 仍先解析、再验证。
    默认 `argv=None` 保留原零参数 `parse_args()` 故障注入接口。
@@ -159,7 +160,7 @@ ETOPO 的 bathymetry 预处理不是评价中的隐式结果重网格。
 每次本地数值检查限制一 CPU、180 秒、4 GiB；实际 receipts、失败/跳过与未运行项
 见整体重构验证报告。这里不把待执行命令记为 PASS。
 
-验证应覆盖：原 collection 无遗漏；35 同对象 alias 与实际安装路径；
+验证应覆盖：原 collection 无遗漏；正式安装无旧转接层及研究实现；
 独立参考公式及负例仍有效；275-record 全状态与 344-record JIT 驱动/重启 payload；
 ETOPO NC/NPZ 的真实优先级及历史 Dataset 故障钩子；干净 wheel 外部目录运行；
 实际所有源码文件的 hash/tamper 拒绝；MMS 两个 gate 的退出码。

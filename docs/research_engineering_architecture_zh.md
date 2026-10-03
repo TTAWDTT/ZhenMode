@@ -47,7 +47,7 @@ flowchart TD
 | `archive/evidence` | 可核查历史证据索引 | 指向原始 Git 对象，保留来源边界与字节校验 |
 | `scripts`, `tests`, `docs` | 少量维护/验证入口，按合同测试，运行/方法说明 | 无第二套算法；旧脚本是否可删先查引用与复现用途 |
 
-`fd`、`data` 等旧 canonical 路径留下薄模块别名以支持现有序列化、私有故障注入和历史消费者；它们不保存第二份实现。需要历史执行源码的严格 checkpoint 应检出原提交，不能把新别名哈希伪装成旧源码。研究历史 bare imports 在单独 research distribution 保留，不反向装入正式包。
+内部调用直接导入上述职责模块。原 `fd`/`data` 转接包、生产和研究 bare-module 别名、汇总门面及历史类型名伪装均已删除。只保留有使用价值的公共 CLI：`zhenmode` 和 `ocean-solver`。旧路径映射是复现元数据，不再是可导入接口。严格 checkpoint 仍校验实际执行文件；历史运行需检出原提交。详细删除依据见 [清理说明](cleanup_zh.md)。
 
 ## 依赖顺序与验证
 

@@ -24,11 +24,11 @@ def test_production_distribution_and_identity_exclude_research_bridges():
     layout = json.loads((REPOSITORY_ROOT / 'docs/research_engineering_layout.json').read_text(encoding='utf-8'))
     research = set(layout['research_legacy_modules'])
     config = tomllib.loads((REPOSITORY_ROOT / 'pyproject.toml').read_text(encoding='utf-8'))
-    assert not set(config['tool']['setuptools']['py-modules']) & research
+    assert not set(config['tool']['setuptools'].get('py-modules', [])) & research
     assert not set(production_source_modules()) & research
     assert not any(x.startswith('zhenmode_research/') for x in production_source_modules())
     for name in research:
-        assert (REPOSITORY_ROOT / 'research/src/compat' / (name + '.py')).is_file()
+        assert not (REPOSITORY_ROOT / 'research/src/compat' / (name + '.py')).exists()
 
 
 def test_historical_layout_declaration_remains_original_git_bytes():

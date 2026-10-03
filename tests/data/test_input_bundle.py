@@ -9,7 +9,7 @@ from io import BytesIO
 import numpy as np
 import pytest
 
-from input_quality import enforce_strict_quality_bundle, load_strict_quality_bundle
+from ocean_solver.io.data_quality import enforce_strict_quality_bundle, load_strict_quality_bundle
 from tests.support.data.input_quality import cli
 from tests.support.data.input_sources import write_inputs
 

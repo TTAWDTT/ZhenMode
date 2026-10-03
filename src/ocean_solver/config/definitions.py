@@ -11,7 +11,6 @@ from dataclasses import dataclass, field
 
 import numpy as np
 
-from ocean_solver._compat import preserve_legacy_names
 from ocean_solver.provenance.locations import source_root
 
 # ── Physical constants ──────────────────────────────────────────────
@@ -183,7 +182,7 @@ class Config:
 DEFAULT_CONFIG = Config()
 
 
-preserve_legacy_names(globals(), 'config')
+
 
 if __name__ == "__main__":
     cfg = DEFAULT_CONFIG

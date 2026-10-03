@@ -4,10 +4,10 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from barotropic_transport import subcycle_barotropic
-from cgrid_momentum import hydrostatic_pressure_force, momentum_geometry
-from config import R_EARTH
-from finite_volume import build_geometry, surface_volume
+from ocean_solver.config.definitions import R_EARTH
+from zhenmode_research.candidates.fv.barotropic import subcycle_barotropic
+from zhenmode_research.candidates.fv.geometry import build_geometry, surface_volume
+from zhenmode_research.candidates.fv.momentum import hydrostatic_pressure_force, momentum_geometry
 
 jax.config.update("jax_enable_x64", True)
 

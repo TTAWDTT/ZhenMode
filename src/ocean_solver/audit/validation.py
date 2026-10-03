@@ -4,8 +4,6 @@ from numbers import Integral, Real
 
 import numpy as np
 
-from ocean_solver._compat import preserve_legacy_names
-
 
 def finite_number(name, value, *, positive=False, nonnegative=False):
     if isinstance(value, (bool, np.bool_)) or not isinstance(value, Real) or not np.isfinite(value):
@@ -38,5 +36,3 @@ def validate_grid(grid):
     if (spacing.shape != (grid.nz - 1,) or not np.all(np.isfinite(spacing) & (spacing > 0.))
             or not np.allclose(spacing, -np.diff(depths), rtol=1e-12, atol=0.)):
         raise ValueError("dz must match the positive distances between z nodes")
-
-preserve_legacy_names(globals(), 'runtime_validation')

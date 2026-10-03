@@ -16,19 +16,17 @@ import pytest
 
 from tests.support.grid import all_wet_grid
 
-from config import ALPHA_T, G_EARTH, R_EARTH, RHO_0
+from ocean_solver.config.definitions import ALPHA_T, G_EARTH, R_EARTH, RHO_0
 
-from jax_solver_global import (
-    JaxStateG,
-    _advection_scalar,
-    _compute_hydrostatic_pressure,
-    _compute_pressure_gradient,
-    _d2_dz2_flux,
-    _face_transport_divergence,
-    _gradient_conservative_3d,
-    _horizontal_diffusion_flux,
-    make_fd_params,
-)
+from ocean_solver.state.types import JaxStateG
+from ocean_solver.dynamics.transport import _advection_scalar
+from ocean_solver.dynamics.pressure import _compute_hydrostatic_pressure
+from ocean_solver.dynamics.pressure import _compute_pressure_gradient
+from ocean_solver.numerics.vertical import _d2_dz2_flux
+from ocean_solver.dynamics.transport import _face_transport_divergence
+from ocean_solver.numerics.horizontal import _gradient_conservative_3d
+from ocean_solver.numerics.horizontal import _horizontal_diffusion_flux
+from ocean_solver.geometry.fd import make_fd_params
 
 from research.experiments.material_rstar_coordinates.dense_oracle import assemble_diffusion
 

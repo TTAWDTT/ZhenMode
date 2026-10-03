@@ -11,7 +11,7 @@ import jax
 import jax.numpy as jnp
 from jax.scipy.sparse.linalg import cg
 
-from ocean_solver._compat import preserve_legacy_names
+
 from zhenmode_research.candidates.fv.barotropic import BarotropicResult, subcycle_barotropic
 from zhenmode_research.candidates.fv.fluxes import (
     HalfPrismTransport,
@@ -33,7 +33,7 @@ from zhenmode_research.candidates.fv.velocity import (
     PhysicalVelocityReconstruction,
     physical_velocity_from_fluxes,
 )
-from ocean_solver.configuration import OMEGA
+from ocean_solver.config.definitions import OMEGA
 
 
 class PressureForce(NamedTuple):
@@ -368,5 +368,3 @@ def linear_momentum_surface_step(geometry, state, density_anomaly, dt, nsub,
     return MomentumResult(final_state, pressure, barotropic, transport, fluxes, flux_reconstruction, dual_transport, physical_velocity,
                            jnp.maximum(first.energy_relative_change, second.energy_relative_change),
                            jnp.maximum(first.solve_relative_residual, second.solve_relative_residual), surface_error, valid)
-
-preserve_legacy_names(globals(), 'cgrid_momentum')

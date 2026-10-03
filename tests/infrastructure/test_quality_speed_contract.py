@@ -10,7 +10,7 @@ from pathlib import Path
 
 from tests.support.paths import REPOSITORY_ROOT
 
-TOOLS = REPOSITORY_ROOT / 'scripts' / 'quality_speed'
+TOOLS = REPOSITORY_ROOT / 'research/tools' / 'quality_speed'
 sys.path.insert(0, str(TOOLS))
 from contract import HASH_FIELDS, PAIR_FIELDS, PHASES, digest, evaluate
 from gate import load

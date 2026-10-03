@@ -4,7 +4,8 @@ from typing import NamedTuple
 import jax
 import jax.numpy as jnp
 
-from jax_solver_global import _advection_scalar, _face_transport_divergence
+from ocean_solver.dynamics.transport import _advection_scalar
+from ocean_solver.dynamics.transport import _face_transport_divergence
 from research.experiments.material_rstar_coordinates.kernel import (
     relative_vertical_transport,
     rstar_geometry,

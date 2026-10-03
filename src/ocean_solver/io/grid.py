@@ -1,6 +1,6 @@
 """Read bathymetry and pass arrays to the pure geometry builder."""
 
-from ocean_solver._compat import preserve_legacy_names
+
 from ocean_solver.config.definitions import GlobalGridConfig
 from ocean_solver.geometry.columns import nodal_control_thickness as nodal_control_thickness
 from ocean_solver.geometry.mesh import (
@@ -50,7 +50,7 @@ def make_global_grid(grid_config, bathymetry_file, smooth_passes=0,
     )
 
 
-preserve_legacy_names(globals(), 'grid')
+
 
 if __name__ == "__main__":
     from ocean_solver.config.definitions import DEFAULT_CONFIG

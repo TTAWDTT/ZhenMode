@@ -7,9 +7,9 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from config import PhysicsConfig
-from jax_solver_global import make_solver_global
-from run_long_integration_global import interp_monthly_field, interp_monthly_field_jit
+from ocean_solver.config.definitions import PhysicsConfig
+from ocean_solver.model.factory import make_solver_global
+from ocean_solver.runtime.entry import interp_monthly_field, interp_monthly_field_jit
 from tests.support.grid import all_wet_grid
 
 

@@ -16,12 +16,9 @@ from dataclasses import replace
 import jax.numpy as jnp
 import numpy as np
 
-from config import PhysicsConfig
-from jax_solver_global import (
-    _advection_scalar,
-    _vertical_transport_iface,
-    make_solver_global,
-)
+from ocean_solver.config.definitions import PhysicsConfig
+from ocean_solver.dynamics.transport import _advection_scalar, _vertical_transport_iface
+from ocean_solver.model.factory import make_solver_global
 from tests.support.fd.advection import _synth_grid
 
 

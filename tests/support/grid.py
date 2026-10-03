@@ -6,7 +6,7 @@ assertions that explain it.
 """
 import numpy as np
 
-from grid import GlobalOceanGrid
+from ocean_solver.io.grid import GlobalOceanGrid
 
 
 def all_wet_grid(nx=32, ny=32, nz=8):

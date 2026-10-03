@@ -5,15 +5,15 @@ import numpy as np
 import pytest
 from scipy.linalg import expm
 
-from config import G_EARTH, RHO_0
-from jax_solver_global import (
+from ocean_solver.audit.stages import _StageRecorder, make_budget_step
+from ocean_solver.config.definitions import G_EARTH, RHO_0
+from ocean_solver.dynamics.barotropic import (
     _barotropic_subcycle_transport,
     _free_surface_step_fd,
-    _linear_bottom_drag_step,
-    _step_impl,
     _symmetric_free_surface_step,
 )
-from stage_budgets import _StageRecorder, make_budget_step
+from ocean_solver.dynamics.processes import _linear_bottom_drag_step
+from ocean_solver.timestepping.integration import _step_impl
 from tests.support.material.reference_geometry import WIDTHS, _fixture
 from tests.support.material.subcycled_rk import _trajectory
 
