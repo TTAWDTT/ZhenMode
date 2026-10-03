@@ -313,3 +313,30 @@ only; the actual applied replay mixing ledger gate remains false. Physical
 moving pressure, fixed-endpoint order >=1.9, mature-mode parity and equal-error
 speed remain unqualified. Production defaults and the original user checkout
 were not changed.
+
+## 2026-10-03: final range-check correction and refreshed source binding
+
+The final complete baseline-to-head whitespace check found one additional
+terminal LF in each of the native audit, capture script and support module.
+The earlier whitespace check covered only the uncommitted diff. Exactly those
+three bytes were removed in scientific source
+`f0d1cbc329967e659efc64edc149b803d193f4da`; independent inspection verified
+that no other source byte changed. Ruff and the complete baseline-to-head
+whitespace check now pass. This correction supersedes the current-source
+binding above while preserving that earlier execution record.
+
+The same 47 controls passed again in 53.18 s pytest / 54.172 s supervisor time,
+with peak owned private memory 651431936 bytes. The same bounded witness
+passed in 17.062 s with peak owned private memory 409767936 bytes. All
+non-provenance receipt fields exactly equal the prior witness, including the
+nonzero diagnostic endpoint, work identities and unqualified moving gates.
+The refreshed receipt binds the corrected clean scientific source to all 229
+labels / 189 actual files; actual bytes again equal the committed Git blobs.
+
+The resource record retains all six invocations, including both initial
+failures and both source bindings: total supervisor wall 146.749 s; maximum
+owned private memory 651431936 bytes. Every numerical invocation remained
+serial, one CPU, hard 180 s / 4 GiB with no bound stop. No new case or numerical
+operator was added. The joint-moving and physical/order/speed gaps above
+remain unchanged. The isolated branch's tracking ref was also repaired after
+the first push; no original user checkout or persistent proxy setting changed.

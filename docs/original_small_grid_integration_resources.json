@@ -1,5 +1,5 @@
 {
-  "source_commit": "fddda45b39fcdcf752bef756d4c52e90541a40f1",
+  "source_commit": "f0d1cbc329967e659efc64edc149b803d193f4da",
   "invocations": [
     {
       "wall_s": 2.015,
@@ -56,8 +56,36 @@
       "log_byte_sha256": "5b5c39ba7232b2e9cd2c7a94e67549409bf37177bf2ad0da400166e81d93a2ce",
       "source_commit": "fddda45b39fcdcf752bef756d4c52e90541a40f1",
       "classification": "passed"
+    },
+    {
+      "wall_s": 54.172,
+      "peak_interpreter_RSS_bytes": 579403776,
+      "peak_job_private_bytes": 651431936,
+      "single_CPU": true,
+      "memory_limit_bytes": 4294967296,
+      "wall_limit_s": 180,
+      "bound_stop": false,
+      "exit_code": 0,
+      "log": "original_native_green_final.log",
+      "log_byte_sha256": "3ac26650f27fd6412c7344efa7bc9fdf4c576797dc71572ae3cab6228a22a57b",
+      "source_commit": "f0d1cbc329967e659efc64edc149b803d193f4da",
+      "classification": "passed_final_source_binding"
+    },
+    {
+      "wall_s": 17.062,
+      "peak_interpreter_RSS_bytes": 369061888,
+      "peak_job_private_bytes": 409767936,
+      "single_CPU": true,
+      "memory_limit_bytes": 4294967296,
+      "wall_limit_s": 180,
+      "bound_stop": false,
+      "exit_code": 0,
+      "log": "original_native_witness_final.log",
+      "log_byte_sha256": "7c894599961b5c16596f53a7ab390750c4b4cece74f6d3677a8921175cace167",
+      "source_commit": "f0d1cbc329967e659efc64edc149b803d193f4da",
+      "classification": "passed_final_source_binding"
     }
   ],
-  "total_wall_s": 75.515,
+  "total_wall_s": 146.749,
   "bounded_runner_sha256": "844c81b1f8185d33bcb79872bd83213807ad0e1f708746ccee52f4a41e00ac03"
 }

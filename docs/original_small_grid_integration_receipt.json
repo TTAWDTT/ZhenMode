@@ -20,7 +20,7 @@
     "independent_pressure_work_J": 24370932.26324599,
     "fixed_mass_work_roundoff_bound_J": 818.4853791669638
   },
-  "scientific_source_commit": "fddda45b39fcdcf752bef756d4c52e90541a40f1",
+  "scientific_source_commit": "f0d1cbc329967e659efc64edc149b803d193f4da",
   "case_source": "tests/support/original_native.py::make_original_native_case",
   "backend": "cpu",
   "execution_versions": {
@@ -698,13 +698,13 @@
   },
   "frozen_case_parameter_binding_passed": true,
   "source_sha256": {
-    "research/experiments/material_top_band/original_native.py": "d6f832927a53e99a18e1957713783e340e7426cf8917049a157f3395d3a1f0e6",
+    "research/experiments/material_top_band/original_native.py": "e14c09d5d3e3f29934019fdb7357fbf2677568ea130a0c58637f8f32fd4eca1a",
     "research/experiments/material_top_band/integration.py": "9533cd9aff8bbdd10eb69f53324b5c335697dc6332984917df0672deaad44e6f",
     "research/experiments/fd_static_bridge/bridge.py": "d2749cdd5c64280630e740ebb35cb2477cede330a78680179e9376b68a07344e",
     "tests/research/contracts/test_original_native_integration.py": "cfe4c1a53bb3e326b0d20c7efd8ac111de609a9caa1da98282676259bb62d2d3",
     "docs/original_small_grid_integration_protocol.json": "bffbf48be67c1ba3a98375bd8f0c744f0f68af5ed6847ef798c720fb69cb4b3d",
     "scripts/run_bounded_research_tests.py": "844c81b1f8185d33bcb79872bd83213807ad0e1f708746ccee52f4a41e00ac03",
-    "scripts/capture_original_native_contract.py": "c72e09c23a9a9b13cae8fa6caac75b51330a5467db736aff40f98667d3b44297",
+    "scripts/capture_original_native_contract.py": "90b36d4d834a7e45ac2fbf7e7a2889c09bd4f52ba44ff685908b6aeb3374b1ea",
     "checkout/src/jax_solver_global.py": "72fa6702cdaa0bbb0db94f133d1187782ff3a2f54af06641335f806a3b4c9ee6",
     "checkout/src/run_long_integration_global.py": "7b98e51ca147228d448b77ef84c6510d4bde7fbbeb2d628e2fc7a25db6c99769",
     "src/run_long_integration_global.py": "6b73e9dec108c4c30876fcd5851d58c559f42704d9c8a63c96d38d008b9615eb",
@@ -914,7 +914,7 @@
     "tests/support/material/subcycled_rk.py": "24a8dc37a3cf58ec3fde454b617e3b295b4986443f20b99582f6e4c0fc2a95f8",
     "tests/support/material/subcycles.py": "0352ff46e6c3e05d877a24c7c79a7648a134a4178a0e71ea83d3fbe79c800cc5",
     "tests/support/material/top.py": "c63d7f3086f7dff3292c7504201f0558762d3c7281983b932f35d2826fb1850b",
-    "tests/support/original_native.py": "cf33ad0f91ff8613c3696198c46a9d86c5794a9e57bd7d894b1d3191bb8a9b4e",
+    "tests/support/original_native.py": "9c480ce0d8f006cd15d60616bc2259b36326a62a717de448e3e5828729c38935",
     "tests/support/paths.py": "78fffa648dfee6ae0fa6059a3d99fbad677fafe1fc96feda688f66ea4061c96b",
     "tests/support/rstar/__init__.py": "748ee066b9587c510ca2d8866c32c16a54dd324a2eeb5f07ecddc2c400d180fe",
     "tests/support/rstar/metric_controls.py": "1babfb969623531d40d0629cae47c0ea87e1b6cd4ed44af3bc13e47069a67cc4",
@@ -931,12 +931,12 @@
   "source_byte_metadata": {
     "research/experiments/material_top_band/original_native.py": {
       "checkout_path": "research/experiments/material_top_band/original_native.py",
-      "actual_byte_sha256": "d6f832927a53e99a18e1957713783e340e7426cf8917049a157f3395d3a1f0e6",
-      "byte_count": 15027,
+      "actual_byte_sha256": "e14c09d5d3e3f29934019fdb7357fbf2677568ea130a0c58637f8f32fd4eca1a",
+      "byte_count": 15026,
       "CRLF_count": 0,
-      "LF_count": 312,
-      "git_blob_sha1": "f1214dfabfe5f46eacbed200e1f05d16652cece3",
-      "git_blob_sha256": "d6f832927a53e99a18e1957713783e340e7426cf8917049a157f3395d3a1f0e6",
+      "LF_count": 311,
+      "git_blob_sha1": "c4e5c4184a0db2d5124faacdca68e6db9294967c",
+      "git_blob_sha256": "e14c09d5d3e3f29934019fdb7357fbf2677568ea130a0c58637f8f32fd4eca1a",
       "equal_after_CRLF_to_LF": true
     },
     "research/experiments/material_top_band/integration.py": {
@@ -991,12 +991,12 @@
     },
     "scripts/capture_original_native_contract.py": {
       "checkout_path": "scripts/capture_original_native_contract.py",
-      "actual_byte_sha256": "c72e09c23a9a9b13cae8fa6caac75b51330a5467db736aff40f98667d3b44297",
-      "byte_count": 9529,
+      "actual_byte_sha256": "90b36d4d834a7e45ac2fbf7e7a2889c09bd4f52ba44ff685908b6aeb3374b1ea",
+      "byte_count": 9528,
       "CRLF_count": 0,
-      "LF_count": 156,
-      "git_blob_sha1": "3945508c789ed23789050d9fc0861c9f4c432ea5",
-      "git_blob_sha256": "c72e09c23a9a9b13cae8fa6caac75b51330a5467db736aff40f98667d3b44297",
+      "LF_count": 155,
+      "git_blob_sha1": "2802e912be061044cc6ea387983ca8ec0fc6526c",
+      "git_blob_sha256": "90b36d4d834a7e45ac2fbf7e7a2889c09bd4f52ba44ff685908b6aeb3374b1ea",
       "equal_after_CRLF_to_LF": true
     },
     "checkout/src/jax_solver_global.py": {
@@ -3091,12 +3091,12 @@
     },
     "tests/support/original_native.py": {
       "checkout_path": "tests/support/original_native.py",
-      "actual_byte_sha256": "cf33ad0f91ff8613c3696198c46a9d86c5794a9e57bd7d894b1d3191bb8a9b4e",
-      "byte_count": 8145,
+      "actual_byte_sha256": "9c480ce0d8f006cd15d60616bc2259b36326a62a717de448e3e5828729c38935",
+      "byte_count": 8144,
       "CRLF_count": 0,
-      "LF_count": 153,
-      "git_blob_sha1": "6739f337dd8a934c41a66b7bc38fe56083de38f4",
-      "git_blob_sha256": "cf33ad0f91ff8613c3696198c46a9d86c5794a9e57bd7d894b1d3191bb8a9b4e",
+      "LF_count": 152,
+      "git_blob_sha1": "cfad5db5c5145fa5c21dccf35b560de91580a855",
+      "git_blob_sha256": "9c480ce0d8f006cd15d60616bc2259b36326a62a717de448e3e5828729c38935",
       "equal_after_CRLF_to_LF": true
     },
     "tests/support/paths.py": {
