@@ -8,9 +8,9 @@ import numpy as np
 from netCDF4 import Dataset
 
 from ocean_solver._compat import preserve_legacy_names
-from ocean_solver.configuration import GlobalGridConfig
-from ocean_solver.data.air import load_monthly_mean_air_temp
-from ocean_solver.geometry.grid import make_global_grid
+from ocean_solver.config.definitions import GlobalGridConfig
+from ocean_solver.forcing.air import load_monthly_mean_air_temp
+from ocean_solver.io.grid import make_global_grid
 
 
 def main():

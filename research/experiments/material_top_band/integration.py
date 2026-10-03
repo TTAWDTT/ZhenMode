@@ -23,7 +23,7 @@ from jax_solver_global import (
     make_fd_params,
 )
 from research.experiments.fd_static_bridge.bridge import integrate
-from source_identity import solver_source_modules
+from zhenmode_research.provenance import solver_source_modules
 
 STAGES = ('bottom_drag_first', 'linear_first', 'nonlinear_predictor',
           'predictor_linear_second', 'barotropic', 'transport_match', 'accepted_tracer_replay',

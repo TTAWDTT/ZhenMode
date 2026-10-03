@@ -1,0 +1,18 @@
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "zhenmode-research"
+version = "0.1.0"
+description = "Optional, unadopted ZhenMode research methods and historical API bridges"
+requires-python = ">=3.12"
+dependencies = ["ocean-solver==0.1.0"]
+
+[tool.setuptools]
+package-dir = { "" = "src/compat", "zhenmode_research" = "src/zhenmode_research" }
+py-modules = ["finite_volume", "bounded_transport", "cgrid_momentum", "wet_fluxes", "physical_velocity", "paired_dynamics", "nonlinear_dynamics", "barotropic_transport", "material_top"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["zhenmode_research*"]

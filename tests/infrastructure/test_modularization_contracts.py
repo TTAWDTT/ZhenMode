@@ -52,7 +52,7 @@ def test_pickle_and_jax_pytree_keep_legacy_type_and_field_order():
     assert shapes.T.dtype == np.dtype('float64')
 
 
-@pytest.mark.parametrize("module", ["ocean_solver/fd/horizontal.py", "ocean_solver/fd/integration.py", "ocean_solver/runtime/forcing.py"])
+@pytest.mark.parametrize("module", ["ocean_solver/fd/horizontal.py", "ocean_solver/fd/integration.py", "ocean_solver/runtime/forcing.py", "ocean_solver/numerics/horizontal.py", "ocean_solver/timestepping/integration.py", "ocean_solver/model/factory.py"])
 def test_new_execution_module_change_rejects_restart_and_missing_source_fails(tmp_path, module):
     from restart_contract import load_restart, make_restart_contract, save_restart
     from source_identity import solver_source_modules, source_paths

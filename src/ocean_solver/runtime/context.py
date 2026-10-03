@@ -5,10 +5,10 @@ from __future__ import annotations
 from collections.abc import Callable
 from dataclasses import dataclass
 
-from ocean_solver.fd.backend import jnp
-from ocean_solver.fd.types import FDPhysParams, JaxStateG
+from ocean_solver.numerics.backend import jnp
 from ocean_solver.runtime.forcing import ForcingBundle, load_forcing
 from ocean_solver.runtime.inputs import GridInputs, _lat_band_mask, load_grid_inputs
+from ocean_solver.state.types import FDPhysParams, JaxStateG
 
 
 @dataclass

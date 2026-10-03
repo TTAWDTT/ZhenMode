@@ -5,9 +5,10 @@ from __future__ import annotations
 import argparse
 from dataclasses import dataclass
 
+import numpy as np
+
 from ocean_solver.audit.validation import finite_number, integer_count
-from ocean_solver.data.forcing import BULK_LAMBDA_DEFAULT
-from ocean_solver.fd.backend import np
+from ocean_solver.forcing.fields import BULK_LAMBDA_DEFAULT
 
 DT_DEFAULT = 60.0
 
@@ -172,7 +173,7 @@ class RunConfiguration:
     parser: argparse.ArgumentParser
 
 
-def parse_run_configuration():
+def build_run_parser():
     ap = argparse.ArgumentParser()
     ap.add_argument("--days", type=float, default=365.0)
     ap.add_argument("--dt", type=float, default=DT_DEFAULT)
@@ -571,7 +572,12 @@ def parse_run_configuration():
         action="store_true",
         help="require all selected local input/cache files before loading; prohibit fallback/download",
     )
-    args = ap.parse_args()
+    return ap
+
+
+def parse_run_configuration(argv=None):
+    ap = build_run_parser()
+    args = ap.parse_args() if argv is None else ap.parse_args(argv)
     if args.strict_forcing and args.allow_forcing_fallback:
         ap.error("--strict-forcing forbids --allow-forcing-fallback")
     try:

@@ -1,5 +1,5 @@
 """Budget shapes and accumulation; independent of solver assembly and audit."""
-from ocean_solver.fd.backend import jnp
+from ocean_solver.numerics.backend import jnp
 
 METRIC_NAMES = ("fixed_node_water_ice_enthalpy_J", "water_salt_kg", "eta_volume_m3")
 

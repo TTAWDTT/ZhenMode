@@ -1,0 +1,60 @@
+schema_version: 1
+kind: case
+id: synthetic-production-smoke-80s
+name_zh: 合成全湿全球FD生产链80秒
+description: 8x8x4全湿网格，均匀温盐，无科氏力；仅验证真实生产组装、输出与运行记录，不代表真实海洋技巧。
+domain:
+  boundary: periodic_lon_closed_lat
+  lat_max:
+    value: 30
+    unit: deg
+  coriolis: none
+grid:
+  kind: synthetic
+  nx: 8
+  ny: 8
+  resolution:
+    value: 45
+    unit: deg
+  resolution_remap: area
+  z_levels:
+    value:
+    - 0
+    - -5
+    - -15
+    - -30
+    unit: m
+  depth:
+    value: 4000
+    unit: m
+duration:
+  value: 80
+  unit: s
+output_interval:
+  value: 20
+  unit: s
+initial:
+  kind: uniform
+  temperature:
+    value: 17
+    unit: degC
+  salinity:
+    value: 35
+    unit: psu
+forcing:
+  kind: synthetic_monthly
+  description: 第m月均匀纬向风应力m*0.001 N/m2，纬向封闭边界；热通量关闭。
+  options:
+    seasonal_wind: true
+    wind_year: 2023
+    no_bulk_flux: true
+    no_meridional_heat_flux: true
+  monthly_tau_increment:
+    value: 0.001
+    unit: N/m2
+data: []
+comparison:
+  scope: synthetic_production_smoke
+  limitations:
+  - 仅用于有界生产工程见证，不能与全球RMSE或MOM6 tc1排名。
+  - 合成网格与输入由安装包内服务生成，求解器仍为正式make_solver_global。

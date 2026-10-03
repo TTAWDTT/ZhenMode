@@ -12,35 +12,29 @@ dependencies = [
     "scipy>=1.12",
     "netCDF4>=1.6",
     "jax>=0.4",
+    "PyYAML>=6.0",
 ]
 
 [project.optional-dependencies]
 dev = [
     "pytest>=8.0",
     "ruff>=0.6",
+    "setuptools>=68.0",
 ]
 
 [project.scripts]
 ocean-solver = "ocean_solver.runtime.entry:main"
+zhenmode = "ocean_solver.cli:main"
 
 # Canonical implementations live in ocean_solver. Historical bare imports
 # are installed from src/compat as aliases to the same canonical module objects.
 # archive/regional is historical and is deliberately not installed or linted.
 [tool.setuptools]
-package-dir = { "" = "src/compat", "ocean_solver" = "src/ocean_solver" }
+package-dir = { "" = "src/compat", "ocean_solver" = "src/ocean_solver", "scripts" = "scripts" }
 py-modules = [
     "config",
     "grid",
-    "finite_volume",
-    "bounded_transport",
-    "cgrid_momentum",
-    "wet_fluxes",
-    "physical_velocity",
-    "paired_dynamics",
-    "nonlinear_dynamics",
-    "barotropic_transport",
     "jax_solver_global",
-    "material_top",
     "run_long_integration_global",
     "restart_contract",
     "runtime_validation",
@@ -75,6 +69,9 @@ py-modules = [
 where = ["src"]
 include = ["ocean_solver*"]
 
+[tool.setuptools.cmdclass]
+build_py = "scripts.build_distribution.CleanBuildPy"
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 
@@ -87,6 +84,7 @@ target-version = "py312"
 # gitignore-driven exclusion would behave differently in a fresh clone.
 respect-gitignore = false
 extend-exclude = [
+    "build",        # generated wheel build tree, never authoritative source
     "archive",       # retired regional spectral solver (not runnable)
     "results",       # archival figure / provenance scripts (machine-specific)
     "data/**", "logs/**", "checkpoints/**",   # local run I/O

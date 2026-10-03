@@ -1,0 +1,17 @@
+"""Legacy state and snapshot metrics outside numerical integration."""
+
+from __future__ import annotations
+
+from ocean_solver.audit.monitor import classify_state
+from ocean_solver.numerics.backend import np
+
+
+def state_is_finite(state):
+    return bool(classify_state(state).finite)
+
+
+def total_kinetic_energy(state, ocean_mask):
+    u = np.asarray(state.u)
+    v = np.asarray(state.v)
+    ke = 0.5 * np.sum((u**2 + v**2) * ocean_mask[:, :, None])
+    return float(ke)

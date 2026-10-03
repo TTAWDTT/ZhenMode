@@ -6,16 +6,16 @@ import os
 import sys
 from dataclasses import dataclass
 
-from ocean_solver.data.forcing import ocean_zonal_mean
-from ocean_solver.fd.backend import jax, jnp, np
-from ocean_solver.provenance.restart import file_sha256, fingerprint
-from ocean_solver.runtime.seasonal import (
+from ocean_solver.forcing.fields import ocean_zonal_mean
+from ocean_solver.forcing.seasonal import (
     interp_monthly_field,
     interp_monthly_field_jit,
     interp_seasonal_wind,
     interp_seasonal_wind_jit,
     marine_smooth_2d,
 )
+from ocean_solver.io.restart import file_sha256, fingerprint
+from ocean_solver.numerics.backend import jax, jnp, np
 
 
 @dataclass

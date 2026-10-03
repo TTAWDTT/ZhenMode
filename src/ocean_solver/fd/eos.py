@@ -1,14 +1,9 @@
-"""Mechanically preserved FD eos implementation."""
-from ocean_solver.configuration import ALPHA_T, BETA_S, RHO_0
+"""Compatibility alias; implementation owner: ocean_solver.physics.eos."""
+import importlib
+import runpy
+import sys
 
-
-def _density_anomaly(T, S, p):
-    """rho' = rho - rho_0 from the linear equation of state.
-
-    The retired regional solver carried a UNESCO 1980 nonlinear branch
-    behind an ``eos_type`` switch. It was never ported here -- the branch
-    was a no-op stub returning this same expression -- so the switch is
-    gone and the EOS is unambiguously linear. The convective-adjustment
-    and buoyancy diagnostics are calibrated against this form.
-    """
-    return RHO_0 * (-ALPHA_T * (T - p.T_ref) + BETA_S * (S - p.S_ref))
+if __name__ == "__main__":
+    runpy.run_module('ocean_solver.physics.eos', run_name="__main__")
+else:
+    sys.modules[__name__] = importlib.import_module('ocean_solver.physics.eos')

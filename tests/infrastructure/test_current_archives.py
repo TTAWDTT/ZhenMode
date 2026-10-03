@@ -20,7 +20,7 @@ def test_current_archive_resolves_legacy_keys_and_contains_complete_source_closu
     assert files['tests/support/rstar/weak_time.py'].is_file()
     required = source_paths(REPOSITORY_ROOT / 'src', production_source_modules())
     assert set(required.values()) <= set(files.values())
-    assert len({key for key in files if key.startswith('src/ocean_solver/')}) == 96
+    assert len({key for key in files if key.startswith('src/ocean_solver/')}) == len(list((REPOSITORY_ROOT / 'src/ocean_solver').rglob('*.py')))
     # Every key hashes actual current bytes; aliases and implementations differ.
     hashes = {key: hashlib.sha256(path.read_bytes()).hexdigest() for key, path in files.items()}
     assert hashes['src/config.py'] == hashes['src/compat/config.py']
@@ -29,8 +29,10 @@ def test_current_archive_resolves_legacy_keys_and_contains_complete_source_closu
 
 def test_current_archive_rejects_missing_implementation_instead_of_hash_fallback(tmp_path):
     shutil.copytree(REPOSITORY_ROOT / 'src', tmp_path / 'src')
+    shutil.copytree(REPOSITORY_ROOT / 'research/src', tmp_path / 'research/src')
     (tmp_path / 'docs').mkdir()
     shutil.copyfile(REPOSITORY_ROOT / 'docs/source_test_layout.json', tmp_path / 'docs/source_test_layout.json')
+    shutil.copyfile(REPOSITORY_ROOT / 'docs/research_engineering_layout.json', tmp_path / 'docs/research_engineering_layout.json')
     (tmp_path / 'src/ocean_solver/data/quality.py').unlink()
     with pytest.raises(ValueError, match='missing required source: ocean_solver/data/quality'):
         current_source_files(tmp_path, ['src/config.py'])
@@ -49,8 +51,8 @@ def test_current_producer_hashes_real_complete_source_closure_without_model_run(
     hashes = owner.source_hashes()
     files = current_source_files(REPOSITORY_ROOT, [Path(owner.__file__).resolve()])
     assert hashes == {name: hashlib.sha256(path.read_bytes()).hexdigest() for name, path in files.items()}
-    assert len([name for name in hashes if name.startswith("src/ocean_solver/")]) == 96
-    assert len([name for name in hashes if name.startswith("src/compat/")]) == 40
+    assert len([name for name in hashes if name.startswith("src/ocean_solver/")]) == len(list((REPOSITORY_ROOT / 'src/ocean_solver').rglob('*.py')))
+    assert len([name for name in hashes if name.startswith("src/compat/")]) == len(list((REPOSITORY_ROOT / 'src/compat').glob('*.py')))
     assert "tests/support/driver.py" in hashes
     assert "tests/support/grid.py" in hashes
 
@@ -116,8 +118,8 @@ def test_rotation_probe_keeps_current_ledger_and_executed_operator_separate():
     operator_bytes = Path(probe.cgrid_momentum.__file__).read_bytes()
     ledger, executed = probe.source_provenance(operator_bytes)
     assert ledger["src/cgrid_momentum.py"] == hashlib.sha256(
-        (REPOSITORY_ROOT / "src/compat/cgrid_momentum.py").read_bytes()).hexdigest()
-    assert executed == {"kind": "current_file", "path": "src/ocean_solver/candidates/fv/momentum.py",
+        (REPOSITORY_ROOT / "research/src/compat/cgrid_momentum.py").read_bytes()).hexdigest()
+    assert executed == {"kind": "current_file", "path": "research/src/zhenmode_research/candidates/fv/momentum.py",
                         "sha256": hashlib.sha256(operator_bytes).hexdigest()}
     retained_blob = b"independent frozen-operator bytes"
     frozen_ledger, frozen = probe.source_provenance(retained_blob, "1" * 40)
@@ -173,9 +175,11 @@ def test_current_manifest_rejects_actual_checkout_launcher_byte_changes(tmp_path
     from ocean_solver.provenance.archives import verify_current_source_hashes
 
     shutil.copytree(REPOSITORY_ROOT / "src", tmp_path / "src", ignore=shutil.ignore_patterns("__pycache__"))
+    shutil.copytree(REPOSITORY_ROOT / "research/src", tmp_path / "research/src", ignore=shutil.ignore_patterns("__pycache__"))
     shutil.copytree(REPOSITORY_ROOT / "tests", tmp_path / "tests", ignore=shutil.ignore_patterns("__pycache__"))
     (tmp_path / "docs").mkdir()
     shutil.copyfile(REPOSITORY_ROOT / "docs/source_test_layout.json", tmp_path / "docs/source_test_layout.json")
+    shutil.copyfile(REPOSITORY_ROOT / "docs/research_engineering_layout.json", tmp_path / "docs/research_engineering_layout.json")
     files = current_source_files(tmp_path, [])
     hashes = {name: hashlib.sha256(path.read_bytes()).hexdigest() for name, path in files.items()}
     verify_current_source_hashes(tmp_path, hashes)

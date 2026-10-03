@@ -1,17 +1,9 @@
-"""Legacy state and snapshot metrics outside numerical integration."""
+"""Compatibility alias; implementation owner: ocean_solver.diagnostics.runtime."""
+import importlib
+import runpy
+import sys
 
-from __future__ import annotations
-
-from ocean_solver.audit.monitor import classify_state
-from ocean_solver.fd.backend import np
-
-
-def state_is_finite(state):
-    return bool(classify_state(state).finite)
-
-
-def total_kinetic_energy(state, ocean_mask):
-    u = np.asarray(state.u)
-    v = np.asarray(state.v)
-    ke = 0.5 * np.sum((u**2 + v**2) * ocean_mask[:, :, None])
-    return float(ke)
+if __name__ == "__main__":
+    runpy.run_module('ocean_solver.diagnostics.runtime', run_name="__main__")
+else:
+    sys.modules[__name__] = importlib.import_module('ocean_solver.diagnostics.runtime')

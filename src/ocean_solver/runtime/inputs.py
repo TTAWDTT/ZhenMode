@@ -5,10 +5,10 @@ from __future__ import annotations
 from dataclasses import dataclass, replace
 from pathlib import Path
 
-from ocean_solver.configuration import DEFAULT_CONFIG, GlobalGridConfig, PhysicsConfig
-from ocean_solver.fd.backend import np
-from ocean_solver.geometry.grid import global_grid_dims, land_distance_from_land_mask
+from ocean_solver.config.definitions import DEFAULT_CONFIG, GlobalGridConfig, PhysicsConfig
+from ocean_solver.geometry.mesh import global_grid_dims, land_distance_from_land_mask
 from ocean_solver.geometry.types import GlobalOceanGrid
+from ocean_solver.numerics.backend import np
 from ocean_solver.runtime.cli import (
     DT_BT_DEFAULT,
     NU_BI_DEFAULT,
@@ -21,10 +21,10 @@ from ocean_solver.validation.benchmarks.metrics import mixed_layer_depth
 
 def _input_files(args, *, seasonal=None, air=None, default_config=DEFAULT_CONFIG):
     """Selected loader paths, including WOA's documented npz precedence."""
-    from ocean_solver.data import air as air_reanalysis
-    from ocean_solver.data import climatology as woa_data
-    from ocean_solver.data import wind as wind_reanalysis
-    from ocean_solver.geometry import grid as grid_module
+    from ocean_solver.forcing import air as air_reanalysis
+    from ocean_solver.forcing import wind as wind_reanalysis
+    from ocean_solver.io import climatology as woa_data
+    from ocean_solver.io import grid as grid_module
 
     bathy = Path(default_config.bathymetry_file)
     if (not bathy.is_file() or grid_module.Dataset is None) and Path(str(bathy) + ".npz").is_file():
@@ -93,7 +93,8 @@ def load_grid_inputs(args, ap, services):
                 ap.error(
                     f"--resolution must be a multiple of the 0.1° ETOPO source grid when --resolution-remap=legacy (got {res}; use --resolution-remap=area)"
                 )
-        nx, ny = global_grid_dims(res, args.lat_max, remap=args.resolution_remap)
+        resolve_dimensions = services.resolve_grid_dimensions or global_grid_dims
+        nx, ny = resolve_dimensions(res, args.lat_max, remap=args.resolution_remap)
         if nx < 4 or ny < 4:
             ap.error(
                 f"--resolution {res} at lat_max={args.lat_max} gives a {nx}x{ny} grid; too coarse"

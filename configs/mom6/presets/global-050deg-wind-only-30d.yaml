@@ -1,0 +1,38 @@
+schema_version: 1
+kind: baseline_preset
+id: mom6-global-050deg-wind-only-30d
+name_zh: MOM6 全球0.5度仅风30天原生输入接入
+method: MOM6
+case_id: global-050deg-wind-only-30d
+case: cases/global-050deg-wind-only-30d.yaml
+protocol: sst-area-v2-wind-only-0-30
+native_options:
+  NIGLOBAL: 720
+  NJGLOBAL: 260
+  NK: 14
+  GRID_CONFIG: spherical
+  SOUTHLAT: -65
+  LENLAT: 130
+  LENLON: 360
+  EQUATOR_REFERENCE: false
+  INPUTDIR: INPUT
+  TOPO_CONFIG: file
+  TOPO_FILE: topog_050.nc
+  WIND_CONFIG: file
+  BUOY_CONFIG: NONE
+  DAYMAX: 30
+required_inputs:
+  - {role: bathymetry, path: INPUT/topog_050.nc, variable: depth}
+  - {role: temperature, path: INPUT/woa_ts_050.nc, variable: ptemp}
+  - {role: salinity, path: INPUT/woa_ts_050.nc, variable: salt}
+  - {role: wind_x, path: INPUT/ncep_wind_050.nc, variable: STRESS_X}
+  - {role: wind_y, path: INPUT/ncep_wind_050.nc, variable: STRESS_Y}
+discretization:
+  horizontal: native C-grid spherical
+  vertical: 14-layer Z-star ALE, explicit native input and resolved parameters retained
+  timestep: Read and retain explicit DT/DTBT/DT_THERM from supplied native inputs; no historical step is guessed
+limitations:
+  - 该预设描述可核查接入，不声称缺失的他机原生输入已恢复；文件名为声明的接入约定，原生文件不同需另存预设；不推荐或猜测历史dt。
+  - 实际depth/wet/T/S逐值与共同reference检查；风应力文件及所有原生输入保存hash，但尚未独立核风变换/完整物理等价。
+  - 与生产FD垂向位置不同；评价没有隐含重网格，物理核验未完成时不可公平排名。
+  - 当前未在本任务启动30天全球MOM6；默认单CPU180秒运行守卫可能报告未完成。

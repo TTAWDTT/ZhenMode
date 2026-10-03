@@ -1,0 +1,152 @@
+schema_version: 1
+kind: case
+id: global-045deg-seasonal-365d
+name_zh: 全球0.45度年度空气强迫365天
+description: 复用已有全球FD物理问题与输入版本；预设保留原脚本参数。不是已在当前源码重新运行的成绩。
+domain:
+  boundary: periodic_lon_closed_lat
+  lat_max:
+    value: 65
+    unit: deg
+  coriolis: rotating_earth
+grid:
+  kind: etopo
+  resolution:
+    value: 0.45
+    unit: deg
+  resolution_remap: area
+  z_levels:
+    value:
+    - 0
+    - -5
+    - -15
+    - -30
+    - -50
+    - -75
+    - -100
+    - -150
+    - -200
+    - -300
+    - -500
+    - -1000
+    - -2000
+    - -4000
+    unit: m
+duration:
+  value: 31536000
+  unit: s
+output_interval:
+  value: 864000
+  unit: s
+initial:
+  kind: woa2023
+forcing:
+  kind: seasonal_ncep2023
+  description: 重复360日季节风周期、30日月长；相应热通量/恢复按下方声明。
+  options:
+    seasonal_wind: true
+    wind_year: 2023
+    real_air_temp: true
+data:
+- role: bathymetry
+  path: data/ETOPO_2022_v1_r3600x1800_surface.nc.npz
+  version: ETOPO2022 v1 0.1-degree; local extracted twin
+  sha256: null
+  status: pending
+  source: NOAA ETOPO2022; see docs/input_sources_zh.md
+- role: temperature
+  path: data/woa/woa23_decav_t00_01.nc.npz
+  version: WOA2023 decav annual temperature 1-degree
+  sha256: null
+  status: pending
+  source: NOAA World Ocean Atlas 2023; original or byte-equivalent extracted twin
+- role: salinity
+  path: data/woa/woa23_decav_s00_01.nc.npz
+  version: WOA2023 decav annual salinity 1-degree
+  sha256: null
+  status: pending
+  source: NOAA World Ocean Atlas 2023; original or byte-equivalent extracted twin
+- role: wind-01
+  path: data/wind/monthly_mean_900.npz
+  version: NCEP/NCAR R1 10-m wind monthly mean 2023-01
+  sha256: null
+  status: pending
+  source: NOAA PSL public THREDDS; ocean_solver.forcing.wind monthly cache
+- role: wind-02
+  path: data/wind/monthly_mean_901.npz
+  version: NCEP/NCAR R1 10-m wind monthly mean 2023-02
+  sha256: null
+  status: pending
+  source: NOAA PSL public THREDDS; ocean_solver.forcing.wind monthly cache
+- role: wind-03
+  path: data/wind/monthly_mean_902.npz
+  version: NCEP/NCAR R1 10-m wind monthly mean 2023-03
+  sha256: null
+  status: pending
+  source: NOAA PSL public THREDDS; ocean_solver.forcing.wind monthly cache
+- role: wind-04
+  path: data/wind/monthly_mean_903.npz
+  version: NCEP/NCAR R1 10-m wind monthly mean 2023-04
+  sha256: null
+  status: pending
+  source: NOAA PSL public THREDDS; ocean_solver.forcing.wind monthly cache
+- role: wind-05
+  path: data/wind/monthly_mean_904.npz
+  version: NCEP/NCAR R1 10-m wind monthly mean 2023-05
+  sha256: null
+  status: pending
+  source: NOAA PSL public THREDDS; ocean_solver.forcing.wind monthly cache
+- role: wind-06
+  path: data/wind/monthly_mean_905.npz
+  version: NCEP/NCAR R1 10-m wind monthly mean 2023-06
+  sha256: null
+  status: pending
+  source: NOAA PSL public THREDDS; ocean_solver.forcing.wind monthly cache
+- role: wind-07
+  path: data/wind/monthly_mean_906.npz
+  version: NCEP/NCAR R1 10-m wind monthly mean 2023-07
+  sha256: null
+  status: pending
+  source: NOAA PSL public THREDDS; ocean_solver.forcing.wind monthly cache
+- role: wind-08
+  path: data/wind/monthly_mean_907.npz
+  version: NCEP/NCAR R1 10-m wind monthly mean 2023-08
+  sha256: null
+  status: pending
+  source: NOAA PSL public THREDDS; ocean_solver.forcing.wind monthly cache
+- role: wind-09
+  path: data/wind/monthly_mean_908.npz
+  version: NCEP/NCAR R1 10-m wind monthly mean 2023-09
+  sha256: null
+  status: pending
+  source: NOAA PSL public THREDDS; ocean_solver.forcing.wind monthly cache
+- role: wind-10
+  path: data/wind/monthly_mean_909.npz
+  version: NCEP/NCAR R1 10-m wind monthly mean 2023-10
+  sha256: null
+  status: pending
+  source: NOAA PSL public THREDDS; ocean_solver.forcing.wind monthly cache
+- role: wind-11
+  path: data/wind/monthly_mean_910.npz
+  version: NCEP/NCAR R1 10-m wind monthly mean 2023-11
+  sha256: null
+  status: pending
+  source: NOAA PSL public THREDDS; ocean_solver.forcing.wind monthly cache
+- role: wind-12
+  path: data/wind/monthly_mean_911.npz
+  version: NCEP/NCAR R1 10-m wind monthly mean 2023-12
+  sha256: null
+  status: pending
+  source: NOAA PSL public THREDDS; ocean_solver.forcing.wind monthly cache
+- role: air
+  path: data/air/air_2m_annual_2023.npz
+  version: NCEP/NCAR R1 2-m air temperature annual mean 2023
+  sha256: null
+  status: pending
+  source: NOAA PSL; ocean_solver.forcing.air annual cache
+comparison:
+  scope: global_shared_grid
+  limitations:
+  - 当前adapter要求相同经纬度网格，无隐含重网格。
+  - 预设来源为历史生产脚本；缺少原始缓存预期SHA256，运行时测量并保留，历史成绩不重新授予。
+  - 分离线性自由面FD与MOM6的垂向/离散方案及实际输入差异，不能直接授予工业级资格。

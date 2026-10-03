@@ -1,0 +1,41 @@
+schema_version: 1
+kind: preset
+id: global-045deg-seasonal
+name_zh: 既有0.45度季节风与年度空气冰点下限配置
+method: zhenmode
+purpose: 保留既有生产谱系中365天低RMSE运行的脚本参数，等待当前源码及固定数据重新验证；不是新的推荐。
+source: scripts/run_candidate_baseline_045_icefloor.sh @ 25258950905f9d1aa84509c4c99ebad9ef33ba2b;
+  historical result bb7ba235eed5706b0adf86472e95b46bc4c021b1/research/experiments/ice_proxy_045/benchmark_365d_repeat_manifest.json;
+  report identity is not complete historical executable source identity
+discretization: global collocated finite difference; linear free surface; mode split;
+  localized convection; limited tracer transport; column projection
+options:
+  mode_split: true
+  use_scan: true
+  dtype: float32
+  lambda_bulk:
+    value: 80
+    unit: W/m2/K
+  kappa_v:
+    value: 1.0e-06
+    unit: m2/s
+  kappa_conv:
+    value: 0.01
+    unit: m2/s
+  kappa_gm:
+    value: 0
+    unit: m2/s
+  localize_conv: true
+  fct_adv: true
+  project_adv_vel: true
+  min_depth:
+    value: 500
+    unit: m
+  smooth_passes: 80
+  nu_h:
+    value: 2000000.0
+    unit: m2/s
+  dt:
+    value: 1800
+    unit: s
+  ice_air_floor: true

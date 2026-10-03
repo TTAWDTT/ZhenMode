@@ -1,0 +1,43 @@
+schema_version: 1
+kind: baseline_preset
+id: mom6-global-050deg-restoring-30d
+name_zh: MOM6 全球0.5度规定恢复30天原生输入接入
+method: MOM6
+case_id: global-050deg-restoring-30d
+case: cases/global-050deg-restoring-30d.yaml
+protocol: sst-area-v2-restoring-0-30
+native_options:
+  NIGLOBAL: 720
+  NJGLOBAL: 260
+  NK: 14
+  GRID_CONFIG: spherical
+  SOUTHLAT: -65
+  LENLAT: 130
+  LENLON: 360
+  EQUATOR_REFERENCE: false
+  INPUTDIR: INPUT
+  TOPO_CONFIG: file
+  TOPO_FILE: topog_050.nc
+  WIND_CONFIG: file
+  BUOY_CONFIG: file
+  RESTOREBUOY: true
+  FLUXCONST: 0.16666667
+  FRAZIL: false
+  DAYMAX: 30
+required_inputs:
+  - {role: bathymetry, path: INPUT/topog_050.nc, variable: depth}
+  - {role: temperature, path: INPUT/woa_ts_050.nc, variable: ptemp}
+  - {role: salinity, path: INPUT/woa_ts_050.nc, variable: salt}
+  - {role: wind_x, path: INPUT/ncep_wind_050.nc, variable: STRESS_X}
+  - {role: wind_y, path: INPUT/ncep_wind_050.nc, variable: STRESS_Y}
+  - {role: sst_restore, path: INPUT/woa_surface_restore_050.nc, variable: SST}
+  - {role: sss_restore, path: INPUT/woa_surface_restore_050.nc, variable: SSS}
+discretization:
+  horizontal: native C-grid spherical
+  vertical: 14-layer Z-star ALE, explicit native input and resolved parameters retained
+  timestep: Read and retain explicit DT/DTBT/DT_THERM from supplied native inputs; no historical step is guessed
+limitations:
+  - 规定恢复FLUXCONST来源于历史30d记录，仍需核实际层热容量/恢复目标与FD相同；不能仅凭同数值授予物理等价。
+  - 这是已知参数的严格接入预设，不是缺失他机MOM_input的重建或推荐配置。
+  - 未独立核验wind转换/完整物理/垂向等价，结果默认limited不可排名。
+  - 本任务没有重新运行30天全球MOM6；大文件不复制进Git。

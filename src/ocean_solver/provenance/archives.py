@@ -17,12 +17,18 @@ def current_source_files(repository, selected):
     root = Path(repository)
     declaration = root / "docs/source_test_layout.json"
     layout = json.loads(declaration.read_text(encoding="utf-8"))
+    engineering_declaration = root / 'docs/research_engineering_layout.json'
+    engineering = (json.loads(engineering_declaration.read_text(encoding='utf-8'))
+                   if engineering_declaration.is_file() else {})
+    moves = engineering.get('source_moves', {})
     entrypoints = {"checkout/src/" + name + ".py": root / "src" / (name + ".py")
                    for name in ("jax_solver_global", "run_long_integration_global")}
     result = {}
     for item in selected:
         name = Path(item).relative_to(root).as_posix() if isinstance(item, Path) else str(item)
-        if name.startswith("src/") and name.count("/") == 1:
+        if name in moves:
+            path = root / moves[name]
+        elif name.startswith("src/") and name.count("/") == 1:
             module = Path(name).stem
             path = source_paths(root / "src", (module,))[module]
         elif name in entrypoints:
@@ -46,10 +52,16 @@ def current_source_files(repository, selected):
     for name, path in source_paths(root / "src", required).items():
         result["src/" + name + ".py"] = path
         result[path.relative_to(root).as_posix()] = path
+    research_root = root / 'research/src'
+    if research_root.is_dir():
+        for path in sorted(research_root.rglob('*.py')):
+            result[path.relative_to(root).as_posix()] = path
     for path in sorted((root / "tests").rglob("*.py")):
         if "support" in path.parts or path.name == "__init__.py":
             result[path.relative_to(root).as_posix()] = path
     result["docs/source_test_layout.json"] = declaration
+    if engineering_declaration.is_file():
+        result['docs/research_engineering_layout.json'] = engineering_declaration
     return result
 
 

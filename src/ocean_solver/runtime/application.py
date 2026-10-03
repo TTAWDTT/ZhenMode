@@ -2,11 +2,11 @@
 
 from __future__ import annotations
 
+from ocean_solver.io.paths import prepare_output_paths
+from ocean_solver.io.recovery import prepare_recovery
 from ocean_solver.runtime.cli import parse_run_configuration
 from ocean_solver.runtime.context import build_run_context
 from ocean_solver.runtime.integration import run_integration
-from ocean_solver.runtime.paths import prepare_output_paths
-from ocean_solver.runtime.recovery import prepare_recovery
 
 
 def run_main(services, source_directory):

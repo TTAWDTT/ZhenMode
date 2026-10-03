@@ -1,0 +1,1304 @@
+{
+  "schema_version": 1,
+  "baseline_commit": "25258950905f9d1aa84509c4c99ebad9ef33ba2b",
+  "method": "zhenmode",
+  "aliases": {
+    "ocean_solver.configuration": "ocean_solver.config.definitions",
+    "ocean_solver.fd.backend": "ocean_solver.numerics.backend",
+    "ocean_solver.fd.barotropic": "ocean_solver.dynamics.barotropic",
+    "ocean_solver.fd.closures": "ocean_solver.physics.isopycnal",
+    "ocean_solver.fd.eos": "ocean_solver.physics.eos",
+    "ocean_solver.fd.factory": "ocean_solver.model.factory",
+    "ocean_solver.fd.geometry": "ocean_solver.geometry.fd",
+    "ocean_solver.fd.horizontal": "ocean_solver.numerics.horizontal",
+    "ocean_solver.fd.integration": "ocean_solver.timestepping.integration",
+    "ocean_solver.fd.pressure": "ocean_solver.dynamics.pressure",
+    "ocean_solver.fd.processes": "ocean_solver.dynamics.processes",
+    "ocean_solver.fd.projection": "ocean_solver.dynamics.projection",
+    "ocean_solver.fd.sources": "ocean_solver.physics.surface",
+    "ocean_solver.fd.stability": "ocean_solver.numerics.stability",
+    "ocean_solver.fd.subcycles": "ocean_solver.timestepping.subcycles",
+    "ocean_solver.fd.transport": "ocean_solver.dynamics.transport",
+    "ocean_solver.fd.types": "ocean_solver.state.types",
+    "ocean_solver.fd.vertical": "ocean_solver.physics.vertical",
+    "ocean_solver.geometry.grid": "ocean_solver.io.grid",
+    "ocean_solver.data.air": "ocean_solver.forcing.air",
+    "ocean_solver.data.wind": "ocean_solver.forcing.wind",
+    "ocean_solver.data.forcing": "ocean_solver.forcing.fields",
+    "ocean_solver.data.climatology": "ocean_solver.io.climatology",
+    "ocean_solver.data.erddap": "ocean_solver.io.erddap",
+    "ocean_solver.data.quality": "ocean_solver.io.data_quality",
+    "ocean_solver.data.sources": "ocean_solver.io.input_sources",
+    "ocean_solver.data.sla": "ocean_solver.io.sla",
+    "ocean_solver.data.ssh": "ocean_solver.io.ssh",
+    "ocean_solver.runtime.seasonal": "ocean_solver.forcing.seasonal",
+    "ocean_solver.runtime.records": "ocean_solver.io.records",
+    "ocean_solver.runtime.output": "ocean_solver.io.output",
+    "ocean_solver.runtime.paths": "ocean_solver.io.paths",
+    "ocean_solver.runtime.recovery": "ocean_solver.io.recovery",
+    "ocean_solver.runtime.metrics": "ocean_solver.diagnostics.runtime",
+    "ocean_solver.provenance.restart": "ocean_solver.io.restart"
+  },
+  "source_moves": {
+    "src/ocean_solver/configuration.py": "src/ocean_solver/config/definitions.py",
+    "src/ocean_solver/fd/backend.py": "src/ocean_solver/numerics/backend.py",
+    "src/ocean_solver/fd/barotropic.py": "src/ocean_solver/dynamics/barotropic.py",
+    "src/ocean_solver/fd/closures.py": "src/ocean_solver/physics/isopycnal.py",
+    "src/ocean_solver/fd/eos.py": "src/ocean_solver/physics/eos.py",
+    "src/ocean_solver/fd/factory.py": "src/ocean_solver/model/factory.py",
+    "src/ocean_solver/fd/geometry.py": "src/ocean_solver/geometry/fd.py",
+    "src/ocean_solver/fd/horizontal.py": "src/ocean_solver/numerics/horizontal.py",
+    "src/ocean_solver/fd/integration.py": "src/ocean_solver/timestepping/integration.py",
+    "src/ocean_solver/fd/pressure.py": "src/ocean_solver/dynamics/pressure.py",
+    "src/ocean_solver/fd/processes.py": "src/ocean_solver/dynamics/processes.py",
+    "src/ocean_solver/fd/projection.py": "src/ocean_solver/dynamics/projection.py",
+    "src/ocean_solver/fd/sources.py": "src/ocean_solver/physics/surface.py",
+    "src/ocean_solver/fd/stability.py": "src/ocean_solver/numerics/stability.py",
+    "src/ocean_solver/fd/subcycles.py": "src/ocean_solver/timestepping/subcycles.py",
+    "src/ocean_solver/fd/transport.py": "src/ocean_solver/dynamics/transport.py",
+    "src/ocean_solver/fd/types.py": "src/ocean_solver/state/types.py",
+    "src/ocean_solver/fd/vertical.py": "src/ocean_solver/physics/vertical.py",
+    "src/ocean_solver/geometry/grid.py": "src/ocean_solver/io/grid.py",
+    "src/ocean_solver/data/air.py": "src/ocean_solver/forcing/air.py",
+    "src/ocean_solver/data/wind.py": "src/ocean_solver/forcing/wind.py",
+    "src/ocean_solver/data/forcing.py": "src/ocean_solver/forcing/fields.py",
+    "src/ocean_solver/data/climatology.py": "src/ocean_solver/io/climatology.py",
+    "src/ocean_solver/data/erddap.py": "src/ocean_solver/io/erddap.py",
+    "src/ocean_solver/data/quality.py": "src/ocean_solver/io/data_quality.py",
+    "src/ocean_solver/data/sources.py": "src/ocean_solver/io/input_sources.py",
+    "src/ocean_solver/data/sla.py": "src/ocean_solver/io/sla.py",
+    "src/ocean_solver/data/ssh.py": "src/ocean_solver/io/ssh.py",
+    "src/ocean_solver/runtime/seasonal.py": "src/ocean_solver/forcing/seasonal.py",
+    "src/ocean_solver/runtime/records.py": "src/ocean_solver/io/records.py",
+    "src/ocean_solver/runtime/output.py": "src/ocean_solver/io/output.py",
+    "src/ocean_solver/runtime/paths.py": "src/ocean_solver/io/paths.py",
+    "src/ocean_solver/runtime/recovery.py": "src/ocean_solver/io/recovery.py",
+    "src/ocean_solver/runtime/metrics.py": "src/ocean_solver/diagnostics/runtime.py",
+    "src/ocean_solver/provenance/restart.py": "src/ocean_solver/io/restart.py"
+  },
+  "original_source_sha256": {
+    "src/ocean_solver/configuration.py": "fdf09ee3eb84fb658f7baef5a6e274bbb5788aea1163f8007d3180b171284ff7",
+    "src/ocean_solver/fd/backend.py": "6248c13eb4d61561677b66b828268957bf8cd8fa0aa1fdb2abfb84839bc4e4fb",
+    "src/ocean_solver/fd/barotropic.py": "bd0deea6e27ca1c8e875744a46151698466ecd4703575bb49d87221ba2e37cd6",
+    "src/ocean_solver/fd/closures.py": "22322c1be9b1b91cf30c1d1723bce841c78922dc726548fe097225164a53a151",
+    "src/ocean_solver/fd/eos.py": "0f677d562275c55280814f72f56c14b2a97cd6e9b09ed2dfcb8d8c22e30ab086",
+    "src/ocean_solver/fd/factory.py": "0aa0de72bb66c4ab5fac59b6a26979b67fa11f5667bc2ade1263198da9fef65f",
+    "src/ocean_solver/fd/geometry.py": "13c390db76f5a3fa2b20c551d99d20cc3f2d24497c576bab0822606c622ddbd7",
+    "src/ocean_solver/fd/horizontal.py": "de7722aa2081cd36ea2ab7557728585497c99627ab6ab0f3fc3c83b17666e116",
+    "src/ocean_solver/fd/integration.py": "982fd55b903185f92bb45e906268161d4b5a21f78cde52865784ea9fa6321120",
+    "src/ocean_solver/fd/pressure.py": "dc21d64847b987725bbc71b2e8d29077f6673b39837585fbe66bc3fa69b14e25",
+    "src/ocean_solver/fd/processes.py": "957a8c953bd33a5bc7cd47cff200eb199d0822600cda1f37b283e27514791313",
+    "src/ocean_solver/fd/projection.py": "d39a40cf09506b2dc0f7adca5c634aadeab1fdc314089fbdfd443cc051a945ff",
+    "src/ocean_solver/fd/sources.py": "2c7b328af4939e3f7831ef533b75d18b454209f0bad05df62a819f0bb4cd4997",
+    "src/ocean_solver/fd/stability.py": "04fe0ff1d97e77dc333fa3df218dba419c2831234d7f5e70d4dc9a846771de0a",
+    "src/ocean_solver/fd/subcycles.py": "064462f391e4df3c0dbc9a98236a9afc2ff5c486025eb1f726f6753633f8cca9",
+    "src/ocean_solver/fd/transport.py": "bb36d5e7df01b5a72837b31da703f17f87cb4c732ffc2e68908120d521eea2a6",
+    "src/ocean_solver/fd/types.py": "6bf64ac80fbbb80b921a52b8676bbe2b26bd1a592e22c28a9538f6621482d681",
+    "src/ocean_solver/fd/vertical.py": "5018ebdb005caee7338b699b112645d2a30447bd553ca4fd96d91bb4b84b7b10",
+    "src/ocean_solver/geometry/grid.py": "4c8c820971cc1c4e8e8b02037b2df08511da34c46d17ab72e682998fc6c7e9c1",
+    "src/ocean_solver/data/air.py": "aa3c2a1df6793a19d34b7f73b75c3ba8caf9e5933f828c5c56754e1758b14ac4",
+    "src/ocean_solver/data/wind.py": "df2455609db566ddc158cc4ff46277af3ff36001385f23076e1986acc870ea57",
+    "src/ocean_solver/data/forcing.py": "cea97d1d6976d1bdb7d9727f6aa86cca9abeaab15561dfa9cf289b2d9d120fed",
+    "src/ocean_solver/data/climatology.py": "a5c964bea2dd62b246f614d19e77efab5bbbd6d314adebe83839a86d551d5787",
+    "src/ocean_solver/data/erddap.py": "632b797b368f8373847b7712c0100441b23ac1c15967d6ef47fd0cb89baf970c",
+    "src/ocean_solver/data/quality.py": "216dacfe88cde849078c4a190819ce9d68d4e501fa2edea28a471a2bc6835bf8",
+    "src/ocean_solver/data/sources.py": "458bfd6624bc9e930b8580432487404cfcee2380e19714716ec50272ba3d2530",
+    "src/ocean_solver/data/sla.py": "ab1c91b104caa6723af259bf6104c9a25e73ddf002e0fbda9da4010dd2eb190a",
+    "src/ocean_solver/data/ssh.py": "db15ff98d3014d4f7d7aae1d2588c44951ee7c243917b03348b5cc5a9fe9ca8d",
+    "src/ocean_solver/runtime/seasonal.py": "b9d11758ad3ac4a33938ac48e3061c27c3e682b8ff3b132718baa457c870c31c",
+    "src/ocean_solver/runtime/records.py": "a03bfb5e9dd920ad6aed9665aaf4d596eb05b447c6dafa58de0a8628066dfc85",
+    "src/ocean_solver/runtime/output.py": "924fb1fc0e4f955f84e6d3a90d22ab2e0d711ad350540c2eb6a0d38cc768acab",
+    "src/ocean_solver/runtime/paths.py": "dd6988ef02863aa5015f7aa1503145567a5626e1d18bdfb969ebe31f73e6c255",
+    "src/ocean_solver/runtime/recovery.py": "90504c3eacb427f16ce95f15caaf332385877c59ee1f1fed0080a304edb8bd92",
+    "src/ocean_solver/runtime/metrics.py": "bbbba9e644d0483cc3d690892374a0810bb8916c9eaa54fade1a46e8fb6498a0",
+    "src/ocean_solver/provenance/restart.py": "d3d405a5356e7fe614e95fac348bdbde4d58b6f840e138caa94fd1b568f43c46"
+  },
+  "definition_moves": [
+    {
+      "source": "src/ocean_solver/configuration.py",
+      "destination": "src/ocean_solver/config/definitions.py",
+      "definition": "GlobalGridConfig",
+      "ast_equal": true,
+      "baseline_ast_sha256": "f0ce83a97e9cd8661051f28fb3674b385be72abb7a0b050c263205244df331b0"
+    },
+    {
+      "source": "src/ocean_solver/configuration.py",
+      "destination": "src/ocean_solver/config/definitions.py",
+      "definition": "PhysicsConfig",
+      "ast_equal": true,
+      "baseline_ast_sha256": "ed9fe412ca274e367085f47d198cf0420028a040df4ce82bfdc198fa1cbebf5d"
+    },
+    {
+      "source": "src/ocean_solver/configuration.py",
+      "destination": "src/ocean_solver/config/definitions.py",
+      "definition": "_default_bathymetry_file",
+      "ast_equal": true,
+      "baseline_ast_sha256": "321b19229a6c094ba2a528b1fe14badc04309776109e5b9d4df0a3ccba6f5a8d"
+    },
+    {
+      "source": "src/ocean_solver/configuration.py",
+      "destination": "src/ocean_solver/config/definitions.py",
+      "definition": "Config",
+      "ast_equal": true,
+      "baseline_ast_sha256": "7c7a8f1e34985f767a2221d20230bb1a890970db3fd3361e93164a8f1b004563"
+    },
+    {
+      "source": "src/ocean_solver/fd/barotropic.py",
+      "destination": "src/ocean_solver/dynamics/barotropic.py",
+      "definition": "_refill_volume",
+      "ast_equal": true,
+      "baseline_ast_sha256": "b540636a10365d96dc35cd43159c01fad95737c07353ee747829644a503d0c55"
+    },
+    {
+      "source": "src/ocean_solver/fd/barotropic.py",
+      "destination": "src/ocean_solver/dynamics/barotropic.py",
+      "definition": "_filter_barotropic_eta",
+      "ast_equal": true,
+      "baseline_ast_sha256": "27316c8c9d336722c0d5492264e073c778f736e2aeb7f8cf275eb472e3315ab3"
+    },
+    {
+      "source": "src/ocean_solver/fd/barotropic.py",
+      "destination": "src/ocean_solver/dynamics/barotropic.py",
+      "definition": "_symmetric_free_surface_step",
+      "ast_equal": true,
+      "baseline_ast_sha256": "d7e864c919a4bb5dd4f20a3d43751f7b93edbadd49f81673f67dd234be71225b"
+    },
+    {
+      "source": "src/ocean_solver/fd/barotropic.py",
+      "destination": "src/ocean_solver/dynamics/barotropic.py",
+      "definition": "_free_surface_step_fd",
+      "ast_equal": true,
+      "baseline_ast_sha256": "cbfbed5d3450ea9df9f50af4bf840c7088cefd5392aee9fbbcbb2411846fb5b4"
+    },
+    {
+      "source": "src/ocean_solver/fd/barotropic.py",
+      "destination": "src/ocean_solver/dynamics/barotropic.py",
+      "definition": "_barotropic_subcycle_transport",
+      "ast_equal": true,
+      "baseline_ast_sha256": "1a1a8b980eebe38cea61c159b2f066205106c6638d8dd7f14455a2bc05475b8d"
+    },
+    {
+      "source": "src/ocean_solver/fd/closures.py",
+      "destination": "src/ocean_solver/physics/isopycnal.py",
+      "definition": "_isopycnal_slope",
+      "ast_equal": true,
+      "baseline_ast_sha256": "d3064800602675127edc19dc64faac7ba7f3a42e65abeed4e19ac82c069cd9ab"
+    },
+    {
+      "source": "src/ocean_solver/fd/closures.py",
+      "destination": "src/ocean_solver/physics/isopycnal.py",
+      "definition": "_redi_skew_flux_tendency",
+      "ast_equal": true,
+      "baseline_ast_sha256": "c0db2db298dfd2c11abfc2cec8f309282f1fd001f211b8f3b5e6043c05b84892"
+    },
+    {
+      "source": "src/ocean_solver/fd/closures.py",
+      "destination": "src/ocean_solver/physics/isopycnal.py",
+      "definition": "_isopycnal_closure",
+      "ast_equal": true,
+      "baseline_ast_sha256": "09ec90754f5dcad7c53214551ceeb6962a1ff012ae5d634b0391087562016661"
+    },
+    {
+      "source": "src/ocean_solver/fd/eos.py",
+      "destination": "src/ocean_solver/physics/eos.py",
+      "definition": "_density_anomaly",
+      "ast_equal": true,
+      "baseline_ast_sha256": "ba609d6108680c2592eaef2ec0a86e9703d19d8218d2f929b1ed1ce42dbfa5de"
+    },
+    {
+      "source": "src/ocean_solver/fd/factory.py",
+      "destination": "src/ocean_solver/model/factory.py",
+      "definition": "make_solver_global",
+      "ast_equal": true,
+      "baseline_ast_sha256": "859555648634eccda9a22d3defc0bdd9a08712e302dcb63b1b3b29efaf38a563"
+    },
+    {
+      "source": "src/ocean_solver/fd/geometry.py",
+      "destination": "src/ocean_solver/geometry/fd.py",
+      "definition": "make_fd_params",
+      "ast_equal": true,
+      "baseline_ast_sha256": "472588749be03997fca37e288e313ae1c83626db3247e5b1c0ad53ed321ec7e8"
+    },
+    {
+      "source": "src/ocean_solver/fd/horizontal.py",
+      "destination": "src/ocean_solver/numerics/horizontal.py",
+      "definition": "_d_dx",
+      "ast_equal": true,
+      "baseline_ast_sha256": "759063f173b59321d6733252caa1472ba26f2fd6606ef15c19b84bf328694a87"
+    },
+    {
+      "source": "src/ocean_solver/fd/horizontal.py",
+      "destination": "src/ocean_solver/numerics/horizontal.py",
+      "definition": "_d_dy",
+      "ast_equal": true,
+      "baseline_ast_sha256": "50a5f44eaf833ff6b35e9cf6636ad4e996e6f36aa1e00f2fe73127a1b9c90d2f"
+    },
+    {
+      "source": "src/ocean_solver/fd/horizontal.py",
+      "destination": "src/ocean_solver/numerics/horizontal.py",
+      "definition": "_divergence_conservative",
+      "ast_equal": true,
+      "baseline_ast_sha256": "7912b56c083d9d3cad683232aba6a00be597a967aac2737ad239d3441b91c92c"
+    },
+    {
+      "source": "src/ocean_solver/fd/horizontal.py",
+      "destination": "src/ocean_solver/numerics/horizontal.py",
+      "definition": "_gradient_conservative",
+      "ast_equal": true,
+      "baseline_ast_sha256": "2f9e4dd130e5b0ff0dca0cf5bc33e87a723ec8366ff09e93e0661979ba908079"
+    },
+    {
+      "source": "src/ocean_solver/fd/horizontal.py",
+      "destination": "src/ocean_solver/numerics/horizontal.py",
+      "definition": "_gradient_conservative_3d",
+      "ast_equal": true,
+      "baseline_ast_sha256": "ed363ab50ef550b63f8e6e037433a8a7f943cb081f1704e8b26775ff046882ab"
+    },
+    {
+      "source": "src/ocean_solver/fd/horizontal.py",
+      "destination": "src/ocean_solver/numerics/horizontal.py",
+      "definition": "_divergence_conservative_3d",
+      "ast_equal": true,
+      "baseline_ast_sha256": "8eb08095c94d8f7b74ec6cd7f6a8d829bb0fc6bfcea8d2de30bbc3d2025b6ead"
+    },
+    {
+      "source": "src/ocean_solver/fd/horizontal.py",
+      "destination": "src/ocean_solver/numerics/horizontal.py",
+      "definition": "_laplacian_h",
+      "ast_equal": true,
+      "baseline_ast_sha256": "e0f4af7fe2cb3e6818c1ece9fc265b19e2a9496307345e0b3df0dc5ddecf339b"
+    },
+    {
+      "source": "src/ocean_solver/fd/horizontal.py",
+      "destination": "src/ocean_solver/numerics/horizontal.py",
+      "definition": "_horizontal_diffusion_flux",
+      "ast_equal": true,
+      "baseline_ast_sha256": "eed28ba9643b0bf9fd46dfe6971d6cba5da56c941f0be5bdeaf6b70b20b74074"
+    },
+    {
+      "source": "src/ocean_solver/fd/horizontal.py",
+      "destination": "src/ocean_solver/numerics/horizontal.py",
+      "definition": "_horizontal_tracer_diffusion",
+      "ast_equal": true,
+      "baseline_ast_sha256": "30c645d2f2b00e6e06808f6311e04f87ae38555774743a11d30712242ccf9fa0"
+    },
+    {
+      "source": "src/ocean_solver/fd/horizontal.py",
+      "destination": "src/ocean_solver/numerics/horizontal.py",
+      "definition": "_horizontal_biharmonic_tracer",
+      "ast_equal": true,
+      "baseline_ast_sha256": "d0f96d86a2377b9661180358198d006c632913b46df4da041c5117e5e0419c4f"
+    },
+    {
+      "source": "src/ocean_solver/fd/horizontal.py",
+      "destination": "src/ocean_solver/numerics/horizontal.py",
+      "definition": "_biharmonic_h",
+      "ast_equal": true,
+      "baseline_ast_sha256": "8fb61c76697e4e816ba0742a01daaeae5dd30940324c2bb1dd00723846c5bf70"
+    },
+    {
+      "source": "src/ocean_solver/fd/horizontal.py",
+      "destination": "src/ocean_solver/numerics/horizontal.py",
+      "definition": "_divergence_h",
+      "ast_equal": true,
+      "baseline_ast_sha256": "19285659f067167e8fbcdbb2cfe2c96afb7d9a453a5b6f36f4ec3eb4975fdc42"
+    },
+    {
+      "source": "src/ocean_solver/fd/horizontal.py",
+      "destination": "src/ocean_solver/numerics/horizontal.py",
+      "definition": "_dealias_h_fd",
+      "ast_equal": true,
+      "baseline_ast_sha256": "5866d83466f1f0a125057785cd2f7cacf479a2b206c377d7b01e5df8c694ae59"
+    },
+    {
+      "source": "src/ocean_solver/fd/horizontal.py",
+      "destination": "src/ocean_solver/numerics/horizontal.py",
+      "definition": "_gradient_face_gated_3d",
+      "ast_equal": true,
+      "baseline_ast_sha256": "a6144219773c28a62d7e12654087f9eb116ddb22905404b915df0dd3b06578b8"
+    },
+    {
+      "source": "src/ocean_solver/fd/horizontal.py",
+      "destination": "src/ocean_solver/numerics/horizontal.py",
+      "definition": "_polar_cap_weights",
+      "ast_equal": true,
+      "baseline_ast_sha256": "1898ecbe3038198e7f0de18ec6b19c4c9a005adb8b5249478776c887edbbd1b9"
+    },
+    {
+      "source": "src/ocean_solver/fd/horizontal.py",
+      "destination": "src/ocean_solver/numerics/horizontal.py",
+      "definition": "_apply_polar_cap",
+      "ast_equal": true,
+      "baseline_ast_sha256": "4eb7d89afb3a19e04bf6340d353d05867f95e0532482c04aec0faaf07e6b428b"
+    },
+    {
+      "source": "src/ocean_solver/fd/integration.py",
+      "destination": "src/ocean_solver/timestepping/integration.py",
+      "definition": "_tracer_rk_subcycle",
+      "ast_equal": true,
+      "baseline_ast_sha256": "4119c9c16727b6681dc0575e342cd4daa25c13a0a096aabd71414a77a710cdd7"
+    },
+    {
+      "source": "src/ocean_solver/fd/integration.py",
+      "destination": "src/ocean_solver/timestepping/integration.py",
+      "definition": "_nonlinear_predictor_rk2",
+      "ast_equal": true,
+      "baseline_ast_sha256": "e5b196bf4444a3da033ad8ffb5cc1f1833fe7b16f3abc31472c6dfcecb04955e"
+    },
+    {
+      "source": "src/ocean_solver/fd/integration.py",
+      "destination": "src/ocean_solver/timestepping/integration.py",
+      "definition": "_explicit_full_step",
+      "ast_equal": true,
+      "baseline_ast_sha256": "1ba35ca4292d7dd3f56764a644414cab175a49681cd91faef3e6d9d067884a5b"
+    },
+    {
+      "source": "src/ocean_solver/fd/integration.py",
+      "destination": "src/ocean_solver/timestepping/integration.py",
+      "definition": "_tracer_step_with_transport",
+      "ast_equal": true,
+      "baseline_ast_sha256": "4d4db738d5a21bc13f147d9b4bc016342295bc85d3e124efe0b0a0d2f9ecd86f"
+    },
+    {
+      "source": "src/ocean_solver/fd/integration.py",
+      "destination": "src/ocean_solver/timestepping/integration.py",
+      "definition": "_step_impl",
+      "ast_equal": true,
+      "baseline_ast_sha256": "5e2c8099f8619c716b740a0de5d323b640a4fd23e852f305117709624a18dfd3"
+    },
+    {
+      "source": "src/ocean_solver/fd/pressure.py",
+      "destination": "src/ocean_solver/dynamics/pressure.py",
+      "definition": "_compute_hydrostatic_pressure",
+      "ast_equal": true,
+      "baseline_ast_sha256": "3c9d06f0f721cbd1241b737929ed41b298b677bb74543b9462e4c5126f5f0423"
+    },
+    {
+      "source": "src/ocean_solver/fd/pressure.py",
+      "destination": "src/ocean_solver/dynamics/pressure.py",
+      "definition": "_compute_pressure_gradient",
+      "ast_equal": true,
+      "baseline_ast_sha256": "4ec2300d064adbed2b2c81e9f55739df05941dd596eeb7df1b67924365a8ac67"
+    },
+    {
+      "source": "src/ocean_solver/fd/pressure.py",
+      "destination": "src/ocean_solver/dynamics/pressure.py",
+      "definition": "_reference_depth_gradient",
+      "ast_equal": true,
+      "baseline_ast_sha256": "919149e0089c5647d939dfeab7131eabb3189484045b9b2843d47f3e6205ce85"
+    },
+    {
+      "source": "src/ocean_solver/fd/pressure.py",
+      "destination": "src/ocean_solver/dynamics/pressure.py",
+      "definition": "_compute_bt_rho_pgf",
+      "ast_equal": true,
+      "baseline_ast_sha256": "9144625b34417d52f6916becff84dad5cae537da54112a7f9823dd42d4240e44"
+    },
+    {
+      "source": "src/ocean_solver/fd/processes.py",
+      "destination": "src/ocean_solver/dynamics/processes.py",
+      "definition": "_compute_momentum_tendency",
+      "ast_equal": true,
+      "baseline_ast_sha256": "d6d0d306b0c3b892da1ff52144db094880c2973183cb499bcb6592e5c98ed110"
+    },
+    {
+      "source": "src/ocean_solver/fd/processes.py",
+      "destination": "src/ocean_solver/dynamics/processes.py",
+      "definition": "_tracer_terms",
+      "ast_equal": true,
+      "baseline_ast_sha256": "0883b0352a0edd95b08dd9bbfe38588f8cc07e56c9941574b1f407a0bb04c4ba"
+    },
+    {
+      "source": "src/ocean_solver/fd/processes.py",
+      "destination": "src/ocean_solver/dynamics/processes.py",
+      "definition": "_compute_tracer_tendency",
+      "ast_equal": true,
+      "baseline_ast_sha256": "aa0fef65e99dde9556d3f75bb4c17cd75a0dbdb04ce23fddda3045c91339d544"
+    },
+    {
+      "source": "src/ocean_solver/fd/processes.py",
+      "destination": "src/ocean_solver/dynamics/processes.py",
+      "definition": "_coriolis_rotation_2d",
+      "ast_equal": true,
+      "baseline_ast_sha256": "aae225aea24cffdf7acc05ea385bfd690112c4fb804c2b3dd347bc3f801eea16"
+    },
+    {
+      "source": "src/ocean_solver/fd/processes.py",
+      "destination": "src/ocean_solver/dynamics/processes.py",
+      "definition": "_rotate_baroclinic_shear",
+      "ast_equal": true,
+      "baseline_ast_sha256": "f89c554566a1d13ec87bb796ed60d0da5b7f699cd7d946687dbb4eb7e287a564"
+    },
+    {
+      "source": "src/ocean_solver/fd/processes.py",
+      "destination": "src/ocean_solver/dynamics/processes.py",
+      "definition": "_linear_half_step",
+      "ast_equal": true,
+      "baseline_ast_sha256": "7d39b19653c536cc6cd7f8b6bb5c6092f17e0db55798e4fab4f25bc5dcc787fb"
+    },
+    {
+      "source": "src/ocean_solver/fd/processes.py",
+      "destination": "src/ocean_solver/dynamics/processes.py",
+      "definition": "_compute_tracer_residual",
+      "ast_equal": true,
+      "baseline_ast_sha256": "37669472bb5645fd4e36f6d73588d73e682fcc307b78ab9bb5f3874fef733967"
+    },
+    {
+      "source": "src/ocean_solver/fd/processes.py",
+      "destination": "src/ocean_solver/dynamics/processes.py",
+      "definition": "_compute_momentum_residual",
+      "ast_equal": true,
+      "baseline_ast_sha256": "4f1e375cadb2f8c40bba35352269d0aca4c314526c0b69372c1af848b60514a5"
+    },
+    {
+      "source": "src/ocean_solver/fd/processes.py",
+      "destination": "src/ocean_solver/dynamics/processes.py",
+      "definition": "_linear_bottom_drag_step",
+      "ast_equal": true,
+      "baseline_ast_sha256": "fa22378b3dca78a31cf76d2c91a7b0c6a87a7c6b5f7446eae67a41378c0dfd8f"
+    },
+    {
+      "source": "src/ocean_solver/fd/projection.py",
+      "destination": "src/ocean_solver/dynamics/projection.py",
+      "definition": "_column_projection_diagonal",
+      "ast_equal": true,
+      "baseline_ast_sha256": "327eec9828fcd5d45e7a7579550c4edffb16f6dbdf2b3097ed9b61ec9bf695e7"
+    },
+    {
+      "source": "src/ocean_solver/fd/projection.py",
+      "destination": "src/ocean_solver/dynamics/projection.py",
+      "definition": "projection_config",
+      "ast_equal": true,
+      "baseline_ast_sha256": "986c4ab59a6bf34de3920adce70350801c816c9737bf564faa8c596fefbaf28b"
+    },
+    {
+      "source": "src/ocean_solver/fd/projection.py",
+      "destination": "src/ocean_solver/dynamics/projection.py",
+      "definition": "_project_column_divergence",
+      "ast_equal": true,
+      "baseline_ast_sha256": "ce7570c04a852b4cfcdb51a1c3b9cc6404da9c2be85be679fc2d30a11cf2161d"
+    },
+    {
+      "source": "src/ocean_solver/fd/sources.py",
+      "destination": "src/ocean_solver/physics/surface.py",
+      "definition": "_surface_heat_weights",
+      "ast_equal": true,
+      "baseline_ast_sha256": "b24f784dada56a1283bb257e08c59ffa07392970635f8911d26ca4df7825a835"
+    },
+    {
+      "source": "src/ocean_solver/fd/sources.py",
+      "destination": "src/ocean_solver/physics/surface.py",
+      "definition": "_dynamic_ice_closure",
+      "ast_equal": true,
+      "baseline_ast_sha256": "20065845d08f99985af8149cb289793e41583cc6458c5a5eb4afbe5a0b03f8c5"
+    },
+    {
+      "source": "src/ocean_solver/fd/stability.py",
+      "destination": "src/ocean_solver/numerics/stability.py",
+      "definition": "nu_nsub_for_2d_cfl",
+      "ast_equal": true,
+      "baseline_ast_sha256": "ad7a987d9a84d68fc2f697695cdc60382b82f6a3a53aa1d61ae22280273712af"
+    },
+    {
+      "source": "src/ocean_solver/fd/subcycles.py",
+      "destination": "src/ocean_solver/timestepping/subcycles.py",
+      "definition": "_subcycle",
+      "ast_equal": true,
+      "baseline_ast_sha256": "db6757bcd368e9fcb06fa98461c7eac29a0da82c26770cbddaccd4a7d24eb805"
+    },
+    {
+      "source": "src/ocean_solver/fd/transport.py",
+      "destination": "src/ocean_solver/dynamics/transport.py",
+      "definition": "_column_divergence",
+      "ast_equal": true,
+      "baseline_ast_sha256": "d84b406bda815cf660f7699aaab4f9021f68dc03384c94d504125a1a59cf4d12"
+    },
+    {
+      "source": "src/ocean_solver/fd/transport.py",
+      "destination": "src/ocean_solver/dynamics/transport.py",
+      "definition": "_layer_face_transports",
+      "ast_equal": true,
+      "baseline_ast_sha256": "99901ed6083578dc47a8d3b2466f11015ad1c973d3dfe4dfe8bd1236a60632a1"
+    },
+    {
+      "source": "src/ocean_solver/fd/transport.py",
+      "destination": "src/ocean_solver/dynamics/transport.py",
+      "definition": "_face_transport_divergence",
+      "ast_equal": true,
+      "baseline_ast_sha256": "e507f4861f2573f150a8bc5c7e75ed7261fbe86ce33903373a2677f7eaa719ec"
+    },
+    {
+      "source": "src/ocean_solver/fd/transport.py",
+      "destination": "src/ocean_solver/dynamics/transport.py",
+      "definition": "_match_layer_face_transports",
+      "ast_equal": true,
+      "baseline_ast_sha256": "2c089a2389b567685abd250c841fe96c7b8e62eb509115c47f27ccd2c61a0f40"
+    },
+    {
+      "source": "src/ocean_solver/fd/transport.py",
+      "destination": "src/ocean_solver/dynamics/transport.py",
+      "definition": "_vertical_transport_iface",
+      "ast_equal": true,
+      "baseline_ast_sha256": "478adf9310877ed25caf614cc98be4dabddbb1ac739137821499adf9e982515f"
+    },
+    {
+      "source": "src/ocean_solver/fd/transport.py",
+      "destination": "src/ocean_solver/dynamics/transport.py",
+      "definition": "_barotropic_velocity",
+      "ast_equal": true,
+      "baseline_ast_sha256": "f546410ce25baadb705d483ec4e52de316540d2efc837a79f9f0f18c8690b909"
+    },
+    {
+      "source": "src/ocean_solver/fd/transport.py",
+      "destination": "src/ocean_solver/dynamics/transport.py",
+      "definition": "_reference_depth_divergence",
+      "ast_equal": true,
+      "baseline_ast_sha256": "55c9e93465f288318ec9b6ceb58be3630f25804a4c0ab2a48e06dbb07b542e85"
+    },
+    {
+      "source": "src/ocean_solver/fd/transport.py",
+      "destination": "src/ocean_solver/dynamics/transport.py",
+      "definition": "_compute_vertical_velocity",
+      "ast_equal": true,
+      "baseline_ast_sha256": "e0d28b5b638f05bc35abeb1b405dbda63f375de2e383703b91ab009ece19e252"
+    },
+    {
+      "source": "src/ocean_solver/fd/transport.py",
+      "destination": "src/ocean_solver/dynamics/transport.py",
+      "definition": "_advection_flux_form",
+      "ast_equal": true,
+      "baseline_ast_sha256": "b48104dd0ae12dbb428b5d7f42911ff9ca059b6801b8f0297fee20c4043c6fb7"
+    },
+    {
+      "source": "src/ocean_solver/fd/transport.py",
+      "destination": "src/ocean_solver/dynamics/transport.py",
+      "definition": "_limited_tracer_slope",
+      "ast_equal": true,
+      "baseline_ast_sha256": "3f8b3113a1cfc4cb6af16a21c655272090f5b1505cb4d1ced094ce8ac3af00a3"
+    },
+    {
+      "source": "src/ocean_solver/fd/transport.py",
+      "destination": "src/ocean_solver/dynamics/transport.py",
+      "definition": "_advection_scalar",
+      "ast_equal": true,
+      "baseline_ast_sha256": "68b7d92d54704d9fcea164068347074691bc7e5e139b60f9db57b313108a90f7"
+    },
+    {
+      "source": "src/ocean_solver/fd/vertical.py",
+      "destination": "src/ocean_solver/numerics/vertical.py",
+      "definition": "_fill_ghost_bottom",
+      "ast_equal": true,
+      "baseline_ast_sha256": "b1228a3264d82e089f8b79d78bc8546bcba75a985686f41f527717444786b6b0"
+    },
+    {
+      "source": "src/ocean_solver/fd/vertical.py",
+      "destination": "src/ocean_solver/numerics/vertical.py",
+      "definition": "_d_dz",
+      "ast_equal": true,
+      "baseline_ast_sha256": "c61de331779e657daacf533faa411bd5dabffc18d031d6565f33449ecafc0a1c"
+    },
+    {
+      "source": "src/ocean_solver/fd/vertical.py",
+      "destination": "src/ocean_solver/numerics/vertical.py",
+      "definition": "_d2_dz2",
+      "ast_equal": true,
+      "baseline_ast_sha256": "7ec3af7e7c551cc99ef60b5d7e219b4d0081e39b39b3d240b8fc6494ccabef07"
+    },
+    {
+      "source": "src/ocean_solver/fd/vertical.py",
+      "destination": "src/ocean_solver/numerics/vertical.py",
+      "definition": "_iface_flux_divergence",
+      "ast_equal": true,
+      "baseline_ast_sha256": "41c82fc858e2ec40c0a03b37c3d6286187ec6a68e4e43ead03442b7bf1d0945d"
+    },
+    {
+      "source": "src/ocean_solver/fd/vertical.py",
+      "destination": "src/ocean_solver/numerics/vertical.py",
+      "definition": "_d2_dz2_flux",
+      "ast_equal": true,
+      "baseline_ast_sha256": "822ef48b5f5c981069bc6d76f66e60d134f0dec694949b32ff1295586587990c"
+    },
+    {
+      "source": "src/ocean_solver/fd/vertical.py",
+      "destination": "src/ocean_solver/physics/vertical.py",
+      "definition": "_conv_flux_tendency",
+      "ast_equal": true,
+      "baseline_ast_sha256": "2abadf674f68b99a3d23402f95593d86b4a409767f7457cf234242b04b7c48de"
+    },
+    {
+      "source": "src/ocean_solver/fd/vertical.py",
+      "destination": "src/ocean_solver/physics/vertical.py",
+      "definition": "_effective_kappa_v",
+      "ast_equal": true,
+      "baseline_ast_sha256": "355be82dc462b88519143caf261c61d59cc84a3ced5a759b2037e33d9e25e81b"
+    },
+    {
+      "source": "src/ocean_solver/fd/vertical.py",
+      "destination": "src/ocean_solver/physics/vertical.py",
+      "definition": "_vertical_diffusion",
+      "ast_equal": true,
+      "baseline_ast_sha256": "6f99daf5574e237a5f303d0608161cae3b7ee433e5c31dcb711971fea5ca74ce"
+    },
+    {
+      "source": "src/ocean_solver/fd/vertical.py",
+      "destination": "src/ocean_solver/physics/vertical.py",
+      "definition": "_vertical_momentum_diffusion",
+      "ast_equal": true,
+      "baseline_ast_sha256": "2949b27ba1ef3b51fc62a8c18c426789af0ab5843cd014a6315ed526a1e33796"
+    },
+    {
+      "source": "src/ocean_solver/fd/vertical.py",
+      "destination": "src/ocean_solver/physics/vertical.py",
+      "definition": "_convective_mask",
+      "ast_equal": true,
+      "baseline_ast_sha256": "11bada797ab268142ec34da2c08c575ff498525371f4f0e251ce9efd9632b799"
+    },
+    {
+      "source": "src/ocean_solver/data/air.py",
+      "destination": "src/ocean_solver/forcing/air.py",
+      "definition": "_monthly_slab_from_dataset",
+      "ast_equal": true,
+      "baseline_ast_sha256": "7c1e04df5027ebf6bcaead96c957f19a742fddb6cfc78eeb138909507f888162"
+    },
+    {
+      "source": "src/ocean_solver/data/air.py",
+      "destination": "src/ocean_solver/forcing/air.py",
+      "definition": "_annual_mean_from_dataset",
+      "ast_equal": true,
+      "baseline_ast_sha256": "8669f4b28fba22330fa7fe1c7ed8c4e96ad52e2d2f1db91f51010c070af60fa9"
+    },
+    {
+      "source": "src/ocean_solver/data/air.py",
+      "destination": "src/ocean_solver/forcing/air.py",
+      "definition": "load_monthly_mean_air_temp",
+      "ast_equal": true,
+      "baseline_ast_sha256": "42d95ceb90a3e6274b6a708d39ba0d5769a1ae222db7b173caa195df5338f2c6"
+    },
+    {
+      "source": "src/ocean_solver/data/air.py",
+      "destination": "src/ocean_solver/forcing/air.py",
+      "definition": "load_annual_mean_air_temp",
+      "ast_equal": true,
+      "baseline_ast_sha256": "0491a76461375fd68a89e28b2040ebe87c1e41d81a303409744dc45ab6455797"
+    },
+    {
+      "source": "src/ocean_solver/data/wind.py",
+      "destination": "src/ocean_solver/forcing/wind.py",
+      "definition": "_bilinear",
+      "ast_equal": true,
+      "baseline_ast_sha256": "3cb9db4634b646b356b9f04ec5900c35f96402e9a521d1643fdfb87f02f47683"
+    },
+    {
+      "source": "src/ocean_solver/data/wind.py",
+      "destination": "src/ocean_solver/forcing/wind.py",
+      "definition": "load_monthly_wind",
+      "ast_equal": true,
+      "baseline_ast_sha256": "430deab335f35557de1e9388439d2f83d053ed74891faacc500530ba21b23dc9"
+    },
+    {
+      "source": "src/ocean_solver/data/wind.py",
+      "destination": "src/ocean_solver/forcing/wind.py",
+      "definition": "wind_stress_from_wind",
+      "ast_equal": true,
+      "baseline_ast_sha256": "c5ce63757d10cd310ab7808de5e3032ba73f1f3b22b359b724296a76e0065fa9"
+    },
+    {
+      "source": "src/ocean_solver/data/wind.py",
+      "destination": "src/ocean_solver/forcing/wind.py",
+      "definition": "real_wind_forcing",
+      "ast_equal": true,
+      "baseline_ast_sha256": "2b59c9464ff825aeb296a5a3e2625afffe649bfa8fb21cefe2cd1dfd924775ba"
+    },
+    {
+      "source": "src/ocean_solver/data/forcing.py",
+      "destination": "src/ocean_solver/forcing/fields.py",
+      "definition": "taper_weight_1d",
+      "ast_equal": true,
+      "baseline_ast_sha256": "b7b8ec8b9a0d7e5c2a4e7265e24fe2f02779047b9d783fbf54e29459fa1b70d1"
+    },
+    {
+      "source": "src/ocean_solver/data/forcing.py",
+      "destination": "src/ocean_solver/forcing/fields.py",
+      "definition": "_taper_y",
+      "ast_equal": true,
+      "baseline_ast_sha256": "a30daffd82fe8e995dd27d41d95b5a1649f1c59066aa2eff4aa092678ed92c7a"
+    },
+    {
+      "source": "src/ocean_solver/data/forcing.py",
+      "destination": "src/ocean_solver/forcing/fields.py",
+      "definition": "taper_2d_y",
+      "ast_equal": true,
+      "baseline_ast_sha256": "30436a72161a834a34208dfd2f42e15d95ee9063965a54efaeb7dcd6f675a747"
+    },
+    {
+      "source": "src/ocean_solver/data/forcing.py",
+      "destination": "src/ocean_solver/forcing/fields.py",
+      "definition": "heat_flux_meridional",
+      "ast_equal": true,
+      "baseline_ast_sha256": "32a176c4cf06cce0aad07e4a8b01cd08123274c69f0e7ed8abd1afbeb64f88a1"
+    },
+    {
+      "source": "src/ocean_solver/data/forcing.py",
+      "destination": "src/ocean_solver/forcing/fields.py",
+      "definition": "ocean_zonal_mean",
+      "ast_equal": true,
+      "baseline_ast_sha256": "e910be0e3ffdd96bbcce9e8a8fcdd5928670d3258c5e32a6a2cac93ad1c43d93"
+    },
+    {
+      "source": "src/ocean_solver/data/forcing.py",
+      "destination": "src/ocean_solver/forcing/fields.py",
+      "definition": "air_temp_profile",
+      "ast_equal": true,
+      "baseline_ast_sha256": "66421e2e78dbc2fa4b6690fd7b565b5ac52b57e791231cf776f906c178dbc62e"
+    },
+    {
+      "source": "src/ocean_solver/data/climatology.py",
+      "destination": "src/ocean_solver/io/climatology.py",
+      "definition": "load_woa_climatology",
+      "ast_equal": true,
+      "baseline_ast_sha256": "bf0cac327999a7320c190379069768f2f46e3bb7294683510c44177c9b28e704"
+    },
+    {
+      "source": "src/ocean_solver/data/climatology.py",
+      "destination": "src/ocean_solver/io/climatology.py",
+      "definition": "_fill_nan_horizontal_per_level",
+      "ast_equal": true,
+      "baseline_ast_sha256": "7d4c449b4d703a3d653d0fbe03d88d904e525277602cacaa2dd3699685f4327a"
+    },
+    {
+      "source": "src/ocean_solver/data/climatology.py",
+      "destination": "src/ocean_solver/io/climatology.py",
+      "definition": "interpolate_to_grid",
+      "ast_equal": true,
+      "baseline_ast_sha256": "8510f2b112d2a0e0ac80ebeec6a192b2ab221a48367ac7f11fb18e4678e0cb56"
+    },
+    {
+      "source": "src/ocean_solver/data/climatology.py",
+      "destination": "src/ocean_solver/io/climatology.py",
+      "definition": "get_initial_fields",
+      "ast_equal": true,
+      "baseline_ast_sha256": "47e28b5614bafbf5ff97eff08dcb093d49b3be4839f82f2d21297dd0a192e47a"
+    },
+    {
+      "source": "src/ocean_solver/data/climatology.py",
+      "destination": "src/ocean_solver/io/climatology.py",
+      "definition": "_fill_ocean_horizontal",
+      "ast_equal": true,
+      "baseline_ast_sha256": "5f3c70d71d98e79e1e86f0c90cd442c85c775d60f9685b721916fbadb6f53bad"
+    },
+    {
+      "source": "src/ocean_solver/data/erddap.py",
+      "destination": "src/ocean_solver/io/erddap.py",
+      "definition": "fetch",
+      "ast_equal": true,
+      "baseline_ast_sha256": "fc33cdedd8ea8f845f24de2f86d3122282419e8080d953afffc5b00ea0196484"
+    },
+    {
+      "source": "src/ocean_solver/data/quality.py",
+      "destination": "src/ocean_solver/io/data_quality.py",
+      "definition": "_scalar",
+      "ast_equal": true,
+      "baseline_ast_sha256": "5e5c125f7662dc6c5002643822597720e07d60ead167557844ea31b62a1442bd"
+    },
+    {
+      "source": "src/ocean_solver/data/quality.py",
+      "destination": "src/ocean_solver/io/data_quality.py",
+      "definition": "normalize_source",
+      "ast_equal": true,
+      "baseline_ast_sha256": "0bbc5bf6e72ce0345345482940291ec1c839b8a9c2cb004af3724c7b266c7f6d"
+    },
+    {
+      "source": "src/ocean_solver/data/quality.py",
+      "destination": "src/ocean_solver/io/data_quality.py",
+      "definition": "source_metadata",
+      "ast_equal": true,
+      "baseline_ast_sha256": "fcad33194ad87e4f296d9b34112bd21db4c74b6f7ea70cef9ac5f24a71eae608"
+    },
+    {
+      "source": "src/ocean_solver/data/quality.py",
+      "destination": "src/ocean_solver/io/data_quality.py",
+      "definition": "_exact_indices",
+      "ast_equal": true,
+      "baseline_ast_sha256": "30a8c375b9c243ce9efcabc9547116914a9c670ba6049390c794ae70ca457c57"
+    },
+    {
+      "source": "src/ocean_solver/data/quality.py",
+      "destination": "src/ocean_solver/io/data_quality.py",
+      "definition": "_wet_components",
+      "ast_equal": true,
+      "baseline_ast_sha256": "47af9ffcbdc814f76f854eaf2daa1ede598e9db79161905e83e109b29db8a585"
+    },
+    {
+      "source": "src/ocean_solver/data/quality.py",
+      "destination": "src/ocean_solver/io/data_quality.py",
+      "definition": "_direct_wet_path",
+      "ast_equal": true,
+      "baseline_ast_sha256": "743bf1e3a3f9209832cacc9864a56858f850bb5e70bd16c6c7ee7d9e99ce9cc6"
+    },
+    {
+      "source": "src/ocean_solver/data/quality.py",
+      "destination": "src/ocean_solver/io/data_quality.py",
+      "definition": "_validate",
+      "ast_equal": true,
+      "baseline_ast_sha256": "8379a1b916d73120df3ed5f6c4bab1b556e0904bb11a7dd74546909bfbc7fd3f"
+    },
+    {
+      "source": "src/ocean_solver/data/quality.py",
+      "destination": "src/ocean_solver/io/data_quality.py",
+      "definition": "audit_woa_variable",
+      "ast_equal": true,
+      "baseline_ast_sha256": "e52f12d5c9f2d3c59bcd56fab1b6e3724183c5ae4e542148313e52772b69e422"
+    },
+    {
+      "source": "src/ocean_solver/data/quality.py",
+      "destination": "src/ocean_solver/io/data_quality.py",
+      "definition": "validate_quality_fields",
+      "ast_equal": true,
+      "baseline_ast_sha256": "b738ee85757ec8920645a4931c32fb9a565f02799f5ec7d43bea0df37ebc680a"
+    },
+    {
+      "source": "src/ocean_solver/data/quality.py",
+      "destination": "src/ocean_solver/io/data_quality.py",
+      "definition": "enforce_strict_quality",
+      "ast_equal": true,
+      "baseline_ast_sha256": "c2b21c1d0f90e8c272f97e290b3b748b33906721a2a8da6b93726d9d2745a5b8"
+    },
+    {
+      "source": "src/ocean_solver/data/quality.py",
+      "destination": "src/ocean_solver/io/data_quality.py",
+      "definition": "_shape_field",
+      "ast_equal": true,
+      "baseline_ast_sha256": "d0456a328e7e6f3f220ccc1ebf7d6075c9f5c0367b1ed7af883dacf343b420af"
+    },
+    {
+      "source": "src/ocean_solver/data/quality.py",
+      "destination": "src/ocean_solver/io/data_quality.py",
+      "definition": "_read_bounded_masks",
+      "ast_equal": true,
+      "baseline_ast_sha256": "ce13488a856c814faf4b920ff5a40dd08334f2316e4eb53c5c84448bf2a9d1d0"
+    },
+    {
+      "source": "src/ocean_solver/data/quality.py",
+      "destination": "src/ocean_solver/io/data_quality.py",
+      "definition": "enforce_strict_quality_bundle",
+      "ast_equal": true,
+      "baseline_ast_sha256": "0d435339d3bd2c2fa8a5df4d23438fc830570f244786f843fdc4d02c354b12b8"
+    },
+    {
+      "source": "src/ocean_solver/data/quality.py",
+      "destination": "src/ocean_solver/io/data_quality.py",
+      "definition": "_unique_json_object",
+      "ast_equal": true,
+      "baseline_ast_sha256": "681bdcb567db57d25fc24da86064c32e2679163de04027ce071465ce6615501f"
+    },
+    {
+      "source": "src/ocean_solver/data/quality.py",
+      "destination": "src/ocean_solver/io/data_quality.py",
+      "definition": "load_strict_quality_bundle",
+      "ast_equal": true,
+      "baseline_ast_sha256": "7d5abb4e935428e4f7ae5d8f924018a246052333db5d94d857878ee6ffe9295c"
+    },
+    {
+      "source": "src/ocean_solver/data/sources.py",
+      "destination": "src/ocean_solver/io/input_sources.py",
+      "definition": "InputSnapshot",
+      "ast_equal": true,
+      "baseline_ast_sha256": "bcf35ad9e4137e1adbc611de5cc5b93333bf72c02fa7c3b868bd628cc109e16c"
+    },
+    {
+      "source": "src/ocean_solver/data/sources.py",
+      "destination": "src/ocean_solver/io/input_sources.py",
+      "definition": "load_snapshot_npz",
+      "ast_equal": true,
+      "baseline_ast_sha256": "b4f8302131e6bbbd9f672e5c14fed6c6b77635a96f6408bcd4ac61f4b2f167d5"
+    },
+    {
+      "source": "src/ocean_solver/data/sources.py",
+      "destination": "src/ocean_solver/io/input_sources.py",
+      "definition": "load_climatology_snapshot",
+      "ast_equal": true,
+      "baseline_ast_sha256": "e15afd87977cdcc5f0392af03cf8e4ff4cd66df4243cbaf088afe874694ea6f2"
+    },
+    {
+      "source": "src/ocean_solver/data/sla.py",
+      "destination": "src/ocean_solver/io/sla.py",
+      "definition": "fetch_month",
+      "ast_equal": true,
+      "baseline_ast_sha256": "8b1a5e871b7de32ec32eea41847c15ff41b7736002d047db2c46fec3dd27803a"
+    },
+    {
+      "source": "src/ocean_solver/data/sla.py",
+      "destination": "src/ocean_solver/io/sla.py",
+      "definition": "main",
+      "ast_equal": true,
+      "baseline_ast_sha256": "515f56d848942b24dd3b4a6619ec3ad71d5db0a1a0805d51784ebc2b6697c0c9"
+    },
+    {
+      "source": "src/ocean_solver/data/ssh.py",
+      "destination": "src/ocean_solver/io/ssh.py",
+      "definition": "fetch_month_day",
+      "ast_equal": true,
+      "baseline_ast_sha256": "1f5f00a8857256ab7fb8e144fe8e055dec06b0316162490ecfed3d4419e691b2"
+    },
+    {
+      "source": "src/ocean_solver/data/ssh.py",
+      "destination": "src/ocean_solver/io/ssh.py",
+      "definition": "main",
+      "ast_equal": true,
+      "baseline_ast_sha256": "d0226d017b5ff15f75852eca4e86b5b329ee241a336a5e8ed9bb7c917de92c1b"
+    },
+    {
+      "source": "src/ocean_solver/runtime/seasonal.py",
+      "destination": "src/ocean_solver/forcing/seasonal.py",
+      "definition": "marine_smooth_2d",
+      "ast_equal": true,
+      "baseline_ast_sha256": "0bb949c50dc95fe0bc8a418f17c53d2491adcbc75ffd09ea196eb3c0c0ad096a"
+    },
+    {
+      "source": "src/ocean_solver/runtime/seasonal.py",
+      "destination": "src/ocean_solver/forcing/seasonal.py",
+      "definition": "build_seasonal_wind_global",
+      "ast_equal": true,
+      "baseline_ast_sha256": "6626b409a5847809886d0bb1cdcce736b58a25261f184e29f7a03fa849db8a31"
+    },
+    {
+      "source": "src/ocean_solver/runtime/seasonal.py",
+      "destination": "src/ocean_solver/forcing/seasonal.py",
+      "definition": "interp_seasonal_wind",
+      "ast_equal": true,
+      "baseline_ast_sha256": "acea7107fa69a2c266cb5a7da8e4da36a1dd41a6ae7884b9380972f88c5e0d64"
+    },
+    {
+      "source": "src/ocean_solver/runtime/seasonal.py",
+      "destination": "src/ocean_solver/forcing/seasonal.py",
+      "definition": "interp_seasonal_wind_jit",
+      "ast_equal": true,
+      "baseline_ast_sha256": "f1408fb1f2b707ec2a160004746dada62c860dc254ba583e2af625d4743d03b2"
+    },
+    {
+      "source": "src/ocean_solver/runtime/seasonal.py",
+      "destination": "src/ocean_solver/forcing/seasonal.py",
+      "definition": "interp_monthly_field",
+      "ast_equal": true,
+      "baseline_ast_sha256": "3f02f868813d555e12250857a3a1533cf4c0564ee85687373b8e2998c3847ff6"
+    },
+    {
+      "source": "src/ocean_solver/runtime/seasonal.py",
+      "destination": "src/ocean_solver/forcing/seasonal.py",
+      "definition": "interp_monthly_field_jit",
+      "ast_equal": true,
+      "baseline_ast_sha256": "cb26af4dd6f059ed6363f5123c220e89d966d466b34b08bd3562d62160473b9b"
+    },
+    {
+      "source": "src/ocean_solver/runtime/records.py",
+      "destination": "src/ocean_solver/io/records.py",
+      "definition": "SnapshotHistory",
+      "ast_equal": true,
+      "baseline_ast_sha256": "7f34d4146c5aa60d58347615ae5005a1f7bbb694897e53e7d63ecc4e4cc088bd"
+    },
+    {
+      "source": "src/ocean_solver/runtime/records.py",
+      "destination": "src/ocean_solver/io/records.py",
+      "definition": "RunCounters",
+      "ast_equal": true,
+      "baseline_ast_sha256": "c695b24f1823483126bc20f73757d9ab21c0efc64fb04f9bfa737a41f9f5d8e5"
+    },
+    {
+      "source": "src/ocean_solver/runtime/records.py",
+      "destination": "src/ocean_solver/io/records.py",
+      "definition": "AcceptedLedger",
+      "ast_equal": true,
+      "baseline_ast_sha256": "b5f1543f64df80d8d7a1442781119e2ebf0670fe142b43ab16eee00572902d49"
+    },
+    {
+      "source": "src/ocean_solver/runtime/records.py",
+      "destination": "src/ocean_solver/io/records.py",
+      "definition": "restore_records",
+      "ast_equal": true,
+      "baseline_ast_sha256": "d7d41dd14e5e969d9df081ce3f3c8b0c82ea883182b8a2cb182c11ae8f7954a1"
+    },
+    {
+      "source": "src/ocean_solver/runtime/records.py",
+      "destination": "src/ocean_solver/io/records.py",
+      "definition": "_save_snapshot_file",
+      "ast_equal": true,
+      "baseline_ast_sha256": "0c56c69f27df35d719ac16a849f15d06a69bf55ce81f499b10d7611e95ea9524"
+    },
+    {
+      "source": "src/ocean_solver/runtime/records.py",
+      "destination": "src/ocean_solver/io/records.py",
+      "definition": "capture_snapshot",
+      "ast_equal": true,
+      "baseline_ast_sha256": "47277644f02a82d8df4bda3c385cd3730c7b902bee0b1bbfe21f46c829bf6738"
+    },
+    {
+      "source": "src/ocean_solver/runtime/output.py",
+      "destination": "src/ocean_solver/io/output.py",
+      "definition": "RunOutcome",
+      "ast_equal": true,
+      "baseline_ast_sha256": "81142cc220d22de1a730001f2689903da87060304fb1031e7f2e1fa1cba57327"
+    },
+    {
+      "source": "src/ocean_solver/runtime/output.py",
+      "destination": "src/ocean_solver/io/output.py",
+      "definition": "effective_config",
+      "ast_equal": true,
+      "baseline_ast_sha256": "f1ce49a48301c1bc0c2a2cf295f6fc689ed9482f0769c24b7bc58924861b5aaa"
+    },
+    {
+      "source": "src/ocean_solver/runtime/output.py",
+      "destination": "src/ocean_solver/io/output.py",
+      "definition": "write_final_records",
+      "ast_equal": true,
+      "baseline_ast_sha256": "4b5dab3b48c00c759d1e228a3ff5897fcebae909e0516745b350de2cd782d801"
+    },
+    {
+      "source": "src/ocean_solver/runtime/paths.py",
+      "destination": "src/ocean_solver/io/paths.py",
+      "definition": "_Tee",
+      "ast_equal": true,
+      "baseline_ast_sha256": "9f9bafe711820130cdcf7ec9980621e8df03de2c71c97181c1130068d55b79a8"
+    },
+    {
+      "source": "src/ocean_solver/runtime/paths.py",
+      "destination": "src/ocean_solver/io/paths.py",
+      "definition": "RunPaths",
+      "ast_equal": true,
+      "baseline_ast_sha256": "c9ddb26c8e654474f0346aff165e92f8463c610529ff80349bce03de98a26c8d"
+    },
+    {
+      "source": "src/ocean_solver/runtime/paths.py",
+      "destination": "src/ocean_solver/io/paths.py",
+      "definition": "prepare_output_paths",
+      "ast_equal": true,
+      "baseline_ast_sha256": "a8748dfba9eacafc2ec62eb8120599fbe810e0a209a9bc5a74f1f95372f9476b"
+    },
+    {
+      "source": "src/ocean_solver/runtime/recovery.py",
+      "destination": "src/ocean_solver/io/recovery.py",
+      "definition": "_validate_restart_history",
+      "ast_equal": true,
+      "baseline_ast_sha256": "1d5716bbe708401e05f0c031b473ce135576214dd9088edc2b752a2495b62012"
+    },
+    {
+      "source": "src/ocean_solver/runtime/recovery.py",
+      "destination": "src/ocean_solver/io/recovery.py",
+      "definition": "OutputManifest",
+      "ast_equal": true,
+      "baseline_ast_sha256": "b4dc45595c3c701dc7546c536458f51aebfb753dad5929aa183f6e6ca55d8108"
+    },
+    {
+      "source": "src/ocean_solver/runtime/recovery.py",
+      "destination": "src/ocean_solver/io/recovery.py",
+      "definition": "RecoveryContext",
+      "ast_equal": true,
+      "baseline_ast_sha256": "df375c069d00a7a2c6b666e85cd2823a0dbabc7720a996a7ee8d72bb5b4bac12"
+    },
+    {
+      "source": "src/ocean_solver/runtime/recovery.py",
+      "destination": "src/ocean_solver/io/recovery.py",
+      "definition": "prepare_recovery",
+      "ast_equal": true,
+      "baseline_ast_sha256": "68a6f2634c5b012e4a60581395c0ce5a1f0dff29974ec6e5f1c8f46bce7dbfdb"
+    },
+    {
+      "source": "src/ocean_solver/runtime/metrics.py",
+      "destination": "src/ocean_solver/diagnostics/runtime.py",
+      "definition": "state_is_finite",
+      "ast_equal": true,
+      "baseline_ast_sha256": "a472953033fc55e076d0308534a4536233ac6a565ec9d49d2f419d535251cf31"
+    },
+    {
+      "source": "src/ocean_solver/runtime/metrics.py",
+      "destination": "src/ocean_solver/diagnostics/runtime.py",
+      "definition": "total_kinetic_energy",
+      "ast_equal": true,
+      "baseline_ast_sha256": "fb69cc83337ae53219b990be505abfde9a7eb26f6c8682fd0ad4f4c532573df3"
+    },
+    {
+      "source": "src/ocean_solver/provenance/restart.py",
+      "destination": "src/ocean_solver/io/restart.py",
+      "definition": "file_sha256",
+      "ast_equal": true,
+      "baseline_ast_sha256": "9b54a8f3c1cbd51fa623df95ac257bf1efd4b1fcc96009ac61c92ca107f31dee"
+    },
+    {
+      "source": "src/ocean_solver/provenance/restart.py",
+      "destination": "src/ocean_solver/io/restart.py",
+      "definition": "_json",
+      "ast_equal": true,
+      "baseline_ast_sha256": "beb0dd5a98d4b9ddcb52f0f21d89510dff600e08d5c52cd7c468b68eb9ed8d16"
+    },
+    {
+      "source": "src/ocean_solver/provenance/restart.py",
+      "destination": "src/ocean_solver/io/restart.py",
+      "definition": "_array_descriptor",
+      "ast_equal": true,
+      "baseline_ast_sha256": "60dfeca7e645dc00f0dfbc23ba03d06756840d41571316c27c8892819e2c42ff"
+    },
+    {
+      "source": "src/ocean_solver/provenance/restart.py",
+      "destination": "src/ocean_solver/io/restart.py",
+      "definition": "fingerprint",
+      "ast_equal": true,
+      "baseline_ast_sha256": "9678d098b0d67c7f715227280bd8425e54089531c6b18e2c1c68a117970da242"
+    },
+    {
+      "source": "src/ocean_solver/provenance/restart.py",
+      "destination": "src/ocean_solver/io/restart.py",
+      "definition": "make_restart_contract",
+      "ast_equal": true,
+      "baseline_ast_sha256": "601cc9dcad9acbc3502b6142838972d31dd10ab8ddce7a101ce49d556a9c0a2a"
+    },
+    {
+      "source": "src/ocean_solver/provenance/restart.py",
+      "destination": "src/ocean_solver/io/restart.py",
+      "definition": "_integer",
+      "ast_equal": true,
+      "baseline_ast_sha256": "92e88dd0dcc33e5a50fc2ec28d537de51dfc0c59dc6bf036660a1b60a4142a6c"
+    },
+    {
+      "source": "src/ocean_solver/provenance/restart.py",
+      "destination": "src/ocean_solver/io/restart.py",
+      "definition": "_numeric_mapping",
+      "ast_equal": true,
+      "baseline_ast_sha256": "e3cfc41ab5a667a7f3174539f3fc440b5ea3c66d5ef50da4a90fcce826830f4b"
+    },
+    {
+      "source": "src/ocean_solver/provenance/restart.py",
+      "destination": "src/ocean_solver/io/restart.py",
+      "definition": "_validate_state",
+      "ast_equal": true,
+      "baseline_ast_sha256": "ed15636514240515a7069da15ec7e9344a6ca184069cec7fdd21bbc16a8a6a3f"
+    },
+    {
+      "source": "src/ocean_solver/provenance/restart.py",
+      "destination": "src/ocean_solver/io/restart.py",
+      "definition": "_validate_outputs",
+      "ast_equal": true,
+      "baseline_ast_sha256": "9647a149115ce4a6ed1433be954680f8bffe71e9907f9c5e2907c4a9d40433f6"
+    },
+    {
+      "source": "src/ocean_solver/provenance/restart.py",
+      "destination": "src/ocean_solver/io/restart.py",
+      "definition": "RestartRecord",
+      "ast_equal": true,
+      "baseline_ast_sha256": "4e5d64b7c8b6403b681d54663b161398097ba4cc84428a4b937e4294184f1ba7"
+    },
+    {
+      "source": "src/ocean_solver/provenance/restart.py",
+      "destination": "src/ocean_solver/io/restart.py",
+      "definition": "save_restart",
+      "ast_equal": true,
+      "baseline_ast_sha256": "454b7044a1db462ede711bb7641dad72c33dab3aec622a10ecfafa969b1f1115"
+    },
+    {
+      "source": "src/ocean_solver/provenance/restart.py",
+      "destination": "src/ocean_solver/io/restart.py",
+      "definition": "load_restart",
+      "ast_equal": true,
+      "baseline_ast_sha256": "d687c67eb86305c7f9ec066743358c75878b8437fbcafe0d4322163da75d086d"
+    },
+    {
+      "source": "src/ocean_solver/geometry/grid.py",
+      "destination": "src/ocean_solver/geometry/mesh.py",
+      "definition": "_smooth_depth_once",
+      "ast_equal": true,
+      "baseline_ast_sha256": "dca37de8dd47d25bedd33f33dece9fd71694d6400cc216db51ab2aa31e78e858"
+    },
+    {
+      "source": "src/ocean_solver/geometry/grid.py",
+      "destination": "src/ocean_solver/geometry/mesh.py",
+      "definition": "global_grid_dims",
+      "ast_equal": true,
+      "baseline_ast_sha256": "e3637d4f67dc129f60728a27310315c520f917200d1fc87af1df2abcdf4a56ff"
+    },
+    {
+      "source": "src/ocean_solver/geometry/grid.py",
+      "destination": "src/ocean_solver/geometry/mesh.py",
+      "definition": "_overlap_matrix",
+      "ast_equal": true,
+      "baseline_ast_sha256": "0e68521ffcb8e9e635266ebe8e2b76f34a708af81c41209043ac21aab17b94c7"
+    },
+    {
+      "source": "src/ocean_solver/geometry/grid.py",
+      "destination": "src/ocean_solver/geometry/mesh.py",
+      "definition": "_remap_etopo_area",
+      "ast_equal": true,
+      "baseline_ast_sha256": "bbd3397ab465808cb7bff5e53fa643edeb3a443f475e6e440b10274267742015"
+    },
+    {
+      "source": "src/ocean_solver/geometry/grid.py",
+      "destination": "src/ocean_solver/geometry/mesh.py",
+      "definition": "land_distance_from_land_mask",
+      "ast_equal": true,
+      "baseline_ast_sha256": "591ccf1dcc3e1b9843f7ceee27dadb16757e39feb2dedb6a014d3e56756ef1f1"
+    }
+  ],
+  "splits": {
+    "src/ocean_solver/fd/vertical.py": {
+      "src/ocean_solver/numerics/vertical.py": [
+        "_fill_ghost_bottom",
+        "_d_dz",
+        "_d2_dz2",
+        "_iface_flux_divergence",
+        "_d2_dz2_flux"
+      ],
+      "src/ocean_solver/physics/vertical.py": [
+        "_conv_flux_tendency",
+        "_effective_kappa_v",
+        "_vertical_diffusion",
+        "_vertical_momentum_diffusion",
+        "_convective_mask"
+      ]
+    },
+    "src/ocean_solver/geometry/grid.py": {
+      "src/ocean_solver/geometry/mesh.py": [
+        "_smooth_depth_once",
+        "global_grid_dims",
+        "_overlap_matrix",
+        "_remap_etopo_area",
+        "land_distance_from_land_mask",
+        "build_global_grid"
+      ],
+      "src/ocean_solver/io/bathymetry.py": [
+        "read_etopo_global"
+      ],
+      "src/ocean_solver/io/grid.py": [
+        "make_global_grid",
+        "_read_etopo_global",
+        "CLI"
+      ]
+    }
+  },
+  "engineering_exceptions": [
+    {
+      "function": "geometry.grid.make_global_grid",
+      "change": "reader wrapper invokes pure build_global_grid after the original read; builder body preserves statement order and expressions"
+    },
+    {
+      "function": "geometry.grid._read_etopo_global",
+      "change": "read_etopo_global receives explicit dataset_factory; io.grid forwards the historical mutable Dataset hook"
+    },
+    {
+      "function": "runtime.cli.parse_run_configuration",
+      "change": "build_run_parser extracts the identical argument declarations; optional argv preserves zero-argument legacy parser override"
+    },
+    {
+      "function": "runtime.services.RunServices / runtime.inputs.load_grid_inputs",
+      "change": "Optional resolve_grid_dimensions service defaults to None, keeping the ordinary ETOPO resolver. Explicit synthetic cases may inject their declared nx/ny while retaining true longitude resolution in effective configuration; actual latitude spacing remains in grid coordinates and metrics. No numerical operator changes."
+    }
+  ],
+  "whole_implementation_deletions": [],
+  "compatibility_policy": "Old canonical module paths are same-object aliases only; production consumers import implementation owners. No old implementation is duplicated. Pickle names, state schemas, factory arguments and defaults remain.",
+  "validation": {
+    "exact_definition_count": 160,
+    "parser_argument_statement_count": 87,
+    "numerical_replay": "Parent coordinated; see reorganization verification report. Static identity is not a numerical replay.",
+    "geometry_builder_computational_body_ast_equal": true,
+    "reader_body_ast_equal_after_explicit_dataset_parameter_rename": true,
+    "static_module_dependency_graph_acyclic": true,
+    "mms_report_owner": "ocean_solver.validation.mms:main"
+  },
+  "original_source_byte_origin": "Immutable baseline Git blob files exported by root at baseline_commit; full execution receipts hash actual checkout/distribution bytes separately."
+}

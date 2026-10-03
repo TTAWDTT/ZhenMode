@@ -58,7 +58,7 @@ def test_canonical_import_contract_rejects_empty_scan(tmp_path):
 
 
 def test_legacy_imports_alias_the_same_canonical_module_and_pickle_definitions():
-    manifest = json.loads((repository() / "docs/source_test_layout.json").read_text(encoding="utf-8"))
+    manifest = json.loads((repository() / "docs/research_engineering_layout.json").read_text(encoding="utf-8"))
     for legacy, canonical in manifest["legacy_modules"].items():
         old = importlib.import_module(legacy)
         current = importlib.import_module(canonical)

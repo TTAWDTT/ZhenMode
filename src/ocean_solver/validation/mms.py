@@ -1,8 +1,8 @@
 """Canonical mms definitions; legacy operations unchanged."""
-from ocean_solver.configuration import OMEGA, R_EARTH
-from ocean_solver.fd.backend import jnp, np
-from ocean_solver.fd.geometry import make_fd_params
-from ocean_solver.fd.horizontal import _d_dx, _d_dy, _divergence_h, _laplacian_h
+from ocean_solver.config.definitions import OMEGA, R_EARTH
+from ocean_solver.geometry.fd import make_fd_params
+from ocean_solver.numerics.backend import jnp, np
+from ocean_solver.numerics.horizontal import _d_dx, _d_dy, _divergence_h, _laplacian_h
 
 
 def _mms_grid(nx, ny, res, lat_max=75.0):
@@ -131,3 +131,31 @@ def _mms_convergence():
     # 2nd-order: halving dx -> error /4, so ratio ~ 4. Accept ratio > 3.
     return {'ddy_coarse': e_coarse, 'ddy_fine': e_fine,
             'convergence_ratio': ratio, 'passes': bool(ratio > 3.0)}
+
+
+def main():
+    """Report the existing MMS gates and return an actionable CLI exit status."""
+    print("=== Global FD Solver — MMS verification ===")
+    res = _mms_run()
+    all_pass = True
+    for name, (err, ok) in res.items():
+        status = "PASS" if ok else "FAIL"
+        if not ok:
+            all_pass = False
+        print(f"  {name:30s} = {err:.3e}  [{status}]")
+    print()
+    print("--- 2nd-order convergence check (d/dy) ---")
+    conv = _mms_convergence()
+    print(f"  coarse (ny=14)  d/dy rel L2 = {conv['ddy_coarse']:.3e}")
+    print(f"  fine   (ny=28)  d/dy rel L2 = {conv['ddy_fine']:.3e}")
+    print(f"  convergence ratio (expect ~4 for 2nd-order) = {conv['convergence_ratio']:.2f}  "
+          f"[{'PASS' if conv['passes'] else 'FAIL'}]")
+    if not conv['passes']:
+        all_pass = False
+    print()
+    print("ALL PASS" if all_pass else "SOME FAILED")
+    return 0 if all_pass else 1
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

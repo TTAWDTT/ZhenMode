@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "MOM6": {"url": "https://github.com/NOAA-GFDL/MOM6.git", "commit": "f49a00096df607b48354603e2398e14e189fd62e"},
+  "FMS": {"url": "https://github.com/NOAA-GFDL/FMS.git", "commit": "527a42f3ff36d75aac68b65757b35f73a74146bb"},
+  "CVMix": {"path": "pkg/CVMix-src", "commit": "fce422195a0c58f15a55946b5ed517ba4365e232"},
+  "GSW": {"path": "pkg/GSW-Fortran", "commit": "29e64d652786e1d076a05128c920f394202bfe10"},
+  "MOM6_examples_historical_only": "a5ebafec64c12f308d9f740ce40be1c1bfddd25a",
+  "provenance": "research/experiments/industrial_comparison_045/mom6_build_status.md and docs/legacy_core_repair_status_zh.md",
+  "build": "FMS CMake double precision, MOM6 upstream Autoconf ocean-only, 1 build job"
+}

@@ -18,10 +18,10 @@ import jax.numpy as jnp
 import numpy as np
 
 from config import DEFAULT_CONFIG, GlobalGridConfig, PhysicsConfig
-from diagnostics import compute_budget_diagnostics
 from grid import global_grid_dims, land_distance_from_land_mask, make_global_grid
 from integration_monitor import make_monitored_advance
 from jax_solver_global import make_solver_global, projection_config
+from ocean_solver.diagnostics.state import compute_budget_diagnostics
 from stage_budgets import (
     MAXIMUM_BUDGET_FIELDS,
     METRIC_NAMES,

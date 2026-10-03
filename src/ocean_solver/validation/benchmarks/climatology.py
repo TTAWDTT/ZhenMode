@@ -46,9 +46,9 @@ from dataclasses import replace
 import numpy as np
 
 from ocean_solver._compat import preserve_legacy_names
-from ocean_solver.configuration import DEFAULT_CONFIG, GlobalGridConfig
-from ocean_solver.data.climatology import get_initial_fields
-from ocean_solver.geometry.grid import global_grid_dims, make_global_grid
+from ocean_solver.config.definitions import DEFAULT_CONFIG, GlobalGridConfig
+from ocean_solver.io.climatology import get_initial_fields
+from ocean_solver.io.grid import global_grid_dims, make_global_grid
 
 EXCLUDED = [
     "pointwise SLA/SSH spatial correlation (T3-1 structural mismatch)",

@@ -9,6 +9,7 @@ import json
 import os
 import subprocess
 import sys
+import sysconfig
 import time
 from ctypes import wintypes
 
@@ -75,9 +76,18 @@ def run(arguments):
         limits.job_memory = 4 * 1024 ** 3
         checked(kernel.SetInformationJobObject(job, 9, ctypes.byref(limits), ctypes.sizeof(limits)))
         # Preserve the invoking venv for subprocesses, while measuring the real interpreter.
-        bootstrap = ('import sys; sys.executable=' + repr(sys.executable) + '; sys.path[:]='
-                     + repr([os.getcwd(), *sys.path]) + '; sys.stdin.read(1); ')
-        if arguments and arguments[0] == '--module':
+        runner_directory = os.path.dirname(os.path.abspath(__file__))
+        paths = [os.getcwd(), *(path for path in sys.path if os.path.abspath(path) != runner_directory)]
+        bootstrap = ('import sys, site; sys.executable=' + repr(sys.executable) + '; sys.path[:]='
+                     + repr(paths) + '; site.addsitedir('
+                     + repr(sysconfig.get_path('purelib')) + '); sys.stdin.read(1); ')
+        if arguments and arguments[0] == '--script':
+            if len(arguments) < 2:
+                raise ValueError('--script requires an absolute script filename')
+            script = os.path.abspath(arguments[1])
+            arguments = [script, *arguments[2:]]
+            bootstrap += 'import runpy; runpy.run_path(sys.argv.pop(1), run_name="__main__")'
+        elif arguments and arguments[0] == '--module':
             if len(arguments) < 2:
                 raise ValueError('--module requires a module name')
             module = arguments[1]

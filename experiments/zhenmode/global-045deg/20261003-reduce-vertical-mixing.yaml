@@ -1,0 +1,25 @@
+schema_version: 1
+kind: experiment
+id: global-045deg-kv-half-20261003
+name_zh: 垂向扩散减半单因素消融
+purpose: 核查背景垂向扩散对365天窗口的影响；尚未运行，不宣称改善。
+method: zhenmode
+case: cases/global-045deg-seasonal-365d.yaml
+parent_preset: configs/zhenmode/presets/global-045deg-seasonal.yaml
+variant: single_factor
+changes:
+- option: kappa_v
+  before:
+    value: 1.0e-06
+    unit: m2/s
+  after:
+    value: 5.0e-07
+    unit: m2/s
+  factor: vertical_tracer_diffusivity
+  reason: 单独改变背景垂向示踪物扩散，测量误差与成本响应；非推荐参数。
+evaluation_protocol: sst-area-v2-initial-reference-280-365
+protocol_path: evaluation/protocols/sst-area-v2-initial-reference-280-365.json
+resources:
+  cpu: 1
+  wall_seconds: 180
+  memory_mib: 4096
