@@ -21,7 +21,7 @@ def test_area_upper_bounds_independent_canonical_path(alpha,dt):
     H = spec.eta-spec.bottom
     nodes,weights = np.polynomial.legendre.leggauss(32)
     times = .5*dt*(nodes+1.)
-    for row in faces['horizontal']:
+    for row in reversed(faces['horizontal']):
         top = row['upper'] == spec.eta
         endpoint_heights = np.array([H/(1.+alpha*t)+spec.bottom-row['lower'] if top else row['upper']-row['lower'] for t in (0.,dt)])
         instantaneous = (H/(1.+alpha*times)+spec.bottom-row['lower']) if top else np.full(32,row['upper']-row['lower'])
@@ -82,3 +82,59 @@ def test_positive_surface_domain_PE_content_covers_expansion():
     end_eta = spec.bottom+H/(1.+spec.alpha*dt)
     assert end_eta > spec.eta
     assert end_eta <= implied_z_max+512.*np.finfo(float).eps*(abs(spec.eta)+H)
+
+
+@pytest.mark.parametrize('alpha,dt', [(-.08,.02),(-.08,.05),(-.398,.05),(.08,.02),(0.,.05)])
+def test_surface_pressure_work_uses_full_cap_rate_sensitivity(alpha,dt):
+    profile,spec = manufactured_mean_case(alpha=alpha)
+    integrator = MovingRawSlice(profile,authority='manufactured_half_prism_raw_means')
+    binding = integrator._binding(integrator.profile)
+    envelope = integrator._input_envelope(binding,dt)
+    faces = integrator._faces(binding,dt)
+    H = spec.eta-spec.bottom
+    delta_alpha = 4.*binding['delta_velocity'][0]/spec.distance
+    q_star = dt*(abs(binding['spec'].alpha)+delta_alpha)
+    # Differentiating -H*a/(1+a*t)^2 gives -H*(1-a*t)/(1+a*t)^3.
+    # This derivative decreases in a*t for |a*t|<.02; the rectangle
+    # [a-delta_a,a+delta_a] x [0,dt] reaches its maximum at its smallest a*t.
+    minimum_q = min(0.,(binding['spec'].alpha-delta_alpha)*dt)
+    derivative_sup = H*(1.-minimum_q)/(1.+minimum_q)**3
+    independently_required = delta_alpha*derivative_sup
+    symmetric_upper = H*delta_alpha*(1.+q_star)/(1.-q_star)**3
+    for row in faces['vertical']:
+        if row['interface'] != 0:
+            continue
+        normalized = row['pressure_energy_input']/(binding['geometry'].area*dt)
+        pressure_part = envelope['dp']*envelope['wmax']
+        used_rate = (normalized-pressure_part)/(envelope['pressure']+envelope['dp'])
+        # No unit floor: uncertainty is tiny, so rounding scales with the
+        # actual subtraction/product operands rather than with one m/s.
+        rounding = 512.*np.finfo(float).eps*(abs(normalized)+abs(pressure_part))/(envelope['pressure']+envelope['dp'])
+        assert independently_required <= used_rate+rounding
+        assert math.isfinite(used_rate) and used_rate > 0.
+        assert abs(used_rate-envelope['cap_rate_error']) <= rounding
+        assert envelope['cap_rate_error'] == pytest.approx(symmetric_upper,abs=0.,rel=3e-15)
+        assert envelope['alpha_interval_q_max'] >= q_star
+        if alpha < 0.:
+            old_fixed_cut_rate = delta_alpha*H/(1.-abs(binding['spec'].alpha*dt))**2
+            assert (independently_required-old_fixed_cut_rate)/rounding > 100.
+
+
+@pytest.mark.parametrize('alpha,dt', [(-.398,.05),(.08,.02)])
+def test_pressure_force_work_input_covers_expanded_column_volume(alpha,dt):
+    profile,spec = manufactured_mean_case(alpha=alpha)
+    integrator = MovingRawSlice(profile,authority='manufactured_half_prism_raw_means')
+    binding = integrator._binding(integrator.profile)
+    receipt = integrator.step(dt)
+    envelope = integrator._input_envelope(binding,dt)
+    H = spec.eta-spec.bottom
+    independent_Hmax = max(H,H/(1.+binding['spec'].alpha*dt))
+    pressure_gradient = abs((spec.external[1]-spec.external[0])/spec.distance)
+    required = pressure_gradient*spec.distance*spec.length*dt*((independent_Hmax+envelope['deta'])*envelope['du']+envelope['deta']*envelope['umax'])
+    used = receipt.faces['body_work_input_J']
+    rounding = 512.*np.finfo(float).eps*abs(required)
+    assert math.isfinite(used) and used > 0.
+    assert required <= used+rounding
+    quadrature = math.fsum(float(row['truncation'][0]) for row in receipt.faces['body_work'])
+    quadrature += 512.*np.finfo(float).eps*max(1.,math.fsum(float(row['scale'][0]) for row in receipt.faces['body_work']))
+    assert receipt.work_error_bound_J == quadrature+used
