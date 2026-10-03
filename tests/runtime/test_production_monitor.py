@@ -8,6 +8,7 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
+import ocean_solver.io.grid as owner_grid
 import ocean_solver.runtime.entry as driver
 from ocean_solver.audit.monitor import classify_state
 from ocean_solver.config.definitions import PhysicsConfig
@@ -75,7 +76,7 @@ def test_invalid_cli_inputs_fail_before_loading_data(tmp_path, monkeypatch, opti
     def forbidden(*args, **kwargs):
         pytest.fail("invalid CLI input reached grid loading")
 
-    monkeypatch.setattr(driver, "make_global_grid", forbidden)
+    monkeypatch.setattr(owner_grid, "make_global_grid", forbidden)
     monkeypatch.setattr(sys, "argv", ["ocean-solver", "--out-dir", str(tmp_path / "new"), *options])
     with pytest.raises(SystemExit) as raised:
         driver.main()

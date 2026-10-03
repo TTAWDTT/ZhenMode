@@ -1,6 +1,6 @@
 # 评价协议与报告
 
-评分实现在可安装包 `ocean_solver.validation.benchmarks`；本目录仅存协议。`ocean_solver.evaluation` 负责校验、接线、来源和报告，不复制 RMSE、平滑、漂移或门槛算法。
+评分实现在可安装包 `ocean_solver.evaluation`；本目录仅存协议。`ocean_solver.evaluation` 负责校验、接线、来源和报告，不复制 RMSE、平滑、漂移或门槛算法。
 
 ```sh
 zhenmode evaluate score \

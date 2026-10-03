@@ -1,1 +1,0 @@
-"""Mom6 components."""

@@ -34,7 +34,9 @@ def test_worker_cache_binding_reaches_actual_reader(tmp_path, monkeypatch, kind)
         "bathymetry": "bathy.nc", "temperature": "temperature.nc", "salinity": "salinity.nc",
         "wind-01": "monthly_mean_900.npz", "air": "air_2m_annual_2023.npz",
     }.items()}
-    bind_external_inputs({"data": data}, SimpleNamespace(DEFAULT_CONFIG=DEFAULT_CONFIG))
+    configured = bind_external_inputs({"data": data})
+    assert configured.bathymetry_file == str(selected / "bathy.nc")
+    assert DEFAULT_CONFIG.bathymetry_file != configured.bathymetry_file
     grid = SimpleNamespace(lon=np.array([1.0, 19.0]), lat=np.array([-8.0, 8.0]))
     if kind == "wind":
         u, v = wind.load_monthly_wind(grid, month_idx=900)

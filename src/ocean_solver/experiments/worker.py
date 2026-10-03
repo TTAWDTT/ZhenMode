@@ -66,12 +66,12 @@ def limit_resources(memory_mib):
         resource.setrlimit(resource.RLIMIT_AS, (memory_bytes, memory_bytes))
 
 
-def synthetic_services(expanded, directory, entry, grid_receipt):
+def synthetic_services(expanded, directory, grid_receipt):
     """Construct documented small inputs; every step still uses make_solver_global."""
     import numpy as np
 
     from ocean_solver.geometry.types import GlobalOceanGrid
-    from ocean_solver.runtime.services import RunServices
+    from ocean_solver.runtime.application import default_services
 
     case = expanded["case"]
     spec = case["grid"]
@@ -99,30 +99,23 @@ def synthetic_services(expanded, directory, entry, grid_receipt):
     with input_path.open("xb") as stream:
         np.savez_compressed(stream, T_init=temperature, S_init=salinity, wind=np.asarray(monthly), lon=lon, lat=lat, z=z,
                             depth=grid.depth, f=coriolis, dx_2d=dx, dy=grid.dy)
-    return RunServices(default_config=entry.DEFAULT_CONFIG,
+    return replace(default_services(),
                        make_global_grid=lambda *args, **kwargs: grid,
                        get_initial_fields=lambda grid: (temperature, salinity),
-                       heat_flux_meridional=entry.heat_flux_meridional,
                        build_seasonal_wind_global=lambda grid, year: monthly,
-                       real_wind_forcing=entry.real_wind_forcing,
-                       load_monthly_mean_air_temp=entry.load_monthly_mean_air_temp,
-                       load_annual_mean_air_temp=entry.load_annual_mean_air_temp,
-                       air_temp_profile=entry.air_temp_profile,
-                       make_solver_global=entry.make_solver_global,
-                       make_budget_step=entry.make_budget_step,
-                       make_restart_contract=entry.make_restart_contract,
                        input_files=lambda *args, **kwargs: {"synthetic_case": input_path},
                        source_identity=lambda: {"schema_version": 2, "all_package_files": source_identity()},
                        resolve_grid_dimensions=lambda *args, **kwargs: (nx, ny))
 
 
-def bind_external_inputs(manifest, entry):
+def bind_external_inputs(manifest):
+    from ocean_solver.config.definitions import DEFAULT_CONFIG
     from ocean_solver.forcing import air, wind
     from ocean_solver.io import climatology
 
     data = manifest["data"]
     bathymetry = data["bathymetry"]["resolved_path"]
-    entry.DEFAULT_CONFIG = replace(entry.DEFAULT_CONFIG, bathymetry_file=bathymetry.removesuffix(".npz"))
+    config = replace(DEFAULT_CONFIG, bathymetry_file=bathymetry.removesuffix(".npz"))
     climatology.WOA_FILES = {name: data[name]["resolved_path"].removesuffix(".npz") for name in ("temperature", "salinity")}
     wind_paths = [Path(value["resolved_path"]) for key, value in data.items() if key.startswith("wind-")]
     if len({path.parent for path in wind_paths}) != 1:
@@ -130,6 +123,7 @@ def bind_external_inputs(manifest, entry):
     wind.CACHE_DIR = str(wind_paths[0].parent)
     if "air" in data:
         air.CACHE_DIR = str(Path(data["air"]["resolved_path"]).parent)
+    return config
 
 
 def verify_selected_inputs(selected, manifest, options):
@@ -168,40 +162,41 @@ def main(argv=None):
     import jax
     import numpy as np
 
-    from ocean_solver.runtime import entry
-    from ocean_solver.runtime.application import run_main
+    from ocean_solver.provenance.sources import source_root
+    from ocean_solver.runtime import application
+    from ocean_solver.runtime.application import default_services, run_main
 
     if jax.default_backend() != "cpu":
         raise RuntimeError("managed local execution requires CPU")
     options = expanded["runtime_options"] | {"tag": "run", "out_dir": str(directory / "model"), "log_dir": str(directory / "logs")}
-    services = None
     grid_receipt = {}
-    if expanded["case"]["grid"]["kind"] == "synthetic":
-        services = synthetic_services(expanded, directory, entry, grid_receipt)
+    synthetic = expanded["case"]["grid"]["kind"] == "synthetic"
+    if synthetic:
+        services = synthetic_services(expanded, directory, grid_receipt)
     else:
-        bind_external_inputs(manifest, entry)
-        build_grid = entry.make_global_grid
+        services = default_services(bind_external_inputs(manifest))
+        build_grid = services.make_global_grid
         def capture_grid(*args, **kwargs):
             grid = build_grid(*args, **kwargs)
             grid_receipt["grid"] = grid
             return grid
-        entry.make_global_grid = capture_grid
+        services = replace(services, make_global_grid=capture_grid)
         # Validate the actual loader selections, including .npz precedence.
         from ocean_solver.runtime.cli import parse_run_configuration
 
         config = parse_run_configuration(argv_for(options))
-        verify_selected_inputs(entry._input_files(config.args), manifest, options)
+        verify_selected_inputs(services.input_files(config.args), manifest, options)
     sys.argv = ["zhenmode-production-worker", *argv_for(options)]
     previous_stdout = sys.stdout
     try:
-        code = entry.main() if services is None else run_main(services, entry.source_root(entry.__file__))
+        code = run_main(services, source_root(application.__file__))
     finally:
         if sys.stdout is not previous_stdout:
             sys.stdout.file.close()
             sys.stdout = previous_stdout
     result_path = directory / "model" / "global_run.npz"
     loaded = {}
-    package_root = Path(entry.__file__).resolve().parents[1]
+    package_root = Path(application.__file__).resolve().parents[1]
     for name, module in tuple(sys.modules.items()):
         path = getattr(module, "__file__", None)
         if name.startswith("ocean_solver") and path and Path(path).suffix == ".py":
@@ -232,7 +227,7 @@ def main(argv=None):
         report["forcing_provenance"] = json.loads(str(result["forcing_provenance_json"]))
         report["result_source_identity"] = json.loads(str(result["source_identity_json"]))
     selected_inputs = report["forcing_provenance"]["selected_files"]
-    if services is None:
+    if not synthetic:
         verify_selected_inputs({name: value["path"] for name, value in selected_inputs.items()}, manifest, options)
         for name, value in selected_inputs.items():
             if file_hash(value["path"]) != value["sha256"]:

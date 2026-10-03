@@ -3,7 +3,7 @@ import netCDF4
 import numpy as np
 import pytest
 
-from ocean_solver.validation.benchmarks.external import (
+from ocean_solver.evaluation.external import (
     _relative_drift,
     _time_days,
     score_external_field,
@@ -165,7 +165,7 @@ def test_no_land_fill_still_transposes_non_square_grid(tmp_path):
 
 
 def test_mom6_cli_uses_normalized_shared_time_window(tmp_path, monkeypatch, capsys):
-    from ocean_solver.validation.benchmarks.mom6 import main
+    from ocean_solver.evaluation.external import main
 
     reference_path = tmp_path / "reference.npz"
     model_path = tmp_path / "model.nc"
@@ -180,7 +180,8 @@ def test_mom6_cli_uses_normalized_shared_time_window(tmp_path, monkeypatch, caps
         dataset.renameVariable("wet_mask", "wet")
         dataset["time"].units = "hours since 2023-01-01"
         dataset["time"][:] = [600., 720.]
-    monkeypatch.setattr("sys.argv", ["score_mom6_prog", "--prog", str(model_path),
+    monkeypatch.setattr("sys.argv", ["score_external_model", "--input", str(model_path), "--variable", "temp",
+                                    "--lat-var", "lath", "--lon-var", "lonh", "--wet-var", "wet",
                                     "--geometry", str(model_path), "--reference-npz", str(reference_path),
                                     "--steady-days", "5", "--out", str(output)])
     main()
@@ -189,7 +190,7 @@ def test_mom6_cli_uses_normalized_shared_time_window(tmp_path, monkeypatch, caps
     result = json.loads(output.read_text())
     assert result["days_end"] == 30.
     assert result["steady_window_days"] == [25., 30.]
-    assert result["n_mom6_wet"] == 7
+    assert result["n_model_wet"] == 7
     assert capsys.readouterr().out
 
 

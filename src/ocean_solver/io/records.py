@@ -6,8 +6,11 @@ import os
 from dataclasses import dataclass, field
 
 from ocean_solver.audit.schema import empty_budget
-from ocean_solver.diagnostics.runtime import total_kinetic_energy
-from ocean_solver.diagnostics.state import BudgetDiagnostics, compute_budget_diagnostics
+from ocean_solver.diagnostics.state import (
+    BudgetDiagnostics,
+    compute_budget_diagnostics,
+    total_kinetic_energy,
+)
 from ocean_solver.io.restart import file_sha256
 from ocean_solver.numerics.backend import jax, jnp, np
 

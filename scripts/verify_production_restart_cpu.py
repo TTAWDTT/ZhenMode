@@ -30,13 +30,14 @@ def worker(directory, phase):
     import numpy as np
     import pytest
 
-    import ocean_solver.runtime.entry as driver
+    import ocean_solver.audit.stages as owner_stages
+    import ocean_solver.runtime.integration as owner_monitor
     from ocean_solver.io.restart import fingerprint
     from tests.support.driver import run_controlled_driver
 
     if jax.default_backend() != 'cpu':
         raise RuntimeError('CPU witness must run on CPU')
-    original = driver.make_budget_step
+    original = owner_stages.make_budget_step
     hlo = {}
     def capture(params):
         advance = original(params)
@@ -51,15 +52,15 @@ def worker(directory, phase):
             return advance(*args, **kwargs)
         return step
     endpoint = {}
-    classify = driver.classify_state
+    classify = owner_monitor.classify_state
     def capture_state(state, *args, **kwargs):
         metrics = classify(state, *args, **kwargs)
         if not int(metrics.failure):
             endpoint.update({name: np.asarray(value).copy() for name, value in zip(state._fields, state, strict=True)})
         return metrics
     with pytest.MonkeyPatch.context() as patch:
-        patch.setattr(driver, 'classify_state', capture_state)
-        patch.setattr(driver, 'make_budget_step', capture)
+        patch.setattr(owner_monitor, 'classify_state', capture_state)
+        patch.setattr(owner_stages, 'make_budget_step', capture)
         grid, contract = run_controlled_driver(
             patch, directory, restart=directory / 'ckpt_controlled.npz' if phase in ('second', 'last') else None,
             crash_after=3 if phase in ('first', 'second') else None,

@@ -38,7 +38,7 @@ import netCDF4
 import numpy as np
 
 from ocean_solver.forcing.fields import FORCING_TAPER_CELLS, taper_2d_y
-from ocean_solver.provenance.locations import source_root
+from ocean_solver.provenance.sources import source_root
 
 # ── Bulk-formula constants ──────────────────────────────────────────
 RHO_AIR = 1.225      # kg/m^3

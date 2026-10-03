@@ -17,7 +17,7 @@ flowchart TD
     Physics --> Numerics
     Run --> Accepted[runtime.integration: accept / reject]
     Accepted --> IO[io: records / output / restart]
-    IO --> Eval[evaluation → validation.benchmarks]
+    IO --> Eval[evaluation: metrics / external / pipeline]
     MOM6[baselines: pinned MOM6 workflow] --> Eval
     Research[separate zhenmode-research] --> Dynamics
 ```
@@ -34,8 +34,8 @@ flowchart TD
 | `dynamics`, `physics`, `timestepping` | 动量/连续性/示踪物，参数化，完整步/快慢子步协调 | 公式和执行顺序保持；时间协调不藏在数据加载里 |
 | `forcing`, `io` | 外部空气/风读取与插值，初值/浴深/输出/重启 | 加载不进入物理算子；数据默认引用路径 |
 | `diagnostics`, `audit`, `provenance` | 保存指标、真实步预算、失败监测、实际执行来源 | 诊断/门槛不等于气候资格 |
-| `validation/benchmarks`, `evaluation` | 唯一评分实现与协议/比较/报告编排 | 旧 raw/A2 与面积 v2 不混排；共享网格，无隐含重网格 |
-| `interop/mom6`, `baselines` | 既有强迫转换、固定外部源/构建/运行/结果转换 | 上游与编译缓存仓库外隔离 |
+| `evaluation`, `validation/mms` | 唯一评分实现与协议/比较/报告编排 | 旧 raw/A2 与面积 v2 不混排；共享网格，无隐含重网格 |
+| `baselines` | 既有强迫转换、固定外部源/构建/运行/结果转换 | 上游与编译缓存仓库外隔离 |
 | `cases` | 共同问题、边界、强迫、输出、数据引用 | 物理不一致的运行不能因 case 标签相同而变成公平比较 |
 | `configs/<method>/presets` | 多套来源明确的正式预设/历史复现配方 | 配方可展开不等于当前成绩已复现 |
 | `experiments` | 有 ID 的试验、消融和扫参定义 | 只声明相对 case/preset 的变化；大扫参不自动执行 |

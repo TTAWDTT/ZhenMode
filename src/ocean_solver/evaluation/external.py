@@ -1,7 +1,8 @@
 """Score an external ocean-model NetCDF on the shared benchmark grid.
 
 The first target is MOM6, but the CLI is intentionally model-neutral so the
-same command can score NEMO/ROMS-style structured output after remapping.
+same command can score other structured output on an already shared grid.
+It performs no regridding.
 """
 from __future__ import annotations
 
@@ -13,7 +14,7 @@ from pathlib import Path
 import netCDF4
 import numpy as np
 
-from ocean_solver.validation.benchmarks.metrics import _relative_drift, score_snapshot
+from ocean_solver.evaluation.metrics import _relative_drift, score_snapshot
 
 
 def _read_1d(ds: netCDF4.Dataset, name: str | None, fallback: np.ndarray | None = None,
