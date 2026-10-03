@@ -2,8 +2,8 @@
 
 本次验证使用原工作区的实际 ETOPO NetCDF、WOA2023 温盐 NetCDF、
 2023 年十二个月风缓存和年度空气温度缓存。不是 worktree 的合成浴深。
-实际数据 SHA256、完整展开参数、执行源码和资源 receipt 见
-[机器报告](global_regression_validation.json)。数据身份是当前本地观察值，
+完整参数、数据 SHA256、执行源码和资源 receipt 随每次本地运行产物保存。
+数据身份是当前本地观察值，
 不能据此补全原历史运行缺失的数据身份。
 
 整理前参考为 `25258950905f9d1aa84509c4c99ebad9ef33ba2b`，从其 Git archive
@@ -12,8 +12,7 @@
 106 个实际源码文件与 checkout 逐字节一致，无 research 或 editable 安装。
 两侧在独立进程中使用同一个 Python/JAX/NumPy 环境、单 CPU 和相同输入。
 旧 reader 显式传入缓存目录，适配及 observer 身份单独记录。
-机器报告中重复的源码清单通过 `source_inventory_sha256` 引用
-`shared_source_inventories`，保留每个实际文件 SHA；数值数据不归一化。
+捕获与比较工具校验实际文件 SHA，数值数据不归一化。
 
 ## 0.45° 原配方的失败与资源边界
 
@@ -54,7 +53,7 @@
 日志收尾曾暴露 observer 在计算日志 SHA 后追加摘要的问题。
 原 `completed.json` 不改字节，新增 `completed-final.json`：独立验证原 SHA
 对应日志前缀，尾部恰为已记录的结束摘要，只更新日志身份；数值文件未改动。
-后续 observer 在索引产物前关闭 Tee。原执行 observer 字节在机器报告保留。
+后续 observer 在索引产物前关闭 Tee。原执行 observer 字节随本地运行产物保存。
 比较器拒绝原校验失败；最终核对通过后还用副本做负例：文件改动、以及更新文件
 身份后仅改变一个浮点位的温度，均被拒绝。
 
@@ -86,7 +85,7 @@
 本机独立产物目录为
 `C:/Users/86153/.codex/tmp/zhenmode-global-regression-20261003T085444256440Z`。
 其 `plan-1deg.json` 是初态准备方案，`plan-staged-1deg.json` 是两小时方案，
-`plan-staged-1deg-12h.json` 是随后较长窗口方案；全部参数和校验值也保存在机器报告。
+`plan-staged-1deg-12h.json` 是随后较长窗口方案；全部参数和校验值保存在该目录的运行记录中。
 `plan-restart-1deg-12h.json` 冻结了实际当前 checkpoint 的 SHA。
 用 `$probe` 指向该目录，`$python` 指向其 `environment/Scripts/python.exe`：
 

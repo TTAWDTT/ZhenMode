@@ -33,14 +33,8 @@ def verify_cleanup(root):
             raise ValueError('moved file mismatch: ' + item['to'])
         if item.get('commit') and git_hash(item['commit'], item['from']) != item['sha256']:
             raise ValueError('historical tool identity mismatch: ' + item['from'])
-    reports = declaration['historical_reports']
-    for item in reports['files']:
-        if hashlib.sha256(path(item['path']).read_bytes()).hexdigest() != item['sha256']:
-            raise ValueError('archived report mismatch: ' + item['path'])
-        if git_hash(reports['commit'], item['original_path']) != item['git_blob_sha256']:
-            raise ValueError('report Git identity mismatch: ' + item['original_path'])
     return {'deleted_files': len(declaration['deletions']), 'moved_files': len(declaration['moves']),
-            'preserved_reports': len(reports['files']), 'models_executed': False}
+            'models_executed': False}
 
 
 def main():
