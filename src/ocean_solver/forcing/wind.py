@@ -87,7 +87,7 @@ def _bilinear(field, fine_lat, fine_lon, coarse_lat, coarse_lon):
 
 
 def load_monthly_wind(grid, month_idx=-1, url_prefix=PSL_BASE,
-                      cache_dir=CACHE_DIR):
+                      cache_dir=None):
     """Load monthly-mean 10m u/v over the solver domain.
 
     Args:
@@ -102,6 +102,7 @@ def load_monthly_wind(grid, month_idx=-1, url_prefix=PSL_BASE,
         solver grid; orientation S->N, lon ascending.
     """
     month_idx = int(month_idx)   # netCDF time-index must be int (float -> IndexError)
+    cache_dir = CACHE_DIR if cache_dir is None else cache_dir
     os.makedirs(cache_dir, exist_ok=True)
     cache_file = os.path.join(cache_dir, f"monthly_mean_{month_idx}.npz")
 

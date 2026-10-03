@@ -53,7 +53,7 @@ def _annual_mean_from_dataset(ds, year: int) -> tuple[np.ndarray, np.ndarray, np
 
 def load_monthly_mean_air_temp(grid, year: int = 2023,
                                url_prefix: str = PSL_AIR_BASE,
-                               cache_dir: str = CACHE_DIR) -> np.ndarray:
+                               cache_dir: str | None = None) -> np.ndarray:
     """Return twelve monthly NCEP 2m air fields on the solver grid, in C.
 
     Returns shape ``(12, nx, ny)``.  Month 0 is January.  A single cached
@@ -61,6 +61,7 @@ def load_monthly_mean_air_temp(grid, year: int = 2023,
     can use the same 30-day/blend schedule as seasonal wind.
     """
     year = int(year)
+    cache_dir = CACHE_DIR if cache_dir is None else cache_dir
     os.makedirs(cache_dir, exist_ok=True)
     cache_file = os.path.join(cache_dir, f"air_2m_monthly_{year:04d}.npz")
     if os.path.exists(cache_file):
@@ -94,7 +95,7 @@ def load_monthly_mean_air_temp(grid, year: int = 2023,
 
 def load_annual_mean_air_temp(grid, year: int = 2023,
                               url_prefix: str = PSL_AIR_BASE,
-                              cache_dir: str = CACHE_DIR) -> np.ndarray:
+                              cache_dir: str | None = None) -> np.ndarray:
     """Return annual-mean NCEP 2-m air temperature on the solver grid, in C.
 
     Returns an array shaped ``(nx, ny)`` matching ``GlobalOceanGrid``.  The
@@ -102,6 +103,7 @@ def load_annual_mean_air_temp(grid, year: int = 2023,
     interpolation and unit conversion are deterministic.
     """
     year = int(year)
+    cache_dir = CACHE_DIR if cache_dir is None else cache_dir
     os.makedirs(cache_dir, exist_ok=True)
     cache_file = os.path.join(cache_dir, f"air_2m_annual_{year:04d}.npz")
     if os.path.exists(cache_file):
