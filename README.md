@@ -76,4 +76,6 @@ python scripts/run_bounded_research_tests.py --module ocean_solver mms
 
 自动 CI 只检查 Ruff；全套测试、合成浴深和 MMS 需在人工验收后手动选择 `full_validation` 启动。独立数值 oracle 与负例保留。冻结集合、生产 fp32/fp64 数值对比、输出/重启、真实 MOM6 小例、外部目录干净安装及失败/跳过记录见 [本轮验证报告](docs/research_engineering_validation_zh.md)。工程回归或 CI 通过不等于长期气候资格、工业级资格或速度优势。
 
+后续在原资源上限内完成真实数据的 1° 全球 12 小时前后对照及 checkpoint 续跑，数值逐字节一致；0.45° 首次编译超时及单独的缓存接线修复也保留在 [全球回归报告](docs/global_regression_validation_zh.md)。这没有重新授予历史全年 RMSE 或百年稳定性结论。
+
 [目标架构](docs/research_engineering_architecture_zh.md)、[生产职责](docs/production_architecture_zh.md)、[迁移记录](docs/research_engineering_layout.json)、[全部文档](docs/README.md)提供进一步说明。材料库存、FV/C-grid 和 r-star 留在研究区；候选 353→354 步失败不能否定原生产历史，PR29 不属于本轮方法或交付。

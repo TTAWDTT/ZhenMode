@@ -10,6 +10,7 @@
 | 选择配方、声明实验与扫参 | [预设索引](../configs/README.md)、[实验说明](experiments_zh.md) |
 | 评分和公平比较 | [评价协议](evaluation_zh.md)、[MOM6 接入](baselines_zh.md) |
 | 审阅本轮改动与实际验证 | [清理说明](cleanup_zh.md)、[验证报告](research_engineering_validation_zh.md) |
+| 查真实全球回归及资源限制 | [全球回归报告](global_regression_validation_zh.md)、[缓存接线修复](external_cache_binding_fix_zh.md) |
 | 查原始方程和决策理由 | [静力原始方程](hydrostatic_primitive_equations.md)、[决策日志](decisions.md) |
 | 研究原型及失败材料 | [研究索引](../research/README.md) |
 

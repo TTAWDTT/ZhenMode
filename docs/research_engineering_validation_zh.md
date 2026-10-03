@@ -1,5 +1,8 @@
 # 当前工程验证报告
 
+下列清理回归对应 `2069035`。随后真实全球验证及单独的输入接线修复记录在
+[全球回归报告](global_regression_validation_zh.md)，不把后续结果补写成此前已完成的验证。
+
 本报告描述删除转接层后的版本。完整机器记录、实际源码和产物 hash 见 [validation.json](research_engineering_validation.json)；
 删除与迁移依据见 [清理清单](cleanup_manifest.json)。第一阶段报告原字节在 [独立证据目录](../archive/evidence/reorganization/phase1/README.md)，不改写成当前结果。
 
