@@ -1,6 +1,6 @@
 # Resolution scaling: measured CFL limits and the auto-scaling fix
 
-Measured 2026-09-18 with CPU probes in `src/jax_solver_global.py`. Every
+Measured 2026-09-18 with CPU probes in `src/ocean_solver/numerics/stability.py`. Every
 number below is from an actual run, not an estimate.
 
 ## TL;DR

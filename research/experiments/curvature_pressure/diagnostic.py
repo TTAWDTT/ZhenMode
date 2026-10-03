@@ -1,5 +1,6 @@
 """Pre-frozen smooth polynomial accuracy diagnostic, no production caller."""
 
+import argparse
 import json
 from pathlib import Path
 
@@ -111,6 +112,12 @@ def run():
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--out", type=Path, help="write a new local report instead of source-tree evidence")
+    args = parser.parse_args()
     result = run()
-    Path(__file__).with_name("evidence.json").write_text(json.dumps(result, indent=2) + "\n")
+    if args.out:
+        args.out.parent.mkdir(parents=True, exist_ok=True)
+        with args.out.open("x", encoding="utf-8") as output:
+            output.write(json.dumps(result, indent=2) + "\n")
     print(json.dumps(result, indent=2))

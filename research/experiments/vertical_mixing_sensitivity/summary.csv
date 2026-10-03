@@ -1,6 +1,0 @@
-run,snapshots,a1_corr,a1_rmse,a2_corr,a2_rmse,mean_error,max_u_peak,max_eta_final,heat_rel_drift,salt_rel_drift
-lambda1_baseline,10,0.997,1.469,0.988,1.886,-1.314,1.6927,1.3823,0.006563,0.00000813
-lambdaglobal_real_air_kv1e-6_kconv005,10,0.997,1.430,0.988,1.851,-1.270,1.6930,1.3830,0.006690,0.00000408
-lambdaglobal_real_air_kv1e-5_kconv001,10,0.997,1.447,0.988,1.870,-1.297,1.6927,1.3799,0.006305,0.00000803
-lambdaglobal_real_air_kv1e-6_kconv001,10,0.997,1.427,0.988,1.848,-1.263,1.6930,1.3806,0.006548,0.00000423
-lambdaglobal_real_air_kv1e-6_kconv001_repeat,10,0.997,1.420,0.988,1.844,-1.260,1.6930,1.3804,0.006535,0.00000366

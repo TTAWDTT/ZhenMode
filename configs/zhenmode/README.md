@@ -4,7 +4,7 @@
 
 | Preset ID | 参数来源 | 对应 case |
 | --- | --- | --- |
-| `global-045deg-seasonal` | `scripts/run_candidate_baseline_045_icefloor.sh` | `global-045deg-seasonal-365d` |
+| `global-045deg-seasonal` | 既有 0.45° seasonal 配方 | `global-045deg-seasonal-365d` |
 | `global-050deg-wind-only` | `scripts/run_industrial_comparison_050_wind_only.sh` | `global-050deg-wind-only-30d` |
 | `global-050deg-restoring` | `scripts/run_industrial_comparison_050_restore_30d.sh` | `global-050deg-restoring-30d` |
 | `synthetic-smoke` | 原受控生产 driver fixture 的运行方式；网格与输入明确重新定义 | `synthetic-production-smoke-80s` |

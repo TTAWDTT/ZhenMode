@@ -43,18 +43,14 @@ testpaths = ["tests"]
 [tool.ruff]
 line-length = 100
 target-version = "py312"
-# Explicit excludes, and do NOT fall back to .gitignore. archive/ is the
-# retired solver and results/ holds archival, machine-specific figure
-# provenance; results/ is gitignored yet partially tracked, so a
-# gitignore-driven exclusion would behave differently in a fresh clone.
+# Exclude generated outputs explicitly so lint scope is consistent across clones.
 respect-gitignore = false
 extend-exclude = [
     "build",        # generated wheel build tree, never authoritative source
-    "archive",       # retired regional spectral solver (not runnable)
-    "results",       # archival figure / provenance scripts (machine-specific)
+    "results",       # local run outputs
     "data/**", "logs/**", "checkpoints/**",   # local run I/O
     "dashboard/node_modules",
-    "research",       # autonomous-research workspace / literature snapshots
+    "research",       # separately installed research implementations
     "scratch",        # local probes and legacy artifacts
     ".claude",        # local agent worktrees / session metadata
 ]
