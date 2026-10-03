@@ -425,8 +425,10 @@ def _material_tracer_step(state, params, faces, *, subcycle_plan=None, max_subcy
 
 
 def _material_step(state, params, subcycle_scheme="reference_static_v1", max_subcycles=128,
-                   momentum_diffusion_scheme="legacy_component_v1", *, stage_observer=None):
+                   momentum_diffusion_scheme="legacy_component_v1", *, stage_observer=None, fast_observer=None):
     # Optional eager research observer; default/JIT production paths are unchanged.
+    if fast_observer is not None and params.use_scan:
+        raise ValueError('eager fast observation requires use_scan=False')
     def observe(name, current, diagnostics=None):
         if stage_observer is not None:
             stage_observer(name, current, diagnostics)
@@ -455,7 +457,11 @@ def _material_step(state, params, subcycle_scheme="reference_static_v1", max_sub
     observe("nonlinear_predictor", nonlinear_predictor)
     predictor = _linear_half_step(nonlinear_predictor, params, duration, momentum_diffusion=momentum_diffusion)
     observe("predictor_linear_second", predictor)
-    dynamical, column_faces, filter_change = _barotropic_subcycle_transport(predictor, params)
+    if fast_observer is None:
+        dynamical, column_faces, filter_change = _barotropic_subcycle_transport(predictor, params)
+    else:
+        dynamical, column_faces, filter_change = _barotropic_subcycle_transport(
+            predictor, params, fast_observer=fast_observer)
     observe("barotropic", dynamical)
     velocity_x = .5 * (first.u + nonlinear_predictor.u)
     velocity_y = .5 * (first.v + nonlinear_predictor.v)

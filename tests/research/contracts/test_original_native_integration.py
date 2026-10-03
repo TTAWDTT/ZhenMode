@@ -7,53 +7,24 @@ import numpy as np
 import pytest
 
 from ocean_solver.candidates.material import solver as material
-from ocean_solver.configuration import G_EARTH, RHO_0, PhysicsConfig
-from ocean_solver.fd.factory import make_solver_global
-from ocean_solver.geometry.types import GlobalOceanGrid
+from ocean_solver.configuration import G_EARTH, RHO_0
 from research.experiments.material_top_band.original_native import (
     OriginalNativeAudit,
     capture_native,
     reference_pressure_kick,
 )
+from tests.support.original_native import (
+    assert_identity,
+    bound,
+    independent_outflow,
+    make_original_native_case,
+    original_factory,
+)
 
 
 @pytest.fixture(scope="module")
 def case():
-    nx, ny, nz = 8, 4, 6
-    latitude = np.array([-30., -10., 10., 30.])
-    cosine = np.cos(np.radians(latitude))
-    z = np.array([0., -5., -15., -30., -50., -80.])
-    grid = GlobalOceanGrid(
-        lon=(np.arange(nx)+.5)*360./nx, lat=latitude,
-        dx_2d=np.broadcast_to(6.371e6*cosine*np.radians(360./nx), (nx, ny)).copy(),
-        dy=float(6.371e6*np.radians(20.)), cos_lat=cosine,
-        f=np.broadcast_to(2*7.2921e-5*np.sin(np.radians(latitude)), (nx, ny)).copy(),
-        z=z, dz=-np.diff(z), nz=nz, depth=np.full((nx, ny), 80.),
-        wet_mask=np.ones((nx, ny)), ocean_mask=np.ones((nx, ny), bool),
-        land_mask=np.zeros((nx, ny)), wet_mask_3d=np.ones((nx, ny, nz)), nx=nx, ny=ny)
-    physics = PhysicsConfig(nu_h=2., nu_v=.0003, kappa_h=.4, kappa_v=.0002,
-                           kappa_conv=.01, nu_bi=100., kappa_bi=20., r_bot=.0001)
-    forcing = tuple(np.full((nx, ny), value) for value in (.02, .003, 35.))
-    _, initialize, _, params, _ = make_solver_global(
-        grid, physics, .12, forcing=forcing, T_atm=np.full((nx, ny), 16.), lambda_bulk=50.,
-        dtype="float64", mode_split=True, dt_bt=.01, nu_nsub=2, use_scan=False,
-        conservative_kv=True, localize_conv=True, monotone_adv=True, fct_adv=True,
-        column_geometry="nodal_dual_v1", process_time_scheme="symmetric_fast_v3",
-        match_barotropic_transport=True, polar_cap_rows=0, polar_cap_taper=0,
-        projection_niter=150, projection_rtol=1e-12, projection_preconditioner="none",
-        projection_max_refinements=2, return_params=True)
-    x, y, level = np.indices((nx, ny, nz))
-    shear = np.array([1., 1.2, 1.4, .6, .3, .1])
-    normal = .003*np.sin(np.pi*y/3.)*(1.+level/20.)
-    normal[:, (0, -1), :] = 0.
-    state = initialize()._replace(
-        u=jnp.asarray((.02+.01*np.sin(2*np.pi*x/8.))*shear),
-        v=jnp.asarray(normal),
-        T=jnp.asarray(15.+.2*level+.03*np.cos(2*np.pi*x/8.)),
-        S=jnp.asarray(35.+.005*level+.004*np.sin(np.pi*y/3.)),
-        eta=jnp.asarray(-.4+.02*np.cos(2*np.pi*np.arange(nx)[:, None]/8.)*np.ones((1, ny))),
-        ice=jnp.zeros((nx, ny), dtype=jnp.float64))
-    return state, params, grid
+    return make_original_native_case()
 
 
 def unchanged(first, second):
@@ -63,35 +34,6 @@ def unchanged(first, second):
         assert np.asarray(a).tobytes() == np.asarray(b).tobytes()
 
 
-def independent_outflow(grid):
-    """Assemble native volume outflow directly from signed face owners."""
-    shape = (grid.nx, grid.ny, grid.nz)
-    n = math.prod(shape)
-    B = np.zeros((n, 2*n))
-    edges = np.r_[0., -.5*(grid.z[:-1]+grid.z[1:]), -grid.z[-1]]
-    widths = np.diff(edges)
-    for i, j, k in np.ndindex(shape):
-        owner = np.ravel_multi_index((i, j, k), shape)
-        east = np.ravel_multi_index(((i+1) % grid.nx, j, k), shape)
-        coefficient = .5*grid.dy*widths[k]
-        for column in (owner, east):
-            B[owner, column] += coefficient
-            B[east, column] -= coefficient
-        if j+1 < grid.ny:
-            north = np.ravel_multi_index((i, j+1, k), shape)
-            face_cosine = .5*(grid.cos_lat[j]+grid.cos_lat[j+1])
-            coefficient = .5*grid.dx_2d[i, j]/grid.cos_lat[j]*face_cosine*widths[k]
-            for column in (owner+n, north+n):
-                B[owner, column] += coefficient
-                B[north, column] -= coefficient
-    for i, j, k in np.ndindex(shape):
-        if j in (0, grid.ny-1):
-            B[:, n+np.ravel_multi_index((i, j, k), shape)] = 0.
-    return B
-
-
-def bound(*operands):
-    return 512.*np.finfo(float).eps*sum(np.abs(value) for value in operands)
 
 
 def test_true_native_fields_stocks_metric_and_pressure(case):
@@ -231,7 +173,24 @@ def test_original_ten_stages_twelve_generic_fast_calls_and_default_identity(case
     assert np.max(abs(receipt.original_state.eta-state.eta)) > 0.
     assert np.max(abs(receipt.original_state.T-state.T)) > 0.
     assert np.max(abs(receipt.original_state.u-state.u)) > 0.
-    assert receipt.convection_activity > 0.
+    from dataclasses import replace
+
+    from tests.support.original_native import audit_native_receipt
+    kick = reference_pressure_kick(audit.view,params)
+    gates = audit_native_receipt(audit.view,kick,receipt,grid)
+    assert max(gates["identity_roundoff_ratios"].values()) <= 1.
+    with pytest.raises(ValueError):
+        audit_native_receipt(audit.view,replace(kick,impulse_work=kick.impulse_work+1e6),receipt,grid)
+    with pytest.raises(ValueError):
+        audit_native_receipt(audit.view,replace(kick,transport_work=kick.transport_work+1e6),receipt,grid)
+    broken = dict(receipt.fast_calls[0])
+    fx,fy = (value.copy() for value in broken["mean_faces"])
+    fx[0,1] += 10.
+    broken["mean_faces"] = (fx,fy)
+    corrupt = replace(receipt,fast_calls=(broken,*receipt.fast_calls[1:]))
+    with pytest.raises(ValueError):
+        audit_native_receipt(audit.view,kick,corrupt,grid)
+    assert receipt.convection_rhs_abs_max > 0.
     assert receipt.pressure_impulse_abs_max > 0.
     assert B.shape == (192, 384)
     assert audit.accepted_joint_steps == 0
@@ -292,3 +251,69 @@ def test_parameter_change_after_capture_refuses_before_observers(case):
     unchanged(state, saved)
     unchanged(audit.state, state)
     assert audit.accepted_joint_steps == 0 and audit.last_receipt is None
+
+
+@pytest.mark.parametrize("duration", [True, 0., -.01, .02, np.nan, np.inf, 1j])
+def test_invalid_pressure_probe_duration_refuses(case, duration):
+    state, params, grid = case
+    saved = tuple(np.asarray(value).copy() for value in state)
+    view = capture_native(state, params, grid)
+    with pytest.raises(ValueError):
+        reference_pressure_kick(view, params, duration=duration)
+    unchanged(state, saved)
+
+
+def test_pressure_view_metric_tampering_refuses(case):
+    from dataclasses import replace
+    state, params, grid = case
+    view = capture_native(state, params, grid)
+    with pytest.raises(ValueError, match="binding"):
+        reference_pressure_kick(replace(view, mass=view.mass*1.01), params)
+
+
+@pytest.mark.parametrize("bad_area", [1.01, np.nan])
+def test_pressure_view_area_tampering_refuses(case, bad_area):
+    from dataclasses import replace
+    state, params, grid = case
+    view = capture_native(state, params, grid)
+    with pytest.raises(ValueError):
+        reference_pressure_kick(replace(view, area=view.area*bad_area), params)
+
+
+def test_success_then_late_failure_retains_complete_diagnostic_receipt(case):
+    state, params, grid = case
+    saved = tuple(np.asarray(value).copy() for value in state)
+    audit = OriginalNativeAudit(state, params, grid)
+    previous = audit.diagnose()
+    def fail(row):
+        if row["index"] == 11:
+            raise RuntimeError("late transaction failure")
+    with pytest.raises(RuntimeError, match="transaction failure"):
+        audit.diagnose(fast_observer=fail)
+    assert audit.last_receipt is previous
+    assert audit.accepted_joint_steps == 0
+    unchanged(audit.state, saved)
+    unchanged(state, saved)
+
+
+@pytest.mark.parametrize("field", ["u", "eta"])
+def test_large_finite_native_values_cannot_export_nonfinite_derived_state(case, field):
+    state, params, grid = case
+    bad = state._replace(**{field:jnp.full_like(getattr(state,field),1e308)})
+    with pytest.raises(ValueError):
+        capture_native(bad, params, grid)
+
+
+def test_true_factory_with_inconsistent_spherical_metric_refuses(case):
+    state, _, grid = case
+    copied = copy.deepcopy(grid)
+    copied.dx_2d[:,1] *= 1.01
+    _, _, _, rebuilt, _ = original_factory(copied)
+    with pytest.raises(ValueError, match="spherical geometry"):
+        capture_native(state, rebuilt, copied)
+
+
+@pytest.mark.parametrize("actual,expected,scale", [(1.,0.,0.),(np.nan,0.,1.),(0.,0.,np.inf)])
+def test_frozen_identity_gate_refuses_invalid_or_zero_bound(actual, expected, scale):
+    with pytest.raises(ValueError):
+        assert_identity(actual,expected,scale)
