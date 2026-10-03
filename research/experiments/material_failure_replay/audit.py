@@ -23,10 +23,10 @@ from ocean_solver.provenance.archives import current_source_files
 ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT / "src"))
 
-from config import PhysicsConfig  # noqa: E402
-from grid import GlobalOceanGrid  # noqa: E402
-from jax_solver_global import make_solver_global  # noqa: E402
-from material_top import (  # noqa: E402
+from ocean_solver.config.definitions import PhysicsConfig  # noqa: E402
+from ocean_solver.io.grid import GlobalOceanGrid  # noqa: E402
+from ocean_solver.model.factory import make_solver_global  # noqa: E402
+from zhenmode_research.candidates.material.solver import (  # noqa: E402
     CFL_LIMIT,
     CONTINUITY_TOLERANCE_M,
     FACE_TOLERANCE_M2_PER_S,

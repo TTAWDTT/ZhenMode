@@ -5,7 +5,7 @@ from __future__ import annotations
 from collections.abc import Callable
 from dataclasses import dataclass
 
-from ocean_solver.configuration import Config
+from ocean_solver.config.definitions import Config
 
 
 @dataclass
@@ -24,3 +24,4 @@ class RunServices:
     make_restart_contract: Callable
     input_files: Callable
     source_identity: Callable
+    resolve_grid_dimensions: Callable | None = None

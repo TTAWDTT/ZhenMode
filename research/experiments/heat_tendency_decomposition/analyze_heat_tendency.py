@@ -17,11 +17,11 @@ import numpy as np
 REPO = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(REPO / "src"))
 
-from air_reanalysis import load_annual_mean_air_temp
-from bench_climatology_global import smooth_2d_global
-from config import DEFAULT_CONFIG, C_P, GlobalGridConfig, RHO_0
+from ocean_solver.forcing.air import load_annual_mean_air_temp
+from ocean_solver.validation.benchmarks.climatology import smooth_2d_global
+from ocean_solver.config.definitions import DEFAULT_CONFIG, C_P, GlobalGridConfig, RHO_0
 from dataclasses import replace
-from grid import make_global_grid
+from ocean_solver.io.grid import make_global_grid
 
 TERM_NAMES = ["advection", "horizontal_diffusion", "vertical_diffusion",
               "convection", "gm_bolus", "redi"]

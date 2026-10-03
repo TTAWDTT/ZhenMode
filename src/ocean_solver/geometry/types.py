@@ -53,5 +53,3 @@ class GlobalOceanGrid:
     # Dimensions
     nx: int
     ny: int
-
-GlobalOceanGrid.__module__ = 'grid'

@@ -23,7 +23,7 @@ import numpy as np
 sys.path.insert(0, os.path.join(
     os.path.dirname(os.path.abspath(__file__)), "..", "src"))
 
-from config import ETOPO_FILENAME  # noqa: E402
+from ocean_solver.config.definitions import ETOPO_FILENAME  # noqa: E402
 
 N_LON, N_LAT = 3600, 1800
 RES = 0.1

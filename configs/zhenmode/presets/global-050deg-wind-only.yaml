@@ -1,0 +1,38 @@
+schema_version: 1
+kind: preset
+id: global-050deg-wind-only
+name_zh: 既有0.5度仅风对照配置
+method: zhenmode
+purpose: 复用已有工业对照运行脚本；共同物理强迫由case定义，实际可比性另行核查。
+source: scripts/run_industrial_comparison_050_wind_only.sh @ 25258950905f9d1aa84509c4c99ebad9ef33ba2b
+discretization: global collocated finite difference; linear free surface; mode split;
+  localized convection; limited tracer transport; column projection
+options:
+  mode_split: true
+  use_scan: true
+  dtype: float32
+  lambda_bulk:
+    value: 80
+    unit: W/m2/K
+  kappa_v:
+    value: 1.0e-06
+    unit: m2/s
+  kappa_conv:
+    value: 0.01
+    unit: m2/s
+  kappa_gm:
+    value: 0
+    unit: m2/s
+  localize_conv: true
+  fct_adv: true
+  project_adv_vel: true
+  min_depth:
+    value: 500
+    unit: m
+  smooth_passes: 80
+  nu_h:
+    value: 2000000.0
+    unit: m2/s
+  dt:
+    value: 1800
+    unit: s

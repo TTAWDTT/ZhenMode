@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "id": "production-smoke-v1",
+  "kind": "sst",
+  "case_id": "synthetic-production-smoke-80s",
+  "metric_definition": "area_weighted_angular_box_v2",
+  "reference": {"role": "saved_initial_surface_temperature", "version": "synthetic-uniform-initialization-v1", "sha256": null},
+  "window": {"start_day": 0, "end_day": 0.000925925925925926},
+  "spatial": {"coordinate_system": "geographic_degrees", "mask": "reference_wet", "weighting": "wet_cell_area", "remapping": "none"},
+  "temporal": {"weighting": "arithmetic_saved_records"},
+  "temperature_unit": "degC",
+  "acceptance": {"max_raw_rmse_degC": null, "max_abs_heat_drift_percent": null, "max_abs_salt_drift_percent": null},
+  "limitations": ["Synthetic 80-second production plumbing smoke; no climate accuracy or long integration claim.", "Protocol name v1 is the orchestration version; the SST metric definition is explicitly area v2.", "Numerical equivalence and restart require separate independent checks."]
+}

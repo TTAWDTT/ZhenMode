@@ -9,20 +9,25 @@ from ocean_solver.provenance.sources import production_source_modules, source_pa
 def current_source_files(repository, selected):
     """Resolve moved files and retain logical archive names for old replay readers.
 
-    Current canonical implementations, bridges, support/oracle helpers and the
-    layout declaration are all included. The reserved checkout/src labels bind
-    the two real direct-file launchers without replacing legacy alias labels. Archived historical manifests stay
-    bound to their historical commit; this helper never invents their hashes.
+    Current implementations, support/oracle helpers and the layout declaration
+    are included. Old logical labels resolve through a migration record, without
+    installing forwarding modules. Historical manifests require their own commit.
     """
     root = Path(repository)
     declaration = root / "docs/source_test_layout.json"
     layout = json.loads(declaration.read_text(encoding="utf-8"))
+    engineering_declaration = root / 'docs/research_engineering_layout.json'
+    engineering = (json.loads(engineering_declaration.read_text(encoding='utf-8'))
+                   if engineering_declaration.is_file() else {})
+    moves = engineering.get('source_moves', {})
     entrypoints = {"checkout/src/" + name + ".py": root / "src" / (name + ".py")
-                   for name in ("jax_solver_global", "run_long_integration_global")}
+                   for name in ("ocean_solver/__main__", "ocean_solver/runtime/entry")}
     result = {}
     for item in selected:
         name = Path(item).relative_to(root).as_posix() if isinstance(item, Path) else str(item)
-        if name.startswith("src/") and name.count("/") == 1:
+        if name in moves:
+            path = root / moves[name]
+        elif name.startswith("src/") and name.count("/") == 1:
             module = Path(name).stem
             path = source_paths(root / "src", (module,))[module]
         elif name in entrypoints:
@@ -42,14 +47,20 @@ def current_source_files(repository, selected):
         if not path.is_file():
             raise ValueError("missing required checkout entrypoint: " + name)
         result[name] = path
-    required = tuple(dict.fromkeys((*production_source_modules(), *layout["legacy_modules"])))
+    required = production_source_modules()
     for name, path in source_paths(root / "src", required).items():
         result["src/" + name + ".py"] = path
         result[path.relative_to(root).as_posix()] = path
+    research_root = root / 'research/src'
+    if research_root.is_dir():
+        for path in sorted(research_root.rglob('*.py')):
+            result[path.relative_to(root).as_posix()] = path
     for path in sorted((root / "tests").rglob("*.py")):
         if "support" in path.parts or path.name == "__init__.py":
             result[path.relative_to(root).as_posix()] = path
     result["docs/source_test_layout.json"] = declaration
+    if engineering_declaration.is_file():
+        result['docs/research_engineering_layout.json'] = engineering_declaration
     return result
 
 

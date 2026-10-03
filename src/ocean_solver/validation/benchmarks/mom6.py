@@ -7,7 +7,6 @@ from pathlib import Path
 import netCDF4
 import numpy as np
 
-from ocean_solver._compat import preserve_legacy_names
 from ocean_solver.validation.benchmarks.external import score_external_field
 from ocean_solver.validation.benchmarks.metrics import _relative_drift
 
@@ -43,7 +42,7 @@ def main():
     print(json.dumps(result, indent=2))
 
 
-preserve_legacy_names(globals(), 'score_mom6_prog')
+
 
 if __name__ == "__main__":
     main()

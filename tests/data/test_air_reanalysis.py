@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from air_reanalysis import load_annual_mean_air_temp, load_monthly_mean_air_temp
+from ocean_solver.forcing.air import load_annual_mean_air_temp, load_monthly_mean_air_temp
 
 
 class Grid:

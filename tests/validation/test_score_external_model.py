@@ -3,7 +3,11 @@ import netCDF4
 import numpy as np
 import pytest
 
-from score_external_model import _relative_drift, _time_days, score_external_field
+from ocean_solver.validation.benchmarks.external import (
+    _relative_drift,
+    _time_days,
+    score_external_field,
+)
 
 
 def _write_reference(path):
@@ -161,7 +165,7 @@ def test_no_land_fill_still_transposes_non_square_grid(tmp_path):
 
 
 def test_mom6_cli_uses_normalized_shared_time_window(tmp_path, monkeypatch, capsys):
-    from score_mom6_prog import main
+    from ocean_solver.validation.benchmarks.mom6 import main
 
     reference_path = tmp_path / "reference.npz"
     model_path = tmp_path / "model.nc"

@@ -17,8 +17,8 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
-import cgrid_momentum
-from finite_volume import build_geometry
+import zhenmode_research.candidates.fv.momentum as cgrid_momentum
+from zhenmode_research.candidates.fv.geometry import build_geometry
 
 jax.config.update("jax_enable_x64", True)
 

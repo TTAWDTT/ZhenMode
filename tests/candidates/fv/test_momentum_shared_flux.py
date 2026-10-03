@@ -4,8 +4,13 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from cgrid_momentum import LayerState, linear_momentum_surface_step
-from finite_volume import ExtensiveState, VolumeFluxes, build_geometry, surface_volume
+from zhenmode_research.candidates.fv.geometry import (
+    ExtensiveState,
+    VolumeFluxes,
+    build_geometry,
+    surface_volume,
+)
+from zhenmode_research.candidates.fv.momentum import LayerState, linear_momentum_surface_step
 
 jax.config.update("jax_enable_x64", True)
 

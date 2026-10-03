@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "id": "sst-area-v2-initial-reference-280-365",
+  "kind": "sst",
+  "case_id": "global-045deg-seasonal-365d",
+  "metric_definition": "area_weighted_angular_box_v2",
+  "reference": {"role": "saved_initial_surface_temperature", "version": "WOA2023-shared-initialization", "sha256": null},
+  "window": {"start_day": 280, "end_day": 365},
+  "spatial": {"coordinate_system": "geographic_degrees", "mask": "reference_wet", "weighting": "wet_cell_area", "remapping": "none"},
+  "temporal": {"weighting": "arithmetic_saved_records"},
+  "temperature_unit": "degC",
+  "acceptance": {"max_raw_rmse_degC": null, "max_abs_heat_drift_percent": null, "max_abs_salt_drift_percent": null},
+  "limitations": ["New v2 protocol. Historical 0.91364293 raw / 1.11257074 A2 reports retain equal-cell v1 identity and cannot be ranked with this protocol.", "Reference field hash is bound in each report; a null template hash is not an independent observation certificate.", "No predeclared climate acceptance thresholds exist in this protocol."]
+}

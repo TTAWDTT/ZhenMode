@@ -10,8 +10,8 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "src"))
 sys.path.insert(0, str(ROOT))
 
-from config import PhysicsConfig
-from jax_solver_global import make_solver_global
+from ocean_solver.config.definitions import PhysicsConfig
+from ocean_solver.model.factory import make_solver_global
 from tests.support.driver import driver, run_controlled_driver
 from tests.support.grid import all_wet_grid
 

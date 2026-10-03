@@ -7,7 +7,7 @@ import numpy as np
 from tests.support.paths import REPOSITORY_ROOT
 
 spec = importlib.util.spec_from_file_location(
-    'window_postprocess', REPOSITORY_ROOT / 'scripts/controlled_window/postprocess_6h.py')
+    'window_postprocess', REPOSITORY_ROOT / 'archive/tools/controlled_window/postprocess_6h.py')
 module = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(module)
 

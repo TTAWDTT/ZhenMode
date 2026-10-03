@@ -4,9 +4,12 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-import material_top
-from material_top import _checkpointed_material_scan, make_material_top_step
+import zhenmode_research.candidates.material.solver as material_top
 from tests.support.material.top import _material_fixture, _state
+from zhenmode_research.candidates.material.solver import (
+    _checkpointed_material_scan,
+    make_material_top_step,
+)
 
 
 @pytest.mark.parametrize("maximum,active", [(1, 1), (7, 3), (8, 8), (13, 11),

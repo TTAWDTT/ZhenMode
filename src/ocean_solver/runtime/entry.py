@@ -20,14 +20,13 @@ Output:
   - results/global_<tag>_3d/   (streamed 3D T/U/V snapshots, one .npy each)
 
 Usage:
-  python src/run_long_integration_global.py --days 365 --seasonal-wind --tag g365d
-  python src/run_long_integration_global.py --days 200 --tag g200d_smoke   # shorter probe
+  zhenmode model --days 365 --seasonal-wind --tag g365d
+  zhenmode model --days 200 --tag g200d_smoke   # shorter probe
 """
 
 import argparse as argparse
 import sys
 
-from ocean_solver._compat import preserve_legacy_names
 from ocean_solver.provenance.locations import source_root
 
 try:
@@ -46,34 +45,46 @@ from ocean_solver.audit.schema import empty_budget as empty_budget
 from ocean_solver.audit.stages import make_budget_step as make_budget_step
 from ocean_solver.audit.validation import finite_number as finite_number
 from ocean_solver.audit.validation import integer_count as integer_count
-from ocean_solver.configuration import DEFAULT_CONFIG as DEFAULT_CONFIG
-from ocean_solver.configuration import GlobalGridConfig as GlobalGridConfig
-from ocean_solver.configuration import PhysicsConfig as PhysicsConfig
-from ocean_solver.data.air import load_annual_mean_air_temp as load_annual_mean_air_temp
-from ocean_solver.data.air import load_monthly_mean_air_temp as load_monthly_mean_air_temp
-from ocean_solver.data.climatology import get_initial_fields as get_initial_fields
-from ocean_solver.data.forcing import BULK_LAMBDA_DEFAULT as BULK_LAMBDA_DEFAULT
-from ocean_solver.data.forcing import air_temp_profile as air_temp_profile
-from ocean_solver.data.forcing import heat_flux_meridional as heat_flux_meridional
-from ocean_solver.data.forcing import ocean_zonal_mean as ocean_zonal_mean
-from ocean_solver.data.wind import real_wind_forcing as real_wind_forcing
+from ocean_solver.config.definitions import DEFAULT_CONFIG as DEFAULT_CONFIG
+from ocean_solver.config.definitions import GlobalGridConfig as GlobalGridConfig
+from ocean_solver.config.definitions import PhysicsConfig as PhysicsConfig
+from ocean_solver.diagnostics.runtime import state_is_finite as state_is_finite
+from ocean_solver.diagnostics.runtime import total_kinetic_energy as total_kinetic_energy
 from ocean_solver.diagnostics.state import BudgetDiagnostics as BudgetDiagnostics
 from ocean_solver.diagnostics.state import compute_budget_diagnostics as compute_budget_diagnostics
 from ocean_solver.diagnostics.state import diagnostics_to_arrays as diagnostics_to_arrays
-from ocean_solver.fd.backend import jax as jax
-from ocean_solver.fd.backend import jnp as jnp
-from ocean_solver.fd.backend import np as np
-from ocean_solver.fd.factory import make_solver_global as make_solver_global
-from ocean_solver.fd.projection import projection_config as projection_config
-from ocean_solver.fd.types import JaxStateG as JaxStateG
-from ocean_solver.geometry.grid import global_grid_dims as global_grid_dims
-from ocean_solver.geometry.grid import land_distance_from_land_mask as land_distance_from_land_mask
-from ocean_solver.geometry.grid import make_global_grid as make_global_grid
-from ocean_solver.provenance.restart import file_sha256 as file_sha256
-from ocean_solver.provenance.restart import fingerprint as fingerprint
-from ocean_solver.provenance.restart import load_restart as load_restart
-from ocean_solver.provenance.restart import make_restart_contract as make_restart_contract
-from ocean_solver.provenance.restart import save_restart as save_restart
+from ocean_solver.dynamics.projection import projection_config as projection_config
+from ocean_solver.forcing.air import load_annual_mean_air_temp as load_annual_mean_air_temp
+from ocean_solver.forcing.air import load_monthly_mean_air_temp as load_monthly_mean_air_temp
+from ocean_solver.forcing.fields import BULK_LAMBDA_DEFAULT as BULK_LAMBDA_DEFAULT
+from ocean_solver.forcing.fields import air_temp_profile as air_temp_profile
+from ocean_solver.forcing.fields import heat_flux_meridional as heat_flux_meridional
+from ocean_solver.forcing.fields import ocean_zonal_mean as ocean_zonal_mean
+from ocean_solver.forcing.seasonal import build_seasonal_wind_global as build_seasonal_wind_global
+from ocean_solver.forcing.seasonal import interp_monthly_field as interp_monthly_field
+from ocean_solver.forcing.seasonal import interp_monthly_field_jit as interp_monthly_field_jit
+from ocean_solver.forcing.seasonal import interp_seasonal_wind as interp_seasonal_wind
+from ocean_solver.forcing.seasonal import interp_seasonal_wind_jit as interp_seasonal_wind_jit
+from ocean_solver.forcing.seasonal import marine_smooth_2d as marine_smooth_2d
+from ocean_solver.forcing.wind import real_wind_forcing as real_wind_forcing
+from ocean_solver.io.climatology import get_initial_fields as get_initial_fields
+from ocean_solver.io.grid import global_grid_dims as global_grid_dims
+from ocean_solver.io.grid import land_distance_from_land_mask as land_distance_from_land_mask
+from ocean_solver.io.grid import make_global_grid as make_global_grid
+from ocean_solver.io.paths import _Tee as _Tee
+from ocean_solver.io.records import _save_snapshot_file as _save_snapshot_file
+from ocean_solver.io.recovery import SNAPSHOT_FIELDS as SNAPSHOT_FIELDS
+from ocean_solver.io.recovery import SNAPSHOT_SCALARS as SNAPSHOT_SCALARS
+from ocean_solver.io.recovery import _validate_restart_history as _validate_restart_history
+from ocean_solver.io.restart import file_sha256 as file_sha256
+from ocean_solver.io.restart import fingerprint as fingerprint
+from ocean_solver.io.restart import load_restart as load_restart
+from ocean_solver.io.restart import make_restart_contract as make_restart_contract
+from ocean_solver.io.restart import save_restart as save_restart
+from ocean_solver.model.factory import make_solver_global as make_solver_global
+from ocean_solver.numerics.backend import jax as jax
+from ocean_solver.numerics.backend import jnp as jnp
+from ocean_solver.numerics.backend import np as np
 from ocean_solver.provenance.sources import production_source_modules as production_source_modules
 from ocean_solver.runtime.application import run_main
 from ocean_solver.runtime.cli import AMPLITUDE_CAP_C as AMPLITUDE_CAP_C
@@ -102,20 +113,8 @@ from ocean_solver.runtime.identity import _source_identity as source_identity
 from ocean_solver.runtime.identity import _state_identity as _state_identity
 from ocean_solver.runtime.inputs import _input_files as resolve_input_files
 from ocean_solver.runtime.inputs import _lat_band_mask as _lat_band_mask
-from ocean_solver.runtime.metrics import state_is_finite as state_is_finite
-from ocean_solver.runtime.metrics import total_kinetic_energy as total_kinetic_energy
-from ocean_solver.runtime.paths import _Tee as _Tee
-from ocean_solver.runtime.records import _save_snapshot_file as _save_snapshot_file
-from ocean_solver.runtime.recovery import SNAPSHOT_FIELDS as SNAPSHOT_FIELDS
-from ocean_solver.runtime.recovery import SNAPSHOT_SCALARS as SNAPSHOT_SCALARS
-from ocean_solver.runtime.recovery import _validate_restart_history as _validate_restart_history
-from ocean_solver.runtime.seasonal import build_seasonal_wind_global as build_seasonal_wind_global
-from ocean_solver.runtime.seasonal import interp_monthly_field as interp_monthly_field
-from ocean_solver.runtime.seasonal import interp_monthly_field_jit as interp_monthly_field_jit
-from ocean_solver.runtime.seasonal import interp_seasonal_wind as interp_seasonal_wind
-from ocean_solver.runtime.seasonal import interp_seasonal_wind_jit as interp_seasonal_wind_jit
-from ocean_solver.runtime.seasonal import marine_smooth_2d as marine_smooth_2d
 from ocean_solver.runtime.services import RunServices
+from ocean_solver.state.types import JaxStateG as JaxStateG
 from ocean_solver.validation.benchmarks.metrics import mixed_layer_depth as mixed_layer_depth
 
 
@@ -147,7 +146,7 @@ def main():
     return run_main(services, source_root(__file__))
 
 
-preserve_legacy_names(globals(), 'run_long_integration_global')
+
 
 if __name__ == "__main__":
     sys.exit(main())

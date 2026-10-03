@@ -7,27 +7,27 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from config import C_P, G_EARTH, RHO_0, PhysicsConfig
-from diagnostics import compute_budget_diagnostics
-from grid import nodal_control_thickness
-from jax_solver_global import (
+from ocean_solver.config.definitions import C_P, G_EARTH, RHO_0, PhysicsConfig
+from ocean_solver.diagnostics.state import compute_budget_diagnostics
+from ocean_solver.dynamics.barotropic import _free_surface_step_fd
+from ocean_solver.dynamics.pressure import (
+    _compute_bt_rho_pgf,
+    _compute_pressure_gradient,
+    _reference_depth_gradient,
+)
+from ocean_solver.dynamics.processes import _compute_momentum_residual, _compute_momentum_tendency
+from ocean_solver.dynamics.transport import (
     _barotropic_velocity,
     _column_divergence,
-    _compute_bt_rho_pgf,
-    _compute_momentum_residual,
-    _compute_momentum_tendency,
-    _compute_pressure_gradient,
-    _conv_flux_tendency,
-    _d2_dz2_flux,
-    _free_surface_step_fd,
-    _horizontal_tracer_diffusion,
     _reference_depth_divergence,
-    _reference_depth_gradient,
-    _surface_heat_weights,
-    _vertical_momentum_diffusion,
-    make_fd_params,
-    make_solver_global,
 )
+from ocean_solver.geometry.fd import make_fd_params
+from ocean_solver.io.grid import nodal_control_thickness
+from ocean_solver.model.factory import make_solver_global
+from ocean_solver.numerics.horizontal import _horizontal_tracer_diffusion
+from ocean_solver.numerics.vertical import _d2_dz2_flux
+from ocean_solver.physics.surface import _surface_heat_weights
+from ocean_solver.physics.vertical import _conv_flux_tendency, _vertical_momentum_diffusion
 from tests.support.material.reference_geometry import WIDTHS, _fixture, _numpy_column_divergence
 
 

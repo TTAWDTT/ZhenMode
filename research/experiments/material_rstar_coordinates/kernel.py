@@ -5,7 +5,7 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
-from config import G_EARTH, RHO_0
+from ocean_solver.config.definitions import G_EARTH, RHO_0
 
 
 class RStarGeometry(NamedTuple):

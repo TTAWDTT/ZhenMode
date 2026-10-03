@@ -3,28 +3,26 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from config import C_P, RHO_0, PhysicsConfig
-from jax_solver_global import (
-    _advection_scalar,
-    _barotropic_subcycle_transport,
-    _barotropic_velocity,
-    _explicit_full_step,
-    _face_transport_divergence,
-    _free_surface_step_fd,
-    _layer_face_transports,
-    _linear_half_step,
-    _match_layer_face_transports,
-    _tracer_step_with_transport,
-    _vertical_transport_iface,
-    make_solver_global,
-)
-from stage_budgets import (
+from ocean_solver.audit.schema import (
     MAXIMUM_BUDGET_FIELDS,
     SOURCE_NAMES,
     accumulate_budget,
     empty_budget,
-    make_budget_step,
 )
+from ocean_solver.audit.stages import make_budget_step
+from ocean_solver.config.definitions import C_P, RHO_0, PhysicsConfig
+from ocean_solver.dynamics.barotropic import _barotropic_subcycle_transport, _free_surface_step_fd
+from ocean_solver.dynamics.processes import _linear_half_step
+from ocean_solver.dynamics.transport import (
+    _advection_scalar,
+    _barotropic_velocity,
+    _face_transport_divergence,
+    _layer_face_transports,
+    _match_layer_face_transports,
+    _vertical_transport_iface,
+)
+from ocean_solver.model.factory import make_solver_global
+from ocean_solver.timestepping.integration import _explicit_full_step, _tracer_step_with_transport
 from tests.support.material.reference_geometry import WIDTHS, _fixture
 
 

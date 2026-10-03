@@ -8,18 +8,16 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from config import G_EARTH, RHO_0
-from jax_solver_global import (
-    _advection_scalar,
-    _compute_hydrostatic_pressure,
-    _gradient_conservative_3d,
-    _layer_face_transports,
-    _vertical_transport_iface,
-)
+from ocean_solver.config.definitions import G_EARTH, RHO_0
+from ocean_solver.dynamics.transport import _advection_scalar
+from ocean_solver.dynamics.pressure import _compute_hydrostatic_pressure
+from ocean_solver.numerics.horizontal import _gradient_conservative_3d
+from ocean_solver.dynamics.transport import _layer_face_transports
+from ocean_solver.dynamics.transport import _vertical_transport_iface
 
 spec = importlib.util.spec_from_file_location(
     'fd_pressure_pe_contract', REPOSITORY_ROOT
-    / 'scripts/diagnostics/fd_pressure_pe_contract.py')
+    / 'research/tools/diagnostics/fd_pressure_pe_contract.py')
 module = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(module)
 

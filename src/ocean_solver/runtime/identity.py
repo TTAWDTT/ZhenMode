@@ -6,9 +6,9 @@ import hashlib
 import subprocess
 from pathlib import Path
 
-from ocean_solver.fd.backend import np
+from ocean_solver.io.restart import file_sha256
+from ocean_solver.numerics.backend import np
 from ocean_solver.provenance.locations import source_root
-from ocean_solver.provenance.restart import file_sha256
 from ocean_solver.provenance.sources import production_source_modules, source_paths
 
 SOURCE_MODULES = production_source_modules()

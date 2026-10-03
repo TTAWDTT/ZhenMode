@@ -42,7 +42,7 @@ jax.config.update("jax_enable_x64", True)
 import jax.numpy as jnp
 import numpy as np
 
-from jax_solver_global import _apply_polar_cap
+from ocean_solver.numerics.horizontal import _apply_polar_cap
 from tests.support.grid import all_wet_grid
 
 NCAP = 2

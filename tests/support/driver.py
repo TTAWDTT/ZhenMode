@@ -5,7 +5,7 @@ from dataclasses import replace
 import numpy as np
 import pytest
 
-import run_long_integration_global as driver
+import ocean_solver.runtime.entry as driver
 from tests.support.grid import all_wet_grid
 
 

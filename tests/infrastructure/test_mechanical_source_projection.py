@@ -6,7 +6,7 @@ import importlib.util
 from tests.support.paths import REPOSITORY_ROOT
 
 spec = importlib.util.spec_from_file_location(
-    'mechanical_source', REPOSITORY_ROOT / 'scripts/controlled_window/prepare_mechanical_source.py')
+    'mechanical_source', REPOSITORY_ROOT / 'archive/tools/controlled_window/prepare_mechanical_source.py')
 module = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(module)
 

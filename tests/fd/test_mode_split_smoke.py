@@ -24,9 +24,9 @@ from dataclasses import replace
 
 import jax.numpy as jnp
 
-import jax_solver_global as G
-from config import PhysicsConfig
-from jax_solver_global import make_solver_global
+import ocean_solver.timestepping.integration as G_integration
+from ocean_solver.config.definitions import PhysicsConfig
+from ocean_solver.model.factory import make_solver_global
 from tests.support.grid import all_wet_grid as _synth_grid
 
 
@@ -58,11 +58,11 @@ def main():
     st = init_off(T_init=jnp.array(T0), S_init=jnp.array(S0))
     st = st._replace(eta=jnp.array(eta0))
     # manual monolithic step via _step_impl for comparison
-    st_ref = G._step_impl(st, params_off)
+    st_ref = G_integration._step_impl(st, params_off)
     # params with new fields zeroed = what the pre-split solver would do
     p_old = params_off._replace(mode_split=False, dt_bt=0.0, n_subcyc=0,
                                 conv_nsub=1)
-    st_old = G._step_impl(st, p_old)
+    st_old = G_integration._step_impl(st, p_old)
     du = float(jnp.max(jnp.abs(st_ref.u - st_old.u)))
     dT = float(jnp.max(jnp.abs(st_ref.T - st_old.T)))
     print(f"[1] monolithic path invariant: max|du|={du:.3e} max|dT|={dT:.3e}")

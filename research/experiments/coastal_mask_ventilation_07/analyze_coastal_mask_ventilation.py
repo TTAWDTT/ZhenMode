@@ -16,9 +16,9 @@ import numpy as np
 REPO = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(REPO / "src"))
 
-from config import GlobalGridConfig
+from ocean_solver.config.definitions import GlobalGridConfig
 from dataclasses import replace
-from grid import make_global_grid
+from ocean_solver.io.grid import make_global_grid
 
 
 def find_bathymetry():

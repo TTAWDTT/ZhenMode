@@ -17,12 +17,8 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
-from config import DEFAULT_CONFIG, GlobalGridConfig, PhysicsConfig
-from diagnostics import compute_budget_diagnostics
-from grid import global_grid_dims, land_distance_from_land_mask, make_global_grid
-from integration_monitor import make_monitored_advance
-from jax_solver_global import make_solver_global, projection_config
-from stage_budgets import (
+from ocean_solver.audit.monitor import make_monitored_advance
+from ocean_solver.audit.schema import (
     MAXIMUM_BUDGET_FIELDS,
     METRIC_NAMES,
     NONLINEAR_PROCESS_NAMES,
@@ -30,8 +26,13 @@ from stage_budgets import (
     STAGE_NAMES,
     TRANSPORT_METRIC_NAMES,
     empty_budget,
-    make_budget_step,
 )
+from ocean_solver.audit.stages import make_budget_step
+from ocean_solver.config.definitions import DEFAULT_CONFIG, GlobalGridConfig, PhysicsConfig
+from ocean_solver.diagnostics.state import compute_budget_diagnostics
+from ocean_solver.dynamics.projection import projection_config
+from ocean_solver.io.grid import global_grid_dims, land_distance_from_land_mask, make_global_grid
+from ocean_solver.model.factory import make_solver_global
 
 
 def source_hashes():
@@ -114,10 +115,10 @@ def main():
         initial_temperature, initial_salinity = load_initial_fixture(args.initial_from, grid)
         additional_inputs[str(Path(args.initial_from).resolve())] = hashlib.sha256(Path(args.initial_from).read_bytes()).hexdigest()
     if args.ncep_month is not None:
-        from air_reanalysis import CACHE_DIR as AIR_CACHE
-        from air_reanalysis import load_monthly_mean_air_temp
-        from wind_reanalysis import CACHE_DIR as WIND_CACHE
-        from wind_reanalysis import real_wind_forcing
+        from ocean_solver.forcing.air import CACHE_DIR as AIR_CACHE
+        from ocean_solver.forcing.air import load_monthly_mean_air_temp
+        from ocean_solver.forcing.wind import CACHE_DIR as WIND_CACHE
+        from ocean_solver.forcing.wind import real_wind_forcing
 
         year = 1948 + args.ncep_month // 12
         atmosphere = load_monthly_mean_air_temp(grid, year=year)[args.ncep_month % 12]

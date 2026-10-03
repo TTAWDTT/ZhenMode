@@ -12,68 +12,30 @@ dependencies = [
     "scipy>=1.12",
     "netCDF4>=1.6",
     "jax>=0.4",
+    "PyYAML>=6.0",
 ]
 
 [project.optional-dependencies]
 dev = [
     "pytest>=8.0",
     "ruff>=0.6",
+    "setuptools>=68.0",
 ]
 
 [project.scripts]
 ocean-solver = "ocean_solver.runtime.entry:main"
+zhenmode = "ocean_solver.cli:main"
 
-# Canonical implementations live in ocean_solver. Historical bare imports
-# are installed from src/compat as aliases to the same canonical module objects.
-# archive/regional is historical and is deliberately not installed or linted.
+# Production uses canonical package imports; research is separately installed.
 [tool.setuptools]
-package-dir = { "" = "src/compat", "ocean_solver" = "src/ocean_solver" }
-py-modules = [
-    "config",
-    "grid",
-    "finite_volume",
-    "bounded_transport",
-    "cgrid_momentum",
-    "wet_fluxes",
-    "physical_velocity",
-    "paired_dynamics",
-    "nonlinear_dynamics",
-    "barotropic_transport",
-    "jax_solver_global",
-    "material_top",
-    "run_long_integration_global",
-    "restart_contract",
-    "runtime_validation",
-    "source_identity",
-    "integration_monitor",
-    "forcing",
-    "wind_reanalysis",
-    "air_reanalysis",
-    "diagnostics",
-    "stage_budgets",
-    "woa_data",
-    "input_quality",
-    "input_sources",
-    "benchmark_metrics",
-    "benchmark_gate",
-    "benchmark_manifest",
-    "benchmark_table",
-    "score_external_model",
-    "score_mom6_prog",
-    "export_mom6_air_temp_forcing",
-    "export_mom6_sensible_forcing",
-    "export_mom6_wind_forcing",
-    "summarize_ice_diagnostics",
-    "mixed_layer_ice",
-    "bench_climatology_global",
-    "fetch_sla_monthly",
-    "fetch_ssh_abs_monthly",
-    "erddap_fetch",
-]
+package-dir = { "" = "src", "scripts" = "scripts" }
 
 [tool.setuptools.packages.find]
 where = ["src"]
 include = ["ocean_solver*"]
+
+[tool.setuptools.cmdclass]
+build_py = "scripts.build_distribution.CleanBuildPy"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -87,6 +49,7 @@ target-version = "py312"
 # gitignore-driven exclusion would behave differently in a fresh clone.
 respect-gitignore = false
 extend-exclude = [
+    "build",        # generated wheel build tree, never authoritative source
     "archive",       # retired regional spectral solver (not runnable)
     "results",       # archival figure / provenance scripts (machine-specific)
     "data/**", "logs/**", "checkpoints/**",   # local run I/O
@@ -103,12 +66,9 @@ ignore = [
 ]
 
 [tool.ruff.lint.per-file-ignores]
-# jax.config.update('jax_enable_x64') must run before the jnp import.
-"src/jax_solver_global.py" = ["E402"]
-"src/run_long_integration_global.py" = ["E402"]
 # Test support imports use the installed package and repository fixtures.
 "tests/**/*.py" = ["E402"]
 "scripts/*.py" = ["E402"]
 
 [tool.ruff.lint.isort]
-known-first-party = ['config', 'grid', 'jax_solver_global', 'run_long_integration_global', 'stage_budgets', 'source_identity', 'restart_contract', 'runtime_validation', 'integration_monitor', 'forcing', 'wind_reanalysis', 'air_reanalysis', 'woa_data', 'input_quality', 'input_sources', 'erddap_fetch', 'fetch_sla_monthly', 'fetch_ssh_abs_monthly', 'diagnostics', 'mixed_layer_ice', 'benchmark_metrics', 'benchmark_gate', 'benchmark_manifest', 'benchmark_table', 'score_external_model', 'score_mom6_prog', 'bench_climatology_global', 'summarize_ice_diagnostics', 'export_mom6_air_temp_forcing', 'export_mom6_sensible_forcing', 'export_mom6_wind_forcing', 'finite_volume', 'bounded_transport', 'cgrid_momentum', 'wet_fluxes', 'physical_velocity', 'paired_dynamics', 'nonlinear_dynamics', 'barotropic_transport', 'material_top', 'ocean_solver', 'tests', 'research', 'scripts', 'dashboard']
+known-first-party = ['ocean_solver', 'zhenmode_research', 'tests', 'research', 'scripts', 'dashboard']

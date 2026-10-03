@@ -7,12 +7,12 @@ import time
 from ocean_solver.audit.monitor import classify_state
 from ocean_solver.audit.schema import accumulate_budget
 from ocean_solver.diagnostics.state import diagnostics_to_arrays
-from ocean_solver.fd.backend import jnp, np
-from ocean_solver.provenance.restart import save_restart
+from ocean_solver.io.output import RunOutcome, write_final_records
+from ocean_solver.io.records import capture_snapshot, restore_records
+from ocean_solver.io.restart import save_restart
+from ocean_solver.numerics.backend import jnp, np
 from ocean_solver.runtime.cli import AMPLITUDE_CAP_C, DRIFT_TOL_C, ETA_BLOWUP_M, MAX_U_BOUND
 from ocean_solver.runtime.identity import _same_state_bytes
-from ocean_solver.runtime.output import RunOutcome, write_final_records
-from ocean_solver.runtime.records import capture_snapshot, restore_records
 from ocean_solver.runtime.reporting import print_run_header
 
 

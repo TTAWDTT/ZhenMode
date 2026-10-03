@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "id": "mom6-tc1-pinned",
+  "name_zh": "MOM6 固定版本官方 tc1 小算例",
+  "method": "MOM6",
+  "upstream_commit": "f49a00096df607b48354603e2398e14e189fd62e",
+  "upstream_case_path": ".testing/tc1",
+  "input_files": ["MOM_input", "MOM_override", "input.nml", "diag_table"],
+  "preparation": "byte-for-byte upstream copy; all input hashes saved before execution",
+  "grid": {"kind": "mercator", "nx": 10, "ny": 8, "nz": 8, "native_velocity_location": "C-grid"},
+  "duration_s": 21600,
+  "baroclinic_dt_s": 900,
+  "output_diagnostic_times_s": [0, 10800, 21600],
+  "evaluation_protocol": "mom6-tc1-smoke-v1",
+  "comparison": {"scope": "native_execution_smoke", "status": "not_comparable_to_global_case", "limitations": ["Upstream tc1 physical inputs are not the WOA/ETOPO shared global case.", "No global RMSE or fair speed ranking."]},
+  "resources": {"cpu": 1, "mpi_ranks": 1, "wall_seconds": 180, "memory_bytes": 4294967296, "output_bytes": 134217728}
+}

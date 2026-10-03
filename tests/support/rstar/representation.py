@@ -5,7 +5,7 @@ from types import SimpleNamespace
 import jax.numpy as jnp
 import numpy as np
 
-from config import RHO_0
+from ocean_solver.config.definitions import RHO_0
 from research.experiments.material_rstar_coordinates.kernel import hydrostatic_pressure
 from research.experiments.material_rstar_coordinates.pressure_work import (
     PotentialBasis,

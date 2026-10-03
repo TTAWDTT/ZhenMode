@@ -14,25 +14,27 @@ def test_current_archive_resolves_legacy_keys_and_contains_complete_source_closu
     files = current_source_files(REPOSITORY_ROOT, [
         'src/config.py', 'tests/test_rstar_weak_time.py', 'tests/_helpers.py',
     ])
-    assert files['src/config.py'] == REPOSITORY_ROOT / 'src/compat/config.py'
+    assert files['src/config.py'] == REPOSITORY_ROOT / 'src/ocean_solver/config/definitions.py'
     assert files['tests/test_rstar_weak_time.py'] == REPOSITORY_ROOT / 'tests/research/rstar/test_rstar_weak_time.py'
     assert files['tests/_helpers.py'] == REPOSITORY_ROOT / 'tests/support/grid.py'
     assert files['tests/support/rstar/weak_time.py'].is_file()
     required = source_paths(REPOSITORY_ROOT / 'src', production_source_modules())
     assert set(required.values()) <= set(files.values())
-    assert len({key for key in files if key.startswith('src/ocean_solver/')}) == 96
+    assert len({key for key in files if key.startswith('src/ocean_solver/')}) == len(list((REPOSITORY_ROOT / 'src/ocean_solver').rglob('*.py')))
     # Every key hashes actual current bytes; aliases and implementations differ.
     hashes = {key: hashlib.sha256(path.read_bytes()).hexdigest() for key, path in files.items()}
-    assert hashes['src/config.py'] == hashes['src/compat/config.py']
-    assert hashes['src/config.py'] != hashes['src/ocean_solver/configuration.py']
+    assert hashes['src/config.py'] == hashes['src/ocean_solver/config/definitions.py']
+    assert 'src/ocean_solver/configuration.py' not in hashes
 
 
 def test_current_archive_rejects_missing_implementation_instead_of_hash_fallback(tmp_path):
     shutil.copytree(REPOSITORY_ROOT / 'src', tmp_path / 'src')
+    shutil.copytree(REPOSITORY_ROOT / 'research/src', tmp_path / 'research/src')
     (tmp_path / 'docs').mkdir()
     shutil.copyfile(REPOSITORY_ROOT / 'docs/source_test_layout.json', tmp_path / 'docs/source_test_layout.json')
-    (tmp_path / 'src/ocean_solver/data/quality.py').unlink()
-    with pytest.raises(ValueError, match='missing required source: ocean_solver/data/quality'):
+    shutil.copyfile(REPOSITORY_ROOT / 'docs/research_engineering_layout.json', tmp_path / 'docs/research_engineering_layout.json')
+    (tmp_path / 'src/ocean_solver/io/data_quality.py').unlink()
+    with pytest.raises(ValueError, match='missing required source: ocean_solver/io/data_quality'):
         current_source_files(tmp_path, ['src/config.py'])
 
 
@@ -49,18 +51,18 @@ def test_current_producer_hashes_real_complete_source_closure_without_model_run(
     hashes = owner.source_hashes()
     files = current_source_files(REPOSITORY_ROOT, [Path(owner.__file__).resolve()])
     assert hashes == {name: hashlib.sha256(path.read_bytes()).hexdigest() for name, path in files.items()}
-    assert len([name for name in hashes if name.startswith("src/ocean_solver/")]) == 96
-    assert len([name for name in hashes if name.startswith("src/compat/")]) == 40
+    assert len([name for name in hashes if name.startswith("src/ocean_solver/")]) == len(list((REPOSITORY_ROOT / 'src/ocean_solver').rglob('*.py')))
+    assert len([name for name in hashes if name.startswith("src/compat/")]) == len(list((REPOSITORY_ROOT / 'src/compat').glob('*.py')))
     assert "tests/support/driver.py" in hashes
     assert "tests/support/grid.py" in hashes
 
 
 @pytest.mark.parametrize("logical,actual", [
-    ("src/config.py", "src/compat/config.py"),
+    pytest.param("src/config.py", "src/ocean_solver/config/definitions.py", id="src/config.py-src/compat/config.py"),
     ("tests/_driver_helpers.py", "tests/support/driver.py"),
     ("tests/_helpers.py", "tests/support/grid.py"),
     ("tests/test_cgrid_pressure_work.py", "tests/candidates/fv/test_cgrid_pressure_work.py"),
-    ("src/ocean_solver/configuration.py", "src/ocean_solver/configuration.py"),
+    pytest.param("src/ocean_solver/configuration.py", "src/ocean_solver/config/definitions.py", id="src/ocean_solver/configuration.py-src/ocean_solver/configuration.py"),
 ])
 def test_current_source_resolver_maps_logical_labels_to_actual_files(logical, actual):
     from ocean_solver.provenance import archives
@@ -97,9 +99,9 @@ def test_current_manifest_requires_actual_hashes_and_complete_current_closure(co
     files = current_source_files(REPOSITORY_ROOT, [])
     hashes = {name: hashlib.sha256(path.read_bytes()).hexdigest() for name, path in files.items()}
     if corruption == "different_bytes":
-        hashes["src/config.py"] = "0" * 64
+        hashes["src/ocean_solver/config/definitions.py"] = "0" * 64
     elif corruption == "missing_canonical":
-        hashes.pop("src/ocean_solver/configuration.py")
+        hashes.pop("src/ocean_solver/config/definitions.py")
     elif corruption == "missing_marker":
         hashes = {name: value for name, value in hashes.items()
                   if name != "docs/source_test_layout.json" and not name.startswith("src/ocean_solver/")}
@@ -116,8 +118,8 @@ def test_rotation_probe_keeps_current_ledger_and_executed_operator_separate():
     operator_bytes = Path(probe.cgrid_momentum.__file__).read_bytes()
     ledger, executed = probe.source_provenance(operator_bytes)
     assert ledger["src/cgrid_momentum.py"] == hashlib.sha256(
-        (REPOSITORY_ROOT / "src/compat/cgrid_momentum.py").read_bytes()).hexdigest()
-    assert executed == {"kind": "current_file", "path": "src/ocean_solver/candidates/fv/momentum.py",
+        (REPOSITORY_ROOT / "research/src/zhenmode_research/candidates/fv/momentum.py").read_bytes()).hexdigest()
+    assert executed == {"kind": "current_file", "path": "research/src/zhenmode_research/candidates/fv/momentum.py",
                         "sha256": hashlib.sha256(operator_bytes).hexdigest()}
     retained_blob = b"independent frozen-operator bytes"
     frozen_ledger, frozen = probe.source_provenance(retained_blob, "1" * 40)
@@ -136,7 +138,7 @@ def test_current_attribution_cli_verifies_new_receipt_sources_without_model(tmp_
 
     hashes = source_hashes()
     if tampered:
-        hashes["src/config.py"] = "0" * 64
+        hashes["src/ocean_solver/config/definitions.py"] = "0" * 64
     report = {"status": "complete", "arguments": {"audit_budget": True},
               "provenance": {"source_sha256": hashes}, "cases": []}
     input_path = tmp_path / "metadata_only.json"
@@ -155,27 +157,35 @@ def test_current_attribution_cli_verifies_new_receipt_sources_without_model(tmp_
         assert result["cases"] == []
 
 
-@pytest.mark.parametrize("launcher", ["jax_solver_global", "run_long_integration_global"])
+@pytest.mark.parametrize("launcher", [
+    pytest.param("ocean_solver/__main__", id="jax_solver_global"),
+    pytest.param("ocean_solver/runtime/entry", id="run_long_integration_global"),
+])
 def test_current_closure_records_checkout_launchers_separately_from_compatibility(launcher):
     from ocean_solver.provenance.archives import current_source_path
 
     files = current_source_files(REPOSITORY_ROOT, [])
     direct_label = f"checkout/src/{launcher}.py"
-    legacy_label = f"src/{launcher}.py"
+    implementation_label = f"src/{launcher}.py"
     assert files[direct_label] == REPOSITORY_ROOT / f"src/{launcher}.py"
-    assert files[legacy_label] == REPOSITORY_ROOT / f"src/compat/{launcher}.py"
+    assert files[implementation_label] == REPOSITORY_ROOT / f"src/{launcher}.py"
     assert current_source_path(REPOSITORY_ROOT, direct_label) == files[direct_label].resolve()
-    assert hashlib.sha256(files[direct_label].read_bytes()).digest() != hashlib.sha256(files[legacy_label].read_bytes()).digest()
+    assert files[direct_label] == files[implementation_label]
 
 
-@pytest.mark.parametrize("launcher", ["jax_solver_global", "run_long_integration_global"])
+@pytest.mark.parametrize("launcher", [
+    pytest.param("ocean_solver/__main__", id="jax_solver_global"),
+    pytest.param("ocean_solver/runtime/entry", id="run_long_integration_global"),
+])
 def test_current_manifest_rejects_actual_checkout_launcher_byte_changes(tmp_path, launcher):
     from ocean_solver.provenance.archives import verify_current_source_hashes
 
     shutil.copytree(REPOSITORY_ROOT / "src", tmp_path / "src", ignore=shutil.ignore_patterns("__pycache__"))
+    shutil.copytree(REPOSITORY_ROOT / "research/src", tmp_path / "research/src", ignore=shutil.ignore_patterns("__pycache__"))
     shutil.copytree(REPOSITORY_ROOT / "tests", tmp_path / "tests", ignore=shutil.ignore_patterns("__pycache__"))
     (tmp_path / "docs").mkdir()
     shutil.copyfile(REPOSITORY_ROOT / "docs/source_test_layout.json", tmp_path / "docs/source_test_layout.json")
+    shutil.copyfile(REPOSITORY_ROOT / "docs/research_engineering_layout.json", tmp_path / "docs/research_engineering_layout.json")
     files = current_source_files(tmp_path, [])
     hashes = {name: hashlib.sha256(path.read_bytes()).hexdigest() for name, path in files.items()}
     verify_current_source_hashes(tmp_path, hashes)

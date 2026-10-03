@@ -6,7 +6,7 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from jax_solver_global import _apply_polar_cap
+from ocean_solver.numerics.horizontal import _apply_polar_cap
 
 
 def _mask(rank):

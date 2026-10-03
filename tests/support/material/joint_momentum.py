@@ -5,8 +5,8 @@ from dataclasses import replace
 import jax.numpy as jnp
 import numpy as np
 
-from config import OMEGA, R_EARTH, PhysicsConfig
-from jax_solver_global import make_solver_global
+from ocean_solver.config.definitions import OMEGA, R_EARTH, PhysicsConfig
+from ocean_solver.model.factory import make_solver_global
 from tests.support.material.reference_geometry import _fixture
 
 POLICY = dict(subcycle_scheme="actual_geometry_v2", momentum_diffusion_scheme="joint_heun_v1")

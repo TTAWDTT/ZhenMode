@@ -1,0 +1,39 @@
+schema_version: 1
+kind: preset
+id: synthetic-smoke
+name_zh: 有界全湿生产工程验证配置
+method: zhenmode
+purpose: 将已有tests/support/driver.py受控生产入口模式整理为安装后可运行的小问题。
+source: tests/support/driver.py @ 25258950905f9d1aa84509c4c99ebad9ef33ba2b; new explicit
+  case has z=0,-5,-15,-30 and documented synthetic services, not a historical climate
+  run
+discretization: ordinary production global FD factory and integration; linear free
+  surface; no candidate/material method
+options:
+  mode_split: true
+  dt:
+    value: 10
+    unit: s
+  dt_bt:
+    value: 5
+    unit: s
+  dtype: float64
+  use_scan: true
+  wind_jit: true
+  nu_h:
+    value: 0
+    unit: m2/s
+  nu_bi:
+    value: 0
+    unit: m4/s
+  kappa_v:
+    value: 0
+    unit: m2/s
+  kappa_conv:
+    value: 0
+    unit: m2/s
+  polar_cap_rows: 0
+  polar_cap_taper: 0
+  checkpoint_days:
+    value: 0.0002314814814814815
+    unit: day

@@ -7,7 +7,7 @@ import numpy as np
 
 from tests.support.paths import REPOSITORY_ROOT
 
-folder = REPOSITORY_ROOT / 'scripts/controlled_window'
+folder = REPOSITORY_ROOT / 'archive/tools/controlled_window'
 sys.path.insert(0, str(folder))
 spec = importlib.util.spec_from_file_location('n_summary', folder / 'summarize_n_probe.py')
 module = importlib.util.module_from_spec(spec)

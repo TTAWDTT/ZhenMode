@@ -16,8 +16,8 @@ from ocean_solver.provenance.archives import current_source_files
 ROOT = Path(__file__).resolve().parents[3]
 sys.path[:0] = [str(ROOT / "src"), str(ROOT / "tests")]
 
-from jax_solver_global import JaxStateG
-from stage_budgets import make_budget_step
+from ocean_solver.state.types import JaxStateG
+from ocean_solver.audit.stages import make_budget_step
 from tests.support.fd.horizontal_diffusion import _parameters
 
 

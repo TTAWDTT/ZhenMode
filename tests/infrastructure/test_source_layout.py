@@ -15,8 +15,11 @@ def repository():
 def assert_canonical_import_contract(root):
     modules = sorted((root / "src/ocean_solver").rglob("*.py"))
     assert modules, "No canonical implementation files were found"
-    forbidden = {path.stem for path in (root / "src/compat").glob("*.py")}
-    forbidden |= {"ocean_solver.fd.legacy", "ocean_solver.audit.legacy"}
+    forbidden = {"config", "grid", "jax_solver_global", "stage_budgets", "run_long_integration_global"}
+    manifest = root / "docs/research_engineering_layout.json"
+    if manifest.is_file():
+        forbidden.update(json.loads(manifest.read_text(encoding="utf-8"))["retired_modules"])
+    forbidden |= {"ocean_solver.fd", "ocean_solver.data", "ocean_solver.fd.legacy", "ocean_solver.audit.legacy"}
     for path in modules:
         for node in ast.walk(ast.parse(path.read_text(encoding="utf-8"))):
             if isinstance(node, ast.Import):
@@ -58,14 +61,19 @@ def test_canonical_import_contract_rejects_empty_scan(tmp_path):
 
 
 def test_legacy_imports_alias_the_same_canonical_module_and_pickle_definitions():
-    manifest = json.loads((repository() / "docs/source_test_layout.json").read_text(encoding="utf-8"))
-    for legacy, canonical in manifest["legacy_modules"].items():
-        old = importlib.import_module(legacy)
+    # Historical test ID retained; the current contract explicitly retires aliases.
+    manifest = json.loads((repository() / "docs/research_engineering_layout.json").read_text(encoding="utf-8"))
+    for legacy, canonical in manifest["retired_modules"].items():
+        try:
+            spec = importlib.util.find_spec(legacy)
+        except ModuleNotFoundError:
+            spec = None
+        assert spec is None, legacy
         current = importlib.import_module(canonical)
-        assert old is current, legacy
+        assert Path(current.__file__).is_relative_to(repository()), canonical
         for definition in vars(current).values():
-            if isinstance(definition, type) and definition.__module__ == legacy:
-                assert getattr(old, definition.__name__) is definition
+            if isinstance(definition, type):
+                assert definition.__module__ != legacy
 
 
 def test_tests_use_support_instead_of_importing_other_test_files():
@@ -89,8 +97,10 @@ def test_tests_use_support_instead_of_importing_other_test_files():
 
 
 def test_checkout_data_roots_stay_at_the_repository():
-    from ocean_solver import configuration
-    from ocean_solver.data import air, climatology, wind
+    import ocean_solver.config.definitions as configuration
+    import ocean_solver.forcing.air as air
+    import ocean_solver.forcing.wind as wind
+    import ocean_solver.io.climatology as climatology
     from ocean_solver.provenance.locations import source_root
 
     root = repository()

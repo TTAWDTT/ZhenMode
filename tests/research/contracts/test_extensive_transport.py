@@ -4,8 +4,8 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from barotropic_transport import coupled_surface_step, subcycle_barotropic
-from finite_volume import (
+from zhenmode_research.candidates.fv.barotropic import coupled_surface_step, subcycle_barotropic
+from zhenmode_research.candidates.fv.geometry import (
     ExtensiveState,
     VolumeFluxes,
     advance_contents,

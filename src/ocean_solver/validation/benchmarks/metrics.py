@@ -15,8 +15,6 @@ from pathlib import Path
 import numpy as np
 from scipy.sparse import csr_array
 
-from ocean_solver._compat import preserve_legacy_names
-
 R_EARTH = 6.371e6
 RHO_0 = 1025.0
 T_REF = 15.0
@@ -390,7 +388,7 @@ def main() -> None:
     print(json.dumps(result, indent=2))
 
 
-preserve_legacy_names(globals(), 'benchmark_metrics')
+
 
 if __name__ == "__main__":
     main()

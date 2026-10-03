@@ -14,7 +14,7 @@ from tests.support.rstar.representation import _gauss_mass
 
 from tests.support.rstar.weak_transport import _weak_case, _weak_diagnostic
 
-from config import RHO_0
+from ocean_solver.config.definitions import RHO_0
 
 from research.experiments.material_rstar_coordinates.nodal_mass import make_nodal_mass
 

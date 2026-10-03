@@ -7,9 +7,9 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from config import PhysicsConfig
-from diagnostics import compute_budget_diagnostics, node_thickness
-from jax_solver_global import make_solver_global
+from ocean_solver.config.definitions import PhysicsConfig
+from ocean_solver.diagnostics.state import compute_budget_diagnostics, node_thickness
+from ocean_solver.model.factory import make_solver_global
 from tests.support.grid import all_wet_grid
 
 

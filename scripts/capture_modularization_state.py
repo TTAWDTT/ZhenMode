@@ -27,12 +27,18 @@ def main():
     import jax.numpy as jnp
     import numpy as np
 
-    import jax_solver_global as solver
-    from config import PhysicsConfig
-    from grid import GlobalOceanGrid
-    from integration_monitor import make_monitored_advance
-    from restart_contract import load_restart, make_restart_contract, save_restart
-    from stage_budgets import empty_budget, make_budget_step
+    import ocean_solver.dynamics.pressure as solver_pressure
+    import ocean_solver.dynamics.processes as solver_processes
+    import ocean_solver.dynamics.transport as solver_transport
+    import ocean_solver.model.factory as solver_factory
+    import ocean_solver.physics.eos as solver_eos
+    import ocean_solver.state.types as solver_types
+    from ocean_solver.audit.monitor import make_monitored_advance
+    from ocean_solver.audit.schema import empty_budget
+    from ocean_solver.audit.stages import make_budget_step
+    from ocean_solver.config.definitions import PhysicsConfig
+    from ocean_solver.io.grid import GlobalOceanGrid
+    from ocean_solver.io.restart import load_restart, make_restart_contract, save_restart
 
     nx, ny, nz = 8, 4, 6
     latitude = np.linspace(-30., 30., ny)
@@ -56,7 +62,7 @@ def main():
                    match_barotropic_transport=arguments.scheme == 'symmetric_fast_v3',
                    polar_cap_rows=0, polar_cap_taper=0, return_params=True,
                    lambda_bulk=50., T_atm=np.full((nx, ny), 16.))
-    step, initialize, diagnostics, params, terms = solver.make_solver_global(grid, physics, 10., **options)
+    step, initialize, diagnostics, params, terms = solver_factory.make_solver_global(grid, physics, 10., **options)
     state = initialize()
     x, y, level = np.indices((nx, ny, nz))
     state = state._replace(
@@ -87,12 +93,12 @@ def main():
 
     record('input', state)
     record('params', params)
-    record('density', solver._density_anomaly(state.T, state.S, params))
-    record('pressure_gradient', solver._compute_pressure_gradient(state, params))
-    record('face_transport', solver._layer_face_transports(state.u, state.v, params))
-    record('relative_vertical', solver._vertical_transport_iface(state.u, state.v, params))
-    record('momentum_tendency', solver._compute_momentum_tendency(state, params))
-    record('tracer_tendency', solver._compute_tracer_tendency(state, params))
+    record('density', solver_eos._density_anomaly(state.T, state.S, params))
+    record('pressure_gradient', solver_pressure._compute_pressure_gradient(state, params))
+    record('face_transport', solver_transport._layer_face_transports(state.u, state.v, params))
+    record('relative_vertical', solver_transport._vertical_transport_iface(state.u, state.v, params))
+    record('momentum_tendency', solver_processes._compute_momentum_tendency(state, params))
+    record('tracer_tendency', solver_processes._compute_tracer_tendency(state, params))
     audited_step = make_budget_step(params)
     for index in range(2):
         before = state
@@ -136,13 +142,13 @@ def main():
     else:
         raise AssertionError('changed restart contract was accepted')
 
-    toy = solver.JaxStateG(*(np.arange(2, dtype=np.float64) for _ in range(5)))
+    toy = solver_types.JaxStateG(*(np.arange(2, dtype=np.float64) for _ in range(5)))
     record('legacy_pickle', np.frombuffer(pickle.dumps(toy, protocol=4), dtype=np.uint8))
-    record('state_defaults', np.asarray(solver.JaxStateG.__new__.__defaults__))
+    record('state_defaults', np.asarray(solver_types.JaxStateG.__new__.__defaults__))
     record('tree_identity', str(jax.tree_util.tree_structure(state)))
     record('pytree_roundtrip', jax.tree_util.tree_unflatten(*reversed(jax.tree_util.tree_flatten(state))))
-    record('factory_signature', str(inspect.signature(solver.make_solver_global)))
-    record('factory_arities', [len(solver.make_solver_global(
+    record('factory_signature', str(inspect.signature(solver_factory.make_solver_global)))
+    record('factory_arities', [len(solver_factory.make_solver_global(
         grid, physics, 10., **{**options, 'return_params': with_params, 'dynamic_forcing': dynamic}))
         for with_params, dynamic in ((False, False), (False, True), (True, False), (True, True))])
     with arguments.output.open('xb') as stream:

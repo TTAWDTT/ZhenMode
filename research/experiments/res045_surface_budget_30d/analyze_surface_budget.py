@@ -14,9 +14,9 @@ sys_path = str(REPO / "src")
 if sys_path not in __import__("sys").path:
     __import__("sys").path.insert(0, sys_path)
 
-from air_reanalysis import load_annual_mean_air_temp
-from config import GlobalGridConfig, RHO_0, C_P
-from grid import make_global_grid
+from ocean_solver.forcing.air import load_annual_mean_air_temp
+from ocean_solver.config.definitions import GlobalGridConfig, RHO_0, C_P
+from ocean_solver.io.grid import make_global_grid
 
 
 def distance_to_land(ocean):

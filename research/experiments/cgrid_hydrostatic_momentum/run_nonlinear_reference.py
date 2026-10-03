@@ -15,9 +15,9 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
-from cgrid_momentum import LayerState
-from finite_volume import ExtensiveState, build_geometry
-from nonlinear_dynamics import nonlinear_momentum_surface_step
+from zhenmode_research.candidates.fv.momentum import LayerState
+from zhenmode_research.candidates.fv.geometry import ExtensiveState, build_geometry
+from zhenmode_research.candidates.fv.nonlinear import nonlinear_momentum_surface_step
 
 jax.config.update("jax_enable_x64", True)
 

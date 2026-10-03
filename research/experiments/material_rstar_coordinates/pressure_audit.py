@@ -36,7 +36,7 @@ def main():
     import jax
     import numpy as np
 
-    from config import G_EARTH, RHO_0
+    from ocean_solver.config.definitions import G_EARTH, RHO_0
     from research.experiments.material_rstar_coordinates.kernel import (
         coordinate_pressure_gradient,
         hydrostatic_pressure,

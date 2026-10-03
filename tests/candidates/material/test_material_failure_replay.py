@@ -11,13 +11,13 @@ from tests.support.paths import REPOSITORY_ROOT
 
 sys.path.insert(0, str(REPOSITORY_ROOT))
 
-from material_top import make_material_top_step
 from research.experiments.material_failure_replay.audit import (
     SCHEME,
     diagnose,
     geometry_witness,
     synthetic_fixture,
 )
+from zhenmode_research.candidates.material.solver import make_material_top_step
 
 
 @pytest.fixture(scope="module")

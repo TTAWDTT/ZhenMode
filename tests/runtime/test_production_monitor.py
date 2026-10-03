@@ -8,11 +8,12 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-import run_long_integration_global as driver
-from config import PhysicsConfig
-from integration_monitor import classify_state
-from jax_solver_global import JaxStateG, make_solver_global
-from restart_contract import load_restart
+import ocean_solver.runtime.entry as driver
+from ocean_solver.audit.monitor import classify_state
+from ocean_solver.config.definitions import PhysicsConfig
+from ocean_solver.io.restart import load_restart
+from ocean_solver.model.factory import make_solver_global
+from ocean_solver.state.types import JaxStateG
 from tests.support.driver import run_controlled_driver
 from tests.support.grid import all_wet_grid
 
@@ -162,7 +163,7 @@ def test_state_monitor_does_not_change_an_actual_legal_step():
 
 
 def test_factory_rejects_overlapping_polar_bands_before_constructing_arrays(monkeypatch):
-    from ocean_solver.fd import factory
+    import ocean_solver.model.factory as factory
     monkeypatch.setattr(factory, 'make_fd_params', lambda *args, **kwargs:
                         pytest.fail('overlapping caps reached array construction'))
     with pytest.raises(ValueError, match='polar cap bands'):

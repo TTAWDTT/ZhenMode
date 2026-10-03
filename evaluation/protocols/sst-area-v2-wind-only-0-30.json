@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "id": "sst-area-v2-wind-only-0-30",
+  "kind": "sst",
+  "case_id": "global-050deg-wind-only-30d",
+  "metric_definition": "area_weighted_angular_box_v2",
+  "reference": {"role": "saved_initial_surface_temperature", "version": "WOA2023-shared-initialization", "sha256": null},
+  "window": {"start_day": 0, "end_day": 30},
+  "spatial": {"coordinate_system": "geographic_degrees", "mask": "reference_wet", "weighting": "wet_cell_area", "remapping": "none"},
+  "temporal": {"weighting": "arithmetic_saved_records"},
+  "temperature_unit": "degC",
+  "acceptance": {"max_raw_rmse_degC": null, "max_abs_heat_drift_percent": null, "max_abs_salt_drift_percent": null},
+  "limitations": ["Wind-only dynamical control omits buoyancy forcing; no full climate qualification.", "Old 30d MOM6 reports are historical evidence and do not inherit v2 scoring.", "No climate acceptance threshold is declared."]
+}

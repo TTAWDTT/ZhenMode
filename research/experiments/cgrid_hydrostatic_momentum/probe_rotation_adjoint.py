@@ -12,9 +12,9 @@ import jax.numpy as jnp
 import numpy as np
 from jax.scipy.sparse.linalg import cg
 
-import cgrid_momentum
-from cgrid_momentum import _rotation_system
-from finite_volume import build_geometry
+import zhenmode_research.candidates.fv.momentum as cgrid_momentum
+from zhenmode_research.candidates.fv.momentum import _rotation_system
+from zhenmode_research.candidates.fv.geometry import build_geometry
 
 jax.config.update("jax_enable_x64", True)
 

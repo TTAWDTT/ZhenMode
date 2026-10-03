@@ -4,8 +4,8 @@
 import jax.numpy as jnp
 import numpy as np
 
-from config import G_EARTH, RHO_0
-from jax_solver_global import _advection_scalar, _face_transport_divergence
+from ocean_solver.config.definitions import G_EARTH, RHO_0
+from ocean_solver.dynamics.transport import _advection_scalar, _face_transport_divergence
 from research.experiments.material_rstar_coordinates.kernel import (
     coordinate_pressure_gradient,
     hydrostatic_pressure,

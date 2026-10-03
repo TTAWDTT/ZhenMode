@@ -15,10 +15,10 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
-from barotropic_transport import subcycle_barotropic
-from cgrid_momentum import hydrostatic_pressure_force, momentum_geometry
-from config import R_EARTH
-from finite_volume import (
+from zhenmode_research.candidates.fv.barotropic import subcycle_barotropic
+from zhenmode_research.candidates.fv.momentum import hydrostatic_pressure_force, momentum_geometry
+from ocean_solver.config.definitions import R_EARTH
+from zhenmode_research.candidates.fv.geometry import (
     _physical_surface_height,
     build_geometry,
     horizontal_divergence,

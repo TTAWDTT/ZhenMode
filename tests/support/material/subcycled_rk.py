@@ -4,8 +4,8 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
-from config import C_P, RHO_0
-from jax_solver_global import _step_impl, _tracer_step_with_transport
+from ocean_solver.config.definitions import C_P, RHO_0
+from ocean_solver.timestepping.integration import _step_impl, _tracer_step_with_transport
 from tests.support.material.process_time import _numpy_vertical_matrix
 from tests.support.material.reference_geometry import WIDTHS, _fixture
 

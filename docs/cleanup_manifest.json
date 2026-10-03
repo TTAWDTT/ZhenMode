@@ -1,0 +1,943 @@
+{
+  "baseline_commit": "0fcd7c00dae610c2cac8aa1656ecc87fc231b29a",
+  "policy": "Delete forwarding-only files after consumer migration; byte-preserve frozen tools and reports; no raw input or run output deletion.",
+  "deletions": [
+    {
+      "path": "research/src/compat/barotropic_transport.py",
+      "sha256": "515528cf99ba4e8d804104ea3aa0295ba7546d78b89334c91e7e49e9d0d8290e",
+      "replacement": "zhenmode_research.candidates.fv.barotropic",
+      "reason": "Only a forwarding interface; consumers now import the implementation owner.",
+      "git_blob_sha256": "515528cf99ba4e8d804104ea3aa0295ba7546d78b89334c91e7e49e9d0d8290e"
+    },
+    {
+      "path": "research/src/compat/bounded_transport.py",
+      "sha256": "0d1ffc546f7e11d1f7b11ec2e9af8f1e5689b6f7e433d20c59f98e5e0230a197",
+      "replacement": "zhenmode_research.candidates.fv.transport",
+      "reason": "Only a forwarding interface; consumers now import the implementation owner.",
+      "git_blob_sha256": "0d1ffc546f7e11d1f7b11ec2e9af8f1e5689b6f7e433d20c59f98e5e0230a197"
+    },
+    {
+      "path": "research/src/compat/cgrid_momentum.py",
+      "sha256": "167f6a59689d3dfdd8aaff1932e29c36abd186ffe8539c6e20ac8376b2fcc2e2",
+      "replacement": "zhenmode_research.candidates.fv.momentum",
+      "reason": "Only a forwarding interface; consumers now import the implementation owner.",
+      "git_blob_sha256": "167f6a59689d3dfdd8aaff1932e29c36abd186ffe8539c6e20ac8376b2fcc2e2"
+    },
+    {
+      "path": "research/src/compat/finite_volume.py",
+      "sha256": "f45ea173603f90edb1999c76bd2d34a6be6ce10b659c9b571f02841d170a3e44",
+      "replacement": "zhenmode_research.candidates.fv.geometry",
+      "reason": "Only a forwarding interface; consumers now import the implementation owner.",
+      "git_blob_sha256": "f45ea173603f90edb1999c76bd2d34a6be6ce10b659c9b571f02841d170a3e44"
+    },
+    {
+      "path": "research/src/compat/material_top.py",
+      "sha256": "c6106c00c4b453e6f2b932dab3c4029e56b25b958f2ef21f704df6b3cd49ecf6",
+      "replacement": "zhenmode_research.candidates.material.solver",
+      "reason": "Only a forwarding interface; consumers now import the implementation owner.",
+      "git_blob_sha256": "c6106c00c4b453e6f2b932dab3c4029e56b25b958f2ef21f704df6b3cd49ecf6"
+    },
+    {
+      "path": "research/src/compat/nonlinear_dynamics.py",
+      "sha256": "47fdec0c595e902a5c740a678ef56e1763af829cb8152f5bf8549c25823b6e78",
+      "replacement": "zhenmode_research.candidates.fv.nonlinear",
+      "reason": "Only a forwarding interface; consumers now import the implementation owner.",
+      "git_blob_sha256": "47fdec0c595e902a5c740a678ef56e1763af829cb8152f5bf8549c25823b6e78"
+    },
+    {
+      "path": "research/src/compat/paired_dynamics.py",
+      "sha256": "975d71ea0924b069b1b7bb5045d8f7b8d0e23d830a6b989df5e6b3f02667f8de",
+      "replacement": "zhenmode_research.candidates.fv.paired",
+      "reason": "Only a forwarding interface; consumers now import the implementation owner.",
+      "git_blob_sha256": "975d71ea0924b069b1b7bb5045d8f7b8d0e23d830a6b989df5e6b3f02667f8de"
+    },
+    {
+      "path": "research/src/compat/physical_velocity.py",
+      "sha256": "c78ad7736eff394f3e6754d1b2a39089384b11d7c402c1aa5d86f9dfa39d2ce8",
+      "replacement": "zhenmode_research.candidates.fv.velocity",
+      "reason": "Only a forwarding interface; consumers now import the implementation owner.",
+      "git_blob_sha256": "c78ad7736eff394f3e6754d1b2a39089384b11d7c402c1aa5d86f9dfa39d2ce8"
+    },
+    {
+      "path": "research/src/compat/wet_fluxes.py",
+      "sha256": "a1889ac00b05a4bbb08d4983ab5775c635fcb3d90a0df647d8e8977456764931",
+      "replacement": "zhenmode_research.candidates.fv.fluxes",
+      "reason": "Only a forwarding interface; consumers now import the implementation owner.",
+      "git_blob_sha256": "a1889ac00b05a4bbb08d4983ab5775c635fcb3d90a0df647d8e8977456764931"
+    },
+    {
+      "path": "src/compat/air_reanalysis.py",
+      "sha256": "3fa611cb04de6dd45a3925832f746cdc7fbff75210243396d4e9f9fc6db3c386",
+      "replacement": "ocean_solver.forcing.air",
+      "reason": "Only a forwarding interface; consumers now import the implementation owner.",
+      "git_blob_sha256": "3fa611cb04de6dd45a3925832f746cdc7fbff75210243396d4e9f9fc6db3c386"
+    },
+    {
+      "path": "src/compat/bench_climatology_global.py",
+      "sha256": "c83b6f32fa488cfb3d55065638e147d540ed68c02060d3c61023b7a3e75caae4",
+      "replacement": "ocean_solver.validation.benchmarks.climatology",
+      "reason": "Only a forwarding interface; consumers now import the implementation owner.",
+      "git_blob_sha256": "c83b6f32fa488cfb3d55065638e147d540ed68c02060d3c61023b7a3e75caae4"
+    },
+    {
+      "path": "src/compat/benchmark_gate.py",
+      "sha256": "cad410e8af4e7c4a3eff453c00af30b8fe7a34b0956739b6c2e902abf6d22499",
+      "replacement": "ocean_solver.validation.benchmarks.gate",
+      "reason": "Only a forwarding interface; consumers now import the implementation owner.",
+      "git_blob_sha256": "cad410e8af4e7c4a3eff453c00af30b8fe7a34b0956739b6c2e902abf6d22499"
+    },
+    {
+      "path": "src/compat/benchmark_manifest.py",
+      "sha256": "5039dd0e2e6491c522fa4052bc2c912df39014dd87bfa972241b0ae043992ef7",
+      "replacement": "ocean_solver.validation.benchmarks.manifest",
+      "reason": "Only a forwarding interface; consumers now import the implementation owner.",
+      "git_blob_sha256": "5039dd0e2e6491c522fa4052bc2c912df39014dd87bfa972241b0ae043992ef7"
+    },
+    {
+      "path": "src/compat/benchmark_metrics.py",
+      "sha256": "b466f91dd94a121460fc97f3c6e62854aad1c9d5fa4eb41e1cb871dd6c048b19",
+      "replacement": "ocean_solver.validation.benchmarks.metrics",
+      "reason": "Only a forwarding interface; consumers now import the implementation owner.",
+      "git_blob_sha256": "b466f91dd94a121460fc97f3c6e62854aad1c9d5fa4eb41e1cb871dd6c048b19"
+    },
+    {
+      "path": "src/compat/benchmark_table.py",
+      "sha256": "59037e4e9f9980479228521c793dfe1b7de6ae34ed47afa3f36649ed6c6eea1d",
+      "replacement": "ocean_solver.validation.benchmarks.table",
+      "reason": "Only a forwarding interface; consumers now import the implementation owner.",
+      "git_blob_sha256": "59037e4e9f9980479228521c793dfe1b7de6ae34ed47afa3f36649ed6c6eea1d"
+    },
+    {
+      "path": "src/compat/config.py",
+      "sha256": "7c191c6f926d37401d69885c03e1eb606b1c322794baa7df2f56ce79e45156ee",
+      "replacement": "ocean_solver.config.definitions",
+      "reason": "Only a forwarding interface; consumers now import the implementation owner.",
+      "git_blob_sha256": "7c191c6f926d37401d69885c03e1eb606b1c322794baa7df2f56ce79e45156ee"
+    },
+    {
+      "path": "src/compat/diagnostics.py",
+      "sha256": "669ac8d22a7791dc7129fc0ad97bd4429780895e6cc8846431e4f45744a7711b",
+      "replacement": "ocean_solver.diagnostics.state",
+      "reason": "Only a forwarding interface; consumers now import the implementation owner.",
+      "git_blob_sha256": "669ac8d22a7791dc7129fc0ad97bd4429780895e6cc8846431e4f45744a7711b"
+    },
+    {
+      "path": "src/compat/erddap_fetch.py",
+      "sha256": "9a3f6b00fdbb76e74fc9c2cf1ab0e5782f0c3d5c20a200f70a1f7d10f662aab9",
+      "replacement": "ocean_solver.io.erddap",
+      "reason": "Only a forwarding interface; consumers now import the implementation owner.",
+      "git_blob_sha256": "9a3f6b00fdbb76e74fc9c2cf1ab0e5782f0c3d5c20a200f70a1f7d10f662aab9"
+    },
+    {
+      "path": "src/compat/export_mom6_air_temp_forcing.py",
+      "sha256": "249d8f8497e6afc9c11bc709ddefcd33175cbd70d6148646338b9e50d9b5641a",
+      "replacement": "ocean_solver.interop.mom6.air_temperature",
+      "reason": "Only a forwarding interface; consumers now import the implementation owner.",
+      "git_blob_sha256": "249d8f8497e6afc9c11bc709ddefcd33175cbd70d6148646338b9e50d9b5641a"
+    },
+    {
+      "path": "src/compat/export_mom6_sensible_forcing.py",
+      "sha256": "b0c7d6893a7b25a5faeb7db0d99cee78371d9f6967b3de2e426bfcbbdab2c6ec",
+      "replacement": "ocean_solver.interop.mom6.sensible_heat",
+      "reason": "Only a forwarding interface; consumers now import the implementation owner.",
+      "git_blob_sha256": "b0c7d6893a7b25a5faeb7db0d99cee78371d9f6967b3de2e426bfcbbdab2c6ec"
+    },
+    {
+      "path": "src/compat/export_mom6_wind_forcing.py",
+      "sha256": "2600bff82308c5a472b364736912bb4c8cb9d9581f18b02c78003cf72dfe86af",
+      "replacement": "ocean_solver.interop.mom6.wind",
+      "reason": "Only a forwarding interface; consumers now import the implementation owner.",
+      "git_blob_sha256": "2600bff82308c5a472b364736912bb4c8cb9d9581f18b02c78003cf72dfe86af"
+    },
+    {
+      "path": "src/compat/fetch_sla_monthly.py",
+      "sha256": "47a0bf392f402e3215e9ba5ecb612feb497d907d829813486abd620fc5e406d0",
+      "replacement": "ocean_solver.io.sla",
+      "reason": "Only a forwarding interface; consumers now import the implementation owner.",
+      "git_blob_sha256": "47a0bf392f402e3215e9ba5ecb612feb497d907d829813486abd620fc5e406d0"
+    },
+    {
+      "path": "src/compat/fetch_ssh_abs_monthly.py",
+      "sha256": "0d4b4184cc69d2e80ff69e5e9046356b19811e58398f4641acb482c70130c3bd",
+      "replacement": "ocean_solver.io.ssh",
+      "reason": "Only a forwarding interface; consumers now import the implementation owner.",
+      "git_blob_sha256": "0d4b4184cc69d2e80ff69e5e9046356b19811e58398f4641acb482c70130c3bd"
+    },
+    {
+      "path": "src/compat/forcing.py",
+      "sha256": "4eb9341965f284f5fa57576fe4cb74fd9d7c54a42eee58c8d6c846774c145456",
+      "replacement": "ocean_solver.forcing.fields",
+      "reason": "Only a forwarding interface; consumers now import the implementation owner.",
+      "git_blob_sha256": "4eb9341965f284f5fa57576fe4cb74fd9d7c54a42eee58c8d6c846774c145456"
+    },
+    {
+      "path": "src/compat/grid.py",
+      "sha256": "089bbd777237b80f64dabb1398ce5bc29615da9219bf80f4ed613158f8d0b15b",
+      "replacement": "ocean_solver.io.grid",
+      "reason": "Only a forwarding interface; consumers now import the implementation owner.",
+      "git_blob_sha256": "089bbd777237b80f64dabb1398ce5bc29615da9219bf80f4ed613158f8d0b15b"
+    },
+    {
+      "path": "src/compat/input_quality.py",
+      "sha256": "50bd9a5565322edf9b028d75bc4b05b6a712865fac185e6e6b2fee9b4000a1cc",
+      "replacement": "ocean_solver.io.data_quality",
+      "reason": "Only a forwarding interface; consumers now import the implementation owner.",
+      "git_blob_sha256": "50bd9a5565322edf9b028d75bc4b05b6a712865fac185e6e6b2fee9b4000a1cc"
+    },
+    {
+      "path": "src/compat/input_sources.py",
+      "sha256": "a72aba9907e4e11d108676f9ae7d6dc6fb6c2019d275ad4f255028a8b906627c",
+      "replacement": "ocean_solver.io.input_sources",
+      "reason": "Only a forwarding interface; consumers now import the implementation owner.",
+      "git_blob_sha256": "a72aba9907e4e11d108676f9ae7d6dc6fb6c2019d275ad4f255028a8b906627c"
+    },
+    {
+      "path": "src/compat/integration_monitor.py",
+      "sha256": "fd07977550f8e43b4807841857524acb8c83457b02d8e47efcc8a6e727984f85",
+      "replacement": "ocean_solver.audit.monitor",
+      "reason": "Only a forwarding interface; consumers now import the implementation owner.",
+      "git_blob_sha256": "fd07977550f8e43b4807841857524acb8c83457b02d8e47efcc8a6e727984f85"
+    },
+    {
+      "path": "src/compat/jax_solver_global.py",
+      "sha256": "f4cad1cb3afd5bc3d50b5b78223b8d4b3e0f295488c8c346b1381abaaddd6191",
+      "replacement": "ocean_solver.model.factory",
+      "reason": "Only a forwarding interface; consumers now import the implementation owner.",
+      "git_blob_sha256": "f4cad1cb3afd5bc3d50b5b78223b8d4b3e0f295488c8c346b1381abaaddd6191"
+    },
+    {
+      "path": "src/compat/mixed_layer_ice.py",
+      "sha256": "cf670a239e01e390d738591ae7dad8d6a037e61715d4f224b20a535b654e8e3d",
+      "replacement": "ocean_solver.physics.ice",
+      "reason": "Only a forwarding interface; consumers now import the implementation owner.",
+      "git_blob_sha256": "cf670a239e01e390d738591ae7dad8d6a037e61715d4f224b20a535b654e8e3d"
+    },
+    {
+      "path": "src/compat/restart_contract.py",
+      "sha256": "2c18e681689ecc8c408d800f2693b2631f89922ca0156a7344f71bccda9e98b4",
+      "replacement": "ocean_solver.io.restart",
+      "reason": "Only a forwarding interface; consumers now import the implementation owner.",
+      "git_blob_sha256": "2c18e681689ecc8c408d800f2693b2631f89922ca0156a7344f71bccda9e98b4"
+    },
+    {
+      "path": "src/compat/run_long_integration_global.py",
+      "sha256": "6b73e9dec108c4c30876fcd5851d58c559f42704d9c8a63c96d38d008b9615eb",
+      "replacement": "ocean_solver.runtime.entry",
+      "reason": "Only a forwarding interface; consumers now import the implementation owner.",
+      "git_blob_sha256": "6b73e9dec108c4c30876fcd5851d58c559f42704d9c8a63c96d38d008b9615eb"
+    },
+    {
+      "path": "src/compat/runtime_validation.py",
+      "sha256": "f0ae28048a605b01099b2852e486f15f7bbdf752691ba0b5ca645c63484b422e",
+      "replacement": "ocean_solver.audit.validation",
+      "reason": "Only a forwarding interface; consumers now import the implementation owner.",
+      "git_blob_sha256": "f0ae28048a605b01099b2852e486f15f7bbdf752691ba0b5ca645c63484b422e"
+    },
+    {
+      "path": "src/compat/score_external_model.py",
+      "sha256": "b25f575e0334a51c90bafa3a6ffee363c35836813a877b1e6a815dabeeadc93e",
+      "replacement": "ocean_solver.validation.benchmarks.external",
+      "reason": "Only a forwarding interface; consumers now import the implementation owner.",
+      "git_blob_sha256": "b25f575e0334a51c90bafa3a6ffee363c35836813a877b1e6a815dabeeadc93e"
+    },
+    {
+      "path": "src/compat/score_mom6_prog.py",
+      "sha256": "9276fcb1a6db450460e32e051336847530b1afe8c61e8381a64f9b58c1747fed",
+      "replacement": "ocean_solver.validation.benchmarks.mom6",
+      "reason": "Only a forwarding interface; consumers now import the implementation owner.",
+      "git_blob_sha256": "9276fcb1a6db450460e32e051336847530b1afe8c61e8381a64f9b58c1747fed"
+    },
+    {
+      "path": "src/compat/source_identity.py",
+      "sha256": "557d3eb4f37076d516cae0fb40248b41dd9fa4d685db2ab140564704f524fbb6",
+      "replacement": "ocean_solver.provenance.sources",
+      "reason": "Only a forwarding interface; consumers now import the implementation owner.",
+      "git_blob_sha256": "557d3eb4f37076d516cae0fb40248b41dd9fa4d685db2ab140564704f524fbb6"
+    },
+    {
+      "path": "src/compat/stage_budgets.py",
+      "sha256": "3d0a3ede8a50c3df860df7de7dea7a27c5d2b8b3a2a9aac048f68043f4a78937",
+      "replacement": "ocean_solver.audit.stages",
+      "reason": "Only a forwarding interface; consumers now import the implementation owner.",
+      "git_blob_sha256": "3d0a3ede8a50c3df860df7de7dea7a27c5d2b8b3a2a9aac048f68043f4a78937"
+    },
+    {
+      "path": "src/compat/summarize_ice_diagnostics.py",
+      "sha256": "d6de4dedbfbe4dee0f574847bb70c056b0f4fbf03e1b9a2da5aeacef8c3be260",
+      "replacement": "ocean_solver.diagnostics.ice",
+      "reason": "Only a forwarding interface; consumers now import the implementation owner.",
+      "git_blob_sha256": "d6de4dedbfbe4dee0f574847bb70c056b0f4fbf03e1b9a2da5aeacef8c3be260"
+    },
+    {
+      "path": "src/compat/wind_reanalysis.py",
+      "sha256": "59654f253d74d29282deabb6e77e65ab8c88511c79172c066815da612cd86f92",
+      "replacement": "ocean_solver.forcing.wind",
+      "reason": "Only a forwarding interface; consumers now import the implementation owner.",
+      "git_blob_sha256": "59654f253d74d29282deabb6e77e65ab8c88511c79172c066815da612cd86f92"
+    },
+    {
+      "path": "src/compat/woa_data.py",
+      "sha256": "72fe9d5794da4fa7d8b20368898b68db8ca2a3d2faab754703ad38dd0193782b",
+      "replacement": "ocean_solver.io.climatology",
+      "reason": "Only a forwarding interface; consumers now import the implementation owner.",
+      "git_blob_sha256": "72fe9d5794da4fa7d8b20368898b68db8ca2a3d2faab754703ad38dd0193782b"
+    },
+    {
+      "path": "src/jax_solver_global.py",
+      "sha256": "72fa6702cdaa0bbb0db94f133d1187782ff3a2f54af06641335f806a3b4c9ee6",
+      "replacement": "ocean_solver.model.factory",
+      "reason": "Only a forwarding interface; consumers now import the implementation owner.",
+      "git_blob_sha256": "72fa6702cdaa0bbb0db94f133d1187782ff3a2f54af06641335f806a3b4c9ee6"
+    },
+    {
+      "path": "src/ocean_solver/_compat.py",
+      "sha256": "7410d4fcb0e1f5856b1e5a43b5e89226cbb36c7c7698ea2c804bcdccab87c937",
+      "replacement": null,
+      "reason": "Only a forwarding interface; consumers now import the implementation owner.",
+      "git_blob_sha256": "7410d4fcb0e1f5856b1e5a43b5e89226cbb36c7c7698ea2c804bcdccab87c937"
+    },
+    {
+      "path": "src/ocean_solver/audit/legacy.py",
+      "sha256": "16ce5f791867986665fffabc1a75216ead712ca94b919f59ae73c126aa8f0430",
+      "replacement": null,
+      "reason": "Only a forwarding interface; consumers now import the implementation owner.",
+      "git_blob_sha256": "16ce5f791867986665fffabc1a75216ead712ca94b919f59ae73c126aa8f0430"
+    },
+    {
+      "path": "src/ocean_solver/configuration.py",
+      "sha256": "655ccc2c4c6373a54df10aea0e164f7439e4a1eb4db94a879683c286a453c123",
+      "replacement": "ocean_solver.config.definitions",
+      "reason": "Only a forwarding interface; consumers now import the implementation owner.",
+      "git_blob_sha256": "655ccc2c4c6373a54df10aea0e164f7439e4a1eb4db94a879683c286a453c123"
+    },
+    {
+      "path": "src/ocean_solver/data/__init__.py",
+      "sha256": "6a9a1048e2fd4fca90347ffe23515911aaa9bb03787b4982142b63e49856c265",
+      "replacement": null,
+      "reason": "Only a forwarding interface; consumers now import the implementation owner.",
+      "git_blob_sha256": "6a9a1048e2fd4fca90347ffe23515911aaa9bb03787b4982142b63e49856c265"
+    },
+    {
+      "path": "src/ocean_solver/data/air.py",
+      "sha256": "0078574b17f591397bff5917322c54518ffdb7f80cb1ba2605d0d1bb9bb8270e",
+      "replacement": "ocean_solver.forcing.air",
+      "reason": "Only a forwarding interface; consumers now import the implementation owner.",
+      "git_blob_sha256": "0078574b17f591397bff5917322c54518ffdb7f80cb1ba2605d0d1bb9bb8270e"
+    },
+    {
+      "path": "src/ocean_solver/data/climatology.py",
+      "sha256": "6d1952b766ab3502260542486da557121812f1b6bb0ed3b70bf18efa177ce8d6",
+      "replacement": "ocean_solver.io.climatology",
+      "reason": "Only a forwarding interface; consumers now import the implementation owner.",
+      "git_blob_sha256": "6d1952b766ab3502260542486da557121812f1b6bb0ed3b70bf18efa177ce8d6"
+    },
+    {
+      "path": "src/ocean_solver/data/erddap.py",
+      "sha256": "d9ec7343a086ab829f662a858d57c94c1b890960b25285f7375ceeda120918aa",
+      "replacement": "ocean_solver.io.erddap",
+      "reason": "Only a forwarding interface; consumers now import the implementation owner.",
+      "git_blob_sha256": "d9ec7343a086ab829f662a858d57c94c1b890960b25285f7375ceeda120918aa"
+    },
+    {
+      "path": "src/ocean_solver/data/forcing.py",
+      "sha256": "a0251a3b126f742efdead9dae58ecd6716389d033744481add536238e44ba170",
+      "replacement": "ocean_solver.forcing.fields",
+      "reason": "Only a forwarding interface; consumers now import the implementation owner.",
+      "git_blob_sha256": "a0251a3b126f742efdead9dae58ecd6716389d033744481add536238e44ba170"
+    },
+    {
+      "path": "src/ocean_solver/data/quality.py",
+      "sha256": "00dc26b881f5ca8a901cfcefd88b52f806e27dd7c92c91a4cbef803efed54559",
+      "replacement": "ocean_solver.io.data_quality",
+      "reason": "Only a forwarding interface; consumers now import the implementation owner.",
+      "git_blob_sha256": "00dc26b881f5ca8a901cfcefd88b52f806e27dd7c92c91a4cbef803efed54559"
+    },
+    {
+      "path": "src/ocean_solver/data/sla.py",
+      "sha256": "634775960025032a103c63d1751accf1dca8a565da35971ed8d7c089f1e45d76",
+      "replacement": "ocean_solver.io.sla",
+      "reason": "Only a forwarding interface; consumers now import the implementation owner.",
+      "git_blob_sha256": "634775960025032a103c63d1751accf1dca8a565da35971ed8d7c089f1e45d76"
+    },
+    {
+      "path": "src/ocean_solver/data/sources.py",
+      "sha256": "02d3eda07bc465e73857afbc1228c42ee6bfc39f1ae1b00499f3cffd4a2c959c",
+      "replacement": "ocean_solver.io.input_sources",
+      "reason": "Only a forwarding interface; consumers now import the implementation owner.",
+      "git_blob_sha256": "02d3eda07bc465e73857afbc1228c42ee6bfc39f1ae1b00499f3cffd4a2c959c"
+    },
+    {
+      "path": "src/ocean_solver/data/ssh.py",
+      "sha256": "eec976e032d05589a352daf5701930776422f09e3f2b94964aa8f4e18f5e68a3",
+      "replacement": "ocean_solver.io.ssh",
+      "reason": "Only a forwarding interface; consumers now import the implementation owner.",
+      "git_blob_sha256": "eec976e032d05589a352daf5701930776422f09e3f2b94964aa8f4e18f5e68a3"
+    },
+    {
+      "path": "src/ocean_solver/data/wind.py",
+      "sha256": "e5540d38075867f8d209a75689b6cc9c411f593abf5bb624e42cdb95e1234027",
+      "replacement": "ocean_solver.forcing.wind",
+      "reason": "Only a forwarding interface; consumers now import the implementation owner.",
+      "git_blob_sha256": "e5540d38075867f8d209a75689b6cc9c411f593abf5bb624e42cdb95e1234027"
+    },
+    {
+      "path": "src/ocean_solver/fd/__init__.py",
+      "sha256": "1cacd12c77c084661ecb2826dc09970f9b6d18d53f4c62ad752b11e2f3e0a3dd",
+      "replacement": null,
+      "reason": "Only a forwarding interface; consumers now import the implementation owner.",
+      "git_blob_sha256": "1cacd12c77c084661ecb2826dc09970f9b6d18d53f4c62ad752b11e2f3e0a3dd"
+    },
+    {
+      "path": "src/ocean_solver/fd/backend.py",
+      "sha256": "89967872fb84679eaed41b3ae59a300f164179c4bf2a5ff437a17c4beefd5609",
+      "replacement": "ocean_solver.numerics.backend",
+      "reason": "Only a forwarding interface; consumers now import the implementation owner.",
+      "git_blob_sha256": "89967872fb84679eaed41b3ae59a300f164179c4bf2a5ff437a17c4beefd5609"
+    },
+    {
+      "path": "src/ocean_solver/fd/barotropic.py",
+      "sha256": "48c6595cc906281fa232f9339a2c8ac352af0436b1319ddacf08a4ca2305ef1a",
+      "replacement": "ocean_solver.dynamics.barotropic",
+      "reason": "Only a forwarding interface; consumers now import the implementation owner.",
+      "git_blob_sha256": "48c6595cc906281fa232f9339a2c8ac352af0436b1319ddacf08a4ca2305ef1a"
+    },
+    {
+      "path": "src/ocean_solver/fd/closures.py",
+      "sha256": "c351de3e5f63fab32f7f046a87c4deeaf2ee072079f73dca2a4bb5c9c5b643ed",
+      "replacement": "ocean_solver.physics.isopycnal",
+      "reason": "Only a forwarding interface; consumers now import the implementation owner.",
+      "git_blob_sha256": "c351de3e5f63fab32f7f046a87c4deeaf2ee072079f73dca2a4bb5c9c5b643ed"
+    },
+    {
+      "path": "src/ocean_solver/fd/eos.py",
+      "sha256": "9d1aab283bb13c908667d3b42cd363759fe3edff7dc030179e062949c9c2d561",
+      "replacement": "ocean_solver.physics.eos",
+      "reason": "Only a forwarding interface; consumers now import the implementation owner.",
+      "git_blob_sha256": "9d1aab283bb13c908667d3b42cd363759fe3edff7dc030179e062949c9c2d561"
+    },
+    {
+      "path": "src/ocean_solver/fd/factory.py",
+      "sha256": "225c0811d20e7fc55717a879a2392e03acae63a17189bba9ff6085fc9c32db7b",
+      "replacement": "ocean_solver.model.factory",
+      "reason": "Only a forwarding interface; consumers now import the implementation owner.",
+      "git_blob_sha256": "225c0811d20e7fc55717a879a2392e03acae63a17189bba9ff6085fc9c32db7b"
+    },
+    {
+      "path": "src/ocean_solver/fd/geometry.py",
+      "sha256": "9877081531ca050ba603469072289119b04a542be1ac2ca14eb669fae9bacc10",
+      "replacement": "ocean_solver.geometry.fd",
+      "reason": "Only a forwarding interface; consumers now import the implementation owner.",
+      "git_blob_sha256": "9877081531ca050ba603469072289119b04a542be1ac2ca14eb669fae9bacc10"
+    },
+    {
+      "path": "src/ocean_solver/fd/horizontal.py",
+      "sha256": "c859a72fb716bc8c35fd2684e6eec98970024f51aac747aecfde1ec3e7e02659",
+      "replacement": "ocean_solver.numerics.horizontal",
+      "reason": "Only a forwarding interface; consumers now import the implementation owner.",
+      "git_blob_sha256": "c859a72fb716bc8c35fd2684e6eec98970024f51aac747aecfde1ec3e7e02659"
+    },
+    {
+      "path": "src/ocean_solver/fd/integration.py",
+      "sha256": "3e73f086fc71102ca8be6313cc156d87e43aa1fca4af19f9a07ed1bbc179481c",
+      "replacement": "ocean_solver.timestepping.integration",
+      "reason": "Only a forwarding interface; consumers now import the implementation owner.",
+      "git_blob_sha256": "3e73f086fc71102ca8be6313cc156d87e43aa1fca4af19f9a07ed1bbc179481c"
+    },
+    {
+      "path": "src/ocean_solver/fd/legacy.py",
+      "sha256": "54f9c3363d06220ab0e4ecbf8791f7fdfbbeb2198dea1382657b7b0302ee8ddc",
+      "replacement": null,
+      "reason": "Only a forwarding interface; consumers now import the implementation owner.",
+      "git_blob_sha256": "54f9c3363d06220ab0e4ecbf8791f7fdfbbeb2198dea1382657b7b0302ee8ddc"
+    },
+    {
+      "path": "src/ocean_solver/fd/pressure.py",
+      "sha256": "87d370c2be2734ecc1d38ee541b356fa58f88e84bda168e976b896669a76ea03",
+      "replacement": "ocean_solver.dynamics.pressure",
+      "reason": "Only a forwarding interface; consumers now import the implementation owner.",
+      "git_blob_sha256": "87d370c2be2734ecc1d38ee541b356fa58f88e84bda168e976b896669a76ea03"
+    },
+    {
+      "path": "src/ocean_solver/fd/processes.py",
+      "sha256": "d97b66fb14ab4c3806d6ee30a95d5dafed31514f6acb0ee136dced440c3f9e88",
+      "replacement": "ocean_solver.dynamics.processes",
+      "reason": "Only a forwarding interface; consumers now import the implementation owner.",
+      "git_blob_sha256": "d97b66fb14ab4c3806d6ee30a95d5dafed31514f6acb0ee136dced440c3f9e88"
+    },
+    {
+      "path": "src/ocean_solver/fd/projection.py",
+      "sha256": "c16396ae90138f567c64c1c041d6677b69f5b19fe3a1b3feb0bedd3faa3ed360",
+      "replacement": "ocean_solver.dynamics.projection",
+      "reason": "Only a forwarding interface; consumers now import the implementation owner.",
+      "git_blob_sha256": "c16396ae90138f567c64c1c041d6677b69f5b19fe3a1b3feb0bedd3faa3ed360"
+    },
+    {
+      "path": "src/ocean_solver/fd/sources.py",
+      "sha256": "4d800d3e3c626341442702dcbfb9c2d7b3dd91cc72d31753cafecb8142107b73",
+      "replacement": "ocean_solver.physics.surface",
+      "reason": "Only a forwarding interface; consumers now import the implementation owner.",
+      "git_blob_sha256": "4d800d3e3c626341442702dcbfb9c2d7b3dd91cc72d31753cafecb8142107b73"
+    },
+    {
+      "path": "src/ocean_solver/fd/stability.py",
+      "sha256": "932025264c32b3f2e00bca1a42225d968e43ebb8f5c03a0117cc73249f120653",
+      "replacement": "ocean_solver.numerics.stability",
+      "reason": "Only a forwarding interface; consumers now import the implementation owner.",
+      "git_blob_sha256": "932025264c32b3f2e00bca1a42225d968e43ebb8f5c03a0117cc73249f120653"
+    },
+    {
+      "path": "src/ocean_solver/fd/subcycles.py",
+      "sha256": "02f259ef6cc994150e913df3829011f1effb311710649c561001016be40f4390",
+      "replacement": "ocean_solver.timestepping.subcycles",
+      "reason": "Only a forwarding interface; consumers now import the implementation owner.",
+      "git_blob_sha256": "02f259ef6cc994150e913df3829011f1effb311710649c561001016be40f4390"
+    },
+    {
+      "path": "src/ocean_solver/fd/transport.py",
+      "sha256": "295a88d5db9a87ffbb1e2aab8d93b6c221d97043976a831acafef8a03ae49ccf",
+      "replacement": "ocean_solver.dynamics.transport",
+      "reason": "Only a forwarding interface; consumers now import the implementation owner.",
+      "git_blob_sha256": "295a88d5db9a87ffbb1e2aab8d93b6c221d97043976a831acafef8a03ae49ccf"
+    },
+    {
+      "path": "src/ocean_solver/fd/types.py",
+      "sha256": "65bd875648fe5e4af157c1a4f11880196757fe2881666858c24b48bc0b1feb62",
+      "replacement": "ocean_solver.state.types",
+      "reason": "Only a forwarding interface; consumers now import the implementation owner.",
+      "git_blob_sha256": "65bd875648fe5e4af157c1a4f11880196757fe2881666858c24b48bc0b1feb62"
+    },
+    {
+      "path": "src/ocean_solver/fd/vertical.py",
+      "sha256": "513270a8c21afd11b08627101c00135f46b384d070a391ad79911514a3310aa4",
+      "replacement": "ocean_solver.physics.vertical",
+      "reason": "Only a forwarding interface; consumers now import the implementation owner.",
+      "git_blob_sha256": "513270a8c21afd11b08627101c00135f46b384d070a391ad79911514a3310aa4"
+    },
+    {
+      "path": "src/ocean_solver/geometry/grid.py",
+      "sha256": "e19483fb60b73ce4771bf2888fa2e5e2a4006b9028f2d2544d9d08a2f825f1d9",
+      "replacement": "ocean_solver.io.grid",
+      "reason": "Only a forwarding interface; consumers now import the implementation owner.",
+      "git_blob_sha256": "e19483fb60b73ce4771bf2888fa2e5e2a4006b9028f2d2544d9d08a2f825f1d9"
+    },
+    {
+      "path": "src/ocean_solver/provenance/restart.py",
+      "sha256": "8fe87158489fc95dd0e3840f5d3064fdc1b1d72e40621ecb017dd83fc405ebf7",
+      "replacement": "ocean_solver.io.restart",
+      "reason": "Only a forwarding interface; consumers now import the implementation owner.",
+      "git_blob_sha256": "8fe87158489fc95dd0e3840f5d3064fdc1b1d72e40621ecb017dd83fc405ebf7"
+    },
+    {
+      "path": "src/ocean_solver/runtime/metrics.py",
+      "sha256": "d6c5e40c94d03df860b21e42d734b5441e2c36236e771d57da2b31124ee7e889",
+      "replacement": "ocean_solver.diagnostics.runtime",
+      "reason": "Only a forwarding interface; consumers now import the implementation owner.",
+      "git_blob_sha256": "d6c5e40c94d03df860b21e42d734b5441e2c36236e771d57da2b31124ee7e889"
+    },
+    {
+      "path": "src/ocean_solver/runtime/output.py",
+      "sha256": "7c35f3a53d45d48f59a1bacfea969f96e5305e237f4facc4fcae743a0b9422f2",
+      "replacement": "ocean_solver.io.output",
+      "reason": "Only a forwarding interface; consumers now import the implementation owner.",
+      "git_blob_sha256": "7c35f3a53d45d48f59a1bacfea969f96e5305e237f4facc4fcae743a0b9422f2"
+    },
+    {
+      "path": "src/ocean_solver/runtime/paths.py",
+      "sha256": "4ca05178068d0f1434966bb33516a3641d1cc0f51fde00ac16a442c91863d715",
+      "replacement": "ocean_solver.io.paths",
+      "reason": "Only a forwarding interface; consumers now import the implementation owner.",
+      "git_blob_sha256": "4ca05178068d0f1434966bb33516a3641d1cc0f51fde00ac16a442c91863d715"
+    },
+    {
+      "path": "src/ocean_solver/runtime/records.py",
+      "sha256": "7823591c84c1a79a8508493ff04aca980841256d3ec2fa853f05b937122e4dc5",
+      "replacement": "ocean_solver.io.records",
+      "reason": "Only a forwarding interface; consumers now import the implementation owner.",
+      "git_blob_sha256": "7823591c84c1a79a8508493ff04aca980841256d3ec2fa853f05b937122e4dc5"
+    },
+    {
+      "path": "src/ocean_solver/runtime/recovery.py",
+      "sha256": "0b9ea4f39a48eae00969e5e91b6c1b6699fcbb6e8d0bb558e22ee33a1ef18bc6",
+      "replacement": "ocean_solver.io.recovery",
+      "reason": "Only a forwarding interface; consumers now import the implementation owner.",
+      "git_blob_sha256": "0b9ea4f39a48eae00969e5e91b6c1b6699fcbb6e8d0bb558e22ee33a1ef18bc6"
+    },
+    {
+      "path": "src/ocean_solver/runtime/seasonal.py",
+      "sha256": "4c3416ca250056e91bd5276cb6003b62e7f70c70988542409cb9cb17b722a1ab",
+      "replacement": "ocean_solver.forcing.seasonal",
+      "reason": "Only a forwarding interface; consumers now import the implementation owner.",
+      "git_blob_sha256": "4c3416ca250056e91bd5276cb6003b62e7f70c70988542409cb9cb17b722a1ab"
+    },
+    {
+      "path": "src/run_long_integration_global.py",
+      "sha256": "7b98e51ca147228d448b77ef84c6510d4bde7fbbeb2d628e2fc7a25db6c99769",
+      "replacement": "ocean_solver.runtime.entry",
+      "reason": "Only a forwarding interface; consumers now import the implementation owner.",
+      "git_blob_sha256": "7b98e51ca147228d448b77ef84c6510d4bde7fbbeb2d628e2fc7a25db6c99769"
+    },
+    {
+      "path": "scripts/run_tests.py",
+      "sha256": "65338aa4f7cfbda1694869520e02a6d945c1c8fadb7b05d598f18f0c387e2bbe",
+      "replacement": "python -m pytest / bounded runner",
+      "reason": "Only banners and a subprocess invocation; no runtime, packaging or test consumer. Git retains historical commands.",
+      "git_blob_sha256": "65338aa4f7cfbda1694869520e02a6d945c1c8fadb7b05d598f18f0c387e2bbe"
+    }
+  ],
+  "moves": [
+    {
+      "from": "scripts/controlled_window/mechanical_probe.py",
+      "to": "archive/tools/controlled_window/mechanical_probe.py",
+      "commit": "0fcd7c00dae610c2cac8aa1656ecc87fc231b29a",
+      "sha256": "63bac409ac12e30650554e8004717a432e1987ca7211ceb9b8d9000efe31d6a3",
+      "role": "Frozen historical campaign/tool; run in its original source checkout.",
+      "before_git_sha256": "63bac409ac12e30650554e8004717a432e1987ca7211ceb9b8d9000efe31d6a3"
+    },
+    {
+      "from": "scripts/controlled_window/n_probe.py",
+      "to": "archive/tools/controlled_window/n_probe.py",
+      "commit": "0fcd7c00dae610c2cac8aa1656ecc87fc231b29a",
+      "sha256": "49ed35669f2c0379debb445981e9f483d10c4f4021d896ed2a34804f332d2531",
+      "role": "Frozen historical campaign/tool; run in its original source checkout.",
+      "before_git_sha256": "49ed35669f2c0379debb445981e9f483d10c4f4021d896ed2a34804f332d2531"
+    },
+    {
+      "from": "scripts/controlled_window/postprocess_6h.py",
+      "to": "archive/tools/controlled_window/postprocess_6h.py",
+      "commit": "0fcd7c00dae610c2cac8aa1656ecc87fc231b29a",
+      "sha256": "bd7d90214a956208a1fefe59576d0397e378d35d7498f1edf41f129877f79759",
+      "role": "Frozen historical campaign/tool; run in its original source checkout.",
+      "before_git_sha256": "bd7d90214a956208a1fefe59576d0397e378d35d7498f1edf41f129877f79759"
+    },
+    {
+      "from": "scripts/controlled_window/prepare_mechanical_source.py",
+      "to": "archive/tools/controlled_window/prepare_mechanical_source.py",
+      "commit": "0fcd7c00dae610c2cac8aa1656ecc87fc231b29a",
+      "sha256": "1076f7ac7dfdafbcf2f3ac3de578a2f660c0b4a9c68817e53ba0e259a8c40ffa",
+      "role": "Frozen historical campaign/tool; run in its original source checkout.",
+      "before_git_sha256": "1076f7ac7dfdafbcf2f3ac3de578a2f660c0b4a9c68817e53ba0e259a8c40ffa"
+    },
+    {
+      "from": "scripts/controlled_window/prepare_n_source.py",
+      "to": "archive/tools/controlled_window/prepare_n_source.py",
+      "commit": "0fcd7c00dae610c2cac8aa1656ecc87fc231b29a",
+      "sha256": "0c7c297db6c74ef6d9875769dcc366ef51c5f85fc6279f1018cff14dfc252534",
+      "role": "Frozen historical campaign/tool; run in its original source checkout.",
+      "before_git_sha256": "0c7c297db6c74ef6d9875769dcc366ef51c5f85fc6279f1018cff14dfc252534"
+    },
+    {
+      "from": "scripts/controlled_window/prepare_source.py",
+      "to": "archive/tools/controlled_window/prepare_source.py",
+      "commit": "0fcd7c00dae610c2cac8aa1656ecc87fc231b29a",
+      "sha256": "695d1e6f2535552503e8bf12285fee1a6eadce108335024d00ea41052d6ab0e9",
+      "role": "Frozen historical campaign/tool; run in its original source checkout.",
+      "before_git_sha256": "695d1e6f2535552503e8bf12285fee1a6eadce108335024d00ea41052d6ab0e9"
+    },
+    {
+      "from": "scripts/controlled_window/summarize_mechanical_probe.py",
+      "to": "archive/tools/controlled_window/summarize_mechanical_probe.py",
+      "commit": "0fcd7c00dae610c2cac8aa1656ecc87fc231b29a",
+      "sha256": "970416e9746b21959bdeb1554ffececb718aeb6b2bc1502885582dd5420e6fd8",
+      "role": "Frozen historical campaign/tool; run in its original source checkout.",
+      "before_git_sha256": "970416e9746b21959bdeb1554ffececb718aeb6b2bc1502885582dd5420e6fd8"
+    },
+    {
+      "from": "scripts/controlled_window/summarize_n_probe.py",
+      "to": "archive/tools/controlled_window/summarize_n_probe.py",
+      "commit": "0fcd7c00dae610c2cac8aa1656ecc87fc231b29a",
+      "sha256": "4e4c0dd8c51e7d380f6c2533071a0eca329472947633bae7b6b2288787cdd053",
+      "role": "Frozen historical campaign/tool; run in its original source checkout.",
+      "before_git_sha256": "4e4c0dd8c51e7d380f6c2533071a0eca329472947633bae7b6b2288787cdd053"
+    },
+    {
+      "from": "scripts/controlled_window/supervisor.py",
+      "to": "archive/tools/controlled_window/supervisor.py",
+      "commit": "0fcd7c00dae610c2cac8aa1656ecc87fc231b29a",
+      "sha256": "f21bbf62b72c386274969c1166a72c8f8661196e9c776ec986760fe110635ba3",
+      "role": "Frozen historical campaign/tool; run in its original source checkout.",
+      "before_git_sha256": "f21bbf62b72c386274969c1166a72c8f8661196e9c776ec986760fe110635ba3"
+    },
+    {
+      "from": "scripts/controlled_window/worker_1h.py",
+      "to": "archive/tools/controlled_window/worker_1h.py",
+      "commit": "0fcd7c00dae610c2cac8aa1656ecc87fc231b29a",
+      "sha256": "2eae0287152d1a1737c582114fd8fe8cad52b74df6d7cb1f89d3d47109fbf97a",
+      "role": "Frozen historical campaign/tool; run in its original source checkout.",
+      "before_git_sha256": "2eae0287152d1a1737c582114fd8fe8cad52b74df6d7cb1f89d3d47109fbf97a"
+    },
+    {
+      "from": "scripts/controlled_window/worker_6h.py",
+      "to": "archive/tools/controlled_window/worker_6h.py",
+      "commit": "0fcd7c00dae610c2cac8aa1656ecc87fc231b29a",
+      "sha256": "deda1421e1a77ef4cde77c4446f6463d0a195a15ee25e66370a1d9adee24b19d",
+      "role": "Frozen historical campaign/tool; run in its original source checkout.",
+      "before_git_sha256": "deda1421e1a77ef4cde77c4446f6463d0a195a15ee25e66370a1d9adee24b19d"
+    },
+    {
+      "from": "scripts/diagnostics/fd_pressure_pe_contract.py",
+      "to": "research/tools/diagnostics/fd_pressure_pe_contract.py",
+      "sha256": "4fd2c995698b59ef13b7014701e11cb670af8261cd47310d1252c1d9fe86b033",
+      "role": "Opt-in research validation; not a production entry.",
+      "before_git_sha256": "eb113532bc27b67a3b6697a1a3a8e01f9e912037f7e432d38cdb22c14790d74a"
+    },
+    {
+      "from": "scripts/quality_speed/contract.py",
+      "to": "research/tools/quality_speed/contract.py",
+      "sha256": "c7dc560da97b4759b0e429fbd1eb90ebff5a36217adfccc80f488fcbc9afeab0",
+      "role": "Opt-in research validation; not a production entry.",
+      "before_git_sha256": "c7dc560da97b4759b0e429fbd1eb90ebff5a36217adfccc80f488fcbc9afeab0"
+    },
+    {
+      "from": "scripts/quality_speed/gate.py",
+      "to": "research/tools/quality_speed/gate.py",
+      "sha256": "5205a9ad30f9b9853557ec5ccfea4cf4654ad33094f00c9e67fb4087e36ce9a0",
+      "role": "Opt-in research validation; not a production entry.",
+      "before_git_sha256": "5205a9ad30f9b9853557ec5ccfea4cf4654ad33094f00c9e67fb4087e36ce9a0"
+    },
+    {
+      "from": "scripts/quality_speed/manifest.py",
+      "to": "research/tools/quality_speed/manifest.py",
+      "sha256": "d8bafd48700233f8f6e480dc71114a90192424f62ee7902b3bcbd1a2f842d5d9",
+      "role": "Opt-in research validation; not a production entry.",
+      "before_git_sha256": "d8bafd48700233f8f6e480dc71114a90192424f62ee7902b3bcbd1a2f842d5d9"
+    },
+    {
+      "from": "scripts/quality_speed/monitor_probe.py",
+      "to": "research/tools/quality_speed/monitor_probe.py",
+      "sha256": "9ce69734ec0a12e1464fe0a6839ab953502a1cb70ab24d5ba832f517f21e7185",
+      "role": "Opt-in research validation; not a production entry.",
+      "before_git_sha256": "8249f738165dd13c663c8fb235d986308844a5439ecff2df7da7b34763aacd00"
+    },
+    {
+      "from": "scripts/quality_speed/timing.py",
+      "to": "research/tools/quality_speed/timing.py",
+      "sha256": "79d479b7d1c1e9f1b131ad444c3ef1a97999c9c36d9ca7fe1d25e3cb7e0d4adc",
+      "role": "Opt-in research validation; not a production entry.",
+      "before_git_sha256": "79d479b7d1c1e9f1b131ad444c3ef1a97999c9c36d9ca7fe1d25e3cb7e0d4adc"
+    },
+    {
+      "from": "scripts/run_candidate_baseline.sh",
+      "to": "archive/campaigns/run_candidate_baseline.sh",
+      "commit": "0fcd7c00dae610c2cac8aa1656ecc87fc231b29a",
+      "sha256": "d22842395dc25d8566f06c600bb2201fe9c406bfba66b6fe28afd674daa793a9",
+      "role": "Frozen historical campaign/tool; run in its original source checkout.",
+      "before_git_sha256": "d22842395dc25d8566f06c600bb2201fe9c406bfba66b6fe28afd674daa793a9"
+    },
+    {
+      "from": "scripts/run_candidate_baseline_045.sh",
+      "to": "archive/campaigns/run_candidate_baseline_045.sh",
+      "commit": "0fcd7c00dae610c2cac8aa1656ecc87fc231b29a",
+      "sha256": "32342d047e7a9753412867060af7f9bf57dd329dc53f89666d77d2cbaec9dcdc",
+      "role": "Frozen historical campaign/tool; run in its original source checkout.",
+      "before_git_sha256": "32342d047e7a9753412867060af7f9bf57dd329dc53f89666d77d2cbaec9dcdc"
+    },
+    {
+      "from": "scripts/run_candidate_baseline_045_icefloor.sh",
+      "to": "archive/campaigns/run_candidate_baseline_045_icefloor.sh",
+      "commit": "0fcd7c00dae610c2cac8aa1656ecc87fc231b29a",
+      "sha256": "d9b6314884297a1fd210806febb0051bb607a7f52ad169c5922eee2000aa0e1c",
+      "role": "Frozen historical campaign/tool; run in its original source checkout.",
+      "before_git_sha256": "d9b6314884297a1fd210806febb0051bb607a7f52ad169c5922eee2000aa0e1c"
+    },
+    {
+      "from": "scripts/run_candidate_baseline_050.sh",
+      "to": "archive/campaigns/run_candidate_baseline_050.sh",
+      "commit": "0fcd7c00dae610c2cac8aa1656ecc87fc231b29a",
+      "sha256": "74138bb19457000049b860493a1ffa144b79bd01c74206dcabe0772dbdc0d8ce",
+      "role": "Frozen historical campaign/tool; run in its original source checkout.",
+      "before_git_sha256": "74138bb19457000049b860493a1ffa144b79bd01c74206dcabe0772dbdc0d8ce"
+    },
+    {
+      "from": "scripts/run_candidate_baseline_050_icefloor.sh",
+      "to": "archive/campaigns/run_candidate_baseline_050_icefloor.sh",
+      "commit": "0fcd7c00dae610c2cac8aa1656ecc87fc231b29a",
+      "sha256": "eefa9ab3326a958d15d48b7096833907667f56986b7f16f844269cfd0db79a1f",
+      "role": "Frozen historical campaign/tool; run in its original source checkout.",
+      "before_git_sha256": "eefa9ab3326a958d15d48b7096833907667f56986b7f16f844269cfd0db79a1f"
+    },
+    {
+      "from": "scripts/run_coastal_mindepth300.sh",
+      "to": "archive/campaigns/run_coastal_mindepth300.sh",
+      "commit": "0fcd7c00dae610c2cac8aa1656ecc87fc231b29a",
+      "sha256": "afd92c7508c74eb0af1cfe76eb95c416cb63ce50fba8b827785a4132503230a8",
+      "role": "Frozen historical campaign/tool; run in its original source checkout.",
+      "before_git_sha256": "afd92c7508c74eb0af1cfe76eb95c416cb63ce50fba8b827785a4132503230a8"
+    },
+    {
+      "from": "scripts/run_coastal_mindepth500.sh",
+      "to": "archive/campaigns/run_coastal_mindepth500.sh",
+      "commit": "0fcd7c00dae610c2cac8aa1656ecc87fc231b29a",
+      "sha256": "fb50a15f39462c633542bc0656fcd9cc8a82ee3981a1ce00e92663b848a5271f",
+      "role": "Frozen historical campaign/tool; run in its original source checkout.",
+      "before_git_sha256": "fb50a15f39462c633542bc0656fcd9cc8a82ee3981a1ce00e92663b848a5271f"
+    },
+    {
+      "from": "scripts/run_coastal_restore.sh",
+      "to": "archive/campaigns/run_coastal_restore.sh",
+      "commit": "0fcd7c00dae610c2cac8aa1656ecc87fc231b29a",
+      "sha256": "e073933183d742d3fffaf7905b456cb6c63a791eba8edc374ce4dfe4b828fca0",
+      "role": "Frozen historical campaign/tool; run in its original source checkout.",
+      "before_git_sha256": "e073933183d742d3fffaf7905b456cb6c63a791eba8edc374ce4dfe4b828fca0"
+    },
+    {
+      "from": "scripts/run_coastal_smooth80.sh",
+      "to": "archive/campaigns/run_coastal_smooth80.sh",
+      "commit": "0fcd7c00dae610c2cac8aa1656ecc87fc231b29a",
+      "sha256": "33f9b6fe669876fa4848a7cfff874d5a0a57fa7852131cc938ef11ee10ce8439",
+      "role": "Frozen historical campaign/tool; run in its original source checkout.",
+      "before_git_sha256": "33f9b6fe669876fa4848a7cfff874d5a0a57fa7852131cc938ef11ee10ce8439"
+    },
+    {
+      "from": "scripts/run_coastal_smooth80_lambda.sh",
+      "to": "archive/campaigns/run_coastal_smooth80_lambda.sh",
+      "commit": "0fcd7c00dae610c2cac8aa1656ecc87fc231b29a",
+      "sha256": "3b4104e60232bfb18742c359c6c7bf99f4dd639949eb62a2ce0f10c37cbde812",
+      "role": "Frozen historical campaign/tool; run in its original source checkout.",
+      "before_git_sha256": "3b4104e60232bfb18742c359c6c7bf99f4dd639949eb62a2ce0f10c37cbde812"
+    },
+    {
+      "from": "scripts/run_coastal_smooth80_mindepth.sh",
+      "to": "archive/campaigns/run_coastal_smooth80_mindepth.sh",
+      "commit": "0fcd7c00dae610c2cac8aa1656ecc87fc231b29a",
+      "sha256": "3fd835f041730f98ee4c5ea5761cbe60c716750d5908e830bbc9f41bde71951c",
+      "role": "Frozen historical campaign/tool; run in its original source checkout.",
+      "before_git_sha256": "3fd835f041730f98ee4c5ea5761cbe60c716750d5908e830bbc9f41bde71951c"
+    },
+    {
+      "from": "scripts/run_industrial_comparison_050_restore_30d.sh",
+      "to": "archive/campaigns/run_industrial_comparison_050_restore_30d.sh",
+      "commit": "0fcd7c00dae610c2cac8aa1656ecc87fc231b29a",
+      "sha256": "795fcc611573bebfbf98ccbdf90db4289bd4264d4112d1a415c5345fed1a4637",
+      "role": "Frozen historical campaign/tool; run in its original source checkout.",
+      "before_git_sha256": "795fcc611573bebfbf98ccbdf90db4289bd4264d4112d1a415c5345fed1a4637"
+    },
+    {
+      "from": "scripts/run_industrial_comparison_050_stage_f_30d.sh",
+      "to": "archive/campaigns/run_industrial_comparison_050_stage_f_30d.sh",
+      "commit": "0fcd7c00dae610c2cac8aa1656ecc87fc231b29a",
+      "sha256": "d012bbc22aa0704396a6608d9b89d85be73eb9b09d55205732f8fe38e78db309",
+      "role": "Frozen historical campaign/tool; run in its original source checkout.",
+      "before_git_sha256": "d012bbc22aa0704396a6608d9b89d85be73eb9b09d55205732f8fe38e78db309"
+    },
+    {
+      "from": "scripts/run_industrial_comparison_050_wind_only.sh",
+      "to": "archive/campaigns/run_industrial_comparison_050_wind_only.sh",
+      "commit": "0fcd7c00dae610c2cac8aa1656ecc87fc231b29a",
+      "sha256": "0de4a87033bbc660fb29b63f0c05f69c02b9ed5b1f37cd477876716369f96397",
+      "role": "Frozen historical campaign/tool; run in its original source checkout.",
+      "before_git_sha256": "0de4a87033bbc660fb29b63f0c05f69c02b9ed5b1f37cd477876716369f96397"
+    },
+    {
+      "from": "scripts/run_lambda_sweep_min500.sh",
+      "to": "archive/campaigns/run_lambda_sweep_min500.sh",
+      "commit": "0fcd7c00dae610c2cac8aa1656ecc87fc231b29a",
+      "sha256": "01ecf7b2c753850145cf8fd5cd8c6f984452a99e6eafdd7a20814fc95938235d",
+      "role": "Frozen historical campaign/tool; run in its original source checkout.",
+      "before_git_sha256": "01ecf7b2c753850145cf8fd5cd8c6f984452a99e6eafdd7a20814fc95938235d"
+    },
+    {
+      "from": "scripts/run_mixed_layer_ice_045.sh",
+      "to": "archive/campaigns/run_mixed_layer_ice_045.sh",
+      "commit": "0fcd7c00dae610c2cac8aa1656ecc87fc231b29a",
+      "sha256": "115d5ea3e0d0fb5d46161c39a9b0799292c9d916d041cbae676ad8198f4e27aa",
+      "role": "Frozen historical campaign/tool; run in its original source checkout.",
+      "before_git_sha256": "115d5ea3e0d0fb5d46161c39a9b0799292c9d916d041cbae676ad8198f4e27aa"
+    },
+    {
+      "from": "scripts/run_mixed_layer_ice_050.sh",
+      "to": "archive/campaigns/run_mixed_layer_ice_050.sh",
+      "commit": "0fcd7c00dae610c2cac8aa1656ecc87fc231b29a",
+      "sha256": "5e052ee2d23a0c59b9fca201444dd20478bc523065bb6b4cbce91fa6d777e1d4",
+      "role": "Frozen historical campaign/tool; run in its original source checkout.",
+      "before_git_sha256": "5e052ee2d23a0c59b9fca201444dd20478bc523065bb6b4cbce91fa6d777e1d4"
+    },
+    {
+      "from": "scripts/run_near_land_3dterms.sh",
+      "to": "archive/campaigns/run_near_land_3dterms.sh",
+      "commit": "0fcd7c00dae610c2cac8aa1656ecc87fc231b29a",
+      "sha256": "2efd06b76d6bb97fc4ed431244c847a8961bcbb231254218c2482b4f4cb4c547",
+      "role": "Frozen historical campaign/tool; run in its original source checkout.",
+      "before_git_sha256": "2efd06b76d6bb97fc4ed431244c847a8961bcbb231254218c2482b4f4cb4c547"
+    },
+    {
+      "from": "scripts/run_res045_gm_probe.sh",
+      "to": "archive/campaigns/run_res045_gm_probe.sh",
+      "commit": "0fcd7c00dae610c2cac8aa1656ecc87fc231b29a",
+      "sha256": "2567f9ca7e77c2568fcfbe84ab5a0d6deea8bfa7be79f82c0cc798c0f7d52017",
+      "role": "Frozen historical campaign/tool; run in its original source checkout.",
+      "before_git_sha256": "2567f9ca7e77c2568fcfbe84ab5a0d6deea8bfa7be79f82c0cc798c0f7d52017"
+    },
+    {
+      "from": "scripts/run_res045_icefloor_restore.sh",
+      "to": "archive/campaigns/run_res045_icefloor_restore.sh",
+      "commit": "0fcd7c00dae610c2cac8aa1656ecc87fc231b29a",
+      "sha256": "eac75c44aa349abdebbdbdedfb837deba8f3dd1265bd42e6f173348d2684f10f",
+      "role": "Frozen historical campaign/tool; run in its original source checkout.",
+      "before_git_sha256": "eac75c44aa349abdebbdbdedfb837deba8f3dd1265bd42e6f173348d2684f10f"
+    },
+    {
+      "from": "scripts/run_res050_restore_diagnostic.sh",
+      "to": "archive/campaigns/run_res050_restore_diagnostic.sh",
+      "commit": "0fcd7c00dae610c2cac8aa1656ecc87fc231b29a",
+      "sha256": "f961020586bbf4452e66a637a83722bb71b3fbe531172a3191349aaec72d9064",
+      "role": "Frozen historical campaign/tool; run in its original source checkout.",
+      "before_git_sha256": "f961020586bbf4452e66a637a83722bb71b3fbe531172a3191349aaec72d9064"
+    }
+  ],
+  "historical_reports": {
+    "commit": "0fcd7c00dae610c2cac8aa1656ecc87fc231b29a",
+    "files": [
+      {
+        "original_path": "docs/production_migrations.json",
+        "path": "archive/evidence/reorganization/phase1/production_migrations.json",
+        "sha256": "d8cba2fa01b4567aa7e9a4ded08c36281e2fd355da3a96479297b62e7703262c",
+        "git_blob_sha256": "0dec71741849ff93e501233401e2afce3fe80a765a6bb3029dd64a8a51263f32",
+        "byte_origin": "preserved checkout bytes; Git checkout newline filters may differ"
+      },
+      {
+        "original_path": "docs/research_engineering_preservation.json",
+        "path": "archive/evidence/reorganization/phase1/research_engineering_preservation.json",
+        "sha256": "e346e9a451bafc324e656caf00d24ada3afad529be17a2a2a62f9f0f6c39dd3c",
+        "git_blob_sha256": "33c09968d5b2531e6c0712db1a9d40b456db7a2a84856301458c5053d94a90f6",
+        "byte_origin": "preserved checkout bytes; Git checkout newline filters may differ"
+      },
+      {
+        "original_path": "docs/research_engineering_validation.json",
+        "path": "archive/evidence/reorganization/phase1/research_engineering_validation.json",
+        "sha256": "676bb4fae68bdfa23655491f03281159a5b89a6bfac9baebd78d0890ca7b2c62",
+        "git_blob_sha256": "676bb4fae68bdfa23655491f03281159a5b89a6bfac9baebd78d0890ca7b2c62",
+        "byte_origin": "preserved checkout bytes; Git checkout newline filters may differ"
+      },
+      {
+        "original_path": "docs/research_engineering_validation_zh.md",
+        "path": "archive/evidence/reorganization/phase1/research_engineering_validation_zh.md",
+        "sha256": "e8c9c7a637afb636172708d0f7c884feee03595530ea152b4edb087b025d857f",
+        "git_blob_sha256": "e8c9c7a637afb636172708d0f7c884feee03595530ea152b4edb087b025d857f",
+        "byte_origin": "preserved checkout bytes; Git checkout newline filters may differ"
+      },
+      {
+        "original_path": "docs/README.md",
+        "path": "archive/evidence/reorganization/phase1/docs-index.md",
+        "sha256": "714dfe1e89ae862f3d01bdc3f3b02215bcdc67be94c0d7386c814b6bab6ccc82",
+        "git_blob_sha256": "714dfe1e89ae862f3d01bdc3f3b02215bcdc67be94c0d7386c814b6bab6ccc82",
+        "byte_origin": "preserved checkout bytes; Git checkout newline filters may differ"
+      },
+      {
+        "original_path": "research/README.md",
+        "path": "archive/evidence/reorganization/phase1/research-index.md",
+        "sha256": "cc6830f512550335004e122b6b0906c16f29726d11fb6a0efcdbae4bc9a4fbba",
+        "git_blob_sha256": "cc6830f512550335004e122b6b0906c16f29726d11fb6a0efcdbae4bc9a4fbba",
+        "byte_origin": "preserved checkout bytes; Git checkout newline filters may differ"
+      }
+    ]
+  },
+  "compatibility": {
+    "retained": [
+      "ocean_solver package",
+      "zhenmode CLI",
+      "ocean-solver CLI"
+    ],
+    "removed": "Old bare imports, fd/data forwarding paths and forced historical pickle module names.",
+    "restart": "Actual source hash remains mandatory; use the original commit for historical receipts/checkpoints."
+  }
+}

@@ -4,8 +4,9 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
-from config import PhysicsConfig
-from jax_solver_global import _compute_tracer_tendency, make_solver_global
+from ocean_solver.config.definitions import PhysicsConfig
+from ocean_solver.dynamics.processes import _compute_tracer_tendency
+from ocean_solver.model.factory import make_solver_global
 from tests.support.grid import all_wet_grid
 
 jax.config.update('jax_enable_x64', True)

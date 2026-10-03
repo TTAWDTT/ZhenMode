@@ -30,8 +30,8 @@ def worker(directory, phase):
     import numpy as np
     import pytest
 
-    import run_long_integration_global as driver
-    from restart_contract import fingerprint
+    import ocean_solver.runtime.entry as driver
+    from ocean_solver.io.restart import fingerprint
     from tests.support.driver import run_controlled_driver
 
     if jax.default_backend() != 'cpu':

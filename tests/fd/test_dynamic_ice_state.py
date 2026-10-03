@@ -5,8 +5,10 @@ from dataclasses import replace
 import jax.numpy as jnp
 import numpy as np
 
-from config import PhysicsConfig
-from jax_solver_global import JaxStateG, _dynamic_ice_closure, make_solver_global
+from ocean_solver.config.definitions import PhysicsConfig
+from ocean_solver.model.factory import make_solver_global
+from ocean_solver.physics.surface import _dynamic_ice_closure
+from ocean_solver.state.types import JaxStateG
 from tests.support.grid import all_wet_grid
 
 

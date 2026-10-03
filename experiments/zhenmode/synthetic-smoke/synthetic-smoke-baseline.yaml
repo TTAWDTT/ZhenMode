@@ -1,0 +1,16 @@
+schema_version: 1
+kind: experiment
+id: synthetic-production-smoke-80s-baseline
+name_zh: 既有配置基线：synthetic-smoke
+purpose: 展开并保存既有生产参数与共同case；运行与指标验收独立记录。
+method: zhenmode
+case: cases/synthetic-production-smoke-80s.yaml
+parent_preset: configs/zhenmode/presets/synthetic-smoke.yaml
+variant: baseline
+changes: []
+evaluation_protocol: production-smoke-v1
+protocol_path: evaluation/protocols/production-smoke-v1.json
+resources:
+  cpu: 1
+  wall_seconds: 180
+  memory_mib: 4096

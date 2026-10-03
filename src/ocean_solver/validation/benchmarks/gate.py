@@ -6,8 +6,6 @@ import json
 import math
 from pathlib import Path
 
-from ocean_solver._compat import preserve_legacy_names
-
 
 def _metric(data: dict, name: str):
     if name == "global_a2_rmse":
@@ -118,7 +116,7 @@ def main() -> None:
     print(text)
 
 
-preserve_legacy_names(globals(), 'benchmark_gate')
+
 
 if __name__ == "__main__":
     main()

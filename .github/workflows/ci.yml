@@ -3,6 +3,13 @@ name: CI
 on:
   push:
   pull_request:
+  workflow_dispatch:
+    inputs:
+      full_validation:
+        description: "Run the full suite and MMS after human review"
+        type: boolean
+        required: true
+        default: false
 
 jobs:
   lint:
@@ -16,6 +23,7 @@ jobs:
       - run: ruff check .
 
   test:
+    if: github.event_name == 'workflow_dispatch' && inputs.full_validation
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -25,6 +33,8 @@ jobs:
           cache: pip
       # JAX's PyPI wheel is CPU-only on Linux, which is all the suite needs.
       - run: pip install -e ".[dev]"
+      # Research is a separate distribution, installed only for its retained tests.
+      - run: pip install -e ./research
       # No real ETOPO/WOA/wind data in CI, so generate the synthetic
       # stand-in first: without it the grid/bathymetry tests skip
       # themselves (tests/test_resolution.py::requires_bathy).
@@ -32,4 +42,4 @@ jobs:
       - run: python -m pytest tests/ -q
       # Self-contained manufactured-solution check on the FD operators; no
       # data required. Fails the build if the operators lose 2nd order.
-      - run: python src/jax_solver_global.py
+      - run: python -m ocean_solver mms

@@ -17,14 +17,13 @@ sys.path[:0] = [str(ROOT / "src"), str(ROOT / "scripts")]
 
 from verify_debug_integration import make_smoke_fixture
 
-from config import DEFAULT_CONFIG
-from jax_solver_global import (
-    _project_column_divergence,
-    _step_impl,
-    _vertical_transport_iface,
-    make_solver_global,
-)
-from stage_budgets import _StageRecorder, make_budget_step
+from ocean_solver.config.definitions import DEFAULT_CONFIG
+from ocean_solver.dynamics.projection import _project_column_divergence
+from ocean_solver.timestepping.integration import _step_impl
+from ocean_solver.dynamics.transport import _vertical_transport_iface
+from ocean_solver.model.factory import make_solver_global
+from ocean_solver.audit.stages import _StageRecorder
+from ocean_solver.audit.stages import make_budget_step
 
 
 class PrecisionRecorder(_StageRecorder):

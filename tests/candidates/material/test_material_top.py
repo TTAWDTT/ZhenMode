@@ -7,9 +7,17 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from config import C_P, RHO_0, PhysicsConfig
-from jax_solver_global import JaxStateG
-from material_top import (
+from ocean_solver.config.definitions import C_P, RHO_0, PhysicsConfig
+from ocean_solver.io.restart import load_restart, make_restart_contract, save_restart
+from ocean_solver.state.types import JaxStateG
+from tests.support.material.reference_geometry import WIDTHS
+from tests.support.material.top import (
+    _material_fixture,
+    _numpy_divergence,
+    _numpy_transport_rhs,
+    _state,
+)
+from zhenmode_research.candidates.material.solver import (
     _contents,
     _linear_material_step,
     _material_tracer_step,
@@ -17,14 +25,6 @@ from material_top import (
     make_material_top_step,
     material_inventory,
     material_thickness,
-)
-from restart_contract import load_restart, make_restart_contract, save_restart
-from tests.support.material.reference_geometry import WIDTHS
-from tests.support.material.top import (
-    _material_fixture,
-    _numpy_divergence,
-    _numpy_transport_rhs,
-    _state,
 )
 
 

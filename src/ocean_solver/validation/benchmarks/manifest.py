@@ -8,7 +8,6 @@ from pathlib import Path
 
 import numpy as np
 
-from ocean_solver._compat import preserve_legacy_names
 from ocean_solver.validation.benchmarks.metrics import score_npz
 
 
@@ -70,7 +69,7 @@ def main() -> None:
     print(json.dumps(manifest, indent=2))
 
 
-preserve_legacy_names(globals(), 'benchmark_manifest')
+
 
 if __name__ == "__main__":
     main()

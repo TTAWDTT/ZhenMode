@@ -23,13 +23,16 @@ from dataclasses import replace
 
 import jax.numpy as jnp
 
-import jax_solver_global as G
-from config import PhysicsConfig
-from jax_solver_global import (
+import ocean_solver.dynamics.processes as G_processes
+import ocean_solver.numerics.horizontal as G_horizontal
+import ocean_solver.numerics.vertical as G_vertical
+import ocean_solver.physics.eos as G_eos
+from ocean_solver.config.definitions import PhysicsConfig
+from ocean_solver.model.factory import make_solver_global
+from ocean_solver.physics.isopycnal import (
     _isopycnal_closure,
     _isopycnal_slope,
     _redi_skew_flux_tendency,
-    make_solver_global,
 )
 from tests.support.grid import all_wet_grid as _synth_grid
 
@@ -110,9 +113,9 @@ def test_slope_sign_down_gradient():
     assert float(jnp.max(jnp.abs(Sx))) > 0.0, "slope is zero everywhere"
 
     # Rebuild the numerator/denominator exactly as _isopycnal_slope does.
-    rho = G._density_anomaly(state.T, state.S, p) * p.wet_mask_z
-    drho_dx, _ = G._gradient_conservative_3d(rho, p)
-    drho_dz = G._d_dz(G._fill_ghost_bottom(rho, p), p)
+    rho = G_eos._density_anomaly(state.T, state.S, p) * p.wet_mask_z
+    drho_dx, _ = G_horizontal._gradient_conservative_3d(rho, p)
+    drho_dz = G_vertical._d_dz(G_vertical._fill_ghost_bottom(rho, p), p)
     expected = -drho_dx / drho_dz
     mask = (jnp.abs(Sx) > 0.0) & (jnp.abs(drho_dz) > 0.0)
     assert bool(jnp.all(jnp.sign(Sx[mask]) == jnp.sign(expected[mask]))), \
@@ -178,8 +181,8 @@ def test_closure_wired_into_tracer_tendency():
     T[:, :, -1] -= 3.0
     st_off, p_off = _make_state_and_params(g, kappa_gm=0.0, T_field=T)
     st_on, p_on = _make_state_and_params(g, kappa_gm=2000.0, T_field=T)
-    dT_off, _ = G._compute_tracer_tendency(st_off, p_off)
-    dT_on, _ = G._compute_tracer_tendency(st_on, p_on)
+    dT_off, _ = G_processes._compute_tracer_tendency(st_off, p_off)
+    dT_on, _ = G_processes._compute_tracer_tendency(st_on, p_on)
     delta = float(jnp.max(jnp.abs(dT_on - dT_off)))
     assert delta > 0.0, "kappa_gm > 0 did not change dT/dt (closure not wired in)"
     print(f"  [PASS] GM closure is applied to dT/dt (max delta {delta:.3e})")
@@ -195,7 +198,7 @@ def test_tendency_finite_with_gm():
     T[:, :, 0] += 3.0
     T[:, :, -1] -= 3.0
     state, p = _make_state_and_params(g, kappa_gm=2000.0, T_field=T)
-    dTdt, dSdt = G._compute_tracer_tendency(state, p)
+    dTdt, dSdt = G_processes._compute_tracer_tendency(state, p)
     assert bool(jnp.all(jnp.isfinite(dTdt))), "dTdt not finite with GM"
     assert bool(jnp.all(jnp.isfinite(dSdt))), "dSdt not finite with GM"
     print(f"  [PASS] tendency finite with GM (max|dTdt|={float(jnp.max(jnp.abs(dTdt))):.3e})")
@@ -257,14 +260,14 @@ def test_redi_is_dissipative_on_perturbation():
         T[i, :, :] += 10.0 * (1.0 - i / (nx - 1))   # 10C zonal front
     state, p = _make_state_and_params(g, kappa_gm=0.0, T_field=T, kappa_redi=2000.0)
     S_x, S_y = _isopycnal_slope(state, p)
-    rho = G._density_anomaly(state.T, state.S, p)
+    rho = G_eos._density_anomaly(state.T, state.S, p)
     # Reconstruct the skew fluxes the function builds internally:
     k = p.kappa_redi
-    dC_dz = G._d_dz(rho, p)
+    dC_dz = G_vertical._d_dz(rho, p)
     Fx = -k * S_x * dC_dz          # horizontal skew flux of density
     Fy = -k * S_y * dC_dz
-    dC_dx = G._d_dx(rho, p)
-    dC_dy = G._d_dy(rho, p)
+    dC_dx = G_horizontal._d_dx(rho, p)
+    dC_dy = G_horizontal._d_dy(rho, p)
     SdotGradC = S_x * dC_dx + S_y * dC_dy
     S2 = S_x * S_x + S_y * S_y
     Fz = -k * (SdotGradC + S2 * dC_dz)   # vertical skew flux of density

@@ -14,9 +14,9 @@ import sys
 
 sys.path.insert(0, str(REPO / "src"))
 
-from air_reanalysis import load_annual_mean_air_temp  # noqa: E402
-from config import GlobalGridConfig  # noqa: E402
-from grid import make_global_grid  # noqa: E402
+from ocean_solver.forcing.air import load_annual_mean_air_temp  # noqa: E402
+from ocean_solver.config.definitions import GlobalGridConfig  # noqa: E402
+from ocean_solver.io.grid import make_global_grid  # noqa: E402
 
 
 def fmt(v: float, digits: int = 3) -> str:

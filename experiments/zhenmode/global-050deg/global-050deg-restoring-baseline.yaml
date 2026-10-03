@@ -1,0 +1,16 @@
+schema_version: 1
+kind: experiment
+id: global-050deg-restoring-30d-baseline
+name_zh: 既有配置基线：global-050deg-restoring
+purpose: 展开并保存既有生产参数与共同case；运行与指标验收独立记录。
+method: zhenmode
+case: cases/global-050deg-restoring-30d.yaml
+parent_preset: configs/zhenmode/presets/global-050deg-restoring.yaml
+variant: baseline
+changes: []
+evaluation_protocol: sst-area-v2-restoring-0-30
+protocol_path: evaluation/protocols/sst-area-v2-restoring-0-30.json
+resources:
+  cpu: 1
+  wall_seconds: 180
+  memory_mib: 4096

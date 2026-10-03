@@ -15,14 +15,12 @@ from ocean_solver.provenance.archives import current_source_files
 ROOT = Path(__file__).resolve().parents[3]
 sys.path[:0] = [str(ROOT / "src"), str(ROOT / "tests")]
 
-from config import C_P, R_EARTH, RHO_0, PhysicsConfig
-from jax_solver_global import (
-    _biharmonic_h,
-    _horizontal_biharmonic_tracer,
-    _horizontal_tracer_diffusion,
-    _laplacian_h,
-    make_solver_global,
-)
+from ocean_solver.config.definitions import C_P, R_EARTH, RHO_0, PhysicsConfig
+from ocean_solver.numerics.horizontal import _biharmonic_h
+from ocean_solver.numerics.horizontal import _horizontal_biharmonic_tracer
+from ocean_solver.numerics.horizontal import _horizontal_tracer_diffusion
+from ocean_solver.numerics.horizontal import _laplacian_h
+from ocean_solver.model.factory import make_solver_global
 from tests.support.fd.horizontal_diffusion import _parameters
 from tests.support.grid import all_wet_grid
 

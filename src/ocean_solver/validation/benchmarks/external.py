@@ -13,7 +13,6 @@ from pathlib import Path
 import netCDF4
 import numpy as np
 
-from ocean_solver._compat import preserve_legacy_names
 from ocean_solver.validation.benchmarks.metrics import _relative_drift, score_snapshot
 
 
@@ -172,7 +171,7 @@ def main():
     print(json.dumps(result, indent=2))
 
 
-preserve_legacy_names(globals(), 'score_external_model')
+
 
 if __name__ == "__main__":
     main()

@@ -11,7 +11,7 @@ import numpy as np
 import pytest
 from tests.support.material.reference_geometry import _fixture
 
-from config import C_P, RHO_0, PhysicsConfig
+from ocean_solver.config.definitions import C_P, RHO_0, PhysicsConfig
 
 PATH = REPOSITORY_ROOT / 'research/experiments/material_top_band/integration.py'
 spec = importlib.util.spec_from_file_location('material_top_band_integration', PATH)

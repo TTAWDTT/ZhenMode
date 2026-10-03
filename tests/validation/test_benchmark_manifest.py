@@ -3,7 +3,7 @@ import json
 
 import numpy as np
 
-from benchmark_manifest import make_manifest
+from ocean_solver.validation.benchmarks.manifest import make_manifest
 
 
 def _write_run(path):

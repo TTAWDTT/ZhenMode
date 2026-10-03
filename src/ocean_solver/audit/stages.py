@@ -18,14 +18,14 @@ from ocean_solver.audit.schema import STAGE_NAMES as STAGE_NAMES
 from ocean_solver.audit.schema import TRANSPORT_METRIC_NAMES as TRANSPORT_METRIC_NAMES
 from ocean_solver.audit.schema import accumulate_budget as accumulate_budget
 from ocean_solver.audit.schema import empty_budget as empty_budget
-from ocean_solver.configuration import C_P, RHO_0
-from ocean_solver.fd.integration import (
-    _step_impl,
-)
-from ocean_solver.fd.transport import (
+from ocean_solver.config.definitions import C_P, RHO_0
+from ocean_solver.dynamics.transport import (
     _face_transport_divergence,
     _layer_face_transports,
     _vertical_transport_iface,
+)
+from ocean_solver.timestepping.integration import (
+    _step_impl,
 )
 
 

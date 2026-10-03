@@ -4,9 +4,7 @@
 import jax.numpy as jnp
 import numpy as np
 
-from jax_solver_global import (
-    JaxStateG,
-)
+from ocean_solver.state.types import JaxStateG
 
 
 def _state(params):

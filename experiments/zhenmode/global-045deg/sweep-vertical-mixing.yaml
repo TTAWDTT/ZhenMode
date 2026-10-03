@@ -1,0 +1,17 @@
+schema_version: 1
+kind: sweep
+id: global-045deg-kv-sweep-20261003
+name_zh: 背景垂向扩散参数扫描
+purpose: 只展开三组配置与资源下界；普通调参，不自动启动，不预称更优。
+experiment: experiments/zhenmode/global-045deg/global-045deg-seasonal-baseline.yaml
+axes:
+- option: kappa_v
+  values:
+  - value: 5.0e-07
+    unit: m2/s
+  - value: 1.0e-06
+    unit: m2/s
+  - value: 2.0e-06
+    unit: m2/s
+  factor: vertical_tracer_diffusivity
+max_runs: 3

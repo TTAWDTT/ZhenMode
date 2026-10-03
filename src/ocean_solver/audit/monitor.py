@@ -6,7 +6,6 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
-from ocean_solver._compat import preserve_legacy_names
 from ocean_solver.audit.schema import accumulate_budget
 
 
@@ -81,5 +80,3 @@ def make_monitored_advance(step, zero_budget, audited=False, transport_tolerance
         return jax.lax.fori_loop(0, count, monitored_step, initial)
 
     return advance
-
-preserve_legacy_names(globals(), 'integration_monitor')

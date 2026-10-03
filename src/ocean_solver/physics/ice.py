@@ -17,8 +17,6 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from ocean_solver._compat import preserve_legacy_names
-
 
 @dataclass(frozen=True)
 class MLIceConfig:
@@ -106,5 +104,3 @@ def mixed_layer_ice_step(T_mld: float | np.ndarray,
                  * np.asarray(latent_change) / cfg.rho_ocean)
     salt_flux = np.where(grows, salt_flux, -salt_flux)
     return T_new, ice_new, q, salt_flux
-
-preserve_legacy_names(globals(), 'mixed_layer_ice')

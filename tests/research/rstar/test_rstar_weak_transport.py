@@ -18,7 +18,7 @@ from tests.support.rstar.pressure_work import _work
 
 from tests.support.rstar.representation import _representation_case
 
-from config import RHO_0
+from ocean_solver.config.definitions import RHO_0
 
 from research.experiments.material_rstar_coordinates.bed_completion import (
     REPRESENTATION_TAG,
