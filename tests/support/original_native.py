@@ -150,4 +150,3 @@ def audit_native_receipt(view, kick, receipt, grid):
             "per_fast_continuity_residual_max_m":max(fast_residuals),
             "independent_pressure_work_J":independent_work,
             "fixed_mass_work_roundoff_bound_J":float(bound(energy_scale,kick.pressure_work))}
-

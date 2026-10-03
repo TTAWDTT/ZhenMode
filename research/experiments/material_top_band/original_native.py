@@ -309,4 +309,3 @@ class OriginalNativeAudit:
             _freeze(result.checks), self.view.source_hashes, self.view.parameter_digest)
         self._last_receipt = receipt
         return receipt
-
