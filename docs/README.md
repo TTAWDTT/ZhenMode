@@ -1,5 +1,12 @@
 # 文档索引 / Documentation Index
 
+本轮工程的入口是 [ZhenMode 架构](research_engineering_architecture_zh.md)、
+[生产职责](production_architecture_zh.md)、[实验运行](experiments_zh.md)、
+[统一评价](evaluation_zh.md)、[MOM6 接入](baselines_zh.md)、
+[验证报告](research_engineering_validation_zh.md) 和
+[历史生产证据](../archive/evidence/README.md)。下面保留原技术说明和研究过程索引；
+旧修复计划、候选失败与验收路线图不替代上述默认生产边界或原始历史成果。
+
 本目录分成两块：**当前主线**（描述今天还在跑的全球有限差分模式）与
 **`archive/`**（区域谱模式时期的工作日志与已被取代的早期文档）。
 主线文档是权威的；归档文档只用来追溯历史推理，**不要照着它配置运行**。

@@ -1,5 +1,13 @@
 # Research code and retained evidence
 
+## 当前安装边界（2026-10-03）
+
+正式 distribution 只安装 `src/ocean_solver` 与必要的生产历史桥，不依赖研究目录。
+未采用的材料库存和 FV/C-grid 源码已迁到 `research/src/zhenmode_research/candidates`；
+研究及其历史 bare imports 需另外执行 `python -m pip install -e ./research`。
+测试里的独立 oracle、历史 JSON、失败材料及下述旧过程记录保持原身份。
+迁移映射见 `docs/research_engineering_layout.json`，原记录用原提交复现。
+
 Production starts at `ocean-solver` / `src/run_long_integration_global.py`, whose
 installed module dependencies are declared in `pyproject.toml`. The production
 CLI does not select these research candidates automatically.

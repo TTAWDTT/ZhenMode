@@ -8,6 +8,8 @@ BUILD_STAGING_ROOT = Path(__file__).resolve().parents[1] / "build"
 
 class CleanBuildPy(build_py):
     def run(self):
+        if self.editable_mode:
+            return super().run()
         staging = Path(self.build_lib).resolve()
         for source in (self.package_dir or {}).values():
             source_root = Path(source).resolve()
@@ -17,8 +19,6 @@ class CleanBuildPy(build_py):
         if staging == managed_root or not staging.is_relative_to(managed_root):
             raise RuntimeError("build staging must be inside the managed build directory: " + str(staging))
         super().run()
-        if self.editable_mode:
-            return
         expected = {Path(path).resolve() for path in self.get_outputs(include_bytecode=False)}
         # Only generated Python payloads in this command's staging tree are touched.
         # Source, research, data and other cached artifacts are never traversed.
