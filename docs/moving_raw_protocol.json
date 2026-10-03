@@ -1,0 +1,166 @@
+{
+  "contract": "manufactured_half_prism_characteristic_ALE_raw_mean_step",
+  "base_commit": "7223a5d533f95bc289a35b2dab62901c2b2776ae",
+  "qualification_passed": false,
+  "original_global_CV_identified": false,
+  "production_force_consumption_qualified": false,
+  "scope": "Explicit new manufactured half-prism raw-mean authority, not identification of the original solver momentum CV. Two adjacent half-prisms x=[0,d/2] and [d/2,d], length L, own fourteen raw horizontal layers, common flat eta and bottom; only the first raw slot moves, all interior cuts fixed. This is not the original top-three-band geometry or predict/12fast/replay.",
+  "authority": "h,IT,IS,Mu,Mv per area remain authoritative. Actual mean velocity a=Mu/(rho0*h) is located at the actual half-CV centroid x=d/4 or3d/4, never at the old endpoint. Explicit manufactured authority is required by the research constructor.",
+  "mean_reconstruction": "Physical endpoint basis N uses actual physical-depth owners. O is the actual raw depth overlap, K=[[0,O/hL],[O^T/hR,0]], Q=.75I+.25K, Psi=N Q^-1. New metric M=Q^-T W_N Q^-1 with W_N=D(2I+K)/3 and D=diag(rho0*A*h), A=d*L/2. Q1=1, M1=D1; D<=M<=4D/3 in exact geometry arithmetic. No old W reused for actual mean DOFs; no constraint fitting, regularization, stock projection or force adjustment.",
+  "frame": "Qdot includes overlap motion and own-volume denominators; only O_dot00=eta_dot and own top h_dot=eta_dot. Jdot=-J Qdot J, Mdot=Jdot^T W_N J+J^T W_Ndot J+J^T W_N Jdot, W_Ndot includes moving top shape. R=M D^-1 and Rdot=Mdot D^-1-M D^-1 Ddot D^-1. General basis/shear probes are geometric tests only, not accepted flows.",
+  "accepted_family": "Every actual T mean and P1 endpoint binds Tref; actual inactive TS/density limiters; common stable affine canonical density anomaly q_b+s*(z-b), a1=0; every actual mean velocity binds U+alpha*x_CV and constant V. Canonical spatial reconstruction is qualified against all actual means and both P1 endpoints. It is not literal initial-piecewise-P1 advection. Raw stocks are not changed to impose this family.",
+  "input_error": "Before-step endpoint/canonical deviations and absolute primitive-operation bounds produce separate deltaT,deltaS,deltaRho,deltaU/deltaV majorants. Linear P1 endpoint bounds cover each actual initial layer. Open inflow uses absolute affine extrapolation weights. Cover both velocity components, alpha/w, Mu=rho0*u^2 flux, cubic KE flux, Pa and pressure work. Endpoint stock/quotient and inactive-P1 Lipschitz error propagation must be included. Propagate these input reconstruction errors separately into face fluxes, Pa, local/global KE/PE, and actual end-CV comparisons; do not disguise them as quadrature truncation or derive gates from after-step residuals.",
+  "characteristics": "Candidate reconstructs initial physical endpoint coefficients with Q^-1. Globally affine initial field extension specifies open-boundary inflow. Particles have constant actual horizontal acceleration -P/rho0, x=X+u_initial(X)*t-P*t^2/(2*rho0), z=b+(Z-b)/(1+alpha0*t), V constant. Candidate traces inverse labels for face fields and consumes finite FV fluxes and Pa impulses. An analytic end stock array is never substituted for the accepted flux update.",
+  "faces": "One shared horizontal union-depth face value is consumed oppositely by both owners. Distinct outer faces are consumed. Internal downward ALE R=-w at fixed raw interfaces is shared by both adjacent layers; surface and bottom relative material R=0. The moving top retains actual external Pa work. Stock and physical KE/PE transport use the same physical face geometry and Q/R. Pressure traction and p*u/p*w energy flux are integrated independently from canonical Pa, with actual P1 discrepancy majorants.",
+  "geometry": "The flow map defines the ALE grid trajectory and raw physical volumes before flux evaluation; water GCL must pass each actual raw row. Record actual local/global and two-step cumulative GCL residuals with predetermined envelopes. This is bounded floating-point mesh-volume conservation, not byte-exact water update. Any GCL discrepancy beyond its declared local envelope rejects the whole step, with no flux or geometry repair. Interior ownership/topology crossing and top thickness below half of its before-step value refuse. Q/M/R and frame geometry denominators are separate from the smooth face lambda quadrature tail.",
+  "energy": "Actual physical K uses M and actual raw means; raw mean K uses D. Physical minus raw covariance KE is explicitly retained, including local/face transport. For the global affine family Evariance=rho0*L*H*d^3*alpha^2/96. Local gravity PE uses rho0*g*z plus rho_prime*g*z; global rho0 baseline is shifted by the fixed bottom constant to rho0 freePE, without double counting. Each raw CV must close finite physical KE/PE + advective energy against pressure energy flux, including internal vertical p*R and moving-surface external Pa work. Independently verify physical KE against true time-integrated horizontal pressure force work and KE transport.",
+  "algebraic_work": "For actual before/after D or M, DeltaK=a_mid^T DeltaMomentum-.5*a_after^T DeltaMass*a_before. Report this algebraic impulse work/mass work separately from true integral(a(t)^T F(t) dt). Midpoint times integrated pressure impulse is also separately recorded; its difference from true pressure time work is not called loss.",
+  "independent_oracle": "No candidate path, inverse-label, time polynomial, face consumer, mean-map, mass-chain or after-stock helper is imported. Derive Eulerian PDE alpha_dot=-alpha^2,H_dot=-alphaH,U_dot=-alphaU-P/rho0,s_dot=alpha*s independently; bind actual before/after CV means by seven-point end-volume integration, independently check PDE residuals, all absolute horizontal/vertical stock/Pa/energy faces, local and global finite ledgers. Candidate16 and oracle32 positive time Gauss rules have their own remainder bounds; agreement alone is not a truncation proof.",
+  "quadrature": {
+    "candidate_time_points": 16,
+    "oracle_time_points": 32,
+    "candidate_space_points": 2,
+    "oracle_space_points": 7,
+    "smooth_execution": "Candidate canonical face integrands are mechanically audited rational time polynomials, numerator degree<=8, denominator(1+q*y)^k withk<=8, y=t/dt. Absolute coefficient-operation polynomial is retained before cancellation with all area/length factors.",
+    "tail16": "T16=binom(31,7)*abs(q)^24/(1-(32/25)*abs(q)); dimensional integral remainder<=2*dt*sum_abs_actual_coefficients*T16, separate from roundoff and input reconstruction error.",
+    "tail32": "T32=binom(63,7)*abs(q)^56/(1-(64/57)*abs(q)); dimensional integral remainder<=2*dt*sum_abs_actual_coefficients*T32.",
+    "degree_table": {
+      "horizontal_water_IT_Mv": [
+        3,
+        2
+      ],
+      "horizontal_IS_Mu": [
+        5,
+        3
+      ],
+      "horizontal_KE": [
+        7,
+        4
+      ],
+      "horizontal_PE": [
+        6,
+        4
+      ],
+      "horizontal_Pa": [
+        4,
+        3
+      ],
+      "horizontal_Pa_times_u": [
+        6,
+        4
+      ],
+      "internal_vertical_water_IT_Mv": [
+        0,
+        1
+      ],
+      "internal_vertical_IS_PE": [
+        1,
+        1
+      ],
+      "internal_vertical_Mu": [
+        2,
+        2
+      ],
+      "internal_vertical_KE": [
+        4,
+        3
+      ],
+      "internal_vertical_Pa_times_R": [
+        3,
+        3
+      ],
+      "moving_cap_external_Pa_work": [
+        0,
+        2
+      ],
+      "body_pressure_work": [
+        3,
+        2
+      ]
+    }
+  },
+  "frozen_thresholds": {
+    "roundoff_eps_multiplier": 512,
+    "roundoff_scale": "sum absolute actual primitive/local operations before cancellation; finite nonnegative scale checked before floor; algebraic identities use no physical truncation budget",
+    "maximum_duration_s": 0.05,
+    "maximum_abs_alpha_dt": 0.02,
+    "minimum_new_top_fraction": 0.5,
+    "false_control_minimum_bound_ratio": 100,
+    "geometry_FD_epsilon_m": [
+      1E-06,
+      5E-07
+    ],
+    "FD_scope": "separate a-priori analytic finite-difference truncation envelope; not a roundoff identity"
+  },
+  "case_parameters": {
+    "distance_m": 2,
+    "length_m": 1.5,
+    "bottom_m": -3,
+    "eta_m": -0.2,
+    "a0": 1,
+    "s": -0.4,
+    "U": 0.03,
+    "alpha": 0.08,
+    "V": -0.02,
+    "external_Pa": [
+      80,
+      200
+    ],
+    "durations_s": [
+      0.02,
+      0.03
+    ],
+    "negative": "U=-.03,alpha=-.08,external=[200,80],same durations",
+    "zero_pressure": "alpha=.08,external=[80,80],dt=.02",
+    "fixed_eta_control": "alpha=0,external=[80,200],dt=.02",
+    "partition": "normalized left weights 1..14; right (14..1)^1.3, base7223 affine_physical_cases",
+    "EOS": {
+      "beta": 0.00076,
+      "Sref": 35,
+      "alpha": 0.0002,
+      "rho0": 1025,
+      "gravity": 9.81,
+      "Tref": 15
+    },
+    "density_intercept_convention": "a0 global z intercept; q_b=a0+s*b",
+    "y_boundary": "periodic extrusion with paired cancelling faces"
+  },
+  "required_controls": [
+    "old endpoint Mu misidentified as mean DOF",
+    "reuse old W with new means",
+    "omit either Qdot inverse-side frame term",
+    "omit moving shape W_Ndot",
+    "omit Rdot",
+    "fixed-mass work on variable mass",
+    "raw mean KE substituted for physical KE",
+    "missing covariance KE or face transport",
+    "midpoint impulse work passed off as true pressure time integral",
+    "omit ALE R or a shared face",
+    "paired zero/P0 TS/M fluxes",
+    "common Pa offset preserving force differences",
+    "omit internal vertical Pa energy flux",
+    "omit moving-cap external Pa work",
+    "active TS limiter/non-affine P1 endpoints",
+    "post-prepare GCL/material/energy audit failure full rollback",
+    "nonpositive geometry/top crossing",
+    "invalid masked/complex/nonfinite inputs and receipt scales"
+  ],
+  "limits": {
+    "CPU_count": 1,
+    "wall_seconds_per_invocation": 180,
+    "memory_bytes_per_process_tree": 4294967296,
+    "serial": true,
+    "first_batch_wall_seconds": 1200,
+    "real_archive_steps": 0,
+    "GPU_runs": 0
+  },
+  "boundaries": [
+    "No original global CV or real353 qualification",
+    "No original top-three geometry or predict12fastreplay",
+    "No accepted general shear/a1/nonflat/coast state",
+    "No literal piecewise initial-P1 transport claim",
+    "No mix/biharmonic/FCT/filter/wind/bulkheat/rotation/drag adapter",
+    "No generic time-order or equal-error speed claim",
+    "No default production switch or merge"
+  ]
+}

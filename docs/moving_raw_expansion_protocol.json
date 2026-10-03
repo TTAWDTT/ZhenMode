@@ -1,0 +1,48 @@
+{
+  "contract": "manufactured_raw_mean_ALE_canonical_face_area_supremum",
+  "predecessor_public_head": "02429e7047a5370bdf3f7638df56781e60f74a39",
+  "predecessor_scientific_source": "d3d29200cf0b09fccb5451e1a2b3e5aa7fb97401",
+  "original_protocol_git_blob": "07e0f43cdfc04e3d282ae05907c5b182735cee78",
+  "original_protocol_executed_CRLF_SHA256": "e51975d35ccd14f777ebec5dba5d56db2d8d7b29fc07dac7f030995b9387f95d",
+  "original_protocol_git_LF_SHA256": "f76bfd745cf52fac88812a6edff91d688082f8e70ed10ea87e051de5fdabf369",
+  "area_rule": "H=eta0-b; q=alpha*dt; cap eta(t)=eta0-H*alpha*t/(1+alpha*t) is monotone because eta_dot=-alpha*H/(1+alpha*t)^2. Therefore maximum cap expansion is H*max(0,-q/(1+q)); fixed interior segments have zero expansion. area_time_upper=L*dt*(initial_segment_height+canonical_expansion+input_delta_eta). It bounds instantaneous and integrated positive area before cancellation. No observed residual participates.",
+  "cap_rate_rule": "The cap rate eta_dot=-H*alpha/(1+alpha*t)^2 has alpha derivative -H*(1-alpha*t)/(1+alpha*t)^3. With delta_alpha=4*delta_velocity_u/distance and q_star=dt*(abs(alpha)+delta_alpha)<1, the independent cap_rate_error is bounded by H*delta_alpha*(1+q_star)/(1-q_star)^3. Top pressure-work input must use this cap-rate bound, while internal fixed-cut fluxes use their own H*delta_alpha/(1-q_star)^2 bound. All lambda-sensitive envelopes cover the complete alpha plus/minus delta_alpha interval. Bounds come from pre-step discrepancies, not accepted residuals.",
+  "extent_rounding_rule": "Positive products, quotients and sums forming maximum canonical expansion, face width, area-time and the lambda uncertainty interval are rounded outward at each primitive operation. PE depth extent includes bottom, initial cap, maximal canonical cap and input cap uncertainty. Reject any nonfinite extent or nonpositive denominator.",
+  "body_work_volume_rule": "The full-column horizontal pressure-force work input also integrates over the expanded column: volume_time_upper=distance*length*dt*(H+canonical_expansion+input_delta_eta). Its velocity input uses this upper volume, and the displaced-cap term uses input_delta_eta*umax. Expose this input separately and add it to the actual work error consumer; no historical receipt or threshold changes.",
+  "independent_cap_rate_controls": "Use the same five alpha/duration probes as the area controls. Recover the rate majorant actually consumed by top pressure-work from its input-product formula, then compare against the exact derivative supremum on the alpha plus/minus delta_alpha times time rectangle. Rounding is scaled with the tiny product/subtraction operands, without a unit floor. Positive-surface translation independently checks the expanded PE extent.",
+  "frozen_thresholds": {
+    "roundoff_eps_multiplier": 512,
+    "maximum_duration_s": 0.05,
+    "maximum_abs_alpha_dt": 0.02,
+    "minimum_new_top_fraction": 0.5,
+    "false_control_minimum_bound_ratio": 100
+  },
+  "independent_area_probes": [
+    {"alpha": -0.08, "dt": 0.02},
+    {"alpha": -0.08, "dt": 0.05},
+    {"alpha": -0.398, "dt": 0.05},
+    {"alpha": 0.08, "dt": 0.02},
+    {"alpha": 0.0, "dt": 0.05}
+  ],
+  "additional_accepted_case": {
+    "U": -0.03,
+    "alpha": -0.398,
+    "V": -0.02,
+    "external_Pa": [200.0, 80.0],
+    "duration_s": 0.05,
+    "distance_m": 2.0,
+    "length_m": 1.5,
+    "eta_m": -0.2,
+    "bottom_m": -3.0,
+    "density_intercept": 1.0,
+    "density_slope": -0.4,
+    "partition_and_EOS": "unchanged exact fourteen-layer manufactured_mean_case and original moving_raw_protocol.json"
+  },
+  "evidence_boundary": "Retain original receipt/resources and scientific source. New witness binds its actual clean corrected source and both protocol files, repeats the original six actual steps and adds one negative-alpha near-limit actual step. No rerun replaces the historical receipt.",
+  "expected_actual_raw_commits": 7,
+  "expected_actual_moving_commits": 6,
+  "qualification_passed": false,
+  "original_global_CV_identified": false,
+  "production_force_consumption_qualified": false,
+  "limits": {"CPU_count": 1, "wall_seconds_per_invocation": 180, "memory_bytes_per_process_tree": 4294967296, "serial": true, "real_archive_steps": 0, "GPU_runs": 0}
+}
