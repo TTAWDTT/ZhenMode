@@ -1,5 +1,5 @@
 """Mechanically preserved FD geometry implementation."""
-from ocean_solver.geometry.columns import nodal_control_thickness
+from ocean_solver.geometry.types import nodal_control_thickness
 from ocean_solver.numerics.backend import jnp, np
 from ocean_solver.state.types import FDParams
 

@@ -9,7 +9,7 @@ from ocean_solver.dynamics.projection import _column_projection_diagonal
 from ocean_solver.dynamics.transport import _compute_vertical_velocity
 from ocean_solver.geometry.fd import make_fd_params
 from ocean_solver.numerics.backend import jax, jnp, np
-from ocean_solver.numerics.stability import nu_nsub_for_2d_cfl
+from ocean_solver.numerics.horizontal import nu_nsub_for_2d_cfl
 from ocean_solver.physics.eos import _density_anomaly
 from ocean_solver.state.types import FDPhysParams, JaxStateG
 from ocean_solver.timestepping.integration import _step_impl

@@ -442,7 +442,7 @@ def convert(directory):
 
 
 def evaluate(directory):
-    from ocean_solver.validation.benchmarks.metrics import _relative_drift
+    from ocean_solver.evaluation.metrics import _relative_drift
 
     directory = Path(directory).resolve()
     manifest = load_json(directory / "run.json")

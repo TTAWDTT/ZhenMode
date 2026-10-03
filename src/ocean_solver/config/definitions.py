@@ -11,7 +11,7 @@ from dataclasses import dataclass, field
 
 import numpy as np
 
-from ocean_solver.provenance.locations import source_root
+from ocean_solver.provenance.sources import source_root
 
 # ── Physical constants ──────────────────────────────────────────────
 G_EARTH     = 9.81          # m/s²

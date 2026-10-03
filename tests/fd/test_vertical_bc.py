@@ -36,7 +36,7 @@ import numpy as np
 
 from ocean_solver.config.definitions import PhysicsConfig
 from ocean_solver.geometry.fd import make_fd_params
-from ocean_solver.io.grid import GlobalOceanGrid
+from ocean_solver.geometry.types import GlobalOceanGrid
 from ocean_solver.numerics.vertical import _d2_dz2
 
 T_REF = PhysicsConfig().T_ref       # 15.0

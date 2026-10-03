@@ -38,7 +38,7 @@ from ocean_solver.physics.vertical import (
     _effective_kappa_v,
     _vertical_momentum_diffusion,
 )
-from ocean_solver.provenance.locations import source_root
+from ocean_solver.provenance.sources import source_root
 from ocean_solver.io.restart import make_restart_contract
 from zhenmode_research.provenance import solver_source_modules, source_paths
 

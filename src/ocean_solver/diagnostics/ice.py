@@ -12,7 +12,7 @@ from pathlib import Path
 
 import numpy as np
 
-from ocean_solver.validation.benchmarks.metrics import cell_area
+from ocean_solver.evaluation.metrics import cell_area
 
 RHO_ICE = 917.0
 LATENT_HEAT_FUSION = 3.34e5

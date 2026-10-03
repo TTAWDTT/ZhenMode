@@ -6,7 +6,7 @@ import json
 import subprocess
 from pathlib import Path
 
-from ocean_solver.baselines import mom6
+from ocean_solver.baselines import forcing, mom6
 
 
 def main(argv=None):
@@ -14,6 +14,7 @@ def main(argv=None):
     methods = parser.add_subparsers(dest="method", required=True)
     model = methods.add_parser("mom6")
     commands = model.add_subparsers(dest="command", required=True)
+    forcing.add_arguments(commands.add_parser("export-forcing", help="export shared forcing to MOM6 A-grid inputs"))
     for command in ("doctor", "fetch", "build", "prepare"):
         p = commands.add_parser(command)
         p.add_argument("--cache", default=str(Path.home()/".cache/zhenmode/mom6/f49a000"))
@@ -36,7 +37,9 @@ def main(argv=None):
     p.add_argument("--out-dir", required=True)
     args = parser.parse_args(argv)
     try:
-        if args.command in ("doctor", "fetch"):
+        if args.command == "export-forcing":
+            result = forcing.export_forcing(args)
+        elif args.command in ("doctor", "fetch"):
             result = getattr(mom6, args.command)(args.cache)
         elif args.command == "build":
             result = mom6.build(args.cache, wall_seconds=args.wall_seconds)

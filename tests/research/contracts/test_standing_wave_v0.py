@@ -367,7 +367,7 @@ def test_full_solver_preserves_tangential_wall_velocity():
     from dataclasses import replace
 
     from ocean_solver.config.definitions import PhysicsConfig
-    from ocean_solver.io.grid import GlobalOceanGrid
+    from ocean_solver.geometry.types import GlobalOceanGrid
     from ocean_solver.timestepping.integration import _step_impl
     from ocean_solver.model.factory import make_solver_global
 

@@ -47,7 +47,7 @@ Run:  python -m pytest tests/test_nu_nsub_cfl.py -v
 import numpy as np
 
 from ocean_solver.config.definitions import R_EARTH
-from ocean_solver.numerics.stability import nu_nsub_for_2d_cfl
+from ocean_solver.numerics.horizontal import nu_nsub_for_2d_cfl
 
 # Production geometry, as make_global_grid builds it for the 1-deg runs:
 # lat = linspace(-59.5, 59.5, 120), dlat = dlon = 1 deg, dy = R*radians(1).

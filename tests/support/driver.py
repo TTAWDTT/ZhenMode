@@ -5,6 +5,12 @@ from dataclasses import replace
 import numpy as np
 import pytest
 
+import ocean_solver.forcing.seasonal as owner_seasonal
+import ocean_solver.io.climatology as owner_climatology
+import ocean_solver.io.grid as owner_grid
+import ocean_solver.io.paths as owner_paths
+import ocean_solver.io.restart as owner_restart
+import ocean_solver.model.factory as owner_factory
 import ocean_solver.runtime.entry as driver
 from tests.support.grid import all_wet_grid
 
@@ -12,22 +18,22 @@ from tests.support.grid import all_wet_grid
 def run_controlled_driver(monkeypatch, directory, *, restart=None, crash_after=None,
                           save_3d=False, options=(), step_override=None, init_override=None, expected_code=0):
     grid = replace(all_wet_grid(nx=8, ny=8, nz=4), f=np.zeros((8, 8)))
-    monkeypatch.setattr(driver, "make_global_grid", lambda *args, **kwargs: grid)
-    monkeypatch.setattr(driver, "get_initial_fields", lambda grid:
+    monkeypatch.setattr(owner_grid, "make_global_grid", lambda *args, **kwargs: grid)
+    monkeypatch.setattr(owner_climatology, "get_initial_fields", lambda grid:
                         (np.full((8, 8, 4), 17.), np.full((8, 8, 4), 35.)))
-    monkeypatch.setattr(driver, "build_seasonal_wind_global", lambda grid, year:
+    monkeypatch.setattr(owner_seasonal, "build_seasonal_wind_global", lambda grid, year:
                         [(np.full((8, 8), (month + 1) * 0.001), np.zeros((8, 8)))
                          for month in range(12)])
-    original_factory = driver.make_solver_global
+    original_factory = owner_factory.make_solver_global
     contracts = []
-    original_contract = driver.make_restart_contract
+    original_contract = owner_restart.make_restart_contract
 
     def build_contract(*args, **kwargs):
         contract = original_contract(*args, **kwargs)
         contracts.append(contract)
         return contract
 
-    monkeypatch.setattr(driver, "make_restart_contract", build_contract)
+    monkeypatch.setattr(owner_restart, "make_restart_contract", build_contract)
 
     def factory(*args, **kwargs):
         result = list(original_factory(*args, **kwargs))
@@ -49,7 +55,7 @@ def run_controlled_driver(monkeypatch, directory, *, restart=None, crash_after=N
         result[-1] = step
         return tuple(result)
 
-    monkeypatch.setattr(driver, "make_solver_global", factory)
+    monkeypatch.setattr(owner_factory, "make_solver_global", factory)
     arguments = ["ocean-solver", "--days", str(80. / 86400.), "--dt", "10", "--dt-bt", "5",
                  "--mode-split", "--seasonal-wind", "--snap-days", str(20. / 86400.),
                  "--checkpoint-days", str(20. / 86400.), "--tag", "controlled",
@@ -71,7 +77,7 @@ def run_controlled_driver(monkeypatch, directory, *, restart=None, crash_after=N
             with pytest.raises(RuntimeError, match="controlled interruption"):
                 driver.main()
     finally:
-        if isinstance(sys.stdout, driver._Tee):
+        if isinstance(sys.stdout, owner_paths._Tee):
             sys.stdout.file.close()
         sys.stdout = previous_stdout
     return grid, contracts[0] if contracts else None

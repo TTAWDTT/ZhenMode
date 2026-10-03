@@ -8,10 +8,10 @@ from pathlib import Path
 import netCDF4
 import numpy as np
 
+from ocean_solver.evaluation.external import _time_days, score_external_field
+from ocean_solver.evaluation.metrics import score_npz
 from ocean_solver.evaluation.protocols import LEGACY, digest, file_digest, load_json, load_protocol
-from ocean_solver.validation.benchmarks.external import _time_days, score_external_field
-from ocean_solver.validation.benchmarks.metrics import score_npz
-from ocean_solver.validation.benchmarks.table import load_metric, markdown_table
+from ocean_solver.evaluation.table import load_metric, markdown_table
 
 
 def _timeline(days, protocol):

@@ -8,8 +8,8 @@ import numpy as np
 import pytest
 
 from ocean_solver.config.definitions import PhysicsConfig
+from ocean_solver.forcing.seasonal import interp_monthly_field, interp_monthly_field_jit
 from ocean_solver.model.factory import make_solver_global
-from ocean_solver.runtime.entry import interp_monthly_field, interp_monthly_field_jit
 from tests.support.grid import all_wet_grid
 
 

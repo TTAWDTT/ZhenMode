@@ -16,7 +16,7 @@ from dataclasses import dataclass
 import numpy as np
 
 from ocean_solver.config.definitions import C_P, RHO_0
-from ocean_solver.geometry.columns import nodal_control_thickness
+from ocean_solver.geometry.types import nodal_control_thickness
 
 
 @dataclass(frozen=True)
@@ -119,3 +119,10 @@ def diagnostics_to_arrays(rows: list[BudgetDiagnostics]) -> dict[str, np.ndarray
         key: np.array([getattr(row, key) for row in rows], dtype=np.float64)
         for key in BudgetDiagnostics.__dataclass_fields__
     }
+
+
+def total_kinetic_energy(state, ocean_mask):
+    u = np.asarray(state.u)
+    v = np.asarray(state.v)
+    ke = 0.5 * np.sum((u**2 + v**2) * ocean_mask[:, :, None])
+    return float(ke)

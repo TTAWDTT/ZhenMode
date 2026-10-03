@@ -1,4 +1,5 @@
 """S2 production contracts on a bounded synthetic CPU grid, never an industrial gate."""
+import argparse
 import json
 from dataclasses import replace
 
@@ -6,7 +7,16 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
+import ocean_solver.audit.schema as owner_schema
+import ocean_solver.audit.stages as owner_stages
+import ocean_solver.config.definitions as owner_definitions
+import ocean_solver.forcing.air as owner_air
+import ocean_solver.forcing.fields as owner_fields
+import ocean_solver.io.recovery as owner_recovery
+import ocean_solver.io.restart as owner_restart
 import ocean_solver.runtime.entry as driver
+import ocean_solver.runtime.identity as owner_identity
+import ocean_solver.runtime.inputs as owner_inputs
 from ocean_solver.config.definitions import C_P, RHO_0
 from ocean_solver.io.restart import load_restart
 from tests.support.driver import run_controlled_driver
@@ -33,7 +43,7 @@ def test_real_steps_two_restarts_preserve_accepted_ledger_bytes(tmp_path, monkey
     altered = replace(record, cumulative={**record.cumulative,
                       'ledger_source_inputs': record.cumulative['ledger_source_inputs'] + 1})
     with pytest.raises(ValueError, match='ledger differs'):
-        driver._validate_restart_history(altered, grid, 2, 10., False, False, {}, True)
+        owner_recovery._validate_restart_history(altered, grid, 2, 10., False, False, {}, True)
     with monkeypatch.context() as scoped:
         run_controlled_driver(scoped, resumed, restart=checkpoint, options=options)
     first, second = read_result(continuous), read_result(resumed)
@@ -48,14 +58,14 @@ def test_real_steps_two_restarts_preserve_accepted_ledger_bytes(tmp_path, monkey
 def test_prescribed_heat_is_independent_source_not_residual(tmp_path, monkeypatch):
     # Nonuniform positive prescribed heat; no bulk, sponge, restoration or ice.
     heat = np.arange(64, dtype=float).reshape(8, 8) + 50.
-    monkeypatch.setattr(driver, 'heat_flux_meridional', lambda *args, **kwargs: heat)
+    monkeypatch.setattr(owner_fields, 'heat_flux_meridional', lambda *args, **kwargs: heat)
     # Helper disables heat via CLI. Remove that one argument at parser boundary.
-    parse = driver.argparse.ArgumentParser.parse_args
+    parse = argparse.ArgumentParser.parse_args
     def parse_args(parser, *args, **kwargs):
         result = parse(parser, *args, **kwargs)
         result.no_meridional_heat_flux = False
         return result
-    monkeypatch.setattr(driver.argparse.ArgumentParser, 'parse_args', parse_args)
+    monkeypatch.setattr(argparse.ArgumentParser, 'parse_args', parse_args)
     grid, _ = run_controlled_driver(monkeypatch, tmp_path, options=('--budget-audit',))
     result = read_result(tmp_path)
     expected = np.sum(heat * grid.dx_2d * grid.dy) * 80.
@@ -81,7 +91,7 @@ def test_prescribed_heat_is_independent_source_not_residual(tmp_path, monkeypatc
 
 @pytest.mark.parametrize('kind', ['identity', 'nonfinite', 'negative_infinity', 'velocity'])
 def test_rejected_attempt_never_enters_ledger(tmp_path, monkeypatch, kind):
-    original = driver.make_budget_step
+    original = owner_stages.make_budget_step
     def make(params):
         advance = original(params)
         calls = 0
@@ -98,7 +108,7 @@ def test_rejected_attempt_never_enters_ledger(tmp_path, monkeypatch, kind):
                     ledger = {**ledger, 'source_inputs': ledger['source_inputs'] + jnp.nan}
             return state, ledger
         return audit
-    monkeypatch.setattr(driver, 'make_budget_step', make)
+    monkeypatch.setattr(owner_stages, 'make_budget_step', make)
     override = (lambda state, count: state._replace(v=jnp.full_like(state.v, 11.))
                 if count == 3 else state) if kind == 'velocity' else None
     # Velocity stub differs from real ordinary step; use identical audit for first 2 attempts.
@@ -108,16 +118,16 @@ def test_rejected_attempt_never_enters_ledger(tmp_path, monkeypatch, kind):
             def audit(state, *args):
                 nonlocal count
                 count += 1
-                return override(state, count), driver.empty_budget()
+                return override(state, count), owner_schema.empty_budget()
             return audit
-        monkeypatch.setattr(driver, 'make_budget_step', make_stub)
+        monkeypatch.setattr(owner_stages, 'make_budget_step', make_stub)
     _, contract = run_controlled_driver(monkeypatch, tmp_path, step_override=override,
                                         options=('--budget-audit',), expected_code=1)
     result = read_result(tmp_path)
     assert result['accepted_steps'] == 2 and result['attempted_steps'] == 3
     assert result['failure_code'] == {'identity': 7, 'nonfinite': 2, 'negative_infinity': 2, 'velocity': 3}[kind]
     saved = load_restart(tmp_path / 'ckpt_controlled.npz', contract)
-    for name in driver.empty_budget():
+    for name in owner_schema.empty_budget():
         assert saved.cumulative['ledger_' + name].tobytes() == result['ledger_' + name][-1].tobytes()
     with np.load(tmp_path / 'rejected_controlled.npz') as z:
         assert not z['resumable']
@@ -127,14 +137,14 @@ def test_rejected_attempt_never_enters_ledger(tmp_path, monkeypatch, kind):
 def test_requested_air_failure_requires_explicit_fallback(tmp_path, monkeypatch):
     def unavailable(*args, **kwargs):
         raise OSError('controlled unavailable air')
-    monkeypatch.setattr(driver, 'load_monthly_mean_air_temp', unavailable)
+    monkeypatch.setattr(owner_air, 'load_monthly_mean_air_temp', unavailable)
     # Enable bulk despite fixture's default --no-bulk-flux.
-    parse = driver.argparse.ArgumentParser.parse_args
+    parse = argparse.ArgumentParser.parse_args
     def parse_args(parser, *args, **kwargs):
         result = parse(parser, *args, **kwargs)
         result.no_bulk_flux = False
         return result
-    monkeypatch.setattr(driver.argparse.ArgumentParser, 'parse_args', parse_args)
+    monkeypatch.setattr(argparse.ArgumentParser, 'parse_args', parse_args)
     with monkeypatch.context() as scoped:
         with pytest.raises(ValueError, match='fallback disabled'):
             run_controlled_driver(scoped, tmp_path / 'strict', options=('--real-air-temp-monthly',))
@@ -151,19 +161,19 @@ def test_requested_air_failure_requires_explicit_fallback(tmp_path, monkeypatch)
 
 
 def test_strict_preflight_fails_before_loading(tmp_path, monkeypatch):
-    monkeypatch.setattr(driver, '_input_files', lambda *args, **kwargs: {'missing': tmp_path / 'missing'})
+    monkeypatch.setattr(owner_inputs, '_input_files', lambda *args, **kwargs: {'missing': tmp_path / 'missing'})
     with pytest.raises(ValueError, match='strict forcing preflight'):
         run_controlled_driver(monkeypatch, tmp_path, options=('--strict-forcing',))
 
 
 def test_effective_nonfinite_forcing_fails_before_solver(tmp_path, monkeypatch):
-    monkeypatch.setattr(driver, 'air_temp_profile', lambda *args: np.full((8, 8), np.inf))
-    parse = driver.argparse.ArgumentParser.parse_args
+    monkeypatch.setattr(owner_fields, 'air_temp_profile', lambda *args: np.full((8, 8), np.inf))
+    parse = argparse.ArgumentParser.parse_args
     def parse_args(parser, *args, **kwargs):
         result = parse(parser, *args, **kwargs)
         result.no_bulk_flux = False
         return result
-    monkeypatch.setattr(driver.argparse.ArgumentParser, 'parse_args', parse_args)
+    monkeypatch.setattr(argparse.ArgumentParser, 'parse_args', parse_args)
     with pytest.raises(ValueError, match='nonfinite effective forcing'):
         run_controlled_driver(monkeypatch, tmp_path)
 
@@ -178,27 +188,26 @@ def test_eta_peak_between_snapshots_is_persisted(tmp_path, monkeypatch):
 
 
 def test_audit_identity_checks_bytes_including_signed_zero():
-    assert not driver._same_state_bytes((np.array([0.]),), (np.array([-0.]),))
-    assert not driver._same_state_bytes((np.array([0.], dtype='float32'),), (np.array([0.]),))
+    assert not owner_identity._same_state_bytes((np.array([0.]),), (np.array([-0.]),))
+    assert not owner_identity._same_state_bytes((np.array([0.], dtype='float32'),), (np.array([0.]),))
 
 
 def test_source_hashes_survive_flat_wheel_layout(tmp_path, monkeypatch):
     import shutil
 
-    from ocean_solver.provenance.locations import source_root
-    from ocean_solver.provenance.sources import source_paths
+    from ocean_solver.provenance.sources import source_paths, source_root
     source = source_root(driver.__file__)
-    paths = source_paths(source, driver.SOURCE_MODULES)
+    paths = source_paths(source, owner_identity.SOURCE_MODULES)
     installed = tmp_path / 'site-packages'
     installed.mkdir()
-    for name in driver.SOURCE_MODULES:
+    for name in owner_identity.SOURCE_MODULES:
         target = installed / f'{name}.py'
         target.parent.mkdir(parents=True, exist_ok=True)
         shutil.copyfile(paths[name], target)
-    monkeypatch.setattr(driver, '__file__', str(installed / 'run_long_integration_global.py'))
-    identity = driver._source_identity()
-    assert len(identity['source_sha256']) == len(driver.SOURCE_MODULES)
-    assert identity['source_sha256']['run_long_integration_global.py'] == driver.file_sha256(paths['run_long_integration_global'])
+    monkeypatch.setattr(owner_identity, '__file__', str(installed / 'ocean_solver/runtime/identity.py'))
+    identity = owner_identity._source_identity()
+    assert len(identity['source_sha256']) == len(owner_identity.SOURCE_MODULES)
+    assert identity['source_sha256']['ocean_solver/runtime/entry.py'] == owner_restart.file_sha256(paths['ocean_solver/runtime/entry'])
 
 
 def test_bathymetry_provenance_follows_offline_loader_precedence(tmp_path, monkeypatch):
@@ -209,9 +218,9 @@ def test_bathymetry_provenance_follows_offline_loader_precedence(tmp_path, monke
     bathy.write_bytes(b'nc sentinel')
     twin = tmp_path / 'bathy.nc.npz'
     twin.write_bytes(b'npz sentinel')
-    monkeypatch.setattr(driver, 'DEFAULT_CONFIG', SimpleNamespace(bathymetry_file=str(bathy)))
+    monkeypatch.setattr(owner_definitions, 'DEFAULT_CONFIG', SimpleNamespace(bathymetry_file=str(bathy)))
     args = SimpleNamespace(init_from='init.npz', seasonal_wind=False, month='2023-01',
                            wind_year=2023, no_bulk_flux=True)
-    assert driver._input_files(args)['bathymetry'] == bathy
+    assert owner_inputs._input_files(args, default_config=owner_definitions.DEFAULT_CONFIG)['bathymetry'] == bathy
     monkeypatch.setattr(grid, 'Dataset', None)
-    assert driver._input_files(args)['bathymetry'] == twin
+    assert owner_inputs._input_files(args, default_config=owner_definitions.DEFAULT_CONFIG)['bathymetry'] == twin

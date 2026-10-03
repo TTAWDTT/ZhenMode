@@ -1,7 +1,7 @@
 
 import numpy as np
 
-from ocean_solver.io.grid import land_distance_from_land_mask
+from ocean_solver.geometry.mesh import land_distance_from_land_mask
 
 
 def test_land_distance_periodic_and_connectivity():
