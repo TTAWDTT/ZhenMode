@@ -1,24 +1,55 @@
-"""Write final and rejected records with the historical NPZ schema."""
+"""Output locations, effective run metadata and final records."""
 
 from __future__ import annotations
 
 import json
 import os
+import sys
+import time
 from dataclasses import dataclass
 
-from zhenmode.model.audit.schema import (
+from zhenmode.model.diagnostics.budgets import (
     METRIC_NAMES,
     NONLINEAR_PROCESS_NAMES,
     SOURCE_NAMES,
     STAGE_NAMES,
 )
-from zhenmode.model.diagnostics.state import diagnostics_to_arrays
-from zhenmode.model.dynamics.projection import projection_config
+from zhenmode.model.diagnostics.snapshot import diagnostics_to_arrays
+from zhenmode.model.io.records import history_arrays
 from zhenmode.model.io.restart import fingerprint
-from zhenmode.model.numerics.backend import np
-from zhenmode.model.runtime.identity import _state_identity
-from zhenmode.model.state.types import JaxStateG
+from zhenmode.model.runtime.reporting import _Tee
+from zhenmode.model.solver.dynamics.projection import projection_config
+from zhenmode.model.solver.numerics.backend import np
+from zhenmode.model.solver.state import JaxStateG, _state_identity
 
+
+@dataclass
+class RunPaths:
+    tag: str
+    out_npz: str
+    out_log: str
+    three_d_dir: str | None
+    three_d_terms_dir: str | None
+
+def prepare_output_paths(args):
+    tag = args.tag or f"g{int(args.days)}d"
+    os.makedirs(args.out_dir, exist_ok=True)
+    os.makedirs(args.log_dir, exist_ok=True)
+    out_npz = os.path.join(args.out_dir, f"global_{tag}.npz")
+    out_log = os.path.join(args.log_dir, f"global_{tag}.log")
+    sys.stdout = _Tee(out_log)
+    print(f"# {time.strftime('%Y-%m-%d %H:%M:%S')}  {sys.executable}")
+    print(f"# {' '.join(sys.argv)}")
+    three_d_dir = None
+    if args.save_3d:
+        three_d_dir = os.path.join(args.out_dir, f"global_{tag}_3d")
+        os.makedirs(three_d_dir, exist_ok=True)
+    three_d_terms_dir = None
+    if args.save_3d_terms:
+        assert args.save_3d, "--save-3d-terms requires --save-3d"
+        three_d_terms_dir = os.path.join(args.out_dir, f"global_{tag}_terms")
+        os.makedirs(three_d_terms_dir, exist_ok=True)
+    return RunPaths(tag, out_npz, out_log, three_d_dir, three_d_terms_dir)
 
 @dataclass
 class RunOutcome:
@@ -28,7 +59,6 @@ class RunOutcome:
     verdict: str
     monotonic_drift: bool
     amplitude_bounded: bool
-
 
 def effective_config(args, context):
     return {
@@ -105,7 +135,6 @@ def effective_config(args, context):
         "init_from": args.init_from or "",
     }
 
-
 def write_final_records(
     args, requested_steps, context, paths, recovery, history, counters, ledger, outcome
 ):
@@ -135,17 +164,7 @@ def write_final_records(
             )
     np.savez_compressed(
         paths.out_npz,
-        days=np.array(history.snap_days),
-        max_u=np.array(history.snap_maxu),
-        max_velocity=np.array(history.snap_maxvelocity),
-        max_T=np.array(history.snap_maxT),
-        max_eta=np.array(history.snap_maxeta),
-        ssh_std=np.array(history.snap_sshstd),
-        ke=np.array(history.snap_ke),
-        eta=np.array(history.snap_eta),
-        T_top=np.array(history.snap_T_top),
-        ice_top=np.array(history.snap_ice_top),
-        ice_fraction=np.array(history.snap_ice_fraction),
+        **history_arrays(history),
         **diagnostics_to_arrays(history.snap_budget),
         **{name: np.asarray(value) for name, value in ledger.history.items()},
         budget_audit_enabled=args.budget_audit,

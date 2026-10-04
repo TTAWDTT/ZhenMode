@@ -12,8 +12,8 @@ sys.path.insert(0, str(REPOSITORY_ROOT / "scripts"))
 
 from verify_debug_integration import load_initial_fixture, make_monitored_advance
 
-from zhenmode.model.audit.schema import empty_budget
-from zhenmode.model.state.types import JaxStateG
+from zhenmode.model.diagnostics.budgets import empty_budget
+from zhenmode.model.solver.state import JaxStateG
 
 
 def _state():
@@ -108,8 +108,7 @@ def test_invalid_negative_infinite_metric_cannot_be_hidden_by_maximum_accumulati
 
 def test_healthy_actual_candidate_matches_unmonitored_steps_and_ledgers():
     from tests.support.fd.process_time import _candidate
-    from zhenmode.model.audit.schema import accumulate_budget
-    from zhenmode.model.audit.stages import make_budget_step
+    from zhenmode.model.diagnostics.budgets import accumulate_budget, make_budget_step
 
     _, (_, initialize, _, params, _) = _candidate(use_scan=True)
     step = make_budget_step(params)

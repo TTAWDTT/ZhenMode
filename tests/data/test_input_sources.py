@@ -11,8 +11,8 @@ from netCDF4 import Dataset
 
 from tests.support.data.input_quality import cli, example
 from tests.support.data.input_sources import netcdf_source, write_inputs
-from zhenmode.model.io.data_quality import audit_woa_variable, enforce_strict_quality
-from zhenmode.model.io.input_sources import InputSnapshot, load_climatology_snapshot
+from zhenmode.model.inputs.quality import audit_woa_variable, enforce_strict_quality
+from zhenmode.model.inputs.sources import InputSnapshot, load_climatology_snapshot
 
 
 def test_typed_normal_twin_input_passes_strict(tmp_path):
@@ -292,7 +292,7 @@ def test_packed_netcdf_valid_decoded_value_equal_to_encoded_fill_is_preserved(tm
     enforce_strict_quality(report)
 
 def test_bundle_reader_rejects_failed_top_level(tmp_path):
-    from zhenmode.model.io.data_quality import enforce_strict_quality_bundle
+    from zhenmode.model.inputs.quality import enforce_strict_quality_bundle
     assert cli().main(write_inputs(tmp_path)) == 0
     report = json.loads((tmp_path / 'quality.json').read_text())
     report['publication_state'] = 'failed'
@@ -300,7 +300,7 @@ def test_bundle_reader_rejects_failed_top_level(tmp_path):
         enforce_strict_quality_bundle(report)
 
 def test_bundle_reader_rejects_invalid_base64(tmp_path):
-    from zhenmode.model.io.data_quality import enforce_strict_quality_bundle
+    from zhenmode.model.inputs.quality import enforce_strict_quality_bundle
     assert cli().main(write_inputs(tmp_path)) == 0
     report = json.loads((tmp_path / 'quality.json').read_text())
     report['private_mask_artifact']['content_base64'] = '@invalid'

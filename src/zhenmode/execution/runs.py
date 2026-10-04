@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import hashlib
 import importlib.metadata
 import json
 import os
@@ -14,16 +13,10 @@ import uuid
 from datetime import datetime, timezone
 from pathlib import Path
 
+from zhenmode.provenance.sources import sha256_file as file_hash
+
 from .resolve import canonical_hash, resource_estimate
 from .schema import ConfigurationError, reference_path
-
-
-def file_hash(path):
-    digest = hashlib.sha256()
-    with Path(path).open("rb") as stream:
-        for block in iter(lambda: stream.read(1024 * 1024), b""):
-            digest.update(block)
-    return digest.hexdigest()
 
 
 def write_json(path, value, *, create=False):

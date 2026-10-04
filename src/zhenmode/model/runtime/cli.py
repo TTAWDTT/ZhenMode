@@ -7,8 +7,8 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from zhenmode.model.audit.validation import finite_number, integer_count
-from zhenmode.model.forcing.fields import BULK_LAMBDA_DEFAULT
+from zhenmode.model.config import finite_number, integer_count
+from zhenmode.model.inputs.forcing.idealized import BULK_LAMBDA_DEFAULT
 
 DT_DEFAULT = 60.0
 

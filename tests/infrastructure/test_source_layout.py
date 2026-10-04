@@ -77,17 +77,19 @@ def test_tests_use_support_instead_of_importing_other_test_files():
 
 
 def test_checkout_data_roots_stay_at_the_repository():
-    import zhenmode.model.config.definitions as configuration
-    import zhenmode.model.forcing.air as air
-    import zhenmode.model.forcing.wind as wind
-    import zhenmode.model.io.climatology as climatology
+    import zhenmode.model.config as configuration
+    import zhenmode.model.inputs.forcing.reanalysis as air
+    import zhenmode.model.inputs.forcing.reanalysis as wind
+    import zhenmode.model.inputs.initial_conditions as climatology
+    import zhenmode.model.inputs.sources as input_sources
     from zhenmode.provenance.sources import source_root
 
     root = repository()
-    assert Path(configuration._REPO_ROOT) == root
+    assert Path(input_sources._REPO_ROOT) == root
     assert Path(climatology._REPO_ROOT) == root
     for module in (air, wind):
-        assert Path(module.CACHE_DIR).is_relative_to(root / "data")
+        assert Path(module.AIR_CACHE_DIR).is_relative_to(root / "data")
+        assert Path(module.WIND_CACHE_DIR).is_relative_to(root / "data")
     assert source_root(configuration.__file__) == root / "src"
 
 

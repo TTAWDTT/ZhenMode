@@ -17,8 +17,8 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
-from zhenmode.model.audit.monitor import make_monitored_advance
-from zhenmode.model.audit.schema import (
+from zhenmode.model.config import DEFAULT_CONFIG, GlobalGridConfig, PhysicsConfig
+from zhenmode.model.diagnostics.budgets import (
     MAXIMUM_BUDGET_FIELDS,
     METRIC_NAMES,
     NONLINEAR_PROCESS_NAMES,
@@ -26,14 +26,14 @@ from zhenmode.model.audit.schema import (
     STAGE_NAMES,
     TRANSPORT_METRIC_NAMES,
     empty_budget,
+    make_budget_step,
 )
-from zhenmode.model.audit.stages import make_budget_step
-from zhenmode.model.config.definitions import DEFAULT_CONFIG, GlobalGridConfig, PhysicsConfig
-from zhenmode.model.diagnostics.state import compute_budget_diagnostics
-from zhenmode.model.dynamics.projection import projection_config
-from zhenmode.model.factory import make_solver_global
-from zhenmode.model.geometry.mesh import global_grid_dims, land_distance_from_land_mask
-from zhenmode.model.io.grid import make_global_grid
+from zhenmode.model.diagnostics.snapshot import compute_budget_diagnostics
+from zhenmode.model.inputs.bathymetry import make_global_grid
+from zhenmode.model.runtime.monitor import make_monitored_advance
+from zhenmode.model.solver.dynamics.projection import projection_config
+from zhenmode.model.solver.factory import make_solver_global
+from zhenmode.model.solver.geometry.grid import global_grid_dims, land_distance_from_land_mask
 
 
 def source_hashes():
@@ -116,10 +116,12 @@ def main():
         initial_temperature, initial_salinity = load_initial_fixture(args.initial_from, grid)
         additional_inputs[str(Path(args.initial_from).resolve())] = hashlib.sha256(Path(args.initial_from).read_bytes()).hexdigest()
     if args.ncep_month is not None:
-        from zhenmode.model.forcing.air import CACHE_DIR as AIR_CACHE
-        from zhenmode.model.forcing.air import load_monthly_mean_air_temp
-        from zhenmode.model.forcing.wind import CACHE_DIR as WIND_CACHE
-        from zhenmode.model.forcing.wind import real_wind_forcing
+        from zhenmode.model.inputs.forcing.reanalysis import AIR_CACHE_DIR as AIR_CACHE
+        from zhenmode.model.inputs.forcing.reanalysis import WIND_CACHE_DIR as WIND_CACHE
+        from zhenmode.model.inputs.forcing.reanalysis import (
+            load_monthly_mean_air_temp,
+            real_wind_forcing,
+        )
 
         year = 1948 + args.ncep_month // 12
         atmosphere = load_monthly_mean_air_temp(grid, year=year)[args.ncep_month % 12]

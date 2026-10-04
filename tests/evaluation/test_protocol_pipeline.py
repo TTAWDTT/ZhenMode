@@ -8,8 +8,9 @@ import numpy as np
 import pytest
 
 from zhenmode.evaluation.pipeline import compare, evaluate, import_historical
-from zhenmode.evaluation.protocols import digest, file_digest, load_json, validate_protocol
+from zhenmode.evaluation.protocols import digest, load_json, validate_protocol
 from zhenmode.provenance.sources import PACKAGE_SOURCE_MODULES
+from zhenmode.provenance.sources import sha256_file as file_digest
 
 
 @pytest.fixture
@@ -32,9 +33,9 @@ def bundle(tmp_path):
     package = Path(__file__).resolve().parents[2]/"src/zhenmode"
     full = {name.removeprefix("zhenmode/")+".py": file_digest(package/(name.removeprefix("zhenmode/")+".py"))
             for name in PACKAGE_SOURCE_MODULES}
-    executed = {name: full[name] for name in ("model/runtime/application.py", "model/runtime/integration.py", "model/factory.py",
-                                              "model/timestepping/integration.py", "model/dynamics/processes.py",
-                                              "model/numerics/horizontal.py", "model/physics/vertical.py", "model/io/output.py")}
+    executed = {name: full[name] for name in ("model/runtime/run.py", "model/runtime/run_loop.py", "model/solver/factory.py",
+                                              "model/solver/timestepping/step.py", "model/solver/dynamics/tendencies.py",
+                                              "model/solver/numerics/horizontal.py", "model/solver/physics/vertical.py", "model/io/output.py")}
     manifest = dict(run_id="toy-repeat-1", case_id="toy", method="zhenmode", config_hash="a"*64,
                     execution_status="completed", physical_problem_sha256="b"*64, data_sha256="c"*64,
                     effective_physics_sha256="d"*64,
@@ -136,7 +137,7 @@ def test_result_cannot_be_borrowed_from_another_run(bundle):
 
 
 def test_source_receipt_mismatch_rejected(bundle):
-    bundle[3]["executed_source_files"]["model/dynamics/processes.py"] = "0"*64
+    bundle[3]["executed_source_files"]["model/solver/dynamics/tendencies.py"] = "0"*64
     (bundle[0]/"manifest.json").write_text(json.dumps(bundle[3]))
     with pytest.raises(ValueError, match="executed source"):
         run_bundle(bundle)
@@ -249,7 +250,7 @@ def test_native_shared_grid_units_and_binding_rejected(bundle, bad):
 
 def test_two_facade_files_cannot_certify_production_source(bundle):
     bundle[3]["executed_source_files"] = {name: bundle[3]["source_identity"][name]
-                                          for name in ("__init__.py", "model/runtime/entry.py")}
+                                          for name in ("__init__.py", "model/runtime/run.py")}
     (bundle[0]/"manifest.json").write_text(json.dumps(bundle[3]))
     report = run_bundle(bundle)
     assert report["comparability"]["status"] == "limited"

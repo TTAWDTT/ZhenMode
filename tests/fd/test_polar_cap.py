@@ -43,7 +43,7 @@ import jax.numpy as jnp
 import numpy as np
 
 from tests.support.grid import all_wet_grid
-from zhenmode.model.numerics.horizontal import _apply_polar_cap
+from zhenmode.model.solver.numerics.horizontal import _apply_polar_cap
 
 NCAP = 2
 NTAPER = 3

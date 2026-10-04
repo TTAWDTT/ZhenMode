@@ -1,4 +1,5 @@
 """Read → validate → existing score → comparability → durable report."""
+
 from __future__ import annotations
 
 import json
@@ -10,8 +11,9 @@ import numpy as np
 
 from zhenmode.evaluation.external import _time_days, score_external_field
 from zhenmode.evaluation.metrics import score_npz
-from zhenmode.evaluation.protocols import LEGACY, digest, file_digest, load_json, load_protocol
+from zhenmode.evaluation.protocols import LEGACY, digest, load_json, load_protocol
 from zhenmode.evaluation.table import load_metric, markdown_table
+from zhenmode.provenance.sources import sha256_file as file_digest
 
 
 def _timeline(days, protocol):
@@ -149,9 +151,9 @@ def _verify_execution_artifact(path, manifest):
             from zhenmode.provenance.sources import PACKAGE_SOURCE_MODULES
 
             required_full = {name.removeprefix("zhenmode/")+".py" for name in PACKAGE_SOURCE_MODULES}
-            required_executed = {"model/runtime/application.py", "model/runtime/integration.py", "model/factory.py",
-                                 "model/timestepping/integration.py", "model/dynamics/processes.py",
-                                 "model/numerics/horizontal.py", "model/physics/vertical.py", "model/io/output.py"}
+            required_executed = {"model/runtime/run.py", "model/runtime/run_loop.py", "model/solver/factory.py",
+                                 "model/solver/timestepping/step.py", "model/solver/dynamics/tendencies.py",
+                                 "model/solver/numerics/horizontal.py", "model/solver/physics/vertical.py", "model/io/output.py"}
             if not required_full <= set(full):
                 missing.append("producer_full_package_source_envelope")
             if not required_executed <= set(executed):

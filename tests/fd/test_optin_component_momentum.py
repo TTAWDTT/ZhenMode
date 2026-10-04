@@ -5,8 +5,8 @@ import pytest
 
 from tests.support.fd.momentum_metric import _controlled_factory, _numpy_operators
 from tests.support.fd.reference_geometry import WIDTHS
-from zhenmode.model.config.definitions import RHO_0
-from zhenmode.model.dynamics.processes import _linear_half_step
+from zhenmode.model.config import RHO_0
+from zhenmode.model.solver.timestepping.step import _linear_half_step
 
 
 def test_component_half_step_retains_declared_modal_negative_control():

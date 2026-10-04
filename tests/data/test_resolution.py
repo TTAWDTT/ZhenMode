@@ -22,9 +22,9 @@ import numpy as np
 import pytest
 
 from tests.support.paths import REPOSITORY_ROOT
-from zhenmode.model.config.definitions import DEFAULT_CONFIG, GlobalGridConfig
-from zhenmode.model.geometry.mesh import global_grid_dims
-from zhenmode.model.io.grid import _read_etopo_global, make_global_grid
+from zhenmode.model.config import DEFAULT_CONFIG, GlobalGridConfig
+from zhenmode.model.inputs.bathymetry import _read_etopo_global, make_global_grid
+from zhenmode.model.solver.geometry.grid import global_grid_dims
 
 BATHY = DEFAULT_CONFIG.bathymetry_file
 HAVE_BATHY = os.path.exists(BATHY) or os.path.exists(BATHY + ".npz")
@@ -171,9 +171,11 @@ def test_sub_source_resolution_rejected_by_runner_cli():
     exits before any grid work."""
     import subprocess
     r = subprocess.run(
-        [sys.executable, "-m", "zhenmode.model.runtime.entry",
+        [sys.executable, "-m", "zhenmode.model.runtime.run",
          "--resolution", "0.25", "--days", "0.001"],
-        capture_output=True, text=True, encoding="utf-8", cwd=REPOSITORY_ROOT / 'src', timeout=180)
+        capture_output=True, text=True, encoding="utf-8",
+        env={**os.environ, "PYTHONIOENCODING": "utf-8"},
+        cwd=REPOSITORY_ROOT / 'src', timeout=180)
     assert r.returncode != 0
     assert "multiple of the 0.1" in (r.stdout + r.stderr)
 

@@ -11,7 +11,7 @@ import pytest
 
 from tests.support.data.input_quality import cli
 from tests.support.data.input_sources import write_inputs
-from zhenmode.model.io.data_quality import enforce_strict_quality_bundle, load_strict_quality_bundle
+from zhenmode.model.inputs.quality import enforce_strict_quality_bundle, load_strict_quality_bundle
 
 
 @pytest.fixture

@@ -5,8 +5,8 @@ from dataclasses import replace
 import numpy as np
 
 from tests.support.grid import all_wet_grid
-from zhenmode.model.config.definitions import OMEGA, R_EARTH, PhysicsConfig
-from zhenmode.model.factory import make_solver_global
+from zhenmode.model.config import OMEGA, R_EARTH, PhysicsConfig
+from zhenmode.model.solver.factory import make_solver_global
 
 
 def _parameters(latitude_limit=30., land=False, ny=32, nx=24):

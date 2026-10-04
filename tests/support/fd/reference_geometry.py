@@ -5,8 +5,8 @@ from dataclasses import replace
 import numpy as np
 
 from tests.support.grid import all_wet_grid
-from zhenmode.model.config.definitions import PhysicsConfig
-from zhenmode.model.factory import make_solver_global
+from zhenmode.model.config import PhysicsConfig
+from zhenmode.model.solver.factory import make_solver_global
 
 WIDTHS = np.array([2.5, 10., 22.5, 15.])
 

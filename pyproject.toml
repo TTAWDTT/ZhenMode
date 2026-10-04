@@ -23,7 +23,7 @@ dev = [
 ]
 
 [project.scripts]
-ocean-solver = "zhenmode.model.runtime.entry:main"
+ocean-solver = "zhenmode.model.runtime.run:main"
 zhenmode = "zhenmode.cli:main"
 
 # Install the product package: model, execution, baselines and evaluation.

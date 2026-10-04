@@ -7,15 +7,14 @@ from scipy.linalg import expm
 
 from tests.support.fd.reference_geometry import WIDTHS, _fixture
 from tests.support.fd.subcycled_rk import _trajectory
-from zhenmode.model.audit.stages import _StageRecorder, make_budget_step
-from zhenmode.model.config.definitions import G_EARTH, RHO_0
-from zhenmode.model.dynamics.barotropic import (
+from zhenmode.model.config import G_EARTH, RHO_0
+from zhenmode.model.diagnostics.budgets import _StageRecorder, make_budget_step
+from zhenmode.model.solver.dynamics.barotropic import (
     _barotropic_subcycle_transport,
     _free_surface_step_fd,
     _symmetric_free_surface_step,
 )
-from zhenmode.model.dynamics.processes import _linear_bottom_drag_step
-from zhenmode.model.timestepping.integration import _step_impl
+from zhenmode.model.solver.timestepping.step import _linear_bottom_drag_step, _step_impl
 
 
 def _candidate(**options):

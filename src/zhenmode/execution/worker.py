@@ -70,8 +70,8 @@ def synthetic_services(expanded, directory, grid_receipt):
     """Construct documented small inputs; every step still uses make_solver_global."""
     import numpy as np
 
-    from zhenmode.model.geometry.types import GlobalOceanGrid
-    from zhenmode.model.runtime.application import default_services
+    from zhenmode.model.runtime.run import default_services
+    from zhenmode.model.solver.geometry.grid import GlobalOceanGrid
 
     case = expanded["case"]
     spec = case["grid"]
@@ -109,9 +109,10 @@ def synthetic_services(expanded, directory, grid_receipt):
 
 
 def bind_external_inputs(manifest):
-    from zhenmode.model.config.definitions import DEFAULT_CONFIG
-    from zhenmode.model.forcing import air, wind
-    from zhenmode.model.io import climatology
+    import zhenmode.model.inputs.forcing.reanalysis as air
+    import zhenmode.model.inputs.forcing.reanalysis as wind
+    import zhenmode.model.inputs.initial_conditions as climatology
+    from zhenmode.model.config import DEFAULT_CONFIG
 
     data = manifest["data"]
     bathymetry = data["bathymetry"]["resolved_path"]
@@ -120,9 +121,9 @@ def bind_external_inputs(manifest):
     wind_paths = [Path(value["resolved_path"]) for key, value in data.items() if key.startswith("wind-")]
     if len({path.parent for path in wind_paths}) != 1:
         raise ValueError("all selected wind caches must share one cache directory")
-    wind.CACHE_DIR = str(wind_paths[0].parent)
+    wind.WIND_CACHE_DIR = str(wind_paths[0].parent)
     if "air" in data:
-        air.CACHE_DIR = str(Path(data["air"]["resolved_path"]).parent)
+        air.AIR_CACHE_DIR = str(Path(data["air"]["resolved_path"]).parent)
     return config
 
 
@@ -162,8 +163,8 @@ def main(argv=None):
     import jax
     import numpy as np
 
-    from zhenmode.model.runtime import application
-    from zhenmode.model.runtime.application import default_services, run_main
+    import zhenmode.model.runtime.run as application
+    from zhenmode.model.runtime.run import default_services, run_main
     from zhenmode.provenance.sources import source_root
 
     if jax.default_backend() != "cpu":

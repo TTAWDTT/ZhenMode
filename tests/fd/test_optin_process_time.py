@@ -5,19 +5,15 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from tests.support.fd.process_time import (
-    _candidate,
-    _inertial_source_path,
-    _numpy_vertical_matrix,
-)
+from tests.support.fd.process_time import _candidate, _inertial_source_path, _numpy_vertical_matrix
 from tests.support.fd.reference_geometry import WIDTHS, _fixture
-from zhenmode.model.config.definitions import C_P, G_EARTH, RHO_0, PhysicsConfig
-from zhenmode.model.dynamics.barotropic import _free_surface_step_fd
-from zhenmode.model.dynamics.pressure import _reference_depth_gradient
-from zhenmode.model.dynamics.processes import _compute_tracer_residual, _rotate_baroclinic_shear
-from zhenmode.model.dynamics.transport import _barotropic_velocity
-from zhenmode.model.factory import make_solver_global
-from zhenmode.model.timestepping.integration import _step_impl
+from zhenmode.model.config import C_P, G_EARTH, RHO_0, PhysicsConfig
+from zhenmode.model.solver.dynamics.barotropic import _free_surface_step_fd
+from zhenmode.model.solver.dynamics.pressure import _reference_depth_gradient
+from zhenmode.model.solver.dynamics.tendencies import _compute_tracer_residual
+from zhenmode.model.solver.dynamics.transport import _barotropic_velocity
+from zhenmode.model.solver.factory import make_solver_global
+from zhenmode.model.solver.timestepping.step import _rotate_baroclinic_shear, _step_impl
 
 
 @pytest.mark.parametrize("subcycles", [1, 2, 4, 8])

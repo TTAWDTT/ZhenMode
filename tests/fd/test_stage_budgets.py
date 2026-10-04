@@ -4,13 +4,12 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-import zhenmode.model.numerics.horizontal as solver_horizontal
-import zhenmode.model.state.types as solver_types
-import zhenmode.model.timestepping.integration as solver_integration
+import zhenmode.model.solver.numerics.horizontal as solver_horizontal
+import zhenmode.model.solver.state as solver_types
+import zhenmode.model.solver.timestepping.step as solver_integration
 from tests.support.fd.surface_energy import _setup
-from zhenmode.model.audit.schema import SOURCE_NAMES, STAGE_NAMES
-from zhenmode.model.audit.stages import make_budget_step
-from zhenmode.model.config.definitions import C_P, RHO_0
+from zhenmode.model.config import C_P, RHO_0
+from zhenmode.model.diagnostics.budgets import SOURCE_NAMES, STAGE_NAMES, make_budget_step
 
 
 def _inventory_change(before, after, params):
@@ -112,7 +111,7 @@ def test_internal_diffusion_source_is_detected_not_declared(monkeypatch):
     _, params, state, _ = _setup(heat=0.)
     original = solver_horizontal._horizontal_tracer_diffusion
     injected_rate = 1e-6
-    import zhenmode.model.dynamics.processes as processes
+    import zhenmode.model.solver.dynamics.tendencies as processes
     monkeypatch.setattr(processes, "_horizontal_tracer_diffusion",
                         lambda tracer, configured: original(tracer, configured) + injected_rate * configured.wet_mask_z)
     _, ledger = make_budget_step(params)(state)

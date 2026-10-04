@@ -17,9 +17,9 @@ import jax.numpy as jnp
 import numpy as np
 
 from tests.support.fd.advection import _synth_grid
-from zhenmode.model.config.definitions import PhysicsConfig
-from zhenmode.model.dynamics.transport import _advection_scalar, _vertical_transport_iface
-from zhenmode.model.factory import make_solver_global
+from zhenmode.model.config import PhysicsConfig
+from zhenmode.model.solver.dynamics.transport import _advection_scalar, _vertical_transport_iface
+from zhenmode.model.solver.factory import make_solver_global
 
 
 def _make_params(grid, monotone):

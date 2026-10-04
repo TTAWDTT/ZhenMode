@@ -7,13 +7,16 @@ import pytest
 
 from tests.support.fd.horizontal_diffusion import _parameters
 from tests.support.fd.nonlinear_budgets import _state
-from zhenmode.model.audit.schema import NONLINEAR_PROCESS_NAMES
-from zhenmode.model.audit.stages import _StageRecorder, make_budget_step
-from zhenmode.model.config.definitions import C_P, RHO_0
-from zhenmode.model.dynamics.processes import _compute_tracer_tendency
-from zhenmode.model.dynamics.transport import _advection_scalar, _vertical_transport_iface
-from zhenmode.model.physics.isopycnal import _isopycnal_closure
-from zhenmode.model.physics.vertical import _conv_flux_tendency, _convective_mask
+from zhenmode.model.config import C_P, RHO_0
+from zhenmode.model.diagnostics.budgets import (
+    NONLINEAR_PROCESS_NAMES,
+    _StageRecorder,
+    make_budget_step,
+)
+from zhenmode.model.solver.dynamics.tendencies import _compute_tracer_tendency
+from zhenmode.model.solver.dynamics.transport import _advection_scalar, _vertical_transport_iface
+from zhenmode.model.solver.physics.isopycnal import _isopycnal_closure
+from zhenmode.model.solver.physics.vertical import _conv_flux_tendency, _convective_mask
 
 
 @pytest.mark.parametrize("land", [False, True])

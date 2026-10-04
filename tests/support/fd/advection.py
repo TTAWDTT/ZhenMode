@@ -1,7 +1,7 @@
 """Identical passive-advection fixture shared by the two limiter suites."""
 import numpy as np
 
-from zhenmode.model.geometry.types import GlobalOceanGrid
+from zhenmode.model.solver.geometry.grid import GlobalOceanGrid
 
 
 def _synth_grid():

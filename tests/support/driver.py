@@ -5,13 +5,13 @@ from dataclasses import replace
 import numpy as np
 import pytest
 
-import zhenmode.model.factory as owner_factory
-import zhenmode.model.forcing.seasonal as owner_seasonal
-import zhenmode.model.io.climatology as owner_climatology
-import zhenmode.model.io.grid as owner_grid
-import zhenmode.model.io.paths as owner_paths
+import zhenmode.model.inputs.bathymetry as owner_grid
+import zhenmode.model.inputs.forcing.seasonal as owner_seasonal
+import zhenmode.model.inputs.initial_conditions as owner_climatology
+import zhenmode.model.io.output as owner_paths
 import zhenmode.model.io.restart as owner_restart
-import zhenmode.model.runtime.entry as driver
+import zhenmode.model.runtime.run as driver
+import zhenmode.model.solver.factory as owner_factory
 from tests.support.grid import all_wet_grid
 
 

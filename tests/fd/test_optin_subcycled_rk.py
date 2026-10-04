@@ -14,9 +14,9 @@ from tests.support.fd.subcycled_rk import (
     convection_order,
     quadratic_drag_order,
 )
-from zhenmode.model.audit.stages import _StageRecorder, make_budget_step
-from zhenmode.model.config.definitions import C_P, RHO_0
-from zhenmode.model.timestepping.integration import _step_impl, _tracer_step_with_transport
+from zhenmode.model.config import C_P, RHO_0
+from zhenmode.model.diagnostics.budgets import _StageRecorder, make_budget_step
+from zhenmode.model.solver.timestepping.step import _step_impl, _tracer_step_with_transport
 
 
 @pytest.mark.parametrize("oracle,error_field", [(convection_order, "rms_K"),

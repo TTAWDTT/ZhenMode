@@ -10,8 +10,9 @@ import yaml
 
 from zhenmode.execution.options import decode_options
 from zhenmode.execution.resolve import expand_experiment, expand_sweep, read_preset
-from zhenmode.execution.runs import file_hash, list_runs, run_experiment
+from zhenmode.execution.runs import list_runs, run_experiment
 from zhenmode.execution.schema import ConfigurationError, load_document
+from zhenmode.provenance.sources import sha256_file as file_hash
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -162,8 +163,8 @@ def test_runs_never_overwrite_and_source_is_not_facade(catalog):
     assert first["config_hash"] == second["config_hash"]
     assert first["execution_status"] == "proposed"
     assert first["acceptance"]["status"] == "not_assessed"
-    assert "model/factory.py" in first["source_identity"]
-    assert "model/timestepping/integration.py" in first["source_identity"]
+    assert "model/solver/factory.py" in first["source_identity"]
+    assert "model/solver/timestepping/step.py" in first["source_identity"]
     assert len(list_runs(root / "outputs")) == 2
 
 

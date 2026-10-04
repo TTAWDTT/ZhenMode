@@ -13,8 +13,8 @@ sys.path.insert(0, str(REPOSITORY_ROOT / "scripts"))
 
 import verify_debug_integration as smoke
 
-from zhenmode.model.audit.schema import empty_budget
-from zhenmode.model.config.definitions import PhysicsConfig
+from zhenmode.model.config import PhysicsConfig
+from zhenmode.model.diagnostics.budgets import empty_budget
 
 
 @pytest.mark.parametrize("nonfinite", [False, True])

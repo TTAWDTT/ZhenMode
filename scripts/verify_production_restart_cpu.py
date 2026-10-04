@@ -30,8 +30,8 @@ def worker(directory, phase):
     import numpy as np
     import pytest
 
-    import zhenmode.model.audit.stages as owner_stages
-    import zhenmode.model.runtime.integration as owner_monitor
+    import zhenmode.model.diagnostics.budgets as owner_stages
+    import zhenmode.model.runtime.run_loop as owner_monitor
     from tests.support.driver import run_controlled_driver
     from zhenmode.model.io.restart import fingerprint
 

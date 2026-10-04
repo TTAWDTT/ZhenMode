@@ -1,4 +1,5 @@
 """Strict, versioned contracts; no metric computation lives here."""
+
 from __future__ import annotations
 
 import hashlib
@@ -15,12 +16,6 @@ def digest(value: object) -> str:
                                      allow_nan=False).encode()).hexdigest()
 
 
-def file_digest(path: str | Path) -> str:
-    result = hashlib.sha256()
-    with Path(path).open("rb") as stream:
-        for block in iter(lambda: stream.read(1024 * 1024), b""):
-            result.update(block)
-    return result.hexdigest()
 
 
 def load_json(path: str | Path) -> dict:

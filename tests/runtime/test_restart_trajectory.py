@@ -8,11 +8,13 @@ import pytest
 
 from tests.support.fd.reference_geometry import _fixture
 from tests.support.paths import REPOSITORY_ROOT
-from zhenmode.model.audit.schema import accumulate_budget, empty_budget
-from zhenmode.model.audit.stages import make_budget_step
-from zhenmode.model.forcing.seasonal import interp_monthly_field_jit, interp_seasonal_wind_jit
+from zhenmode.model.diagnostics.budgets import accumulate_budget, empty_budget, make_budget_step
+from zhenmode.model.inputs.forcing.seasonal import (
+    interp_monthly_field_jit,
+    interp_seasonal_wind_jit,
+)
 from zhenmode.model.io.restart import load_restart, make_restart_contract, save_restart
-from zhenmode.model.state.types import JaxStateG
+from zhenmode.model.solver.state import JaxStateG
 from zhenmode.provenance.sources import source_paths
 
 
@@ -39,7 +41,7 @@ def test_two_actual_restarts_preserve_state_seasonal_phase_and_every_budget_fiel
         grid, params, dtype=dtype, forcing={"wind": wind, "air": atmosphere, "heat": heat},
         controls={"calendar": "360_day", "blend_days": 5., "ledger": "actual_stage_budget"},
         code_paths=source_paths(REPOSITORY_ROOT / "src", (
-            'zhenmode/model/timestepping/integration', 'zhenmode/model/audit/stages', 'zhenmode/model/io/restart')),
+            'zhenmode/model/solver/timestepping/step', 'zhenmode/model/diagnostics/budgets', 'zhenmode/model/io/restart')),
         execution={"backend": jax.default_backend(), "jax": jax.__version__})
     advance = make_budget_step(params)
     accumulate = jax.jit(accumulate_budget)

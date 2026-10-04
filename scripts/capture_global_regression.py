@@ -54,8 +54,11 @@ def main():
     import numpy as np
 
     namespace = "zhenmode.model" if args.layout == "product" else "ocean_solver"
-    application = importlib.import_module(f"{namespace}.runtime.application")
-    entry = importlib.import_module(f"{namespace}.runtime.entry")
+    model_root = Path(importlib.import_module(namespace).__file__).parent
+    compact_product = args.layout == "product" and (model_root / "solver/factory.py").is_file()
+    application = importlib.import_module(f"{namespace}.runtime.run" if compact_product
+                                         else f"{namespace}.runtime.application")
+    entry = application if compact_product else importlib.import_module(f"{namespace}.runtime.entry")
     parse_run_configuration = importlib.import_module(f"{namespace}.runtime.cli").parse_run_configuration
 
     if jax.default_backend() != "cpu":
@@ -64,17 +67,20 @@ def main():
     if args.source_root and package_root.parent != args.source_root.resolve():
         raise RuntimeError("historical execution did not load the frozen source")
     owner = "data" if args.layout == "legacy" else "forcing"
-    wind = importlib.import_module(f"{namespace}.{owner}.wind")
-    air = importlib.import_module(f"{namespace}.{owner}.air")
+    wind = importlib.import_module(f"{namespace}.inputs.forcing.reanalysis" if compact_product
+                                  else f"{namespace}.{owner}.wind")
+    air = wind if compact_product else importlib.import_module(f"{namespace}.{owner}.air")
     climatology = importlib.import_module(
-        f"{namespace}.data.climatology" if args.layout == "legacy"
+        f"{namespace}.inputs.initial_conditions" if compact_product
+        else f"{namespace}.data.climatology" if args.layout == "legacy"
         else f"{namespace}.io.climatology"
     )
     # Historical checkouts bind through their original driver. Current runs
     # inject invocation services without modifying production module globals.
     services = None
     if hasattr(application, "default_services"):
-        DEFAULT_CONFIG = importlib.import_module(f"{namespace}.config.definitions").DEFAULT_CONFIG
+        DEFAULT_CONFIG = importlib.import_module(f"{namespace}.config" if compact_product
+                                                else f"{namespace}.config.definitions").DEFAULT_CONFIG
 
         services = application.default_services(replace(
             DEFAULT_CONFIG, bathymetry_file=plan["data"]["bathymetry"]["path"]))
@@ -82,15 +88,17 @@ def main():
         entry.DEFAULT_CONFIG = replace(entry.DEFAULT_CONFIG, bathymetry_file=plan["data"]["bathymetry"]["path"])
     if "temperature" in plan["data"]:
         climatology.WOA_FILES = {role: plan["data"][role]["path"] for role in ("temperature", "salinity")}
-    wind.CACHE_DIR = str(Path(plan["data"]["wind_900"]["path"]).parent)
-    air.CACHE_DIR = str(Path(plan["data"]["air"]["path"]).parent)
+    wind_cache = str(Path(plan["data"]["wind_900"]["path"]).parent)
+    air_cache = str(Path(plan["data"]["air"]["path"]).parent)
+    setattr(wind, "WIND_CACHE_DIR" if compact_product else "CACHE_DIR", wind_cache)
+    setattr(air, "AIR_CACHE_DIR" if compact_product else "CACHE_DIR", air_cache)
     legacy_cache_adapter = args.layout == "legacy"
     if legacy_cache_adapter:
         # Historical readers capture CACHE_DIR as a function default. Pass the
         # selected cache explicitly, without editing frozen historical source.
-        wind.load_monthly_wind = partial(wind.load_monthly_wind, cache_dir=wind.CACHE_DIR)
-        entry.load_annual_mean_air_temp = partial(air.load_annual_mean_air_temp, cache_dir=air.CACHE_DIR)
-        entry.load_monthly_mean_air_temp = partial(air.load_monthly_mean_air_temp, cache_dir=air.CACHE_DIR)
+        wind.load_monthly_wind = partial(wind.load_monthly_wind, cache_dir=wind_cache)
+        entry.load_annual_mean_air_temp = partial(air.load_annual_mean_air_temp, cache_dir=air_cache)
+        entry.load_monthly_mean_air_temp = partial(air.load_monthly_mean_air_temp, cache_dir=air_cache)
     argv = [*plan["argv"], "--tag", "probe", "--out-dir", str(directory / "model"),
             "--log-dir", str(directory / "logs")]
     sys.argv = ["global-regression-production", *argv]

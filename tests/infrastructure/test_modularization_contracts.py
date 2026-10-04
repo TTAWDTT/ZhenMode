@@ -11,23 +11,23 @@ import numpy as np
 import pytest
 
 from tests.support.paths import REPOSITORY_ROOT
-from zhenmode.model.numerics.backend import jax, jnp
+from zhenmode.model.solver.numerics.backend import jax, jnp
 
 
 def test_model_uses_one_canonical_state_and_parameter_type():
-    from zhenmode.model.state.types import FDParams, FDPhysParams, JaxStateG
+    from zhenmode.model.solver.state import FDParams, FDPhysParams, JaxStateG
 
     assert JaxStateG._fields == ('u', 'v', 'T', 'S', 'eta', 'ice')
     assert JaxStateG.__new__.__defaults__ == (0.0,)
     assert JaxStateG._field_defaults == {}
-    assert JaxStateG.__module__ == 'zhenmode.model.state.types'
+    assert JaxStateG.__module__ == 'zhenmode.model.solver.state'
     for kind in (FDParams, FDPhysParams):
-        assert kind.__module__ == 'zhenmode.model.state.types'
+        assert kind.__module__ == 'zhenmode.model.solver.state'
         assert kind._field_defaults == {}
 
 
 def test_pickle_and_jax_pytree_keep_current_type_and_field_order():
-    from zhenmode.model.state.types import JaxStateG
+    from zhenmode.model.solver.state import JaxStateG
 
     state = JaxStateG(*(jnp.arange(3, dtype=jnp.float64) + index for index in range(5)))
     restored = pickle.loads(pickle.dumps(state, protocol=4))
@@ -47,10 +47,10 @@ def test_pickle_and_jax_pytree_keep_current_type_and_field_order():
 
 
 @pytest.mark.parametrize("module", [
-    pytest.param("zhenmode/model/dynamics/transport.py", id="zhenmode/fd/horizontal.py"),
-    pytest.param("zhenmode/model/dynamics/processes.py", id="zhenmode/fd/integration.py"),
-    "zhenmode/model/runtime/forcing.py", "zhenmode/model/numerics/horizontal.py",
-    "zhenmode/model/timestepping/integration.py", "zhenmode/model/factory.py",
+    pytest.param("zhenmode/model/solver/dynamics/transport.py", id="zhenmode/fd/horizontal.py"),
+    pytest.param("zhenmode/model/solver/dynamics/tendencies.py", id="zhenmode/fd/integration.py"),
+    "zhenmode/model/inputs/forcing/bundle.py", "zhenmode/model/solver/numerics/horizontal.py",
+    "zhenmode/model/solver/timestepping/step.py", "zhenmode/model/solver/factory.py",
 ])
 def test_new_execution_module_change_rejects_restart_and_missing_source_fails(tmp_path, module):
     from tests.support.fd.reference_geometry import _fixture
@@ -109,11 +109,11 @@ def test_monitor_import_preserves_runtime_default_without_solver_assembly(overri
     else:
         environment['XLA_PYTHON_CLIENT_PREALLOCATE'] = override
     probe = subprocess.run([sys.executable, '-c',
-        "import zhenmode.model.audit.monitor, os, sys, json, jax; "
+        "import zhenmode.model.runtime.monitor, os, sys, json, jax; "
         "print(json.dumps({'allocation': os.environ['XLA_PYTHON_CLIENT_PREALLOCATE'], "
         "'precision': jax.config.jax_enable_x64, "
-        "'solver_loaded': 'zhenmode.model.factory' in sys.modules, "
-        "'audit_loaded': 'zhenmode.model.audit.stages' in sys.modules}))"],
+        "'solver_loaded': 'zhenmode.model.solver.factory' in sys.modules, "
+        "'audit_loaded': 'zhenmode.model.solver.timestepping.step' in sys.modules}))"],
         env=environment, check=True, capture_output=True, text=True, timeout=20)
     result = json.loads(probe.stdout)
     assert result == {'allocation': override or 'false', 'precision': True,

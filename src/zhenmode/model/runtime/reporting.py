@@ -1,6 +1,8 @@
-"""Print the effective production configuration before integration."""
+"""Production stdout log, progress and run description."""
 
 from __future__ import annotations
+
+import sys
 
 from zhenmode.model.runtime.cli import AMPLITUDE_CAP_C, DRIFT_TOL_C, ETA_BLOWUP_M, MAX_U_BOUND
 
@@ -102,3 +104,23 @@ def print_run_header(args, context, recovery):
     header.append("-" * 78)
     for line in header:
         print(line)
+
+class _Tee:
+    """Duplicate writes to the original stdout and a log file.
+
+    Long runs are typically launched detached (nohup / taskset), where the
+    console scrollback is lost; out_log preserves the progress table and the
+    VERDICT block for later inspection.
+    """
+
+    def __init__(self, path):
+        self.file = open(path, "a", buffering=1)
+        self.stdout = sys.stdout
+
+    def write(self, s):
+        self.stdout.write(s)
+        self.file.write(s)
+
+    def flush(self):
+        self.stdout.flush()
+        self.file.flush()

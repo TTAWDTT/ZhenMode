@@ -4,6 +4,7 @@ Run natively in Linux/WSL with the package installed. No system package or
 credential modification is performed. Existing cluster/global artifacts remain
 historical; tc1 is explicitly not the global shared-grid comparison.
 """
+
 from __future__ import annotations
 
 import json
@@ -20,7 +21,8 @@ from pathlib import Path
 import netCDF4
 import numpy as np
 
-from zhenmode.evaluation.protocols import digest, file_digest, load_json
+from zhenmode.evaluation.protocols import digest, load_json
+from zhenmode.provenance.sources import sha256_file as file_digest
 
 RESOURCE_ROOT = Path(__file__).resolve().parent
 PIN_SPEC = load_json(RESOURCE_ROOT / "pins.json")

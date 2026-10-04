@@ -13,9 +13,9 @@ import os
 import numpy as np
 import pytest
 
-from zhenmode.model.config.definitions import DEFAULT_CONFIG, GlobalGridConfig
-from zhenmode.model.geometry.mesh import global_grid_dims
-from zhenmode.model.io.grid import _read_etopo_global, make_global_grid
+from zhenmode.model.config import DEFAULT_CONFIG, GlobalGridConfig
+from zhenmode.model.inputs.bathymetry import _read_etopo_global, make_global_grid
+from zhenmode.model.solver.geometry.grid import global_grid_dims
 
 BATHY = DEFAULT_CONFIG.bathymetry_file
 HAVE_BATHY = os.path.exists(BATHY) or os.path.exists(BATHY + ".npz")

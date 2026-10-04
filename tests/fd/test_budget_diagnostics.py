@@ -8,9 +8,9 @@ import numpy as np
 import pytest
 
 from tests.support.grid import all_wet_grid
-from zhenmode.model.config.definitions import PhysicsConfig
-from zhenmode.model.diagnostics.state import compute_budget_diagnostics, node_thickness
-from zhenmode.model.factory import make_solver_global
+from zhenmode.model.config import PhysicsConfig
+from zhenmode.model.diagnostics.snapshot import compute_budget_diagnostics, node_thickness
+from zhenmode.model.solver.factory import make_solver_global
 
 
 def test_budget_diagnostics_on_uniform_state():

@@ -1,4 +1,5 @@
 """Installed entry for the production model, experiments and evaluation."""
+
 from __future__ import annotations
 
 import sys
@@ -35,10 +36,10 @@ def main(argv=None):
         from zhenmode.baselines.cli import main as execute
         return execute(remaining)
     if command == "mms":
-        from zhenmode.model.validation.mms import main as execute
+        from zhenmode.model.verification import main as execute
         return execute()
     if command == "model" or command.startswith("-"):
-        from zhenmode.model.runtime.entry import main as execute
+        from zhenmode.model.runtime.run import main as execute
         previous = sys.argv
         sys.argv = ["ocean-solver", *(remaining if command == "model" else arguments)]
         try:

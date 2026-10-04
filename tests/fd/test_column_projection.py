@@ -7,15 +7,15 @@ import pytest
 
 from tests.support.fd.column_projection import _velocities
 from tests.support.fd.horizontal_diffusion import _parameters
-from zhenmode.model.audit.stages import make_budget_step
-from zhenmode.model.dynamics.projection import _project_column_divergence
-from zhenmode.model.dynamics.transport import (
+from zhenmode.model.diagnostics.budgets import make_budget_step
+from zhenmode.model.solver.dynamics.projection import _project_column_divergence
+from zhenmode.model.solver.dynamics.transport import (
     _advection_scalar,
     _column_divergence,
     _vertical_transport_iface,
 )
-from zhenmode.model.numerics.horizontal import _gradient_conservative_3d
-from zhenmode.model.timestepping.integration import _step_impl
+from zhenmode.model.solver.numerics.horizontal import _gradient_conservative_3d
+from zhenmode.model.solver.timestepping.step import _step_impl
 
 
 @pytest.mark.parametrize("land", [False, True])

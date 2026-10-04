@@ -8,8 +8,8 @@ import numpy as np
 import pytest
 
 from tests.support.data.input_quality import cli, example
-from zhenmode.model.io.climatology import _fill_nan_horizontal_per_level
-from zhenmode.model.io.data_quality import audit_woa_variable, enforce_strict_quality
+from zhenmode.model.inputs.initial_conditions import _fill_nan_horizontal_per_level
+from zhenmode.model.inputs.quality import audit_woa_variable, enforce_strict_quality
 
 
 def test_original_valid_input_is_supported_and_unchanged():

@@ -1,4 +1,5 @@
 """Strict, atomic FD restarts; old state-only files are not verified continuations."""
+
 from __future__ import annotations
 
 import hashlib
@@ -10,16 +11,12 @@ from pathlib import Path, PurePosixPath
 
 import numpy as np
 
+from zhenmode.provenance.sources import sha256_file as file_sha256
+
 SCHEMA_VERSION = 1
 STATE_FIELDS = ("u", "v", "T", "S", "eta", "ice")
 
 
-def file_sha256(path):
-    digest = hashlib.sha256()
-    with open(path, "rb") as stream:
-        for chunk in iter(lambda: stream.read(1024 * 1024), b""):
-            digest.update(chunk)
-    return digest.hexdigest()
 
 
 def _json(value):

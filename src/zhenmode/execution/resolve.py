@@ -190,7 +190,7 @@ def effective_grid(case):
     grid = case["grid"]
     if grid["kind"] == "synthetic":
         return {"nx": grid["nx"], "ny": grid["ny"], "nz": len(grid["z_levels"]["value"]), "kind": "synthetic"}
-    from zhenmode.model.geometry.mesh import global_grid_dims
+    from zhenmode.model.solver.geometry.grid import global_grid_dims
 
     nx, ny = global_grid_dims(grid["resolution"]["value"], case["domain"]["lat_max"]["value"], remap=grid["resolution_remap"])
     if "nx" in grid and grid["nx"] != nx or "ny" in grid and grid["ny"] != ny:
@@ -233,7 +233,7 @@ def expand_experiment(path, root=None, *, document=None):
     for name in resources:
         if isinstance(resources[name], bool) or not isinstance(resources[name], int) or resources[name] <= 0:
             raise ConfigurationError("resources must be positive integers")
-    from zhenmode.model.config.definitions import PhysicsConfig
+    from zhenmode.model.config import PhysicsConfig
 
     physics = asdict(PhysicsConfig())
     for name in ("nu_h", "nu_bi", "kappa_v", "kappa_conv", "kappa_gm", "kappa_redi", "gm_slope_max"):
