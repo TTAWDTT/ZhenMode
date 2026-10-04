@@ -4,7 +4,7 @@
 import jax.numpy as jnp
 import numpy as np
 
-from ocean_solver.state.types import JaxStateG
+from zhenmode.model.state.types import JaxStateG
 
 
 def _state(params):

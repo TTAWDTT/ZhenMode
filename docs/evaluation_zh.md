@@ -4,10 +4,10 @@
 
 ## 一个评分入口，一份指标实现
 
-`zhenmode evaluate score` 连接结果读取、严格协议检查、`ocean_solver.evaluation.metrics.score_npz` / `ocean_solver.evaluation.external.score_external_field`、可比性校验与报告。`evaluation/` 不含第二份评分实现。解析与制造解验证继续使用 `validation.mms`；独立驻波 oracle 继续在其原研究合同目录，正式包不反向导入研究代码。
+`zhenmode evaluate score` 连接结果读取、严格协议检查、`zhenmode.evaluation.metrics.score_npz` / `zhenmode.evaluation.external.score_external_field`、可比性校验与报告。顶层 `protocols/` 只存评价规则，评分实现集中在 `src/zhenmode/evaluation/`。解析与制造解验证使用 `zhenmode.model.validation.mms`；独立驻波 oracle 继续在其原研究合同目录，正式包不反向导入研究代码。
 
 ```sh
-zhenmode evaluate score --input outputs/RUN/model/global_run.npz --protocol evaluation/protocols/production-smoke-v1.json --run-manifest outputs/RUN/manifest.json --out-dir outputs/RUN/evaluation
+zhenmode evaluate score --input outputs/RUN/model/global_run.npz --protocol protocols/production-smoke-v1.json --run-manifest outputs/RUN/manifest.json --out-dir outputs/RUN/evaluation
 ```
 
 运行 manifest 必须有稳定 `run_id`、`case_id`、`method`、`config_hash`、`execution_status=completed`，以及实际模型产物的 `result_path/result_sha256` 或 `outputs` 的 `model_result` 项。随便选择另一 NPZ 配一个 completed 标签会被拒绝。失败和未完成执行保持在运行索引，不补成指标通过。

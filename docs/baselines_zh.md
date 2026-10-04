@@ -1,6 +1,6 @@
 # MOM6：固定来源、隔离构建、真实运行、转换与报告
 
-MOM6 是外部对照，生产 FD 不依赖其代码。`ocean_solver.baselines.mom6` 只做环境检查、固定源码获取、build cache、原生输入准备、有界运行与产物绑定。评分复用 `evaluation`，不复制评分器、不发展材料库存候选或新的动力核心。
+MOM6 是外部对照，生产 FD 不依赖其代码。`zhenmode.baselines.mom6.adapter` 只做环境检查、固定源码获取、build cache、原生输入准备、有界运行与产物绑定。评分复用 `evaluation`，不复制评分器、不发展材料库存候选或新的动力核心。
 
 ## 固定版本与环境
 
@@ -14,6 +14,7 @@ MOM6 是外部对照，生产 FD 不依赖其代码。`ocean_solver.baselines.mo
 这些版本来自既有构建记录，这些身份保存在仓库 pins 文件中。`MOM6-examples a5ebafe...` 保留为历史 reference；tc1 使用 MOM6 本身 `.testing/tc1`，不依赖 examples 来生成另一套源码。源码抓取、构建路径在仓库外，以 commit和cache明确身份。
 
 `doctor/prepare` 记录源码、子模块、构建配置、实际编译器及依赖库身份。缓存路径由调用者显式指定。
+固定定义随 `zhenmode.baselines.mom6` 安装。已有构建缓存可以复用；升级接入代码后重新 `prepare`，旧运行应使用当时的接入版本复现，不替换其来源收据。
 
 无完整 `build_manifest.json` 或其绑定不一致时 `build_provenance=unverified`。干净 pinned source + 一份 binary hash 不能证明该 binary由它构建。新的 build 保存实际命令、flags、source与dependency身份；环境变化会失去已记录构建资格。工具不安装全局软件、不改系统安全或凭据。
 

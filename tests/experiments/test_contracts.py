@@ -8,10 +8,10 @@ from types import SimpleNamespace
 import pytest
 import yaml
 
-from ocean_solver.experiments.options import decode_options
-from ocean_solver.experiments.resolve import expand_experiment, expand_sweep, read_preset
-from ocean_solver.experiments.runs import file_hash, list_runs, run_experiment
-from ocean_solver.experiments.schema import ConfigurationError, load_document
+from zhenmode.execution.options import decode_options
+from zhenmode.execution.resolve import expand_experiment, expand_sweep, read_preset
+from zhenmode.execution.runs import file_hash, list_runs, run_experiment
+from zhenmode.execution.schema import ConfigurationError, load_document
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -30,7 +30,7 @@ def catalog(tmp_path):
     save(tmp_path / "case.yaml", case)
     save(tmp_path / "preset.yaml", preset)
     save(tmp_path / "experiment.yaml", experiment)
-    (tmp_path / "protocol.json").write_bytes((ROOT / "evaluation/protocols/production-smoke-v1.json").read_bytes())
+    (tmp_path / "protocol.json").write_bytes((ROOT / "protocols/production-smoke-v1.json").read_bytes())
     return tmp_path, case, preset, experiment
 
 
@@ -163,7 +163,7 @@ def test_runs_never_overwrite_and_source_is_not_facade(catalog):
     assert first["execution_status"] == "proposed"
     assert first["acceptance"]["status"] == "not_assessed"
     assert "model/factory.py" in first["source_identity"]
-    assert "timestepping/integration.py" in first["source_identity"]
+    assert "model/timestepping/integration.py" in first["source_identity"]
     assert len(list_runs(root / "outputs")) == 2
 
 
@@ -208,7 +208,7 @@ def test_completed_integration_not_automatic_acceptance(catalog, monkeypatch):
 
 
 def test_evaluation_refusal_preserves_execution_status(catalog, monkeypatch):
-    from ocean_solver.evaluation import pipeline
+    from zhenmode.evaluation import pipeline
 
     root, _, _, _ = catalog
     real_run = subprocess.run
@@ -230,7 +230,7 @@ def test_evaluation_refusal_preserves_execution_status(catalog, monkeypatch):
 
 
 def test_loader_roles_and_freeze_are_checked(tmp_path):
-    from ocean_solver.experiments.worker import verify_selected_inputs
+    from zhenmode.execution.worker import verify_selected_inputs
 
     jan, feb = tmp_path / "monthly_mean_900.npz", tmp_path / "monthly_mean_901.npz"
     jan.write_bytes(b"January bytes")

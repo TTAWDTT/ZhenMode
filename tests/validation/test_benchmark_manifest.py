@@ -3,7 +3,7 @@ import json
 
 import numpy as np
 
-from ocean_solver.evaluation.manifest import make_manifest
+from zhenmode.evaluation.manifest import make_manifest
 
 
 def _write_run(path):
@@ -27,7 +27,7 @@ def test_make_manifest_records_config_and_metrics(tmp_path):
     npz_path = tmp_path / "run.npz"
     _write_run(npz_path)
     manifest = make_manifest(npz_path, commit="abc123")
-    assert manifest["model"] == "ocean_solver"
+    assert manifest["model"] == "zhenmode"
     assert manifest["commit"] == "abc123"
     assert manifest["config"]["resolution"] == 0.5
     assert manifest["metrics"]["verdict"] == "PASS"

@@ -5,14 +5,14 @@ import pytest
 
 from tests.support.paths import REPOSITORY_ROOT
 
-PACKAGE = REPOSITORY_ROOT / "src" / "ocean_solver"
+PACKAGE = REPOSITORY_ROOT / "src" / "zhenmode" / "model"
 PURE_OWNERS = ("geometry", "state", "numerics", "dynamics", "physics", "timestepping")
 OLD_OWNER_PREFIXES = (
-    "ocean_solver.fd.", "ocean_solver.data.", "ocean_solver.configuration",
-    "ocean_solver.geometry.grid", "ocean_solver.provenance.restart",
-    "ocean_solver.runtime.seasonal", "ocean_solver.runtime.records",
-    "ocean_solver.runtime.output", "ocean_solver.runtime.paths",
-    "ocean_solver.runtime.recovery", "ocean_solver.runtime.metrics",
+    "zhenmode.fd.", "zhenmode.data.", "zhenmode.configuration",
+    "zhenmode.model.geometry.grid", "zhenmode.provenance.restart",
+    "zhenmode.model.runtime.seasonal", "zhenmode.model.runtime.records",
+    "zhenmode.model.runtime.output", "zhenmode.model.runtime.paths",
+    "zhenmode.model.runtime.recovery", "zhenmode.model.runtime.metrics",
 )
 INPUT_LIBRARIES = {"netCDF4", "h5py", "xarray", "pandas", "requests", "urllib"}
 
@@ -40,11 +40,11 @@ def forbidden_dependencies(text, *, array_owner=False):
         for module in imported:
             if module.split(".")[0] in {"research", "zhenmode_research"}:
                 failures.append(module)
-            if module.startswith("ocean_solver.candidates") or module.startswith(OLD_OWNER_PREFIXES):
+            if module.startswith("zhenmode.candidates") or module.startswith(OLD_OWNER_PREFIXES):
                 failures.append(module)
             if array_owner and (
                 module.split(".")[0] in INPUT_LIBRARIES
-                or module.startswith("ocean_solver.io")
+                or module.startswith("zhenmode.model.io")
             ):
                 failures.append(module)
     return failures
@@ -74,8 +74,8 @@ def test_array_owners_do_not_load_external_inputs():
 @pytest.mark.parametrize("source", [
     "from zhenmode_research.candidates.material import solver",
     "import research.experiments.example",
-    "from ocean_solver.fd.horizontal import _d_dx",
-    "importlib.import_module('ocean_solver.candidates.material.solver')",
+    "from zhenmode.fd.horizontal import _d_dx",
+    "importlib.import_module('zhenmode.candidates.material.solver')",
     "__import__('zhenmode_research.candidates.fv.geometry')",
 ])
 def test_dependency_negative_controls(source):
@@ -83,7 +83,7 @@ def test_dependency_negative_controls(source):
 
 
 @pytest.mark.parametrize("source", [
-    "import netCDF4", "from ocean_solver.io.climatology import get_initial_fields",
+    "import netCDF4", "from zhenmode.model.io.climatology import get_initial_fields",
     "np.load('input.npz')", "open('input.nc')",
 ])
 def test_input_negative_controls(source):
@@ -91,5 +91,5 @@ def test_input_negative_controls(source):
 
 
 def test_allowed_array_dependency():
-    assert forbidden_dependencies("from ocean_solver.numerics.vertical import _d_dz",
+    assert forbidden_dependencies("from zhenmode.model.numerics.vertical import _d_dz",
                                   array_owner=True) == []

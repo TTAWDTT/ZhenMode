@@ -6,14 +6,14 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from ocean_solver.audit.schema import accumulate_budget, empty_budget
-from ocean_solver.audit.stages import make_budget_step
-from ocean_solver.forcing.seasonal import interp_monthly_field_jit, interp_seasonal_wind_jit
-from ocean_solver.io.restart import load_restart, make_restart_contract, save_restart
-from ocean_solver.provenance.sources import source_paths
-from ocean_solver.state.types import JaxStateG
 from tests.support.fd.reference_geometry import _fixture
 from tests.support.paths import REPOSITORY_ROOT
+from zhenmode.model.audit.schema import accumulate_budget, empty_budget
+from zhenmode.model.audit.stages import make_budget_step
+from zhenmode.model.forcing.seasonal import interp_monthly_field_jit, interp_seasonal_wind_jit
+from zhenmode.model.io.restart import load_restart, make_restart_contract, save_restart
+from zhenmode.model.state.types import JaxStateG
+from zhenmode.provenance.sources import source_paths
 
 
 @pytest.mark.parametrize("dtype", ["float32", "float64"])
@@ -39,7 +39,7 @@ def test_two_actual_restarts_preserve_state_seasonal_phase_and_every_budget_fiel
         grid, params, dtype=dtype, forcing={"wind": wind, "air": atmosphere, "heat": heat},
         controls={"calendar": "360_day", "blend_days": 5., "ledger": "actual_stage_budget"},
         code_paths=source_paths(REPOSITORY_ROOT / "src", (
-            'ocean_solver/timestepping/integration', 'ocean_solver/audit/stages', 'ocean_solver/io/restart')),
+            'zhenmode/model/timestepping/integration', 'zhenmode/model/audit/stages', 'zhenmode/model/io/restart')),
         execution={"backend": jax.default_backend(), "jax": jax.__version__})
     advance = make_budget_step(params)
     accumulate = jax.jit(accumulate_budget)

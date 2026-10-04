@@ -8,15 +8,15 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-import ocean_solver.io.grid as owner_grid
-import ocean_solver.runtime.entry as driver
-from ocean_solver.audit.monitor import classify_state
-from ocean_solver.config.definitions import PhysicsConfig
-from ocean_solver.io.restart import load_restart
-from ocean_solver.model.factory import make_solver_global
-from ocean_solver.state.types import JaxStateG
+import zhenmode.model.io.grid as owner_grid
+import zhenmode.model.runtime.entry as driver
 from tests.support.driver import run_controlled_driver
 from tests.support.grid import all_wet_grid
+from zhenmode.model.audit.monitor import classify_state
+from zhenmode.model.config.definitions import PhysicsConfig
+from zhenmode.model.factory import make_solver_global
+from zhenmode.model.io.restart import load_restart
+from zhenmode.model.state.types import JaxStateG
 
 
 @pytest.mark.parametrize("field,value", [("u", 11.), ("v", 11.), ("eta", 16.)]
@@ -164,7 +164,7 @@ def test_state_monitor_does_not_change_an_actual_legal_step():
 
 
 def test_factory_rejects_overlapping_polar_bands_before_constructing_arrays(monkeypatch):
-    import ocean_solver.model.factory as factory
+    import zhenmode.model.factory as factory
     monkeypatch.setattr(factory, 'make_fd_params', lambda *args, **kwargs:
                         pytest.fail('overlapping caps reached array construction'))
     with pytest.raises(ValueError, match='polar cap bands'):

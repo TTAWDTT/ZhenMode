@@ -8,7 +8,7 @@ import time
 from dataclasses import asdict, replace
 from pathlib import Path
 
-from ocean_solver.provenance.sources import current_source_files
+from zhenmode.provenance.sources import current_source_files
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
@@ -17,8 +17,8 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
-from ocean_solver.audit.monitor import make_monitored_advance
-from ocean_solver.audit.schema import (
+from zhenmode.model.audit.monitor import make_monitored_advance
+from zhenmode.model.audit.schema import (
     MAXIMUM_BUDGET_FIELDS,
     METRIC_NAMES,
     NONLINEAR_PROCESS_NAMES,
@@ -27,13 +27,13 @@ from ocean_solver.audit.schema import (
     TRANSPORT_METRIC_NAMES,
     empty_budget,
 )
-from ocean_solver.audit.stages import make_budget_step
-from ocean_solver.config.definitions import DEFAULT_CONFIG, GlobalGridConfig, PhysicsConfig
-from ocean_solver.diagnostics.state import compute_budget_diagnostics
-from ocean_solver.dynamics.projection import projection_config
-from ocean_solver.geometry.mesh import global_grid_dims, land_distance_from_land_mask
-from ocean_solver.io.grid import make_global_grid
-from ocean_solver.model.factory import make_solver_global
+from zhenmode.model.audit.stages import make_budget_step
+from zhenmode.model.config.definitions import DEFAULT_CONFIG, GlobalGridConfig, PhysicsConfig
+from zhenmode.model.diagnostics.state import compute_budget_diagnostics
+from zhenmode.model.dynamics.projection import projection_config
+from zhenmode.model.factory import make_solver_global
+from zhenmode.model.geometry.mesh import global_grid_dims, land_distance_from_land_mask
+from zhenmode.model.io.grid import make_global_grid
 
 
 def source_hashes():
@@ -116,10 +116,10 @@ def main():
         initial_temperature, initial_salinity = load_initial_fixture(args.initial_from, grid)
         additional_inputs[str(Path(args.initial_from).resolve())] = hashlib.sha256(Path(args.initial_from).read_bytes()).hexdigest()
     if args.ncep_month is not None:
-        from ocean_solver.forcing.air import CACHE_DIR as AIR_CACHE
-        from ocean_solver.forcing.air import load_monthly_mean_air_temp
-        from ocean_solver.forcing.wind import CACHE_DIR as WIND_CACHE
-        from ocean_solver.forcing.wind import real_wind_forcing
+        from zhenmode.model.forcing.air import CACHE_DIR as AIR_CACHE
+        from zhenmode.model.forcing.air import load_monthly_mean_air_temp
+        from zhenmode.model.forcing.wind import CACHE_DIR as WIND_CACHE
+        from zhenmode.model.forcing.wind import real_wind_forcing
 
         year = 1948 + args.ncep_month // 12
         atmosphere = load_monthly_mean_air_temp(grid, year=year)[args.ncep_month % 12]

@@ -13,9 +13,9 @@ import os
 import numpy as np
 import pytest
 
-from ocean_solver.config.definitions import DEFAULT_CONFIG, GlobalGridConfig
-from ocean_solver.geometry.mesh import global_grid_dims
-from ocean_solver.io.grid import _read_etopo_global, make_global_grid
+from zhenmode.model.config.definitions import DEFAULT_CONFIG, GlobalGridConfig
+from zhenmode.model.geometry.mesh import global_grid_dims
+from zhenmode.model.io.grid import _read_etopo_global, make_global_grid
 
 BATHY = DEFAULT_CONFIG.bathymetry_file
 HAVE_BATHY = os.path.exists(BATHY) or os.path.exists(BATHY + ".npz")

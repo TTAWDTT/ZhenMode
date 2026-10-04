@@ -6,13 +6,13 @@ from pathlib import Path
 
 import pytest
 
-from ocean_solver.provenance.sources import (
+from tests.support.paths import REPOSITORY_ROOT
+from zhenmode.provenance.sources import (
     current_source_files,
     production_source_modules,
     source_paths,
     verify_current_source_hashes,
 )
-from tests.support.paths import REPOSITORY_ROOT
 
 
 def hashes(files):
@@ -21,7 +21,7 @@ def hashes(files):
 
 def test_identity_covers_every_actual_package_file_without_local_materials():
     files = current_source_files(REPOSITORY_ROOT)
-    actual = set((REPOSITORY_ROOT / "src/ocean_solver").rglob("*.py"))
+    actual = set((REPOSITORY_ROOT / "src/zhenmode").rglob("*.py"))
     registered = set(source_paths(REPOSITORY_ROOT / "src", production_source_modules()).values())
     assert actual == registered
     assert actual <= set(files.values())
@@ -38,7 +38,7 @@ def test_producer_includes_itself_and_all_actual_implementations(producer):
     recorded = owner.source_hashes()
     assert recorded == hashes(files)
     assert f"scripts/{producer}.py" in recorded
-    assert set((REPOSITORY_ROOT / "src/ocean_solver").rglob("*.py")) <= set(files.values())
+    assert set((REPOSITORY_ROOT / "src/zhenmode").rglob("*.py")) <= set(files.values())
 
 
 @pytest.mark.parametrize("name", ["../outside.py", "/outside.py", "tests/missing.py", "src/config.py"])
@@ -56,8 +56,8 @@ def test_selected_absolute_path_object_must_be_inside_repository(tmp_path):
 
 def test_missing_implementation_fails_even_with_valid_other_files(tmp_path):
     shutil.copytree(REPOSITORY_ROOT / "src", tmp_path / "src", ignore=shutil.ignore_patterns("__pycache__"))
-    (tmp_path / "src/ocean_solver/io/data_quality.py").unlink()
-    with pytest.raises(ValueError, match="missing required source: ocean_solver/io/data_quality"):
+    (tmp_path / "src/zhenmode/model/io/data_quality.py").unlink()
+    with pytest.raises(ValueError, match="missing required source: zhenmode/model/io/data_quality"):
         current_source_files(tmp_path)
 
 
@@ -65,13 +65,13 @@ def test_missing_implementation_fails_even_with_valid_other_files(tmp_path):
 def test_manifest_requires_complete_real_hashes(corruption):
     manifest = hashes(current_source_files(REPOSITORY_ROOT))
     if corruption == "bytes":
-        manifest["src/ocean_solver/config/definitions.py"] = "0" * 64
+        manifest["src/zhenmode/model/config/definitions.py"] = "0" * 64
     elif corruption == "implementation":
-        manifest.pop("src/ocean_solver/config/definitions.py")
+        manifest.pop("src/zhenmode/model/config/definitions.py")
     elif corruption == "helper":
         manifest.pop("tests/support/grid.py")
     elif corruption == "invalid_hash":
-        manifest["src/ocean_solver/config/definitions.py"] = "invalid"
+        manifest["src/zhenmode/model/config/definitions.py"] = "invalid"
     if corruption:
         with pytest.raises(ValueError, match="source mismatch|incomplete|invalid source hash"):
             verify_current_source_hashes(REPOSITORY_ROOT, manifest)
@@ -79,13 +79,13 @@ def test_manifest_requires_complete_real_hashes(corruption):
         verify_current_source_hashes(REPOSITORY_ROOT, manifest)
 
 
-@pytest.mark.parametrize("module", ["runtime/entry", "dynamics/transport", "timestepping/integration"])
+@pytest.mark.parametrize("module", ["model/runtime/entry", "model/dynamics/transport", "model/timestepping/integration"])
 def test_changes_to_launcher_and_actual_operators_are_rejected(tmp_path, module):
     shutil.copytree(REPOSITORY_ROOT / "src", tmp_path / "src", ignore=shutil.ignore_patterns("__pycache__"))
     manifest = hashes(current_source_files(tmp_path))
-    path = tmp_path / f"src/ocean_solver/{module}.py"
+    path = tmp_path / f"src/zhenmode/{module}.py"
     path.write_bytes(path.read_bytes() + b"\n# independent tamper control\n")
-    with pytest.raises(ValueError, match=f"runtime source mismatch: src/ocean_solver/{module}"):
+    with pytest.raises(ValueError, match=f"runtime source mismatch: src/zhenmode/{module}"):
         verify_current_source_hashes(tmp_path, manifest)
 
 

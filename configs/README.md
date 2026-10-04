@@ -15,7 +15,7 @@
 
 0.45° 预设与历史低 RMSE 记录保持来源关系，但新面积加权 v2 评价不会重新授予旧湿格等权 raw/A2 成绩；历史报告提交也不等于完整执行源码身份。外部全球输入在 case 中有版本、路径与待核验 SHA256 状态，不能把尚未恢复的数据声明为历史原始缓存。
 
-两套 MOM6 预设共享 FD 的 case 标签，同时显式声明 native C-grid、14 层 Z-star ALE 和原生参数读取。上游及依赖固定于 [MOM6 pins](../baselines/mom6/pins.json)，缓存与编译产物放在隔离目录。`prepare-native` 必须核对真实深度、湿掩膜、初始温盐、输入文件与执行来源；风变换、恢复物理或垂向等价未完成时，比较为受限，不能公平排名。已实测的 [官方 tc1 小例](../baselines/mom6/cases/tc1.json) 是另一个问题，不能替这两套全球接入证明 30 天成绩。
+两套 MOM6 预设共享 FD 的 case 标签，同时显式声明 native C-grid、14 层 Z-star ALE 和原生参数读取。上游及依赖固定于 [MOM6 pins](../src/zhenmode/baselines/mom6/pins.json)，缓存与编译产物放在隔离目录。`prepare-native` 必须核对真实深度、湿掩膜、初始温盐、输入文件与执行来源；风变换、恢复物理或垂向等价未完成时，比较为受限，不能公平排名。已实测的 [官方 tc1 小例](../src/zhenmode/baselines/mom6/cases/tc1.json) 是另一个问题，不能替这两套全球接入证明 30 天成绩。
 
 ZhenMode 预设继承、实验变化、配置展开和独立 run 记录见 [实验说明](../docs/experiments_zh.md)。实际运行与评分状态从 run manifest 读取，不由预设存在或命令退出成功推断。
 

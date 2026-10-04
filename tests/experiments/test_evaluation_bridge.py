@@ -12,10 +12,10 @@ import numpy as np
 import pytest
 import yaml
 
-from ocean_solver.evaluation.pipeline import evaluate
-from ocean_solver.evaluation.protocols import digest
-from ocean_solver.experiments.resolve import expand_experiment
-from ocean_solver.experiments.runs import create_run, write_json
+from zhenmode.evaluation.pipeline import evaluate
+from zhenmode.evaluation.protocols import digest
+from zhenmode.execution.resolve import expand_experiment
+from zhenmode.execution.runs import create_run, write_json
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -24,7 +24,7 @@ def test_protocol_byte_and_content_hashes_cross_real_pipeline(tmp_path):
     experiment = yaml.safe_load((ROOT / "experiments/zhenmode/synthetic-smoke/synthetic-smoke-baseline.yaml").read_text(encoding="utf-8"))
     for name, origin in (("case.yaml", "cases/synthetic-production-smoke-80s.yaml"),
                          ("preset.yaml", "configs/zhenmode/presets/synthetic-smoke.yaml"),
-                         ("protocol.json", "evaluation/protocols/production-smoke-v1.json")):
+                         ("protocol.json", "protocols/production-smoke-v1.json")):
         (tmp_path / name).write_bytes((ROOT / origin).read_bytes())
     experiment.update(case="case.yaml", parent_preset="preset.yaml", protocol_path="protocol.json")
     (tmp_path / "experiment.yaml").write_text(yaml.safe_dump(experiment, allow_unicode=True), encoding="utf-8")

@@ -4,10 +4,10 @@ from dataclasses import replace
 import numpy as np
 import pytest
 
-import ocean_solver.io.records as owner_records
-import ocean_solver.io.recovery as owner_recovery
-from ocean_solver.io.restart import load_restart
+import zhenmode.model.io.records as owner_records
+import zhenmode.model.io.recovery as owner_recovery
 from tests.support.driver import run_controlled_driver as _run_driver
+from zhenmode.model.io.restart import load_restart
 
 
 @pytest.mark.parametrize("save_3d", [False, True])

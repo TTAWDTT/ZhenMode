@@ -24,10 +24,10 @@ from dataclasses import replace
 
 import jax.numpy as jnp
 
-import ocean_solver.timestepping.integration as G_integration
-from ocean_solver.config.definitions import PhysicsConfig
-from ocean_solver.model.factory import make_solver_global
+import zhenmode.model.timestepping.integration as G_integration
 from tests.support.grid import all_wet_grid as _synth_grid
+from zhenmode.model.config.definitions import PhysicsConfig
+from zhenmode.model.factory import make_solver_global
 
 
 def main():

@@ -31,11 +31,14 @@ def main():
     parser.add_argument("--plan", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--revision", required=True)
-    parser.add_argument("--layout", choices=("legacy", "canonical"), required=True)
+    parser.add_argument("--layout", choices=("legacy", "canonical", "product"), default="product",
+                        help="product is the current zhenmode package; historical ocean_solver layouts require --source-root")
     parser.add_argument("--source-root", type=Path)
     parser.add_argument("--prepare-only", action="store_true",
                         help="export the unchanged production WOA interpolation, without time steps")
     args = parser.parse_args()
+    if args.layout != "product" and args.source_root is None:
+        parser.error("historical layouts require an independently frozen --source-root")
     started = time.perf_counter()
     directory = args.output.resolve()
     directory.mkdir(parents=True, exist_ok=False)
@@ -50,26 +53,28 @@ def main():
     import jax
     import numpy as np
 
-    from ocean_solver.runtime import application, entry
-    from ocean_solver.runtime.cli import parse_run_configuration
+    namespace = "zhenmode.model" if args.layout == "product" else "ocean_solver"
+    application = importlib.import_module(f"{namespace}.runtime.application")
+    entry = importlib.import_module(f"{namespace}.runtime.entry")
+    parse_run_configuration = importlib.import_module(f"{namespace}.runtime.cli").parse_run_configuration
 
     if jax.default_backend() != "cpu":
         raise RuntimeError("global local probe requires CPU")
-    package_root = Path(entry.__file__).resolve().parents[1]
+    package_root = Path(entry.__file__).resolve().parents[2 if args.layout == "product" else 1]
     if args.source_root and package_root.parent != args.source_root.resolve():
         raise RuntimeError("historical execution did not load the frozen source")
     owner = "data" if args.layout == "legacy" else "forcing"
-    wind = importlib.import_module(f"ocean_solver.{owner}.wind")
-    air = importlib.import_module(f"ocean_solver.{owner}.air")
+    wind = importlib.import_module(f"{namespace}.{owner}.wind")
+    air = importlib.import_module(f"{namespace}.{owner}.air")
     climatology = importlib.import_module(
-        "ocean_solver.data.climatology" if args.layout == "legacy"
-        else "ocean_solver.io.climatology"
+        f"{namespace}.data.climatology" if args.layout == "legacy"
+        else f"{namespace}.io.climatology"
     )
     # Historical checkouts bind through their original driver. Current runs
     # inject invocation services without modifying production module globals.
     services = None
     if hasattr(application, "default_services"):
-        from ocean_solver.config.definitions import DEFAULT_CONFIG
+        DEFAULT_CONFIG = importlib.import_module(f"{namespace}.config.definitions").DEFAULT_CONFIG
 
         services = application.default_services(replace(
             DEFAULT_CONFIG, bathymetry_file=plan["data"]["bathymetry"]["path"]))
@@ -174,7 +179,7 @@ def main():
     previous_stdout = sys.stdout
     try:
         code = (entry.main() if services is None else
-                application.run_main(services, Path(application.__file__).resolve().parents[2]))
+                application.run_main(services, package_root.parent))
     except PreparedInputs:
         code = 0
     finally:

@@ -12,10 +12,10 @@ from dataclasses import replace
 import jax.numpy as jnp
 import numpy as np
 
-from ocean_solver.config.definitions import PhysicsConfig
-from ocean_solver.dynamics.transport import _advection_scalar, _vertical_transport_iface
-from ocean_solver.model.factory import make_solver_global
 from tests.support.fd.advection import _synth_grid
+from zhenmode.model.config.definitions import PhysicsConfig
+from zhenmode.model.dynamics.transport import _advection_scalar, _vertical_transport_iface
+from zhenmode.model.factory import make_solver_global
 
 
 def _make_params(grid, fct):

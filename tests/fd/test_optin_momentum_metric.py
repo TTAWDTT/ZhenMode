@@ -7,12 +7,12 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from ocean_solver.config.definitions import R_EARTH
-from ocean_solver.geometry.fd import make_fd_params
-from ocean_solver.numerics.horizontal import _biharmonic_h, _laplacian_h
 from tests.support.fd.momentum_metric import _controlled_factory, _numpy_operators
 from tests.support.fd.reference_geometry import WIDTHS
 from tests.support.grid import all_wet_grid
+from zhenmode.model.config.definitions import R_EARTH
+from zhenmode.model.geometry.fd import make_fd_params
+from zhenmode.model.numerics.horizontal import _biharmonic_h, _laplacian_h
 
 
 def _face_quadratic(velocity, params):

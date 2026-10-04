@@ -13,7 +13,7 @@ import sys
 import time
 from pathlib import Path
 
-from ocean_solver.provenance.sources import current_source_files
+from zhenmode.provenance.sources import current_source_files
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path[:0] = [str(ROOT)]
@@ -30,10 +30,10 @@ def worker(directory, phase):
     import numpy as np
     import pytest
 
-    import ocean_solver.audit.stages as owner_stages
-    import ocean_solver.runtime.integration as owner_monitor
-    from ocean_solver.io.restart import fingerprint
+    import zhenmode.model.audit.stages as owner_stages
+    import zhenmode.model.runtime.integration as owner_monitor
     from tests.support.driver import run_controlled_driver
+    from zhenmode.model.io.restart import fingerprint
 
     if jax.default_backend() != 'cpu':
         raise RuntimeError('CPU witness must run on CPU')

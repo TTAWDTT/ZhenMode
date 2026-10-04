@@ -13,8 +13,8 @@ sys.path.insert(0, str(REPOSITORY_ROOT / "scripts"))
 
 import verify_debug_integration as smoke
 
-from ocean_solver.audit.schema import empty_budget
-from ocean_solver.config.definitions import PhysicsConfig
+from zhenmode.model.audit.schema import empty_budget
+from zhenmode.model.config.definitions import PhysicsConfig
 
 
 @pytest.mark.parametrize("nonfinite", [False, True])

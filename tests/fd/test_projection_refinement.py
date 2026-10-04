@@ -4,11 +4,11 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from ocean_solver.dynamics.projection import _project_column_divergence, projection_config
-from ocean_solver.dynamics.transport import _vertical_transport_iface
-from ocean_solver.model.factory import make_solver_global
-from ocean_solver.numerics.horizontal import _gradient_conservative_3d
 from tests.support.fd.horizontal_diffusion import _parameters
+from zhenmode.model.dynamics.projection import _project_column_divergence, projection_config
+from zhenmode.model.dynamics.transport import _vertical_transport_iface
+from zhenmode.model.factory import make_solver_global
+from zhenmode.model.numerics.horizontal import _gradient_conservative_3d
 
 
 def _smooth_predictor():
@@ -55,7 +55,7 @@ def test_disabling_refinement_retains_the_known_failure():
 
 @pytest.mark.parametrize("limit", [-1, 3, True, 1.5, np.nan])
 def test_invalid_refinement_limits_fail_at_construction(limit):
-    from ocean_solver.config.definitions import PhysicsConfig
+    from zhenmode.model.config.definitions import PhysicsConfig
 
     grid, _, _ = _parameters(nx=12, ny=12)
     with pytest.raises(ValueError, match="projection_max_refinements"):

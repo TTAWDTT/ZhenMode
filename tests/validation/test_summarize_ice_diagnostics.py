@@ -4,7 +4,7 @@ import json
 import numpy as np
 import pytest
 
-from ocean_solver.diagnostics.ice import summarize_ice_closed_loop
+from zhenmode.evaluation.ice import summarize_ice_closed_loop
 
 
 def _write_run(tmp_path):

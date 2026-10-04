@@ -3,7 +3,7 @@ import runpy
 
 import pytest
 
-from ocean_solver.validation import mms
+from zhenmode.model.validation import mms
 
 
 @pytest.mark.parametrize('operator_ok,convergence_ok,status', [
@@ -16,5 +16,5 @@ def test_mms_cli_returns_failure_when_either_gate_fails(monkeypatch, operator_ok
     })
     monkeypatch.setattr('sys.argv', ['zhenmode', 'mms'])
     with pytest.raises(SystemExit) as result:
-        runpy.run_module('ocean_solver', run_name='__main__')
+        runpy.run_module('zhenmode', run_name='__main__')
     assert result.value.code == status

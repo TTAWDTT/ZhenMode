@@ -4,9 +4,9 @@ from dataclasses import replace
 
 import numpy as np
 
-from ocean_solver.config.definitions import OMEGA, R_EARTH, PhysicsConfig
-from ocean_solver.model.factory import make_solver_global
 from tests.support.grid import all_wet_grid
+from zhenmode.model.config.definitions import OMEGA, R_EARTH, PhysicsConfig
+from zhenmode.model.factory import make_solver_global
 
 
 def _parameters(latitude_limit=30., land=False, ny=32, nx=24):

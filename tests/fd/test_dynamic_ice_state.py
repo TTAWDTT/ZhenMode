@@ -5,11 +5,11 @@ from dataclasses import replace
 import jax.numpy as jnp
 import numpy as np
 
-from ocean_solver.config.definitions import PhysicsConfig
-from ocean_solver.model.factory import make_solver_global
-from ocean_solver.physics.surface import _dynamic_ice_closure
-from ocean_solver.state.types import JaxStateG
 from tests.support.grid import all_wet_grid
+from zhenmode.model.config.definitions import PhysicsConfig
+from zhenmode.model.factory import make_solver_global
+from zhenmode.model.physics.surface import _dynamic_ice_closure
+from zhenmode.model.state.types import JaxStateG
 
 
 def _params(T_atm_value=-20.0, lambda_bulk=80.0, dt=864000.0):

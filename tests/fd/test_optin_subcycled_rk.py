@@ -5,9 +5,6 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from ocean_solver.audit.stages import _StageRecorder, make_budget_step
-from ocean_solver.config.definitions import C_P, RHO_0
-from ocean_solver.timestepping.integration import _step_impl, _tracer_step_with_transport
 from tests.support.fd.process_time import _numpy_vertical_matrix
 from tests.support.fd.reference_geometry import WIDTHS, _fixture
 from tests.support.fd.subcycled_rk import (
@@ -17,6 +14,9 @@ from tests.support.fd.subcycled_rk import (
     convection_order,
     quadratic_drag_order,
 )
+from zhenmode.model.audit.stages import _StageRecorder, make_budget_step
+from zhenmode.model.config.definitions import C_P, RHO_0
+from zhenmode.model.timestepping.integration import _step_impl, _tracer_step_with_transport
 
 
 @pytest.mark.parametrize("oracle,error_field", [(convection_order, "rms_K"),
