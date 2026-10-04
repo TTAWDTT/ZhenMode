@@ -23,7 +23,7 @@ def main():
     import jax.numpy as jnp
     import numpy as np
 
-    from ocean_solver.io.grid import GlobalOceanGrid
+    from ocean_solver.geometry.types import GlobalOceanGrid
     from ocean_solver.state.types import FDPhysParams
     from ocean_solver.state.types import JaxStateG
     from zhenmode_research.candidates.material.solver import make_material_top_restart_contract, make_material_top_step

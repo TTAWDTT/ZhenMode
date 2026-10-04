@@ -22,7 +22,7 @@ from ocean_solver.dynamics.transport import (
     _reference_depth_divergence,
 )
 from ocean_solver.geometry.fd import make_fd_params
-from ocean_solver.io.grid import nodal_control_thickness
+from ocean_solver.geometry.types import nodal_control_thickness
 from ocean_solver.model.factory import make_solver_global
 from ocean_solver.numerics.horizontal import _horizontal_tracer_diffusion
 from ocean_solver.numerics.vertical import _d2_dz2_flux

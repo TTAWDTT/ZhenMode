@@ -4,7 +4,7 @@
 
 ## 一个评分入口，一份指标实现
 
-`zhenmode evaluate score` 连接结果读取、严格协议检查、已有 `metrics.score_npz` / `external.score_external_field`、可比性校验与报告。`evaluation/` 不含第二份评分实现。解析与制造解验证继续使用 `validation.mms`；独立驻波 oracle 继续在其原研究合同目录，正式包不反向导入研究代码。
+`zhenmode evaluate score` 连接结果读取、严格协议检查、`ocean_solver.evaluation.metrics.score_npz` / `ocean_solver.evaluation.external.score_external_field`、可比性校验与报告。`evaluation/` 不含第二份评分实现。解析与制造解验证继续使用 `validation.mms`；独立驻波 oracle 继续在其原研究合同目录，正式包不反向导入研究代码。
 
 ```sh
 zhenmode evaluate score --input outputs/RUN/model/global_run.npz --protocol evaluation/protocols/production-smoke-v1.json --run-manifest outputs/RUN/manifest.json --out-dir outputs/RUN/evaluation

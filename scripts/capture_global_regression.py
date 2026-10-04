@@ -65,7 +65,16 @@ def main():
         "ocean_solver.data.climatology" if args.layout == "legacy"
         else "ocean_solver.io.climatology"
     )
-    entry.DEFAULT_CONFIG = replace(entry.DEFAULT_CONFIG, bathymetry_file=plan["data"]["bathymetry"]["path"])
+    # Historical checkouts bind through their original driver. Current runs
+    # inject invocation services without modifying production module globals.
+    services = None
+    if hasattr(application, "default_services"):
+        from ocean_solver.config.definitions import DEFAULT_CONFIG
+
+        services = application.default_services(replace(
+            DEFAULT_CONFIG, bathymetry_file=plan["data"]["bathymetry"]["path"]))
+    else:
+        entry.DEFAULT_CONFIG = replace(entry.DEFAULT_CONFIG, bathymetry_file=plan["data"]["bathymetry"]["path"])
     if "temperature" in plan["data"]:
         climatology.WOA_FILES = {role: plan["data"][role]["path"] for role in ("temperature", "salinity")}
     wind.CACHE_DIR = str(Path(plan["data"]["wind_900"]["path"]).parent)
@@ -81,7 +90,7 @@ def main():
             "--log-dir", str(directory / "logs")]
     sys.argv = ["global-regression-production", *argv]
     config = parse_run_configuration()
-    selected = entry._input_files(config.args)
+    selected = services.input_files(config.args) if services is not None else entry._input_files(config.args)
     if set(selected) != set(plan["data"]):
         raise ValueError("loader roles differ from frozen plan")
     for role, path in selected.items():
@@ -105,7 +114,7 @@ def main():
         pass
 
     if args.prepare_only:
-        native_initial_fields = entry.get_initial_fields
+        native_initial_fields = services.get_initial_fields if services is not None else entry.get_initial_fields
 
         def prepare_fields(grid):
             temperature, salinity = native_initial_fields(grid)
@@ -114,7 +123,10 @@ def main():
                          lon=grid.lon, lat=grid.lat, z=grid.z, wet_mask=grid.wet_mask)
             raise PreparedInputs()
 
-        entry.get_initial_fields = prepare_fields
+        if services is not None:
+            services = replace(services, get_initial_fields=prepare_fields)
+        else:
+            entry.get_initial_fields = prepare_fields
     native_integration = application.run_integration
     observed = []
     final = {}
@@ -161,7 +173,8 @@ def main():
     np.load = observe_load
     previous_stdout = sys.stdout
     try:
-        code = entry.main()
+        code = (entry.main() if services is None else
+                application.run_main(services, Path(application.__file__).resolve().parents[2]))
     except PreparedInputs:
         code = 0
     finally:

@@ -34,7 +34,7 @@ import jax.numpy as jnp
 
 import ocean_solver.dynamics.processes as G_processes
 from ocean_solver.config.definitions import PhysicsConfig
-from ocean_solver.io.grid import GlobalOceanGrid
+from ocean_solver.geometry.types import GlobalOceanGrid
 from ocean_solver.model.factory import make_solver_global
 
 T_REF = PhysicsConfig().T_ref      # 15.0

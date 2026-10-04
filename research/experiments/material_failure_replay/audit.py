@@ -24,7 +24,7 @@ ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT / "src"))
 
 from ocean_solver.config.definitions import PhysicsConfig  # noqa: E402
-from ocean_solver.io.grid import GlobalOceanGrid  # noqa: E402
+from ocean_solver.geometry.types import GlobalOceanGrid
 from ocean_solver.model.factory import make_solver_global  # noqa: E402
 from zhenmode_research.candidates.material.solver import (  # noqa: E402
     CFL_LIMIT,

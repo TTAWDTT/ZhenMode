@@ -1,6 +1,6 @@
 # MOM6：固定来源、隔离构建、真实运行、转换与报告
 
-MOM6 是外部对照，生产 FD 不依赖其代码。`ocean_solver.baselines.mom6` 只做环境检查、固定源码获取、build cache、原生输入准备、有界运行与产物绑定。评分复用 `validation.benchmarks`，不复制评分器、不发展材料库存候选或新的动力核心。
+MOM6 是外部对照，生产 FD 不依赖其代码。`ocean_solver.baselines.mom6` 只做环境检查、固定源码获取、build cache、原生输入准备、有界运行与产物绑定。评分复用 `evaluation`，不复制评分器、不发展材料库存候选或新的动力核心。
 
 ## 固定版本与环境
 
@@ -71,3 +71,13 @@ zhenmode baseline mom6 prepare-wave-input --contract COARSE_CONTRACT.json --out-
 ```
 
 该命令仅生成四层T/S与五个native接口；顶层η采用确切cell-mean的sinc修正，x/y单位为米。`preparation.json` 保存合同/输入hash与原生interface参数。它没有自动配置零过程完整MOM_input、没有运行、没有生成完整33时刻输出，也不替代独立oracle；运行前须核原合同中的全动力/零过程、时间方案、原生output schema与资源。该边界不影响tc1已实际走通的执行链。
+
+## 强迫导出
+
+```sh
+zhenmode baseline mom6 export-forcing --kind wind --bathy data/ETOPO_2022_v1_r3600x1800_surface.nc.npz --out outputs/mom6-inputs/wind.nc
+zhenmode baseline mom6 export-forcing --kind air-temperature --bathy data/ETOPO_2022_v1_r3600x1800_surface.nc.npz --out outputs/mom6-inputs/air.nc
+zhenmode baseline mom6 export-forcing --kind sensible-heat --bathy data/ETOPO_2022_v1_r3600x1800_surface.nc.npz --out outputs/mom6-inputs/sensible.nc
+```
+
+三种导出共用 `baselines.forcing`，保留已有 A-grid 转置、fp32 字段及每月 `16 + 30*m` 天的 Julian 时间映射。浴深和输出路径必须显式提供，已有输出拒绝覆盖；WOA 和空气缓存按正式读取器配置。sensible-heat 是 `λ × (空气温度 − 固定初始 SST)` 的代理，不是运行时空气海洋耦合，也不自动满足公平比较的输入合同。原 `interop.mom6.*` 三个脚本入口已退役。

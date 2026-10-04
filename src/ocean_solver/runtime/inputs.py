@@ -6,6 +6,7 @@ from dataclasses import dataclass, replace
 from pathlib import Path
 
 from ocean_solver.config.definitions import DEFAULT_CONFIG, GlobalGridConfig, PhysicsConfig
+from ocean_solver.evaluation.metrics import mixed_layer_depth
 from ocean_solver.geometry.mesh import global_grid_dims, land_distance_from_land_mask
 from ocean_solver.geometry.types import GlobalOceanGrid
 from ocean_solver.numerics.backend import np
@@ -16,7 +17,6 @@ from ocean_solver.runtime.cli import (
     NY_DEFAULT,
     scaled_physics_for_resolution,
 )
-from ocean_solver.validation.benchmarks.metrics import mixed_layer_depth
 
 
 def _input_files(args, *, seasonal=None, air=None, default_config=DEFAULT_CONFIG):

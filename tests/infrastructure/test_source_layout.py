@@ -101,7 +101,7 @@ def test_checkout_data_roots_stay_at_the_repository():
     import ocean_solver.forcing.air as air
     import ocean_solver.forcing.wind as wind
     import ocean_solver.io.climatology as climatology
-    from ocean_solver.provenance.locations import source_root
+    from ocean_solver.provenance.sources import source_root
 
     root = repository()
     assert Path(configuration._REPO_ROOT) == root
@@ -113,7 +113,7 @@ def test_checkout_data_roots_stay_at_the_repository():
 
 @pytest.mark.parametrize("directory_name", ["installed", "compat", "ocean_solver"])
 def test_source_root_supports_installed_paths_and_external_source_directory(tmp_path, directory_name):
-    from ocean_solver.provenance.locations import source_root
+    from ocean_solver.provenance.sources import source_root
 
     installed = tmp_path / directory_name
     package = installed / "ocean_solver"

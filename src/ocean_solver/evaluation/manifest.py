@@ -8,7 +8,7 @@ from pathlib import Path
 
 import numpy as np
 
-from ocean_solver.validation.benchmarks.metrics import score_npz
+from ocean_solver.evaluation.metrics import score_npz
 
 
 def _load_config(npz_path: str | Path) -> dict:

@@ -8,9 +8,9 @@ import pytest
 
 from ocean_solver.audit.schema import accumulate_budget, empty_budget
 from ocean_solver.audit.stages import make_budget_step
+from ocean_solver.forcing.seasonal import interp_monthly_field_jit, interp_seasonal_wind_jit
 from ocean_solver.io.restart import load_restart, make_restart_contract, save_restart
 from ocean_solver.provenance.sources import source_paths
-from ocean_solver.runtime.entry import interp_monthly_field_jit, interp_seasonal_wind_jit
 from ocean_solver.state.types import JaxStateG
 from tests.support.material.reference_geometry import _fixture
 from tests.support.paths import REPOSITORY_ROOT

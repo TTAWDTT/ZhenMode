@@ -31,7 +31,8 @@ from ocean_solver.audit.stages import make_budget_step
 from ocean_solver.config.definitions import DEFAULT_CONFIG, GlobalGridConfig, PhysicsConfig
 from ocean_solver.diagnostics.state import compute_budget_diagnostics
 from ocean_solver.dynamics.projection import projection_config
-from ocean_solver.io.grid import global_grid_dims, land_distance_from_land_mask, make_global_grid
+from ocean_solver.geometry.mesh import global_grid_dims, land_distance_from_land_mask
+from ocean_solver.io.grid import make_global_grid
 from ocean_solver.model.factory import make_solver_global
 
 

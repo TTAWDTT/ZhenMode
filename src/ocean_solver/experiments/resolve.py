@@ -190,7 +190,7 @@ def effective_grid(case):
     grid = case["grid"]
     if grid["kind"] == "synthetic":
         return {"nx": grid["nx"], "ny": grid["ny"], "nz": len(grid["z_levels"]["value"]), "kind": "synthetic"}
-    from ocean_solver.io.grid import global_grid_dims
+    from ocean_solver.geometry.mesh import global_grid_dims
 
     nx, ny = global_grid_dims(grid["resolution"]["value"], case["domain"]["lat_max"]["value"], remap=grid["resolution_remap"])
     if "nx" in grid and grid["nx"] != nx or "ny" in grid and grid["ny"] != ny:

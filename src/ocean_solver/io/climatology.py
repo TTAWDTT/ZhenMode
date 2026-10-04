@@ -21,7 +21,7 @@ import os
 
 import numpy as np
 
-from ocean_solver.provenance.locations import source_root
+from ocean_solver.provenance.sources import source_root
 
 try:
     from netCDF4 import Dataset

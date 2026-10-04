@@ -15,7 +15,7 @@ import numpy as np
 
 import zhenmode_research.candidates.material.solver as material
 from ocean_solver.config.definitions import C_P, RHO_0
-from ocean_solver.io.grid import nodal_control_thickness
+from ocean_solver.geometry.types import nodal_control_thickness
 from ocean_solver.dynamics.pressure import _compute_bt_rho_pgf
 from ocean_solver.dynamics.pressure import _compute_pressure_gradient
 from ocean_solver.dynamics.transport import _vertical_transport_iface

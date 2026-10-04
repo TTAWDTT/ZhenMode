@@ -18,7 +18,7 @@ import netCDF4
 import numpy as np
 
 from ocean_solver.forcing.wind import _bilinear
-from ocean_solver.provenance.locations import source_root
+from ocean_solver.provenance.sources import source_root
 
 # NCEP R1 monthly mean 2-m air temperature on the T62 Gaussian surface grid.
 PSL_AIR_BASE = ("https://psl.noaa.gov/thredds/dodsC/Datasets/"
