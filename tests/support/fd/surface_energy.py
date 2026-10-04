@@ -5,10 +5,10 @@ from dataclasses import replace
 import jax.numpy as jnp
 import numpy as np
 
-from ocean_solver.config.definitions import PhysicsConfig
-from ocean_solver.model.factory import make_solver_global
-from ocean_solver.state.types import JaxStateG
 from tests.support.grid import all_wet_grid
+from zhenmode.model.config.definitions import PhysicsConfig
+from zhenmode.model.factory import make_solver_global
+from zhenmode.model.state.types import JaxStateG
 
 
 def _setup(depth=None, heat=100., ice=False, coastal_mask=None):

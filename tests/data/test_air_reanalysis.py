@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from ocean_solver.forcing.air import load_annual_mean_air_temp, load_monthly_mean_air_temp
+from zhenmode.model.forcing.air import load_annual_mean_air_temp, load_monthly_mean_air_temp
 
 
 class Grid:

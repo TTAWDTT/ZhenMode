@@ -4,10 +4,10 @@
 import jax.numpy as jnp
 import numpy as np
 
-from ocean_solver.dynamics.barotropic import _free_surface_step_fd
-from ocean_solver.dynamics.processes import _linear_half_step
-from ocean_solver.dynamics.transport import _barotropic_velocity
 from tests.support.fd.reference_geometry import WIDTHS, _fixture
+from zhenmode.model.dynamics.barotropic import _free_surface_step_fd
+from zhenmode.model.dynamics.processes import _linear_half_step
+from zhenmode.model.dynamics.transport import _barotropic_velocity
 
 
 def _candidate(**options):

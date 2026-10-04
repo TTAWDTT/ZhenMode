@@ -5,17 +5,17 @@ import numpy as np
 import pytest
 from scipy.linalg import expm
 
-from ocean_solver.audit.stages import _StageRecorder, make_budget_step
-from ocean_solver.config.definitions import G_EARTH, RHO_0
-from ocean_solver.dynamics.barotropic import (
+from tests.support.fd.reference_geometry import WIDTHS, _fixture
+from tests.support.fd.subcycled_rk import _trajectory
+from zhenmode.model.audit.stages import _StageRecorder, make_budget_step
+from zhenmode.model.config.definitions import G_EARTH, RHO_0
+from zhenmode.model.dynamics.barotropic import (
     _barotropic_subcycle_transport,
     _free_surface_step_fd,
     _symmetric_free_surface_step,
 )
-from ocean_solver.dynamics.processes import _linear_bottom_drag_step
-from ocean_solver.timestepping.integration import _step_impl
-from tests.support.fd.reference_geometry import WIDTHS, _fixture
-from tests.support.fd.subcycled_rk import _trajectory
+from zhenmode.model.dynamics.processes import _linear_bottom_drag_step
+from zhenmode.model.timestepping.integration import _step_impl
 
 
 def _candidate(**options):

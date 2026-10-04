@@ -1,7 +1,9 @@
 # Resolution scaling: measured CFL limits and the auto-scaling fix
 
-Measured 2026-09-18 with CPU probes in `src/ocean_solver/numerics/stability.py`. Every
-number below is from an actual run, not an estimate.
+Historical measurements from 2026-09-18, using the then-current probe
+`src/ocean_solver/numerics/stability.py`. The recorded values below are unchanged;
+they are not fresh measurements of the current source. Current resolution
+scaling is implemented in `src/zhenmode/model/runtime/cli.py`.
 
 ## TL;DR
 

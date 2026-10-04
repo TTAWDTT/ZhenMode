@@ -11,13 +11,13 @@ def test_distribution_includes_local_import_dependencies():
     assert not config["tool"]["setuptools"].get("py-modules")
     assert config["tool"]["setuptools"]["package-dir"][""] == "src"
     assert not list((root / "src/compat").glob("*.py"))
-    assert "ocean_solver*" in config["tool"]["setuptools"]["packages"]["find"]["include"]
+    assert "zhenmode*" in config["tool"]["setuptools"]["packages"]["find"]["include"]
     package_modules = {".".join(path.relative_to(root / "src").with_suffix("").parts).removesuffix(".__init__")
-                       for path in (root / "src/ocean_solver").rglob("*.py")}
-    for path in (root / "src/ocean_solver").rglob("*.py"):
+                       for path in (root / "src/zhenmode").rglob("*.py")}
+    for path in (root / "src/zhenmode").rglob("*.py"):
         for node in ast.walk(ast.parse(path.read_text(encoding="utf-8"))):
-            if isinstance(node, ast.ImportFrom) and (node.module or "").startswith("ocean_solver"):
+            if isinstance(node, ast.ImportFrom) and (node.module or "").startswith("zhenmode"):
                 assert node.module in package_modules, (path, node.module)
             elif isinstance(node, ast.Import):
-                for name in (alias.name for alias in node.names if alias.name.startswith("ocean_solver")):
+                for name in (alias.name for alias in node.names if alias.name.startswith("zhenmode")):
                     assert name in package_modules, (path, name)

@@ -5,9 +5,9 @@ from dataclasses import replace
 import jax.numpy as jnp
 import numpy as np
 
-from ocean_solver.config.definitions import OMEGA, R_EARTH, PhysicsConfig
-from ocean_solver.model.factory import make_solver_global
 from tests.support.fd.reference_geometry import _fixture
+from zhenmode.model.config.definitions import OMEGA, R_EARTH, PhysicsConfig
+from zhenmode.model.factory import make_solver_global
 
 
 def _controlled_factory(*, stairs=False, metric=False, duration=600., physics=None):

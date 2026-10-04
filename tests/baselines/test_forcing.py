@@ -5,8 +5,8 @@ import netCDF4
 import numpy as np
 import pytest
 
-from ocean_solver.baselines import forcing
 from tests.support.grid import all_wet_grid
+from zhenmode.baselines.mom6 import forcing
 
 
 def arguments(directory, kind, *options):

@@ -5,13 +5,13 @@ from dataclasses import replace
 import numpy as np
 import pytest
 
-import ocean_solver.forcing.seasonal as owner_seasonal
-import ocean_solver.io.climatology as owner_climatology
-import ocean_solver.io.grid as owner_grid
-import ocean_solver.io.paths as owner_paths
-import ocean_solver.io.restart as owner_restart
-import ocean_solver.model.factory as owner_factory
-import ocean_solver.runtime.entry as driver
+import zhenmode.model.factory as owner_factory
+import zhenmode.model.forcing.seasonal as owner_seasonal
+import zhenmode.model.io.climatology as owner_climatology
+import zhenmode.model.io.grid as owner_grid
+import zhenmode.model.io.paths as owner_paths
+import zhenmode.model.io.restart as owner_restart
+import zhenmode.model.runtime.entry as driver
 from tests.support.grid import all_wet_grid
 
 

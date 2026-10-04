@@ -4,9 +4,9 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from ocean_solver.config.definitions import ALPHA_T, BETA_S, RHO_0
-from ocean_solver.physics.vertical import _conv_flux_tendency, _convective_mask
 from tests.support.fd.convection import _material_fixture, _state
+from zhenmode.model.config.definitions import ALPHA_T, BETA_S, RHO_0
+from zhenmode.model.physics.vertical import _conv_flux_tendency, _convective_mask
 
 
 @pytest.fixture

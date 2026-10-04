@@ -1,7 +1,7 @@
 """Benchmark comparison table tests."""
 import json
 
-from ocean_solver.evaluation.table import load_metric, markdown_table
+from zhenmode.evaluation.table import load_metric, markdown_table
 
 
 def test_load_metric_flattens_fields(tmp_path):

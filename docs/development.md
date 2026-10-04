@@ -8,7 +8,7 @@ python -m pip install -e ".[dev]"
 python -m ruff check .
 python scripts/make_synthetic_bathymetry.py
 python -m pytest tests/ -q
-python -m ocean_solver mms
+python -m zhenmode mms
 ```
 
 `requirements.txt` 固定 CPU 开发验证环境；`pyproject.toml` 定义可安装包的依赖和入口。GPU 环境见 [GPU 运行](gpu_runtime_zh.md)。
@@ -19,10 +19,11 @@ Windows 本地有界调用使用单 CPU、180 秒、4 GiB，可按明确范围�
 
 ```powershell
 python scripts/run_bounded_tests.py tests/infrastructure tests/experiments tests/evaluation -q
-python scripts/run_bounded_tests.py --module ocean_solver mms
+python scripts/run_bounded_tests.py --module zhenmode mms
 ```
 
 全球回归使用 `scripts/capture_global_regression.py` 和 `scripts/compare_global_regression.py`，完整输入、源码身份、数值记录和结果保存在独立运行目录，拒绝覆盖。重启小例使用 `scripts/verify_production_restart_cpu.py --output <新目录>`。超时或资源不足属于失败或未完成，不能推断数值通过。
+全球采集器默认 `--layout product`；历史 `ocean_solver` 版本使用 `--layout canonical` 或 `legacy`，并必须指定独立冻结的 `--source-root`。它只观测原版本，不安装旧包转接层。
 
 自动 CI 只运行 Ruff。完整测试和 MMS 通过 `workflow_dispatch` 的 `full_validation` 人工启动。数值测试通过不等于长期气候效果或公平加速结论。
 

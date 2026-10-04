@@ -7,9 +7,9 @@ import netCDF4
 import numpy as np
 import pytest
 
-from ocean_solver.evaluation.pipeline import compare, evaluate, import_historical
-from ocean_solver.evaluation.protocols import digest, file_digest, load_json, validate_protocol
-from ocean_solver.provenance.sources import PACKAGE_SOURCE_MODULES
+from zhenmode.evaluation.pipeline import compare, evaluate, import_historical
+from zhenmode.evaluation.protocols import digest, file_digest, load_json, validate_protocol
+from zhenmode.provenance.sources import PACKAGE_SOURCE_MODULES
 
 
 @pytest.fixture
@@ -29,12 +29,12 @@ def bundle(tmp_path):
                   lon=np.array([0., 90., 180., 270.]), verdict=np.array("PASS"),
                   max_u_peak=np.array(0.), max_eta=np.zeros(3), heat_content_J=np.ones(3),
                   salt_content_kg=np.ones(3))
-    package = Path(__file__).resolve().parents[2]/"src/ocean_solver"
-    full = {name.removeprefix("ocean_solver/")+".py": file_digest(package/(name.removeprefix("ocean_solver/")+".py"))
+    package = Path(__file__).resolve().parents[2]/"src/zhenmode"
+    full = {name.removeprefix("zhenmode/")+".py": file_digest(package/(name.removeprefix("zhenmode/")+".py"))
             for name in PACKAGE_SOURCE_MODULES}
-    executed = {name: full[name] for name in ("runtime/application.py", "runtime/integration.py", "model/factory.py",
-                                              "timestepping/integration.py", "dynamics/processes.py",
-                                              "numerics/horizontal.py", "physics/vertical.py", "io/output.py")}
+    executed = {name: full[name] for name in ("model/runtime/application.py", "model/runtime/integration.py", "model/factory.py",
+                                              "model/timestepping/integration.py", "model/dynamics/processes.py",
+                                              "model/numerics/horizontal.py", "model/physics/vertical.py", "model/io/output.py")}
     manifest = dict(run_id="toy-repeat-1", case_id="toy", method="zhenmode", config_hash="a"*64,
                     execution_status="completed", physical_problem_sha256="b"*64, data_sha256="c"*64,
                     effective_physics_sha256="d"*64,
@@ -136,9 +136,65 @@ def test_result_cannot_be_borrowed_from_another_run(bundle):
 
 
 def test_source_receipt_mismatch_rejected(bundle):
-    bundle[3]["executed_source_files"]["dynamics/processes.py"] = "0"*64
+    bundle[3]["executed_source_files"]["model/dynamics/processes.py"] = "0"*64
     (bundle[0]/"manifest.json").write_text(json.dumps(bundle[3]))
     with pytest.raises(ValueError, match="executed source"):
+        run_bundle(bundle)
+
+
+@pytest.mark.parametrize("prefix", ["zhenmode", "ocean_solver"])
+@pytest.mark.parametrize("legacy_layout", [False, True])
+@pytest.mark.parametrize("tamper", [False, True])
+def test_prefixed_output_receipt_preserves_hash_checks(bundle, prefix, legacy_layout, tamper):
+    path, _, arrays, manifest = bundle
+    if legacy_layout:
+        # Independent pre-migration producer envelope; do not rewrite old paths or hashes.
+        manifest["source_identity"] = {
+            "runtime/application.py": "a"*64,
+            "dynamics/processes.py": "b"*64,
+            "provenance/sources.py": "c"*64,
+        }
+        manifest["executed_source_files"] = {
+            name: manifest["source_identity"][name]
+            for name in ("runtime/application.py", "dynamics/processes.py")
+        }
+        manifest["method"] = "ocean_solver"
+    receipt = {"source_sha256": {f"{prefix}/{name}": sha
+                                 for name, sha in manifest["source_identity"].items()}}
+    if tamper:
+        receipt["source_sha256"][f"{prefix}/provenance/sources.py"] = "0"*64
+    manifest["result_source_identity"] = receipt
+    arrays["source_identity_json"] = np.array(json.dumps(receipt))
+    np.savez(path/"result.npz", **arrays)
+    manifest["result_sha256"] = file_digest(path/"result.npz")
+    (path/"manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
+    if tamper:
+        with pytest.raises(ValueError, match="embedded source identity differs"):
+            run_bundle(bundle)
+        return
+    report = run_bundle(bundle)
+    assert report["effect"]["global"]["raw_rmse"] == 0
+    assert report["provenance"]["execution_source_identity"] == manifest["source_identity"]
+    assert report["comparability"]["status"] == (
+        "limited" if legacy_layout else "eligible_for_contract_comparison")
+    assert ("known_producer_source_registry_version" in
+            report["comparability"]["missing_identity"]) == legacy_layout
+    assert compare([report, copy.deepcopy(report)])["comparable"] is (not legacy_layout)
+
+
+@pytest.mark.parametrize("conflicting_hash", [False, True])
+def test_mixed_prefix_receipt_cannot_hide_duplicate_source(bundle, conflicting_hash):
+    path, _, arrays, manifest = bundle
+    receipt = {"source_sha256": {f"zhenmode/{name}": sha
+                                 for name, sha in manifest["source_identity"].items()}}
+    receipt["source_sha256"]["ocean_solver/provenance/sources.py"] = (
+        "0"*64 if conflicting_hash else manifest["source_identity"]["provenance/sources.py"])
+    manifest["result_source_identity"] = receipt
+    arrays["source_identity_json"] = np.array(json.dumps(receipt))
+    np.savez(path/"result.npz", **arrays)
+    manifest["result_sha256"] = file_digest(path/"result.npz")
+    (path/"manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
+    with pytest.raises(ValueError, match="ambiguous embedded source"):
         run_bundle(bundle)
 
 
@@ -193,7 +249,7 @@ def test_native_shared_grid_units_and_binding_rejected(bundle, bad):
 
 def test_two_facade_files_cannot_certify_production_source(bundle):
     bundle[3]["executed_source_files"] = {name: bundle[3]["source_identity"][name]
-                                          for name in ("__init__.py", "runtime/entry.py")}
+                                          for name in ("__init__.py", "model/runtime/entry.py")}
     (bundle[0]/"manifest.json").write_text(json.dumps(bundle[3]))
     report = run_bundle(bundle)
     assert report["comparability"]["status"] == "limited"

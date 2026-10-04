@@ -5,11 +5,11 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from ocean_solver.config.definitions import C_P, RHO_0
-from ocean_solver.dynamics.processes import _compute_tracer_tendency
-from ocean_solver.physics.surface import _dynamic_ice_closure
-from ocean_solver.state.types import JaxStateG
 from tests.support.fd.surface_energy import _setup
+from zhenmode.model.config.definitions import C_P, RHO_0
+from zhenmode.model.dynamics.processes import _compute_tracer_tendency
+from zhenmode.model.physics.surface import _dynamic_ice_closure
+from zhenmode.model.state.types import JaxStateG
 
 
 @pytest.mark.parametrize("depth", [None, 20., 50., 5000.])
@@ -63,7 +63,7 @@ def test_full_step_applies_surface_heat_only_once_with_ice():
     np.testing.assert_allclose(result.ice, expected, rtol=1e-10)
 
 def test_ice_checkpoint_restart_matches_continuous_steps(tmp_path):
-    from ocean_solver.io.restart import load_restart, make_restart_contract, save_restart
+    from zhenmode.model.io.restart import load_restart, make_restart_contract, save_restart
 
     grid, params, state, step = _setup(heat=-100., ice=True)
     first = step(state)

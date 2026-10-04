@@ -5,17 +5,17 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from ocean_solver.audit.stages import make_budget_step
-from ocean_solver.dynamics.projection import _project_column_divergence
-from ocean_solver.dynamics.transport import (
+from tests.support.fd.column_projection import _velocities
+from tests.support.fd.horizontal_diffusion import _parameters
+from zhenmode.model.audit.stages import make_budget_step
+from zhenmode.model.dynamics.projection import _project_column_divergence
+from zhenmode.model.dynamics.transport import (
     _advection_scalar,
     _column_divergence,
     _vertical_transport_iface,
 )
-from ocean_solver.numerics.horizontal import _gradient_conservative_3d
-from ocean_solver.timestepping.integration import _step_impl
-from tests.support.fd.column_projection import _velocities
-from tests.support.fd.horizontal_diffusion import _parameters
+from zhenmode.model.numerics.horizontal import _gradient_conservative_3d
+from zhenmode.model.timestepping.integration import _step_impl
 
 
 @pytest.mark.parametrize("land", [False, True])

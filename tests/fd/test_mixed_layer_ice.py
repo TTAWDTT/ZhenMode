@@ -2,7 +2,7 @@
 
 import numpy as np
 
-from ocean_solver.physics.ice import MLIceConfig, mixed_layer_ice_step, surface_heat_flux
+from zhenmode.model.physics.ice import MLIceConfig, mixed_layer_ice_step, surface_heat_flux
 
 CFG = MLIceConfig(mixed_layer_depth_m=50.0, freeze_temp_c=-1.8,
                   bulk_lambda=80.0)
@@ -45,9 +45,9 @@ def test_surface_flux_is_weakened_under_ice():
 def test_solver_accepts_mixed_layer_depth():
     from dataclasses import replace
 
-    from ocean_solver.config.definitions import PhysicsConfig
-    from ocean_solver.model.factory import make_solver_global
     from tests.support.grid import all_wet_grid
+    from zhenmode.model.config.definitions import PhysicsConfig
+    from zhenmode.model.factory import make_solver_global
 
     grid = all_wet_grid(nx=16, ny=8, nz=4)
     physics = replace(PhysicsConfig(), nu_h=0.0, nu_bi=0.0,

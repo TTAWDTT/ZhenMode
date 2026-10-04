@@ -3,10 +3,10 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from ocean_solver.config.definitions import G_EARTH, RHO_0
-from ocean_solver.dynamics.pressure import _compute_hydrostatic_pressure
-from ocean_solver.numerics.horizontal import _gradient_conservative_3d
 from tests.support.fd import pressure_pe_contract as module
+from zhenmode.model.config.definitions import G_EARTH, RHO_0
+from zhenmode.model.dynamics.pressure import _compute_hydrostatic_pressure
+from zhenmode.model.numerics.horizontal import _gradient_conservative_3d
 
 
 def test_stationary_uniform_stable_profile_has_no_conversion():

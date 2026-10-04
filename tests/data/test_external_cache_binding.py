@@ -5,10 +5,10 @@ from types import SimpleNamespace
 import numpy as np
 import pytest
 
-from ocean_solver.config.definitions import DEFAULT_CONFIG
-from ocean_solver.experiments.worker import bind_external_inputs
-from ocean_solver.forcing import air, wind
-from ocean_solver.io import climatology
+from zhenmode.execution.worker import bind_external_inputs
+from zhenmode.model.config.definitions import DEFAULT_CONFIG
+from zhenmode.model.forcing import air, wind
+from zhenmode.model.io import climatology
 
 
 @pytest.mark.parametrize("kind", ["wind", "air_annual", "air_monthly"])

@@ -3,17 +3,18 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from ocean_solver.audit.schema import (
+from tests.support.fd.reference_geometry import WIDTHS, _fixture
+from zhenmode.model.audit.schema import (
     MAXIMUM_BUDGET_FIELDS,
     SOURCE_NAMES,
     accumulate_budget,
     empty_budget,
 )
-from ocean_solver.audit.stages import make_budget_step
-from ocean_solver.config.definitions import C_P, RHO_0, PhysicsConfig
-from ocean_solver.dynamics.barotropic import _barotropic_subcycle_transport, _free_surface_step_fd
-from ocean_solver.dynamics.processes import _linear_half_step
-from ocean_solver.dynamics.transport import (
+from zhenmode.model.audit.stages import make_budget_step
+from zhenmode.model.config.definitions import C_P, RHO_0, PhysicsConfig
+from zhenmode.model.dynamics.barotropic import _barotropic_subcycle_transport, _free_surface_step_fd
+from zhenmode.model.dynamics.processes import _linear_half_step
+from zhenmode.model.dynamics.transport import (
     _advection_scalar,
     _barotropic_velocity,
     _face_transport_divergence,
@@ -21,9 +22,8 @@ from ocean_solver.dynamics.transport import (
     _match_layer_face_transports,
     _vertical_transport_iface,
 )
-from ocean_solver.model.factory import make_solver_global
-from ocean_solver.timestepping.integration import _explicit_full_step, _tracer_step_with_transport
-from tests.support.fd.reference_geometry import WIDTHS, _fixture
+from zhenmode.model.factory import make_solver_global
+from zhenmode.model.timestepping.integration import _explicit_full_step, _tracer_step_with_transport
 
 
 def _numpy_faces(velocity_x, velocity_y, grid):

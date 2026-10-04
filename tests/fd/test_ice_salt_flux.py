@@ -4,10 +4,10 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
-from ocean_solver.config.definitions import PhysicsConfig
-from ocean_solver.dynamics.processes import _compute_tracer_tendency
-from ocean_solver.model.factory import make_solver_global
 from tests.support.grid import all_wet_grid
+from zhenmode.model.config.definitions import PhysicsConfig
+from zhenmode.model.dynamics.processes import _compute_tracer_tendency
+from zhenmode.model.factory import make_solver_global
 
 jax.config.update('jax_enable_x64', True)
 

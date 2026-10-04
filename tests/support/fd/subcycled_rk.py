@@ -4,10 +4,10 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
-from ocean_solver.config.definitions import C_P, RHO_0
-from ocean_solver.timestepping.integration import _step_impl, _tracer_step_with_transport
 from tests.support.fd.process_time import _numpy_vertical_matrix
 from tests.support.fd.reference_geometry import WIDTHS, _fixture
+from zhenmode.model.config.definitions import C_P, RHO_0
+from zhenmode.model.timestepping.integration import _step_impl, _tracer_step_with_transport
 
 
 def _candidate(**options):

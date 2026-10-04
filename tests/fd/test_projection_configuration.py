@@ -6,18 +6,18 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from ocean_solver.audit.schema import accumulate_budget, empty_budget
-from ocean_solver.config.definitions import PhysicsConfig
-from ocean_solver.dynamics.projection import (
+from tests.support.fd.column_projection import _velocities
+from tests.support.fd.horizontal_diffusion import _parameters
+from zhenmode.model.audit.schema import accumulate_budget, empty_budget
+from zhenmode.model.config.definitions import PhysicsConfig
+from zhenmode.model.dynamics.projection import (
     _column_projection_diagonal,
     _project_column_divergence,
     projection_config,
 )
-from ocean_solver.dynamics.transport import _column_divergence
-from ocean_solver.model.factory import make_solver_global
-from ocean_solver.numerics.horizontal import _gradient_conservative_3d
-from tests.support.fd.column_projection import _velocities
-from tests.support.fd.horizontal_diffusion import _parameters
+from zhenmode.model.dynamics.transport import _column_divergence
+from zhenmode.model.factory import make_solver_global
+from zhenmode.model.numerics.horizontal import _gradient_conservative_3d
 
 
 def _build(grid, **settings):
@@ -140,8 +140,8 @@ def test_jacobi_jvp_vjp_and_volume_adjoint_match_converged_projection():
 
 
 def test_actual_monitor_detects_iteration_cap_failure():
-    from ocean_solver.audit.stages import make_budget_step
     from tests.support.fd.nonlinear_budgets import _state
+    from zhenmode.model.audit.stages import make_budget_step
 
     _, params, _ = _parameters(65., land=True)
     params = params._replace(kappa_h=0., dt=1., project_adv_vel=True, projection_niter=1)

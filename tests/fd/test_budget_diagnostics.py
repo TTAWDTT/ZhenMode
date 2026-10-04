@@ -7,10 +7,10 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from ocean_solver.config.definitions import PhysicsConfig
-from ocean_solver.diagnostics.state import compute_budget_diagnostics, node_thickness
-from ocean_solver.model.factory import make_solver_global
 from tests.support.grid import all_wet_grid
+from zhenmode.model.config.definitions import PhysicsConfig
+from zhenmode.model.diagnostics.state import compute_budget_diagnostics, node_thickness
+from zhenmode.model.factory import make_solver_global
 
 
 def test_budget_diagnostics_on_uniform_state():

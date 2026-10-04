@@ -23,18 +23,18 @@ from dataclasses import replace
 
 import jax.numpy as jnp
 
-import ocean_solver.dynamics.processes as G_processes
-import ocean_solver.numerics.horizontal as G_horizontal
-import ocean_solver.numerics.vertical as G_vertical
-import ocean_solver.physics.eos as G_eos
-from ocean_solver.config.definitions import PhysicsConfig
-from ocean_solver.model.factory import make_solver_global
-from ocean_solver.physics.isopycnal import (
+import zhenmode.model.dynamics.processes as G_processes
+import zhenmode.model.numerics.horizontal as G_horizontal
+import zhenmode.model.numerics.vertical as G_vertical
+import zhenmode.model.physics.eos as G_eos
+from tests.support.grid import all_wet_grid as _synth_grid
+from zhenmode.model.config.definitions import PhysicsConfig
+from zhenmode.model.factory import make_solver_global
+from zhenmode.model.physics.isopycnal import (
     _isopycnal_closure,
     _isopycnal_slope,
     _redi_skew_flux_tendency,
 )
-from tests.support.grid import all_wet_grid as _synth_grid
 
 
 def _make_state_and_params(grid, kappa_gm, T_field, S_field=None, kappa_redi=0.0):

@@ -13,4 +13,4 @@
 
 合成 case 的经向分辨率为 45°，纬向坐标为 −30° 至 30° 的 8 个点，纬向间距约 8.5714°。它不是角度各向同性的 45° 真实地形模式。安装包服务只构造输入和实际网格；调用同一正式 FD factory、时间积分和输出流程。
 
-MOM6 官方 `tc1` 是另一个小物理问题，定义在 `baselines/mom6/cases/`，不能套用全球 case 身份。来源和配置规范见 [实验说明](../docs/experiments_zh.md)。
+MOM6 官方 `tc1` 是另一个小物理问题，内置定义随接入包安装，位于 [tc1.json](../src/zhenmode/baselines/mom6/cases/tc1.json)，不能套用全球 case 身份。来源和配置规范见 [实验说明](../docs/experiments_zh.md)。

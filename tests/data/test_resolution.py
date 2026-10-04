@@ -21,10 +21,10 @@ from dataclasses import replace
 import numpy as np
 import pytest
 
-from ocean_solver.config.definitions import DEFAULT_CONFIG, GlobalGridConfig
-from ocean_solver.geometry.mesh import global_grid_dims
-from ocean_solver.io.grid import _read_etopo_global, make_global_grid
 from tests.support.paths import REPOSITORY_ROOT
+from zhenmode.model.config.definitions import DEFAULT_CONFIG, GlobalGridConfig
+from zhenmode.model.geometry.mesh import global_grid_dims
+from zhenmode.model.io.grid import _read_etopo_global, make_global_grid
 
 BATHY = DEFAULT_CONFIG.bathymetry_file
 HAVE_BATHY = os.path.exists(BATHY) or os.path.exists(BATHY + ".npz")
@@ -171,9 +171,9 @@ def test_sub_source_resolution_rejected_by_runner_cli():
     exits before any grid work."""
     import subprocess
     r = subprocess.run(
-        [sys.executable, "-m", "ocean_solver.runtime.entry",
+        [sys.executable, "-m", "zhenmode.model.runtime.entry",
          "--resolution", "0.25", "--days", "0.001"],
-        capture_output=True, text=True, cwd=REPOSITORY_ROOT / 'src', timeout=180)
+        capture_output=True, text=True, encoding="utf-8", cwd=REPOSITORY_ROOT / 'src', timeout=180)
     assert r.returncode != 0
     assert "multiple of the 0.1" in (r.stdout + r.stderr)
 
@@ -248,7 +248,7 @@ def test_legacy_ny_path_still_rejects_inconsistent_ny():
 def test_physics_autoscale_matches_dx_powers():
     """scaled_physics_for_resolution maps 1 deg -> (dt_bt, nu_h, nu_bi)
     with exponents 1, 2, 4 and is a no-op at 1.0 deg."""
-    from ocean_solver.runtime.cli import (
+    from zhenmode.model.runtime.cli import (
         DT_BT_DEFAULT,
         NU_BI_REF_1DEG,
         NU_H_REF_1DEG,
@@ -275,7 +275,7 @@ def test_physics_autoscale_matches_dx_powers():
 
 def test_physics_autoscale_respects_explicit_override():
     """An explicitly-passed value is never overwritten by the scaling."""
-    from ocean_solver.runtime.cli import scaled_physics_for_resolution
+    from zhenmode.model.runtime.cli import scaled_physics_for_resolution
 
     dt_bt, nu_h, nu_bi = scaled_physics_for_resolution(
         0.25, 999.0, 123.0, 456.0)

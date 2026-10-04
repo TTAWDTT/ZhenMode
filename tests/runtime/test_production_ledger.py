@@ -7,19 +7,19 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-import ocean_solver.audit.schema as owner_schema
-import ocean_solver.audit.stages as owner_stages
-import ocean_solver.config.definitions as owner_definitions
-import ocean_solver.forcing.air as owner_air
-import ocean_solver.forcing.fields as owner_fields
-import ocean_solver.io.recovery as owner_recovery
-import ocean_solver.io.restart as owner_restart
-import ocean_solver.runtime.entry as driver
-import ocean_solver.runtime.identity as owner_identity
-import ocean_solver.runtime.inputs as owner_inputs
-from ocean_solver.config.definitions import C_P, RHO_0
-from ocean_solver.io.restart import load_restart
+import zhenmode.model.audit.schema as owner_schema
+import zhenmode.model.audit.stages as owner_stages
+import zhenmode.model.config.definitions as owner_definitions
+import zhenmode.model.forcing.air as owner_air
+import zhenmode.model.forcing.fields as owner_fields
+import zhenmode.model.io.recovery as owner_recovery
+import zhenmode.model.io.restart as owner_restart
+import zhenmode.model.runtime.entry as driver
+import zhenmode.model.runtime.identity as owner_identity
+import zhenmode.model.runtime.inputs as owner_inputs
 from tests.support.driver import run_controlled_driver
+from zhenmode.model.config.definitions import C_P, RHO_0
+from zhenmode.model.io.restart import load_restart
 
 
 def read_result(directory):
@@ -195,7 +195,7 @@ def test_audit_identity_checks_bytes_including_signed_zero():
 def test_source_hashes_survive_flat_wheel_layout(tmp_path, monkeypatch):
     import shutil
 
-    from ocean_solver.provenance.sources import source_paths, source_root
+    from zhenmode.provenance.sources import source_paths, source_root
     source = source_root(driver.__file__)
     paths = source_paths(source, owner_identity.SOURCE_MODULES)
     installed = tmp_path / 'site-packages'
@@ -204,16 +204,16 @@ def test_source_hashes_survive_flat_wheel_layout(tmp_path, monkeypatch):
         target = installed / f'{name}.py'
         target.parent.mkdir(parents=True, exist_ok=True)
         shutil.copyfile(paths[name], target)
-    monkeypatch.setattr(owner_identity, '__file__', str(installed / 'ocean_solver/runtime/identity.py'))
+    monkeypatch.setattr(owner_identity, '__file__', str(installed / 'zhenmode/model/runtime/identity.py'))
     identity = owner_identity._source_identity()
     assert len(identity['source_sha256']) == len(owner_identity.SOURCE_MODULES)
-    assert identity['source_sha256']['ocean_solver/runtime/entry.py'] == owner_restart.file_sha256(paths['ocean_solver/runtime/entry'])
+    assert identity['source_sha256']['zhenmode/model/runtime/entry.py'] == owner_restart.file_sha256(paths['zhenmode/model/runtime/entry'])
 
 
 def test_bathymetry_provenance_follows_offline_loader_precedence(tmp_path, monkeypatch):
     from types import SimpleNamespace
 
-    import ocean_solver.io.grid as grid
+    import zhenmode.model.io.grid as grid
     bathy = tmp_path / 'bathy.nc'
     bathy.write_bytes(b'nc sentinel')
     twin = tmp_path / 'bathy.nc.npz'

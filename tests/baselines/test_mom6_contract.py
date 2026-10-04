@@ -6,8 +6,8 @@ import netCDF4
 import numpy as np
 import pytest
 
-from ocean_solver.baselines import mom6
-from ocean_solver.baselines.mom6 import (
+from zhenmode.baselines.mom6 import adapter as mom6
+from zhenmode.baselines.mom6.adapter import (
     CASE_ID,
     convert,
     evaluate,
@@ -15,7 +15,31 @@ from ocean_solver.baselines.mom6 import (
     prepare_wave_input,
     run,
 )
-from ocean_solver.evaluation.protocols import file_digest
+from zhenmode.evaluation.protocols import file_digest
+
+
+def test_installed_native_definitions_are_used_and_hashed():
+    pins = mom6.RESOURCE_ROOT / "pins.json"
+    case = mom6.RESOURCE_ROOT / "cases/tc1.json"
+    assert mom6.PINS == {name: json.loads(pins.read_text())[name] for name in ("MOM6", "FMS", "CVMix", "GSW")}
+    spec = json.loads(case.read_text(encoding="utf-8"))
+    assert mom6.CASE_ID == spec["id"]
+    assert mom6.INPUT_FILES == tuple(spec["input_files"])
+    identity = mom6.adapter_identity()
+    assert identity["baselines/mom6/pins.json"] == file_digest(pins)
+    assert identity["baselines/mom6/cases/tc1.json"] == file_digest(case)
+
+
+def test_adapter_identity_detects_changed_packaged_definition(tmp_path, monkeypatch):
+    module = tmp_path / "zhenmode/baselines/mom6/adapter.py"
+    module.parent.mkdir(parents=True)
+    module.write_text("# independent adapter fixture\n")
+    pins = module.parent / "pins.json"
+    pins.write_text('{"MOM6": "original"}')
+    monkeypatch.setattr(mom6, "__file__", str(module))
+    before = mom6.adapter_identity()
+    pins.write_text('{"MOM6": "changed"}')
+    assert before != mom6.adapter_identity()
 
 
 def native_fixture(tmp_path):

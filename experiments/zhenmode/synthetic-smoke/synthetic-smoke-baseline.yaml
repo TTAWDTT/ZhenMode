@@ -9,7 +9,7 @@ parent_preset: configs/zhenmode/presets/synthetic-smoke.yaml
 variant: baseline
 changes: []
 evaluation_protocol: production-smoke-v1
-protocol_path: evaluation/protocols/production-smoke-v1.json
+protocol_path: protocols/production-smoke-v1.json
 resources:
   cpu: 1
   wall_seconds: 180
