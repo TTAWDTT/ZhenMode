@@ -1,9 +1,0 @@
-{
-  "scope": "full original1degree real bathymetry/metrics and both saved first rejected eta fields, fresh analytic nodal tracer/velocity and positive wet heat source, not continued original dynamics or a whole-ocean integration",
-  "geometry": "explicit completed-bed representation on unchanged360x132x14 shape, all original wet nodes/beds retained; same original inputs as real_geometry_protocol.json, no excluded wet columns",
-  "fresh_fields": "temperature10+10exp(-physical_depth/2000)+0.2sin(original_lon)*cos(original_lat); u=0.03sin(lon)cos(lat)exp(-d/2000), v=0.02cos(lon)sin(lat)exp(-d/2000), both evaluated at every new actual wet node; neither WOArestart nor old dry values used for new samples",
-  "source": "100W/m2 at every original wet surface, nodal content rate area*100/(rho0*cp) at top, separately dimensional heat ledger; duration600s for both prescribed stress stages, not the old300s ocean time-step or accepted ocean dynamics",
-  "gates": "same frozen bounded stage, no global dense Jacobian or changed cap/domain/damping; valid stage, actual decoded nodes within kernel graph/source bounds at64eps, global source inventory and independent physical heat sum64eps, positive actual widths; source and input hashes unchanged",
-  "capacity": "construct full new weak graph on CPU first and count stored arrays bytes; actual full GPU compile/execute only after small frozen GPU controls pass; CUDA full-grid uses explicitly recorded XLA_PYTHON_CLIENT_PREALLOCATE=false to avoid blanket reservation on the shared laptop GPU, not a precision/domain/physics change; do not restart on observation timeout or silently shrink grid, record memory identity and any OOM/failure",
-  "status": "accepted_ocean_steps remains0 even if two prescribed tracer stress stages pass; no factory, limiter entropy, complete source/diffusion/momentum/fastslow, restart, actual1degree day7/30, century/climate/forecast or industrial rank from this probe"
-}

@@ -19,7 +19,7 @@ from ocean_solver.config.definitions import PhysicsConfig
 
 @pytest.mark.parametrize("nonfinite", [False, True])
 def test_cli_saves_exact_rejected_and_last_accepted_states_without_booking_failed_step(tmp_path, monkeypatch, nonfinite):
-    from tests.support.material.process_time import _candidate
+    from tests.support.fd.process_time import _candidate
 
     grid, solver = _candidate()
     initial = solver[1]()

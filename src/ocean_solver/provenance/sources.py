@@ -1,5 +1,6 @@
 """Required current source identities; historical reports remain commit-bound."""
 
+import hashlib
 import re
 from pathlib import Path
 
@@ -93,7 +94,6 @@ PACKAGE_SOURCE_MODULES = (
     'ocean_solver/physics/surface',
     'ocean_solver/physics/vertical',
     'ocean_solver/provenance/__init__',
-    'ocean_solver/provenance/archives',
     'ocean_solver/provenance/sources',
     'ocean_solver/runtime/__init__',
     'ocean_solver/runtime/application',
@@ -132,16 +132,59 @@ def source_paths(source_directory, modules):
         if not isinstance(name, str) or not re.fullmatch(r'[A-Za-z_][A-Za-z_0-9]*(/[A-Za-z_][A-Za-z_0-9]*)*', name):
             raise ValueError('invalid source name: ' + str(name))
         path = directory / (name + '.py')
-        # An explicit research envelope may resolve a separately installed package
-        # or checkout research sources. The production registry never requests it.
-        research_root = directory.parent / 'research/src'
-        if (not path.is_file() and research_root.is_dir()
-                and name.startswith('zhenmode_research/')):
-            path = research_root / (name + '.py')
         if not path.is_file():
             raise ValueError("missing required source: " + name)
-        if not (path.resolve().is_relative_to(directory.resolve())
-                or (research_root.is_dir() and path.resolve().is_relative_to(research_root.resolve()))):
-            raise ValueError('outside required source roots: ' + name)
+        if not path.resolve().is_relative_to(directory):
+            raise ValueError('outside required source root: ' + name)
         result[name] = path
     return result
+
+
+def _repository_file(root, name):
+    if not isinstance(name, str):
+        raise ValueError("source label must be a relative string")
+    requested = Path(name)
+    path = (root / requested).resolve()
+    if requested.is_absolute() or ".." in requested.parts or not path.is_relative_to(root):
+        raise ValueError("outside-workspace source: " + name)
+    if not path.is_file():
+        raise ValueError("missing declared current source: " + name)
+    return path
+
+
+def current_source_files(repository, selected=()):
+    """Collect real current package files, test helpers and selected producers.
+
+    Labels are repository-relative paths. No historical aliases or local research
+    are included. Every required implementation must exist; missing files fail.
+    """
+    root = Path(repository).resolve()
+    files = {path.relative_to(root).as_posix(): path
+             for path in source_paths(root / "src", production_source_modules()).values()}
+    for path in sorted((root / "tests").rglob("*.py")):
+        if "support" in path.relative_to(root / "tests").parts or path.name == "__init__.py":
+            name = path.relative_to(root).as_posix()
+            files[name] = _repository_file(root, name)
+    for item in selected:
+        if isinstance(item, Path):
+            try:
+                name = item.resolve().relative_to(root).as_posix()
+            except ValueError as error:
+                raise ValueError("outside-workspace source: " + str(item)) from error
+        else:
+            name = item
+        files[name] = _repository_file(root, name)
+    return files
+
+
+def verify_current_source_hashes(repository, manifest):
+    """Reject incomplete, missing, escaped or changed current source manifests."""
+    root = Path(repository).resolve()
+    files = current_source_files(root, manifest)
+    if not set(files).issubset(manifest):
+        raise ValueError("incomplete current source manifest")
+    for name, expected in manifest.items():
+        if not isinstance(expected, str) or not re.fullmatch(r"[0-9a-f]{64}", expected):
+            raise ValueError("invalid source hash: " + name)
+        if hashlib.sha256(files[name].read_bytes()).hexdigest() != expected:
+            raise ValueError("runtime source mismatch: " + name)

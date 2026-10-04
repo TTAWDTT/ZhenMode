@@ -1,5 +1,0 @@
-# Restricted scalar affine probe; Python 3.12.14.
-# Existing project dependencies; no solver configuration or old lock changes.
-numpy==2.5.3
-pytest==9.1.1
-ruff==0.16.8

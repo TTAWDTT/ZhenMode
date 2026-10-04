@@ -1,27 +1,29 @@
 # 开发与测试
 
-正式包和研究包独立安装。执行完整开发测试时：
+需要 Python 3.12+。仅安装正式包即可收集和执行仓库测试：
 
 ```sh
+python -m pip install -r requirements.txt
 python -m pip install -e ".[dev]"
-python -m pip install -e ./research
 python -m ruff check .
 python scripts/make_synthetic_bathymetry.py
 python -m pytest tests/ -q
 python -m ocean_solver mms
 ```
 
-测试使用当前 checkout。`tests/fd`、`tests/runtime`、`tests/data` 对应正式模型；`tests/baselines`、`tests/evaluation`、`tests/experiments` 对应接入契约；研究测试使用独立原型和参考计算。必要参考解与负例不能改成对同一实现的回调验证。
+`requirements.txt` 固定 CPU 开发验证环境；`pyproject.toml` 定义可安装包的依赖和入口。GPU 环境见 [GPU 运行](gpu_runtime_zh.md)。
 
-Windows 本地有界调用使用单 CPU、180 秒、4 GiB：
+`tests/fd`、`tests/runtime`、`tests/data` 对应模型与输入；`tests/baselines`、`tests/evaluation`、`tests/experiments` 对应接入、评分与实验契约。`test_optin_*` 覆盖正式包提供的可选接口，不代表默认生产方案。独立解析解、NumPy 参考计算和故障负例保留在测试中，不能改为同一实现的回调自证。研究专属测试位于本地研究工作区，不参与正式收集。
+
+Windows 本地有界调用使用单 CPU、180 秒、4 GiB，可按明确范围拆分：
 
 ```powershell
-python scripts/run_bounded_research_tests.py tests/infrastructure tests/experiments tests/evaluation -q
-python scripts/run_bounded_research_tests.py --module ocean_solver mms
+python scripts/run_bounded_tests.py tests/infrastructure tests/experiments tests/evaluation -q
+python scripts/run_bounded_tests.py --module ocean_solver mms
 ```
 
-真实数据前后回归可使用 `scripts/capture_global_regression.py` 和 `scripts/compare_global_regression.py`。计划、输入、来源、数值记录与报告保存在各次运行目录；输出拒绝覆盖。全局强迫可显式选择缓存目录，读取器在调用时解析该目录。
+全球回归使用 `scripts/capture_global_regression.py` 和 `scripts/compare_global_regression.py`，完整输入、源码身份、数值记录和结果保存在独立运行目录，拒绝覆盖。重启小例使用 `scripts/verify_production_restart_cpu.py --output <新目录>`。超时或资源不足属于失败或未完成，不能推断数值通过。
 
-自动 CI 运行 Ruff，完整测试和 MMS 通过 `workflow_dispatch` 的 `full_validation` 手动启动。测试通过说明对应契约有效；长期气候效果和同等误差下的成本优势需要独立实验。
+自动 CI 只运行 Ruff。完整测试和 MMS 通过 `workflow_dispatch` 的 `full_validation` 人工启动。数值测试通过不等于长期气候效果或公平加速结论。
 
-内部调用直接引用所属模块：网格类型与垂向厚度在 `geometry.types`，纯网格操作在 `geometry.mesh`，评分及报告在 `evaluation`。`runtime.entry` 只保留启动入口；需要控制依赖的运行使用 `runtime.application.default_services()` 和 `dataclasses.replace` 注入 `RunServices`，不从 CLI 模块导入内部函数。旧区域 SSH/SLA 下载器及历史气候评分脚本已删除；重现其历史操作应检出相应 Git 提交。
+内部调用直接引用所属模块；结构见 [方法与架构](production_architecture_zh.md)。旧源码的运行和严格 checkpoint 需检出对应 Git 提交，不通过路径别名或替换 hash 绕过身份检查。

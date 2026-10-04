@@ -15,7 +15,7 @@ Usage: zhenmode COMMAND [ARGS]
   mms         Run the independent manufactured-solution operator checks
 
 Each command provides --help. Plain model flags also select the production FD
-method. Research methods require the separate zhenmode-research distribution.
+method. Local research prototypes are outside the installed production workflow.
 """
 
 

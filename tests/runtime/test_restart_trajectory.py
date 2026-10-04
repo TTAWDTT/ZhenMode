@@ -12,7 +12,7 @@ from ocean_solver.forcing.seasonal import interp_monthly_field_jit, interp_seaso
 from ocean_solver.io.restart import load_restart, make_restart_contract, save_restart
 from ocean_solver.provenance.sources import source_paths
 from ocean_solver.state.types import JaxStateG
-from tests.support.material.reference_geometry import _fixture
+from tests.support.fd.reference_geometry import _fixture
 from tests.support.paths import REPOSITORY_ROOT
 
 

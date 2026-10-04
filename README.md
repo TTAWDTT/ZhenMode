@@ -6,7 +6,7 @@ ZhenMode 是基于 JAX 的全球有限差分海洋模式，原名 ocean-solver�
 
 ## 安装与运行
 
-需要 Python 3.12+：
+需要 Python 3.12+；固定 CPU 开发环境可先安装根目录 `requirements.txt`：
 
 ```sh
 python -m pip install ".[dev]"
@@ -45,7 +45,6 @@ zhenmode sweep expand experiments/zhenmode/global-045deg/sweep-vertical-mixing.y
 | `src/ocean_solver/` | 正式模型、实验执行、对照接入与统一评价 |
 | `cases/`, `configs/`, `experiments/`, `evaluation/` | 问题定义、预设、实验与评价协议 |
 | `tests/`, `scripts/`, `docs/` | 测试、维护工具、方法和使用说明 |
-| `research/` | 独立安装的研究原型和必要参考计算 |
 | `data/`, `outputs/`, `results/`, `logs/` | 本地输入与运行产物，默认忽略 |
 
-参见 [正式方法](docs/production_architecture_zh.md)、[工程职责](docs/research_engineering_architecture_zh.md)、[开发与测试](docs/development.md)。研究包不作为正式模型的运行依赖。
+参见 [方法与架构](docs/production_architecture_zh.md)、[开发与测试](docs/development.md)。研究原型、私人监控和运行产物仅保留在本地，不参与安装或正式测试。

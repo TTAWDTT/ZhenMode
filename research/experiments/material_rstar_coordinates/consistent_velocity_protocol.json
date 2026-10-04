@@ -1,9 +1,0 @@
-{
-  "scope": "single root correction of the physical weak pressure velocity Riesz map after full-node vertical accuracy failure; not a complete momentum integrator",
-  "evidence": "lumped velocity mass exactly matches the independently integrated hat force functional, but nodal acceleration vertical9/17/33 L2 ratios2.82176 and2.82510 fail the unchanged second-order gate; endpoints remain included, horizontal projected ratios3.97693 and3.99422 pass",
-  "contract": "same completed-bed piecewise-linear velocity field as transport, kinetic energy rho0/2 times velocity transpose times actual consistent hat mass times velocity; pressure acceleration is minus actual consistent mass inverse of exactly the same potential-transport transpose, no pressure formula or force clipping change",
-  "comparison": "retain old lumped work/rest16 PASS and old lumped point-order FAIL as different declared kinetic contracts; consistent pressure power must be recomputed with the consistent kinetic gradient, never relabeled old diagonal work",
-  "gates": "same original-domain16 controls, independent NumPy five-point weak rates and independently assembled five-point kinetic matrix; unchanged physical rest64eps including the old smaller floor, pressure work64eps of absolute contributing matrix terms, full-node vertical and horizontal ratios3.3..4.5 against analytic hydrostatics, local kinetic derivative/AD and dry sentinels",
-  "boundaries": "no arbitrary moving-mass kinetic budget, advective momentum, Coriolis/drag/viscosity, fast-slow temporal coupling, bounded tracer, source/dependent operator migration, PDE MMS or restart/factory promotion established; topology and state changes remain explicit; actual1degree and century qualification pending",
-  "provenance": "freeze this contract before execution, retain original fail and source snapshots; CPU first then actual CUDA using identical sources, all generated raw arrays and runtime saved"
-}
