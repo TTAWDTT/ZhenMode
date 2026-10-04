@@ -111,8 +111,8 @@ def test_internal_diffusion_source_is_detected_not_declared(monkeypatch):
     _, params, state, _ = _setup(heat=0.)
     original = solver_horizontal._horizontal_tracer_diffusion
     injected_rate = 1e-6
-    import zhenmode.model.solver.dynamics.tendencies as processes
-    monkeypatch.setattr(processes, "_horizontal_tracer_diffusion",
+    # The linear half-step owns this binding after the integration move.
+    monkeypatch.setattr(solver_integration, "_horizontal_tracer_diffusion",
                         lambda tracer, configured: original(tracer, configured) + injected_rate * configured.wet_mask_z)
     _, ledger = make_budget_step(params)(state)
     volume = np.asarray(params.dx_2d)[:, :, None] * params.dy * np.asarray(params.dz_node) * np.asarray(params.wet_mask_z)
