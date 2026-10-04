@@ -109,7 +109,7 @@ def test_invalid_negative_infinite_metric_cannot_be_hidden_by_maximum_accumulati
 def test_healthy_actual_candidate_matches_unmonitored_steps_and_ledgers():
     from ocean_solver.audit.schema import accumulate_budget
     from ocean_solver.audit.stages import make_budget_step
-    from tests.support.material.process_time import _candidate
+    from tests.support.fd.process_time import _candidate
 
     _, (_, initialize, _, params, _) = _candidate(use_scan=True)
     step = make_budget_step(params)
@@ -155,7 +155,7 @@ def test_transport_limits_reject_unaudited_or_invalid_contracts(limits, audited)
 
 @pytest.mark.parametrize("fault", [None, "lon", "wet_mask_z", "T_initial", "S_initial"])
 def test_real_initial_fixture_fails_closed_on_wrong_geometry_shape_or_nan(tmp_path, fault):
-    from tests.support.material.process_time import _candidate
+    from tests.support.fd.process_time import _candidate
 
     grid, _ = _candidate()
     values = {"lon": grid.lon, "lat": grid.lat, "z": grid.z, "wet_mask_z": grid.wet_mask_3d,

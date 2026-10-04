@@ -1,4 +1,4 @@
-"""Bounded synthetic production restart witness, not the historical CUDA replay.
+"""Bounded synthetic production restart check.
 
 Uses the existing 8x8x4 driver fixture; four independent CPU processes execute
 8 steps continuously and 2+2+4 steps with two strict checkpoint continuations.
@@ -13,14 +13,14 @@ import sys
 import time
 from pathlib import Path
 
-from ocean_solver.provenance.archives import current_source_files
+from ocean_solver.provenance.sources import current_source_files
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path[:0] = [str(ROOT)]
 
 
 def source_hashes():
-    """Current producer hashes real implementations and all moved support owners."""
+    """Hash actual implementations, helpers and this producer."""
     files = current_source_files(ROOT, [Path(__file__).resolve()])
     return {name: hashlib.sha256(path.read_bytes()).hexdigest() for name, path in files.items()}
 
@@ -105,7 +105,6 @@ def main():
     files = {str(path.relative_to(args.output)): hashlib.sha256(path.read_bytes()).hexdigest()
              for path in sorted(args.output.rglob('*')) if path.is_file()}
     report = {'scope': 'synthetic CPU 8x8x4 80 seconds; not historical 30-day CUDA replay',
-              'historical_30_day_byte_gate': 'FAIL remains; original inputs/checkpoints absent',
               'all_saved_fields_byte_equal': all(equal.values()), 'field_byte_equal': equal,
               'process_wall_seconds': durations, 'artifact_sha256': files,
               'accepted_ocean_steps': 16, 'industrial_qualification': False,

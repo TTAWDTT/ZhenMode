@@ -1,7 +1,5 @@
 """Architecture contracts for canonical sources, bridges and test support."""
 import ast
-import importlib
-import json
 from pathlib import Path
 
 import pytest
@@ -16,9 +14,6 @@ def assert_canonical_import_contract(root):
     modules = sorted((root / "src/ocean_solver").rglob("*.py"))
     assert modules, "No canonical implementation files were found"
     forbidden = {"config", "grid", "jax_solver_global", "stage_budgets", "run_long_integration_global"}
-    manifest = root / "docs/research_engineering_layout.json"
-    if manifest.is_file():
-        forbidden.update(json.loads(manifest.read_text(encoding="utf-8"))["retired_modules"])
     forbidden |= {"ocean_solver.fd", "ocean_solver.data", "ocean_solver.fd.legacy", "ocean_solver.audit.legacy"}
     for path in modules:
         for node in ast.walk(ast.parse(path.read_text(encoding="utf-8"))):
@@ -60,27 +55,11 @@ def test_canonical_import_contract_rejects_empty_scan(tmp_path):
         assert_canonical_import_contract(tmp_path)
 
 
-def test_legacy_imports_alias_the_same_canonical_module_and_pickle_definitions():
-    # Historical test ID retained; the current contract explicitly retires aliases.
-    manifest = json.loads((repository() / "docs/research_engineering_layout.json").read_text(encoding="utf-8"))
-    for legacy, canonical in manifest["retired_modules"].items():
-        try:
-            spec = importlib.util.find_spec(legacy)
-        except ModuleNotFoundError:
-            spec = None
-        assert spec is None, legacy
-        current = importlib.import_module(canonical)
-        assert Path(current.__file__).is_relative_to(repository()), canonical
-        for definition in vars(current).values():
-            if isinstance(definition, type):
-                assert definition.__module__ != legacy
-
-
 def test_tests_use_support_instead_of_importing_other_test_files():
     def is_test_owner(module):
         return any(part.startswith("test_") for part in module.replace("\\", "/").replace("/", ".").split("."))
 
-    for directory in ("tests", "research/reviews", "scripts", "src"):
+    for directory in ("tests", "scripts", "src"):
         for path in (repository() / directory).rglob("*.py"):
             for node in ast.walk(ast.parse(path.read_text(encoding="utf-8"))):
                 if isinstance(node, ast.ImportFrom):

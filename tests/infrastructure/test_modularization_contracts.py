@@ -55,7 +55,7 @@ def test_pickle_and_jax_pytree_keep_legacy_type_and_field_order():
 def test_new_execution_module_change_rejects_restart_and_missing_source_fails(tmp_path, module):
     from ocean_solver.io.restart import load_restart, make_restart_contract, save_restart
     from ocean_solver.provenance.sources import solver_source_modules, source_paths
-    from tests.support.material.reference_geometry import _fixture
+    from tests.support.fd.reference_geometry import _fixture
 
     source = REPOSITORY_ROOT / 'src'
     copied = tmp_path / 'source'

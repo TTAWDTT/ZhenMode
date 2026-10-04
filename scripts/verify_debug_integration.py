@@ -8,7 +8,7 @@ import time
 from dataclasses import asdict, replace
 from pathlib import Path
 
-from ocean_solver.provenance.archives import current_source_files
+from ocean_solver.provenance.sources import current_source_files
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
@@ -37,7 +37,7 @@ from ocean_solver.model.factory import make_solver_global
 
 
 def source_hashes():
-    """Current producer hashes real implementations and all moved support owners."""
+    """Hash actual implementations, helpers and this producer."""
     files = current_source_files(ROOT, [Path(__file__).resolve()])
     return {name: hashlib.sha256(path.read_bytes()).hexdigest() for name, path in files.items()}
 

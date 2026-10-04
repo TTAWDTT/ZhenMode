@@ -1,9 +1,0 @@
-{
-  "scope": "isolated original-nodal rstar metric kernels before material API integration",
-  "motivation": "current top-only moving inventory has finite negative top weights on actual1degree trajectories despite positive total water depth;256 diagnostic accepts one original refusal then stops geometrically",
-  "controls": "geometry retains invalid negative weights; actual surface and bed endpoints and total thickness identity; reuse original donor/minmod transport with relative grid flux in multicolumn spherical wet/staircase domain; affine physical-density resting pressure on varying reference depths; zeroeta reference equivalence; quadratic density coordinate-MMS; actual-distance vertical diffusion and full coordinate-metric negative adjoint",
-  "gates": "float64 dimensional64eps floors for algebraic identities, constant content, resting affine pressure and independent face-square diffusion work; quadratic coordinate-MMS ratio3.5..4.5 at both successive double refinements; dry sentinel independence; no positive diffusion work above64eps matrix norm floor",
-  "negative_control": "using moving nodal values with old coordinate gradient must generate a false force; horizontal slope correction with only the old divergence is assessed independently against the full negative adjoint rather than assumed dissipative",
-  "retention": "preserve failing tests/logs and kernel hashes; do not replace actual1degree negative geometry or original128 matrix qualification with these local controls",
-  "integration_boundary": "research only, no production or material_top imports this module; no new-state restart, tracer stage order, full3D moving-face advection, full momentum energy, ice, century, climate, forecast or industrial ranking qualification"
-}

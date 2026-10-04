@@ -20,11 +20,9 @@ env/
 *~
 
 # Data & results (never commit large files).
-# Keep only the result-directory guide; run artifacts stay local.
 /data/
 /outputs/
-results/*
-!results/README.md
+/results/
 logs/
 checkpoints/
 *.pt
@@ -39,11 +37,6 @@ papers/
 # Downloaded reference material (journal HTML/TXT; mostly anti-bot 404 pages)
 refs/
 
-# Do not vendor third-party ocean-model source/docs; keep only our synthesis.
-research/literature/*
-!research/literature/README.md
-!research/literature/comparative_notes.md
-
 # OS artifacts
 .DS_Store
 Thumbs.db
@@ -57,10 +50,10 @@ nul
 *.log
 .env
 
-# Dashboard (secrets must never be committed)
-dashboard/secret.json
-dashboard/node_modules/
-dashboard/curve_cache/
+# Local research, private monitoring and agent configuration
+/research/
+/dashboard/
+/.claude/
 
 # Deep-heat campaign scratch artifacts (2026-09 ~ 09-13). The scripts were
 # removed in the 2026-09-19 cleanup; these patterns catch leftover outputs.

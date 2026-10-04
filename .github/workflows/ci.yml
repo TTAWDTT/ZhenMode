@@ -33,11 +33,9 @@ jobs:
           cache: pip
       # JAX's PyPI wheel is CPU-only on Linux, which is all the suite needs.
       - run: pip install -e ".[dev]"
-      # Research is a separate distribution, installed only for its retained tests.
-      - run: pip install -e ./research
       # No real ETOPO/WOA/wind data in CI, so generate the synthetic
       # stand-in first: without it the grid/bathymetry tests skip
-      # themselves (tests/test_resolution.py::requires_bathy).
+      # themselves (tests/data/test_resolution.py::requires_bathy).
       - run: python scripts/make_synthetic_bathymetry.py
       - run: python -m pytest tests/ -q
       # Self-contained manufactured-solution check on the FD operators; no

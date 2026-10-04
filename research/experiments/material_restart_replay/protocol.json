@@ -1,9 +1,0 @@
-{
-  "scope": "cross-process replay of the already completed repaired actual 2degree 30day material trajectory, not rstar integration or new climate qualification",
-  "baseline": "results/legacy_repair/m1_momentum_flux_C_20260929T152700Z/actual",
-  "segments": "original continuous day0..30; fresh CUDA process loads original strict day7 checkpoint and runs to day15; a second fresh CUDA process loads the new strict day15 checkpoint and runs to day30",
-  "identity": "regenerate strict contract from original grid, actual parameter arrays, raw input manifest, original protocol and current factory; verify all original sources and input hashes before and after; same CUDA device/JAX/backend; do not rewrite baseline or migrate its state",
-  "gates": "every accepted step must pass all original factory validity gates and keep the original128 cap; stop at first rejection and archive attempted state/checks/budget with all-field rollback assertion; new checkpoints must load strictly and preserve all six fields, counters, cumulative arrays and every history byte; final day30 all fields, all cumulative budgets, histories, counters and elapsed time must be byte-identical to the original continuous strict checkpoint",
-  "retention": "output directories must be new; freeze runner/protocol/source hashes and preserve failures; no coefficient, tolerance, physics, dtype or timestep changes",
-  "not_qualified": "this fixedJanuary2023 noice 2degree replay does not prove 1degree, seasonal/century, independent climate, forecast, complete momentum energy, gradients or industrial ranking"
-}

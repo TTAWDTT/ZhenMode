@@ -26,7 +26,7 @@ dev = [
 ocean-solver = "ocean_solver.runtime.entry:main"
 zhenmode = "ocean_solver.cli:main"
 
-# Production uses canonical package imports; research is separately installed.
+# Install only the production package.
 [tool.setuptools]
 package-dir = { "" = "src", "scripts" = "scripts" }
 
@@ -49,8 +49,8 @@ extend-exclude = [
     "build",        # generated wheel build tree, never authoritative source
     "results",       # local run outputs
     "data/**", "logs/**", "checkpoints/**",   # local run I/O
-    "dashboard/node_modules",
-    "research",       # separately installed research implementations
+    "dashboard",
+    "research",       # local research workspace
     "scratch",        # local probes and legacy artifacts
     ".claude",        # local agent worktrees / session metadata
 ]
@@ -67,4 +67,4 @@ ignore = [
 "scripts/*.py" = ["E402"]
 
 [tool.ruff.lint.isort]
-known-first-party = ['ocean_solver', 'zhenmode_research', 'tests', 'research', 'scripts', 'dashboard']
+known-first-party = ['ocean_solver', 'tests', 'scripts']

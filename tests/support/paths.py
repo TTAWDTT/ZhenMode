@@ -1,4 +1,4 @@
-"""One repository anchor for moved tests and independent research fixtures."""
+"""Repository anchor for production tests and their independent fixtures."""
 from pathlib import Path
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
