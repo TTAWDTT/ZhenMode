@@ -10,8 +10,7 @@ from zhenmode.model.inputs.sources import BATHYMETRY_ENV_VAR, ETOPO_FILENAME
 from zhenmode.model.solver.geometry.grid import _remap_etopo_area, build_global_grid
 
 
-def read_etopo_global(filepath, resolution=1.0, lat_max=85.0,
-                      remap="legacy", *, dataset_factory):
+def _read_etopo_global(filepath, resolution=1.0, lat_max=85.0, remap="legacy"):
     """Read global ETOPO2022 bathymetry, downsampled to target resolution.
 
     ETOPO is 0.1° (3600×1800).  ``legacy`` averages integer 0.1° blocks and
@@ -28,6 +27,7 @@ def read_etopo_global(filepath, resolution=1.0, lat_max=85.0,
     # nodes without netCDF4, and letting a leftover twin shadow the real relief
     # is silent wrong-data: the two paths return the same shape, so nothing
     # downstream (including every dimension test) can tell which one ran.
+    dataset_factory = Dataset
     npz_path = filepath + ".npz"
     have_nc = os.path.exists(filepath)
     have_npz = os.path.exists(npz_path)
@@ -98,11 +98,6 @@ try:
 except ImportError:
     Dataset = None
 
-def _read_etopo_global(filepath, resolution=1.0, lat_max=85.0, remap="legacy"):
-    return read_etopo_global(
-        filepath, resolution=resolution, lat_max=lat_max,
-        remap=remap, dataset_factory=Dataset,
-    )
 
 def make_global_grid(grid_config, bathymetry_file, smooth_passes=0,
                      min_depth=None, remap="legacy"):

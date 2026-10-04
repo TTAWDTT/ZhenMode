@@ -322,38 +322,3 @@ def _fill_ocean_horizontal(field, wet_mask, max_pass=50):
         if np.isfinite(gm):
             f = np.where(still_nan, gm, f)
     return f
-
-
-# ── Smoke test ───────────────────────────────────────────────────────
-
-
-
-if __name__ == "__main__":
-    from zhenmode.model.config import DEFAULT_CONFIG, GlobalGridConfig
-    from zhenmode.model.inputs.bathymetry import make_global_grid
-
-    grid = make_global_grid(GlobalGridConfig(), DEFAULT_CONFIG.bathymetry_file)
-
-    print("=== WOA2023 Initial Fields ===")
-    print(f"Solver grid: {grid.nx} x {grid.ny} x {grid.nz}")
-    print(f"  lon: [{grid.lon[0]:.1f}, {grid.lon[-1]:.1f}]E")
-    print(f"  lat: [{grid.lat[0]:.1f}, {grid.lat[-1]:.1f}]N")
-    print(f"  z:   {grid.z}")
-    print()
-
-    T_init, S_init = get_initial_fields(grid)
-
-    print(f"T_init shape: {T_init.shape}")
-    print(f"T_init range: [{T_init.min():.2f}, {T_init.max():.2f}] degC")
-    print(f"S_init shape: {S_init.shape}")
-    print(f"S_init range: [{S_init.min():.2f}, {S_init.max():.2f}] PSU")
-    print(f"T_init NaN count: {np.isnan(T_init).sum()}")
-    print(f"S_init NaN count: {np.isnan(S_init).sum()}")
-    print()
-
-    ic = grid.nx // 2
-    jc = grid.ny // 2
-    print(f"Profile at center ({grid.lon[ic]:.1f}E, {grid.lat[jc]:.1f}N):")
-    print(f"  {'z(m)':>8s}  {'T(C)':>8s}  {'S(PSU)':>8s}")
-    for k in range(grid.nz):
-        print(f"  {grid.z[k]:8.0f}  {T_init[ic, jc, k]:8.2f}  {S_init[ic, jc, k]:8.2f}")

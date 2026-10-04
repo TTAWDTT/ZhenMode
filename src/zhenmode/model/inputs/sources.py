@@ -27,8 +27,8 @@ def _default_bathymetry_file() -> str:
     """Locate the ETOPO2022 bathymetry file without machine-specific paths.
 
     Order: the ``OCEAN_SOLVER_BATHYMETRY`` environment variable, then
-    ``<repo>/data/``, then the repository root. The returned path is not
-    guaranteed to exist — grid._read_etopo_global raises a clear error naming
+    the repository root, then ``<repo>/data/``. The returned path is not
+    guaranteed to exist — inputs.bathymetry._read_etopo_global raises a clear error naming
     this env var when the file is missing (the test suite uses that to skip).
     """
     env = os.environ.get(BATHYMETRY_ENV_VAR)

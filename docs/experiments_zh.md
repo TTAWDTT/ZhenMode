@@ -1,6 +1,6 @@
 # Case、预设、实验、扫参与运行记录
 
-工程入口围绕唯一的既有全球 FD 生产方法。实验管理包 `zhenmode.execution` 只负责配置展开、输入接线和运行记录，数值执行仍进入正式 `runtime.entry → application → model.factory → timestepping`。MOM6 使用独立 baseline 构建与执行契约，但共享物理问题必须引用同一 case，并核验实际输入和网格。
+工程入口围绕唯一的既有全球 FD 生产方法。实验管理包 `zhenmode.execution` 只负责配置展开、输入接线和运行记录，数值执行仍进入正式 `runtime.run → solver.factory → solver.timestepping.step`。MOM6 使用独立 baseline 构建与执行契约，但共享物理问题必须引用同一 case，并核验实际输入和网格。
 
 安装后，从仓库根目录可执行：
 
