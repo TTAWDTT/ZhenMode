@@ -142,6 +142,62 @@ def test_source_receipt_mismatch_rejected(bundle):
         run_bundle(bundle)
 
 
+@pytest.mark.parametrize("prefix", ["zhenmode", "ocean_solver"])
+@pytest.mark.parametrize("legacy_layout", [False, True])
+@pytest.mark.parametrize("tamper", [False, True])
+def test_prefixed_output_receipt_preserves_hash_checks(bundle, prefix, legacy_layout, tamper):
+    path, _, arrays, manifest = bundle
+    if legacy_layout:
+        # Independent pre-migration producer envelope; do not rewrite old paths or hashes.
+        manifest["source_identity"] = {
+            "runtime/application.py": "a"*64,
+            "dynamics/processes.py": "b"*64,
+            "provenance/sources.py": "c"*64,
+        }
+        manifest["executed_source_files"] = {
+            name: manifest["source_identity"][name]
+            for name in ("runtime/application.py", "dynamics/processes.py")
+        }
+        manifest["method"] = "ocean_solver"
+    receipt = {"source_sha256": {f"{prefix}/{name}": sha
+                                 for name, sha in manifest["source_identity"].items()}}
+    if tamper:
+        receipt["source_sha256"][f"{prefix}/provenance/sources.py"] = "0"*64
+    manifest["result_source_identity"] = receipt
+    arrays["source_identity_json"] = np.array(json.dumps(receipt))
+    np.savez(path/"result.npz", **arrays)
+    manifest["result_sha256"] = file_digest(path/"result.npz")
+    (path/"manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
+    if tamper:
+        with pytest.raises(ValueError, match="embedded source identity differs"):
+            run_bundle(bundle)
+        return
+    report = run_bundle(bundle)
+    assert report["effect"]["global"]["raw_rmse"] == 0
+    assert report["provenance"]["execution_source_identity"] == manifest["source_identity"]
+    assert report["comparability"]["status"] == (
+        "limited" if legacy_layout else "eligible_for_contract_comparison")
+    assert ("known_producer_source_registry_version" in
+            report["comparability"]["missing_identity"]) == legacy_layout
+    assert compare([report, copy.deepcopy(report)])["comparable"] is (not legacy_layout)
+
+
+@pytest.mark.parametrize("conflicting_hash", [False, True])
+def test_mixed_prefix_receipt_cannot_hide_duplicate_source(bundle, conflicting_hash):
+    path, _, arrays, manifest = bundle
+    receipt = {"source_sha256": {f"zhenmode/{name}": sha
+                                 for name, sha in manifest["source_identity"].items()}}
+    receipt["source_sha256"]["ocean_solver/provenance/sources.py"] = (
+        "0"*64 if conflicting_hash else manifest["source_identity"]["provenance/sources.py"])
+    manifest["result_source_identity"] = receipt
+    arrays["source_identity_json"] = np.array(json.dumps(receipt))
+    np.savez(path/"result.npz", **arrays)
+    manifest["result_sha256"] = file_digest(path/"result.npz")
+    (path/"manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
+    with pytest.raises(ValueError, match="ambiguous embedded source"):
+        run_bundle(bundle)
+
+
 @pytest.mark.parametrize("field,value", [("wet_mask", np.full((4, 4), np.nan)),
                                         ("wet_mask", np.full((4, 4), 2.)),
                                         ("max_u_peak", np.array(np.nan))])

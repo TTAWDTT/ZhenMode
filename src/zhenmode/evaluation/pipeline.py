@@ -134,9 +134,13 @@ def _verify_execution_artifact(path, manifest):
                     missing.append("actual_output_embedded_source_receipt")
         embedded = embedded_receipt.get("all_package_files")
         if embedded is None and isinstance(embedded_receipt.get("source_sha256"), dict):
-            embedded = {name.removeprefix("zhenmode/"): sha
-                        for name, sha in embedded_receipt["source_sha256"].items()
-                        if name.startswith("zhenmode/")}
+            embedded = {}
+            for name, sha in embedded_receipt["source_sha256"].items():
+                if name.startswith(("zhenmode/", "ocean_solver/")):
+                    relative = name.split("/", 1)[1]
+                    if relative in embedded:
+                        raise ValueError(f"ambiguous embedded source receipt: {relative}")
+                    embedded[relative] = sha
         if embedded is None:
             missing.append("result_embedded_source_identity")
         elif embedded != full:
