@@ -33,9 +33,11 @@ class RunPaths:
 
 def prepare_output_paths(args):
     tag = args.tag or f"g{int(args.days)}d"
+    out_npz = os.path.join(args.out_dir, f"global_{tag}.npz")
+    if os.path.exists(out_npz):
+        raise FileExistsError(f"result already exists: {out_npz}; select a new --tag or --out-dir")
     os.makedirs(args.out_dir, exist_ok=True)
     os.makedirs(args.log_dir, exist_ok=True)
-    out_npz = os.path.join(args.out_dir, f"global_{tag}.npz")
     out_log = os.path.join(args.log_dir, f"global_{tag}.log")
     sys.stdout = _Tee(out_log)
     print(f"# {time.strftime('%Y-%m-%d %H:%M:%S')}  {sys.executable}")
@@ -162,86 +164,87 @@ def write_final_records(
                 accepted_step=counters.cur,
                 elapsed_seconds=counters.diverged_at * 86400.0,
             )
-    np.savez_compressed(
-        paths.out_npz,
-        **history_arrays(history),
-        **diagnostics_to_arrays(history.snap_budget),
-        **{name: np.asarray(value) for name, value in ledger.history.items()},
-        budget_audit_enabled=args.budget_audit,
-        ledger_metric_names=np.asarray(METRIC_NAMES),
-        ledger_stage_names=np.asarray(STAGE_NAMES),
-        ledger_source_names=np.asarray(SOURCE_NAMES),
-        ledger_process_names=np.asarray(NONLINEAR_PROCESS_NAMES),
-        ledger_inventory_kind="fixed_reference_node_water_minus_ice_latent; eta_displacement_separate",
-        ledger_boundary_kind="internal_advection_reference_boundary_diagnostic_not_external_netboundaryflux",
-        physical_budget_closed=False,
-        external_netboundaryflux_status="not_measured_do_not_substitute_numerical_residual",
-        actual_moving_volume_inventory_status="not_implemented_in_this_legacy_driver",
-        effective_config_identity_json=json.dumps(
-            fingerprint(context.solver.params), sort_keys=True
-        ),
-        grid_identity_json=json.dumps(fingerprint(context.inputs.grid), sort_keys=True),
-        ledger_heat_residual_W_m2=float(ledger.totals["budget_residual"][0])
-        / (
-            float(
-                np.sum(
-                    np.asarray(context.inputs.grid.dx_2d)
-                    * context.inputs.grid.dy
-                    * context.inputs.ocean
+    with open(paths.out_npz, "xb") as stream:
+        np.savez_compressed(
+            stream,
+            **history_arrays(history),
+            **diagnostics_to_arrays(history.snap_budget),
+            **{name: np.asarray(value) for name, value in ledger.history.items()},
+            budget_audit_enabled=args.budget_audit,
+            ledger_metric_names=np.asarray(METRIC_NAMES),
+            ledger_stage_names=np.asarray(STAGE_NAMES),
+            ledger_source_names=np.asarray(SOURCE_NAMES),
+            ledger_process_names=np.asarray(NONLINEAR_PROCESS_NAMES),
+            ledger_inventory_kind="fixed_reference_node_water_minus_ice_latent; eta_displacement_separate",
+            ledger_boundary_kind="internal_advection_reference_boundary_diagnostic_not_external_netboundaryflux",
+            physical_budget_closed=False,
+            external_netboundaryflux_status="not_measured_do_not_substitute_numerical_residual",
+            actual_moving_volume_inventory_status="not_implemented_in_this_legacy_driver",
+            effective_config_identity_json=json.dumps(
+                fingerprint(context.solver.params), sort_keys=True
+            ),
+            grid_identity_json=json.dumps(fingerprint(context.inputs.grid), sort_keys=True),
+            ledger_heat_residual_W_m2=float(ledger.totals["budget_residual"][0])
+            / (
+                float(
+                    np.sum(
+                        np.asarray(context.inputs.grid.dx_2d)
+                        * context.inputs.grid.dy
+                        * context.inputs.ocean
+                    )
                 )
+                * counters.cur
+                * args.dt
             )
-            * counters.cur
-            * args.dt
-        )
-        if args.budget_audit and counters.cur
-        else np.nan,
-        ledger_absolute_heat_residual_W_m2=float(ledger.totals["absolute_budget_residual"][0])
-        / (
-            float(
-                np.sum(
-                    np.asarray(context.inputs.grid.dx_2d)
-                    * context.inputs.grid.dy
-                    * context.inputs.ocean
+            if args.budget_audit and counters.cur
+            else np.nan,
+            ledger_absolute_heat_residual_W_m2=float(ledger.totals["absolute_budget_residual"][0])
+            / (
+                float(
+                    np.sum(
+                        np.asarray(context.inputs.grid.dx_2d)
+                        * context.inputs.grid.dy
+                        * context.inputs.ocean
+                    )
                 )
+                * counters.cur
+                * args.dt
             )
-            * counters.cur
-            * args.dt
+            if args.budget_audit and counters.cur
+            else np.nan,
+            final_state_identity_json=json.dumps(_state_identity(outcome.state), sort_keys=True),
+            forcing_provenance_json=json.dumps(context.forcing.forcing_provenance, sort_keys=True),
+            source_identity_json=json.dumps(context.forcing.source_identity, sort_keys=True),
+            execution_identity_json=json.dumps(context.forcing.execution_identity, sort_keys=True),
+            forcing_phase_seconds=counters.cur * args.dt % (360 * 86400),
+            elapsed_seconds=counters.cur * args.dt,
+            diagnostics_schema_version=4,
+            monitor_schema_version=1,
+            salt_content_units="kg",
+            T_init=context.inputs.T_init,
+            S_init=context.inputs.S_init,
+            wet_mask=np.asarray(context.inputs.grid.wet_mask),
+            lat=np.asarray(context.inputs.grid.lat),
+            lon=np.asarray(context.inputs.grid.lon),
+            z=np.asarray(context.inputs.grid.z),
+            verdict=outcome.verdict,
+            diverged_at=counters.diverged_at if counters.diverged_at is not None else -1.0,
+            monotonic_drift=outcome.monotonic_drift,
+            amplitude_bounded=outcome.amplitude_bounded,
+            max_u_peak=counters.max_u_peak,
+            max_velocity_peak=counters.max_velocity_peak,
+            max_eta_peak=counters.max_eta_peak,
+            requested_steps=requested_steps,
+            accepted_steps=counters.cur,
+            attempted_steps=counters.attempted_steps,
+            first_rejected_step=counters.first_rejected_step,
+            failure_code=counters.failure_code,
+            rejected_state_path=counters.rejected_path,
+            duration_complete=counters.cur == requested_steps and (not counters.failure_code),
+            n_3d_snaps=counters.n_3d_snaps,
+            three_d_dir=paths.three_d_dir or "",
+            config=str(config_dict),
         )
-        if args.budget_audit and counters.cur
-        else np.nan,
-        final_state_identity_json=json.dumps(_state_identity(outcome.state), sort_keys=True),
-        forcing_provenance_json=json.dumps(context.forcing.forcing_provenance, sort_keys=True),
-        source_identity_json=json.dumps(context.forcing.source_identity, sort_keys=True),
-        execution_identity_json=json.dumps(context.forcing.execution_identity, sort_keys=True),
-        forcing_phase_seconds=counters.cur * args.dt % (360 * 86400),
-        elapsed_seconds=counters.cur * args.dt,
-        diagnostics_schema_version=4,
-        monitor_schema_version=1,
-        salt_content_units="kg",
-        T_init=context.inputs.T_init,
-        S_init=context.inputs.S_init,
-        wet_mask=np.asarray(context.inputs.grid.wet_mask),
-        lat=np.asarray(context.inputs.grid.lat),
-        lon=np.asarray(context.inputs.grid.lon),
-        z=np.asarray(context.inputs.grid.z),
-        verdict=outcome.verdict,
-        diverged_at=counters.diverged_at if counters.diverged_at is not None else -1.0,
-        monotonic_drift=outcome.monotonic_drift,
-        amplitude_bounded=outcome.amplitude_bounded,
-        max_u_peak=counters.max_u_peak,
-        max_velocity_peak=counters.max_velocity_peak,
-        max_eta_peak=counters.max_eta_peak,
-        requested_steps=requested_steps,
-        accepted_steps=counters.cur,
-        attempted_steps=counters.attempted_steps,
-        first_rejected_step=counters.first_rejected_step,
-        failure_code=counters.failure_code,
-        rejected_state_path=counters.rejected_path,
-        duration_complete=counters.cur == requested_steps and (not counters.failure_code),
-        n_3d_snaps=counters.n_3d_snaps,
-        three_d_dir=paths.three_d_dir or "",
-        config=str(config_dict),
-    )
     print(f"  saved {paths.out_npz}")
     if paths.three_d_dir:
         print(f"  3D snapshots: {counters.n_3d_snaps} files in {paths.three_d_dir}")
