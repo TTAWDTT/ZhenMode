@@ -91,9 +91,13 @@ def interp_monthly_field_jit(field_stack, day, blend_days=5.0):
     prev_i = (mi - 1) % 12
     nxt_i = (mi + 1) % 12
     half = blend_days / 2.0
-    w_after = jnp.clip((mpos - (month_len - half)) / blend_days, 0.0, 1.0)
-    w_before = jnp.clip((half - mpos) / blend_days, 0.0, 1.0)
+    # Zero selects the current month, including month/year boundaries. Use a
+    # safe denominator even when width is traced; where alone cannot undo NaN.
+    denominator = jnp.where(blend_days > 0.0, blend_days, 1.0)
+    w_after = jnp.clip((mpos - (month_len - half)) / denominator, 0.0, 1.0)
+    w_before = jnp.clip((half - mpos) / denominator, 0.0, 1.0)
     cur = field_stack[mi]
     nxt = field_stack[nxt_i]
     prev = field_stack[prev_i]
-    return (1.0 - w_after - w_before) * cur + w_after * nxt + w_before * prev
+    blended = (1.0 - w_after - w_before) * cur + w_after * nxt + w_before * prev
+    return jnp.where(blend_days > 0.0, blended, cur)
