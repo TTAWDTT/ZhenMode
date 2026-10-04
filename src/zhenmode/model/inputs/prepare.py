@@ -25,8 +25,7 @@ from zhenmode.model.solver.numerics.backend import np
 def _input_files(args, *, seasonal=None, air=None, default_config=DEFAULT_CONFIG):
     """Selected loader paths, including WOA's documented npz precedence."""
     import zhenmode.model.inputs.bathymetry as grid_module
-    import zhenmode.model.inputs.forcing.reanalysis as air_reanalysis
-    import zhenmode.model.inputs.forcing.reanalysis as wind_reanalysis
+    import zhenmode.model.inputs.forcing.reanalysis as reanalysis
     import zhenmode.model.inputs.initial_conditions as woa_data
 
     bathy = Path(default_config.bathymetry_file)
@@ -44,7 +43,7 @@ def _input_files(args, *, seasonal=None, air=None, default_config=DEFAULT_CONFIG
     year = args.wind_year if seasonal else int(args.month[:4])
     for month in months:
         index = (year - 1948) * 12 + month
-        paths[f"wind_{index}"] = Path(wind_reanalysis.WIND_CACHE_DIR) / f"monthly_mean_{index}.npz"
+        paths[f"wind_{index}"] = Path(reanalysis.WIND_CACHE_DIR) / f"monthly_mean_{index}.npz"
     if not args.no_bulk_flux and args.lambda_bulk * args.bulk_lambda_mult > 0:
         if air is None:
             air = (
@@ -55,7 +54,7 @@ def _input_files(args, *, seasonal=None, air=None, default_config=DEFAULT_CONFIG
                 else "zonal"
             )
         if air in {"monthly", "annual"}:
-            paths["air"] = Path(air_reanalysis.AIR_CACHE_DIR) / f"air_2m_{air}_{args.wind_year:04d}.npz"
+            paths["air"] = Path(reanalysis.AIR_CACHE_DIR) / f"air_2m_{air}_{args.wind_year:04d}.npz"
     return paths
 
 

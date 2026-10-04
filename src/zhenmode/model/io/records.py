@@ -16,7 +16,19 @@ from zhenmode.model.runtime.cli import ETA_BLOWUP_M, MAX_U_BOUND
 from zhenmode.model.solver.numerics.backend import jax, jnp, np
 from zhenmode.provenance.sources import sha256_file as file_sha256
 
-HISTORY_ATTRIBUTES = {'days': 'snap_days', 'max_u': 'snap_maxu', 'max_velocity': 'snap_maxvelocity', 'max_T': 'snap_maxT', 'max_eta': 'snap_maxeta', 'ssh_std': 'snap_sshstd', 'ke': 'snap_ke', 'eta': 'snap_eta', 'T_top': 'snap_T_top', 'ice_top': 'snap_ice_top', 'ice_fraction': 'snap_ice_fraction'}
+HISTORY_ATTRIBUTES = {
+    "days": "snap_days",
+    "max_u": "snap_maxu",
+    "max_velocity": "snap_maxvelocity",
+    "max_T": "snap_maxT",
+    "max_eta": "snap_maxeta",
+    "ssh_std": "snap_sshstd",
+    "ke": "snap_ke",
+    "eta": "snap_eta",
+    "T_top": "snap_T_top",
+    "ice_top": "snap_ice_top",
+    "ice_fraction": "snap_ice_fraction",
+}
 
 
 def history_arrays(history):

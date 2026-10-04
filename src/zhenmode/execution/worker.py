@@ -109,8 +109,7 @@ def synthetic_services(expanded, directory, grid_receipt):
 
 
 def bind_external_inputs(manifest):
-    import zhenmode.model.inputs.forcing.reanalysis as air
-    import zhenmode.model.inputs.forcing.reanalysis as wind
+    import zhenmode.model.inputs.forcing.reanalysis as reanalysis
     import zhenmode.model.inputs.initial_conditions as climatology
     from zhenmode.model.config import DEFAULT_CONFIG
 
@@ -121,9 +120,9 @@ def bind_external_inputs(manifest):
     wind_paths = [Path(value["resolved_path"]) for key, value in data.items() if key.startswith("wind-")]
     if len({path.parent for path in wind_paths}) != 1:
         raise ValueError("all selected wind caches must share one cache directory")
-    wind.WIND_CACHE_DIR = str(wind_paths[0].parent)
+    reanalysis.WIND_CACHE_DIR = str(wind_paths[0].parent)
     if "air" in data:
-        air.AIR_CACHE_DIR = str(Path(data["air"]["resolved_path"]).parent)
+        reanalysis.AIR_CACHE_DIR = str(Path(data["air"]["resolved_path"]).parent)
     return config
 
 
