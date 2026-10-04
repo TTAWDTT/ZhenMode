@@ -1,7 +1,9 @@
 """Export shared model forcing to MOM6 A-grid NetCDF inputs."""
+import os
 from argparse import ArgumentParser
 from dataclasses import replace
 from pathlib import Path
+from tempfile import TemporaryDirectory
 
 import numpy as np
 from netCDF4 import Dataset
@@ -57,44 +59,48 @@ def export_forcing(args):
     }[args.kind]
     out.parent.mkdir(parents=True, exist_ok=True)
     month0 = (args.year - 1948) * 12
-    with Dataset(out, 'w') as dataset:
-        dataset.createDimension('time', None)
-        dataset.createDimension('y', grid.ny)
-        dataset.createDimension('x', grid.nx)
-        time = dataset.createVariable('time', 'f8', ('time',))
-        time.units = 'days since 0001-01-01 00:00:00'
-        time.calendar = 'julian'
-        for name, values, units in (('x', grid.lon, 'degrees_east'),
-                                    ('y', grid.lat, 'degrees_north')):
-            coordinate = dataset.createVariable(name, 'f8', (name,))
-            coordinate.units = units
-            coordinate[:] = values
-        variables = []
-        for name, units, description in fields:
-            variable = dataset.createVariable(name, 'f4', ('time', 'y', 'x'))
-            variable.units = units
-            variable.long_name = description
-            variables.append(variable)
-        for month in range(12):
+    with TemporaryDirectory(prefix=f'.{out.name}.', dir=out.parent) as directory:
+        temporary = Path(directory) / out.name
+        with Dataset(temporary, 'w') as dataset:
+            dataset.createDimension('time', None)
+            dataset.createDimension('y', grid.ny)
+            dataset.createDimension('x', grid.nx)
+            time = dataset.createVariable('time', 'f8', ('time',))
+            time.units = 'days since 0001-01-01 00:00:00'
+            time.calendar = 'julian'
+            for name, values, units in (('x', grid.lon, 'degrees_east'),
+                                        ('y', grid.lat, 'degrees_north')):
+                coordinate = dataset.createVariable(name, 'f8', (name,))
+                coordinate.units = units
+                coordinate[:] = values
+            variables = []
+            for name, units, description in fields:
+                variable = dataset.createVariable(name, 'f4', ('time', 'y', 'x'))
+                variable.units = units
+                variable.long_name = description
+                variables.append(variable)
+            for month in range(12):
+                if args.kind == 'wind':
+                    values = real_wind_forcing(grid, month_idx=month0 + month,
+                                               taper_cells=args.taper_cells)
+                elif args.kind == 'air-temperature':
+                    values = (air[month],)
+                else:
+                    values = (args.lambda_bulk * (air[month] - sst),)
+                for variable, value in zip(variables, values, strict=True):
+                    variable[month, :, :] = np.ascontiguousarray(value.T, dtype=np.float32)
+                time[month] = 1.0 + 30.0 * month + 15.0
             if args.kind == 'wind':
-                values = real_wind_forcing(grid, month_idx=month0 + month,
-                                           taper_cells=args.taper_cells)
+                dataset.title = 'NCEP R1 10m wind converted to bulk wind stress'
+                dataset.ocean_solver_month_mapping = f'{month0}..{month0 + 11}'
+                dataset.taper_cells = args.taper_cells
             elif args.kind == 'air-temperature':
-                values = (air[month],)
+                dataset.title = 'NCEP R1 monthly 2m air temperature'
             else:
-                values = (args.lambda_bulk * (air[month] - sst),)
-            for variable, value in zip(variables, values, strict=True):
-                variable[month, :, :] = np.ascontiguousarray(value.T, dtype=np.float32)
-            time[month] = 1.0 + 30.0 * month + 15.0
-        if args.kind == 'wind':
-            dataset.title = 'NCEP R1 10m wind converted to bulk wind stress'
-            dataset.ocean_solver_month_mapping = f'{month0}..{month0 + 11}'
-            dataset.taper_cells = args.taper_cells
-        elif args.kind == 'air-temperature':
-            dataset.title = 'NCEP R1 monthly 2m air temperature'
-        else:
-            dataset.title = 'Ocean_solver-like bulk sensible heat proxy'
-            dataset.lambda_bulk_w_m2_k = args.lambda_bulk
+                dataset.title = 'Ocean_solver-like bulk sensible heat proxy'
+                dataset.lambda_bulk_w_m2_k = args.lambda_bulk
+        # Publish the closed file atomically without replacing a competing output.
+        os.link(temporary, out)
     return {'path': str(out), 'kind': args.kind, 'records': 12,
             'nx': grid.nx, 'ny': grid.ny,
             'time_mapping': '16 + 30 * month days, julian calendar',

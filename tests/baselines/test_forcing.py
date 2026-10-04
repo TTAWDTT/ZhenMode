@@ -81,3 +81,49 @@ def test_export_requires_explicit_input_and_output(missing):
     with pytest.raises(SystemExit) as error:
         parser.parse_args(args)
     assert error.value.code == 2
+
+
+@pytest.mark.parametrize('failed_month', [900, 905, 911])
+def test_failed_wind_export_leaves_no_output_and_can_retry(tmp_path, monkeypatch, failed_month):
+    grid = all_wet_grid(nx=4, ny=3, nz=4)
+    out = tmp_path / 'forcing.nc'
+    monkeypatch.setattr(forcing, 'make_global_grid', lambda *a, **kw: grid)
+
+    def unavailable(grid, month_idx, taper_cells):
+        if month_idx == failed_month:
+            raise OSError('monthly input unavailable')
+        return np.full((4, 3), month_idx), np.zeros((4, 3))
+
+    monkeypatch.setattr(forcing, 'real_wind_forcing', unavailable)
+    with pytest.raises(OSError, match='monthly input unavailable'):
+        forcing.export_forcing(arguments(tmp_path, 'wind'))
+    assert not out.exists()
+    assert list(tmp_path.iterdir()) == []
+
+    def available(grid, month_idx, taper_cells):
+        assert not out.exists(), 'incomplete output became visible'
+        return np.full((4, 3), month_idx), np.zeros((4, 3))
+
+    monkeypatch.setattr(forcing, 'real_wind_forcing', available)
+    forcing.export_forcing(arguments(tmp_path, 'wind'))
+    assert list(tmp_path.iterdir()) == [out]
+    with netCDF4.Dataset(out) as dataset:
+        np.testing.assert_array_equal(dataset['time'][:], np.arange(12) * 30 + 16)
+        np.testing.assert_array_equal(dataset['STRESS_X'][:, 0, 0], np.arange(900, 912))
+
+
+def test_export_does_not_replace_output_created_during_loading(tmp_path, monkeypatch):
+    grid = all_wet_grid(nx=4, ny=3, nz=4)
+    out = tmp_path / 'forcing.nc'
+    monkeypatch.setattr(forcing, 'make_global_grid', lambda *a, **kw: grid)
+
+    def concurrent_output(grid, month_idx, taper_cells):
+        if month_idx == 911:
+            out.write_bytes(b'other completed export')
+        return np.zeros((4, 3)), np.zeros((4, 3))
+
+    monkeypatch.setattr(forcing, 'real_wind_forcing', concurrent_output)
+    with pytest.raises(FileExistsError):
+        forcing.export_forcing(arguments(tmp_path, 'wind'))
+    assert out.read_bytes() == b'other completed export'
+    assert list(tmp_path.iterdir()) == [out]
