@@ -6,7 +6,10 @@ import pytest
 from tests.support.paths import REPOSITORY_ROOT
 
 PACKAGE = REPOSITORY_ROOT / "src" / "zhenmode" / "model"
-PURE_OWNERS = ("solver/numerics", "solver/geometry", "solver/dynamics", "solver/physics", "solver/timestepping")
+PURE_OWNERS = (
+    "solver/numerics", "solver/geometry", "solver/dynamics", "solver/physics",
+    "solver/timestepping", "solver/state.py",
+)
 OLD_OWNER_PREFIXES = (
     "zhenmode.fd.", "zhenmode.data.", "zhenmode.configuration",
     "zhenmode.model.geometry.grid", "zhenmode.provenance.restart",
@@ -63,8 +66,10 @@ def test_formal_owners_do_not_import_research_or_old_implementation_paths():
 
 
 def test_array_owners_do_not_load_external_inputs():
-    paths = [path for owner in PURE_OWNERS for path in (PACKAGE / owner).rglob("*.py")]
-    assert all((PACKAGE / owner).is_dir() for owner in PURE_OWNERS)
+    owners = [PACKAGE / owner for owner in PURE_OWNERS]
+    assert all(owner.is_dir() or owner.is_file() for owner in owners)
+    paths = [path for owner in owners
+             for path in ([owner] if owner.is_file() else owner.rglob("*.py"))]
     assert paths
     failures = {str(path.relative_to(PACKAGE)): forbidden_dependencies(
         path.read_text(encoding="utf-8"), array_owner=True) for path in paths}
