@@ -124,7 +124,8 @@ def main(argv=None):
     fetch.add_argument('--destination', required=True)
     fetch.add_argument('--year', type=int, required=True)
     native = commands.add_parser('prepare-forcing', help='prepare an explicit native rectangular JRA window; never launch an ocean')
-    native.add_argument('--acquisition', required=True)
+    native.add_argument('--acquisition', action='append', required=True,
+                        help='repeat for adjacent verified annual shards, including the end-window instant')
     native.add_argument('--grid', required=True, help='NPZ: lon/lat, lon_bounds/lat_bounds, area, wet_mask')
     native.add_argument('--runoff-area', required=True, help='JSON: path, variable, bytes, sha256 of original discharge grid-cell area')
     native.add_argument('--output', required=True)

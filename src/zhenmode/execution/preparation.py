@@ -8,6 +8,7 @@ This prepares data only; it never certifies an ocean or climate experiment.
 from __future__ import annotations
 
 import json
+from contextlib import ExitStack
 from pathlib import Path
 
 import netCDF4
@@ -113,6 +114,65 @@ def route_discharge(values, source_area, target_area, routing):
     return mass.reshape(target_area.shape) / target_area
 
 
+def _original_field(stack, acquisitions, received, field, data_kind):
+    """Open checked annual shards and index records without loading 3D arrays."""
+    variable, units, cadence, interpretation, height = FIELDS[field]
+    datasets, records, identities = [], [], []
+    expected_methods = ('area: mean time: point' if interpretation == 'instant' else {
+        'friver':'area: mean where sea time: mean',
+        'licalvf':'area: time: mean where ice_sheet'}.get(variable, 'area: time: mean'))
+    for acquisition, receipt in zip(acquisitions, received):
+        identity = receipt['files'][variable]
+        original = acquisition.parent/identity['filename']
+        if original.stat().st_size != identity['bytes'] or sha256_file(original) != identity['sha256']:
+            raise ValueError('original forcing identity changed: '+variable)
+        ds = stack.enter_context(netCDF4.Dataset(original))
+        var = ds[variable]
+        if (ds.source_id != 'MRI-JRA55-do-1-4-0' or var.units not in units
+                or var.dimensions != ('time','lat','lon')
+                or getattr(ds,'data_kind','observed') != data_kind
+                or ds['lon'].units != 'degrees_east' or ds['lat'].units != 'degrees_north'
+                or not str(getattr(ds,'license','')).strip()):
+            raise ValueError('original forcing metadata mismatch: '+variable)
+        if height is not None and (ds['height'].size != 1 or ds['height'].units != 'm'
+                                   or ds['height'][:].item() != height):
+            raise ValueError('original state height must be 10m')
+        if var.cell_methods != expected_methods:
+            raise ValueError('unrecognized original spatial/temporal semantics: '+variable)
+        if datasets:
+            for axis in ('lon','lat'):
+                if not np.array_equal(ds[axis][:],datasets[0][axis][:]):
+                    raise ValueError('annual shard coordinates disagree: '+variable)
+                if interpretation == 'mean' and not np.array_equal(
+                        ds[ds[axis].bounds][:], datasets[0][datasets[0][axis].bounds][:]):
+                    raise ValueError('annual shard cell bounds disagree: '+variable)
+            if ds.license != datasets[0].license:
+                raise ValueError('annual shard licenses disagree: '+variable)
+        datasets.append(ds)
+        raw_times = ds['time'][:]
+        raw_bounds = ds[ds['time'].bounds][:] if interpretation == 'mean' else None
+        if np.ma.is_masked(raw_times) or (raw_bounds is not None and np.ma.is_masked(raw_bounds)):
+            raise ValueError('missing original time or bounds: '+variable)
+        times = _seconds(raw_times,ds['time'])
+        bounds = _seconds(raw_bounds,ds['time']) if raw_bounds is not None else None
+        if (times.ndim != 1 or not len(times) or not np.isfinite(times).all()
+                or (len(times)>1 and not np.allclose(np.diff(times),cadence,rtol=0,atol=1e-6))):
+            raise ValueError('invalid original record cadence: '+variable)
+        if bounds is not None and (bounds.shape != (len(times),2) or not np.isfinite(bounds).all()
+                or not np.allclose(bounds[:,1]-bounds[:,0],cadence,rtol=0,atol=1e-6)
+                or not np.allclose(bounds.mean(axis=1),times,rtol=0,atol=1e-6)):
+            raise ValueError('invalid original mean bounds: '+variable)
+        records.extend((float(time), ds, index, None if bounds is None else bounds[index], identity['sha256'])
+                       for index,time in enumerate(times))
+        identities.append(identity | {'acquisition_sha256':sha256_file(acquisition)})
+    records.sort(key=lambda record:record[0])
+    times = np.array([record[0] for record in records])
+    if len(times)>1 and not np.allclose(np.diff(times),cadence,rtol=0,atol=1e-6):
+        raise ValueError('annual shards overlap or leave a time gap: '+variable)
+    bounds = np.array([record[3] for record in records]) if interpretation == 'mean' else None
+    return datasets[0], times, bounds, records, identities
+
+
 def prepare_jra_window(
     acquisition,
     grid_path,
@@ -128,17 +188,21 @@ def prepare_jra_window(
     Grid NPZ: lon, lat, lon_bounds, lat_bounds, area, wet_mask; arrays use lon,lat.
     Caller bounds numerical preprocessing to one CPU / 180s / 4GiB.
     """
-    acquisition, grid_path, runoff_area_path = map(Path, (acquisition, grid_path, runoff_area_path))
+    acquisitions = [Path(path) for path in acquisition] if isinstance(acquisition,(list,tuple)) else [Path(acquisition)]
+    if not acquisitions or len(set(path.resolve() for path in acquisitions)) != len(acquisitions):
+        raise ValueError('nonempty distinct annual acquisition receipts required')
+    grid_path, runoff_area_path = map(Path,(grid_path,runoff_area_path))
     start, end = float(start), float(end)
-    received = load_json(acquisition)
-    if (
-        received["product"] != "JRA55-do"
-        or received["version"] != "1.4.0"
-        or received["execution_status"] != "completed"
-        or set(received["files"]) != {item[0] for item in FIELDS.values()}
-        or received["verified"] != {name: row["sha256"] for name, row in received["files"].items()}
-    ):
-        raise ValueError("complete original v1.4.0 publisher-identity receipt required")
+    received = [load_json(path) for path in acquisitions]
+    for receipt in received:
+        if (receipt['product'] != 'JRA55-do' or receipt['version'] != '1.4.0'
+                or receipt['execution_status'] != 'completed'
+                or set(receipt['files']) != {item[0] for item in FIELDS.values()}
+                or receipt['verified'] != {name:row['sha256'] for name,row in receipt['files'].items()}):
+            raise ValueError('complete original v1.4.0 publisher-identity receipt required')
+    data_kinds = {receipt.get('data_kind','observed') for receipt in received}
+    if len(data_kinds) != 1:
+        raise ValueError('annual acquisition data roles disagree')
     if not np.isfinite([start, end]).all() or start >= end:
         raise ValueError("invalid preprocessing interval")
     with np.load(grid_path, allow_pickle=False) as source:
@@ -197,7 +261,7 @@ def prepare_jra_window(
         "schema_version": 1,
         "product": "JRA55-do",
         "version": "1.4.0",
-        "data_kind": received.get("data_kind", "observed"),
+        "data_kind": received[0].get("data_kind", "observed"),
         "files": [],
     }
     report = {
@@ -206,7 +270,8 @@ def prepare_jra_window(
         "executed_reader_mapping_sha256": sha256_file(
             Path(__file__).parents[1] / 'model/inputs/forcing/jra55.py'),
         "numerical_environment": {"numpy": np.__version__, "netCDF4": netCDF4.__version__},
-        "acquisition_sha256": sha256_file(acquisition),
+        "acquisition_sha256": sha256_file(acquisitions[0]) if len(acquisitions)==1 else
+                              [sha256_file(path) for path in acquisitions],
         "grid_sha256": sha256_file(grid_path),
         "native_area_validation": {"radius_m": 6371000.0,
             "definition": "R2_delta_longitude_delta_sine_latitude",
@@ -225,50 +290,12 @@ def prepare_jra_window(
     }
     try:
         for field, (variable, units, _, interpretation, height) in FIELDS.items():
-            identity = received["files"][variable]
-            original = acquisition.parent / identity["filename"]
-            if (
-                original.stat().st_size != identity["bytes"]
-                or sha256_file(original) != identity["sha256"]
-            ):
-                raise ValueError("original forcing identity changed: " + variable)
-            with netCDF4.Dataset(original) as ds:
+            with ExitStack() as stack:
+                ds,times,bounds,records,identities = _original_field(
+                    stack,acquisitions,received,field,result['data_kind'])
+                identity = identities[0]
                 var = ds[variable]
-                if (
-                    ds.source_id != "MRI-JRA55-do-1-4-0"
-                    or var.units not in units
-                    or var.dimensions != ("time", "lat", "lon")
-                    or getattr(ds, "data_kind", "observed") != result["data_kind"]
-                    or ds['lon'].units != 'degrees_east'
-                    or ds['lat'].units != 'degrees_north'
-                    or not str(getattr(ds, 'license', '')).strip()
-                ):
-                    raise ValueError("original forcing metadata mismatch: " + variable)
-                if height is not None and (
-                    ds["height"].size != 1
-                    or ds["height"].units != "m"
-                    or ds["height"][:].item() != height
-                ):
-                    raise ValueError("original state height must be 10m")
-                times = _seconds(ds["time"][:], ds["time"])
-                bounds = (
-                    _seconds(ds[ds["time"].bounds][:], ds["time"])
-                    if interpretation == "mean"
-                    else None
-                )
                 methods = var.cell_methods
-                expected_methods = (
-                    "area: mean time: point"
-                    if interpretation == "instant"
-                    else {
-                        "friver": "area: mean where sea time: mean",
-                        "licalvf": "area: time: mean where ice_sheet",
-                    }.get(variable, "area: time: mean")
-                )
-                if methods != expected_methods:
-                    raise ValueError(
-                        "unrecognized original spatial/temporal semantics: " + variable
-                    )
                 if interpretation == "instant":
                     begin = max(0, np.searchsorted(times, start, side="right") - 1)
                     finish = min(len(times), np.searchsorted(times, end, side="left") + 1)
@@ -335,7 +362,8 @@ def prepare_jra_window(
                         "time: point" if interpretation == "instant" else "time: mean"
                     )
                     for index, original_index in enumerate(indices):
-                        values = var[original_index]
+                        _, source_dataset, source_index, _, source_sha256 = records[original_index]
+                        values = source_dataset[variable][source_index]
                         mapped = (
                             route_discharge(values, runoff_area, area.T, routing)
                             if terrestrial
@@ -351,6 +379,8 @@ def prepare_jra_window(
                             integrals.append(
                                 {
                                     "index": int(original_index),
+                                    "source_index": int(source_index),
+                                    "source_sha256": source_sha256,
                                     "original_kg_s": before,
                                     "native_kg_s": after,
                                 }
@@ -367,8 +397,13 @@ def prepare_jra_window(
                 )
                 report["fields"][field] = {
                     "original_sha256": identity["sha256"],
+                    "original_sources": identities,
+                    "source_url_semantics": "first_original_all_shards_in_original_sources",
                     "original_cell_methods": methods,
                     "indices": indices.tolist(),
+                    "selected_records": [{"time_seconds":records[index][0],
+                        "source_index":records[index][2], "source_sha256":records[index][4]}
+                        for index in indices],
                     "mapping": "coastal_mass"
                     if terrestrial
                     else "bilinear_state"

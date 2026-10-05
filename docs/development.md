@@ -34,6 +34,7 @@ MOM6系数对照在Linux中使用`python scripts/check_mom6_coefficients.py --so
 原始强迫通过`zhenmode benchmark fetch-jra --catalog ESGF_COMPLETE_FILE_RESPONSE.json --destination LOCAL_DATA --year 1958`获取。catalog须包含全部响应记录；冻结source_id、20190429发布、11个变量及发布方SHA256。中断保留partial和failed收据；续传核查HTTP区间，最终仍核对完整文件SHA256，已有损坏输入不覆盖。每次调用保存独立append-only尝试日志，当前状态文件只是索引。完成下载仅代表原始字节可用，还需原生空间映射、时间窗口和机制核验。原始JRA许可及引用要求保留在输入资料中，不能用其他版本替代。
 
 原生矩形窗口：`zhenmode benchmark prepare-forcing --acquisition LOCAL_DATA/acquisition-1958.json --grid NATIVE_GEOMETRY.npz --runoff-area ORIGINAL_AREA.json --output NEW_INPUT --start 1958-01-01T00:00:00 --end 1958-01-01T06:00:00`。外层仍须单CPU/180秒/4GiB限制。网格声明`lon/lat/lon_bounds/lat_bounds/area/wet_mask`，可加原地形推导的`land_fraction`；面积引用声明path/variable/bytes/sha256。天气双线性、均通量球面面积、排水沿岸kg/s映射分别记录，不提供tripolar映射或缺测归一化。原始面积按作者说明采用整格面积，不能直接照抄有误的CMOR `cell_measures`标签。输出不授予海洋执行资格；制造数据仍为manufactured，错误单位、许可缺失、远距离非零排水和改写原始字节拒绝。
+窗口末端超出该年最后一条天气记录时，重复`--acquisition LOCAL_NEXT_YEAR/acquisition-1959.json`接入下一年的插值端点。每份收据仍须完整核验v1.4.0的11份原始文件；时间记录显式合并排序，不在内存拼接完整三维场。源grid、bounds、许可和资料角色须一致，重叠、断档和缺端点拒绝；逐记录保留来源hash/索引。跨年制造窗口仅证明插值与区间积分，不算年度模式运行。原生area独立按bounds和6371km半径核对，Ctrl-C保存failed收据。
 
 潜热表达式检查：`python scripts/check_mom6_latent_energy.py --examples PINNED_CHECKOUT --fms-build BUILD/build/fms --output NEW_ENERGY_CHECK`。编译实际暂存的SIS2/MOM/耦合库存源码片段，独立SI期望值不由被测实现生成；此检查不执行完整耦合或大气—冰顶部预算。
 该检查还核对固定`SIS2/src/ice_model.F90`并执行其实际内部能量→W/m²导出语句及新耦合传递调用，采用不同的SIS/MOM单位缩放。单格交换仅提供恒等存储，不验证全球重分配；不能把`Ice%flux_lh`再除一次潜热换算因子，它在公开边界已经是W/m²。

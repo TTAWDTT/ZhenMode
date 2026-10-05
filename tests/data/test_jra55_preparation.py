@@ -52,13 +52,14 @@ def test_unresolved_island_routes_locally_without_loosening_distance_limit():
             maximum_distance_m=1000,land_fraction=np.full((2,2),1.01))
 
 
-def original_fixture(tmp_path):
+def original_fixture(tmp_path, *, epoch=None, instant_count=3, mean_count=2):
     lon,lat=np.array([90.,270.]),np.array([-45.,45.])
     area=np.full((2,2),np.pi*6371000**2)
     bounds={'lon':np.array([[0.,180.],[180.,360.]]),'lat':np.array([[-90.,0.],[0.,90.]])}
     grid=tmp_path/'native-grid.npz'
     np.savez(grid,lon=lon,lat=lat,lon_bounds=bounds['lon'],lat_bounds=bounds['lat'],area=area,wet_mask=np.array([[1,1],[0,1]]))
-    epoch=netCDF4.date2num(netCDF4.num2date(0,'seconds since 1958-01-01',calendar='proleptic_gregorian'),TIME_UNITS,calendar='proleptic_gregorian')
+    if epoch is None:
+        epoch=netCDF4.date2num(netCDF4.num2date(0,'seconds since 1958-01-01',calendar='proleptic_gregorian'),TIME_UNITS,calendar='proleptic_gregorian')
     acquisition={'product':'JRA55-do','version':'1.4.0','execution_status':'completed',
                  'data_kind':'manufactured','files':{},'verified':{}}
     def axes(ds):
@@ -75,7 +76,7 @@ def original_fixture(tmp_path):
             ds.createVariable(v.bounds,'f8',(axis,'bounds'))[:]=bounds[axis]
     for _,(variable,units,cadence,interpretation,height) in FIELDS.items():
         path=tmp_path/(variable+'-original.nc')
-        count=3 if interpretation=='instant' else 1 if cadence==86400 else 2
+        count=instant_count if interpretation=='instant' else 1 if cadence==86400 else mean_count
         with netCDF4.Dataset(path,'w') as ds:
             axes(ds)
             ds.createDimension('time',count)
@@ -206,3 +207,73 @@ def test_interrupted_preprocessing_keeps_failed_receipt(tmp_path, monkeypatch):
     receipt = json.loads((tmp_path/'interrupted/preparation.json').read_text())
     assert receipt['status'] == 'failed' and receipt['reason_type'] == 'KeyboardInterrupt'
     assert receipt['reason'] == 'KeyboardInterrupt'
+
+
+def annual_fixture(tmp_path, *, offset=0):
+    first, second = tmp_path/'1958', tmp_path/'1959'
+    first.mkdir()
+    second.mkdir()
+    epoch = float(netCDF4.date2num(netCDF4.num2date(0,'seconds since 1958-12-31',
+                   calendar='gregorian'),TIME_UNITS,calendar='gregorian'))
+    previous,grid,area,_ = original_fixture(first,epoch=epoch,instant_count=8,mean_count=8)
+    following,_,_,_ = original_fixture(second,epoch=epoch+86400+offset)
+    for receipt, wind, radiation in [(previous,3,100),(following,9,400)]:
+        identity = json.loads(receipt.read_text())
+        for variable, value in [('uas',wind),('rsds',radiation)]:
+            source = receipt.parent/identity['files'][variable]['filename']
+            with netCDF4.Dataset(source,'a') as ds:
+                ds[variable][:] = value
+            identity['files'][variable]['bytes'] = source.stat().st_size
+            identity['files'][variable]['sha256'] = sha256_file(source)
+            identity['verified'][variable] = sha256_file(source)
+        receipt.write_text(json.dumps(identity))
+    return previous,following,grid,area,epoch
+
+
+def test_adjacent_annual_shards_interpolate_and_integrate_across_new_year(tmp_path):
+    previous,following,grid,area,epoch = annual_fixture(tmp_path)
+    output = tmp_path/'cross-year'
+    report = prepare_jra_window([following,previous],grid,area,output,
+        start=epoch+21*3600,end=epoch+27*3600,maximum_routing_distance_m=20e6)
+    assert report['status'] == 'prepared_and_reader_verified'
+    assert len(report['fields']['wind_u']['original_sources']) == 2
+    with np.load(output/'grid.npz') as native:
+        reader = JRA55Forcing(output/'forcing.json',lon=native['lon'],lat=native['lat'],
+            wet_mask=native['wet_mask'],start_seconds=epoch+21*3600,end_seconds=epoch+27*3600)
+    sample = reader.sample(epoch+23*3600,interval_end_seconds=epoch+25*3600)
+    np.testing.assert_allclose(sample.wind_u[reader.wet],7)
+    np.testing.assert_allclose(sample.shortwave_down[reader.wet],250)
+    assert reader.data_kind == 'manufactured'
+    assert not report['execution_ready'] and not report['climate_qualification']
+
+
+@pytest.mark.parametrize('offset',[-10800,10800])
+def test_overlapping_or_gapped_annual_shards_are_rejected(tmp_path,offset):
+    previous,following,grid,area,epoch = annual_fixture(tmp_path,offset=offset)
+    with pytest.raises(ValueError,match='overlap or leave a time gap'):
+        prepare_jra_window([previous,following],grid,area,tmp_path/'rejected',
+            start=epoch+21*3600,end=epoch+27*3600,maximum_routing_distance_m=20e6)
+    assert json.loads((tmp_path/'rejected/preparation.json').read_text())['status']=='failed'
+
+
+def test_missing_next_year_instant_is_not_extrapolated(tmp_path):
+    previous,_,grid,area,epoch = annual_fixture(tmp_path)
+    with pytest.raises(ValueError,match='instant cadence/gap/duplicate'):
+        prepare_jra_window(previous,grid,area,tmp_path/'uncovered',
+            start=epoch+21*3600,end=epoch+24*3600,maximum_routing_distance_m=20e6)
+    assert json.loads((tmp_path/'uncovered/preparation.json').read_text())['status']=='failed'
+
+
+def test_repeated_acquisition_cli_prepares_cross_year_window(tmp_path, capsys):
+    from zhenmode.execution.benchmark import main
+
+    previous,following,grid,area,_ = annual_fixture(tmp_path)
+    output = tmp_path/'cli-cross-year'
+    assert main(['prepare-forcing','--acquisition',str(previous),'--acquisition',str(following),
+        '--grid',str(grid),'--runoff-area',str(area),'--output',str(output),
+        '--start','1958-12-31T21:00:00','--end','1959-01-01T03:00:00',
+        '--maximum-routing-distance-m','20000000']) == 0
+    assert json.loads(capsys.readouterr().out)['status'] == 'prepared_and_reader_verified'
+    receipt = json.loads((output/'preparation.json').read_text())
+    assert len(receipt['acquisition_sha256']) == 2
+    assert len(receipt['fields']['wind_u']['selected_records']) == 3
