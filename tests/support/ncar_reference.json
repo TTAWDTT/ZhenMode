@@ -1,0 +1,103 @@
+{
+  "source_url": "https://github.com/HiroyukiTsujino/JRA55-do/blob/30c8e1a84386c1db8a436d980826b884b2075089/anl/diagflux/src/bulk-ncar.F90",
+  "source_sha256": "3552594f3f7235a5bf14822eb968e3bc6481d426bef361a404f53ed7644297ef",
+  "driver_sha256": "8b3765f4ee4cae48e6e8c6b9a26189f573a8564f7bc5b878428df70ef0361d8e",
+  "compiler": "GNU Fortran 13.3.0 Ubuntu 24.04",
+  "flags": "-cpp -O0; no OGCM_LYCOEF or CALHEIGHT",
+  "scope": "Coefficients only, recovered from reference fluxes using its own density; not equality of complete surface flux policies.",
+  "resource_limits": {
+    "cpus": 1,
+    "seconds_per_command": 180,
+    "virtual_memory_MiB": 4096
+  },
+  "cases": [
+    {
+      "theta_air_k": 303.15,
+      "humidity_air": 0.012,
+      "temperature_surface_k": 298.15,
+      "humidity_surface": 0.019368285901732934,
+      "scalar_wind": 5.0,
+      "cd": 0.000893271347510496,
+      "ch": 0.0005097194010959563,
+      "ce": 0.0009345243512234272,
+      "reference_latent": -97.24437072783164
+    },
+    {
+      "theta_air_k": 283.15,
+      "humidity_air": 0.004,
+      "temperature_surface_k": 291.15,
+      "humidity_surface": 0.01255840894980125,
+      "scalar_wind": 8.0,
+      "cd": 0.0012948668671571993,
+      "ch": 0.0013417553642985467,
+      "ce": 0.0014313839786804802,
+      "reference_latent": -299.75842904252573
+    },
+    {
+      "theta_air_k": 293.15,
+      "humidity_air": 0.013,
+      "temperature_surface_k": 294.15,
+      "humidity_surface": 0.015159993637444951,
+      "scalar_wind": 0.5,
+      "cd": 0.008150539341804583,
+      "ch": 0.003921829139515682,
+      "ce": 0.004230439677218786,
+      "reference_latent": -13.387000569995324
+    },
+    {
+      "theta_air_k": 291.15,
+      "humidity_air": 0.004,
+      "temperature_surface_k": 293.15,
+      "humidity_surface": 0.014244157297771313,
+      "scalar_wind": 35.0,
+      "cd": 0.002353247999954794,
+      "ch": 0.0015923199879041353,
+      "ce": 0.0016852125478158742,
+      "reference_latent": -1793.9813125219312
+    },
+    {
+      "theta_air_k": 295.15,
+      "humidity_air": 0.006,
+      "temperature_surface_k": 293.15,
+      "humidity_surface": 0.014244157297771313,
+      "scalar_wind": 50.0,
+      "cd": 0.0023407766235993134,
+      "ch": 0.0015824322587294805,
+      "ce": 0.001674399683237413,
+      "reference_latent": -2019.0265914982738
+    },
+    {
+      "theta_air_k": 288.15,
+      "humidity_air": 0.004,
+      "temperature_surface_k": 283.15,
+      "humidity_surface": 0.007447086099505385,
+      "scalar_wind": 1.0,
+      "cd": 5.450920639016974e-05,
+      "ch": 4.0890656023601846e-05,
+      "ce": 4.797239726728471e-05,
+      "reference_latent": -0.5007382936097285
+    },
+    {
+      "theta_air_k": 268.15,
+      "humidity_air": 0.001,
+      "temperature_surface_k": 272.15,
+      "humidity_surface": 0.003438741242197347,
+      "scalar_wind": 10.0,
+      "cd": 0.001287084167063761,
+      "ch": 0.0012528478299767296,
+      "ce": 0.0013308971446383897,
+      "reference_latent": -106.88602469480975
+    },
+    {
+      "theta_air_k": 300.15,
+      "humidity_air": 0.015,
+      "temperature_surface_k": 298.15,
+      "humidity_surface": 0.019368285901732934,
+      "scalar_wind": 20.0,
+      "cd": 0.0017809379837715525,
+      "ch": 0.0007593588671434067,
+      "ce": 0.0014591922929181119,
+      "reference_latent": -363.01514007216963
+    }
+  ]
+}

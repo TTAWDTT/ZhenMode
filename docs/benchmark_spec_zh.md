@@ -1,10 +1,24 @@
 # 全球海洋 benchmark 规范
 
-规范 ID：zhenmode-omip2-physical-v0.1；状态：proposed，待人工审阅。目标是全球海洋—海冰气候模拟；业务预报资格不在本规范内。先确定本规范，再补齐两种模式的机制与接入。实现现状见[机制符合表](benchmark_compliance_zh.md)。
+规范 ID：zhenmode-omip2-physical-v1；共同物理要求已固化为[可安装合同](../src/zhenmode/execution/benchmark.py)，数据、原生方案和评分资格仍有独立门槛。目标是全球海洋—海冰气候模拟；业务预报资格不在本规范内。实现现状见[机制符合表](benchmark_compliance_zh.md)。
 
-这是以已发表 OMIP-2 为行业参照的项目规范。下文“协议事实”来自文献；“项目选择”是可审阅的具体提案，不冒充行业强制要求。它不是当前 CLI 可执行的 case/preset/protocol，尚未冻结数据文件及新评分实现，execution_status=proposed、acceptance=not_declared、comparability=not_yet_comparable。
+这是以已发表 OMIP-2 为行业参照的项目规范。下文“协议事实”来自文献；“项目选择”不冒充行业强制要求。CLI 可以冻结合同、检查原生强迫和展开运行计划；尚不能执行完整目标 case 或观测评分。所有计划保持 execution_status=proposed、acceptance=not_assessed、comparability=not_yet_comparable。短窗与完整计划共用物理 hash；成功检查合同也不会授予执行或气候验收资格。
 
 ## 1. 比较问题与身份
+
+可执行的冻结与计划命令（输出目录须先存在，合同文件拒绝覆盖）：
+
+```sh
+zhenmode benchmark freeze --output outputs/physical-v1.json
+zhenmode benchmark check-contract --contract outputs/physical-v1.json
+zhenmode benchmark plan --profile integration-6h --method zhenmode --dt-seconds 600
+zhenmode benchmark plan --profile climate-6cycle --method mom6 --dt-seconds 3600
+zhenmode baseline mom6 omip2-plan --profile integration-6h
+```
+
+原生强迫预检：`zhenmode benchmark check-forcing --manifest FORCING.json --grid GRID.npz --start 1958-01-01T00:00:00 --end 1958-01-01T06:00:00`。GRID只含`lon/lat/wet_mask`；manifest的字段定义见[读取器](../src/zhenmode/model/inputs/forcing/jra55.py)。每个文件引用必须带field/path/sha256/bytes/source_url/license；文件本身声明产品来源、单位、10m高度及CF时间元数据。原始JRA→原生网格的转换须另有原始字节和权重收据，不通过添加一个source_id就算核实来源。命令检查全清单元数据/身份/覆盖，只读取首个区间的数值；其余值在每次运行取样时检查，报告明确写明未扫描全时段。manufactured数据永不升级成观测输入。
+
+组件验证：`python scripts/run_bounded_tests.py tests/data/test_jra55.py tests/fd/test_air_sea.py tests/fd/test_online_surface.py tests/experiments/test_benchmark_contract.py tests/baselines/test_omip2_preparation.py -q`。完整profile仍需逐项满足门槛，不通过本命令启动。
 
 - 主问题：在共同大气信息和明确物理范围下，ZhenMode 与 MOM6 分别能达到什么气候效果、稳定性与成本？主结论归属完整配置。
 - 同方法进步：新旧 ZhenMode 使用同一规范版本、输入与评价；机制升级与数值调参分别登记。
@@ -37,7 +51,7 @@ Gregorian日历，区间左闭右开；强迫覆盖含插值所需相邻记录�
 
 | 编号 | 项目要求 | 验收材料 |
 | --- | --- | --- |
-| B01 大气输入 | JRA v1.4.0的10m风、2m气温/比湿和海平面气压为3h瞬时；下行辐射、雨、雪为3h区间均值；径流日均。按原始time bounds解释，不先降成月均风/年均空气 | 原始文件、变量、单位、高度、时间轴及转网格收据 |
+| B01 大气输入 | JRA v1.4.0的风、气温和比湿均在10m；这些字段及海平面气压为3h瞬时；下行辐射、雨、雪为3h区间均值；径流/陆冰排水日均。按原始time bounds解释，不先降成月均风/年均空气 | 原始文件、变量、单位、高度、时间轴及转网格收据 |
 | B02 风应力 | Large–Yeager2009/NCAR算法；项目选相对风Ua−Uo（α=1），每种模式使用自己的当前海流 | 固定天气/海态参考与独立负例；在线与预处理成本分列 |
 | B03 湍流交换 | 同算法算感热、潜热与蒸发；项目选Tsujino2018推荐的湿空气性质公式。模型当前SST参加反馈；声明bulk/skin温度及原生取样深度 | 分项通量、导数/符号、单位、高度与算法版本 |
 | B04 辐射 | 读取下行短/长波；计算海面反射及当前海温对应出射长波；短波按冻结的吸收方案进入水柱 | 净短波、净长波及逐层沉积，列积分与表面输入相符 |
@@ -46,6 +60,12 @@ Gregorian日历，区间左闭右开；强迫覆盖含插值所需相邻记录�
 | B07 海冰 | 有覆盖/隔热、冻结融化潜热与盐交换，能处理雪和冰输运，冰水合并预算；冻结温度有盐压语义 | 海冰与水的分项质量/焓/盐、覆盖和季节变化 |
 
 B02的α、B03湿空气公式和B06恢复强度是本项目额外冻结选择，OMIP-2没有统一强制全部这些值。初版B06在湿海面全年应用、不因冰覆盖关闭，不使用未记录的恢复全球均值扣除；改变冰区掩膜或修正规则创建变体。B04短波吸收/反照率与B07冰热力学/动力方案允许原生选择，但需在首次成对运行前固定；方案不同属于系统比较。必需算法的源码/参数/依赖commit尚未获得运行证明，不能标已接通。
+
+v1纠正提案中的高度：JRA原始分析温湿字段在2m，但发布的 JRA55-do 温湿已换算至10m，不能再次按2m处理。[MRI用户说明 A.2](https://climate.mri-jma.go.jp/pub/ocean/JRA55-do/docs/v1_5-manual/User_manual_jra55_do_v1_5.pdf)及其版本沿革说明了此区别。该说明为v1.5文档，实际输入仍只接受合同指定的v1.4.0字节和元数据。
+
+开水面通量组件的项目约定：Gill空气性质，海水饱和蒸汽压乘0.98，实际气温计算空气密度，θ=Ta+g×10/Cp；相对风标量下限0.5m/s、迭代中性风下限0.3m/s、z/L∈[−10,10]，最多五次迭代，阻力相对变化小于1e−4停止。开水面反照率0.066、发射率0.98。这些细节有自己的身份，不能把所有名为NCAR的实现混为一谈。
+
+目前的 `surface-contract` 仅用于组件验证。其显式耦合每步开始读取天气并计算交换，FD接收应力，步后一次施加保持的热/虚拟盐通量；是一级分裂更新，短波作为表面净热沉积。它拒绝海冰、雪、陆冰排水、冻结以及重复的旧表面源。它不满足完整B04/B07，也不作为其他 integration/climate profile 的可执行配置。后续完整耦合须补齐穿透、冰和阶段预算，再单独冻结原生参数；不能拿本组件替代完整协议的短窗。
 
 风温湿等瞬时字段线性时间插值；区间均辐射/降水按bounds保持区间通量。水平状态字段采用明确双线性插值；降水/辐射/径流作有海陆及向量旋转处理的保守映射，保存权重hash与积分误差。算法改变须版本化。强迫更新时间、各积分阶段取样相位与实际累计通量保存；没有隐含360日周期、五日月界平滑、缺失值回退或空气−1.8°C floor。
 

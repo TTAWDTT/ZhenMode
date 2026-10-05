@@ -1,0 +1,163 @@
+"""Frozen OMIP physical scope and plans; planning never launches a model."""
+
+from __future__ import annotations
+
+import argparse
+import json
+from datetime import datetime
+from pathlib import Path
+
+from zhenmode.evaluation.protocols import digest, load_json
+from zhenmode.provenance.sources import sha256_file
+
+CONTRACT_ID = "zhenmode-omip2-physical-v1"
+CASE_ID = "global-omip2-physical"
+MECHANISMS = tuple(f"B{i:02d}" for i in range(1, 13))
+PROFILES = {
+    "surface-contract": (None, 0),
+    "integration-6h": ("1958-01-01T06:00:00", 1),
+    "integration-30d": ("1958-01-31T00:00:00", 1),
+    "integration-1y": ("1959-01-01T00:00:00", 1),
+    "climate-6cycle": ("2019-01-01T00:00:00", 6),
+}
+
+
+def contract():
+    """One installed definition; data identities and effect thresholds are separate gates."""
+    return {
+        "schema_version": 1, "id": CONTRACT_ID, "case_id": CASE_ID,
+        "scope": "global_ocean_sea_ice_climate",
+        "calendar": "proleptic_gregorian", "interval": "left_closed_right_open",
+        "forcing": {"product": "JRA55-do", "version": "1.4.0",
+                    "first_year": 1958, "last_year": 2018,
+                    "wind_height_m": 10, "temperature_humidity_height_m": 10,
+                    "instant_sampling": "linear", "mean_sampling": "bounded_piecewise_constant",
+                    "instant_cadence_s": 10800, "flux_cadence_s": 10800,
+                    "runoff_cadence_s": 86400},
+        "surface": {"bulk": "large_yeager_2009", "relative_wind_alpha": 1,
+                    "moist_air": "gill_1982_jra_recommended",
+                    "sst": "current_bulk", "minimum_scalar_wind_m_s": 0.5,
+                    "coefficient_iteration": "five_max_relative_drag_1e-4",
+                    "neutral_wind_floor_m_s": 0.3,
+                    "air_potential_temperature": "Ta_plus_g_z_over_Gill_Cp",
+                    "open_water_albedo": 0.066, "open_water_emissivity": 0.98,
+                    "shortwave_penetration": "per_method_frozen_absorption_with_column_integral",
+                    "direct_sst_restoring": False,
+                    "sss_reference": "WOA13v2_upper_10m_monthly",
+                    "sss_piston_m_s": 50 / (365 * 86400),
+                    "sss_under_ice": True, "sss_global_mean_subtraction": False},
+        "initial": {"temperature_salinity": "WOA13v2_annual", "velocity": "rest",
+                    "eta_anomaly_m": 0, "ice_mass_kg_m2": 0},
+        "geometry": {"scope": "global_including_poles_shallow_seas",
+                     "bathymetry_source": "ETOPO2022_v1_r3600x1800_surface",
+                     "native_discretization": "explicit_per_method",
+                     "evaluation_grid": "1deg_360x180_centres"},
+        "thermodynamics": "TEOS10_compatible_validated_nonlinear_T_S_p",
+        "required_mechanisms": list(MECHANISMS),
+        "evaluation": {"id": "omip2-climate-observations-v1",
+                       "climate_cycle": 6, "main_window": [1980, 2009],
+                       "ssh_window": [1993, 2009], "temporal_weighting": "interval_seconds",
+                       "regridding": "separately_frozen_weights_and_masks",
+                       "effect_thresholds": "not_declared"},
+        "profiles": {name: {"start": "1958-01-01T00:00:00", "end": end, "cycles": cycles,
+                             "climate_qualification": name == "climate-6cycle"}
+                     for name, (end, cycles) in PROFILES.items()},
+    }
+
+
+def validate_frozen(value):
+    expected = contract()
+    envelope = {"contract": expected, "contract_sha256": digest(expected)}
+    # Canonical bytes distinguish True/1 and 1/1.0, unlike Python dict equality.
+    if not isinstance(value, dict) or digest(value) != digest(envelope):
+        raise ValueError("benchmark contract differs from frozen v1; create a new version")
+    return value
+
+
+def plan(profile, method, dt_seconds):
+    if profile not in PROFILES or method not in {"zhenmode", "mom6"}:
+        raise ValueError("unknown benchmark profile or method")
+    if type(dt_seconds) is not int or dt_seconds <= 0:
+        raise ValueError("dt_seconds must be a positive integer in seconds")
+    end, cycles = PROFILES[profile]
+    duration = 0 if end is None else int((datetime.fromisoformat(end) - datetime(1958, 1, 1)).total_seconds()) * cycles
+    if duration % dt_seconds:
+        raise ValueError("dt_seconds must exactly divide the profile interval")
+    definition = contract()
+    return {"schema_version": 1, "contract_id": CONTRACT_ID,
+            "contract_sha256": digest(definition), "case_id": CASE_ID,
+            "profile": profile, "method": method, "dt_seconds": dt_seconds,
+            "duration_seconds": duration, "steps": duration // dt_seconds,
+            "physics_sha256": digest({key: value for key, value in definition.items()
+                                      if key not in {"profiles", "evaluation"}}),
+            "execution_status": "proposed", "execution_ready": False,
+            "acceptance": "not_assessed", "comparability": "not_yet_comparable",
+            "cost_estimate": "requires_same_physics_measurement",
+            "required_gates": ["input_receipts", "B01-B12_actual_configuration",
+                               "build_receipt", "diagnostic_contract", "resource_plan"],
+            "climate_qualification": False,
+            "purpose": "component_contract" if profile == "surface-contract" else
+                       "full_climate_experiment" if profile == "climate-6cycle" else
+                       "short_subset_same_physics"}
+
+
+def main(argv=None):
+    parser = argparse.ArgumentParser(prog="zhenmode benchmark")
+    commands = parser.add_subparsers(dest="command", required=True)
+    commands.add_parser("describe", help="show the installed frozen physical definition")
+    freeze = commands.add_parser("freeze", help="create a contract receipt, never overwrite")
+    freeze.add_argument("--output", required=True)
+    check = commands.add_parser("check-contract")
+    check.add_argument("--contract", required=True)
+    prepare = commands.add_parser("plan", help="expand a profile without launching anything")
+    prepare.add_argument("--profile", required=True, choices=tuple(PROFILES))
+    prepare.add_argument("--method", required=True, choices=("zhenmode", "mom6"))
+    prepare.add_argument("--dt-seconds", required=True, type=int)
+    forcing = commands.add_parser("check-forcing", help="verify native CF files/window and sample the first interval")
+    forcing.add_argument("--manifest", required=True)
+    forcing.add_argument("--grid", required=True, help="NPZ containing lon, lat, wet_mask")
+    forcing.add_argument("--start", required=True, help="Gregorian ISO timestamp, no timezone suffix")
+    forcing.add_argument("--end", required=True)
+    args = parser.parse_args(argv)
+    try:
+        if args.command == "check-forcing":
+            import numpy as np
+
+            from zhenmode.model.inputs.forcing.jra55 import JRA55Forcing
+
+            origin = datetime(1970, 1, 1)
+            start = (datetime.fromisoformat(args.start) - origin).total_seconds()
+            end = (datetime.fromisoformat(args.end) - origin).total_seconds()
+            with np.load(args.grid, allow_pickle=False) as grid:
+                if set(grid.files) != {'lon', 'lat', 'wet_mask'}:
+                    raise ValueError('forcing grid NPZ must contain exactly lon, lat, wet_mask')
+                reader = JRA55Forcing(args.manifest, lon=grid['lon'], lat=grid['lat'],
+                                     wet_mask=grid['wet_mask'], start_seconds=start, end_seconds=end)
+            first_end = min(end, start + 10800)
+            sample = reader.sample(start, interval_end_seconds=first_end)
+            result = {'status': 'metadata_identity_window_and_first_sample_verified',
+                      'data_kind': reader.data_kind, 'file_receipts': reader.receipts,
+                      'grid_sha256': sha256_file(args.grid),
+                      'sample_interval_seconds': [start, first_end],
+                      'all_records_values_scanned': False,
+                      'first_sample_wet_ranges': {name: [float(np.min(np.asarray(field)[reader.wet])),
+                                                        float(np.max(np.asarray(field)[reader.wet]))]
+                                                  for name, field in zip(sample._fields, sample, strict=True)},
+                      'execution_ready': False, 'climate_qualification': False}
+        elif args.command == "plan":
+            result = plan(args.profile, args.method, args.dt_seconds)
+        elif args.command == "check-contract":
+            validate_frozen(load_json(args.contract))
+            result = {"status": "physical_contract_verified", "file_sha256": sha256_file(args.contract),
+                      "execution_ready": False, "climate_qualification": False}
+        else:
+            definition = contract()
+            result = {"contract": definition, "contract_sha256": digest(definition)}
+            if args.command == "freeze":
+                with Path(args.output).open("x", encoding="utf-8") as stream:
+                    json.dump(result, stream, indent=2, ensure_ascii=False, allow_nan=False)
+                    stream.write("\n")
+        print(json.dumps(result, indent=2, ensure_ascii=False, allow_nan=False))
+        return 0
+    except (OSError, ValueError, KeyError, TypeError) as error:
+        parser.error(str(error))

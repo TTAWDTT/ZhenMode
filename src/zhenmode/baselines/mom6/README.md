@@ -17,3 +17,5 @@ zhenmode baseline mom6 evaluate --run-dir RUN_DIR
 `fetch/build` 不默认执行；构建前先报告工具链和资源。已有 cache 只检查，不自动覆盖。无可核查 source→binary 构建收据时标 unverified，即使当前源码干净且 executable hash已记录。
 
 tc1 是10×8×8、24步、0.25日的原生执行 smoke，不与全球 case 比气候指标或速度。两个共同全球 case 的 MOM6 原生接入预设在 `configs/mom6/presets/`；先备齐实际原生输入、共同初态/海深 reference，再用 `prepare-native`。缺少历史他机输入不虚构恢复，完整物理核验未完成时保持 limited。
+
+`omip2.py` 与 `omip2-pins.json` 对应独立的 MOM6+SIS2 候选，保留旧solo接入身份。`zhenmode baseline mom6 omip2-plan` 展示固定依赖、实际源码差异和构建计划；不会获取或构建。`omip2-prepare --examples-dir PINNED_CHECKOUT --output NEW_DIRECTORY` 验证全部指定源码组件和配置字节，准备日历、窗口与恢复改动；输出仍是不可执行的候选，不是完整运行目录。源码NCAR/Gill、EOS、数据映射和预算等未满足前，不授予共同协议资格，见[机制符合表](../../../../docs/benchmark_compliance_zh.md)。

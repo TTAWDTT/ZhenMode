@@ -47,6 +47,7 @@ model/
 │   │   ├── barotropic.py
 │   │   └── projection.py
 │   ├── physics/
+│   │   ├── air_sea.py
 │   │   ├── eos.py
 │   │   ├── surface.py
 │   │   ├── vertical.py
@@ -61,6 +62,8 @@ model/
 │   ├── quality.py
 │   ├── prepare.py
 │   └── forcing/
+│       ├── jra55.py
+│       ├── online.py
 │       ├── reanalysis.py
 │       ├── seasonal.py
 │       ├── idealized.py
@@ -72,6 +75,7 @@ model/
 │   ├── monitor.py
 │   └── reporting.py
 ├── diagnostics/
+│   ├── surface_budget.py
 │   ├── snapshot.py
 │   ├── mixed_layer.py
 │   └── budgets.py
@@ -118,6 +122,7 @@ model/
 | [dynamics/projection.py](solver/dynamics/projection.py) | 用有界迭代修正速度的水柱散度，提供投影系数和收敛控制。 |
 | [physics/eos.py](solver/physics/eos.py) | EOS（状态方程）：按既有线性关系把温盐转成相对参考状态的密度异常。 |
 | [physics/surface.py](solver/physics/surface.py) | 表面热量在混合层中的分配权重，以及生产动态海冰闭合和相关热盐交换。 |
+| [physics/air_sea.py](solver/physics/air_sea.py) | 显式选择的LY2009/Gill开水面交换：实时海温/海流参与应力、感热、潜热和蒸发；净辐射及虚拟盐表面算子。纯计算，不读取数据；尚不支持完整冰/雪/穿透。 |
 | [physics/vertical.py](solver/physics/vertical.py) | 选择垂向混合系数与扩散形式，判断局地对流并计算相应通量；复用 `numerics/vertical.py`。 |
 | [physics/isopycnal.py](solver/physics/isopycnal.py) | 沿等密度面的 Redi 混合和 Gent–McWilliams 涡旋参数化。 |
 | [timestepping/step.py](solver/timestepping/step.py) | `_step_impl` 主时间步：组织线性半步、非线性更新、外模子步、边界处理和海冰更新；也包含显式启用的时间方案分支。 |
@@ -141,6 +146,8 @@ model/
 | [forcing/seasonal.py](inputs/forcing/seasonal.py) | 组织月风场、空间平滑，以及重复 360 天历法下的月际混合；保留 NumPy 与 JAX 两种时间插值实现。 |
 | [forcing/idealized.py](inputs/forcing/idealized.py) | 构造理想化热通量和空气温度分布，提供空间渐消等辅助处理。 |
 | [forcing/bundle.py](inputs/forcing/bundle.py) | `load_forcing` 组装实际生效的强迫与来源；`ForcingBundle.bind_step` 把模拟时间和当时的强迫绑定到时间步函数。 |
+| [forcing/jra55.py](inputs/forcing/jra55.py) | 流式读取已准备到原生网格的JRA55-do CF文件；严格核验文件、单位、高度、日历、网格和时间bounds，不隐含重网格或下载。 |
+| [forcing/online.py](inputs/forcing/online.py) | 开水面组件的显式接线：每步开始取天气/海态，FD接收应力，步后施加保持的热/虚拟盐交换并检查预算；未接入生产默认或完整气候预设。 |
 
 ### `runtime/`：组织整次运行
 
@@ -163,6 +170,7 @@ model/
 | [snapshot.py](diagnostics/snapshot.py) | 用 NumPy 计算状态快照的热量、盐量、动能等诊断，并转换为可保存的历史数组。 |
 | [mixed_layer.py](diagnostics/mixed_layer.py) | 按密度阈值计算混合层深度，供初始化中的混合设置和外部分析使用；因此诊断也可以反馈物理参数准备。 |
 | [budgets.py](diagnostics/budgets.py) | 记录已接受阶段的库存变化、已实现的通量项和累计预算；开启预算审计时，额外执行带记账的影子步并核对状态身份。 |
+| [surface_budget.py](diagnostics/surface_budget.py) | 开水面组件的独立端点库存对外源积分检查；不从残差构造源项，也不宣称完整水冰预算闭合。 |
 
 预算记录不等于所有物理库存都已独立闭合。当前最终输出仍明确保存 `physical_budget_closed=False`；影子步身份核对也不能替代独立解析解或观测验证。
 

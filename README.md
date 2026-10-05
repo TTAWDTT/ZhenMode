@@ -39,7 +39,13 @@ zhenmode sweep expand experiments/zhenmode/global-045deg/sweep-vertical-mixing.y
 
 `zhenmode baseline mom6` 提供 `doctor → fetch → build → prepare → run → convert → evaluate`，固定上游依赖并使用隔离缓存，见 [MOM6 使用说明](docs/baselines_zh.md)。
 
-下一阶段以 [OMIP-2 参照 benchmark 规范](docs/benchmark_spec_zh.md)定义共同机制、观测评价与成本口径；[机制符合表](docs/benchmark_compliance_zh.md)列出两种模式的实际基础、缺口与验收材料。规范目前为待审阅提案，两种模式尚未取得该规范下的完整执行与气候评价资格。
+以 [OMIP-2 参照 benchmark 规范](docs/benchmark_spec_zh.md)定义下一阶段共同机制、观测评价与成本口径；[机制符合表](docs/benchmark_compliance_zh.md)列出实际基础和缺口。可安装命令已支持合同冻结与计划展开；两种模式尚未取得完整执行与气候评价资格。以下命令只检查或规划，不启动积分：
+
+```sh
+zhenmode benchmark describe
+zhenmode benchmark plan --profile integration-6h --method zhenmode --dt-seconds 600
+zhenmode baseline mom6 omip2-plan --profile integration-6h
+```
 
 ## 开发
 

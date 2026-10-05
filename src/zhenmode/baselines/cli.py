@@ -36,9 +36,19 @@ def main(argv=None):
     p = commands.add_parser("prepare-wave-input", help="prepare frozen native standing-wave initial interfaces only")
     p.add_argument("--contract", required=True)
     p.add_argument("--out-dir", required=True)
+    commands.add_parser("omip2-plan", help="show the pinned MOM6+SIS2 candidate and unresolved gates").add_argument(
+        "--profile", default="integration-6h")
+    p = commands.add_parser("omip2-prepare", help="stage checked source configurations; never build/run")
+    p.add_argument("--examples-dir", required=True)
+    p.add_argument("--output", required=True)
+    p.add_argument("--profile", default="integration-6h")
     args = parser.parse_args(argv)
     try:
-        if args.command == "export-forcing":
+        if args.command.startswith("omip2-"):
+            from zhenmode.baselines.mom6 import omip2
+            result = (omip2.preparation_plan(args.profile) if args.command == "omip2-plan" else
+                      omip2.prepare(args.examples_dir, args.output, profile=args.profile))
+        elif args.command == "export-forcing":
             result = forcing.export_forcing(args)
         elif args.command in ("doctor", "fetch"):
             result = getattr(mom6, args.command)(args.cache)

@@ -1,0 +1,55 @@
+{
+  "schema_version": 1,
+  "examples": {
+    "url": "https://github.com/NOAA-GFDL/MOM6-examples.git",
+    "commit": "9b856f1d620f79e8035f96deb8004d544af77af3"
+  },
+  "components": {
+    "src/MOM6": "d3a3b4c92dcff5afb8ba2e41426e6251f7abca42",
+    "src/SIS2": "66faa209cdbabb93cdafdc26f89b18dad1d58449",
+    "src/FMS2": "0721d5969734e6a5240a75120d0b25b1269541b7",
+    "src/atmos_null": "aeac506b910c06ce949fea408c2968c0a928a62e",
+    "src/coupler": "14578f09a25c8e6101faba18342630af267cdba9",
+    "src/ice_param": "ddedca7d724fad9ad4fc6ec68bd4b22733551ed7",
+    "src/icebergs": "765b4cab2d82ac2d740b946b61f9d3dc02d733f0",
+    "src/land_null": "49b089ea8d5b963ede276660cb63c6c3ec2516ab",
+    "src/mkmf": "c87e743a5c396d93db7dc69ad4ddd5e62d383236"
+  },
+  "nested": {
+    "src/MOM6/pkg/CVMix-src": "fce422195a0c58f15a55946b5ed517ba4365e232",
+    "src/MOM6/pkg/GSW-Fortran": "29e64d652786e1d076a05128c920f394202bfe10"
+  },
+  "configuration_files": {
+    "ice_ocean_SIS2/OM4_025.JRA/input.nml": {
+      "git_blob": "5fdb38df30df422b4a5824beb216680203849f42",
+      "sha256": "1c2ebc55f17be837eb7592b2529f21f450a5bd9e432915cff8b9d744e405d90e"
+    },
+    "ice_ocean_SIS2/OM4_025.JRA/data_table": {
+      "git_blob": "c5d4ce207cedd5fe6eaa24d4e7bfcdd4b858bc61",
+      "sha256": "6d5831d37adc3a22d7195d497cf67d6ad156188990c7a33e909954e76d16e98f"
+    },
+    "ice_ocean_SIS2/OM4_025.JRA/MOM_input": {
+      "git_blob": "fae29507889c68a8a0d1feb2efc513a127ba93ea",
+      "sha256": "fcc5f38421ee92b16e645ec25f1a374160dcfb1aa41e956d101db4f44999ed18"
+    },
+    "ice_ocean_SIS2/OM4_025.JRA/MOM_saltrestore": {
+      "git_blob": "3888af4ebd4d35613b1d5db6acb9cbd348905a4e",
+      "sha256": "b7820a1ed87d4d249c128e05e85fb0430d0ba684faf635dcd4e68ac3d530eaf7"
+    },
+    "ice_ocean_SIS2/OM4_025.JRA/SIS_input": {
+      "git_blob": "a6d9272863f35c3b540ecde8ffb2afa8432da3cb",
+      "sha256": "2823b18c3049e4d0a0900899fafb688dcdf83c63c4922e5475fcc67df415c4db"
+    }
+  },
+  "build_target": "ice_ocean_SIS2",
+  "fms_codebase": "src/FMS2",
+  "upstream_config": "ice_ocean_SIS2/OM4_025.JRA",
+  "coupler_audit": {
+    "path": "src/coupler/surface_flux.F90",
+    "sha256": "ef58a6f1606ac2cf2fd770e4253cd96933438d800b15dcbf13faf79697fd219a",
+    "locator": "subroutine ncar_ocean_fluxes",
+    "drag": "LY2004",
+    "iterations": 2
+  },
+  "status": "pinned_candidate_not_protocol_qualified"
+}
