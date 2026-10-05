@@ -2,6 +2,8 @@
 
 ZhenMode 的方法 ID 和 Python 包名均为 `zhenmode`。默认模型是既有全球有限差分生产方法：静力原始方程、线性自由面、快慢步协调，以及既有投影、输运和物理参数化。
 
+逐文件职责、阅读顺序与实际运行链路见 [模型导读](../src/zhenmode/model/README.md)。本页说明模型与实验、对照、评价之间的产品边界。
+
 ```text
 src/zhenmode/
 ├── model/                 正式模型
