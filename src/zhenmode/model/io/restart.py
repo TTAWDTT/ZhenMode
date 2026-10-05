@@ -6,6 +6,7 @@ import hashlib
 import json
 import os
 import tempfile
+from contextlib import contextmanager
 from dataclasses import dataclass, fields, is_dataclass
 from pathlib import Path, PurePosixPath
 
@@ -123,6 +124,32 @@ class RestartRecord:
     outputs: dict
 
 
+@contextmanager
+def atomic_archive(path, *, replace=False):
+    """Serialize and fsync before publishing; links atomically refuse an existing target.
+
+    Checkpoints explicitly permit replacement. Final results use no-clobber
+    publication on the same filesystem. An abrupt stop before publication can
+    leave only a uniquely named temporary file, never a partial final archive.
+    """
+    path = Path(path)
+    temporary_path = None
+    try:
+        with tempfile.NamedTemporaryFile(dir=path.parent, prefix=f".{path.name}.",
+                                         suffix=".tmp", delete=False) as stream:
+            temporary_path = Path(stream.name)
+            yield stream
+            stream.flush()
+            os.fsync(stream.fileno())
+        if replace:
+            os.replace(temporary_path, path)
+        else:
+            os.link(temporary_path, path)
+    finally:
+        if temporary_path is not None and temporary_path.exists():
+            temporary_path.unlink()
+
+
 def save_restart(path, state, contract, *, step, counters, cumulative, history, outputs=None):
     """Write to a same-directory temporary file, fsync, then replace atomically."""
     if contract.get("schema_version") != SCHEMA_VERSION:
@@ -148,19 +175,8 @@ def save_restart(path, state, contract, *, step, counters, cumulative, history, 
                for name, value in values.items()}
     payload.update(metadata_json=np.asarray(metadata_json),
                    metadata_sha256=np.asarray(hashlib.sha256(metadata_json.encode()).hexdigest()))
-    path = Path(path)
-    temporary_path = None
-    try:
-        with tempfile.NamedTemporaryFile(dir=path.parent, prefix=f".{path.name}.",
-                                         suffix=".tmp", delete=False) as stream:
-            temporary_path = Path(stream.name)
-            np.savez_compressed(stream, **payload)
-            stream.flush()
-            os.fsync(stream.fileno())
-        os.replace(temporary_path, path)
-    finally:
-        if temporary_path is not None and temporary_path.exists():
-            temporary_path.unlink()
+    with atomic_archive(path, replace=True) as stream:
+        np.savez_compressed(stream, **payload)
 
 
 def load_restart(path, expected_contract):

@@ -16,7 +16,7 @@ from zhenmode.model.diagnostics.budgets import (
 )
 from zhenmode.model.diagnostics.snapshot import diagnostics_to_arrays
 from zhenmode.model.io.records import history_arrays
-from zhenmode.model.io.restart import fingerprint
+from zhenmode.model.io.restart import atomic_archive, fingerprint
 from zhenmode.model.runtime.reporting import _Tee
 from zhenmode.model.solver.dynamics.projection import projection_config
 from zhenmode.model.solver.numerics.backend import np
@@ -164,7 +164,7 @@ def write_final_records(
                 accepted_step=counters.cur,
                 elapsed_seconds=counters.diverged_at * 86400.0,
             )
-    with open(paths.out_npz, "xb") as stream:
+    with atomic_archive(paths.out_npz) as stream:
         np.savez_compressed(
             stream,
             **history_arrays(history),
