@@ -46,11 +46,21 @@ def main(argv=None):
     p.add_argument('--preparation', required=True)
     p.add_argument('--output', required=True)
     p.add_argument('--wall-seconds', type=int, default=180)
+    p = commands.add_parser('omip2-time-inputs', help='adapt verified rectangular inputs to FMS time format; never run a model')
+    p.add_argument('--prepared-input', required=True)
+    p.add_argument('--output', required=True)
+    p.add_argument('--dt-atmos', type=int, default=3600)
+    p.add_argument('--dt-cpld', type=int, default=3600)
     args = parser.parse_args(argv)
     try:
         if args.command.startswith("omip2-"):
             from zhenmode.baselines.mom6 import omip2
-            if args.command == 'omip2-build':
+            if args.command == 'omip2-time-inputs':
+                from zhenmode.baselines.mom6.omip2_time import prepare_time_inputs
+
+                result = prepare_time_inputs(args.prepared_input, args.output,
+                                             dt_atmos=args.dt_atmos, dt_cpld=args.dt_cpld)
+            elif args.command == 'omip2-build':
                 result = omip2.build_segment(args.preparation, args.output, wall_seconds=args.wall_seconds)
             else:
                 result = (omip2.preparation_plan(args.profile) if args.command == "omip2-plan" else
