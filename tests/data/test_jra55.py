@@ -99,6 +99,8 @@ def test_interpolation_and_flux_overlap_are_distinct(forcing_files):
 @pytest.mark.parametrize('field,operation,error', [
     ('temperature_k', lambda ds: ds['tas'].setncattr('units', 'C'), 'units'),
     ('wind_u', lambda ds: ds['height'].assignValue(2), '10m'),
+    ('temperature_k', lambda ds: ds['height'].assignValue(2), '10m'),
+    ('specific_humidity', lambda ds: ds['height'].assignValue(2), '10m'),
     ('wind_u', lambda ds: ds['lon'].__setitem__(slice(None), [0, 2]), 'grid mismatch'),
     ('wind_u', lambda ds: ds['time'].setncattr('calendar', '360_day'), 'Gregorian'),
     ('wind_u', lambda ds: ds['time'].__setitem__(1, 11000), 'cadence'),
