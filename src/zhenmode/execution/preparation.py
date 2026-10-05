@@ -1,0 +1,392 @@
+"""Original JRA window -> explicit rectilinear native input and mapping receipts.
+
+Atmospheric state is bilinear, surface cell means conservative, and terrestrial
+discharge routes to declared coastal cells with its original grid-cell area.
+This prepares data only; it never certifies an ocean or climate experiment.
+"""
+
+from __future__ import annotations
+
+import json
+from pathlib import Path
+
+import netCDF4
+import numpy as np
+from scipy.spatial import cKDTree
+
+from zhenmode.model.inputs.forcing.jra55 import (
+    FIELDS,
+    TIME_UNITS,
+    JRA55Forcing,
+    _seconds,
+    bilinear_rectilinear_weights,
+    conservative_rectilinear_weights,
+    remap_rectilinear_means,
+)
+from zhenmode.provenance.sources import load_json, sha256_file
+
+AREA_SOURCE = "https://github.com/HiroyukiTsujino/JRA55-do/blob/30c8e1a84386c1db8a436d980826b884b2075089/doc/user_manual/User_manual_jra55_do_v1_5.tex"
+
+
+def coastal_routing(source_lon, source_lat, lon, lat, wet, *, maximum_distance_m,
+                    land_fraction=None):
+    """Frozen nearest-coast routing in spherical distance, not weather infilling.
+
+    Every original discharge cell has one recipient. Routing weights act on
+    kg/s, then divide by actual target wet-cell area. No discharge is dropped.
+    Longitude is periodic; the polar boundary is not classified as land.
+    """
+    wet = np.asarray(wet)
+    if (
+        wet.shape != (len(lat), len(lon))
+        or not np.isin(wet, [0, 1]).all()
+        or isinstance(maximum_distance_m, bool)
+        or not np.isfinite(maximum_distance_m)
+        or maximum_distance_m <= 0
+    ):
+        raise ValueError("invalid routing mask or maximum spherical distance")
+    wet = wet.astype(bool)
+    land_adjacent = ~np.roll(wet, 1, axis=1) | ~np.roll(wet, -1, axis=1)
+    land_adjacent[1:] |= ~wet[:-1]
+    land_adjacent[:-1] |= ~wet[1:]
+    if land_fraction is not None:
+        fraction = np.asarray(land_fraction)
+        if (fraction.shape != wet.shape or not np.isfinite(fraction).all()
+                or np.any(fraction < 0) or np.any(fraction > 1)):
+            raise ValueError('coastal land fraction must explicitly lie in [0,1]')
+        # Unresolved islands may share a wet cell; do not send their rivers
+        # thousands of kilometres to the next fully dry model cell.
+        land_adjacent |= fraction > 0
+    coast = np.flatnonzero(wet & land_adjacent)
+    if not len(coast):
+        raise ValueError("no declared wet coastal recipient for terrestrial discharge")
+
+    def xyz(x, y):
+        x, y = np.meshgrid(np.deg2rad(x), np.deg2rad(y))
+        return np.stack((np.cos(y) * np.cos(x), np.cos(y) * np.sin(x), np.sin(y)), axis=-1).reshape(
+            -1, 3
+        )
+
+    distance, recipient = cKDTree(xyz(lon, lat)[coast]).query(
+        xyz(source_lon, source_lat), workers=1
+    )
+    return (
+        coast[recipient],
+        2 * 6371000 * np.arcsin(np.minimum(distance / 2, 1)),
+        float(maximum_distance_m),
+    )
+
+
+def route_discharge(values, source_area, target_area, routing):
+    """Preserve independently measured original kg/s, refusing distant nonzero input."""
+    data = np.ma.asarray(values)
+    area = np.ma.asarray(source_area)
+    target_area = np.asarray(target_area)
+    recipient, distance, limit = routing
+    if (
+        data.shape != area.shape
+        or data.size != len(recipient)
+        or np.asarray(recipient).dtype.kind not in "iu"
+        or np.any(recipient < 0)
+        or np.any(recipient >= target_area.size)
+        or np.asarray(distance).shape != np.asarray(recipient).shape
+        or not np.isfinite(distance).all()
+        or np.any(distance < 0)
+        or np.ma.is_masked(data)
+        or np.ma.is_masked(area)
+        or not np.isfinite(data).all()
+        or not np.isfinite(area).all()
+        or np.any(data < 0)
+        or np.any(area <= 0)
+        or not np.isfinite(target_area).all()
+        or np.any(target_area <= 0)
+    ):
+        raise ValueError("invalid discharge/area or routing arrays")
+    far = (np.asarray(data).ravel() != 0) & (distance > limit)
+    if far.any():
+        raise ValueError(f'{int(far.sum())} nonzero discharge cells exceed routing limit '
+                         f'{limit:.0f}m; maximum {float(distance[far].max()):.0f}m')
+    mass = np.bincount(
+        recipient, weights=(np.asarray(data, dtype=np.float64) * np.asarray(area, dtype=np.float64)).ravel(),
+        minlength=target_area.size
+    )
+    return mass.reshape(target_area.shape) / target_area
+
+
+def prepare_jra_window(
+    acquisition,
+    grid_path,
+    runoff_area_path,
+    output,
+    *,
+    start,
+    end,
+    maximum_routing_distance_m=500000,
+):
+    """Identity-checked originals with retained semantics; streamed selected records.
+
+    Grid NPZ: lon, lat, lon_bounds, lat_bounds, area, wet_mask; arrays use lon,lat.
+    Caller bounds numerical preprocessing to one CPU / 180s / 4GiB.
+    """
+    acquisition, grid_path, runoff_area_path = map(Path, (acquisition, grid_path, runoff_area_path))
+    start, end = float(start), float(end)
+    received = load_json(acquisition)
+    if (
+        received["product"] != "JRA55-do"
+        or received["version"] != "1.4.0"
+        or received["execution_status"] != "completed"
+        or set(received["files"]) != {item[0] for item in FIELDS.values()}
+        or received["verified"] != {name: row["sha256"] for name, row in received["files"].items()}
+    ):
+        raise ValueError("complete original v1.4.0 publisher-identity receipt required")
+    if not np.isfinite([start, end]).all() or start >= end:
+        raise ValueError("invalid preprocessing interval")
+    with np.load(grid_path, allow_pickle=False) as source:
+        required = {"lon", "lat", "lon_bounds", "lat_bounds", "area", "wet_mask"}
+        if set(source.files) not in (required, required | {'land_fraction'}):
+            raise ValueError("explicit native coordinates/bounds/area/wet_mask required")
+        grid = {name: np.array(source[name]) for name in source.files}
+    lon, lat, wet, area = (grid[name] for name in ("lon", "lat", "wet_mask", "area"))
+    # Validate global bounds and area using the same independently tested overlap contract.
+    conservative_rectilinear_weights(
+        grid["lon_bounds"], grid["lat_bounds"], grid["lon_bounds"], grid["lat_bounds"]
+    )
+    if (
+        wet.shape != (len(lon), len(lat))
+        or area.shape != wet.shape
+        or not np.isin(wet, [0, 1]).all()
+        or not wet.any()
+        or not np.isfinite(area).all()
+        or np.any(area <= 0)
+        or not np.allclose(lon, grid["lon_bounds"].mean(axis=1), atol=1e-10, rtol=0)
+        or not np.allclose(lat, grid["lat_bounds"].mean(axis=1), atol=1e-10, rtol=0)
+    ):
+        raise ValueError("native centers/mask/positive areas disagree")
+    original_area = load_json(runoff_area_path)
+    path = runoff_area_path.parent / original_area["path"]
+    if (
+        path.stat().st_size != original_area["bytes"]
+        or sha256_file(path) != original_area["sha256"]
+    ):
+        raise ValueError("runoff area input identity mismatch")
+    with netCDF4.Dataset(path) as ds:
+        if ds.source_id != "MRI-JRA55-do-1-4-0" or ds[original_area["variable"]].units != "m2":
+            raise ValueError("incorrect original discharge area source/units")
+        runoff_area = ds[original_area["variable"]][:]
+        runoff_lon, runoff_lat = ds["lon"][:], ds["lat"][:]
+    routing = coastal_routing(
+        runoff_lon, runoff_lat, lon, lat, wet.T, maximum_distance_m=maximum_routing_distance_m,
+        land_fraction=grid['land_fraction'].T if 'land_fraction' in grid else None,
+    )
+    output = Path(output).resolve()
+    output.mkdir(parents=True, exist_ok=False)
+    np.savez(
+        output / "routing.npz",
+        recipient=routing[0],
+        distance_m=routing[1],
+        maximum_distance_m=routing[2],
+    )
+    np.savez(output / "grid.npz", lon=lon, lat=lat, wet_mask=wet)
+    result = {
+        "schema_version": 1,
+        "product": "JRA55-do",
+        "version": "1.4.0",
+        "data_kind": received.get("data_kind", "observed"),
+        "files": [],
+    }
+    report = {
+        "status": "running",
+        "executed_preparation_sha256": sha256_file(Path(__file__)),
+        "executed_reader_mapping_sha256": sha256_file(
+            Path(__file__).parents[1] / 'model/inputs/forcing/jra55.py'),
+        "numerical_environment": {"numpy": np.__version__, "netCDF4": netCDF4.__version__},
+        "acquisition_sha256": sha256_file(acquisition),
+        "grid_sha256": sha256_file(grid_path),
+        "runoff_area_sha256": sha256_file(path),
+        "area_semantics_source": AREA_SOURCE,
+        "window_seconds": [start, end],
+        "routing": {
+            "definition": "nearest_fractional_or_four_neighbor_coast_spherical_v1" if 'land_fraction' in grid else "nearest_four_neighbor_coast_spherical_v1",
+            "sha256": sha256_file(output / "routing.npz"),
+            "maximum_distance_m": routing[2],
+        },
+        "fields": {},
+        "execution_ready": False,
+        "climate_qualification": False,
+    }
+    try:
+        for field, (variable, units, _, interpretation, height) in FIELDS.items():
+            identity = received["files"][variable]
+            original = acquisition.parent / identity["filename"]
+            if (
+                original.stat().st_size != identity["bytes"]
+                or sha256_file(original) != identity["sha256"]
+            ):
+                raise ValueError("original forcing identity changed: " + variable)
+            with netCDF4.Dataset(original) as ds:
+                var = ds[variable]
+                if (
+                    ds.source_id != "MRI-JRA55-do-1-4-0"
+                    or var.units not in units
+                    or var.dimensions != ("time", "lat", "lon")
+                    or getattr(ds, "data_kind", "observed") != result["data_kind"]
+                    or ds['lon'].units != 'degrees_east'
+                    or ds['lat'].units != 'degrees_north'
+                    or not str(getattr(ds, 'license', '')).strip()
+                ):
+                    raise ValueError("original forcing metadata mismatch: " + variable)
+                if height is not None and (
+                    ds["height"].size != 1
+                    or ds["height"].units != "m"
+                    or ds["height"][:].item() != height
+                ):
+                    raise ValueError("original state height must be 10m")
+                times = _seconds(ds["time"][:], ds["time"])
+                bounds = (
+                    _seconds(ds[ds["time"].bounds][:], ds["time"])
+                    if interpretation == "mean"
+                    else None
+                )
+                methods = var.cell_methods
+                expected_methods = (
+                    "area: mean time: point"
+                    if interpretation == "instant"
+                    else {
+                        "friver": "area: mean where sea time: mean",
+                        "licalvf": "area: time: mean where ice_sheet",
+                    }.get(variable, "area: time: mean")
+                )
+                if methods != expected_methods:
+                    raise ValueError(
+                        "unrecognized original spatial/temporal semantics: " + variable
+                    )
+                if interpretation == "instant":
+                    begin = max(0, np.searchsorted(times, start, side="right") - 1)
+                    finish = min(len(times), np.searchsorted(times, end, side="left") + 1)
+                    indices = np.arange(begin, finish)
+                else:
+                    indices = np.flatnonzero((bounds[:, 1] > start) & (bounds[:, 0] < end))
+                if not len(indices):
+                    raise ValueError("original has no records in the requested window")
+                target = output / (variable + ".nc")
+                terrestrial = variable in {"friver", "licalvf"}
+                if terrestrial:
+                    if not np.array_equal(ds["lon"][:], runoff_lon) or not np.array_equal(
+                        ds["lat"][:], runoff_lat
+                    ):
+                        raise ValueError("original discharge area/grid mismatch")
+                    weights = None
+                else:
+                    weights = (
+                        bilinear_rectilinear_weights(ds["lon"][:], ds["lat"][:], lon, lat)
+                        if interpretation == "instant"
+                        else conservative_rectilinear_weights(
+                            ds[ds["lon"].bounds][:],
+                            ds[ds["lat"].bounds][:],
+                            grid["lon_bounds"],
+                            grid["lat_bounds"],
+                        )
+                    )
+                    np.savez(
+                        output / (variable + "-weights.npz"),
+                        latitude=weights[0],
+                        longitude=weights[1],
+                    )
+                integrals = []
+                with netCDF4.Dataset(target, "w") as native:
+                    native.source_id = ds.source_id
+                    native.data_kind = result["data_kind"]
+                    native.license = ds.license
+                    for axis, values, unit in [
+                        ("lon", lon, "degrees_east"),
+                        ("lat", lat, "degrees_north"),
+                    ]:
+                        native.createDimension(axis, len(values))
+                        coordinate = native.createVariable(axis, "f8", (axis,))
+                        coordinate.units = unit
+                        coordinate[:] = values
+                    native.createDimension("time", len(indices))
+                    native.createDimension("bounds", 2)
+                    time = native.createVariable("time", "f8", ("time",))
+                    time.units = TIME_UNITS
+                    time.calendar = "proleptic_gregorian"
+                    time[:] = times[indices]
+                    if bounds is not None:
+                        time.bounds = "time_bounds"
+                        native.createVariable("time_bounds", "f8", ("time", "bounds"))[:] = bounds[
+                            indices
+                        ]
+                    if height is not None:
+                        h = native.createVariable("height", "f8")
+                        h.units = "m"
+                        h.assignValue(height)
+                    out = native.createVariable(variable, "f8", ("time", "lat", "lon"), zlib=True)
+                    out.units = var.units
+                    out.cell_methods = (
+                        "time: point" if interpretation == "instant" else "time: mean"
+                    )
+                    for index, original_index in enumerate(indices):
+                        values = var[original_index]
+                        mapped = (
+                            route_discharge(values, runoff_area, area.T, routing)
+                            if terrestrial
+                            else remap_rectilinear_means(values, weights)
+                        )
+                        out[index] = mapped
+                        if terrestrial:
+                            before = float(np.einsum('ij,ij->', np.asarray(values, dtype=np.float64),
+                                                     np.asarray(runoff_area, dtype=np.float64)))
+                            after = float(np.sum(mapped * area.T))
+                            if not np.isclose(before, after, rtol=1e-12, atol=1e-6):
+                                raise ValueError("terrestrial mass integral changed during routing")
+                            integrals.append(
+                                {
+                                    "index": int(original_index),
+                                    "original_kg_s": before,
+                                    "native_kg_s": after,
+                                }
+                            )
+                result["files"].append(
+                    {
+                        "field": field,
+                        "path": target.name,
+                        "sha256": sha256_file(target),
+                        "bytes": target.stat().st_size,
+                        "source_url": identity["source_url"],
+                        "license": ds.license,
+                    }
+                )
+                report["fields"][field] = {
+                    "original_sha256": identity["sha256"],
+                    "original_cell_methods": methods,
+                    "indices": indices.tolist(),
+                    "mapping": "coastal_mass"
+                    if terrestrial
+                    else "bilinear_state"
+                    if interpretation == "instant"
+                    else "spherical_area_mean",
+                    "weights_sha256": None
+                    if terrestrial
+                    else sha256_file(output / (variable + "-weights.npz")),
+                    "mass_integrals": integrals,
+                    "prepared_sha256": sha256_file(target),
+                }
+        (output / "forcing.json").write_text(json.dumps(result, indent=2, allow_nan=False) + "\n")
+        JRA55Forcing(
+            output / "forcing.json",
+            lon=lon,
+            lat=lat,
+            wet_mask=wet,
+            start_seconds=start,
+            end_seconds=end,
+        ).sample(start, interval_end_seconds=min(end, start + 10800))
+        report["status"] = "prepared_and_reader_verified"
+    except Exception as error:
+        report["status"] = "failed"
+        report["reason"] = str(error)
+        raise
+    finally:
+        (output / "preparation.json").write_text(
+            json.dumps(report, indent=2, allow_nan=False) + "\n"
+        )
+    return report
