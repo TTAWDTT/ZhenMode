@@ -45,6 +45,9 @@ def driver(mom):
     start = mom.index('real elemental function density_elem_TEOS10(')
     stop = mom.index('end function density_elem_TEOS10', start)
     routine = mom[start:stop + len('end function density_elem_TEOS10')]
+    parameters = [line for line in mom.splitlines() if line.startswith('real, parameter :: Pa2db')]
+    if len(parameters) != 1:
+        raise ValueError('actual MOM6 pressure-conversion declaration is ambiguous')
     # Execute the actual MOM function and its Pa conversion. The empty type
     # only supplies its unused `this` argument; no complete MOM EOS is claimed.
     return '''! MOM6 function below is from the Modular Ocean Model version 6.
@@ -56,7 +59,7 @@ implicit none
 type TEOS10_EOS
 end type
 type(TEOS10_EOS) :: eos
-real, parameter :: Pa2db=1.e-4
+MOM_PRESSURE_PARAMETER
 real :: s,t,p,rs,rt,rp
 integer :: ios
 do
@@ -67,7 +70,7 @@ do
    density_elem_TEOS10(eos,t,s,p*1.e4)
 enddo
 contains
-''' + routine + '\nend program\n'
+'''.replace('MOM_PRESSURE_PARAMETER', parameters[0]) + routine + '\nend program\n'
 
 
 def check(source, mom_source, output):

@@ -35,7 +35,7 @@ python scripts/check_teos10.py --source PINNED_GSW_ROOT --mom-source PINNED_MOM_
 | fp64 | 1.52×10⁻¹³ | 4.55×10⁻¹³ | 2×10⁻¹⁰ |
 | fp32 | 6.26×10⁻⁵ | 1.68×10⁻⁴ | 5×10⁻⁴ |
 
-三项密度导数及 Pa/dbar 换算通过。GSW 压力导数为每 Pa，本组件为每 dbar，参考值乘 10⁴后比较。fp32 导数最大绝对误差约 3.01×10⁻⁶，容差 10⁻⁵；fp64 容差 2×10⁻¹⁰。这次运行约 7.02 秒、峰值 RSS 215 MiB，属于组件验证成本，不是模式积分速度。
+三项密度导数及 Pa/dbar 换算通过。GSW 压力导数为每 Pa，本组件为每 dbar，参考值乘 10⁴后比较。fp32 导数最大绝对误差约 3.01×10⁻⁶，容差 10⁻⁵；fp64 容差 2×10⁻¹⁰。复算同时提取实际 MOM 的换算常量声明，约 6.82 秒、峰值 RSS 214 MiB，属于组件验证成本，不是模式积分速度。
 
 18 个 Fortran 生成参考状态及驱动保留在[参考 JSON](../tests/support/teos10_reference.json)和[驱动](../tests/support/teos10_reference.f90)，日常[测试](../tests/fd/test_teos10.py)核对其身份。完整源码、二进制、228 组输出、编译命令和资源收据放在本地 outputs，避免将编译缓存提交。GSW 参考来源请引用 McDougall and Barker (2011), *Getting started with TEOS-10 and the Gibbs Seawater Oceanographic Toolbox*；[官方工具说明](https://www.teos-10.org/software.htm)列明引用方式。
 

@@ -11,7 +11,7 @@ from zhenmode.model.solver.numerics.backend import jax, jnp
 from zhenmode.model.solver.physics import teos10
 from zhenmode.model.solver.physics.eos import _density_anomaly
 
-REFERENCE_SHA = 'fecc5a0d04d52be89eabb5ed701aaa5d7cd32b2a90e0e4a7c90349f04a61bc85'
+REFERENCE_SHA = 'd6965433e4955ce2d933a78bcd30c492fae888b06bb77458ec9708853b9159ec'
 
 
 def reference():

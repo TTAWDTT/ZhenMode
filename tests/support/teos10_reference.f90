@@ -7,7 +7,7 @@ implicit none
 type TEOS10_EOS
 end type
 type(TEOS10_EOS) :: eos
-real, parameter :: Pa2db=1.e-4
+real, parameter :: Pa2db  = 1.e-4  !< The conversion factor from Pa to dbar [dbar Pa-1]
 real :: s,t,p,rs,rt,rp
 integer :: ios
 do
