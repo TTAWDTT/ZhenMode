@@ -41,6 +41,8 @@ MOM6系数对照在Linux中使用`python scripts/check_mom6_coefficients.py --so
 
 MOM6时间格式适配：`zhenmode baseline mom6 omip2-time-inputs --prepared-input NEW_INPUT --output NEW_FMS_INPUT --dt-atmos 3600 --dt-cpld 3600`。输入须是上述空间准备的完整收据。生成Gregorian、1958年参考时刻、unlimited时间维及明确的FMS区间属性，保留实际日期和物理通量值。雨雪/辐射按大气步末读取，径流/陆冰按耦合步首读取；这些时相来自固定coupler源码，不是可随意互换的标签。步长须整除相应原始区间，输出目录拒绝覆盖。
 
+准备前还核对窗口内所有均通量源边界与实际调用步长的相位：只核对窗口长度不够；例如每小时步长的00:30–05:30会跨越03:00源边界而被拒绝。01:00–05:00可在源区间内开始且不跨界，允许准备。数值复制采用至多8MiB多轴块，连大单记录也分块；完整年度的墙时仍未验证，不因内存改为流式就承诺180秒内完成。每份文件复制前后重新哈希，并核对inode、大小、mtime/ctime；源文件变动或Ctrl-C保留failed收据。
+
 实际FMS时间检查：`python scripts/check_mom6_time_inputs.py --source PINNED_FMS/time_interp/time_interp_external2.F90 --fms-build BUILD/build/fms --fms-include PINNED_FMS/include --output NEW_TIME_CHECK`。在Linux中由外层施加单CPU/180秒/4GiB限制；编译完整、固定来源的FMS读取模块并链接真实FMS库。独立制造值检查区间均值、普通线性插值、单记录日均及六小时累计能量；跨界、越界、错误单位和旧负时刻编码均须拒绝。1958年资料不能直接以1970年参考时刻的负增量交给该FMS版本。此检查不运行耦合海洋，也不授予完整case资格；实际case还须绑定相同的时钟、输入表及构建收据。
 
 为同一命令追加`--original-prepared NEW_INPUT --native-prepared NEW_FMS_INPUT`并选择另一新输出目录，可独立比较真实1958年首六小时、每小时的11字段。先核对两层收据及每个实际文件；参考直接从适配前CF时刻/bounds和值计算，检查所有格点，同时保留三个样本与全场求和，不调用被测读取器生成期望值。实际Fortran输出为native-real64列优先stream，检查器核对完整长度、逐值误差及输出hash。输入是制造数据时仍标记manufactured；该小检查固定首窗和一小时步长，不能冒充任意年度或完整耦合验证。
