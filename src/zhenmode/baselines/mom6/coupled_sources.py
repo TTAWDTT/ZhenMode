@@ -52,6 +52,8 @@ def corrected_latent_energy(path, source):
         replace('    !ML ocean only requires t, q, lw, sw, fprec, calving',
                 '    allocate(ice_ocean_boundary%latent_flux(is:ie,js:je)); ice_ocean_boundary%latent_flux = 0.0\n'
                 '    !ML ocean only requires t, q, lw, sw, fprec, calving')
+        # The pinned SIS ice_model.F90 exports IOF internal energy using
+        # US%QRZ_T_to_W_m2; the public Ice%flux_lh is already physical W/m2.
         replace('    call mpp_clock_end(fluxIceOceanClock)',
                 '    call flux_ice_to_ocean_redistribute(Ice, Ocean, Ice%flux_lh, &\n'
                 '         Ice_Ocean_Boundary%latent_flux, Ice_Ocean_Boundary%xtype, do_area_weighted_flux)\n\n'

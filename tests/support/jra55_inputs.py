@@ -8,13 +8,14 @@ from zhenmode.model.inputs.forcing.jra55 import FIELDS, TIME_UNITS
 from zhenmode.provenance.sources import sha256_file
 
 
-def original_fixture(tmp_path):
+def original_fixture(tmp_path, *, epoch=None, instant_count=3, mean_count=2):
     lon,lat=np.array([90.,270.]),np.array([-45.,45.])
     area=np.full((2,2),np.pi*6371000**2)
     bounds={'lon':np.array([[0.,180.],[180.,360.]]),'lat':np.array([[-90.,0.],[0.,90.]])}
     grid=tmp_path/'native-grid.npz'
     np.savez(grid,lon=lon,lat=lat,lon_bounds=bounds['lon'],lat_bounds=bounds['lat'],area=area,wet_mask=np.array([[1,1],[0,1]]))
-    epoch=netCDF4.date2num(netCDF4.num2date(0,'seconds since 1958-01-01',calendar='proleptic_gregorian'),TIME_UNITS,calendar='proleptic_gregorian')
+    if epoch is None:
+        epoch=netCDF4.date2num(netCDF4.num2date(0,'seconds since 1958-01-01',calendar='proleptic_gregorian'),TIME_UNITS,calendar='proleptic_gregorian')
     acquisition={'product':'JRA55-do','version':'1.4.0','execution_status':'completed',
                  'data_kind':'manufactured','files':{},'verified':{}}
     def axes(ds):
@@ -31,7 +32,7 @@ def original_fixture(tmp_path):
             ds.createVariable(v.bounds,'f8',(axis,'bounds'))[:]=bounds[axis]
     for _,(variable,units,cadence,interpretation,height) in FIELDS.items():
         path=tmp_path/(variable+'-original.nc')
-        count=3 if interpretation=='instant' else 1 if cadence==86400 else 2
+        count=instant_count if interpretation=='instant' else 1 if cadence==86400 else mean_count
         with netCDF4.Dataset(path,'w') as ds:
             axes(ds)
             ds.createDimension('time',count)
@@ -71,4 +72,3 @@ def original_fixture(tmp_path):
     received=tmp_path/'acquisition.json'
     received.write_text(json.dumps(acquisition))
     return received,grid,area_manifest,epoch
-
