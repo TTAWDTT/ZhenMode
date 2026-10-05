@@ -10,6 +10,15 @@ from zhenmode.model.inputs.sources import BATHYMETRY_ENV_VAR, ETOPO_FILENAME
 from zhenmode.model.solver.geometry.grid import _remap_etopo_area, build_global_grid
 
 
+def selected_bathymetry_path(filepath):
+    """Honor an explicit NPZ; otherwise preserve real-NetCDF-first fallback."""
+    filepath = os.fspath(filepath)
+    if filepath.endswith(".npz"):
+        return filepath
+    twin = filepath + ".npz"
+    return twin if (not os.path.isfile(filepath) or Dataset is None) and os.path.isfile(twin) else filepath
+
+
 def _read_etopo_global(filepath, resolution=1.0, lat_max=85.0, remap="legacy"):
     """Read global ETOPO2022 bathymetry, downsampled to target resolution.
 
@@ -21,28 +30,29 @@ def _read_etopo_global(filepath, resolution=1.0, lat_max=85.0, remap="legacy"):
     covering ±lat_max. Land = 0 depth.
     """
     # npz twin support: offline nodes (no netCDF4/HDF) can read a pre-extracted
-    # "<file>.npz" (z int16, lon, lat). Identical values to the netCDF path.
+    # "<file>.npz" (z, lon, lat). Equality must be established for each cache;
+    # a filename alone is not evidence that a twin is the same relief.
     #
     # The REAL file wins when both are present. The twin is a fallback for
     # nodes without netCDF4, and letting a leftover twin shadow the real relief
     # is silent wrong-data: the two paths return the same shape, so nothing
     # downstream (including every dimension test) can tell which one ran.
     dataset_factory = Dataset
+    filepath = os.fspath(filepath)
+    selected = selected_bathymetry_path(filepath)
     npz_path = filepath + ".npz"
-    have_nc = os.path.exists(filepath)
-    have_npz = os.path.exists(npz_path)
-    if not have_nc and not have_npz:
+    if not os.path.isfile(selected):
         raise FileNotFoundError(
             f"ETOPO bathymetry not found: neither {filepath!r} nor "
             f"{npz_path!r} exists. Set ${BATHYMETRY_ENV_VAR} to the "
             f"ETOPO2022 0.1 deg relief file, or place {ETOPO_FILENAME} "
             f"(or its .npz twin) in <repo>/data/."
         )
-    if have_npz and (not have_nc or dataset_factory is None):
-        d = np.load(npz_path)
-        etopo_lon = np.asarray(d['lon'], dtype=np.float64)
-        etopo_lat = np.asarray(d['lat'], dtype=np.float64)
-        z_full = np.asarray(d['z'], dtype=np.float64)
+    if selected.endswith(".npz"):
+        with np.load(selected, allow_pickle=False) as d:
+            etopo_lon = np.asarray(d['lon'], dtype=np.float64)
+            etopo_lat = np.asarray(d['lat'], dtype=np.float64)
+            z_full = np.asarray(d['z'], dtype=np.float64)
     else:
         if dataset_factory is None:
             raise ImportError(

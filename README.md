@@ -31,7 +31,7 @@ zhenmode experiment expand experiments/zhenmode/global-045deg/global-045deg-seas
 zhenmode sweep expand experiments/zhenmode/global-045deg/sweep-vertical-mixing.yaml
 ```
 
-扫参默认仅展开与估算资源。字段、单位、继承、消融和运行状态见 [实验说明](docs/experiments_zh.md)。
+扫参默认仅展开与估算资源。GPU 实验需显式 `--backend cuda`，先固定实际数据并核对预算，见 [GPU 运行](docs/gpu_runtime_zh.md)。字段、单位、继承、消融和运行状态见 [实验说明](docs/experiments_zh.md)。
 
 ## 评价与对照
 

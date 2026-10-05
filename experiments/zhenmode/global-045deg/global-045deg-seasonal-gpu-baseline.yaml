@@ -1,0 +1,13 @@
+schema_version: 1
+kind: experiment
+id: global-045deg-seasonal-365d-gpu-baseline
+name_zh: 既有0.45度配置的GPU年度基线
+purpose: 固定当前源码和实际输入后独立复跑365天；评价280至365天面积v2，不与旧raw/A2混排，不做调参。
+method: zhenmode
+case: cases/global-045deg-seasonal-365d.yaml
+parent_preset: configs/zhenmode/presets/global-045deg-seasonal-checkpoints.yaml
+variant: baseline
+changes: []
+evaluation_protocol: sst-area-v2-initial-reference-280-365
+protocol_path: protocols/sst-area-v2-initial-reference-280-365.json
+resources: {cpu: 1, wall_seconds: 10800, memory_mib: 8192}

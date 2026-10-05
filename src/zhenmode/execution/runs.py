@@ -16,6 +16,7 @@ from pathlib import Path
 from zhenmode.provenance.sources import sha256_file as file_hash
 
 from .resolve import canonical_hash, resource_estimate
+from .resources import run_cuda_worker, validate_budget
 from .schema import ConfigurationError, reference_path
 
 
@@ -34,14 +35,14 @@ def source_identity():
 
 def environment_identity():
     packages = {}
-    for name in ("zhenmode", "jax", "jaxlib", "numpy", "scipy", "netCDF4", "PyYAML"):
+    for name in ("zhenmode", "jax", "jaxlib", "jax-cuda13-plugin", "jax-cuda13-pjrt", "numpy", "scipy", "netCDF4", "PyYAML"):
         try:
             packages[name] = importlib.metadata.version(name)
         except importlib.metadata.PackageNotFoundError:
             packages[name] = None
     return {"python": sys.version, "executable": sys.executable, "platform": platform.platform(),
             "machine": platform.machine(), "processor": platform.processor(), "packages": packages,
-            "flags": {name: os.environ.get(name) for name in ("JAX_PLATFORMS", "XLA_FLAGS", "JAX_ENABLE_X64", "OCEAN_PAV_NITER")}}
+            "flags": {name: os.environ.get(name) for name in ("JAX_PLATFORMS", "XLA_FLAGS", "JAX_ENABLE_X64", "OCEAN_PAV_NITER", "CUDA_VISIBLE_DEVICES", "XLA_PYTHON_CLIENT_PREALLOCATE", "XLA_PYTHON_CLIENT_MEM_FRACTION")}}
 
 
 def git_identity(root):
@@ -106,12 +107,13 @@ def create_run(expanded, root, outputs):
     return directory, manifest
 
 
-def run_experiment(expanded, root, outputs, *, dry_run=False, evaluate=False):
-    """Managed production runs are bounded CPU jobs; sweeps never call this."""
+def run_experiment(expanded, root, outputs, *, dry_run=False, evaluate=False, backend="cpu"):
+    """CPU smoke by default; CUDA requires an explicit caller selection."""
     resources = expanded["resources"]
-    if resources["cpu"] != 1 or resources["wall_seconds"] > 180 or resources["memory_mib"] > 4096:
-        raise ConfigurationError("managed local run exceeds 1 CPU / 180 seconds / 4096 MiB; use a separately reviewed execution plan")
+    validate_budget(resources, backend)
     directory, manifest = create_run(expanded, root, outputs)
+    manifest["execution_backend"] = backend
+    write_json(directory / "manifest.json", manifest)
     if dry_run:
         return manifest | {"run_directory": str(directory)}
     start = time.monotonic()
@@ -123,11 +125,25 @@ def run_experiment(expanded, root, outputs, *, dry_run=False, evaluate=False):
         manifest["data"] = data
         manifest["data_sha256"] = canonical_hash({key: value["observed_sha256"] for key, value in data.items()})
         write_json(directory / "manifest.json", manifest)
-        environment = {**os.environ, "JAX_PLATFORMS": "cpu", "OMP_NUM_THREADS": "1", "OPENBLAS_NUM_THREADS": "1", "MKL_NUM_THREADS": "1"}
+        environment = {**os.environ, "JAX_PLATFORMS": backend, "OMP_NUM_THREADS": "1", "OPENBLAS_NUM_THREADS": "1", "MKL_NUM_THREADS": "1", "PYTHONUNBUFFERED": "1"}
+        if backend == "cuda":
+            environment.update(CUDA_VISIBLE_DEVICES="0", XLA_PYTHON_CLIENT_PREALLOCATE="false", XLA_PYTHON_CLIENT_MEM_FRACTION="0.40")
+        manifest["worker_environment"] = {name: environment.get(name) for name in ("JAX_PLATFORMS", "CUDA_VISIBLE_DEVICES", "XLA_PYTHON_CLIENT_PREALLOCATE", "XLA_PYTHON_CLIENT_MEM_FRACTION", "OMP_NUM_THREADS", "OPENBLAS_NUM_THREADS", "MKL_NUM_THREADS")}
         command = [sys.executable, "-m", "zhenmode.execution.worker", "--run-directory", str(directory), "--root", str(Path(root).resolve())]
         manifest["command"] = command
+        write_json(directory / "manifest.json", manifest)
         with (directory / "process.log").open("x", encoding="utf-8") as log:
-            result = subprocess.run(command, cwd=directory, env=environment, stdout=log, stderr=subprocess.STDOUT, timeout=resources["wall_seconds"], check=False)
+            if backend == "cuda":
+                remaining = max(0, resources["wall_seconds"] - (time.monotonic() - start))
+                if not remaining:
+                    raise subprocess.TimeoutExpired(command, resources["wall_seconds"])
+                result, enforcement = run_cuda_worker(command, cwd=directory, env=environment, stdout=log, resources=resources | {"wall_seconds": remaining})
+                manifest["resource_enforcement"] = enforcement
+                manifest["exit_code"] = result.returncode
+                if enforcement["stop_reason"]:
+                    raise RuntimeError(f"CUDA worker stopped: {enforcement['stop_reason']}")
+            else:
+                result = subprocess.run(command, cwd=directory, env=environment, stdout=log, stderr=subprocess.STDOUT, timeout=resources["wall_seconds"], check=False)
         manifest["exit_code"] = result.returncode
         worker_report = directory / "worker-report.json"
         if not worker_report.is_file():
@@ -135,10 +151,17 @@ def run_experiment(expanded, root, outputs, *, dry_run=False, evaluate=False):
         report = json.loads(worker_report.read_text(encoding="utf-8"))
         allowed = {"executed_source_files", "result_path", "execution_hardware", "resource_enforcement", "verdict",
                    "requested_steps", "accepted_steps", "duration_complete", "forcing_provenance", "data_sha256",
-                   "result_sha256", "result_source_identity", "physical_grid_sha256", "physical_grid_path", "physical_grid_artifact_sha256", "execution_grid_metadata"}
+                   "result_sha256", "result_source_identity", "physical_grid_sha256", "physical_grid_path", "physical_grid_artifact_sha256", "execution_grid_metadata", "timings", "device_memory_stats"}
         if set(report) - allowed:
             raise RuntimeError(f"worker report has unexpected fields: {sorted(set(report) - allowed)}")
+        enforcement = manifest.get("resource_enforcement") if backend == "cuda" else None
         manifest.update(report)
+        if enforcement is not None:
+            manifest["resource_enforcement"] = enforcement
+        if "timings" in report:
+            manifest["cost"].update({name: report["timings"][name] for name in ("compile_s", "integration_s", "io_s")})
+            manifest["cost"]["hardware"] = report["execution_hardware"]["device_kind"]
+            manifest["cost"]["component_scope"] = report["timings"]["scope"]
         result_path = Path(report["result_path"])
         if not result_path.is_file() or file_hash(result_path) != report["result_sha256"]:
             raise RuntimeError("worker result artifact does not match recorded hash")

@@ -22,22 +22,19 @@ from zhenmode.model.solver.geometry.grid import (
 from zhenmode.model.solver.numerics.backend import np
 
 
-def _input_files(args, *, seasonal=None, air=None, default_config=DEFAULT_CONFIG):
+def _input_files(args, *, seasonal=None, air=None, default_config=DEFAULT_CONFIG, initial_files=None):
     """Selected loader paths, including WOA's documented npz precedence."""
     import zhenmode.model.inputs.bathymetry as grid_module
     import zhenmode.model.inputs.forcing.reanalysis as reanalysis
     import zhenmode.model.inputs.initial_conditions as woa_data
 
-    bathy = Path(default_config.bathymetry_file)
-    if (not bathy.is_file() or grid_module.Dataset is None) and Path(str(bathy) + ".npz").is_file():
-        bathy = Path(str(bathy) + ".npz")
+    bathy = Path(grid_module.selected_bathymetry_path(default_config.bathymetry_file))
     paths = {"bathymetry": bathy}
     if args.init_from:
         paths["initial_fields"] = Path(args.init_from)
     else:
-        for name, filename in woa_data.WOA_FILES.items():
-            path = Path(filename)
-            paths[name] = Path(filename + ".npz") if Path(filename + ".npz").is_file() else path
+        for name, filename in (woa_data.WOA_FILES if initial_files is None else initial_files).items():
+            paths[name] = Path(woa_data.selected_woa_path(filename, exact=initial_files is not None))
     seasonal = args.seasonal_wind if seasonal is None else seasonal
     months = range(12) if seasonal else [int(args.month[5:7]) - 1]
     year = args.wind_year if seasonal else int(args.month[:4])

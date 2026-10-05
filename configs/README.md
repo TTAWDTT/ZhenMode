@@ -1,9 +1,10 @@
 # 配置总索引
 
-正式方法唯一明确：既有 ZhenMode 全球有限差分生产主线。这里保存四套 ZhenMode 预设和两套 MOM6 原生输入接入预设，全部指向现有文件。它们是可审阅的运行配方或接入契约，不是本轮推荐参数，也不是已经完成长期气候验收的配置。
+正式方法唯一明确：既有 ZhenMode 全球有限差分生产主线。这里保存 ZhenMode 预设和两套 MOM6 原生输入接入预设，全部指向现有文件。它们是可审阅的运行配方或接入契约，不是本轮推荐参数，也不是已经完成长期气候验收的配置。
 
 | 方法 / preset ID | 真实预设文件 | 共同 case | 实验或接入关系 | 来源与验证身份 |
 | --- | --- | --- | --- | --- |
+| ZhenMode / `global-045deg-seasonal-checkpoints` | [严格重启点配方](zhenmode/presets/global-045deg-seasonal-checkpoints.yaml) | 同一 365 天全球问题 | [显式 GPU 基线](../experiments/zhenmode/global-045deg/global-045deg-seasonal-gpu-baseline.yaml) | 继承既有季节强迫配方，仅增加 10 天 checkpoint；实际状态由 run manifest 记录 |
 | ZhenMode / `global-045deg-seasonal` | [0.45° 季节强迫](zhenmode/presets/global-045deg-seasonal.yaml) | [365 天全球问题](../cases/global-045deg-seasonal-365d.yaml) | [基线](../experiments/zhenmode/global-045deg/global-045deg-seasonal-baseline.yaml)、[垂向扩散单因素](../experiments/zhenmode/global-045deg/20261003-reduce-vertical-mixing.yaml)、[三点扫参](../experiments/zhenmode/global-045deg/sweep-vertical-mixing.yaml) | 参数来自 `run_candidate_baseline_045_icefloor.sh` 的生产 FD 调用；当前已展开，365 天未重新积分 |
 | ZhenMode / `global-050deg-wind-only` | [0.5° 仅风](zhenmode/presets/global-050deg-wind-only.yaml) | [共同仅风 30 天](../cases/global-050deg-wind-only-30d.yaml) | [FD 基线](../experiments/zhenmode/global-050deg/global-050deg-wind-only-baseline.yaml)，对应下方 MOM6 仅风接入 | 参数来自既有 `run_industrial_comparison_050_wind_only.sh`；当前已展开，30 天未重新积分 |
 | ZhenMode / `global-050deg-restoring` | [0.5° 温盐恢复](zhenmode/presets/global-050deg-restoring.yaml) | [共同恢复 30 天](../cases/global-050deg-restoring-30d.yaml) | [FD 基线](../experiments/zhenmode/global-050deg/global-050deg-restoring-baseline.yaml)，对应下方 MOM6 恢复接入 | 参数来自既有 `run_industrial_comparison_050_restore_30d.sh`；当前已展开，30 天未重新积分 |

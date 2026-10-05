@@ -49,23 +49,23 @@ forcing:
     real_air_temp: true
 data:
 - role: bathymetry
-  path: data/ETOPO_2022_v1_r3600x1800_surface.nc.npz
-  version: ETOPO2022 v1 0.1-degree; local extracted twin
+  path: data/ETOPO_2022_v1_r3600x1800_surface.nc
+  version: ETOPO2022 v1 0.1-degree NetCDF; verify actual source file
   sha256: null
   status: pending
-  source: NOAA ETOPO2022; see docs/input_sources_zh.md
+  source: NOAA ETOPO2022; see cases/README.md; synthetic test relief is not this input
 - role: temperature
-  path: data/woa/woa23_decav_t00_01.nc.npz
+  path: data/woa/woa23_decav_t00_01.nc
   version: WOA2023 decav annual temperature 1-degree
   sha256: null
   status: pending
-  source: NOAA World Ocean Atlas 2023; original or byte-equivalent extracted twin
+  source: NOAA World Ocean Atlas 2023; pin the selected original or independently verified extracted cache
 - role: salinity
-  path: data/woa/woa23_decav_s00_01.nc.npz
+  path: data/woa/woa23_decav_s00_01.nc
   version: WOA2023 decav annual salinity 1-degree
   sha256: null
   status: pending
-  source: NOAA World Ocean Atlas 2023; original or byte-equivalent extracted twin
+  source: NOAA World Ocean Atlas 2023; pin the selected original or independently verified extracted cache
 - role: wind-01
   path: data/wind/monthly_mean_900.npz
   version: NCEP/NCAR R1 10-m wind monthly mean 2023-01
