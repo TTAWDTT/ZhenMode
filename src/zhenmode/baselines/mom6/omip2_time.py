@@ -7,7 +7,9 @@ This adapter does not qualify the rest of the coupled experiment.
 from __future__ import annotations
 
 import hashlib
+import itertools
 import json
+import math
 from pathlib import Path
 
 from zhenmode.provenance.sources import load_json, sha256_file
@@ -15,6 +17,70 @@ from zhenmode.provenance.sources import load_json, sha256_file
 _PIN = load_json(Path(__file__).with_name('omip2-pins.json'))['bounded_mean_source']
 FMS_SOURCE, FMS_SHA256 = _PIN['path'], _PIN['sha256']
 MOM_TIME_UNITS = 'seconds since 1958-01-01 00:00:00'
+_COPY_BYTES = 8 * 1024**2
+
+
+def _mean_clock_alignment(reader, fields, dt_atmos, dt_cpld):
+    """Every interior source boundary must lie on its actual caller's clock.
+
+    A window may start within a source record if no request crosses bounds.
+    Duration alone does not prove this: 00:30 + hourly steps crosses 03:00.
+    """
+    report = {}
+    for field, (_, _, _, interpretation, _) in fields.items():
+        if interpretation != 'mean':
+            continue
+        interval = dt_cpld if field in {'runoff', 'calving'} else dt_atmos
+        boundaries = {bound for record in reader.records[field] for bound in record.bounds
+                      if reader.start < bound < reader.end}
+        for bound in boundaries:
+            phase = (bound-reader.start)/interval
+            if not math.isclose(phase, round(phase), rel_tol=0, abs_tol=1e-9):
+                raise ValueError(f'{field} source boundary does not align with the coupling clock')
+        report[field] = {'interior_boundaries': len(boundaries), 'interval_seconds': interval,
+                         'aligned': True}
+    return report
+
+
+def _variable_blocks(shape, itemsize):
+    """Multiaxis slices bounding each numeric array, including a large single record."""
+    if itemsize > _COPY_BYTES or any(length <= 0 for length in shape):
+        raise ValueError('invalid numeric variable shape or block budget')
+    block = list(shape)
+    while math.prod(block)*itemsize > _COPY_BYTES:
+        axis = max(range(len(block)), key=lambda axis: block[axis])
+        block[axis] = (block[axis]+1)//2
+    yield from (tuple(slice(start, min(start+width, length))
+                      for start, width, length in zip(starts, block, shape, strict=True))
+                for starts in itertools.product(*(range(0, length, width)
+                                                  for length, width in zip(shape, block, strict=True))))
+
+
+def _copy_variable(source, clone, source_time, is_time):
+    """Stream actual NetCDF arrays; validate all values and normalized timestamps."""
+    import netCDF4
+    import numpy as np
+
+    for block in _variable_blocks(source.shape, source.dtype.itemsize):
+        values = source[block]
+        if np.ma.is_masked(values) or not np.isfinite(values).all():
+            raise ValueError('missing or nonfinite prepared data: '+source.name)
+        if is_time:
+            dates = netCDF4.num2date(values, source_time.units, calendar=source_time.calendar)
+            if any(date.year < 1958 for date in np.asarray(dates).flat):
+                raise ValueError('FMS native time precedes frozen 1958 reference')
+            normalized = netCDF4.date2num(dates, MOM_TIME_UNITS, calendar='gregorian')
+            actual_dates = netCDF4.num2date(normalized, MOM_TIME_UNITS, calendar='gregorian')
+            if not np.array_equal(netCDF4.date2num(actual_dates, source_time.units,
+                                                  calendar=source_time.calendar), values):
+                raise ValueError('calendar/reference normalization changed actual timestamps')
+            values = normalized
+        clone[block] = values
+
+
+def _file_identity(path):
+    stat = path.stat()
+    return stat.st_dev, stat.st_ino, stat.st_size, stat.st_mtime_ns, stat.st_ctime_ns
 
 
 def prepare_time_inputs(prepared, output, *, dt_atmos=3600, dt_cpld=3600):
@@ -49,12 +115,14 @@ def prepare_time_inputs(prepared, output, *, dt_atmos=3600, dt_cpld=3600):
     for row in manifest['files']:
         if row['sha256'] != receipt['fields'][row['field']]['prepared_sha256']:
             raise ValueError('native bytes disagree with spatial preparation receipt')
+    mean_clocks = _mean_clock_alignment(reader, FIELDS, dt_atmos, dt_cpld)
     output.mkdir(parents=True, exist_ok=False)
     report = {'status':'running', 'scope':'FMS_time_format_only_not_complete_case',
               'data_kind':reader.data_kind, 'dt_atmos_seconds':dt_atmos, 'dt_cpld_seconds':dt_cpld,
               'input_preparation_sha256':sha256_file(prepared/'preparation.json'),
               'input_manifest_sha256':sha256_file(prepared/'forcing.json'),
               'executed_adapter_sha256':sha256_file(__file__), 'files':{},
+              'mean_clock_validation':mean_clocks, 'numeric_copy_block_limit_bytes':_COPY_BYTES,
               'execution_ready':False, 'climate_qualification':False}
     try:
         for row in manifest['files']:
@@ -64,6 +132,10 @@ def prepare_time_inputs(prepared, output, *, dt_atmos=3600, dt_cpld=3600):
             target = output / (variable+'.nc')
             phase = ('left_endpoint' if field in {'runoff','calving'} else 'right_endpoint')
             interval = dt_cpld if field in {'runoff','calving'} else dt_atmos
+            before = _file_identity(path)
+            original_sha = sha256_file(path)
+            if before[2] != row['bytes'] or original_sha != row['sha256']:
+                raise ValueError('source bytes changed before time conversion: '+field)
             with netCDF4.Dataset(path) as original, netCDF4.Dataset(target, 'w') as native:
                 source_time = original['time']
                 original_time_units = source_time.units
@@ -72,26 +144,14 @@ def prepare_time_inputs(prepared, output, *, dt_atmos=3600, dt_cpld=3600):
                 for name, dimension in original.dimensions.items():
                     native.createDimension(name, None if name == 'time' else len(dimension))
                 for name, source in original.variables.items():
-                    values = source[:]
-                    if np.ma.is_masked(values) or not np.isfinite(values).all():
-                        raise ValueError('missing or nonfinite prepared data: '+name)
-                    dates = None
-                    if name in {'time',bound_name}:
-                        dates = netCDF4.num2date(values, source_time.units, calendar=source_time.calendar)
-                        if any(date.year < 1958 for date in dates.flat):
-                            raise ValueError('FMS native time precedes frozen 1958 reference')
-                        normalized = netCDF4.date2num(dates, MOM_TIME_UNITS, calendar='gregorian')
-                        actual_dates = netCDF4.num2date(normalized, MOM_TIME_UNITS, calendar='gregorian')
-                        if not np.array_equal(netCDF4.date2num(actual_dates, source_time.units,
-                                                              calendar=source_time.calendar), values):
-                            raise ValueError('calendar/reference normalization changed actual timestamps')
                     clone = native.createVariable(name, source.dtype, source.dimensions,
                         fill_value=source.getncattr('_FillValue') if '_FillValue' in source.ncattrs() else False)
                     clone.setncatts({key:source.getncattr(key) for key in source.ncattrs() if key != '_FillValue'})
-                    clone[:] = normalized if dates is not None else values
+                    is_time = name in {'time',bound_name}
+                    _copy_variable(source, clone, source_time, is_time)
                     if name in {'lon','lat','time'}:
                         clone.cartesian_axis = {'lon':'X','lat':'Y','time':'T'}[name]
-                    if dates is not None:
+                    if is_time:
                         clone.calendar = 'gregorian'
                         clone.units = MOM_TIME_UNITS
                 if interpretation == 'mean':
@@ -104,7 +164,11 @@ def prepare_time_inputs(prepared, output, *, dt_atmos=3600, dt_cpld=3600):
                     native[variable].time_avg_info = 'average_T1,average_T2'
                     native[variable].zhenmode_interval_sampling = phase
                     native[variable].zhenmode_interval_seconds = np.int32(interval)
-            report['files'][field] = {'path':target.name, 'original_sha256':row['sha256'],
+            final_sha = sha256_file(path)
+            if _file_identity(path) != before or final_sha != original_sha:
+                raise ValueError('source bytes changed during time conversion: '+field)
+            report['files'][field] = {'path':target.name, 'original_sha256':original_sha,
+                'source_revalidated_after_copy':True,
                 'sha256':sha256_file(target), 'bytes':target.stat().st_size,
                 'mean_phase':phase if interpretation == 'mean' else None,
                 'interval_seconds':interval if interpretation == 'mean' else None,
@@ -112,8 +176,8 @@ def prepare_time_inputs(prepared, output, *, dt_atmos=3600, dt_cpld=3600):
                 'original_time_units':original_time_units, 'native_time_units':MOM_TIME_UNITS,
                 'calendar':'gregorian'}
         report['status'] = 'prepared'
-    except Exception as error:
-        report.update(status='failed', reason=str(error))
+    except (Exception, KeyboardInterrupt) as error:
+        report.update(status='failed', reason_type=type(error).__name__, reason=str(error))
         raise
     finally:
         (output/'time-inputs.json').write_text(json.dumps(report,indent=2)+'\n')
