@@ -23,7 +23,7 @@ import numpy as np
 sys.path.insert(0, os.path.join(
     os.path.dirname(os.path.abspath(__file__)), "..", "src"))
 
-from zhenmode.model.config import ETOPO_FILENAME
+from zhenmode.model.inputs.sources import ETOPO_FILENAME
 
 N_LON, N_LAT = 3600, 1800
 RES = 0.1

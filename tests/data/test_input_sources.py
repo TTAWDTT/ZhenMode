@@ -3,6 +3,10 @@
 import base64
 import hashlib
 import json
+import os
+import subprocess
+import sys
+import textwrap
 from io import BytesIO
 
 import numpy as np
@@ -11,8 +15,68 @@ from netCDF4 import Dataset
 
 from tests.support.data.input_quality import cli, example
 from tests.support.data.input_sources import netcdf_source, write_inputs
+from tests.support.paths import REPOSITORY_ROOT
 from zhenmode.model.inputs.quality import audit_woa_variable, enforce_strict_quality
 from zhenmode.model.inputs.sources import InputSnapshot, load_climatology_snapshot
+
+
+def test_npz_readers_and_solver_import_without_netcdf4(tmp_path):
+    bathy = tmp_path / 'relief.nc'
+    np.savez(str(bathy) + '.npz', z=np.full((20, 40), -3000, dtype=np.int16),
+             lon=np.arange(40) * .1, lat=-90. + (.5 + np.arange(20)) * .1)
+    typed = tmp_path / 'temperature.npz'
+    raw, _ = example()
+    np.savez(typed, **raw)
+    netcdf = tmp_path / 'temperature.nc'
+    netcdf.write_bytes(b'CDF\x01')
+    environment = {**os.environ, 'PYTHONPATH': str(REPOSITORY_ROOT / 'src'),
+                   'OCEAN_SOLVER_BATHYMETRY': str(bathy)}
+    probe = subprocess.run([sys.executable, '-c', textwrap.dedent('''
+        import importlib.abc
+        import sys
+        import numpy as np
+        class NoNetCDF(importlib.abc.MetaPathFinder):
+            def find_spec(self, fullname, path=None, target=None):
+                if fullname == 'netCDF4' or fullname.startswith('netCDF4.'):
+                    raise ModuleNotFoundError('netCDF4 unavailable in this witness')
+        sys.meta_path.insert(0, NoNetCDF())
+        from zhenmode.model.config import DEFAULT_CONFIG
+        from zhenmode.model.inputs.bathymetry import Dataset, _read_etopo_global
+        from zhenmode.model.inputs.sources import InputSnapshot, load_climatology_snapshot
+        from zhenmode.model.solver.factory import make_solver_global
+        assert callable(make_solver_global) and Dataset is None
+        assert DEFAULT_CONFIG.bathymetry_file == sys.argv[1]
+        depth, lon, lat = _read_etopo_global(sys.argv[1], resolution=1., lat_max=90.)
+        assert depth.shape == (4, 2)
+        np.testing.assert_array_equal(depth, 3000.)
+        np.testing.assert_allclose(lon, [.5, 1.5, 2.5, 3.5])
+        np.testing.assert_allclose(lat, [-89.5, -88.5])
+        field = load_climatology_snapshot(InputSnapshot.read(sys.argv[2]), 'T')
+        np.testing.assert_array_equal(field['data'], np.full((2, 3, 4), 7.))
+        try:
+            load_climatology_snapshot(InputSnapshot.read(sys.argv[3]), 'T')
+        except ImportError as error:
+            assert 'typed .npz twin' in str(error)
+        else:
+            raise AssertionError('NetCDF must require its reader')
+        assert 'netCDF4' not in sys.modules
+    '''), str(bathy), str(typed), str(netcdf)], cwd=tmp_path, env=environment,
+        capture_output=True, text=True, encoding='utf-8', timeout=30)
+    assert probe.returncode == 0, probe.stdout + probe.stderr
+
+
+def test_documented_synthetic_bathymetry_cli(tmp_path):
+    probe = subprocess.run([sys.executable, str(REPOSITORY_ROOT / 'scripts/make_synthetic_bathymetry.py'),
+                            '--out-dir', str(tmp_path)], cwd=tmp_path, capture_output=True,
+                           text=True, encoding='utf-8', timeout=30)
+    assert probe.returncode == 0, probe.stdout + probe.stderr
+    assert 'NOT ETOPO' in probe.stdout
+    # Independent public format/sign contract, with no real data or repository output.
+    with np.load(tmp_path / 'ETOPO_2022_v1_r3600x1800_surface.nc.npz') as saved:
+        assert set(saved.files) == {'z', 'lon', 'lat'}
+        assert saved['z'].shape == (1800, 3600) and saved['z'].dtype == np.int16
+        assert .4 < np.mean(saved['z'] < 0) < .95
+        assert np.max(saved['z']) == 0 and np.min(saved['z']) < -3000
 
 
 def test_typed_normal_twin_input_passes_strict(tmp_path):

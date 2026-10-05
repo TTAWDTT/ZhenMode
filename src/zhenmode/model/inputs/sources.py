@@ -12,7 +12,6 @@ from pathlib import Path
 from zipfile import BadZipFile
 
 import numpy as np
-from netCDF4 import Dataset
 
 from zhenmode.model.inputs.quality import normalize_source
 from zhenmode.provenance.sources import source_root
@@ -88,6 +87,12 @@ def load_climatology_snapshot(snapshot, variable):
             raise ValueError('unsupported twin variable, units, format or missing encoding')
         return raw
     role, name = {'T': ('temperature', 't_an'), 'S': ('salinity', 's_an')}[variable]
+    try:
+        from netCDF4 import Dataset
+    except ImportError as error:
+        raise ImportError(
+            'netCDF4 is required for NetCDF climatology; provide a typed .npz twin instead'
+        ) from error
     try:
         with Dataset('input_snapshot', memory=snapshot.content) as dataset:
             source = dataset.variables[name]
