@@ -162,6 +162,12 @@ def prepare_jra_window(
         or not np.allclose(lat, grid["lat_bounds"].mean(axis=1), atol=1e-10, rtol=0)
     ):
         raise ValueError("native centers/mask/positive areas disagree")
+    # Reusing an incorrect supplied area for both division and a budget check
+    # would cancel its error. Derive the physical rectangle independently.
+    derived_area = (6371000.0**2 * np.deg2rad(np.diff(grid['lon_bounds'], axis=1))
+                    * np.diff(np.sin(np.deg2rad(grid['lat_bounds'])), axis=1).T)
+    if not np.allclose(area, derived_area, rtol=1e-10, atol=1e-6):
+        raise ValueError('native area disagrees with spherical cell bounds and 6371000m radius')
     original_area = load_json(runoff_area_path)
     path = runoff_area_path.parent / original_area["path"]
     if (
@@ -202,6 +208,9 @@ def prepare_jra_window(
         "numerical_environment": {"numpy": np.__version__, "netCDF4": netCDF4.__version__},
         "acquisition_sha256": sha256_file(acquisition),
         "grid_sha256": sha256_file(grid_path),
+        "native_area_validation": {"radius_m": 6371000.0,
+            "definition": "R2_delta_longitude_delta_sine_latitude",
+            "maximum_relative_difference": float(np.max(np.abs(area-derived_area)/derived_area))},
         "runoff_area_sha256": sha256_file(path),
         "area_semantics_source": AREA_SOURCE,
         "window_seconds": [start, end],
@@ -381,9 +390,10 @@ def prepare_jra_window(
             end_seconds=end,
         ).sample(start, interval_end_seconds=min(end, start + 10800))
         report["status"] = "prepared_and_reader_verified"
-    except Exception as error:
+    except (Exception, KeyboardInterrupt) as error:
         report["status"] = "failed"
-        report["reason"] = str(error)
+        report["reason"] = str(error) or type(error).__name__
+        report["reason_type"] = type(error).__name__
         raise
     finally:
         (output / "preparation.json").write_text(

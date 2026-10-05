@@ -56,5 +56,9 @@
     "src/MOM6/config_src/drivers/FMS_cap/MOM_surface_forcing_gfdl.F90": "7ff203061ec9b6bd21673aa1392d33335966b5428db16ce22c0fa985e93782b6",
     "src/coupler/ice_ocean_flux_exchange.F90": "9b3e7aea93c26cf3ee6057b26593b3abda04d611925d7a0341ba1db2376713ba"
   },
+  "latent_export_source": {
+    "path": "src/SIS2/src/ice_model.F90",
+    "sha256": "2e90394d517a1025081e85a167bdb04474cd28a4288ad553cf25651c888f213e"
+  },
   "status": "pinned_candidate_not_protocol_qualified"
 }

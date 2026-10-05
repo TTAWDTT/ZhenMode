@@ -36,6 +36,7 @@ MOM6系数对照在Linux中使用`python scripts/check_mom6_coefficients.py --so
 原生矩形窗口：`zhenmode benchmark prepare-forcing --acquisition LOCAL_DATA/acquisition-1958.json --grid NATIVE_GEOMETRY.npz --runoff-area ORIGINAL_AREA.json --output NEW_INPUT --start 1958-01-01T00:00:00 --end 1958-01-01T06:00:00`。外层仍须单CPU/180秒/4GiB限制。网格声明`lon/lat/lon_bounds/lat_bounds/area/wet_mask`，可加原地形推导的`land_fraction`；面积引用声明path/variable/bytes/sha256。天气双线性、均通量球面面积、排水沿岸kg/s映射分别记录，不提供tripolar映射或缺测归一化。原始面积按作者说明采用整格面积，不能直接照抄有误的CMOR `cell_measures`标签。输出不授予海洋执行资格；制造数据仍为manufactured，错误单位、许可缺失、远距离非零排水和改写原始字节拒绝。
 
 潜热表达式检查：`python scripts/check_mom6_latent_energy.py --examples PINNED_CHECKOUT --fms-build BUILD/build/fms --output NEW_ENERGY_CHECK`。编译实际暂存的SIS2/MOM/耦合库存源码片段，独立SI期望值不由被测实现生成；此检查不执行完整耦合或大气—冰顶部预算。
+该检查还核对固定`SIS2/src/ice_model.F90`并执行其实际内部能量→W/m²导出语句及新耦合传递调用，采用不同的SIS/MOM单位缩放。单格交换仅提供恒等存储，不验证全球重分配；不能把`Ice%flux_lh`再除一次潜热换算因子，它在公开边界已经是W/m²。
 
 内部调用直接引用所属模块；结构见 [方法与架构](production_architecture_zh.md)。旧源码的运行和严格 checkpoint 需检出对应 Git 提交，不通过路径别名或替换 hash 绕过身份检查。
 

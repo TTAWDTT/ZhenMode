@@ -29,6 +29,13 @@ def check(examples, fms_build, output):
     mom = next(text for path,text in sources.items() if path.endswith('MOM_surface_forcing_gfdl.F90'))
     coupler = next(text for path,text in sources.items() if path.endswith('ice_ocean_flux_exchange.F90'))
     producer = between(sis,'    flux_lh(i,j,0) = (2.5008e6','  enddo ; enddo')
+    export_pin = PINS['latent_export_source']
+    export_path = Path(examples)/export_pin['path']
+    if sha256_file(export_path) != export_pin['sha256']:
+        raise ValueError('SIS physical export source does not match the audited pin')
+    exporter = between(export_path.read_text(), '    Ice%flux_lh(i2,j2) =', '    Ice%fprec(i2,j2) =')
+    handoff = between(coupler, '    call flux_ice_to_ocean_redistribute(Ice, Ocean, Ice%flux_lh, &',
+                      '    call mpp_clock_end(fluxIceOceanClock)')
     consumer = between(mom,'    fluxes%latent(i,j) = 0.0','    if (associated(IOB%sw_flux_vis_dir))')
     ice_stock = between(coupler,'    from_dq = Dt_cpl * SUM( Ice%area * ( &','    Ice_stock(ISTOCK_HEAT)')
     ocean_stock = between(coupler,'    from_dq = SUM( ocean_cell_area * wet *( Ice_Ocean_Boundary%sw_flux_vis_dir','    Ocn_stock(ISTOCK_HEAT)')
@@ -38,7 +45,7 @@ def check(examples, fms_build, output):
 implicit none
 integer,parameter::FATAL=1
 type units
-real::C_to_degC=2.,J_kg_to_Q=.01,W_m2_to_QRZ_T=.02
+real::C_to_degC=2.,J_kg_to_Q=.01,W_m2_to_QRZ_T=.02,RZ_T_to_kg_m2s=.5,QRZ_T_to_W_m2=50.
 end type
 type sea
 real::SST_C(1,1)
@@ -47,6 +54,7 @@ type geometry
 real::mask2dT(1,1)=1
 end type
 type boundary
+integer::xtype=0
 real,pointer::fprec(:,:)=>null(),calving(:,:)=>null(),latent_flux(:,:)=>null(),q_flux(:,:)=>null()
 real::sw_flux_vis_dir(1,1)=0,sw_flux_vis_dif(1,1)=0,sw_flux_nir_dir(1,1)=0,sw_flux_nir_dif(1,1)=0
 real::lw_flux(1,1)=0,t_flux(1,1)=0
@@ -54,6 +62,9 @@ end type
 type ice_fields
 real::area(1,1)=3,fprec(1,1)=0,calving(1,1)=0,flux_t(1,1)=0,flux_q(1,1)=0,flux_lh(1,1)=0
 real::flux_sw_vis_dir(1,1)=0,flux_sw_vis_dif(1,1)=0,flux_sw_nir_dir(1,1)=0,flux_sw_nir_dif(1,1)=0,flux_lw(1,1)=0
+end type
+type ocean_top
+real::flux_lh_ocn_top(1,1)
 end type
 type flux_fields
 real::latent(1,1),latent_fprec_diag(1,1),latent_frunoff_diag(1,1),latent_evap_diag(1,1)
@@ -63,6 +74,14 @@ real::latent_heat_fusion
 logical::check_no_land_fluxes=.false.
 end type
 contains
+subroutine flux_ice_to_ocean_redistribute(Ice, Ocean, source, destination, xtype, do_area_weighted_flux)
+type(ice_fields)::Ice,Ocean
+real::source(:,:),destination(:,:)
+integer::xtype
+logical::do_area_weighted_flux
+! One-cell identity exchange storage; not a test of global redistribution.
+destination=source
+end subroutine
 subroutine MOM_error(level,message)
 integer::level
 character(*)::message
@@ -80,30 +99,34 @@ program check_energy
 use storage
 use constants_mod,only:HLF
 implicit none
-type(units)::US
+type(units)::US,SIS_US
 type(sea)::sOSS
 type(geometry)::G
 type(boundary)::IOB,Ice_Ocean_Boundary
-type(ice_fields)::Ice
+type(ice_fields)::Ice,Ocean
+type(ocean_top)::IOF
 type(flux_fields)::fluxes
 type(controls)::CS
 real::flux_lh(1,1,0:0),evap(1,1,0:0),from_dq,Dt_cpl,kg_m2_s_conversion
 real::ocean_cell_area(1,1),wet(1,1),temperature(4),mass(4)
-integer::i,j,i0,j0,k
-i=1;j=1;i0=0;j0=0;Dt_cpl=1800;kg_m2_s_conversion=2
+integer::i,j,i0,j0,i2,j2,k
+logical::do_area_weighted_flux=.true.
+i=1;j=1;i2=1;j2=1;i0=0;j0=0;Dt_cpl=1800;kg_m2_s_conversion=2
+SIS_US=units(2.,.01,.005,2.,200.)
 CS%latent_heat_fusion=HLF*US%J_kg_to_Q
 allocate(IOB%latent_flux(1,1),IOB%fprec(1,1),IOB%calving(1,1),IOB%q_flux(1,1))
 IOB%fprec=0;IOB%calving=0;IOB%q_flux=999
 temperature=[-1.,0.,10.,30.];mass=[1e-5,0.,-1e-5,2e-5]
 do k=1,4
-sOSS%SST_C=temperature(k)/US%C_to_degC;evap(1,1,0)=mass(k)
-''' + producer + '''
-write(*,'(a,es25.17)') 'WATER ',flux_lh(1,1,0)/US%J_kg_to_Q
-IOB%latent_flux=flux_lh(1,1,0)/US%J_kg_to_Q
+sOSS%SST_C=temperature(k)/SIS_US%C_to_degC;evap(1,1,0)=mass(k)/SIS_US%RZ_T_to_kg_m2s
+''' + producer.replace('US%', 'SIS_US%') + '''
+IOF%flux_lh_ocn_top=flux_lh(1,1,0)
+''' + exporter.replace('US%', 'SIS_US%') + '''
+write(*,'(a,es25.17)') 'WATER ',Ice%flux_lh(1,1)
+Ice_Ocean_Boundary%latent_flux=>IOB%latent_flux
+''' + handoff + '''
 ''' + consumer + '''
 write(*,'(a,es25.17)') 'MOM ',fluxes%latent(1,1)/US%W_m2_to_QRZ_T
-Ice%flux_lh=IOB%latent_flux
-Ice_Ocean_Boundary%latent_flux=>IOB%latent_flux
 Ice_Ocean_Boundary%fprec=>IOB%fprec
 Ice_Ocean_Boundary%calving=>IOB%calving
 Ice_Ocean_Boundary%q_flux=>IOB%q_flux
@@ -150,6 +173,8 @@ end program
                                    'adapted_sha256':__import__('hashlib').sha256(text.encode()).hexdigest()}
                                for path,text in sources.items()},
             'harness_sha256':sha256_file(__file__),'driver_sha256':sha256_file(output/'driver.f90'),
+            'actual_SIS_export_sha256':sha256_file(export_path),
+            'handoff_scope':'actual_export_and_coupler_call_one_cell_identity_storage_not_global_mapper',
             'fms_constants_sha256':sha256_file(Path(fms_build)/'constants_mod.mod'),
             'binary_sha256':sha256_file(output/'check_energy'),'command':command,'actual':values,
             'execution_ready':False,'climate_qualification':False}

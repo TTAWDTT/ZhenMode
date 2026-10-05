@@ -174,3 +174,35 @@ def test_hash_verified_original_still_requires_geographic_units_and_license(tmp_
     with pytest.raises(ValueError,match='metadata mismatch'):
         prepare_jra_window(received,grid,area,tmp_path/'failed',start=epoch,end=epoch+21600,
                            maximum_routing_distance_m=20e6)
+
+
+@pytest.mark.parametrize('change', ['scaled', 'permuted'])
+def test_positive_native_area_must_match_independent_bounds(tmp_path, change):
+    received, grid, area, epoch = original_fixture(tmp_path)
+    with np.load(grid) as ds:
+        values = {key:ds[key] for key in ds.files}
+    if change == 'scaled':
+        values['area'] *= 2
+    else:
+        values['area'][0,0] *= .9
+        values['area'][1,0] *= 1.1  # Same global sum, wrong local freshwater flux.
+    np.savez(grid, **values)
+    with pytest.raises(ValueError, match='area disagrees with spherical cell bounds'):
+        prepare_jra_window(received, grid, area, tmp_path/'rejected', start=epoch,
+                           end=epoch+21600, maximum_routing_distance_m=20e6)
+    assert not (tmp_path/'rejected').exists()
+
+
+def test_interrupted_preprocessing_keeps_failed_receipt(tmp_path, monkeypatch):
+    from zhenmode.execution import preparation
+
+    received, grid, area, epoch = original_fixture(tmp_path)
+    def interrupt(*args, **kwargs):
+        raise KeyboardInterrupt()
+    monkeypatch.setattr(preparation, 'remap_rectilinear_means', interrupt)
+    with pytest.raises(KeyboardInterrupt):
+        prepare_jra_window(received, grid, area, tmp_path/'interrupted', start=epoch,
+                           end=epoch+21600, maximum_routing_distance_m=20e6)
+    receipt = json.loads((tmp_path/'interrupted/preparation.json').read_text())
+    assert receipt['status'] == 'failed' and receipt['reason_type'] == 'KeyboardInterrupt'
+    assert receipt['reason'] == 'KeyboardInterrupt'
