@@ -8,6 +8,7 @@
 | case 和数据 | [输入说明](../cases/README.md) |
 | 配置、实验与扫参 | [预设](../configs/README.md)、[实验说明](experiments_zh.md) |
 | 评分与比较 | [评价说明](evaluation_zh.md) |
+| 行业参照 benchmark | [具体规范](benchmark_spec_zh.md)、[ZhenMode／MOM6 机制符合表](benchmark_compliance_zh.md) |
 | 外部对照 | [MOM6](baselines_zh.md) |
 | 开发与验证命令 | [开发说明](development.md) |
 | GPU 环境 | [GPU 运行](gpu_runtime_zh.md) |

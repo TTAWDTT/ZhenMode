@@ -1,0 +1,61 @@
+# ZhenMode／MOM6 机制符合表
+
+对应[规范 zhenmode-omip2-physical-v0.1](benchmark_spec_zh.md)。核查日期2026-10-05；ZhenMode源码基线为main合并PR38后的2d17198619d48618c758354a268e3ba425ee4e47。对象是现有生产默认和0.45°年度配置，不把未启用选项算成年度能力。MOM6源码为固定f49a00096df607b48354603e2398e14e189fd62e，接入为现有solo-driver/tc1与两个0.5°30日case。
+
+状态含义：**符合**=有对应范围的证据；**部分**=已有基础但不满足完整要求；**缺失**=当前实现/配置缺少所需链条；**待核**=有接口或上游例子，但没有选定配置、构建与实际运行证据。源码能力、当前接入与执行资格分别写，不能用一个勾概括。
+
+## 表面与内部机制
+
+| 规范项 | ZhenMode现状、证据 | MOM6上游能力／当前接入 | 下一份验收材料 |
+| --- | --- | --- | --- |
+| B01 高频大气 | **缺失**：年度使用NCEP月均风、年均空气；无湿度/气压/辐射全链。[读取器](../src/zhenmode/model/inputs/forcing/reanalysis.py)有月空气选项，也不等于JRA高频支持 | **待核／缺失**：需选定完整大气强迫driver。现有[导出器](../src/zhenmode/baselines/mom6/forcing.py)只覆盖风、空气和感热代理 | v1.4.0实际文件清单；时间bounds、单位/高度、跨年及海陆/向量转换正负例 |
+| B02 相对风/NCAR应力 | **部分**：固定Cd=1.3e−3计算应力，无当前海流反馈；[seasonal](../src/zhenmode/model/inputs/forcing/seasonal.py)用360日/五日月界混合 | **部分／缺失**：pinned solo支持规定应力/A→C转换；不等于已接NCAR在线相对风 | 固定天气与各海流的算法参考；α=1、换算/平均顺序与更新相位 |
+| B03 感热/潜热/蒸发 | **缺失**：年度Qideal+80(Tair−SST)有实时反馈，但不是完整bulk。[组装](../src/zhenmode/model/inputs/forcing/bundle.py)、[tendency](../src/zhenmode/model/solver/dynamics/tendencies.py) | **待核／缺失**：solo file可输入通量及live-SST恢复；solo atmos_ocean_fluxes为dummy，不提供完整大气交换 | 选定coupler/强迫组件commit；温湿风/海温变化的独立通量参考及实际耦合日志 |
+| B04 辐射/短波穿透 | **缺失**：年度仅理想纬向Q。已有[受热权重](../src/zhenmode/model/solver/physics/surface.py)，不等于短波吸收 | **部分／待核**：solo file读短/长波、热源等；完整出射长波、反照率及沉积配置未运行核验 | 分项辐射及列沉积积分、符号控制、方案与参数冻结 |
+| B05 淡水/盐 | **缺失于年度**：无所需雨/雪/蒸发/径流链；已有盐恢复/可选冰盐源不是全部淡水预算 | **部分／待核**：solo有雨/雪/蒸发/径流输入字段，但当前全球case未形成完整JRA输入及水盐预算证明 | 水/盐方程、质量或虚拟盐语义、原生源项与全局预算 |
+| B06 恢复约定 | **部分**：有SSS恢复选项，年度关闭；现热式不满足新规范。[factory](../src/zhenmode/model/solver/factory.py)；冰空气floor不适用于新profile | **部分／待核**：有T/S恢复系数；没有本规范WOA上10m目标、50m/年及冰区掩膜的已执行配置 | 生效参数及单位转换；恢复盐源独立输出；确认无直接SST恢复 |
+| B07 海冰 | **部分**：有可选[最小闭环](../src/zhenmode/model/solver/physics/surface.py)，年度未开启；源码明确没有冰动力、夹卷或分层热力学 | **待核／缺失**：官方有MOM6+SIS2例子；仓库当前pins/build没有固定SIS2/coupler执行链 | 完整组件pin、初冰及雪处理、冰水质量/焓/盐控制和季节诊断 |
+| B08 非线性热力学 | **缺失**：[EOS](../src/zhenmode/model/solver/physics/eos.py)明确仅线性；[MLD诊断](../src/zhenmode/model/diagnostics/mixed_layer.py)也用线性密度 | **已有源码能力／待核配置**：pinned MOM_EOS支持TEOS10等；当前缓存r8不能据源码选择列表证明实际EOS/变量语义 | 温盐压转换、独立GSW样本、热容量和冻结温度语义；实际resolved EOS |
+| B09 风/浮力驱动混合层 | **部分**：[vertical](../src/zhenmode/model/solver/physics/vertical.py)有背景扩散及局地对流；受热深度选项/密度MLD不等于完整湍流闭合 | **待核／待核**：CVMix依赖已pin；未选择/验证本规范的混合层配置，不凭链接库存在算通过 | 风驱动、冷却/稳定层结、夹卷与列热盐预算过程例 |
+| B10 海域/初态/输运 | **部分**：已有全球FD输运与重启。年度±65°墙、min_depth500、14节点离散不代表规范全域。[输入准备](../src/zhenmode/model/inputs/prepare.py)、[几何](../src/zhenmode/model/solver/geometry/fd_metrics.py) | **部分／缺失接入**：当前prepare-native只接受720×260的两个30日case；不能容纳新全域/native网格协议 | 实际网格bounds/面积/体积、海峡与浅海、初态转换/库存、离散误差及重启 |
+| B11 涡旋/水平/底部闭合 | **部分**：年度GM/Redi均关闭。[isopycnal](../src/zhenmode/model/solver/physics/isopycnal.py)现共用skew算子，注释说明两者系数会叠加；名字不证明两个独立机制 | **待核／待核**：未逐项审读完整原生闭合，也没有冻结本目标配置 | 按分辨率选方案；GM与Redi的独立过程作用、参数和实际开关 |
+| B12 独立预算 | **部分**：已有[ledger](../src/zhenmode/model/diagnostics/budgets.py)记录source/stage/residual；年度未开启预算审计，端点OHC/盐变化不是闭合证明 | **部分／待核**：tc1报告首末内容/CFL，adapter明确不是独立预算闭合；完整预算诊断未接入 | 原生库存与独立外源/边界测量、未回填残差、负例及预算收敛 |
+
+B10的固定参考层厚/线性自由面本身不是不符合行业机制的证据；需核相应库存和外源关系。旧材料库存候选353失败不用于判定本表，也不指定它为升级路线。
+
+## 执行、评价和来源
+
+| 合同项 | 当前基础／限制 | 本规范资格 |
+| --- | --- | --- |
+| 输入来源 | PR38接通精确实际路径、全文件hash与严格输入；新JRA/观测/权重未获取冻结 | **部分**；新profile不能运行 |
+| MOM6 source→binary | [pins](../src/zhenmode/baselines/mom6/pins.json)固定MOM6/FMS/CVMix/GSW。[adapter](../src/zhenmode/baselines/mom6/adapter.py)要求build_manifest；旧缓存缺绑定收据 | **待核**；binary hash+clean source不替代构建证明 |
+| 运行器 | ZhenMode CPU/CUDA监督与独立run ID已接；MOM6当前1CPU/1rank/180s/4GiB/128MiB输出 | **部分**；后者不能直接承载完整profile，超额另需计划和授权 |
+| 月均/3D诊断 | 年度输出十日瞬时SST且save_3d=False。现[output](../src/zhenmode/model/io/output.py)有可选字段 | **缺失目标输出**；严格月bounds/3D/通量积分未接 |
+| 观测评分 | [protocols](../src/zhenmode/evaluation/protocols.py)当前只接受保存初始SST、area-v2、保存记录等权、无重网格 | **缺失新协议**；现有scorer不得重标工业气候评分 |
+| MOM6原生转换 | [external](../src/zhenmode/evaluation/external.py)要求参考同网格中心/湿区并取T_init；非通用重网格 | **缺失公共观测评价链** |
+| MLD/海冰/环流 | 有局部诊断/最小冰报告；没有规范下完整时间序列与统一观测处理 | **部分**；不以初态或零冰覆盖充当运行技能 |
+| 采样合同 | 当前时间轴检查覆盖和末日；独立制造控制显示不同保存频率可得到不同area-v2分数 | **待扩展**；新协议必须核完整bounds/缺月/权重，旧实现语义保持 |
+| 成本/误差 | PR38分compile/integration/IO/E2E；既有compare不自动授予equal-error speedup | **部分**；forcing分项、设备峰值、新profile误差—成本曲线待实现 |
+| 气候效果 | 既有长期稳定与低RMSE属于历史谱系；PR38年度为简化配置/初始参考。MOM6新profile未跑 | **未运行**；两边均无本规范下的工业气候验收 |
+
+总体：ZhenMode已具备正式FD生产与工程运行基础；MOM6已具备固定源码与小例接入基础。**两边当前都不具备本规范完整执行/评价资格。**上游MOM6完整配置的存在不能认证当前solo缓存，更不能证明新profile成绩。
+
+## 证据定位与阅读边界
+
+- 项目源码：上表相对链接对应2d17198；年度具体选项见[正式预设](../configs/zhenmode/presets/global-045deg-seasonal.yaml)。[PR38](https://github.com/TTAWDTT/ZhenMode/pull/38)保留作者运行记录；本轮没有独立重跑年度或严格尾段重启。
+- 固定MOM6：[solo surface](https://github.com/NOAA-GFDL/MOM6/blob/f49a00096df607b48354603e2398e14e189fd62e/config_src/drivers/solo_driver/MOM_surface_forcing.F90)的set_forcing、file buoyancy、get_file_time_level及参数；[solo dummy](https://github.com/NOAA-GFDL/MOM6/blob/f49a00096df607b48354603e2398e14e189fd62e/config_src/drivers/solo_driver/atmos_ocean_fluxes.F90)全文；[EOS](https://github.com/NOAA-GFDL/MOM6/blob/f49a00096df607b48354603e2398e14e189fd62e/src/equation_of_state/MOM_EOS.F90)的EOS_init。源码审读不是实际调用证明。
+- [官方MOM6-examples](https://github.com/NOAA-GFDL/MOM6-examples)目录/README证实有ice_ocean_SIS2配置；该可变上游没有在本任务中锁定运行配置。SIS2、coupler及bulk实现的具体tuple仍是待核项。
+- [OMIP-2 §2及Appendix C](https://gmd.copernicus.org/articles/13/3643/2020/)、[JRA55-do2018 Table1](https://www.coaps.fsu.edu/pub/eric/papers_html/Tsujino_et_al_18.pdf)、[GSW密度](https://www.teos-10.org/pubs/gsw/html/gsw_rho.html)作为机制参照；没有声称所有论文/模式源码全文均已读。
+- 文献要求、项目选择与源码事实分开；没有借新增库/接口给任何模式补写PASS。当前build、数据获取、数值容差及效果阈值未冻结的项继续显式待核。
+
+## 实施顺序与审阅决定
+
+| 优先级 | 交付 | 验收范围 |
+| --- | --- | --- |
+| P0 | 审阅规范项目选择：资料版本、α、湿空气公式、SSS恢复/冰区、初态与评价身份 | 形成冻结v1及数据/验收清单；不先调算法或重跑简化年度 |
+| P1 | JRA读取/时间语义与NCAR表面交换；同步选定MOM6完整强迫/海冰driver与依赖tuple | 两实现对独立固定海态参考，温湿风/当前SST负例与累计输入 |
+| P2 | 淡水、非线性热力学、混合层、完整冰机制及预算逐项接通 | 独立过程例与实际库存/外源；保持既有生产基线独立身份 |
+| P3 | native输出、公共观测/重网格新协议、机制资格检查与成本分项 | 单一可安装evaluation实现；拒绝缺字段、错误单位/窗口/mask/协议 |
+| P4 | 同物理机制短窗→年→完整循环，按资源审批扩大 | 执行完成、机制符合、效果与成本分别授予；独立复跑/作者/历史/失败分列 |
+
+这些是下一阶段工程任务，不是本次已经实现的功能。改变EOS、表面通量、混合或库存的工作分别列行为影响与前后证据；不会藏在目录重构中，也不以回填残差形成自证。
