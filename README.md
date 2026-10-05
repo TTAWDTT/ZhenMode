@@ -51,7 +51,7 @@ zhenmode sweep expand experiments/zhenmode/global-045deg/sweep-vertical-mixing.y
 | `tests/`, `scripts/`, `docs/` | 测试、维护工具、方法和使用说明 |
 | `data/`, `outputs/`, `results/`, `logs/` | 本地输入与运行产物，默认忽略 |
 
-模型内部按 `solver`（求解）、`inputs`（输入）、`runtime`（运行）、`io`（产物与重启）、`diagnostics`（诊断）组织；配置与解析验证分别为 `config.py`、`verification.py`。
+模型内部按 `solver`（求解）、`inputs`（输入）、`runtime`（运行）、`io`（产物与重启）、`diagnostics`（诊断）组织；配置与解析验证分别为 `config.py`、`verification.py`。每个文件的职责与运行链路见 [模型导读](src/zhenmode/model/README.md)。
 
 参见 [方法与架构](docs/production_architecture_zh.md)、[开发与测试](docs/development.md)。研究原型、私人监控和运行产物仅保留在本地，不参与安装或正式测试。
 
