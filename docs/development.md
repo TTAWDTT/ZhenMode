@@ -43,7 +43,7 @@ MOM6时间格式适配：`zhenmode baseline mom6 omip2-time-inputs --prepared-in
 
 实际FMS时间检查：`python scripts/check_mom6_time_inputs.py --source PINNED_FMS/time_interp/time_interp_external2.F90 --fms-build BUILD/build/fms --fms-include PINNED_FMS/include --output NEW_TIME_CHECK`。在Linux中由外层施加单CPU/180秒/4GiB限制；编译完整、固定来源的FMS读取模块并链接真实FMS库。独立制造值检查区间均值、普通线性插值、单记录日均及六小时累计能量；跨界、越界、错误单位和旧负时刻编码均须拒绝。1958年资料不能直接以1970年参考时刻的负增量交给该FMS版本。此检查不运行耦合海洋，也不授予完整case资格；实际case还须绑定相同的时钟、输入表及构建收据。
 
-为同一命令追加`--original-prepared NEW_INPUT --native-prepared NEW_FMS_INPUT`并选择另一新输出目录，可独立比较真实1958年首六小时、每小时的11字段。先核对两层收据及每个实际文件；参考直接从适配前CF时刻/bounds和值计算，检查三个格点与整个矩形场求和，不调用被测读取器生成期望值。输入是制造数据时仍标记manufactured；该小检查固定首窗和一小时步长，不能冒充任意年度或完整耦合验证。
+为同一命令追加`--original-prepared NEW_INPUT --native-prepared NEW_FMS_INPUT`并选择另一新输出目录，可独立比较真实1958年首六小时、每小时的11字段。先核对两层收据及每个实际文件；参考直接从适配前CF时刻/bounds和值计算，检查所有格点，同时保留三个样本与全场求和，不调用被测读取器生成期望值。实际Fortran输出为native-real64列优先stream，检查器核对完整长度、逐值误差及输出hash。输入是制造数据时仍标记manufactured；该小检查固定首窗和一小时步长，不能冒充任意年度或完整耦合验证。
 
 内部调用直接引用所属模块；结构见 [方法与架构](production_architecture_zh.md)。旧源码的运行和严格 checkpoint 需检出对应 Git 提交，不通过路径别名或替换 hash 绕过身份检查。
 

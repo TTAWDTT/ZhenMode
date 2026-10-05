@@ -47,6 +47,8 @@ real,allocatable :: data(:,:)
 call fms_init()
 call set_calendar_type(GREGORIAN)
 call time_interp_external_init()
+open(unit=90,file='fields.bin',access='stream',form='unformatted',status='new')
+if(storage_size(0.0)/=64) error stop 'check requires actual real64 stream'
 do nf=1,11
 index=init_external_field('INPUT/'//trim(variables(nf))//'.nc',trim(variables(nf)),ongrid=.true.)
 siz=get_external_field_size(index)
@@ -55,11 +57,13 @@ do k=0,5
 hour=k+1
 if(nf>=10) hour=k
 call time_interp_external(index,set_date(1958,1,1,0,0,0)+set_time(hour*3600,0),data)
+write(90) data
 write(*,'(a,a,1x,i2,1x,4(es25.17,1x))') 'VALUE ',trim(variables(nf)),hour, &
 data(1,1),data(siz(1)/2,siz(2)/2),data(siz(1),siz(2)),sum(data)
 enddo
 deallocate(data)
 enddo
+close(90)
 call fms_end()
 end program
 '''
@@ -77,6 +81,13 @@ def prepared_reference(original, native, output):
                 raise ValueError('duplicate native sample')
             actual[key] = np.array([float(value) for value in parts[3:]])
     reference = {}
+    with netCDF4.Dataset(native/'uas.nc') as ds:
+        ny, nx = len(ds.dimensions['lat']), len(ds.dimensions['lon'])
+    fields = np.fromfile(output/'fields.bin', dtype=np.dtype('f8').newbyteorder('='))
+    if fields.size != 66*ny*nx:
+        raise ValueError('actual FMS stream lacks the complete eleven-field six-hour window')
+    fields = fields.reshape(66,ny,nx)
+    record_index = 0
     for field, (variable, _, _, interpretation, _) in FIELDS.items():
         with netCDF4.Dataset(original/(variable+'.nc')) as ds:
             def seconds(values):
@@ -107,12 +118,17 @@ def prepared_reference(original, native, output):
                 observed = actual[(variable,hour)]
                 np.testing.assert_allclose(observed[:3], expected[:3], rtol=2e-13, atol=1e-12)
                 np.testing.assert_allclose(observed[3], expected[3], rtol=2e-11, atol=1e-8)
-                reference[f'{variable}:{hour}'] = {'expected':expected.tolist(), 'actual':observed.tolist()}
+                np.testing.assert_allclose(fields[record_index],data,rtol=2e-13,atol=1e-12)
+                reference[f'{variable}:{hour}'] = {'expected':expected.tolist(), 'actual':observed.tolist(),
+                    'whole_field_maximum_absolute_difference':float(np.max(np.abs(fields[record_index]-data)))}
+                record_index += 1
     if len(actual) != len(reference):
         raise ValueError('unexpected or missing native samples')
     return {'scope':'actual_FMS_prepared_11_field_6h_not_coupled_ocean',
             'data_kind':load_json(native/'time-inputs.json')['data_kind'],
             'comparisons':len(reference), 'reference':reference,
+            'whole_field_values_checked':int(fields.size),
+            'actual_field_stream_sha256':sha256_file(output/'fields.bin'),
             'native_input_receipt_sha256':sha256_file(native/'time-inputs.json'),
             'original_input_receipt_sha256':sha256_file(original/'preparation.json')}
 
