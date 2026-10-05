@@ -47,5 +47,7 @@ MOM6时间格式适配：`zhenmode baseline mom6 omip2-time-inputs --prepared-in
 
 内部调用直接引用所属模块；结构见 [方法与架构](production_architecture_zh.md)。旧源码的运行和严格 checkpoint 需检出对应 Git 提交，不通过路径别名或替换 hash 绕过身份检查。
 
+非线性热力学组件和固定 GSW/MOM6 参考检查见[温盐与密度](thermodynamics_zh.md)。日常测试用 `python scripts/run_bounded_tests.py tests/fd/test_teos10.py -q`；完整 Fortran 复算在 Linux 外层使用同样资源上限。组件尚未切换生产状态变量或 EOS。
+
 直接模型运行拒绝已存在的 `global_<tag>.npz`，请为新运行选择独立 `--tag` 或 `--out-dir`。受中断的严格 checkpoint 续跑仍核对原配置与源码；已完成或已保存失败结果的目录不会被覆盖。
 最终结果先写入同目录临时文件并 fsync，再以原子硬链接发布，拒绝覆盖竞争写入；checkpoint 则原子替换。文件系统须支持同目录硬链接；不支持时明确失败。发布前写入中断不会留下残缺的最终结果，异常退出可能留有独立临时文件，不阻止同名 checkpoint 续跑。

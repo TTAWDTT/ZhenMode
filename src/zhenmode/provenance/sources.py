@@ -122,6 +122,7 @@ PACKAGE_SOURCE_MODULES = (
     'zhenmode/model/solver/physics/eos',
     'zhenmode/model/solver/physics/isopycnal',
     'zhenmode/model/solver/physics/surface',
+    'zhenmode/model/solver/physics/teos10',
     'zhenmode/model/solver/physics/vertical',
     'zhenmode/model/solver/state',
     'zhenmode/model/solver/timestepping/__init__',
