@@ -8,6 +8,7 @@ import json
 import os
 import sys
 from dataclasses import replace
+from functools import partial
 from pathlib import Path
 
 from .options import argv_for
@@ -16,7 +17,7 @@ from .runs import canonical_hash, file_hash, source_identity, write_json
 _job_handle = None
 
 
-def limit_resources(memory_mib):
+def limit_resources(memory_mib, *, backend="cpu"):
     """Apply process affinity and address/commit memory limits before JAX loads."""
     memory_bytes = memory_mib * 1024 * 1024
     if os.name == "nt":
@@ -63,7 +64,8 @@ def limit_resources(memory_mib):
         if not hasattr(os, "sched_setaffinity"):
             raise RuntimeError("this platform cannot enforce a one-CPU managed job")
         os.sched_setaffinity(0, {min(os.sched_getaffinity(0))})
-        resource.setrlimit(resource.RLIMIT_AS, (memory_bytes, memory_bytes))
+        if backend == "cpu":
+            resource.setrlimit(resource.RLIMIT_AS, (memory_bytes, memory_bytes))
 
 
 def synthetic_services(expanded, directory, grid_receipt):
@@ -115,8 +117,8 @@ def bind_external_inputs(manifest):
 
     data = manifest["data"]
     bathymetry = data["bathymetry"]["resolved_path"]
-    config = replace(DEFAULT_CONFIG, bathymetry_file=bathymetry.removesuffix(".npz"))
-    climatology.WOA_FILES = {name: data[name]["resolved_path"].removesuffix(".npz") for name in ("temperature", "salinity")}
+    config = replace(DEFAULT_CONFIG, bathymetry_file=bathymetry)
+    climatology.WOA_FILES = {name: data[name]["resolved_path"] for name in ("temperature", "salinity")}
     wind_paths = [Path(value["resolved_path"]) for key, value in data.items() if key.startswith("wind-")]
     if len({path.parent for path in wind_paths}) != 1:
         raise ValueError("all selected wind caches must share one cache directory")
@@ -156,7 +158,8 @@ def main(argv=None):
     directory = args.run_directory.resolve()
     expanded = json.loads((directory / "expanded.json").read_text(encoding="utf-8"))
     manifest = json.loads((directory / "manifest.json").read_text(encoding="utf-8"))
-    limit_resources(expanded["resources"]["memory_mib"])
+    backend = manifest.get("execution_backend", "cpu")
+    limit_resources(expanded["resources"]["memory_mib"], backend=backend)
     if source_identity() != manifest["source_identity"]:
         raise RuntimeError("actual installed execution files changed after the run was frozen")
     import jax
@@ -166,8 +169,8 @@ def main(argv=None):
     from zhenmode.model.runtime.run import default_services, run_main
     from zhenmode.provenance.sources import source_root
 
-    if jax.default_backend() != "cpu":
-        raise RuntimeError("managed local execution requires CPU")
+    if jax.default_backend() != ("gpu" if backend == "cuda" else "cpu") or len(jax.devices()) != 1:
+        raise RuntimeError("requested single-device execution backend unavailable")
     options = expanded["runtime_options"] | {"tag": "run", "out_dir": str(directory / "model"), "log_dir": str(directory / "logs")}
     grid_receipt = {}
     synthetic = expanded["case"]["grid"]["kind"] == "synthetic"
@@ -175,6 +178,12 @@ def main(argv=None):
         services = synthetic_services(expanded, directory, grid_receipt)
     else:
         services = default_services(bind_external_inputs(manifest))
+        from zhenmode.model.inputs import initial_conditions, prepare
+
+        initial_files = {name: manifest["data"][name]["resolved_path"] for name in ("temperature", "salinity")}
+        services = replace(services,
+                           get_initial_fields=partial(initial_conditions.get_initial_fields, files=initial_files),
+                           input_files=partial(prepare._input_files, default_config=services.default_config, initial_files=initial_files))
         build_grid = services.make_global_grid
         def capture_grid(*args, **kwargs):
             grid = build_grid(*args, **kwargs)
@@ -188,8 +197,12 @@ def main(argv=None):
         verify_selected_inputs(services.input_files(config.args), manifest, options)
     sys.argv = ["zhenmode-production-worker", *argv_for(options)]
     previous_stdout = sys.stdout
+    from .profiling import StepTimings
+
+    timings = StepTimings()
     try:
-        code = run_main(services, source_root(application.__file__))
+        with timings.observe(services) as observed_services:
+            code = run_main(observed_services, source_root(application.__file__))
     finally:
         if sys.stdout is not previous_stdout:
             sys.stdout.file.close()
@@ -216,6 +229,8 @@ def main(argv=None):
     report = {"executed_source_files": loaded, "result_path": str(result_path),
               "execution_hardware": {"backend": jax.default_backend(), "device_kind": jax.devices()[0].device_kind},
               "resource_enforcement": {"cpu_affinity": 1, "memory_mib": expanded["resources"]["memory_mib"]},
+              "timings": timings.report(),
+              "device_memory_stats": jax.devices()[0].memory_stats(),
               "physical_grid_sha256": fingerprint({name: getattr(grid, name) for name in ("lon", "lat", "z", "depth", "wet_mask", "dx_2d", "dy")}),
               "physical_grid_path": str(physical_grid_path), "physical_grid_artifact_sha256": file_hash(physical_grid_path),
               "execution_grid_metadata": {"nx": grid.nx, "ny": grid.ny, "nz": grid.nz,

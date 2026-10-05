@@ -2,6 +2,7 @@
 
 | 实验 ID | Case / parent preset | 类别 | 声明改动 | 当前状态 |
 | --- | --- | --- | --- | --- |
+| `global-045deg-seasonal-365d-gpu-baseline` | 0.45° 365 天 / `global-045deg-seasonal-checkpoints` | baseline | 继承既有配方，仅预设增加10天 checkpoint | 需固定实际输入并显式 `--backend cuda`；状态以独立 manifest 为准 |
 | `global-045deg-seasonal-365d-baseline` | 0.45° 365 天 / `global-045deg-seasonal` | baseline | 无 | 已展开；当前长运行未执行 |
 | `global-050deg-wind-only-30d-baseline` | 0.5° 仅风 / `global-050deg-wind-only` | baseline | 无 | 已展开；当前长运行未执行 |
 | `global-050deg-restoring-30d-baseline` | 0.5° 恢复 / `global-050deg-restoring` | baseline | 无 | 已展开；当前长运行未执行 |

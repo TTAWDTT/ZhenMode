@@ -13,4 +13,6 @@
 
 合成 case 的经向分辨率为 45°，纬向坐标为 −30° 至 30° 的 8 个点，纬向间距约 8.5714°。它不是角度各向同性的 45° 真实地形模式。安装包服务只构造输入和实际网格；调用同一正式 FD factory、时间积分和输出流程。
 
+`scripts/make_synthetic_bathymetry.py` 生成的 ETOPO 同名 NPZ 是测试用合成地形，不能用于真实全球基线。0.45° 年度 case 默认引用原始 NetCDF；若选其他缓存，需明确改路径、版本和校验值并独立核验内容，不能把同名缓存当作同一数据。
+
 MOM6 官方 `tc1` 是另一个小物理问题，内置定义随接入包安装，位于 [tc1.json](../src/zhenmode/baselines/mom6/cases/tc1.json)，不能套用全球 case 身份。来源和配置规范见 [实验说明](../docs/experiments_zh.md)。

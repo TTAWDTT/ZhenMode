@@ -25,6 +25,7 @@ def main(argv=None):
             command.add_argument("--outputs", type=Path, default=Path("outputs"))
             command.add_argument("--dry-run", action="store_true")
             command.add_argument("--evaluate", action="store_true", help="score a completed run with its frozen protocol")
+            command.add_argument("--backend", choices=("cpu", "cuda"), default="cpu", help="CUDA is explicit: Linux/WSL2, one device, up to 3 h / 8192 MiB host RSS; arrange resources before running")
     sweep = commands.add_parser("sweep").add_subparsers(dest="command", required=True).add_parser("expand")
     sweep.add_argument("path", type=Path)
     sweep.add_argument("--root", type=Path, default=Path.cwd())
@@ -42,7 +43,7 @@ def main(argv=None):
             if args.command == "validate":
                 result = {"valid": True, "experiment_id": expanded["experiment_id"], "config_hash": expanded["config_hash"], "resource_estimate": resource_estimate(expanded)}
             elif args.command == "run":
-                result = run_experiment(expanded, args.root, args.outputs, dry_run=args.dry_run, evaluate=args.evaluate)
+                result = run_experiment(expanded, args.root, args.outputs, dry_run=args.dry_run, evaluate=args.evaluate, backend=args.backend)
             else:
                 result = expanded
         if getattr(args, "output", None):

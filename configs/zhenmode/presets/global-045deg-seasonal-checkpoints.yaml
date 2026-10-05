@@ -1,0 +1,11 @@
+schema_version: 1
+kind: preset
+id: global-045deg-seasonal-checkpoints
+name_zh: 既有0.45度季节强迫配置与10天严格重启点
+method: zhenmode
+purpose: 为独立年积分保存恢复点；继承既有数值参数，只增加输出控制，不是新的物理方案或推荐参数。
+source: configs/zhenmode/presets/global-045deg-seasonal.yaml; checkpoint cadence aligned with the 365-day case output
+discretization: inherited global finite difference and linear free surface
+parent: configs/zhenmode/presets/global-045deg-seasonal.yaml
+options:
+  checkpoint_days: {value: 10, unit: day}

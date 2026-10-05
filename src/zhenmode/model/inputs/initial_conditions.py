@@ -43,7 +43,15 @@ WOA_FILES = {
 }
 
 
-def load_woa_climatology(var_name, filepath=None):
+def selected_woa_path(filepath, *, exact=False):
+    """Default readers retain twin precedence; frozen runs request exact files."""
+    filepath = os.fspath(filepath)
+    if exact or filepath.endswith(".npz"):
+        return filepath
+    return filepath + ".npz" if os.path.isfile(filepath + ".npz") else filepath
+
+
+def load_woa_climatology(var_name, filepath=None, *, exact=False):
     """Load a WOA2023 annual mean field.
 
     Args:
@@ -60,24 +68,28 @@ def load_woa_climatology(var_name, filepath=None):
     """
     if filepath is None:
         filepath = WOA_FILES[var_name]
+    filepath = selected_woa_path(filepath, exact=exact)
 
     # npz twin support: offline nodes (no netCDF4/HDF) can read a pre-extracted
-    # "<file>.npz" (lon, lat, depth, data float32 with NaN). Identical to netCDF.
-    if not os.path.exists(filepath + ".npz") and not os.path.exists(filepath):
+    # "<file>.npz" (lon, lat, depth, data with NaN). A twin needs its own identity.
+    if not os.path.isfile(filepath):
         raise FileNotFoundError(
             f"WOA2023 file not found: neither {filepath!r} nor its .npz twin "
             f"exists. Set ${WOA_DIR_ENV_VAR} to the directory holding "
             f"woa23_decav_t00_01.nc / woa23_decav_s00_01.nc, or place them in "
             f"<repo>/data/woa/, or pass --init-from with a precomputed npz."
         )
-    if os.path.exists(filepath + ".npz"):
-        d = np.load(filepath + ".npz")
-        return {
-            'lon':   np.asarray(d['lon'], dtype=np.float64),
-            'lat':   np.asarray(d['lat'], dtype=np.float64),
-            'depth': np.asarray(d['depth'], dtype=np.float64),
-            'data':  np.asarray(d['data'], dtype=np.float64),
-        }
+    if filepath.endswith(".npz"):
+        with np.load(filepath, allow_pickle=False) as d:
+            return {
+                'lon':   np.asarray(d['lon'], dtype=np.float64),
+                'lat':   np.asarray(d['lat'], dtype=np.float64),
+                'depth': np.asarray(d['depth'], dtype=np.float64),
+                'data':  np.asarray(d['data'], dtype=np.float64),
+            }
+
+    if Dataset is None:
+        raise ImportError(f"netCDF4 is required to read the selected WOA file: {filepath}")
 
     ds = Dataset(filepath)
 
@@ -233,7 +245,7 @@ def interpolate_to_grid(woa, grid_lon, grid_lat, grid_z):
     return field
 
 
-def get_initial_fields(grid):
+def get_initial_fields(grid, *, files=None):
     """Get initial T and S fields from WOA climatology for the solver grid.
 
     Args:
@@ -243,8 +255,8 @@ def get_initial_fields(grid):
         T_init: (nx, ny, nz) temperature [degC]
         S_init: (nx, ny, nz) salinity [PSU]
     """
-    woa_temp = load_woa_climatology('temperature')
-    woa_salt = load_woa_climatology('salinity')
+    woa_temp = load_woa_climatology('temperature', None if files is None else files['temperature'], exact=files is not None)
+    woa_salt = load_woa_climatology('salinity', None if files is None else files['salinity'], exact=files is not None)
 
     T_init = interpolate_to_grid(woa_temp, grid.lon, grid.lat, grid.z)
     S_init = interpolate_to_grid(woa_salt, grid.lon, grid.lat, grid.z)

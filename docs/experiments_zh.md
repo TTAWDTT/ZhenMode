@@ -20,7 +20,13 @@ zhenmode runs list --outputs outputs/proposed
 zhenmode experiment run experiments/zhenmode/synthetic-smoke/synthetic-smoke-baseline.yaml --evaluate --outputs outputs/smoke
 ```
 
-托管本地运行强制 1 CPU，180 秒墙钟和 4096 MiB 上限。Windows 使用 Job Object 限制 CPU affinity 和内存，并在关闭 job 时终止子进程；Linux 使用 CPU affinity 和 address-space limit。不支持可靠限制的平台会明确拒绝。大型真实网格和长积分应先形成独立资源计划；目前的全球预设只验证展开，不自动重跑 365 天或百年。
+默认托管 CPU 运行强制 1 CPU，180 秒墙钟和 4096 MiB 上限。Windows 使用 Job Object；Linux 使用 CPU affinity 和 address-space limit。GPU 需显式传 `--backend cuda`，只支持 Linux/WSL2 的单设备运行，资源上限为 1 CPU、10800 秒、8192 MiB 主机内存。应先核验设备并确认资源计划；不会自动启动年积分或扫参。
+
+CUDA 的虚拟地址预留不能套用 CPU address-space limit。父进程每 0.2 秒采样 worker 整个进程组的主机 RSS，超限或超时终止进程组；这不是 cgroup 硬内存上限。JAX 关闭预分配并使用 0.40 allocator fraction，这也不是整块共享显卡的硬内存配额。manifest 明确记录执行后端、worker 环境、峰值 RSS、终止原因和设备内存统计，显卡上的其他应用仍可能影响性能。
+
+worker 将主 FD 步的 lowering、compile、同步调用与结果/checkpoint/快照写入分别计时；预热固定丢弃前三次执行。`cost.integration_s` 仅为同步的主积分 executable 调用，排除强迫插值和 monitor；`compile_s` 不包含诊断 JIT，`io_s` 不含输入读取及日志。它们不是端到端时间的完整分割。`end_to_end_s` 从数据核验开始到 worker 产物核验结束，评价耗时另计；不能与对照的另一计时范围混排或据此宣称同误差加速。
+
+冻结 case 的数据路径就是运行所选路径。显式 `.npz` 不再被去掉后缀；WOA 在托管运行中精确读取指定文件，不允许同名 twin 偷换。直接模型入口仍保持原有默认优先级：海深真实 NetCDF 优先，WOA twin 优先；缺少海深 NetCDF 或 reader 时可以回退到 twin。每种文件都核验实际 SHA256，不能凭名称宣称 NPZ 与 NetCDF 等价。
 
 仓库外使用相同安装命令，传 `--root <仓库绝对路径>`，配置路径可以相对 root；`--outputs` 相对当前工作目录或使用绝对路径。worker 在每次 run 的独立目录启动，不依赖研究目录、测试 fixture 或 `src` 临时路径。
 
