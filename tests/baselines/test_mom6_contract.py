@@ -15,7 +15,7 @@ from zhenmode.baselines.mom6.adapter import (
     prepare_wave_input,
     run,
 )
-from zhenmode.evaluation.protocols import file_digest
+from zhenmode.provenance.sources import sha256_file as file_digest
 
 
 def test_installed_native_definitions_are_used_and_hashed():

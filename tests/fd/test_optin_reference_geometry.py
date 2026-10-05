@@ -8,27 +8,30 @@ import numpy as np
 import pytest
 
 from tests.support.fd.reference_geometry import WIDTHS, _fixture, _numpy_column_divergence
-from zhenmode.model.config.definitions import C_P, G_EARTH, RHO_0, PhysicsConfig
-from zhenmode.model.diagnostics.state import compute_budget_diagnostics
-from zhenmode.model.dynamics.barotropic import _free_surface_step_fd
-from zhenmode.model.dynamics.pressure import (
+from zhenmode.model.config import C_P, G_EARTH, RHO_0, PhysicsConfig
+from zhenmode.model.diagnostics.snapshot import compute_budget_diagnostics
+from zhenmode.model.solver.dynamics.barotropic import _free_surface_step_fd
+from zhenmode.model.solver.dynamics.pressure import (
     _compute_bt_rho_pgf,
     _compute_pressure_gradient,
     _reference_depth_gradient,
 )
-from zhenmode.model.dynamics.processes import _compute_momentum_residual, _compute_momentum_tendency
-from zhenmode.model.dynamics.transport import (
+from zhenmode.model.solver.dynamics.tendencies import (
+    _compute_momentum_residual,
+    _compute_momentum_tendency,
+)
+from zhenmode.model.solver.dynamics.transport import (
     _barotropic_velocity,
     _column_divergence,
     _reference_depth_divergence,
 )
-from zhenmode.model.factory import make_solver_global
-from zhenmode.model.geometry.fd import make_fd_params
-from zhenmode.model.geometry.types import nodal_control_thickness
-from zhenmode.model.numerics.horizontal import _horizontal_tracer_diffusion
-from zhenmode.model.numerics.vertical import _d2_dz2_flux
-from zhenmode.model.physics.surface import _surface_heat_weights
-from zhenmode.model.physics.vertical import _conv_flux_tendency, _vertical_momentum_diffusion
+from zhenmode.model.solver.factory import make_solver_global
+from zhenmode.model.solver.geometry.fd_metrics import make_fd_params
+from zhenmode.model.solver.geometry.grid import nodal_control_thickness
+from zhenmode.model.solver.numerics.horizontal import _horizontal_tracer_diffusion
+from zhenmode.model.solver.numerics.vertical import _d2_dz2_flux
+from zhenmode.model.solver.physics.surface import _surface_heat_weights
+from zhenmode.model.solver.physics.vertical import _conv_flux_tendency, _vertical_momentum_diffusion
 
 
 def test_dual_widths_close_the_declared_column_not_the_old_proxy():

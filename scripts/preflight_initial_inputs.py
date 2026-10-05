@@ -11,12 +11,12 @@ from tempfile import TemporaryDirectory
 import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'src'))
-from zhenmode.model.io.data_quality import (  # noqa: E402
+from zhenmode.model.inputs.quality import (
     audit_woa_variable,
     load_strict_quality_bundle,
     validate_quality_fields,
 )
-from zhenmode.model.io.input_sources import (  # noqa: E402
+from zhenmode.model.inputs.sources import (
     InputSnapshot,
     load_climatology_snapshot,
     load_snapshot_npz,

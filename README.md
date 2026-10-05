@@ -51,6 +51,8 @@ zhenmode sweep expand experiments/zhenmode/global-045deg/sweep-vertical-mixing.y
 | `tests/`, `scripts/`, `docs/` | 测试、维护工具、方法和使用说明 |
 | `data/`, `outputs/`, `results/`, `logs/` | 本地输入与运行产物，默认忽略 |
 
+模型内部按 `solver`（求解）、`inputs`（输入）、`runtime`（运行）、`io`（产物与重启）、`diagnostics`（诊断）组织；配置与解析验证分别为 `config.py`、`verification.py`。
+
 参见 [方法与架构](docs/production_architecture_zh.md)、[开发与测试](docs/development.md)。研究原型、私人监控和运行产物仅保留在本地，不参与安装或正式测试。
 
 模型不依赖对照、实验管理或评分模块。`ocean-solver` 命令继续直接运行同一个正式模式；Python 导入改用 `zhenmode.model.*`，不保留旧包转接层。旧源码生成的严格 checkpoint 和 Python pickle 需在其原 Git 版本读取，不能通过本次路径迁移绕过源码身份校验。

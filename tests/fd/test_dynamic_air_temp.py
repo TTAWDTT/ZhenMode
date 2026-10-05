@@ -8,9 +8,9 @@ import numpy as np
 import pytest
 
 from tests.support.grid import all_wet_grid
-from zhenmode.model.config.definitions import PhysicsConfig
-from zhenmode.model.factory import make_solver_global
-from zhenmode.model.forcing.seasonal import interp_monthly_field, interp_monthly_field_jit
+from zhenmode.model.config import PhysicsConfig
+from zhenmode.model.inputs.forcing.seasonal import interp_monthly_field, interp_monthly_field_jit
+from zhenmode.model.solver.factory import make_solver_global
 
 
 def test_monthly_field_blend_matches_calendar():

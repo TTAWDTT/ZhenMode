@@ -11,13 +11,9 @@ import pytest
 
 from tests.support.grid import all_wet_grid
 from tests.support.paths import REPOSITORY_ROOT
-from zhenmode.model.io.restart import (
-    file_sha256,
-    load_restart,
-    make_restart_contract,
-    save_restart,
-)
-from zhenmode.model.state.types import JaxStateG
+from zhenmode.model.io.restart import load_restart, make_restart_contract, save_restart
+from zhenmode.model.solver.state import JaxStateG
+from zhenmode.provenance.sources import sha256_file as file_sha256
 
 
 def _fixture(dtype="float64"):
@@ -29,7 +25,7 @@ def _fixture(dtype="float64"):
     contract = make_restart_contract(
         grid, namedtuple("Params", ["dt"])(60.), dtype=dtype,
         forcing={"heat": np.zeros((8, 8))}, controls={"calendar": "360_day"},
-        code_paths={"solver": REPOSITORY_ROOT / "src/zhenmode/model/timestepping/integration.py"},
+        code_paths={"solver": REPOSITORY_ROOT / "src/zhenmode/model/solver/timestepping/step.py"},
         execution={"backend": "cpu"})
     return grid, state, contract
 
@@ -94,7 +90,7 @@ def test_same_dimensions_but_changed_geometry_fails(tmp_path, field):
     new_contract = make_restart_contract(
         new_grid, namedtuple("Params", ["dt"])(60.), dtype="float64", forcing={"heat": np.zeros((8, 8))},
         controls={"calendar": "360_day"},
-        code_paths={"solver": REPOSITORY_ROOT / "src/zhenmode/model/timestepping/integration.py"},
+        code_paths={"solver": REPOSITORY_ROOT / "src/zhenmode/model/solver/timestepping/step.py"},
         execution={"backend": "cpu"})
     path = tmp_path / "checkpoint.npz"
     _save(path, state, contract)

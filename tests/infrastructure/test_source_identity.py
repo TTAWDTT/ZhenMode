@@ -56,8 +56,8 @@ def test_selected_absolute_path_object_must_be_inside_repository(tmp_path):
 
 def test_missing_implementation_fails_even_with_valid_other_files(tmp_path):
     shutil.copytree(REPOSITORY_ROOT / "src", tmp_path / "src", ignore=shutil.ignore_patterns("__pycache__"))
-    (tmp_path / "src/zhenmode/model/io/data_quality.py").unlink()
-    with pytest.raises(ValueError, match="missing required source: zhenmode/model/io/data_quality"):
+    (tmp_path / "src/zhenmode/model/inputs/quality.py").unlink()
+    with pytest.raises(ValueError, match="missing required source: zhenmode/model/inputs/quality"):
         current_source_files(tmp_path)
 
 
@@ -65,13 +65,13 @@ def test_missing_implementation_fails_even_with_valid_other_files(tmp_path):
 def test_manifest_requires_complete_real_hashes(corruption):
     manifest = hashes(current_source_files(REPOSITORY_ROOT))
     if corruption == "bytes":
-        manifest["src/zhenmode/model/config/definitions.py"] = "0" * 64
+        manifest["src/zhenmode/model/config.py"] = "0" * 64
     elif corruption == "implementation":
-        manifest.pop("src/zhenmode/model/config/definitions.py")
+        manifest.pop("src/zhenmode/model/config.py")
     elif corruption == "helper":
         manifest.pop("tests/support/grid.py")
     elif corruption == "invalid_hash":
-        manifest["src/zhenmode/model/config/definitions.py"] = "invalid"
+        manifest["src/zhenmode/model/config.py"] = "invalid"
     if corruption:
         with pytest.raises(ValueError, match="source mismatch|incomplete|invalid source hash"):
             verify_current_source_hashes(REPOSITORY_ROOT, manifest)
@@ -79,7 +79,7 @@ def test_manifest_requires_complete_real_hashes(corruption):
         verify_current_source_hashes(REPOSITORY_ROOT, manifest)
 
 
-@pytest.mark.parametrize("module", ["model/runtime/entry", "model/dynamics/transport", "model/timestepping/integration"])
+@pytest.mark.parametrize("module", ["model/runtime/run", "model/solver/dynamics/transport", "model/solver/timestepping/step"])
 def test_changes_to_launcher_and_actual_operators_are_rejected(tmp_path, module):
     shutil.copytree(REPOSITORY_ROOT / "src", tmp_path / "src", ignore=shutil.ignore_patterns("__pycache__"))
     manifest = hashes(current_source_files(tmp_path))

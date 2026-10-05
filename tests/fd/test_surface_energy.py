@@ -6,10 +6,10 @@ import numpy as np
 import pytest
 
 from tests.support.fd.surface_energy import _setup
-from zhenmode.model.config.definitions import C_P, RHO_0
-from zhenmode.model.dynamics.processes import _compute_tracer_tendency
-from zhenmode.model.physics.surface import _dynamic_ice_closure
-from zhenmode.model.state.types import JaxStateG
+from zhenmode.model.config import C_P, RHO_0
+from zhenmode.model.solver.dynamics.tendencies import _compute_tracer_tendency
+from zhenmode.model.solver.physics.surface import _dynamic_ice_closure
+from zhenmode.model.solver.state import JaxStateG
 
 
 @pytest.mark.parametrize("depth", [None, 20., 50., 5000.])

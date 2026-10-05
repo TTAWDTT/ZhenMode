@@ -5,7 +5,7 @@ import numpy as np
 import pytest
 
 import zhenmode.model.io.records as owner_records
-import zhenmode.model.io.recovery as owner_recovery
+import zhenmode.model.io.records as owner_recovery
 from tests.support.driver import run_controlled_driver as _run_driver
 from zhenmode.model.io.restart import load_restart
 

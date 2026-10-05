@@ -23,14 +23,14 @@ from dataclasses import replace
 
 import jax.numpy as jnp
 
-import zhenmode.model.dynamics.processes as G_processes
-import zhenmode.model.numerics.horizontal as G_horizontal
-import zhenmode.model.numerics.vertical as G_vertical
-import zhenmode.model.physics.eos as G_eos
+import zhenmode.model.solver.dynamics.tendencies as G_processes
+import zhenmode.model.solver.numerics.horizontal as G_horizontal
+import zhenmode.model.solver.numerics.vertical as G_vertical
+import zhenmode.model.solver.physics.eos as G_eos
 from tests.support.grid import all_wet_grid as _synth_grid
-from zhenmode.model.config.definitions import PhysicsConfig
-from zhenmode.model.factory import make_solver_global
-from zhenmode.model.physics.isopycnal import (
+from zhenmode.model.config import PhysicsConfig
+from zhenmode.model.solver.factory import make_solver_global
+from zhenmode.model.solver.physics.isopycnal import (
     _isopycnal_closure,
     _isopycnal_slope,
     _redi_skew_flux_tendency,

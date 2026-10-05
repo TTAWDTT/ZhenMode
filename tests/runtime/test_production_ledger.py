@@ -7,18 +7,19 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-import zhenmode.model.audit.schema as owner_schema
-import zhenmode.model.audit.stages as owner_stages
-import zhenmode.model.config.definitions as owner_definitions
-import zhenmode.model.forcing.air as owner_air
-import zhenmode.model.forcing.fields as owner_fields
-import zhenmode.model.io.recovery as owner_recovery
+import zhenmode.model.config as owner_definitions
+import zhenmode.model.diagnostics.budgets as owner_schema
+import zhenmode.model.diagnostics.budgets as owner_stages
+import zhenmode.model.inputs.forcing.idealized as owner_fields
+import zhenmode.model.inputs.forcing.reanalysis as owner_air
+import zhenmode.model.inputs.prepare as owner_inputs
+import zhenmode.model.io.records as owner_recovery
 import zhenmode.model.io.restart as owner_restart
-import zhenmode.model.runtime.entry as driver
-import zhenmode.model.runtime.identity as owner_identity
-import zhenmode.model.runtime.inputs as owner_inputs
+import zhenmode.model.runtime.run as driver
+import zhenmode.model.solver.state as owner_state
+import zhenmode.provenance.sources as owner_identity
 from tests.support.driver import run_controlled_driver
-from zhenmode.model.config.definitions import C_P, RHO_0
+from zhenmode.model.config import C_P, RHO_0
 from zhenmode.model.io.restart import load_restart
 
 
@@ -188,8 +189,8 @@ def test_eta_peak_between_snapshots_is_persisted(tmp_path, monkeypatch):
 
 
 def test_audit_identity_checks_bytes_including_signed_zero():
-    assert not owner_identity._same_state_bytes((np.array([0.]),), (np.array([-0.]),))
-    assert not owner_identity._same_state_bytes((np.array([0.], dtype='float32'),), (np.array([0.]),))
+    assert not owner_state._same_state_bytes((np.array([0.]),), (np.array([-0.]),))
+    assert not owner_state._same_state_bytes((np.array([0.], dtype='float32'),), (np.array([0.]),))
 
 
 def test_source_hashes_survive_flat_wheel_layout(tmp_path, monkeypatch):
@@ -197,23 +198,23 @@ def test_source_hashes_survive_flat_wheel_layout(tmp_path, monkeypatch):
 
     from zhenmode.provenance.sources import source_paths, source_root
     source = source_root(driver.__file__)
-    paths = source_paths(source, owner_identity.SOURCE_MODULES)
+    paths = source_paths(source, owner_identity.production_source_modules())
     installed = tmp_path / 'site-packages'
     installed.mkdir()
-    for name in owner_identity.SOURCE_MODULES:
+    for name in owner_identity.production_source_modules():
         target = installed / f'{name}.py'
         target.parent.mkdir(parents=True, exist_ok=True)
         shutil.copyfile(paths[name], target)
-    monkeypatch.setattr(owner_identity, '__file__', str(installed / 'zhenmode/model/runtime/identity.py'))
+    monkeypatch.setattr(owner_identity, '__file__', str(installed / 'zhenmode/model/solver/state.py'))
     identity = owner_identity._source_identity()
-    assert len(identity['source_sha256']) == len(owner_identity.SOURCE_MODULES)
-    assert identity['source_sha256']['zhenmode/model/runtime/entry.py'] == owner_restart.file_sha256(paths['zhenmode/model/runtime/entry'])
+    assert len(identity['source_sha256']) == len(owner_identity.production_source_modules())
+    assert identity['source_sha256']['zhenmode/model/runtime/run.py'] == owner_restart.file_sha256(paths['zhenmode/model/runtime/run'])
 
 
 def test_bathymetry_provenance_follows_offline_loader_precedence(tmp_path, monkeypatch):
     from types import SimpleNamespace
 
-    import zhenmode.model.io.grid as grid
+    import zhenmode.model.inputs.bathymetry as grid
     bathy = tmp_path / 'bathy.nc'
     bathy.write_bytes(b'nc sentinel')
     twin = tmp_path / 'bathy.nc.npz'

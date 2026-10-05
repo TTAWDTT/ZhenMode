@@ -4,9 +4,9 @@ from types import SimpleNamespace
 import jax.numpy as jnp
 import numpy as np
 
-from zhenmode.model.config.definitions import ALPHA_T, G_EARTH, RHO_0
-from zhenmode.model.dynamics.pressure import _compute_pressure_gradient
-from zhenmode.model.dynamics.transport import (
+from zhenmode.model.config import ALPHA_T, G_EARTH, RHO_0
+from zhenmode.model.solver.dynamics.pressure import _compute_pressure_gradient
+from zhenmode.model.solver.dynamics.transport import (
     _advection_scalar,
     _face_transport_divergence,
     _layer_face_transports,

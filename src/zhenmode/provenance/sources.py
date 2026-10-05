@@ -2,6 +2,7 @@
 
 import hashlib
 import re
+import subprocess
 from pathlib import Path
 
 
@@ -34,6 +35,7 @@ PACKAGE_SOURCE_MODULES = (
     'zhenmode/evaluation/cli',
     'zhenmode/evaluation/external',
     'zhenmode/evaluation/gate',
+    'zhenmode/evaluation/ice',
     'zhenmode/evaluation/manifest',
     'zhenmode/evaluation/metrics',
     'zhenmode/evaluation/pipeline',
@@ -47,71 +49,57 @@ PACKAGE_SOURCE_MODULES = (
     'zhenmode/execution/schema',
     'zhenmode/execution/worker',
     'zhenmode/model/__init__',
-    'zhenmode/model/audit/__init__',
-    'zhenmode/model/audit/monitor',
-    'zhenmode/model/audit/schema',
-    'zhenmode/model/audit/stages',
-    'zhenmode/model/audit/validation',
-    'zhenmode/model/config/__init__',
-    'zhenmode/model/config/definitions',
+    'zhenmode/model/config',
     'zhenmode/model/diagnostics/__init__',
-    'zhenmode/evaluation/ice',
+    'zhenmode/model/diagnostics/budgets',
     'zhenmode/model/diagnostics/mixed_layer',
-    'zhenmode/model/diagnostics/state',
-    'zhenmode/model/dynamics/__init__',
-    'zhenmode/model/dynamics/barotropic',
-    'zhenmode/model/dynamics/pressure',
-    'zhenmode/model/dynamics/processes',
-    'zhenmode/model/dynamics/projection',
-    'zhenmode/model/dynamics/transport',
-    'zhenmode/model/factory',
-    'zhenmode/model/forcing/__init__',
-    'zhenmode/model/forcing/air',
-    'zhenmode/model/forcing/fields',
-    'zhenmode/model/forcing/seasonal',
-    'zhenmode/model/forcing/wind',
-    'zhenmode/model/geometry/__init__',
-    'zhenmode/model/geometry/fd',
-    'zhenmode/model/geometry/mesh',
-    'zhenmode/model/geometry/types',
+    'zhenmode/model/diagnostics/snapshot',
+    'zhenmode/model/inputs/__init__',
+    'zhenmode/model/inputs/bathymetry',
+    'zhenmode/model/inputs/forcing/__init__',
+    'zhenmode/model/inputs/forcing/bundle',
+    'zhenmode/model/inputs/forcing/idealized',
+    'zhenmode/model/inputs/forcing/reanalysis',
+    'zhenmode/model/inputs/forcing/seasonal',
+    'zhenmode/model/inputs/initial_conditions',
+    'zhenmode/model/inputs/prepare',
+    'zhenmode/model/inputs/quality',
+    'zhenmode/model/inputs/sources',
     'zhenmode/model/io/__init__',
-    'zhenmode/model/io/bathymetry',
-    'zhenmode/model/io/climatology',
-    'zhenmode/model/io/data_quality',
-    'zhenmode/model/io/grid',
-    'zhenmode/model/io/input_sources',
     'zhenmode/model/io/output',
-    'zhenmode/model/io/paths',
     'zhenmode/model/io/records',
-    'zhenmode/model/io/recovery',
     'zhenmode/model/io/restart',
-    'zhenmode/model/numerics/__init__',
-    'zhenmode/model/numerics/backend',
-    'zhenmode/model/numerics/horizontal',
-    'zhenmode/model/numerics/vertical',
-    'zhenmode/model/physics/__init__',
-    'zhenmode/model/physics/eos',
-    'zhenmode/model/physics/ice',
-    'zhenmode/model/physics/isopycnal',
-    'zhenmode/model/physics/surface',
-    'zhenmode/model/physics/vertical',
     'zhenmode/model/runtime/__init__',
-    'zhenmode/model/runtime/application',
     'zhenmode/model/runtime/cli',
-    'zhenmode/model/runtime/context',
-    'zhenmode/model/runtime/entry',
-    'zhenmode/model/runtime/forcing',
-    'zhenmode/model/runtime/identity',
-    'zhenmode/model/runtime/inputs',
-    'zhenmode/model/runtime/integration',
+    'zhenmode/model/runtime/monitor',
     'zhenmode/model/runtime/reporting',
-    'zhenmode/model/state/__init__',
-    'zhenmode/model/state/types',
-    'zhenmode/model/timestepping/__init__',
-    'zhenmode/model/timestepping/integration',
-    'zhenmode/model/timestepping/subcycles',
-    'zhenmode/model/validation/__init__',
-    'zhenmode/model/validation/mms',
+    'zhenmode/model/runtime/run',
+    'zhenmode/model/runtime/run_loop',
+    'zhenmode/model/solver/__init__',
+    'zhenmode/model/solver/dynamics/__init__',
+    'zhenmode/model/solver/dynamics/barotropic',
+    'zhenmode/model/solver/dynamics/pressure',
+    'zhenmode/model/solver/dynamics/projection',
+    'zhenmode/model/solver/dynamics/tendencies',
+    'zhenmode/model/solver/dynamics/transport',
+    'zhenmode/model/solver/factory',
+    'zhenmode/model/solver/geometry/__init__',
+    'zhenmode/model/solver/geometry/fd_metrics',
+    'zhenmode/model/solver/geometry/grid',
+    'zhenmode/model/solver/numerics/__init__',
+    'zhenmode/model/solver/numerics/backend',
+    'zhenmode/model/solver/numerics/horizontal',
+    'zhenmode/model/solver/numerics/vertical',
+    'zhenmode/model/solver/physics/__init__',
+    'zhenmode/model/solver/physics/eos',
+    'zhenmode/model/solver/physics/isopycnal',
+    'zhenmode/model/solver/physics/surface',
+    'zhenmode/model/solver/physics/vertical',
+    'zhenmode/model/solver/state',
+    'zhenmode/model/solver/timestepping/__init__',
+    'zhenmode/model/solver/timestepping/step',
+    'zhenmode/model/solver/timestepping/subcycles',
+    'zhenmode/model/verification',
     'zhenmode/provenance/__init__',
     'zhenmode/provenance/sources',
 )
@@ -189,3 +177,35 @@ def verify_current_source_hashes(repository, manifest):
             raise ValueError("invalid source hash: " + name)
         if hashlib.sha256(files[name].read_bytes()).hexdigest() != expected:
             raise ValueError("runtime source mismatch: " + name)
+
+
+
+def _source_identity(source_directory=None):
+    source_dir = (
+        Path(source_directory)
+        if source_directory is not None
+        else Path(__file__)
+    )
+    source_dir = source_root(source_dir)
+    root = source_dir.parent
+    try:
+        head = subprocess.check_output(
+            ["git", "rev-parse", "HEAD"], cwd=root, text=True, stderr=subprocess.DEVNULL
+        ).strip()
+    except (OSError, subprocess.CalledProcessError):
+        head = "unavailable_installed_distribution"
+    return {
+        "git_head": head,
+        "source_sha256": {
+            name + ".py": sha256_file(path) for name, path in source_paths(source_dir, production_source_modules()).items()
+        },
+    }
+
+
+def sha256_file(path):
+    """SHA256 of file bytes, streamed in bounded chunks."""
+    digest = hashlib.sha256()
+    with open(path, "rb") as stream:
+        for chunk in iter(lambda: stream.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()

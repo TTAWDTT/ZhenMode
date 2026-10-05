@@ -4,9 +4,9 @@ import numpy as np
 import pytest
 
 from tests.support.fd import pressure_pe_contract as module
-from zhenmode.model.config.definitions import G_EARTH, RHO_0
-from zhenmode.model.dynamics.pressure import _compute_hydrostatic_pressure
-from zhenmode.model.numerics.horizontal import _gradient_conservative_3d
+from zhenmode.model.config import G_EARTH, RHO_0
+from zhenmode.model.solver.dynamics.pressure import _compute_hydrostatic_pressure
+from zhenmode.model.solver.numerics.horizontal import _gradient_conservative_3d
 
 
 def test_stationary_uniform_stable_profile_has_no_conversion():

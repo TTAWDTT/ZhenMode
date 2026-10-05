@@ -32,10 +32,10 @@ from dataclasses import replace
 
 import jax.numpy as jnp
 
-import zhenmode.model.dynamics.processes as G_processes
-from zhenmode.model.config.definitions import PhysicsConfig
-from zhenmode.model.factory import make_solver_global
-from zhenmode.model.geometry.types import GlobalOceanGrid
+import zhenmode.model.solver.timestepping.step as G_processes
+from zhenmode.model.config import PhysicsConfig
+from zhenmode.model.solver.factory import make_solver_global
+from zhenmode.model.solver.geometry.grid import GlobalOceanGrid
 
 T_REF = PhysicsConfig().T_ref      # 15.0
 S_REF = PhysicsConfig().S_ref      # 35.0

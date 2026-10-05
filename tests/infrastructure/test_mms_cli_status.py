@@ -3,7 +3,7 @@ import runpy
 
 import pytest
 
-from zhenmode.model.validation import mms
+import zhenmode.model.verification as mms
 
 
 @pytest.mark.parametrize('operator_ok,convergence_ok,status', [

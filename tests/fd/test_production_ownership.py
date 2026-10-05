@@ -6,7 +6,10 @@ import pytest
 from tests.support.paths import REPOSITORY_ROOT
 
 PACKAGE = REPOSITORY_ROOT / "src" / "zhenmode" / "model"
-PURE_OWNERS = ("geometry", "state", "numerics", "dynamics", "physics", "timestepping")
+PURE_OWNERS = (
+    "solver/numerics", "solver/geometry", "solver/dynamics", "solver/physics",
+    "solver/timestepping", "solver/state.py",
+)
 OLD_OWNER_PREFIXES = (
     "zhenmode.fd.", "zhenmode.data.", "zhenmode.configuration",
     "zhenmode.model.geometry.grid", "zhenmode.provenance.restart",
@@ -44,7 +47,7 @@ def forbidden_dependencies(text, *, array_owner=False):
                 failures.append(module)
             if array_owner and (
                 module.split(".")[0] in INPUT_LIBRARIES
-                or module.startswith("zhenmode.model.io")
+                or module.startswith(("zhenmode.model.io", "zhenmode.model.inputs"))
             ):
                 failures.append(module)
     return failures
@@ -63,8 +66,10 @@ def test_formal_owners_do_not_import_research_or_old_implementation_paths():
 
 
 def test_array_owners_do_not_load_external_inputs():
-    paths = [path for owner in PURE_OWNERS for path in (PACKAGE / owner).rglob("*.py")]
-    assert all((PACKAGE / owner).is_dir() for owner in PURE_OWNERS)
+    owners = [PACKAGE / owner for owner in PURE_OWNERS]
+    assert all(owner.is_dir() or owner.is_file() for owner in owners)
+    paths = [path for owner in owners
+             for path in ([owner] if owner.is_file() else owner.rglob("*.py"))]
     assert paths
     failures = {str(path.relative_to(PACKAGE)): forbidden_dependencies(
         path.read_text(encoding="utf-8"), array_owner=True) for path in paths}
@@ -83,7 +88,7 @@ def test_dependency_negative_controls(source):
 
 
 @pytest.mark.parametrize("source", [
-    "import netCDF4", "from zhenmode.model.io.climatology import get_initial_fields",
+    "import netCDF4", "from zhenmode.model.inputs.initial_conditions import get_initial_fields",
     "np.load('input.npz')", "open('input.nc')",
 ])
 def test_input_negative_controls(source):
@@ -91,5 +96,5 @@ def test_input_negative_controls(source):
 
 
 def test_allowed_array_dependency():
-    assert forbidden_dependencies("from zhenmode.model.numerics.vertical import _d_dz",
+    assert forbidden_dependencies("from zhenmode.model.solver.numerics.vertical import _d_dz",
                                   array_owner=True) == []

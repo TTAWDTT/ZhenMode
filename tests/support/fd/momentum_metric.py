@@ -6,8 +6,8 @@ import jax.numpy as jnp
 import numpy as np
 
 from tests.support.fd.reference_geometry import _fixture
-from zhenmode.model.config.definitions import OMEGA, R_EARTH, PhysicsConfig
-from zhenmode.model.factory import make_solver_global
+from zhenmode.model.config import OMEGA, R_EARTH, PhysicsConfig
+from zhenmode.model.solver.factory import make_solver_global
 
 
 def _controlled_factory(*, stairs=False, metric=False, duration=600., physics=None):

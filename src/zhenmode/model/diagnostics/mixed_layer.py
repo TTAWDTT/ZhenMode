@@ -1,4 +1,5 @@
 """Density-threshold mixed-layer diagnostic used by initialization and scoring."""
+
 from __future__ import annotations
 
 import numpy as np
@@ -31,8 +32,7 @@ def mixed_layer_depth(T: np.ndarray, S: np.ndarray, z: np.ndarray,
     T = np.asarray(T, dtype=float)
     S = np.asarray(S, dtype=float)
     depth = -np.asarray(z, dtype=float)
-    rho = RHO_0 * (1.0 - ALPHA_T * (T - T_REF)
-                   + BETA_S * (S - S_REF))
+    rho = seawater_density(T, S)
     nx, ny, _ = rho.shape
     wet = np.ones((nx, ny), dtype=bool) if ocean is None \
         else np.asarray(ocean, dtype=bool)

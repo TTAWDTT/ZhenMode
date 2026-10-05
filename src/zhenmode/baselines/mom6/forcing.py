@@ -1,4 +1,5 @@
 """Export shared model forcing to MOM6 A-grid NetCDF inputs."""
+
 import os
 from argparse import ArgumentParser
 from dataclasses import replace
@@ -8,11 +9,10 @@ from tempfile import TemporaryDirectory
 import numpy as np
 from netCDF4 import Dataset
 
-from zhenmode.model.config.definitions import GlobalGridConfig
-from zhenmode.model.forcing.air import load_monthly_mean_air_temp
-from zhenmode.model.forcing.wind import real_wind_forcing
-from zhenmode.model.io.climatology import get_initial_fields
-from zhenmode.model.io.grid import make_global_grid
+from zhenmode.model.config import GlobalGridConfig
+from zhenmode.model.inputs.bathymetry import make_global_grid
+from zhenmode.model.inputs.forcing.reanalysis import load_monthly_mean_air_temp, real_wind_forcing
+from zhenmode.model.inputs.initial_conditions import get_initial_fields
 
 
 def add_arguments(parser):

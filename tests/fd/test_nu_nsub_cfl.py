@@ -46,8 +46,8 @@ Run:  python -m pytest tests/test_nu_nsub_cfl.py -v
 
 import numpy as np
 
-from zhenmode.model.config.definitions import R_EARTH
-from zhenmode.model.numerics.horizontal import nu_nsub_for_2d_cfl
+from zhenmode.model.config import R_EARTH
+from zhenmode.model.solver.numerics.horizontal import nu_nsub_for_2d_cfl
 
 # Production geometry, as make_global_grid builds it for the 1-deg runs:
 # lat = linspace(-59.5, 59.5, 120), dlat = dlon = 1 deg, dy = R*radians(1).

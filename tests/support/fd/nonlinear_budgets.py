@@ -4,7 +4,7 @@
 import jax.numpy as jnp
 import numpy as np
 
-from zhenmode.model.state.types import JaxStateG
+from zhenmode.model.solver.state import JaxStateG
 
 
 def _state(params):

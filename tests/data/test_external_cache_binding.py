@@ -5,10 +5,11 @@ from types import SimpleNamespace
 import numpy as np
 import pytest
 
+import zhenmode.model.inputs.forcing.reanalysis as air
+import zhenmode.model.inputs.forcing.reanalysis as wind
+import zhenmode.model.inputs.initial_conditions as climatology
 from zhenmode.execution.worker import bind_external_inputs
-from zhenmode.model.config.definitions import DEFAULT_CONFIG
-from zhenmode.model.forcing import air, wind
-from zhenmode.model.io import climatology
+from zhenmode.model.config import DEFAULT_CONFIG
 
 
 @pytest.mark.parametrize("kind", ["wind", "air_annual", "air_monthly"])
@@ -22,8 +23,8 @@ def test_worker_cache_binding_reaches_actual_reader(tmp_path, monkeypatch, kind)
     np.savez(selected / "air_2m_annual_2023.npz", air_2m=field, lon=lon, lat=lat)
     np.savez(selected / "air_2m_monthly_2023.npz", air_2m_months=np.tile(field, (12, 1, 1)), lon=lon, lat=lat)
     # Register restoration before the real worker mutates these module values.
-    monkeypatch.setattr(wind, "CACHE_DIR", str(tmp_path / "wrong-wind"))
-    monkeypatch.setattr(air, "CACHE_DIR", str(tmp_path / "wrong-air"))
+    monkeypatch.setattr(wind, "WIND_CACHE_DIR", str(tmp_path / "wrong-wind"))
+    monkeypatch.setattr(air, "AIR_CACHE_DIR", str(tmp_path / "wrong-air"))
     monkeypatch.setattr(climatology, "WOA_FILES", dict(climatology.WOA_FILES))
 
     def refuse_remote(*args, **kwargs):

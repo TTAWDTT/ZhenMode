@@ -5,9 +5,9 @@ import jax.numpy as jnp
 import numpy as np
 
 from tests.support.grid import all_wet_grid
-from zhenmode.model.config.definitions import PhysicsConfig
-from zhenmode.model.dynamics.processes import _compute_tracer_tendency
-from zhenmode.model.factory import make_solver_global
+from zhenmode.model.config import PhysicsConfig
+from zhenmode.model.solver.dynamics.tendencies import _compute_tracer_tendency
+from zhenmode.model.solver.factory import make_solver_global
 
 jax.config.update('jax_enable_x64', True)
 

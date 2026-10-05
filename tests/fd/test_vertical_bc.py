@@ -34,10 +34,10 @@ jax.config.update("jax_enable_x64", True)
 import jax.numpy as jnp
 import numpy as np
 
-from zhenmode.model.config.definitions import PhysicsConfig
-from zhenmode.model.geometry.fd import make_fd_params
-from zhenmode.model.geometry.types import GlobalOceanGrid
-from zhenmode.model.numerics.vertical import _d2_dz2
+from zhenmode.model.config import PhysicsConfig
+from zhenmode.model.solver.geometry.fd_metrics import make_fd_params
+from zhenmode.model.solver.geometry.grid import GlobalOceanGrid
+from zhenmode.model.solver.numerics.vertical import _d2_dz2
 
 T_REF = PhysicsConfig().T_ref       # 15.0
 SENTINEL = 999.0                    # deliberately absurd, so a leak is loud

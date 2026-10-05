@@ -7,13 +7,13 @@ import numpy as np
 import pytest
 
 from tests.support.fd.horizontal_diffusion import _parameters
-from zhenmode.model.config.definitions import R_EARTH
-from zhenmode.model.dynamics.processes import _linear_half_step
-from zhenmode.model.numerics.horizontal import (
+from zhenmode.model.config import R_EARTH
+from zhenmode.model.solver.numerics.horizontal import (
     _horizontal_biharmonic_tracer,
     _horizontal_tracer_diffusion,
 )
-from zhenmode.model.state.types import JaxStateG
+from zhenmode.model.solver.state import JaxStateG
+from zhenmode.model.solver.timestepping.step import _linear_half_step
 
 
 @pytest.mark.parametrize("latitude_limit", [30., 65.])

@@ -5,9 +5,9 @@ import jax.numpy as jnp
 import numpy as np
 
 from tests.support.fd.reference_geometry import WIDTHS, _fixture
-from zhenmode.model.dynamics.barotropic import _free_surface_step_fd
-from zhenmode.model.dynamics.processes import _linear_half_step
-from zhenmode.model.dynamics.transport import _barotropic_velocity
+from zhenmode.model.solver.dynamics.barotropic import _free_surface_step_fd
+from zhenmode.model.solver.dynamics.transport import _barotropic_velocity
+from zhenmode.model.solver.timestepping.step import _linear_half_step
 
 
 def _candidate(**options):
