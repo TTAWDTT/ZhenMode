@@ -53,5 +53,13 @@ MOM6时间格式适配：`zhenmode baseline mom6 omip2-time-inputs --prepared-in
 
 CT/SR参考变体的转换与FD接线检查使用`python scripts/run_bounded_tests.py tests/fd/test_temperature_conversions.py tests/fd/test_thermodynamic_coupling.py tests/fd/test_online_surface.py tests/fd/test_teos10.py -q`。实际GSW复算追加`--temperatures`，核对全部22份原始例程、CP0及实际包源码，输出精度、来源、失败控制和范围。该变体目前只由明确的Python API接入；普通CLI及默认预设仍用线性状态方程。不要以无冰组件的运行代替完整协议短窗。
 
+WOA13v2原始网格转换使用 `zhenmode benchmark prepare-initial-source --acquisition WOA/acquisition.json --pressure-reference PRESSURE/pressure.json --output NEW_OUTPUT`。外层施加单CPU、180秒、4GiB上限；逐层读取官方年度 `t_an/s_an`，保留成对原始缺失掩膜，生成MOM初始化需要的位温 `ptemp` 及参考变体的 `ct/sr`。PSS-78单位 `1` 保留数值，不当成kg/kg缩放。温盐必须使用相同年气候time、0至12月climatology bounds；保留年零的原始气候月份编码，不把它转成1958年天气时钟。
+
+压力JSON字段精确为 `path/variable/bytes/sha256/units/definition`，units为dbar；所引NetCDF有与原WOA相同depth/lat坐标及二维 `p[depth,lat]`，有限、单调、表面0、0至8000dbar。压力定义必须显式给出；例如固定rho0*g*depth/10000是Boussinesq参考近似，不能写成精确地理压力。准备器核实际输入及完整执行包身份，收据和输入在执行结束后再次核验；中断或变化保存failed，已有目录拒绝覆盖。
+
+独立源检查使用 `python scripts/check_woa_initial_source.py --prepared NEW_OUTPUT --acquisition WOA/acquisition.json --pressure-reference PRESSURE/pressure.json --oracle TEMPERATURE_ORACLE --output NEW_CHECK`，在Linux外层施加相同资源上限。oracle为前述固定原始GSW `--temperatures` 检查输出目录：核其源码/驱动/二进制，再逐层核所有掩膜，预先固定种子每层至多8个样本，经原始Fortran另算SP→SR及PT/CT，并要求改错0.01°C的参考触发失败。此检查验证转换/写出，不认证共享数学系数或压力生产者；样本检查不等于每个温度数值均已与GSW比较。
+
+这些输出仍是原始网格源产品，`native_initialization_ready=false`、`execution_ready=false`。原生重映射、湿柱支持、补值/外推、浅海/底部、完整水柱体积和初始库存需单独准备验证。MOM所读盐度为原SP，参考变体采用SR≈SA；不能将同一文件改标签来混用。
+
 直接模型运行拒绝已存在的 `global_<tag>.npz`，请为新运行选择独立 `--tag` 或 `--out-dir`。受中断的严格 checkpoint 续跑仍核对原配置与源码；已完成或已保存失败结果的目录不会被覆盖。
 最终结果先写入同目录临时文件并 fsync，再以原子硬链接发布，拒绝覆盖竞争写入；checkpoint 则原子替换。文件系统须支持同目录硬链接；不支持时明确失败。发布前写入中断不会留下残缺的最终结果，异常退出可能留有独立临时文件，不阻止同名 checkpoint 续跑。
