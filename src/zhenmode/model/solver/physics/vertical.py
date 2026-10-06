@@ -69,7 +69,14 @@ def _convective_mask(state, p):
     it every wet/ghost interface tests unstable and convects the whole column
     (D10).
     """
-    rho_prime = _density_anomaly(state.T, state.S, p) * p.wet_mask_z
     wet_iface = (p.wet_mask_z[..., :-1] > 0.5) & (p.wet_mask_z[..., 1:] > 0.5)
-    unstable_iface = (rho_prime[..., :-1] > rho_prime[..., 1:]) & wet_iface
+    if p.thermodynamics == 'teos10_reference':
+        from zhenmode.model.solver.physics.teos10 import parcel_density_contrast
+        pressure = .5*(p.eos_pressure_dbar[..., :-1]+p.eos_pressure_dbar[..., 1:])
+        contrast = parcel_density_contrast(state.S[..., :-1],state.T[..., :-1],
+                                           state.S[..., 1:],state.T[..., 1:],pressure)
+        unstable_iface = (contrast > 0) & wet_iface
+    else:
+        rho_prime = _density_anomaly(state.T, state.S, p) * p.wet_mask_z
+        unstable_iface = (rho_prime[..., :-1] > rho_prime[..., 1:]) & wet_iface
     return jnp.any(unstable_iface, axis=-1, keepdims=True), unstable_iface

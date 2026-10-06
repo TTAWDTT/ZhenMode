@@ -35,7 +35,7 @@ where = ["src"]
 include = ["zhenmode*"]
 
 [tool.setuptools.package-data]
-"zhenmode.baselines.mom6" = ["pins.json", "cases/*.json", "README.md"]
+"zhenmode.baselines.mom6" = ["*.json", "cases/*.json", "README.md"]
 
 [tool.setuptools.cmdclass]
 build_py = "scripts.build_distribution.CleanBuildPy"
@@ -51,6 +51,7 @@ respect-gitignore = false
 extend-exclude = [
     "build",        # generated wheel build tree, never authoritative source
     "results",       # local run outputs
+    "outputs",       # local receipts, downloaded references and tool caches
     "data/**", "logs/**", "checkpoints/**",   # local run I/O
     "dashboard",
     "research",       # local research workspace

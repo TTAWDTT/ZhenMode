@@ -24,6 +24,32 @@ from scipy.interpolate import RegularGridInterpolator
 
 from zhenmode.provenance.sources import source_root
 
+
+def convert_teos_reference_fields(in_situ_temperature, practical_salinity, sea_pressure_dbar):
+    """Explicit native-field conversion: in-situ T/SP -> CT/SR≈SA.
+
+    Pressure is supplied in dbar on the same grid, not guessed from layer
+    indices. Call after the declared native mapping. No file reads, clipping,
+    missing-value repair or geographical Absolute Salinity claim occurs here.
+    The ordinary WOA initialization path does not call this automatically.
+    """
+    from zhenmode.model.solver.physics.teos10 import (
+        conservative_from_in_situ,
+        reference_salinity,
+        validate_state,
+    )
+    values = (in_situ_temperature,practical_salinity,sea_pressure_dbar)
+    if any(np.ma.isMaskedArray(value) and np.ma.getmaskarray(value).any() for value in values):
+        raise ValueError('native thermodynamic fields contain masked values')
+    if any(np.asarray(value).dtype.kind not in 'fiu' for value in values):
+        raise ValueError('native thermodynamic fields must be real numeric arrays')
+    temperature,salinity,pressure = np.broadcast_arrays(*(np.asarray(value) for value in values))
+    sr = reference_salinity(salinity)
+    validate_state(sr,temperature,pressure)
+    ct = conservative_from_in_situ(sr,temperature,pressure)
+    validate_state(sr,ct,pressure)
+    return np.asarray(ct),np.asarray(sr)
+
 try:
     from netCDF4 import Dataset
 except ImportError:   # offline nodes: npz twins only (see load_woa_climatology)

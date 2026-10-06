@@ -7,6 +7,8 @@ import json
 import math
 from pathlib import Path
 
+from zhenmode.provenance.sources import load_json as load_json
+
 V2 = "area_weighted_angular_box_v2"
 LEGACY = "legacy_equal_cell_index_box_v1"
 
@@ -16,20 +18,6 @@ def digest(value: object) -> str:
                                      allow_nan=False).encode()).hexdigest()
 
 
-
-
-def load_json(path: str | Path) -> dict:
-    def pairs(items):
-        result = {}
-        for name, value in items:
-            if name in result:
-                raise ValueError(f"ambiguous duplicate JSON field: {name}")
-            result[name] = value
-        return result
-    value = json.loads(Path(path).read_text(encoding="utf-8"), object_pairs_hook=pairs)
-    if not isinstance(value, dict):
-        raise ValueError(f"expected JSON object: {path}")
-    return value
 
 
 def _keys(value: dict, fields: set[str], name: str) -> None:

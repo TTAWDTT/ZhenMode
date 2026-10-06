@@ -47,7 +47,8 @@ def make_solver_global(grid, physics, dt, forcing=None,
                        fct_adv=False, projection_niter=None,
                        projection_rtol=None, projection_preconditioner='none',
                        projection_max_refinements=2, column_geometry='legacy',
-                       match_barotropic_transport=False, process_time_scheme='legacy'):
+                       match_barotropic_transport=False, process_time_scheme='legacy',
+                       eos_pressure_dbar=None):
     """Create a JIT-compiled global FD ocean solver.
 
     Key properties:
@@ -107,6 +108,24 @@ def make_solver_global(grid, physics, dt, forcing=None,
     validate_grid(grid)
     if dtype not in {'float32', 'float64'}:
         raise ValueError('dtype must be float32 or float64')
+    if physics.thermodynamics not in {'linear', 'teos10_reference'}:
+        raise ValueError('unknown thermodynamics definition')
+    if physics.thermodynamics == 'teos10_reference':
+        from zhenmode.model.solver.physics.teos10 import validate_state
+        validate_state(physics.S_ref,physics.T_ref,0.)  # also keep dry/ghost sentinels valid
+        if eos_pressure_dbar is None:
+            raise ValueError('TEOS reference variant requires explicit sea pressure in dbar')
+        pressure = np.asarray(eos_pressure_dbar)
+        if (pressure.shape != (grid.nx, grid.ny, grid.nz) or pressure.dtype.kind not in 'fiu'
+                or not np.isfinite(pressure).all() or np.any((pressure < 0) | (pressure > 8000))
+                or np.any(np.diff(pressure,axis=-1) < 0) or np.any(pressure[...,0] != 0)):
+            raise ValueError('TEOS sea pressure must be finite ordered dbar on the full grid with surface zero')
+        if dynamic_ice or ice_salt_flux != 0 or lambda_bulk != 0 or coastal_bulk_lambda != 0:
+            raise ValueError('TEOS reference variant cannot use legacy ice or bulk temperature sources')
+        if ice_freeze_temp_c != -1.8:
+            raise ValueError('TEOS reference variant does not accept a legacy freezing-temperature override')
+    elif eos_pressure_dbar is not None:
+        raise ValueError('linear EOS does not accept an unused TEOS pressure field')
     for name in ('nu_h', 'nu_v', 'nu_bi', 'kappa_h', 'kappa_v', 'kappa_bi',
                  'kappa_conv', 'kappa_gm', 'kappa_redi', 'r_bot', 'cd'):
         finite_number(name, getattr(physics, name), nonnegative=True)
@@ -425,6 +444,8 @@ def make_solver_global(grid, physics, dt, forcing=None,
         column_geometry=column_geometry,
         match_barotropic_transport=bool(match_barotropic_transport),
         process_time_scheme=process_time_scheme,
+        thermodynamics=physics.thermodynamics,
+        eos_pressure_dbar=(None if eos_pressure_dbar is None else jnp.asarray(eos_pressure_dbar)),
     )
 
     if projection_preconditioner == 'jacobi':
@@ -488,6 +509,11 @@ def _compile_solver(params, physics, shape, state_dtype, *, dynamic_forcing, ret
         return _tracer_terms(state, params)
 
     def init_state(T_init=None, S_init=None):
+        if params.thermodynamics == 'teos10_reference':
+            if T_init is None or S_init is None or np.shape(T_init) != shape or np.shape(S_init) != shape:
+                raise ValueError('TEOS initialization requires full-grid CT and reference salinity')
+            from zhenmode.model.solver.physics.teos10 import validate_state
+            validate_state(S_init, T_init, params.eos_pressure_dbar)
         u = jnp.zeros((nx, ny, nz), dtype=state_dtype)
         v = jnp.zeros((nx, ny, nz), dtype=state_dtype)
         eta = jnp.zeros((nx, ny), dtype=state_dtype)

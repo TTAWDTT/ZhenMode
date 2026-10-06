@@ -162,9 +162,11 @@ FDPhysParams = namedtuple('FDPhysParams', [
     'column_geometry',
     'match_barotropic_transport',
     'process_time_scheme',
+    'thermodynamics',
+    'eos_pressure_dbar',  # explicitly supplied sea pressure, fixed during a run
 ])
 
-FDPhysParams.__new__.__defaults__ = (None, False, False, False, False, False, False, False, None, None, None, -1.8, 0.0, False, 1.0, 150, None, 'none', None, 'default', 2, 'legacy', False, 'legacy')
+FDPhysParams.__new__.__defaults__ = (None, False, False, False, False, False, False, False, None, None, None, -1.8, 0.0, False, 1.0, 150, None, 'none', None, 'default', 2, 'legacy', False, 'legacy', 'linear', None)
 
 def _state_identity(state):
     # Incoming invalid states still need a failure report; do not pass them

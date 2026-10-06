@@ -11,8 +11,26 @@ BETA_S = 7.6e-4
 S_REF = 35.0
 
 
-def seawater_density(T: np.ndarray, S: np.ndarray) -> np.ndarray:
-    """Linear-equation-of-state density used by the current solver."""
+def seawater_density(T: np.ndarray, S: np.ndarray, *, thermodynamics='linear') -> np.ndarray:
+    """Default linear density, or surface-referenced TEOS potential density.
+
+    Missing profile levels remain NaN. Finite TEOS values are preflighted, so
+    Kelvin or unsupported salinity cannot silently enter an MLD diagnostic.
+    """
+    if thermodynamics == 'teos10_reference':
+        from zhenmode.model.solver.physics.teos10 import density, validate_state
+        if any(np.asarray(value).dtype.kind not in 'fiu' for value in (T,S)):
+            raise ValueError('MLD temperature and salinity must be real numeric fields')
+        t,s = np.broadcast_arrays(np.ma.asarray(T,dtype=float).filled(np.nan),
+                                   np.ma.asarray(S,dtype=float).filled(np.nan))
+        if np.isinf(t).any() or np.isinf(s).any():
+            raise ValueError('MLD inputs contain infinity')
+        valid = np.isfinite(t) & np.isfinite(s)
+        if valid.any():
+            validate_state(s[valid],t[valid],0.)
+        return np.asarray(density(s,t,0.))  # potential density referenced to surface
+    if thermodynamics != 'linear':
+        raise ValueError('unknown MLD thermodynamics definition')
     return RHO_0 * (1.0 - ALPHA_T * (np.asarray(T, dtype=float) - T_REF)
                     + BETA_S * (np.asarray(S, dtype=float) - S_REF))
 
@@ -21,7 +39,7 @@ def seawater_density(T: np.ndarray, S: np.ndarray) -> np.ndarray:
 def mixed_layer_depth(T: np.ndarray, S: np.ndarray, z: np.ndarray,
                       ocean: np.ndarray | None = None,
                       ref_depth: float = 10.0,
-                      density_delta: float = 0.03) -> np.ndarray:
+                      density_delta: float = 0.03, *, thermodynamics='linear') -> np.ndarray:
     """Column mixed-layer depth in metres positive down.
 
     Uses the common density-threshold definition and the current solver's
@@ -32,7 +50,7 @@ def mixed_layer_depth(T: np.ndarray, S: np.ndarray, z: np.ndarray,
     T = np.asarray(T, dtype=float)
     S = np.asarray(S, dtype=float)
     depth = -np.asarray(z, dtype=float)
-    rho = seawater_density(T, S)
+    rho = seawater_density(T, S,thermodynamics=thermodynamics)
     nx, ny, _ = rho.shape
     wet = np.ones((nx, ny), dtype=bool) if ocean is None \
         else np.asarray(ocean, dtype=bool)

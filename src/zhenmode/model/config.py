@@ -18,6 +18,7 @@ ALPHA_T     = 2.0e-4        # 1/°C   thermal expansion coefficient
 BETA_S      = 7.6e-4        # 1/psu  haline contraction coefficient
 
 C_P         = 3992.0        # J/(kg·°C) specific heat of seawater
+CP0_TEOS10  = 3991.86795711963  # J/(kg K), potential enthalpy / Conservative Temperature
 
 R_EARTH     = 6371.0e3      # m      Earth radius
 
@@ -121,7 +122,9 @@ class PhysicsConfig:
     # w* steepening feedback. Typically κ_redi = κ_gm. 0 = disabled (default).
     kappa_redi: float = 0.0     # m²/s  Redi isopycnal diffusivity; 0 = off
 
-    # ── Equation of state (linear only; see _density_anomaly) ──
+    # TEOS reference variant uses CT and SR≈SA; explicit pressure is required
+    # by factory, while the production default retains its original variables.
+    # ── Equation of state reference values ──
     T_ref: float = 15.0        # °C    reference temperature
     S_ref: float = 35.0        # psu   reference salinity
 
@@ -134,6 +137,7 @@ class PhysicsConfig:
     cd: float = 2.5e-3         # quadratic drag coefficient
     r_bot: float = 1.0e-3      # linear bottom friction coefficient
     bottom_friction: str = 'linear'  # 'linear' or 'quadratic'
+    thermodynamics: str = 'linear'   # appended to preserve existing positional parameters
 
 @dataclass(frozen=True)
 class Config:

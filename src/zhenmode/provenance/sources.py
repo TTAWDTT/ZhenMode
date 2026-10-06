@@ -1,9 +1,25 @@
 """Required current source identities; historical reports remain commit-bound."""
 
 import hashlib
+import json
 import re
 import subprocess
 from pathlib import Path
+
+
+def load_json(path):
+    """Read an object without silently accepting duplicate keys."""
+    def pairs(items):
+        result = {}
+        for name, value in items:
+            if name in result:
+                raise ValueError(f"ambiguous duplicate JSON field: {name}")
+            result[name] = value
+        return result
+    value = json.loads(Path(path).read_text(encoding="utf-8"), object_pairs_hook=pairs)
+    if not isinstance(value, dict):
+        raise ValueError(f"expected JSON object: {path}")
+    return value
 
 
 def source_root(location):
@@ -29,7 +45,10 @@ PACKAGE_SOURCE_MODULES = (
     'zhenmode/baselines/cli',
     'zhenmode/baselines/mom6/__init__',
     'zhenmode/baselines/mom6/adapter',
+    'zhenmode/baselines/mom6/coupled_sources',
     'zhenmode/baselines/mom6/forcing',
+    'zhenmode/baselines/mom6/omip2',
+    'zhenmode/baselines/mom6/omip2_time',
     'zhenmode/cli',
     'zhenmode/evaluation/__init__',
     'zhenmode/evaluation/cli',
@@ -42,6 +61,9 @@ PACKAGE_SOURCE_MODULES = (
     'zhenmode/evaluation/protocols',
     'zhenmode/evaluation/table',
     'zhenmode/execution/__init__',
+    'zhenmode/execution/benchmark',
+    'zhenmode/execution/datasets',
+    'zhenmode/execution/preparation',
     'zhenmode/execution/cli',
     'zhenmode/execution/options',
     'zhenmode/execution/profiling',
@@ -55,12 +77,15 @@ PACKAGE_SOURCE_MODULES = (
     'zhenmode/model/diagnostics/__init__',
     'zhenmode/model/diagnostics/budgets',
     'zhenmode/model/diagnostics/mixed_layer',
+    'zhenmode/model/diagnostics/surface_budget',
     'zhenmode/model/diagnostics/snapshot',
     'zhenmode/model/inputs/__init__',
     'zhenmode/model/inputs/bathymetry',
     'zhenmode/model/inputs/forcing/__init__',
     'zhenmode/model/inputs/forcing/bundle',
     'zhenmode/model/inputs/forcing/idealized',
+    'zhenmode/model/inputs/forcing/jra55',
+    'zhenmode/model/inputs/forcing/online',
     'zhenmode/model/inputs/forcing/reanalysis',
     'zhenmode/model/inputs/forcing/seasonal',
     'zhenmode/model/inputs/initial_conditions',
@@ -93,9 +118,11 @@ PACKAGE_SOURCE_MODULES = (
     'zhenmode/model/solver/numerics/horizontal',
     'zhenmode/model/solver/numerics/vertical',
     'zhenmode/model/solver/physics/__init__',
+    'zhenmode/model/solver/physics/air_sea',
     'zhenmode/model/solver/physics/eos',
     'zhenmode/model/solver/physics/isopycnal',
     'zhenmode/model/solver/physics/surface',
+    'zhenmode/model/solver/physics/teos10',
     'zhenmode/model/solver/physics/vertical',
     'zhenmode/model/solver/state',
     'zhenmode/model/solver/timestepping/__init__',
