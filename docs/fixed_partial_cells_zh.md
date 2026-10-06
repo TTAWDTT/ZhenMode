@@ -53,3 +53,6 @@ python scripts/run_bounded_tests.py tests/fd/test_fixed_partial_geometry.py -q
 独立数学核验的声明范围限于参考区间覆盖、固定库存守恒、平均速度／联系梯度
 的负伴随及列投影对角。应逐项记录有限枚举、反例控制、证明和实际调用点审计，
 不得把组件的核验状态升级为完整模式资格。
+
+完整定义、代数推导、公开精确检查脚本及调用范围见
+[联系代数与独立检查](fixed_partial_contact_algebra.md)。
