@@ -51,5 +51,7 @@ MOM6时间格式适配：`zhenmode baseline mom6 omip2-time-inputs --prepared-in
 
 非线性热力学组件和固定 GSW/MOM6 参考检查见[温盐与密度](thermodynamics_zh.md)。日常测试用 `python scripts/run_bounded_tests.py tests/fd/test_teos10.py -q`；完整 Fortran 复算在 Linux 外层使用同样资源上限。组件尚未切换生产状态变量或 EOS。
 
+CT/SR参考变体的转换与FD接线检查使用`python scripts/run_bounded_tests.py tests/fd/test_temperature_conversions.py tests/fd/test_thermodynamic_coupling.py tests/fd/test_online_surface.py tests/fd/test_teos10.py -q`。实际GSW复算追加`--temperatures`，核对全部22份原始例程、CP0及实际包源码，输出精度、来源、失败控制和范围。该变体目前只由明确的Python API接入；普通CLI及默认预设仍用线性状态方程。不要以无冰组件的运行代替完整协议短窗。
+
 直接模型运行拒绝已存在的 `global_<tag>.npz`，请为新运行选择独立 `--tag` 或 `--out-dir`。受中断的严格 checkpoint 续跑仍核对原配置与源码；已完成或已保存失败结果的目录不会被覆盖。
 最终结果先写入同目录临时文件并 fsync，再以原子硬链接发布，拒绝覆盖竞争写入；checkpoint 则原子替换。文件系统须支持同目录硬链接；不支持时明确失败。发布前写入中断不会留下残缺的最终结果，异常退出可能留有独立临时文件，不阻止同名 checkpoint 续跑。

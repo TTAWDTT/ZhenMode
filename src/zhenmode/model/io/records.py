@@ -138,7 +138,8 @@ def capture_snapshot(args, context, paths, recovery, history, counters, ledger, 
     history.snap_ice_fraction.append(
         float(np.mean(ice_top[context.inputs.ocean] > 0.0)) if context.inputs.ocean.any() else 0.0
     )
-    history.snap_budget.append(compute_budget_diagnostics(state, context.inputs.grid))
+    history.snap_budget.append(compute_budget_diagnostics(state, context.inputs.grid,
+        thermodynamics=context.inputs.physics.thermodynamics))
     for name, value in ledger.totals.items():
         ledger.history["ledger_" + name].append(np.asarray(value).copy())
     if args.save_3d:

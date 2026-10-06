@@ -146,7 +146,8 @@ def open_water_fluxes(air, sst_c, ocean_u, ocean_v, *, albedo=0.066, emissivity=
 
 
 def apply_open_water_exchange(state, fluxes, air, sss_reference, weights, dt_seconds,
-                              *, piston_m_s=50 / (365 * 86400), source_salinity=None):
+                              *, piston_m_s=50 / (365 * 86400), source_salinity=None,
+                              heat_capacity_j_kg_k=C_P):
     """Explicit surface operator; fixed Boussinesq volume, virtual salt flux.
 
     weights are wet inverse-thickness deposition weights supplied by geometry.
@@ -159,7 +160,7 @@ def apply_open_water_exchange(state, fluxes, air, sss_reference, weights, dt_sec
     surface_salt = state.S[:, :, 0] if source_salinity is None else source_salinity
     restoring = piston_m_s * (sss_reference - surface_salt)  # PSU m/s
     salt = -surface_salt * freshwater / RHO_0 + restoring
-    temperature = state.T + (dt_seconds * heat / (RHO_0 * C_P))[:, :, None] * weights
+    temperature = state.T + (dt_seconds * heat / (RHO_0 * heat_capacity_j_kg_k))[:, :, None] * weights
     salinity = state.S + (dt_seconds * salt)[:, :, None] * weights
     # Reader/exchange precision must not silently promote the prognostic state.
     return state._replace(T=temperature.astype(state.T.dtype), S=salinity.astype(state.S.dtype)), heat, salt, freshwater, restoring

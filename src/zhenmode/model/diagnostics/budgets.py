@@ -4,13 +4,14 @@ from __future__ import annotations
 
 import jax
 
-from zhenmode.model.config import C_P, RHO_0
+from zhenmode.model.config import RHO_0
 from zhenmode.model.solver.dynamics.transport import (
     _face_transport_divergence,
     _layer_face_transports,
     _vertical_transport_iface,
 )
 from zhenmode.model.solver.numerics.backend import jnp
+from zhenmode.model.solver.physics.eos import heat_capacity
 
 METRIC_NAMES = ("fixed_node_water_ice_enthalpy_J", "water_salt_kg", "eta_volume_m3")
 
@@ -65,6 +66,7 @@ class _StageRecorder:
 
     def __init__(self, params):
         self.params = params
+        self.cp = heat_capacity(params)
         self.area = jnp.asarray(params.dx_2d, dtype=jnp.float64) * jnp.asarray(params.dy, dtype=jnp.float64)
         self.surface_area = self.area * params.wet_mask
         self.volume = self.area[:, :, None] * jnp.asarray(params.dz_node, dtype=jnp.float64) * params.wet_mask_z
@@ -121,7 +123,7 @@ class _StageRecorder:
             self.transport_consistency_max = self.transport_consistency_max.at[3].set(mismatch)
 
     def difference(self, before, after):
-        heat = RHO_0 * C_P * (jnp.asarray(after.T, dtype=jnp.float64) - jnp.asarray(before.T, dtype=jnp.float64)) * self.volume
+        heat = RHO_0 * self.cp * (jnp.asarray(after.T, dtype=jnp.float64) - jnp.asarray(before.T, dtype=jnp.float64)) * self.volume
         latent = 917. * 3.34e5 * (jnp.asarray(after.ice, dtype=jnp.float64)
                                  - jnp.asarray(before.ice, dtype=jnp.float64)) * self.surface_area
         salt = RHO_0 / 1000. * (jnp.asarray(after.S, dtype=jnp.float64) - jnp.asarray(before.S, dtype=jnp.float64)) * self.volume
@@ -140,7 +142,7 @@ class _StageRecorder:
     def surface_sources(self, tendencies, duration=None):
         interval = self.params.dt / 2. if duration is None else duration
         for index, tendency in enumerate(tendencies):
-            factor = RHO_0 * C_P if index < 4 else RHO_0 / 1000.
+            factor = RHO_0 * self.cp if index < 4 else RHO_0 / 1000.
             component = 0 if index < 4 else 1
             amount = jnp.sum(jnp.asarray(tendency, dtype=jnp.float64) * self.volume) * factor * interval
             self.sources[SOURCE_NAMES[index]] = self.sources[SOURCE_NAMES[index]].at[component].add(amount)
@@ -151,20 +153,20 @@ class _StageRecorder:
             absolute_tendencies = jax.tree.map(jnp.abs, tendencies)
         for name, (temperature, salinity), (absolute_temperature, absolute_salinity) in zip(
                 NONLINEAR_PROCESS_NAMES, tendencies, absolute_tendencies, strict=True):
-            heat = RHO_0 * C_P * interval * jnp.asarray(temperature, dtype=jnp.float64) * self.volume
+            heat = RHO_0 * self.cp * interval * jnp.asarray(temperature, dtype=jnp.float64) * self.volume
             salt = RHO_0 / 1000. * interval * jnp.asarray(salinity, dtype=jnp.float64) * self.volume
             self.processes[name] = self.processes[name] + jnp.stack((jnp.sum(heat), jnp.sum(salt), jnp.asarray(0.)))
             if duration is None:
                 scale_heat, scale_salt = jnp.abs(heat), jnp.abs(salt)
             else:
-                scale_heat = RHO_0 * C_P * interval * absolute_temperature * self.volume
+                scale_heat = RHO_0 * self.cp * interval * absolute_temperature * self.volume
                 scale_salt = RHO_0 / 1000. * interval * absolute_salinity * self.volume
             self.process_scale = self.process_scale + jnp.stack((jnp.sum(scale_heat),
                                                                 jnp.sum(scale_salt), jnp.asarray(0.)))
 
     def advection_boundary_fluxes(self, temperature_flux, salinity_flux, duration=None):
         interval = self.params.dt / 2. if duration is None else duration
-        heat = RHO_0 * C_P * interval * jnp.sum(jnp.asarray(temperature_flux, dtype=jnp.float64) * self.surface_area)
+        heat = RHO_0 * self.cp * interval * jnp.sum(jnp.asarray(temperature_flux, dtype=jnp.float64) * self.surface_area)
         salt = RHO_0 / 1000. * interval * jnp.sum(jnp.asarray(salinity_flux, dtype=jnp.float64) * self.surface_area)
         self.advection_boundary = self.advection_boundary + jnp.stack((heat, salt, jnp.asarray(0.)))
 
@@ -185,7 +187,7 @@ class _StageRecorder:
                        - eta_before * jnp.asarray(before.T[..., 0], dtype=jnp.float64))
         salinity = (eta_after * jnp.asarray(after.S[..., 0], dtype=jnp.float64)
                     - eta_before * jnp.asarray(before.S[..., 0], dtype=jnp.float64))
-        return jnp.stack((RHO_0 * C_P * jnp.sum(temperature * self.surface_area),
+        return jnp.stack((RHO_0 * self.cp * jnp.sum(temperature * self.surface_area),
                           RHO_0 / 1000. * jnp.sum(salinity * self.surface_area), jnp.asarray(0.)))
 
     def sponge_sources(self, before, decay):
@@ -194,7 +196,7 @@ class _StageRecorder:
                        - jnp.asarray(before.T, dtype=jnp.float64)) * fraction
         salinity = (jnp.asarray(self.params.S_clim_3d, dtype=jnp.float64)
                     - jnp.asarray(before.S, dtype=jnp.float64)) * fraction
-        source = jnp.stack((RHO_0 * C_P * jnp.sum(temperature * self.volume),
+        source = jnp.stack((RHO_0 * self.cp * jnp.sum(temperature * self.volume),
                             RHO_0 / 1000. * jnp.sum(salinity * self.volume), jnp.asarray(0.)))
         self.sources["sponge"] = self.sources["sponge"] + source
 

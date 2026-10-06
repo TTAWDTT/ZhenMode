@@ -28,13 +28,21 @@ def _isopycnal_slope(state, p):
 
     Returns (S_x, S_y), each (nx, ny, nz), masked to wet points.
     """
-    rho_prime = _density_anomaly(state.T, state.S, p) * p.wet_mask_z
-    # Seafloor no-flux fill (D8): without it the bottom wet layer's _d_dz sees
-    # the masked 0 below it, i.e. an INVERTED column, and the closure reads
-    # "convective" (slope at its cap) over every sill.
-    rho_fill = _fill_ghost_bottom(rho_prime, p)
-    drho_dx, drho_dy = _gradient_conservative_3d(rho_prime, p)
-    drho_dz = _d_dz(rho_fill, p)
+    if p.thermodynamics == 'teos10_reference':
+        from zhenmode.model.solver.physics.teos10 import density_derivatives
+        rho_s, rho_t, _ = density_derivatives(state.S,state.T,p.eos_pressure_dbar)
+        grad_s = _gradient_conservative_3d(state.S*p.wet_mask_z,p)
+        grad_t = _gradient_conservative_3d(state.T*p.wet_mask_z,p)
+        drho_dx, drho_dy = (rho_s*ds+rho_t*dt for ds,dt in zip(grad_s,grad_t,strict=True))
+        drho_dz = (rho_s*_d_dz(_fill_ghost_bottom(state.S,p),p)
+                   + rho_t*_d_dz(_fill_ghost_bottom(state.T,p),p))
+    else:
+        rho_prime = _density_anomaly(state.T, state.S, p) * p.wet_mask_z
+        # Preserve the default bottom-fill density stencil; the TEOS branch
+        # above fills tracers before taking the fixed-pressure gradient.
+        rho_fill = _fill_ghost_bottom(rho_prime, p)
+        drho_dx, drho_dy = _gradient_conservative_3d(rho_prime, p)
+        drho_dz = _d_dz(rho_fill, p)
     # Floor the denominator: stable stratification only; unstable columns
     # (drho_dz<0) get the floor magnitude with their sign preserved so the
     # bolus does not reverse in convective patches.
