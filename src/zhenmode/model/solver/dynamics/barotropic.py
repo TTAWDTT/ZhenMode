@@ -8,6 +8,7 @@ from zhenmode.model.solver.dynamics.transport import (
     _face_transport_divergence,
     _layer_face_transports,
     _reference_depth_divergence,
+    _sum_layer_transports,
 )
 from zhenmode.model.solver.numerics.backend import jnp
 from zhenmode.model.solver.numerics.horizontal import (
@@ -47,7 +48,7 @@ def _symmetric_free_surface_step(eta, velocity_x, velocity_y, params, duration,
     velocity_y = velocity_y * params.wet_mask * normal_mask
     if column_face_transport is None:
         layers = _layer_face_transports(velocity_x[..., None], velocity_y[..., None], params)
-        first_faces = tuple(jnp.sum(flux, axis=-1) for flux in layers)
+        first_faces = tuple(_sum_layer_transports(flux) for flux in layers)
     else:
         first_faces = column_face_transport
     midpoint_eta = eta - (duration / 2.) * _face_transport_divergence(*first_faces, params)
@@ -65,7 +66,7 @@ def _symmetric_free_surface_step(eta, velocity_x, velocity_y, params, duration,
     next_y = ((right_y - half_rotation * right_x) / denominator) * params.wet_mask * normal_mask
     delta_layers = _layer_face_transports((next_x - velocity_x)[..., None],
                                          (next_y - velocity_y)[..., None], params)
-    second_faces = tuple(first + jnp.sum(delta, axis=-1)
+    second_faces = tuple(first + _sum_layer_transports(delta)
                          for first, delta in zip(first_faces, delta_layers, strict=True))
     transported_eta = midpoint_eta - (duration / 2.) * _face_transport_divergence(*second_faces, params)
     mean_faces = tuple(0.5 * (first + second) for first, second in zip(first_faces, second_faces, strict=True))
@@ -104,7 +105,7 @@ def _free_surface_step_fd(eta, u, v, p, F_rho_x=None, F_rho_y=None, dt_half=None
         ubt, vbt = u, v   # subcycle mode: caller passes BT velocity directly
     else:
         ubt, vbt = _barotropic_velocity(u, v, p)
-        if p.column_geometry == 'nodal_dual_v1':
+        if p.column_geometry in {'nodal_dual_v1', 'fixed_partial_v1'}:
             column_divergence_offset = _column_divergence(u, v, p) - _reference_depth_divergence(ubt, vbt, p)
 
     F_x = jnp.zeros_like(ubt)
@@ -121,7 +122,7 @@ def _free_surface_step_fd(eta, u, v, p, F_rho_x=None, F_rho_y=None, dt_half=None
     # interfaces so the divergence telescopes to zero over the wet domain. The
     # centered (roll) form leaks volume at coastlines and closed walls. Mask
     # ubt/vbt to wet first so the face averages carry no land values. (D2)
-    if p.column_geometry == 'nodal_dual_v1':
+    if p.column_geometry in {'nodal_dual_v1', 'fixed_partial_v1'}:
         if column_face_transport is not None:
             column_transport_divergence = _face_transport_divergence(*column_face_transport, p)
         else:
@@ -140,7 +141,7 @@ def _free_surface_step_fd(eta, u, v, p, F_rho_x=None, F_rho_y=None, dt_half=None
     # 2 - dt^2*g*H*k^2 => |lambda| = 1 under CFL < 1, the standard OGCM
     # discretization (MOM6/ROMS/NEMO); bottom drag then decays the free mode.
     # (D22)
-    if p.column_geometry == 'nodal_dual_v1':
+    if p.column_geometry in {'nodal_dual_v1', 'fixed_partial_v1'}:
         eta_new = eta - dt_half * column_transport_divergence
     else:
         eta_new = eta - dt_half * p.H_sw * div_bt
@@ -191,7 +192,7 @@ def _free_surface_step_fd(eta, u, v, p, F_rho_x=None, F_rho_y=None, dt_half=None
     # Energy-consistent PGF: the exact adjoint of the conservative divergence
     # (area-weighted), so the FB pair is neutral on the masked non-uniform grid.
     # The centered _d_dx/_d_dy gradient is NOT the adjoint and injects energy.
-    if p.column_geometry == 'nodal_dual_v1':
+    if p.column_geometry in {'nodal_dual_v1', 'fixed_partial_v1'}:
         grad_eta_x, grad_eta_y = _reference_depth_gradient(eta_new, p)
     else:
         grad_eta_x, grad_eta_y = _gradient_conservative(eta_new, p)
@@ -237,7 +238,7 @@ def _free_surface_step_fd(eta, u, v, p, F_rho_x=None, F_rho_y=None, dt_half=None
     # Project barotropic delta back to 3D velocity (uniform over depth)
     delta_ubt = (ubt_new - ubt)[:, :, None]
     delta_vbt = (vbt_new - vbt)[:, :, None]
-    projection_mask = p.wet_mask_z if p.column_geometry == 'nodal_dual_v1' else 1.
+    projection_mask = p.wet_mask_z if p.column_geometry in {'nodal_dual_v1', 'fixed_partial_v1'} else 1.
     u_new = u + delta_ubt * projection_mask
     v_new = v + delta_vbt * projection_mask
     # No-flux wall: enforce zero normal velocity at the N/S boundary rows on
@@ -266,7 +267,7 @@ def _barotropic_subcycle_transport(state, params):
         velocity_x = state.u + (mean_u - initial_u)[..., None] * params.wet_mask_z
         velocity_y = state.v + (mean_v - initial_v)[..., None] * params.wet_mask_z
         layers = _layer_face_transports(velocity_x, velocity_y, params)
-        faces = tuple(jnp.sum(flux, axis=-1) for flux in layers)
+        faces = tuple(_sum_layer_transports(flux) for flux in layers)
         if params.match_barotropic_transport:
             divergence = _face_transport_divergence(*faces, params)
         else:

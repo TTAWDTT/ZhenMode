@@ -1,9 +1,15 @@
 """Wet-face transport, continuity and tracer advection."""
 
 from zhenmode.model.solver.numerics.backend import jnp
+from zhenmode.model.solver.numerics.contacts import (
+    contact_divergence,
+    contact_transports,
+    neighbours,
+)
 from zhenmode.model.solver.numerics.horizontal import (
     _dealias_h_fd,
     _divergence_h,
+    _face_thickness,
     _gradient_face_gated_3d,
 )
 from zhenmode.model.solver.numerics.vertical import _d_dz, _fill_ghost_bottom
@@ -20,9 +26,10 @@ def _column_divergence(u, v, p):
 
 def _layer_face_transports(velocity_x, velocity_y, params):
     """Static nodal volume flux per face width; y includes cos(face latitude)."""
-    wet = params.wet_mask_z
-    thickness_x = params.dz_node * wet * jnp.roll(wet, -1, axis=0)
-    thickness_y = params.dz_node * wet * jnp.roll(wet, -1, axis=1)
+    if getattr(params,'column_geometry','legacy')=='fixed_partial_v1':
+        return contact_transports(velocity_x,velocity_y,params)
+    thickness_x = _face_thickness(params, 0)
+    thickness_y = _face_thickness(params, 1)
     cosine_face = 0.5 * (params.cos_lat + jnp.roll(params.cos_lat, -1))
     flux_x = 0.5 * (velocity_x + jnp.roll(velocity_x, -1, axis=0)) * thickness_x
     flux_y = 0.5 * (velocity_y + jnp.roll(velocity_y, -1, axis=1)) * thickness_y * cosine_face[None, :, None]
@@ -30,20 +37,31 @@ def _layer_face_transports(velocity_x, velocity_y, params):
 
 def _face_transport_divergence(flux_x, flux_y, params):
     """Divergence of layer or column face transports, with closed y walls."""
+    if flux_x.ndim==4:
+        return contact_divergence(flux_x,flux_y,params)
     incoming_y = jnp.roll(flux_y, 1, axis=1).at[:, 0].set(0.)
     inverse_dx = params.inv_dx[..., :1] if flux_x.ndim == 3 else params.inv_dx[..., 0]
     cosine = params.cos_lat[None, :, None] if flux_y.ndim == 3 else params.cos_lat[None, :]
     return ((flux_x - jnp.roll(flux_x, 1, axis=0)) * inverse_dx
             + (flux_y - incoming_y) * params.inv_dy / cosine)
 
+
+def _sum_layer_transports(flux):
+    """Sum reference-node and contact axes into one physical column face."""
+    return jnp.sum(flux,axis=(0,-1)) if flux.ndim==4 else jnp.sum(flux,axis=-1)
+
 def _match_layer_face_transports(velocity_x, velocity_y, column_transport, params):
     """Match the fast-mode time mean at every open face, retaining layer shear."""
     fluxes = _layer_face_transports(velocity_x, velocity_y, params)
     corrected = []
     for axis, flux, target in zip((0, 1), fluxes, column_transport, strict=True):
-        thickness = params.dz_node * params.wet_mask_z * jnp.roll(params.wet_mask_z, -1, axis=axis)
-        if axis == 1:
-            thickness = thickness.at[:, -1].set(0.)
+        if getattr(params,'column_geometry','legacy')=='fixed_partial_v1':
+            thickness=params.face_contacts[axis]
+            depth=_sum_layer_transports(thickness)
+            weights=thickness/jnp.where(depth>0.,depth,1.)[None,...,None]
+            corrected.append(flux+weights*(target-_sum_layer_transports(flux))[None,...,None])
+            continue
+        thickness = _face_thickness(params, axis)
         depth = jnp.sum(thickness, axis=-1, keepdims=True)
         weights = thickness / jnp.where(depth > 0., depth, 1.)
         corrected.append(flux + weights * (target - jnp.sum(flux, axis=-1))[..., None])
@@ -74,7 +92,7 @@ def _vertical_transport_iface(u, v, p, face_transport=None):
 
 def _barotropic_velocity(u, v, p):
     """Depth-averaged (barotropic) horizontal velocity."""
-    if p.column_geometry == 'nodal_dual_v1':
+    if p.column_geometry in {'nodal_dual_v1', 'fixed_partial_v1'}:
         return jnp.sum(u * p.dz_norm, axis=-1), jnp.sum(v * p.dz_norm, axis=-1)
     u_avg = 0.5 * (u[..., :-1] + u[..., 1:])
     v_avg = 0.5 * (v[..., :-1] + v[..., 1:])
@@ -138,31 +156,8 @@ def _limited_tracer_slope(tracer, wet, axis):
     return (0.5 * signs * jnp.minimum(jnp.abs(left_delta), jnp.abs(right_delta))
             * wet * previous_wet * following_wet)
 
-def _advection_scalar(T, u, v, Fz_in, p, return_boundary=False, face_transport=None):
-    """3D FLUX-FORM scalar advection (FD, land-masked, NOT dealiased).
-
-    Flux form (-div(uT)) rather than advective form: the two differ by +T*div(u), a
-    REAL anti-diffusion whose positive eigenvalue dt*delta grows the field
-    exponentially at any nonzero discrete divergence, and subcycling only slows it
-    without removing it. Flux form is exactly conservative and matches the
-    continuity-consistent tracer equation the free-surface subcycle solves; momentum
-    keeps the advective form. (D15)
-
-    No dealiasing here, unlike _advection_flux_form: the flux form's value is that
-    its column divergence telescopes exactly into the boundary fluxes, which is what
-    closes the column heat budget, and _dealias_h_fd would break it. Horizontal
-    fluxes are face-gated at mask boundaries (D14); the vertical flux is donor-cell
-    on Fz_in from _vertical_transport_iface, the exact discrete inverse of the
-    horizontal divergence, so the column transport is exactly conservative and
-    monotone. (D7, D16)
-
-    ``fct_adv`` is a compact TVD/MUSCL flux limiter: it reconstructs the face
-    state from the two donor cells with a minmod slope and chooses the state
-    consistent with the face velocity. It is not yet a full Zalesak multidimensional
-    FCT limiter, but it is conservative and removes the centered scheme's local
-    overshoot at a sharp front.
-    """
-    wm = p.wet_mask_z
+def _legacy_horizontal_tracer_fluxes(T,u,v,p,face_transport):
+    wm=p.wet_mask_z
     # ── Zonal flux at face (i+1/2), periodic in x ──
     # Fx = u_face * T_face (centered unless monotone_adv), face-gated on both
     # cells wet; +x-directed (u>0 carries T eastward).
@@ -224,6 +219,58 @@ def _advection_scalar(T, u, v, Fz_in, p, return_boundary=False, face_transport=N
     # the interior neighbour). Close it explicitly, as
     # _divergence_conservative does.
     Fy = Fy.at[:, -1].set(0.0)
+    return Fx,Fy
+
+
+def _advection_scalar(T, u, v, Fz_in, p, return_boundary=False, face_transport=None):
+    """3D FLUX-FORM scalar advection (FD, land-masked, NOT dealiased).
+
+    Flux form (-div(uT)) rather than advective form: the two differ by +T*div(u), a
+    REAL anti-diffusion whose positive eigenvalue dt*delta grows the field
+    exponentially at any nonzero discrete divergence, and subcycling only slows it
+    without removing it. Flux form is exactly conservative and matches the
+    continuity-consistent tracer equation the free-surface subcycle solves; momentum
+    keeps the advective form. (D15)
+
+    No dealiasing here, unlike _advection_flux_form: the flux form's value is that
+    its column divergence telescopes exactly into the boundary fluxes, which is what
+    closes the column heat budget, and _dealias_h_fd would break it. Horizontal
+    fluxes are face-gated at mask boundaries (D14); the vertical flux is donor-cell
+    on Fz_in from _vertical_transport_iface, the exact discrete inverse of the
+    horizontal divergence, so the column transport is exactly conservative and
+    monotone. (D7, D16)
+
+    ``fct_adv`` is a compact TVD/MUSCL flux limiter: it reconstructs the face
+    state from the two donor cells with a minmod slope and chooses the state
+    consistent with the face velocity. It is not yet a full Zalesak multidimensional
+    FCT limiter, but it is conservative and removes the centered scheme's local
+    overshoot at a sharp front.
+    """
+    wm = p.wet_mask_z
+    partial = getattr(p, 'column_geometry', 'legacy') == 'fixed_partial_v1'
+    if partial and face_transport is None:
+        face_transport = _layer_face_transports(u, v, p)
+    if partial:
+        tracer_fluxes=[]
+        for axis,flux in enumerate(face_transport):
+            other=neighbours(T,axis)
+            if p.fct_adv:
+                slope=_limited_tracer_slope(T,wm,axis)
+                left=T[None]+.5*slope[None]
+                right=other-.5*neighbours(slope,axis)
+                concentration=jnp.where(flux>=0.,left,right)
+            elif p.monotone_adv:
+                concentration=jnp.where(flux>=0.,T[None],other)
+            else:
+                concentration=.5*(T[None]+other)
+            tracer_fluxes.append(flux*concentration)
+        horizontal_div=contact_divergence(*tracer_fluxes,p)/p.dz_node
+    else:
+        Fx,Fy=_legacy_horizontal_tracer_fluxes(T,u,v,p,face_transport)
+        Fx_up=jnp.roll(Fx,1,axis=0)
+        Fy_up=jnp.roll(Fy,1,axis=1).at[:,0].set(0.)
+        horizontal_div=((Fx-Fx_up)*p.inv_dx[...,0:1]
+                        +(Fy-Fy_up)*p.inv_dy/p.cos_lat[None,:,None])
     # ── Vertical flux at interface (k+1/2): DONOR-CELL (upwind) ──
     # Fz is the DOWNWARD-positive interface transport (nx, ny, nz+1) from
     # _vertical_transport_iface; the donor is the SHALLOWER node when Fz > 0 and
@@ -243,9 +290,6 @@ def _advection_scalar(T, u, v, Fz_in, p, return_boundary=False, face_transport=N
     # Tendency is OUT-minus-IN: k increases DOWNWARD, so cell k's out-face is
     # its bottom (k+1/2) and its in-face the top (k-1/2). Swapping to (up - dn)
     # makes the donor-cell scheme ANTI-upwind. (D16)
-    Fx_up = jnp.roll(Fx, 1, axis=0)                   # flux at face (i-1/2)
-    Fy_up = jnp.roll(Fy, 1, axis=1)
-    Fy_up = Fy_up.at[:, 0].set(0.0)                   # south wall closed
     # Top face: Fz[..., 0] is the column-integrated horizontal divergence, the
     # rigid-lid leak the barotropic subcycle absorbs as the eta tendency. The
     # MOM-style rigid-lid closure carries the surface cell's own value,
@@ -254,11 +298,8 @@ def _advection_scalar(T, u, v, Fz_in, p, return_boundary=False, face_transport=N
     Fz_top = Fz_in[:, :, :1] * T[..., :1]
     up = jnp.concatenate([Fz_top, Fz_int], axis=-1)
     dn = jnp.concatenate([Fz_int, jnp.zeros_like(Fz_int[..., :1])], axis=-1)
-    div_x = (Fx - Fx_up) * p.inv_dx[..., 0:1]
-    # Meridional: divide by cos(cell lat) like _divergence_conservative.
-    div_y = (Fy - Fy_up) * p.inv_dy / p.cos_lat[None, :, None]
-    div_z = (dn - up) / p.dz_node
-    adv_T = -(div_x + div_y + div_z)
+    div_z = (dn-up)/p.dz_node
+    adv_T = -(horizontal_div+div_z)
     tendency = adv_T * p.wet_mask_z
     if return_boundary:
         return tendency, Fz_top[..., 0]

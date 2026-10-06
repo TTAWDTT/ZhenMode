@@ -2,6 +2,12 @@
 
 from zhenmode.model.config import OMEGA, R_EARTH
 from zhenmode.model.solver.numerics.backend import jnp, np
+from zhenmode.model.solver.numerics.contacts import (
+    contact_diffusion,
+    contact_divergence,
+    contact_gradient,
+    contact_transports,
+)
 
 
 def _mirror_latitude(u):
@@ -19,6 +25,16 @@ def _wet_face_pair(wet, axis):
         positive = positive.at[:, -1].set(0.0)
         negative = negative.at[:, 0].set(0.0)
     return positive, negative
+
+
+def _face_thickness(p, axis):
+    """Same-node widths for legacy/nodal paths, with closed y walls."""
+    wet = p.wet_mask_z
+    thickness = p.dz_node
+    if getattr(p, 'column_geometry', 'legacy') == 'fixed_partial_v1':
+        raise ValueError('fixed partial geometry requires its full cross-node contacts')
+    result = thickness * wet * jnp.roll(wet, -1, axis=axis)
+    return result.at[:, -1].set(0.) if axis == 1 else result
 
 
 def _d_dx(u, p):
@@ -99,6 +115,8 @@ def _gradient_conservative_3d(field, p):
 
     No flux reaches into land zeros across a coastline. (D4)
     """
+    if getattr(p, 'column_geometry', 'legacy') == 'fixed_partial_v1':
+        return contact_gradient(field,p)
     wm = p.wet_mask_z                                 # (nx, ny, nz)
     cos_lat = p.cos_lat                               # (ny,)
     inv_dx = p.inv_dx[..., 0:1]                        # (nx, ny, 1)
@@ -123,6 +141,8 @@ def _divergence_conservative_3d(Fx, Fy, p):
     The bare _d_dx/_d_dy divergence of a coastal flux reads the land zeros inside
     its stencil and injects a spurious coastal source. (D4)
     """
+    if getattr(p, 'column_geometry', 'legacy') == 'fixed_partial_v1':
+        return _divergence_h(Fx, Fy, p)
     wm = p.wet_mask_z                                 # (nx, ny, nz)
     cos_lat = p.cos_lat                               # (ny,)
     # Zonal (axis 0, periodic): face (i+1/2,j,k) open iff cell i and i+1 wet.
@@ -150,7 +170,7 @@ def _laplacian_h(u, p):
     The nodal candidate uses closed wet-face cosine fluxes. The legacy branch
     retains its expanded metric correction for production compatibility. (D5)
     """
-    if getattr(p, 'column_geometry', 'legacy') == 'nodal_dual_v1':
+    if getattr(p, 'column_geometry', 'legacy') in {'nodal_dual_v1', 'fixed_partial_v1'}:
         return _horizontal_diffusion_flux(u, jnp.ones_like(p.coastal_kappa_h_2d)[:, :, None], p)
     # ∂²u/∂x²: FACE-GATED conservative form (open iff BOTH cells wet). The bare
     # central stencil reads the mask step at the coast, where ghost nodes hold
@@ -179,6 +199,9 @@ def _laplacian_h(u, p):
 
 def _horizontal_diffusion_flux(tracer, diffusivity, p):
     """Wet-face variable-coefficient diffusion with closed latitude walls."""
+    if getattr(p, 'column_geometry', 'legacy') == 'fixed_partial_v1':
+        diffusivity = jnp.broadcast_to(diffusivity,p.dz_node.shape)
+        return contact_diffusion(tracer,diffusivity,p)
     wet = p.wet_mask_z
     zonal_flux = (0.5 * (diffusivity + jnp.roll(diffusivity, -1, axis=0))
                   * (jnp.roll(tracer, -1, axis=0) - tracer) * p.inv_dx
@@ -193,8 +216,9 @@ def _horizontal_diffusion_flux(tracer, diffusivity, p):
                        * wet * next_wet * cos_face[None, :, None])
     meridional_flux = meridional_flux.at[:, -1, :].set(0.)
     incoming_y = jnp.roll(meridional_flux, 1, axis=1).at[:, 0, :].set(0.)
-    return ((zonal_flux - jnp.roll(zonal_flux, 1, axis=0)) * p.inv_dx
-            + (meridional_flux - incoming_y) * p.inv_dy / p.cos_lat[None, :, None])
+    result = ((zonal_flux - jnp.roll(zonal_flux, 1, axis=0)) * p.inv_dx
+              + (meridional_flux - incoming_y) * p.inv_dy / p.cos_lat[None, :, None])
+    return result
 
 def _horizontal_tracer_diffusion(tracer, p):
     """Conservative wet-face diffusion for background and enhanced coefficients."""
@@ -221,6 +245,8 @@ def _divergence_h(u, v, p):
     mirror-pads the closed N/S walls and carries the same cos(face)/cos(cell)
     spherical factors as _divergence_conservative. (D6)
     """
+    if getattr(p, 'column_geometry', 'legacy') == 'fixed_partial_v1':
+        return contact_divergence(*contact_transports(u,v,p),p)/p.dz_node
     wm = p.wet_mask_z
     # Zonal (axis 0, periodic): face (i+1/2) velocity, open iff both wet.
     Fx = 0.5 * (u + jnp.roll(u, -1, axis=0)) * wm * jnp.roll(wm, -1, axis=0)
@@ -337,7 +363,15 @@ def _apply_polar_cap(field, wm, p):
     # (silently defeats the fp32 state/params cast downstream).
     wts = _polar_cap_weights(ncap, p.polar_cap_taper).astype(field.dtype)
 
-    def _cap_band(f, w, wts_band):
+    def _cap_band(f, w, wts_band, h=None):
+        if field.ndim == 3 and getattr(p, 'column_geometry', 'legacy') == 'fixed_partial_v1':
+            # Partial bottom capacities differ along longitude. An unweighted
+            # wet-point mean would change tracer inventory in this band.
+            capacity = h.astype(jnp.float64) * w
+            total = jnp.sum(capacity, axis=0, keepdims=True)
+            mean = jnp.sum(f.astype(jnp.float64) * capacity, axis=0, keepdims=True) / jnp.where(total > 0., total, 1.)
+            fraction = wts_band.astype(jnp.float64)[None, :, None]
+            return ((f.astype(jnp.float64) + fraction * (mean-f)) * w).astype(field.dtype)
         if field.dtype == jnp.float32 and getattr(p, 'process_time_scheme', 'legacy') != 'legacy':
             wet64 = w.astype(jnp.float64)
             values64 = f.astype(jnp.float64) * wet64
@@ -363,8 +397,9 @@ def _apply_polar_cap(field, wm, p):
     # effectively uncapped. The wall row then grows a 2dx zonal checkerboard
     # (measured on the real ETOPO relief: peak |u| pinned to j=ny-1, 1.0 ->
     # 24.8 m/s between day 1.0 and day 2.0). (D21)
-    south = _cap_band(field[:, :nb], wm[:, :nb], wts)
-    north = _cap_band(field[:, -nb:], wm[:, -nb:], jnp.flip(wts))
+    partial = field.ndim == 3 and getattr(p, 'column_geometry', 'legacy') == 'fixed_partial_v1'
+    south = _cap_band(field[:, :nb], wm[:, :nb], wts, p.dz_node[:, :nb] if partial else None)
+    north = _cap_band(field[:, -nb:], wm[:, -nb:], jnp.flip(wts), p.dz_node[:, -nb:] if partial else None)
     return jnp.concatenate([south, field[:, nb:-nb], north], axis=1)
 
 

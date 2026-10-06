@@ -357,7 +357,7 @@ def _step_impl(state, p, budget=None):
     # Runs AFTER the L/N/L core on the un-masked final 3D state (before the
     # polar cap / land hold below, so the subcycle sees the same masked,
     # capped input the monolithic path fed _free_surface_step_fd).
-    if p.mode_split and p.column_geometry == 'nodal_dual_v1' and (budget is not None or p.match_barotropic_transport):
+    if p.mode_split and p.column_geometry in {'nodal_dual_v1', 'fixed_partial_v1'} and (budget is not None or p.match_barotropic_transport):
         state, column_transport, filter_change = _barotropic_subcycle_transport(state, p)
         if budget is not None:
             budget.stage("free_surface", barotropic_start, state)
@@ -380,7 +380,7 @@ def _step_impl(state, p, budget=None):
         F_rho_x, F_rho_y = _compute_bt_rho_pgf(state, p)
         ubt0, vbt0 = _barotropic_velocity(state.u, state.v, p)
         column_divergence_offset = None
-        if p.column_geometry == 'nodal_dual_v1':
+        if p.column_geometry in {'nodal_dual_v1', 'fixed_partial_v1'}:
             column_divergence_offset = (_column_divergence(state.u, state.v, p)
                                         - _reference_depth_divergence(ubt0, vbt0, p))
         ubt, vbt = ubt0, vbt0
@@ -404,7 +404,7 @@ def _step_impl(state, p, budget=None):
         # (uniform over depth) — same projection as the monolithic path.
         delta_ubt = (ubt - ubt0)[:, :, None]
         delta_vbt = (vbt - vbt0)[:, :, None]
-        projection_mask = p.wet_mask_z if p.column_geometry == 'nodal_dual_v1' else 1.
+        projection_mask = p.wet_mask_z if p.column_geometry in {'nodal_dual_v1', 'fixed_partial_v1'} else 1.
         state = JaxStateG(state.u + delta_ubt * projection_mask, state.v + delta_vbt * projection_mask,
                           state.T, state.S, eta, state.ice)
         if budget is not None:
