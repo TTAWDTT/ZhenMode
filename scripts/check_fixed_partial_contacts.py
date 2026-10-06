@@ -546,4 +546,3 @@ if __name__ == "__main__":
             "scope": "T1 and finite hostile corpus; universal proof separately reviewed",
         },
     )
-
