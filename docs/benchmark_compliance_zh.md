@@ -1,6 +1,25 @@
 # ZhenMode／MOM6 机制符合表
 
-对应[规范 zhenmode-omip2-physical-v0.1](benchmark_spec_zh.md)。核查日期2026-10-05；ZhenMode源码基线为main合并PR38后的2d17198619d48618c758354a268e3ba425ee4e47。对象是现有生产默认和0.45°年度配置，不把未启用选项算成年度能力。MOM6源码为固定f49a00096df607b48354603e2398e14e189fd62e，接入为现有solo-driver/tc1与两个0.5°30日case。
+对应[规范 zhenmode-omip2-physical-v1](benchmark_spec_zh.md)。核查日期2026-10-05。下方原有现状表仍以main合并PR38后的2d17198619d48618c758354a268e3ba425ee4e47为生产默认基线；MOM6旧接入为f49a00096df607b48354603e2398e14e189fd62e的solo-driver/tc1与两个0.5°30日case。新增组件与耦合候选分别登记，不把它们算成旧年度配置已启用的能力。
+
+## 本轮实现进度
+
+| 范围 | 已实现及验证 | 仍不具备的资格 |
+| --- | --- | --- |
+| 共同合同 | `zhenmode benchmark freeze/check-contract/plan`；拒绝被改写后重新哈希的合同；短窗/六循环同物理hash；真实Gregorian时长 | 数据、原生方案、观测协议尚未完整绑定，所有计划 execution_ready=false |
+| B01 | [JRA读取](../src/zhenmode/model/inputs/forcing/jra55.py)：11种字段、实际文件hash、SI/10m/日历/grid/bounds校验、瞬时插值与均通量区间积分 | 仅接受已准备的原生矩形网格；不下载、不重网格；真实资料/转换权重尚未冻结 |
+| B02–B03 | [在线bulk](../src/zhenmode/model/solver/physics/air_sea.py)，独立作者Fortran八工况参考和符号/反馈/强风负例 | 开水面组件，未证明完整冰海大气交换或气候效果 |
+| B04–B06 | 净短/长波、雨/径流/蒸发虚拟盐、50m/年piston恢复；[显式FD接线](../src/zhenmode/model/inputs/forcing/online.py)的小网格实际调用 | 不含穿透/雪/陆冰/冰；恢复目标仍由调用者提供，不冒充已绑定月WOA |
+| B12 | [独立端点预算](../src/zhenmode/model/diagnostics/surface_budget.py)：体积测库存、面积积分外源，破坏热源的负例产生非零残差 | 仅水热/虚拟盐表面组件；没有完整水冰质量/焓/盐和长期漂移验收 |
+| MOM6+SIS2 | [新候选pins](../src/zhenmode/baselines/mom6/omip2-pins.json)冻结官方examples及9个组件、2个嵌套依赖和5份配置实际字节；可计划、检查完整源码并准备已知配置改动 | 未获取完整新源码/输入、未构建执行；缺口不会因配置准备成功而消失 |
+
+MOM6候选为官方 `OM4_025.JRA`，examples commit `9b856f1d620f79e8035f96deb8004d544af77af3`，不是已匹配的基准。审读其实际coupler的 `ncar_ocean_fluxes`：中性阻力为LY2004表达式、迭代两次；不含LY2009强风修正，气温/饱和湿度约定也需对齐。其原配置采用julian日历、0.1667m/日盐恢复、5PSU截断和全球淡水修正，EOS为WRIGHT，风bicubic而通量bilinear映射。`omip2-prepare`目前只更正日历/窗口、piston、盐差物理范围截断和全球修正；不会偷偷把旧盐目标、EOS或映射宣称为新合同。完整源码变更及数据绑定后才能构建验收。
+
+独立参考来自[JRA55-do作者例程](https://github.com/HiroyukiTsujino/JRA55-do/blob/30c8e1a84386c1db8a436d980826b884b2075089/anl/diagflux/src/bulk-ncar.F90)，通过[本项目小驱动](../tests/support/ncar_reference.f90)编译并保存[参考及来源hash](../tests/support/ncar_reference.json)。只对系数和饱和湿度做对照；作者例程使用输入θ算密度，不能据此宣称本项目全部通量逐位相同。其0.4常量默认单精度后提升，系数对照容限1e−7有明确来源。没有复制上游整套实现进入正式包。
+
+已运行：合同6项、强迫读取24项、通量4项、表面接线/预算/精度3项、MOM候选3项；连同源码身份与结构检查共78项通过。另58项既有表面受热、混合层、评价负例和生产重启检查通过。采用单CPU、每次180秒、4GiB上限；独立Fortran参考用Linux单CPU/180秒/4GiB虚拟内存限制编译/执行。测试收集从1014增至1054，新增40项，原测试无遗漏。干净wheel安装后在仓库外执行了合同和MOM候选计划命令。NetCDF4/NumPy 2.5的数组shape弃用警告仍存在。数值验证为制造小数据和8×8×4 FD组件步骤。MOM6五份上游配置的字节校验与改动展开已实际执行；完整源码checkout准备、MOM6构建、真实全球短窗、GPU、长期积分及新观测评分均未运行；这里的通过不是工业资格或加速结论。
+
+## 生产默认与旧对照接入的现状
 
 状态含义：**符合**=有对应范围的证据；**部分**=已有基础但不满足完整要求；**缺失**=当前实现/配置缺少所需链条；**待核**=有接口或上游例子，但没有选定配置、构建与实际运行证据。源码能力、当前接入与执行资格分别写，不能用一个勾概括。
 

@@ -27,6 +27,8 @@ python scripts/run_bounded_tests.py --module zhenmode mms
 
 自动 CI 只运行 Ruff。完整测试和 MMS 通过 `workflow_dispatch` 的 `full_validation` 人工启动。数值测试通过不等于长期气候效果或公平加速结论。
 
+海气交换新增组件沿用上述有界运行器，见[benchmark规范](benchmark_spec_zh.md)。独立参考驱动在`tests/support/ncar_reference.f90`，数值和来源hash在同名JSON；复算时从JSON的固定作者commit获取原始`bulk-ncar.F90`到忽略的工作目录，先核验SHA256，再以`gfortran -cpp -O0 -o reference tests/support/ncar_reference.f90 WORK/bulk-ncar.F90`编译，不定义`OGCM_LYCOEF`或`OGCM_CALHEIGHT`。输出列为θ/qair/Ts/qs/wind/Cd/Ch/Ce/参考潜热。参考只检验系数和饱和湿度，不能证明整个新通量与作者实现完全同义。该小参考的编译不等于MOM6完整构建已通过。
+
 内部调用直接引用所属模块；结构见 [方法与架构](production_architecture_zh.md)。旧源码的运行和严格 checkpoint 需检出对应 Git 提交，不通过路径别名或替换 hash 绕过身份检查。
 
 直接模型运行拒绝已存在的 `global_<tag>.npz`，请为新运行选择独立 `--tag` 或 `--out-dir`。受中断的严格 checkpoint 续跑仍核对原配置与源码；已完成或已保存失败结果的目录不会被覆盖。
