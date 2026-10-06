@@ -16,6 +16,7 @@ from zhenmode.baselines.mom6.coupled_sources import (
     source_tree,
     stage_sources,
 )
+from zhenmode.baselines.mom6.omip2_time import FMS_SOURCE, corrected_time_reader
 from zhenmode.evaluation.protocols import digest
 from zhenmode.execution.benchmark import plan
 from zhenmode.execution.resources import run_process_group
@@ -25,7 +26,7 @@ PINS = load_json(Path(__file__).with_name('omip2-pins.json'))
 GAPS = [
     'staged LY2009/Gill patch requires compiled reference checks and coupled build receipt',
     'explicit SIS2-to-MOM latent energy needs compiled coupling checks; atmosphere/ice stocks remain unaudited',
-    'bounded mean fluxes must be held/integrated, not native FMS linear interpolation',
+    'bounded mean reader requires tagged native files, matching coupling clocks and actual run receipts',
     'conservative radiation/precipitation/runoff mapping receipts required',
     'JRA55-do v1.4.0, WOA, bathymetry and observations actual data identities required',
     'TEOS10 variable conversions and nonlinear EOS reference checks required',
@@ -201,6 +202,18 @@ def corrected_configuration(files, profile):
     return files | {'input.nml': nml, 'MOM_saltrestore': restore}
 
 
+def _source_patches(examples):
+    """One checked patch set shared by staging and actual build validation."""
+    for path, checksum in PINS['time_callers'].items():
+        if sha256_file(examples / path) != checksum:
+            raise ValueError('audited coupling-clock caller changed: '+path)
+    return {PINS['coupler_audit']['path']: corrected_surface_exchange(
+        (examples / PINS['coupler_audit']['path']).read_bytes())} | {
+        path: corrected_latent_energy(path, (examples / path).read_bytes())
+        for path in PINS['latent_energy_sources']} | {
+        FMS_SOURCE: corrected_time_reader((examples / FMS_SOURCE).read_bytes())}
+
+
 def prepare(examples_dir, output, *, profile='integration-6h'):
     if os.name != 'posix':
         raise ValueError('prepare inside Linux/WSL using native Git symlink semantics')
@@ -224,14 +237,11 @@ def prepare(examples_dir, output, *, profile='integration-6h'):
     audit = PINS['coupler_audit']
     if sha256_file(examples_dir / audit['path']) != audit['sha256']:
         raise ValueError('audited coupler implementation changed')
-    patched = corrected_surface_exchange((examples_dir / audit['path']).read_bytes())
+    patches = _source_patches(examples_dir)
     transformed = corrected_configuration(files, profile)
     output.mkdir(parents=True, exist_ok=False)
     for name, content in transformed.items():
         (output / name).write_text(content, encoding='utf-8')
-    patches = {audit['path']: patched} | {
-        path: corrected_latent_energy(path, (examples_dir / path).read_bytes())
-        for path in PINS['latent_energy_sources']}
     for path, content in patches.items():
         staged_source = output / path
         staged_source.parent.mkdir(parents=True, exist_ok=True)
@@ -254,10 +264,13 @@ def prepare(examples_dir, output, *, profile='integration-6h'):
         'source_patches': {path: {'upstream_sha256': sha256_file(examples_dir / path),
                                   'staged_sha256': sha256_file(output / path)} for path in patches},
         'latent_energy_scope': 'explicit_bottom_energy_no_atmosphere_stock_or_complete_ice_qualification',
+        'time_input_scope': 'tagged_interval_means_require_native_files_and_matching_actual_coupling_clocks',
+        'audited_time_callers': PINS['time_callers'],
         'changes': ['Gregorian calendar', 'profile duration', '50m/year SSS piston',
                     'no global freshwater adjustment', 'no physical-range SSS clipping',
                     'LY2009/Gill open-water exchange configuration',
-                    'Gill water latent heat and explicit energy through ice/ocean interface and stocks'],
+                    'Gill water latent heat and explicit energy through ice/ocean interface and stocks',
+                    'explicit bounded means in FMS, including one-record daily discharge'],
         'not_a_run_directory': 'INPUT, layouts, overrides, diag_table and build/data receipts remain required',
     }
     (output / 'preparation.json').write_text(json.dumps(result, indent=2, allow_nan=False) + '\n')
@@ -292,10 +305,7 @@ def build_segment(preparation, output, *, wall_seconds=180):
                 continue
             if actual.is_file() and actual.suffix.lower() in {'.f90', '.f', '.f95', '.f03', '.f08', '.c', '.cc', '.cpp', '.cxx', '.h', '.inc'} and actual not in known:
                 raise ValueError(f'unregistered compilable source: {actual}')
-    patches = {PINS['coupler_audit']['path']: corrected_surface_exchange(
-        (examples / PINS['coupler_audit']['path']).read_bytes())} | {
-        path: corrected_latent_energy(path, (examples / path).read_bytes())
-        for path in PINS['latent_energy_sources']}
+    patches = _source_patches(examples)
     if set(receipt.get('source_patches', {})) != set(patches):
         raise ValueError('preparation lacks the current explicit energy patch set; prepare a new directory')
     for path, content in patches.items():

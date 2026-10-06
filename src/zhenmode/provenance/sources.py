@@ -48,6 +48,7 @@ PACKAGE_SOURCE_MODULES = (
     'zhenmode/baselines/mom6/coupled_sources',
     'zhenmode/baselines/mom6/forcing',
     'zhenmode/baselines/mom6/omip2',
+    'zhenmode/baselines/mom6/omip2_time',
     'zhenmode/cli',
     'zhenmode/evaluation/__init__',
     'zhenmode/evaluation/cli',
