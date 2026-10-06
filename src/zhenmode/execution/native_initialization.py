@@ -235,6 +235,7 @@ def prepare_native_initialization(source_prepared, geometry, nodes_file, output)
             )
             distances.units = "m"
             total_resolved_volume, total_ct_volume, total_sr_volume = 0.0, 0.0, 0.0
+            deep_reference = None
             for level, node in enumerate(-z):
                 mapped_depth = min(float(node), float(depths[-1]))
                 upper = int(np.searchsorted(depths, mapped_depth))
@@ -261,7 +262,48 @@ def prepare_native_initialization(source_prepared, geometry, nodes_file, output)
                         raise ValueError("native source paired support is inconsistent")
                     read.append(raw)
                 raw = read[0] if lower == upper else (1.0 - weight) * read[0] + weight * read[1]
-                filled = smooth_native_paired_holes(raw, wet3[..., level], lon, lat)
+                if node > depths[-1]:
+                    # Extend the prepared deepest-source plane, rather than
+                    # solving a new horizontal problem on the deeper footprint.
+                    # A shallower sill may disconnect that deeper footprint;
+                    # it must not change the already declared zero-gradient
+                    # continuation or remove its resolved source-depth anchor.
+                    if deep_reference is None:
+                        reference_wet = (bed >= depths[-1]) & (wet > 0)
+                        deep_reference = smooth_native_paired_holes(raw, reference_wet, lon, lat)
+                    keep = wet3[..., level]
+                    filled = dict(deep_reference)
+                    filled["fields"] = np.where(keep[None], deep_reference["fields"], np.nan)
+                    for name in ("original_paired_mask", "infill_mask", "unresolved_mask"):
+                        filled[name] = deep_reference[name] & keep
+                    for name in ("nearest_original_anchor_flat_index", "nearest_anchor_path_distance_m"):
+                        filled[name] = np.where(keep, deep_reference[name], -1)
+                    filled["unsupported_components"] = [
+                        {"native_flat_indices": selected}
+                        for component in deep_reference["unsupported_components"]
+                        if (selected := [k for k in component["native_flat_indices"] if keep.flat[k]])
+                    ]
+                    if "deep_extension_reference" not in report:
+                        reference_path = output / "deep-extension-reference.npz"
+                        np.savez(
+                            reference_path, fields=deep_reference["fields"],
+                            wet_mask=(bed >= depths[-1]) & (wet > 0),
+                            original_paired_mask=deep_reference["original_paired_mask"],
+                            horizontal_infill_mask=deep_reference["infill_mask"],
+                            unresolved_mask=deep_reference["unresolved_mask"],
+                            nearest_original_anchor_flat_index=deep_reference["nearest_original_anchor_flat_index"],
+                            nearest_anchor_path_distance_m=deep_reference["nearest_anchor_path_distance_m"],
+                        )
+                        report["deep_extension_reference"] = {
+                            "path": reference_path.name, "sha256": sha256_file(reference_path),
+                            "source_depth_m": float(depths[-1]),
+                            "rule": "zero_gradient_of_prepared_PT_SR_on_same_column",
+                            "trace_domain": "deepest_source_depth_wet_footprint_not_deeper_native_footprint",
+                        }
+                else:
+                    filled = smooth_native_paired_holes(raw, wet3[..., level], lon, lat)
+                    if node == depths[-1]:
+                        deep_reference = filled
                 pt, sr = filled["fields"]
                 resolved = np.isfinite(pt) & np.isfinite(sr) & wet3[..., level]
                 safe_pt, safe_sr = np.where(resolved, pt, 0.0), np.where(resolved, sr, 35.0)
@@ -321,6 +363,8 @@ def prepare_native_initialization(source_prepared, geometry, nodes_file, output)
                             "path": unknown_path.name,
                             "sha256": sha256_file(unknown_path),
                         },
+                        "infill_system_reference_depth_m": float(min(node, depths[-1])),
+                        "infill_inherited_from_deepest_prepared_plane": bool(node > depths[-1]),
                     }
                 )
                 volume = area * cells["thickness_m"][..., level] * resolved
@@ -365,6 +409,10 @@ def prepare_native_initialization(source_prepared, geometry, nodes_file, output)
             for field in ("infill_system", "infill_unknowns"):
                 if sha256_file(output / row[field]["path"]) != row[field]["sha256"]:
                     raise ValueError("native infill trace changed during preparation")
+        if "deep_extension_reference" in report:
+            ref = report["deep_extension_reference"]
+            if sha256_file(output / ref["path"]) != ref["sha256"]:
+                raise ValueError("native deep extension trace changed during preparation")
         complete = not any(row["unresolved_nodes"] for row in report["levels"])
         report.update(
             status="native_points_prepared" if complete else "blocked_unanchored_native_support",

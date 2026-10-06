@@ -165,3 +165,42 @@ def test_identity_bound_wrong_area_is_not_cancelled_by_inventory_reuse(tmp_path)
     path.write_text(json.dumps(receipt))
     with pytest.raises(ValueError, match="spherical bounds"):
         prepare_native_initialization(source, geometry, nodes, tmp_path / "wrong-area")
+
+
+@pytest.mark.parametrize("include_source_bottom", [False, True])
+def test_deep_extension_reuses_prepared_source_plane_across_shallower_sill(tmp_path, include_source_bottom):
+    source, geometry, nodes, bed, _ = _inputs(tmp_path)
+    bed[0, 0] = 4500.0  # source-depth anchor, below the deep target's 6000 m plane.
+    np.savez(geometry / "bathymetry.npz", lon=[90.0, 270.0], lat=[-45.0, 45.0], depth=bed)
+    geo_path = geometry / "geometry.json"
+    geo = json.loads(geo_path.read_text())
+    geo["bathymetry_sha256"] = sha256_file(geometry / "bathymetry.npz")
+    geo_path.write_text(json.dumps(geo))
+    prepared = source / "woa13v2_thermodynamics.nc"
+    with netCDF4.Dataset(prepared, "a") as data:
+        data["ptemp"][0, 2, 0, 1] = 1.0
+        data["ptemp"][0, 2, 1, 1] = np.ma.masked
+        data["sr"][0, 2, 1, 1] = np.ma.masked
+        data["paired_source_support"][0, 2, 1, 1] = 0
+    origin_path = source / "initialization.json"
+    origin = json.loads(origin_path.read_text())
+    origin["output"].update(bytes=prepared.stat().st_size, sha256=sha256_file(prepared))
+    origin_path.write_text(json.dumps(origin))
+    if not include_source_bottom:
+        nodes.write_text(json.dumps({"z_nodes_m": [0.0, -500.0, -6000.0, -7000.0]}))
+    output = tmp_path / "native-deep"
+    report = prepare_native_initialization(source, geometry, nodes, output)
+    assert report["complete_wet_support"]
+    assert report["deep_extension_reference"]["source_depth_m"] == 4000.0
+    with netCDF4.Dataset(output / "native_point_fields.nc") as data:
+        deep = int(np.flatnonzero(data["depth"][:] == 6000.0)[0])
+        assert data["ptemp"][0, deep, 1, 0] == 1.0
+        assert data["horizontal_infill"][deep, 1, 0] == 1
+        assert data["unresolved_support"][deep, 1, 0] == 0
+        assert data["nearest_original_anchor_flat_index"][deep, 1, 0] == 0
+        if include_source_bottom:
+            assert data["ptemp"][0, deep, 1, 0] == data["ptemp"][0, 2, 1, 0]
+    reference = report["deep_extension_reference"]
+    assert sha256_file(output / reference["path"]) == reference["sha256"]
+    assert report["levels"][deep]["infill_system_reference_depth_m"] == 4000.0
+    assert report["levels"][deep]["infill_inherited_from_deepest_prepared_plane"]
