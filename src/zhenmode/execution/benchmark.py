@@ -132,9 +132,16 @@ def main(argv=None):
     native.add_argument('--start', required=True)
     native.add_argument('--end', required=True)
     native.add_argument('--maximum-routing-distance-m', type=float, default=500000)
+    initial=commands.add_parser('prepare-initial-source',help='convert original WOA annual T/SP to PT/CT/SR; preserve missing support')
+    initial.add_argument('--acquisition',required=True)
+    initial.add_argument('--pressure-reference',required=True,help='identity-bound pressure JSON, p[depth,lat] in dbar')
+    initial.add_argument('--output',required=True)
     args = parser.parse_args(argv)
     try:
-        if args.command == 'prepare-forcing':
+        if args.command == 'prepare-initial-source':
+            from zhenmode.execution.initialization import prepare_woa_thermodynamics
+            result=prepare_woa_thermodynamics(args.acquisition,args.pressure_reference,args.output)
+        elif args.command == 'prepare-forcing':
             from zhenmode.execution.preparation import prepare_jra_window
 
             origin = datetime(1970, 1, 1)
