@@ -1,6 +1,6 @@
 """Momentum and tracer tendencies, with explicit transport and source terms."""
 
-from zhenmode.model.config import C_P, G_EARTH, RHO_0
+from zhenmode.model.config import G_EARTH, RHO_0
 from zhenmode.model.solver.dynamics.pressure import (
     _compute_bt_rho_pgf,
     _compute_pressure_gradient,
@@ -21,6 +21,7 @@ from zhenmode.model.solver.numerics.horizontal import (
     _horizontal_tracer_diffusion,
     _laplacian_h,
 )
+from zhenmode.model.solver.physics.eos import heat_capacity
 from zhenmode.model.solver.physics.isopycnal import _isopycnal_closure
 from zhenmode.model.solver.physics.surface import _surface_heat_weights
 from zhenmode.model.solver.physics.vertical import (
@@ -159,7 +160,7 @@ def _compute_tracer_tendency(state, p, budget=None, face_transport=None, return_
         conv_T = _conv_flux_tendency(state.T, conv_mask_3d, p.kappa_conv, p, iface_gate)
         conv_S = _conv_flux_tendency(state.S, conv_mask_3d, p.kappa_conv, p, iface_gate)
 
-    heat_factor = _surface_heat_weights(p) / (RHO_0 * C_P)
+    heat_factor = _surface_heat_weights(p) / (RHO_0 * heat_capacity(p))
     heat_T = p.Q_heat_2d[:, :, None] * heat_factor
     # Bulk air-sea heat flux (Haney/Barnier): genuine SST negative feedback.
     bulk_T = (p.lambda_bulk * (p.T_atm_3d - state.T[:, :, 0:1])

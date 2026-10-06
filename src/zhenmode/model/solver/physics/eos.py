@@ -1,15 +1,18 @@
-"""Linear seawater density anomaly with explicit reference temperature and salinity."""
+"""Explicit default linear EOS and opt-in CT/SR reference-salinity thermodynamics."""
 
-from zhenmode.model.config import ALPHA_T, BETA_S, RHO_0
+from zhenmode.model.config import ALPHA_T, BETA_S, C_P, CP0_TEOS10, RHO_0
+
+
+def heat_capacity(params):
+    """CT represents potential enthalpy/CP0; legacy temperature retains C_P."""
+    if getattr(params, 'thermodynamics', 'linear') == 'teos10_reference':
+        return CP0_TEOS10
+    return C_P
 
 
 def _density_anomaly(T, S, p):
-    """rho' = rho - rho_0 from the linear equation of state.
-
-    The retired regional solver carried a UNESCO 1980 nonlinear branch
-    behind an ``eos_type`` switch. It was never ported here -- the branch
-    was a no-op stub returning this same expression -- so the switch is
-    gone and the EOS is unambiguously linear. The convective-adjustment
-    and buoyancy diagnostics are calibrated against this form.
-    """
+    """ρ-ρ0: default linear relation, or explicit CT/SR at supplied dbar pressure."""
+    if getattr(p, 'thermodynamics', 'linear') == 'teos10_reference':
+        from zhenmode.model.solver.physics.teos10 import density
+        return density(S, T, p.eos_pressure_dbar) - RHO_0
     return RHO_0 * (-ALPHA_T * (T - p.T_ref) + BETA_S * (S - p.S_ref))

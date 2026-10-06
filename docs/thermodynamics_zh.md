@@ -1,6 +1,6 @@
 # 标准 benchmark 的温盐与密度
 
-当前生产模式仍使用[线性状态方程](../src/zhenmode/model/solver/physics/eos.py)。新增[TEOS-10 组件](../src/zhenmode/model/solver/physics/teos10.py)独立提供 JAX 密度、导数、共同压力水团比较与中性密度梯度，尚未接入积分。没有新增一个实际上仍调用线性公式的 EOS 开关，也没有改变生产默认预设。
+当前生产默认仍使用[线性状态方程](../src/zhenmode/model/solver/physics/eos.py)。[TEOS-10 组件](../src/zhenmode/model/solver/physics/teos10.py)已接入显式可选的 `PhysicsConfig(thermodynamics='teos10_reference')` FD 路径：CT/SR状态、明确的固定海压力、非线性密度、共同压力对流、中性梯度、正确表面SST及CP0库存。当前接线限无冰组件，普通生产CLI和默认预设未切换；完整原生case、海冰、混合与气候资格仍待取得。
 
 ## 三种量不能混用
 
@@ -53,3 +53,17 @@ python scripts/check_teos10.py --source PINNED_GSW_ROOT --mom-source PINNED_MOM_
 共同压力负例：SA=35.16504、上层 CT=10、下层 CT=11 时，500 dbar 下密度差约 +0.187 kg/m³，表示不稳定；若错误地分别用 0/1000 dbar，则差约 −4.258，方向反转。中性梯度检查也排除了均匀温盐柱的压力压缩项。
 
 尚未验证多项式相对精确 Gibbs EOS 的 funnel 精度、原生初态转换、海冰热力学、完整积分与观测评分。组件结果不授予 B08 完整符合、全球 case 执行或长期气候资格。
+
+## CT/SR 参考变体的实际链路
+
+原生字段完成其声明的映射后，显式调用 `inputs.initial_conditions.convert_teos_reference_fields(t_insitu, SP, pressure_dbar)` 返回 CT 和 SR。函数不猜压力、不补缺失、不读文件；真实原生初始化的来源、映射、ghost处理与库存收据尚待接入。`factory.make_solver_global(..., eos_pressure_dbar=full_grid_pressure)` 要求压力形状与状态相同、单调、0…8000 dbar、表面为零；它是固定参考压力，不随η变化，不冒充动态全压力。
+
+`init_state` 必须收到完整 CT/SR 数组；空初态、Kelvin值、错误压力、无效ghost参考值和旧冰／bulk接口拒绝。压力、对流、涡旋斜率及factory诊断统一使用新变量含义。非线性变化属于显式机制变体，没有藏进默认数值路径。
+
+在线无冰交换先将表面CT转为零压力位温／原位SST，再调用既有bulk。热源按CP0更新CT；分步及端点库存使用相同的已声明潜在焓定义，并以独立边界通量测输入。盐度为SR≈SA，恢复目标也须为SR；通量接口不会替调用者猜测输入是不是SP。表面冻结门槛使用盐度相关的GSW CT-freezing多项式，p=0、溶解空气饱和度=0；它只拒绝需要冰的组件步骤，没有补上冰动力或冰焓方程，也没有证明与MOM的实际冻结配置一致。
+
+MLD可明确选择 `thermodynamics='teos10_reference'`，采用零压力潜在密度；缺失层保留NaN，错误Kelvin/盐度值和Infinity拒绝。快照库存同样须声明该类型，使用CP0并拒绝冲突的热容量。普通CLI尚无此变体的原生数据接入，不能将未转换的旧T/S直接交给它运行。
+
+复算温度组件时，在前述Fortran命令追加 `--temperatures`。它核对22个实际GSW文件，比较原位／位温／CT的五种转换、解析导数和表面冻结CT；分别在fp64/fp32下要求绝对差≤10⁻¹⁰/10⁻⁴，并用改错0.01°C的参考值测试比较器。公开系数是两条路线的最深共享层，因此这验证转换实现／迭代／单位接线的一致性，不能认证共享方程或物理真值。JAX迭代数与阈值在温度参考生成前固定，未从新参考值拟合参数。GSW与Gibbs密度的六个官方样本差约−5.14×10⁻⁴…6.22×10⁻⁵ kg/m³；宽矩形所有样本最大差约0.112，不能把这张矩形表称为funnel有效域证明。
+
+独立温度生成值及驱动在[参考JSON](../tests/support/temperature_reference.json)和[驱动](../tests/support/temperature_reference.f90)。原GSW代码未修改；JAX采用通用多项式求值及固定五次Newton迭代，没有CPU回调或新增GSW运行依赖。BootLoops工具索引及外部引擎表未提供海水热力学求值器；已有线性EOS也不提供转换，因此扩展本项目现有热力学模块，并将来源、失败控制和范围写在这里。

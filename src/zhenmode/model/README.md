@@ -120,8 +120,8 @@ model/
 | [dynamics/pressure.py](solver/dynamics/pressure.py) | 由密度计算静力压力及压力梯度，提供三维动量和外模所需的压力加速度。 |
 | [dynamics/barotropic.py](solver/dynamics/barotropic.py) | 正压外模，即深度平均流与海面高度的快速演化；包含自由面连续性、外模子步及海面滤波。 |
 | [dynamics/projection.py](solver/dynamics/projection.py) | 用有界迭代修正速度的水柱散度，提供投影系数和收敛控制。 |
-| [physics/eos.py](solver/physics/eos.py) | EOS（状态方程）：按既有线性关系把温盐转成相对参考状态的密度异常。 |
-| [physics/teos10.py](solver/physics/teos10.py) | 标准 benchmark 待接入的非线性密度组件：显式 SA/CT/dbar、密度导数、共同压力水团比较；尚未切换生产 EOS，见[验证范围](../../../docs/thermodynamics_zh.md)。 |
+| [physics/eos.py](solver/physics/eos.py) | EOS选择及热容量：默认线性关系；显式CT/SR参考变体用非线性密度和CP0，不改变生产默认。 |
+| [physics/teos10.py](solver/physics/teos10.py) | TEOS组件：温度转换、SA/CT/dbar密度、导数、共同压力水团比较和表面冻结门槛；参考变体已接FD无冰组件，完整case未就绪，见[验证范围](../../../docs/thermodynamics_zh.md)。 |
 | [physics/surface.py](solver/physics/surface.py) | 表面热量在混合层中的分配权重，以及生产动态海冰闭合和相关热盐交换。 |
 | [physics/air_sea.py](solver/physics/air_sea.py) | 显式选择的LY2009/Gill开水面交换：实时海温/海流参与应力、感热、潜热和蒸发；净辐射及虚拟盐表面算子。纯计算，不读取数据；尚不支持完整冰/雪/穿透。 |
 | [physics/vertical.py](solver/physics/vertical.py) | 选择垂向混合系数与扩散形式，判断局地对流并计算相应通量；复用 `numerics/vertical.py`。 |

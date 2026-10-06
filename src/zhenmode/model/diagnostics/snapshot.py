@@ -16,7 +16,7 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from zhenmode.model.config import C_P, RHO_0
+from zhenmode.model.config import C_P, CP0_TEOS10, RHO_0
 from zhenmode.model.solver.geometry.grid import nodal_control_thickness
 
 
@@ -64,13 +64,20 @@ def node_thickness(z, column_geometry="legacy"):
     return np.concatenate(([dz[0]], 0.5 * (dz[:-1] + dz[1:]), [dz[-1]]))
 
 
-def compute_budget_diagnostics(state, grid, rho0=RHO_0, cp=C_P, *, column_geometry="legacy") -> BudgetDiagnostics:
+def compute_budget_diagnostics(state, grid, rho0=RHO_0, cp=None, *, column_geometry="legacy",
+                               thermodynamics='linear') -> BudgetDiagnostics:
     """Compute global heat/salt/volume diagnostics from a solver snapshot.
 
     All calculations use the true wet mask and the node-based vertical metric.
     This is intentionally independent of JAX: the caller can pass device or
     host arrays; the result is always a plain ``BudgetDiagnostics``.
     """
+    if thermodynamics not in {'linear','teos10_reference'}:
+        raise ValueError('unknown snapshot thermodynamics definition')
+    if cp is None:
+        cp = CP0_TEOS10 if thermodynamics=='teos10_reference' else C_P
+    elif thermodynamics=='teos10_reference' and cp != CP0_TEOS10:
+        raise ValueError('CT snapshot inventory requires CP0')
     T = np.asarray(state.T, dtype=np.float64)
     S = np.asarray(state.S, dtype=np.float64)
     area = np.asarray(grid.dx_2d, dtype=np.float64) * float(grid.dy)
