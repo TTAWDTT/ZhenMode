@@ -60,6 +60,14 @@ class GlobalOceanGrid:
     nx: int
     ny: int
 
+def _nodal_depths(z):
+    depths = -np.asarray(z, dtype=np.float64)
+    if (depths.ndim != 1 or depths.size < 2 or not np.all(np.isfinite(depths))
+            or depths[0] < 0. or not np.all(np.diff(depths) > 0.)):
+        raise ValueError("z must contain at least two finite, decreasing, nonpositive nodes")
+    return depths
+
+
 def nodal_control_thickness(z):
     """Static nodal dual widths: surface at zero, bottom at the last node.
 
@@ -68,12 +76,51 @@ def nodal_control_thickness(z):
     it does not reproduce the raw bathymetry or water below the deepest node.
     A first sample below zero represents the surface-to-first-face interval.
     """
-    depths = -np.asarray(z, dtype=np.float64)
-    if (depths.ndim != 1 or depths.size < 2 or not np.all(np.isfinite(depths))
-            or depths[0] < 0. or not np.all(np.diff(depths) > 0.)):
-        raise ValueError("z must contain at least two finite, decreasing, nonpositive nodes")
+    depths = _nodal_depths(z)
     edges = np.concatenate(([0.], 0.5 * (depths[:-1] + depths[1:]), [depths[-1]]))
     return np.diff(edges)
+
+
+def fixed_reference_nodal_cells(z, depth, wet_mask):
+    """Prepare fixed reference cells clipped to each actual water column.
+
+    Explicit native-preparation cells; dynamical operators are a separate gate.
+    Legacy defaults retain their existing FD metrics and inventories. Internal boundaries
+    bisect adjacent wet samples; the last wet sample's cell ends at the bed.
+    Shallow one-sample columns retain their actual positive thickness. Nodes
+    must cover the deepest bed; no deep-water truncation or eta displacement
+    occurs. Point tracer inventories are a quadrature definition; mapping
+    errors and whole-model stability require separate qualification.
+    """
+    for value in (z, depth, wet_mask):
+        if np.ma.isMaskedArray(value) and np.ma.getmaskarray(value).any():
+            raise ValueError("reference geometry cannot contain masked coordinates or beds")
+    if np.asarray(z).dtype.kind not in 'fiu':
+        raise ValueError('reference node depths must be real numeric metres')
+    depths = _nodal_depths(z)
+    bed, wet = np.asarray(depth), np.asarray(wet_mask)
+    if (depths[0] != 0. or bed.ndim != 2 or wet.shape != bed.shape
+            or bed.dtype.kind not in 'fiu' or wet.dtype.kind not in 'bfiu'
+            or not bed.size or not np.isfinite(bed).all() or np.any(bed < 0.)
+            or not np.isfinite(wet).all() or not np.isin(wet, [0, 1]).all()
+            or not np.array_equal(wet > 0, bed > 0.) or not np.any(wet)
+            or np.max(bed) > depths[-1]):
+        raise ValueError("reference geometry requires surface-zero nodes covering finite positive wet beds")
+    bed = np.asarray(bed, dtype=np.float64)
+    wet_nodes = (depths <= bed[..., None]) & (wet[..., None] > 0)
+    next_wet = np.concatenate((wet_nodes[..., 1:], np.zeros_like(wet_nodes[..., :1])), axis=-1)
+    bottom_nodes = wet_nodes & ~next_wet
+    midpoints = .5 * (depths[:-1] + depths[1:])
+    tops = np.broadcast_to(np.r_[0., midpoints], wet_nodes.shape)
+    bottoms = np.broadcast_to(np.r_[midpoints, depths[-1]], wet_nodes.shape)
+    # Without this last-wet override, H between a midpoint and the next dry
+    # sample leaves an unrepresented bottom interval.
+    bottoms = np.where(bottom_nodes, bed[..., None], bottoms)
+    tops = np.where(wet_nodes, tops, bed[..., None])
+    bottoms = np.where(wet_nodes, bottoms, bed[..., None])
+    return {"node_depth_m": depths, "cell_top_m": tops, "cell_bottom_m": bottoms,
+            "thickness_m": bottoms - tops, "wet_node_mask": wet_nodes,
+            "bottom_node_mask": bottom_nodes}
 
 def _smooth_depth_once(depth):
     """One Laplacian smoothing pass on the ocean depth field.

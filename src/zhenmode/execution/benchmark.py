@@ -136,9 +136,17 @@ def main(argv=None):
     initial.add_argument('--acquisition',required=True)
     initial.add_argument('--pressure-reference',required=True,help='identity-bound pressure JSON, p[depth,lat] in dbar')
     initial.add_argument('--output',required=True)
+    native_initial=commands.add_parser('prepare-native-initial',help='prepare fixed native WOA points; unresolved support blocks eligibility')
+    native_initial.add_argument('--source-prepared',required=True)
+    native_initial.add_argument('--geometry',required=True)
+    native_initial.add_argument('--nodes-file',required=True,help='JSON containing z_nodes_m, negative downward')
+    native_initial.add_argument('--output',required=True)
     args = parser.parse_args(argv)
     try:
-        if args.command == 'prepare-initial-source':
+        if args.command == 'prepare-native-initial':
+            from zhenmode.execution.native_initialization import prepare_native_initialization
+            result=prepare_native_initialization(args.source_prepared,args.geometry,args.nodes_file,args.output)
+        elif args.command == 'prepare-initial-source':
             from zhenmode.execution.initialization import prepare_woa_thermodynamics
             result=prepare_woa_thermodynamics(args.acquisition,args.pressure_reference,args.output)
         elif args.command == 'prepare-forcing':
@@ -191,6 +199,8 @@ def main(argv=None):
                     json.dump(result, stream, indent=2, ensure_ascii=False, allow_nan=False)
                     stream.write("\n")
         print(json.dumps(result, indent=2, ensure_ascii=False, allow_nan=False))
+        if args.command == 'prepare-native-initial' and not result['complete_wet_support']:
+            return 3
         return 0
     except (OSError, ValueError, KeyError, TypeError, http.client.HTTPException) as error:
         parser.error(str(error))

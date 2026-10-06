@@ -63,6 +63,7 @@ PACKAGE_SOURCE_MODULES = (
     'zhenmode/execution/__init__',
     'zhenmode/execution/benchmark',
     'zhenmode/execution/initialization',
+    'zhenmode/execution/native_initialization',
     'zhenmode/execution/datasets',
     'zhenmode/execution/preparation',
     'zhenmode/execution/cli',
