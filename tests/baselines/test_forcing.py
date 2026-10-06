@@ -7,6 +7,8 @@ import pytest
 
 from tests.support.grid import all_wet_grid
 from zhenmode.baselines.mom6 import forcing
+from zhenmode.model.inputs import bathymetry, initial_conditions
+from zhenmode.model.inputs.forcing import reanalysis
 
 
 def arguments(directory, kind, *options):
@@ -34,10 +36,10 @@ def test_export_preserves_native_values_coordinates_and_month_mapping(tmp_path, 
         assert taper_cells == 8
         return spatial + month_idx, -spatial - month_idx
 
-    monkeypatch.setattr(forcing, 'make_global_grid', build)
-    monkeypatch.setattr(forcing, 'real_wind_forcing', wind)
-    monkeypatch.setattr(forcing, 'load_monthly_mean_air_temp', lambda *a, **kw: air)
-    monkeypatch.setattr(forcing, 'get_initial_fields', lambda grid: (temperatures, temperatures))
+    monkeypatch.setattr(bathymetry, 'make_global_grid', build)
+    monkeypatch.setattr(reanalysis, 'real_wind_forcing', wind)
+    monkeypatch.setattr(reanalysis, 'load_monthly_mean_air_temp', lambda *a, **kw: air)
+    monkeypatch.setattr(initial_conditions, 'get_initial_fields', lambda grid: (temperatures, temperatures))
     result = forcing.export_forcing(arguments(tmp_path, kind))
     with netCDF4.Dataset(result['path']) as dataset:
         np.testing.assert_array_equal(dataset['x'][:], grid.lon)
@@ -65,7 +67,7 @@ def test_export_preserves_native_values_coordinates_and_month_mapping(tmp_path, 
 def test_export_rejects_existing_output_before_loading_inputs(tmp_path, monkeypatch):
     out = tmp_path / 'forcing.nc'
     out.write_bytes(b'previous result')
-    monkeypatch.setattr(forcing, 'make_global_grid', lambda *a, **kw: pytest.fail('read input'))
+    monkeypatch.setattr(bathymetry, 'make_global_grid', lambda *a, **kw: pytest.fail('read input'))
     with pytest.raises(FileExistsError):
         forcing.export_forcing(arguments(tmp_path, 'wind'))
     assert out.read_bytes() == b'previous result'
@@ -87,14 +89,14 @@ def test_export_requires_explicit_input_and_output(missing):
 def test_failed_wind_export_leaves_no_output_and_can_retry(tmp_path, monkeypatch, failed_month):
     grid = all_wet_grid(nx=4, ny=3, nz=4)
     out = tmp_path / 'forcing.nc'
-    monkeypatch.setattr(forcing, 'make_global_grid', lambda *a, **kw: grid)
+    monkeypatch.setattr(bathymetry, 'make_global_grid', lambda *a, **kw: grid)
 
     def unavailable(grid, month_idx, taper_cells):
         if month_idx == failed_month:
             raise OSError('monthly input unavailable')
         return np.full((4, 3), month_idx), np.zeros((4, 3))
 
-    monkeypatch.setattr(forcing, 'real_wind_forcing', unavailable)
+    monkeypatch.setattr(reanalysis, 'real_wind_forcing', unavailable)
     with pytest.raises(OSError, match='monthly input unavailable'):
         forcing.export_forcing(arguments(tmp_path, 'wind'))
     assert not out.exists()
@@ -104,7 +106,7 @@ def test_failed_wind_export_leaves_no_output_and_can_retry(tmp_path, monkeypatch
         assert not out.exists(), 'incomplete output became visible'
         return np.full((4, 3), month_idx), np.zeros((4, 3))
 
-    monkeypatch.setattr(forcing, 'real_wind_forcing', available)
+    monkeypatch.setattr(reanalysis, 'real_wind_forcing', available)
     forcing.export_forcing(arguments(tmp_path, 'wind'))
     assert list(tmp_path.iterdir()) == [out]
     with netCDF4.Dataset(out) as dataset:
@@ -115,14 +117,14 @@ def test_failed_wind_export_leaves_no_output_and_can_retry(tmp_path, monkeypatch
 def test_export_does_not_replace_output_created_during_loading(tmp_path, monkeypatch):
     grid = all_wet_grid(nx=4, ny=3, nz=4)
     out = tmp_path / 'forcing.nc'
-    monkeypatch.setattr(forcing, 'make_global_grid', lambda *a, **kw: grid)
+    monkeypatch.setattr(bathymetry, 'make_global_grid', lambda *a, **kw: grid)
 
     def concurrent_output(grid, month_idx, taper_cells):
         if month_idx == 911:
             out.write_bytes(b'other completed export')
         return np.zeros((4, 3)), np.zeros((4, 3))
 
-    monkeypatch.setattr(forcing, 'real_wind_forcing', concurrent_output)
+    monkeypatch.setattr(reanalysis, 'real_wind_forcing', concurrent_output)
     with pytest.raises(FileExistsError):
         forcing.export_forcing(arguments(tmp_path, 'wind'))
     assert out.read_bytes() == b'other completed export'

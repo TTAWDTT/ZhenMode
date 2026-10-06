@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import http.client
 import json
 from datetime import datetime
 from pathlib import Path
@@ -118,9 +119,34 @@ def main(argv=None):
     forcing.add_argument("--grid", required=True, help="NPZ containing lon, lat, wet_mask")
     forcing.add_argument("--start", required=True, help="Gregorian ISO timestamp, no timezone suffix")
     forcing.add_argument("--end", required=True)
+    fetch = commands.add_parser('fetch-jra', help='download published original annual files with SHA256 checks; never launch a model')
+    fetch.add_argument('--catalog', required=True, help='complete ESGF File search response JSON')
+    fetch.add_argument('--destination', required=True)
+    fetch.add_argument('--year', type=int, required=True)
+    native = commands.add_parser('prepare-forcing', help='prepare an explicit native rectangular JRA window; never launch an ocean')
+    native.add_argument('--acquisition', action='append', required=True,
+                        help='repeat for adjacent verified annual shards, including the end-window instant')
+    native.add_argument('--grid', required=True, help='NPZ: lon/lat, lon_bounds/lat_bounds, area, wet_mask')
+    native.add_argument('--runoff-area', required=True, help='JSON: path, variable, bytes, sha256 of original discharge grid-cell area')
+    native.add_argument('--output', required=True)
+    native.add_argument('--start', required=True)
+    native.add_argument('--end', required=True)
+    native.add_argument('--maximum-routing-distance-m', type=float, default=500000)
     args = parser.parse_args(argv)
     try:
-        if args.command == "check-forcing":
+        if args.command == 'prepare-forcing':
+            from zhenmode.execution.preparation import prepare_jra_window
+
+            origin = datetime(1970, 1, 1)
+            result = prepare_jra_window(args.acquisition, args.grid, args.runoff_area, args.output,
+                start=(datetime.fromisoformat(args.start)-origin).total_seconds(),
+                end=(datetime.fromisoformat(args.end)-origin).total_seconds(),
+                maximum_routing_distance_m=args.maximum_routing_distance_m)
+        elif args.command == 'fetch-jra':
+            from zhenmode.execution.datasets import fetch_jra
+
+            result = fetch_jra(args.catalog, args.destination, args.year)
+        elif args.command == "check-forcing":
             import numpy as np
 
             from zhenmode.model.inputs.forcing.jra55 import JRA55Forcing
@@ -159,5 +185,5 @@ def main(argv=None):
                     stream.write("\n")
         print(json.dumps(result, indent=2, ensure_ascii=False, allow_nan=False))
         return 0
-    except (OSError, ValueError, KeyError, TypeError) as error:
+    except (OSError, ValueError, KeyError, TypeError, http.client.HTTPException) as error:
         parser.error(str(error))

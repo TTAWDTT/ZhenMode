@@ -9,11 +9,6 @@ from tempfile import TemporaryDirectory
 import numpy as np
 from netCDF4 import Dataset
 
-from zhenmode.model.config import GlobalGridConfig
-from zhenmode.model.inputs.bathymetry import make_global_grid
-from zhenmode.model.inputs.forcing.reanalysis import load_monthly_mean_air_temp, real_wind_forcing
-from zhenmode.model.inputs.initial_conditions import get_initial_fields
-
 
 def add_arguments(parser):
     parser.add_argument('--kind', choices=('wind', 'air-temperature', 'sensible-heat'), required=True)
@@ -34,6 +29,14 @@ def export_forcing(args):
     The sensible-heat input is a fixed-SST proxy, not live air-sea coupling.
     Native comparison contracts still have to check physics and input identity.
     """
+    from zhenmode.model.config import GlobalGridConfig
+    from zhenmode.model.inputs.bathymetry import make_global_grid
+    from zhenmode.model.inputs.forcing.reanalysis import (
+        load_monthly_mean_air_temp,
+        real_wind_forcing,
+    )
+    from zhenmode.model.inputs.initial_conditions import get_initial_fields
+
     if args.kind not in ('wind', 'air-temperature', 'sensible-heat'):
         raise ValueError('unknown MOM6 forcing kind')
     out = Path(args.out)

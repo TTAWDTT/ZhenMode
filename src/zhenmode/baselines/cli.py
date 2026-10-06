@@ -42,12 +42,19 @@ def main(argv=None):
     p.add_argument("--examples-dir", required=True)
     p.add_argument("--output", required=True)
     p.add_argument("--profile", default="integration-6h")
+    p = commands.add_parser('omip2-build', help='run one single-CPU 4GiB coupled build segment; never launch a model')
+    p.add_argument('--preparation', required=True)
+    p.add_argument('--output', required=True)
+    p.add_argument('--wall-seconds', type=int, default=180)
     args = parser.parse_args(argv)
     try:
         if args.command.startswith("omip2-"):
             from zhenmode.baselines.mom6 import omip2
-            result = (omip2.preparation_plan(args.profile) if args.command == "omip2-plan" else
-                      omip2.prepare(args.examples_dir, args.output, profile=args.profile))
+            if args.command == 'omip2-build':
+                result = omip2.build_segment(args.preparation, args.output, wall_seconds=args.wall_seconds)
+            else:
+                result = (omip2.preparation_plan(args.profile) if args.command == "omip2-plan" else
+                          omip2.prepare(args.examples_dir, args.output, profile=args.profile))
         elif args.command == "export-forcing":
             result = forcing.export_forcing(args)
         elif args.command in ("doctor", "fetch"):
@@ -71,6 +78,8 @@ def main(argv=None):
         print(json.dumps(summary, indent=2, ensure_ascii=False, allow_nan=False))
         if result.get("execution_status") == "failed" or result.get("ready") is False:
             return 1
+        if result.get('execution_status') == 'incomplete':
+            return 2
         return 0
     except (ValueError, RuntimeError, OSError, KeyError, subprocess.TimeoutExpired) as error:
         parser.error(str(error))

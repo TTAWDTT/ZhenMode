@@ -46,6 +46,86 @@ def _seconds(values, variable):
     return np.asarray(netCDF4.date2num(dates, TIME_UNITS, calendar="proleptic_gregorian"), dtype=float)
 
 
+def conservative_rectilinear_weights(source_lon_bounds, source_lat_bounds,
+                                     target_lon_bounds, target_lat_bounds):
+    """Explicit first-order spherical remap of global rectangular cell means.
+
+    Bounds are degrees, ordered, contiguous and cover the whole sphere.
+    Gaussian latitude bands are supported; curvilinear/tripolar grids are not.
+    Returns (latitude, longitude) matrices mapping data[lat,lon] as Y@data@X.T.
+    The operation covers all cells. Applying an ocean mask/routing land fluxes
+    is a separate physical operation and needs its own budget/receipt.
+    """
+    def bounds(values, latitude):
+        values = np.array(values, dtype=float, copy=True)
+        if (values.ndim != 2 or values.shape[1] != 2 or len(values) == 0
+                or not np.isfinite(values).all() or np.any(values[:, 1] <= values[:, 0])
+                or not np.allclose(values[:-1, 1], values[1:, 0], atol=1e-9, rtol=0)):
+            raise ValueError('remapping requires finite ordered contiguous cell bounds')
+        if latitude:
+            if not np.allclose([values[0, 0], values[-1, 1]], [-90, 90], atol=1e-9, rtol=0):
+                raise ValueError('latitude bounds must cover both poles in degrees')
+            return np.sin(np.deg2rad(values))
+        if not np.isclose(values[-1, 1] - values[0, 0], 360, atol=1e-9, rtol=0):
+            raise ValueError('longitude bounds must cover 360 degrees')
+        values -= np.floor(values[0, 0] / 360) * 360
+        return values
+
+    source_x, target_x = bounds(source_lon_bounds, False), bounds(target_lon_bounds, False)
+    source_y, target_y = bounds(source_lat_bounds, True), bounds(target_lat_bounds, True)
+
+    def overlap(source, target):
+        return np.maximum(0, np.minimum(target[:, 1, None], source[None, :, 1])
+                          - np.maximum(target[:, 0, None], source[None, :, 0]))
+
+    x = sum(overlap(source_x + shift, target_x) for shift in (-360, 0, 360))
+    y = overlap(source_y, target_y)
+    x /= np.diff(target_x, axis=1)
+    y /= np.diff(target_y, axis=1)
+    if not np.allclose(x.sum(axis=1), 1, atol=1e-12, rtol=0) or not np.allclose(y.sum(axis=1), 1, atol=1e-12, rtol=0):
+        raise ValueError('source bounds leave uncovered target cells')
+    return y, x
+
+
+def remap_rectilinear_means(values, weights):
+    """Use declared weights, rejecting missing cells instead of renormalizing."""
+    y, x = weights
+    data = np.ma.asarray(values)
+    if (data.ndim != 2 or data.shape != (y.shape[1], x.shape[1])
+            or np.ma.is_masked(data) or not np.isfinite(data).all()
+            or not np.isfinite(y).all() or not np.isfinite(x).all()
+            or np.any(y < 0) or np.any(x < 0)
+            or not np.allclose(y.sum(axis=1), 1, atol=1e-12, rtol=0)
+            or not np.allclose(x.sum(axis=1), 1, atol=1e-12, rtol=0)):
+        raise ValueError('invalid remapping weights or missing/mismatched source means')
+    return y @ np.asarray(data) @ x.T
+
+
+def bilinear_rectilinear_weights(source_lon, source_lat, target_lon, target_lat):
+    """Periodic geographic components/state; refuse latitude extrapolation."""
+    def linear(source, target, periodic):
+        source, target = np.asarray(source, float), np.asarray(target, float)
+        if (source.ndim != 1 or target.ndim != 1 or len(source) < 2 or len(target) == 0
+                or not np.isfinite(source).all() or not np.isfinite(target).all()
+                or np.any(np.diff(source) <= 0)):
+            raise ValueError('bilinear coordinates must be finite ordered vectors')
+        count = len(source)
+        if periodic:
+            if source[-1]-source[0] >= 360:
+                raise ValueError('longitude contains a duplicate seam or more than one globe')
+            target = (target-source[0]) % 360 + source[0]
+            source = np.r_[source, source[0]+360]
+        elif target.min() < source[0] or target.max() > source[-1]:
+            raise ValueError('bilinear latitude extrapolation is forbidden')
+        left = np.clip(np.searchsorted(source, target, side='right')-1, 0, len(source)-2)
+        alpha = (target-source[left])/(source[left+1]-source[left])
+        weights = np.zeros((len(target), count))
+        weights[np.arange(len(target)), left] = 1-alpha
+        weights[np.arange(len(target)), (left+1) % count] += alpha
+        return weights
+    return linear(source_lat, target_lat, False), linear(source_lon, target_lon, True)
+
+
 @dataclass(frozen=True)
 class _Record:
     path: Path

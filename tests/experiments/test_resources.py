@@ -7,7 +7,7 @@ import time
 
 import pytest
 
-from zhenmode.execution.resources import run_cuda_worker, validate_budget
+from zhenmode.execution.resources import run_cuda_worker, run_process_group, validate_budget
 from zhenmode.execution.schema import ConfigurationError
 
 
@@ -35,3 +35,23 @@ def test_actual_supervision(tmp_path, kind):
     assert receipt["stop_reason"] == {"wall": "wall_limit", "memory": "host_rss_limit", "complete": None}[kind]
     assert (result.returncode == 0) == (kind == "complete")
     assert isinstance(result, subprocess.CompletedProcess)
+
+
+@pytest.mark.skipif(os.name != 'posix', reason='Linux /proc supervisor')
+def test_build_cleanup_grace_stays_inside_wall_budget(tmp_path):
+    script = ("import signal,time,sys; from pathlib import Path; "
+              "signal.signal(signal.SIGTERM, lambda *args: (Path('cleanup').write_text('done'),sys.exit(42))); "
+              "time.sleep(30)")
+    with (tmp_path / 'log').open('w') as log:
+        result, receipt = run_process_group([sys.executable, '-c', script], cwd=tmp_path,
+                    env=os.environ, stdout=log,
+                    resources={'cpu': 1, 'wall_seconds': 2, 'memory_mib': 256, 'termination_grace_seconds': 1})
+    assert result.returncode == 42 and (tmp_path / 'cleanup').read_text() == 'done'
+    assert receipt['stop_reason'] == 'wall_limit' and receipt['elapsed_wall_seconds'] < 3
+
+
+@pytest.mark.skipif(os.name != 'posix', reason='Linux /proc supervisor')
+def test_grace_cannot_extend_the_wall_budget(tmp_path):
+    with (tmp_path / 'log').open('w') as log, pytest.raises(ConfigurationError, match='inside'):
+        run_process_group(['invalid'], cwd=tmp_path, env=os.environ, stdout=log,
+                          resources={'cpu': 1, 'wall_seconds': 2, 'memory_mib': 256, 'termination_grace_seconds': 2})

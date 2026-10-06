@@ -35,14 +35,16 @@ def process_group_rss(group):
     return total
 
 
-def run_cuda_worker(command, *, cwd, env, stdout, resources):
-    """CUDA virtual reservations cannot be limited with CPU RLIMIT_AS.
+def run_process_group(command, *, cwd, env, stdout, resources):
+    """Enforce one CPU, wall time and sampled aggregate RSS, not a cgroup cap.
 
-    Enforce sampled aggregate RSS instead; explicitly not a cgroup hard cap.
     Own a process group so timeout/interruption also kills worker children.
     """
     if os.name != "posix" or not Path("/proc/self/status").is_file() or not hasattr(os, "sched_setaffinity"):
-        raise ConfigurationError("managed CUDA requires Linux /proc and CPU affinity (including WSL2)")
+        raise ConfigurationError("managed process groups require Linux /proc and CPU affinity (including WSL2)")
+    grace = resources.get('termination_grace_seconds', 0)
+    if type(grace) is not int or not 0 <= grace < resources['wall_seconds']:
+        raise ConfigurationError('termination grace must fit inside the wall budget')
     begin, peak, reason = time.monotonic(), 0, None
     child = subprocess.Popen(command, cwd=cwd, env=env, stdout=stdout, stderr=subprocess.STDOUT, start_new_session=True)
     try:
@@ -52,8 +54,19 @@ def run_cuda_worker(command, *, cwd, env, stdout, resources):
             if peak > resources["memory_mib"] * 1024**2:
                 reason = "host_rss_limit"
                 break
-            if time.monotonic() - begin > resources["wall_seconds"]:
+            if time.monotonic() - begin > resources["wall_seconds"] - grace:
                 reason = "wall_limit"
+                if grace:
+                    try:
+                        os.killpg(child.pid, signal.SIGTERM)
+                    except ProcessLookupError:
+                        pass
+                    while child.poll() is None and time.monotonic()-begin < resources['wall_seconds']:
+                        peak = max(peak, process_group_rss(child.pid))
+                        if peak > resources['memory_mib'] * 1024**2:
+                            reason = 'host_rss_limit'
+                            break
+                        time.sleep(0.1)
                 break
             time.sleep(0.2)
     finally:
@@ -66,5 +79,15 @@ def run_cuda_worker(command, *, cwd, env, stdout, resources):
     return subprocess.CompletedProcess(command, child.returncode), {
         "cpu_affinity": 1, "memory_mib": resources["memory_mib"], "wall_seconds": resources["wall_seconds"],
         "peak_host_rss_bytes": peak, "stop_reason": reason,
-        "host_memory_enforcement": "aggregate process-group /proc RSS sampled at 0.2 s; not a hard cgroup cap",
-        "gpu_allocator_fraction": 0.40, "gpu_memory_enforcement": "JAX allocator fraction; not a whole-device memory limit"}
+        "termination_grace_seconds": grace,
+        "elapsed_wall_seconds": time.monotonic() - begin,
+        "host_memory_enforcement": "aggregate process-group /proc RSS sampled at 0.2 s; not a hard cgroup cap"}
+
+
+def run_cuda_worker(command, *, cwd, env, stdout, resources):
+    """CUDA virtual reservations cannot use CPU RLIMIT_AS; supervise host RSS."""
+    result, receipt = run_process_group(command, cwd=cwd, env=env, stdout=stdout,
+                                        resources=resources)
+    return result, receipt | {
+        "gpu_allocator_fraction": 0.40,
+        "gpu_memory_enforcement": "JAX allocator fraction; not a whole-device memory limit"}
