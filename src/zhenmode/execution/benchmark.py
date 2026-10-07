@@ -154,9 +154,16 @@ def main(argv=None):
     fd_initial.add_argument('--native-prepared',required=True)
     fd_initial.add_argument('--policy',required=True)
     fd_initial.add_argument('--output',required=True)
+    tripolar=commands.add_parser('prepare-tripolar-grid',help='prepare identity-bound MOM angular-grid/metric candidate; no mask, mapping or model run')
+    tripolar.add_argument('--acquisition',required=True)
+    tripolar.add_argument('--south-boundary',required=True,type=float)
+    tripolar.add_argument('--output',required=True)
     args = parser.parse_args(argv)
     try:
-        if args.command == 'prepare-fd-initial':
+        if args.command == 'prepare-tripolar-grid':
+            from zhenmode.baselines.mom6.tripolar import prepare_tripolar_grid
+            result=prepare_tripolar_grid(args.acquisition,args.south_boundary,args.output)
+        elif args.command == 'prepare-fd-initial':
             from zhenmode.execution.native_fd import prepare_fd_native_inputs
             result=prepare_fd_native_inputs(args.native_prepared,args.policy,args.output)
         elif args.command == 'complete-native-bottom':
