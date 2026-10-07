@@ -494,3 +494,49 @@ def smooth_native_paired_holes(fields, wet_mask, lon, lat):
             'nearest_original_anchor_flat_index':nearest, 'nearest_anchor_path_distance_m':distance,
             'linear_system_relative_residual':residual,
             'infill_matrix':matrix, 'infill_unknown_flat_indices':np.flatnonzero(supported)}
+
+
+def extend_native_bottom_pairs(fields, wet_mask, depths_m):
+    """Explicit same-column PT/SR fallback below the deepest resolved point.
+
+    Returns float64 values and a donor/depth-distance trace; never fills
+    interior or surface gaps. The caller must establish regional-profile
+    priority and record the chosen policy. A linear continuation from the two
+    deepest resolved points is an arithmetic sensitivity candidate only: it
+    is neither selected nor silently clipped to a thermodynamic domain.
+    """
+    values,wet,depths = np.asarray(fields),np.asarray(wet_mask),np.asarray(depths_m)
+    if (values.ndim!=4 or values.shape[0]!=2 or values.dtype.kind not in 'fiu'
+        or wet.shape!=values.shape[1:] or not np.isin(wet,[0,1]).all()
+        or depths.shape!=(values.shape[-1],) or depths.dtype.kind not in 'fiu'
+        or not np.isfinite(depths).all() or depths[0]!=0 or np.any(np.diff(depths)<=0)
+        or np.any(np.diff(wet.astype(int),axis=-1)>0) or np.isinf(values).any()):
+        raise ValueError('bottom fallback requires real PT/SR and contiguous wet nodes on ordered depths')
+    wet=wet.astype(bool)
+    finite=np.isfinite(values).all(axis=0)&wet
+    if np.any(wet & np.isfinite(values).any(axis=0) & ~finite):
+        raise ValueError('bottom fallback requires paired support, not a single finite tracer')
+    indices=np.arange(len(depths))[None,None,:]
+    last=np.max(np.where(finite,indices,-1),axis=-1)
+    fill=wet&~finite&(indices>last[...,None])&(last[...,None]>=0)
+    result=values.astype(float).copy()
+    alternate=result.copy()
+    donors=np.full(wet.shape,-1,dtype=np.int64)
+    distance=np.zeros(wet.shape,dtype=float)
+    alternate_support=np.zeros(wet.shape,dtype=bool)
+    for i,j in zip(*np.nonzero(fill.any(axis=-1)),strict=True):
+        level=int(last[i,j])
+        targets=np.flatnonzero(fill[i,j])
+        result[:,i,j,targets]=values[:,i,j,level][:,None]
+        alternate[:,i,j,targets]=values[:,i,j,level][:,None]
+        donors[i,j,targets]=level
+        distance[i,j,targets]=depths[targets]-depths[level]
+        previous=np.flatnonzero(finite[i,j,:level])
+        if len(previous):
+            before=int(previous[-1])
+            slope=(values[:,i,j,level]-values[:,i,j,before])/(depths[level]-depths[before])
+            alternate[:,i,j,targets]=values[:,i,j,level][:,None]+slope[:,None]*distance[i,j,targets][None,:]
+            alternate_support[i,j,targets]=True
+    return {'fields':result,'bottom_filled_mask':fill,'unresolved_mask':wet&~finite&~fill,
+            'donor_native_level_index':donors,'extension_distance_m':distance,
+            'linear_sensitivity_fields':alternate,'linear_sensitivity_support':alternate_support}
