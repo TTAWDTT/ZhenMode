@@ -177,8 +177,11 @@ def complete_native_bottom(native_prepared, review_file, output):
             k = point["node_index"]
             if not fill[i, j, k] or regional[i, j, k]:
                 raise ValueError("regional profile cannot replace resolved/non-bottom points")
-            if any(type(point[n]) not in (int, float) for n in ("ptemp", "sr")):
-                raise ValueError("regional PT/SR must be real numbers")
+            if (
+                any(type(point[n]) not in (int, float) for n in ("ptemp", "sr"))
+                or not np.isfinite([point["ptemp"], point["sr"]]).all()
+            ):
+                raise ValueError("regional PT/SR must be finite real numbers")
             result["fields"][:, i, j, k] = [point["ptemp"], point["sr"]]
             regional[i, j, k] = True
     if seen != needed:
