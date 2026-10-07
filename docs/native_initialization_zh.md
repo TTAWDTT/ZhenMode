@@ -1,0 +1,78 @@
+# 原生海岸、水柱与温盐准备
+
+`prepare-native-geometry` 生成全球 1°、360×180 的整格海陆表示；`prepare-native-initial` 在固定垂向部分单元上准备 WOA 点值；`complete-native-bottom` 按逐柱区域资料审查补齐水柱底段。三条命令保存文件身份、处理方法和参考库存。完整 MOM6 层映射、FD 度量适配、动力敏感性及机制运行仍须分别完成。
+
+## 海岸与海深
+
+海岸输入为 [GSHHG 2.3.7](https://www.soest.hawaii.edu/pwessel/gshhg/) high 二进制文件及其发布者校验收据。解析采用原始多边形层级和 Greenwich 展开规则；湖泊不计入海洋，南极采用冰前缘边界，冰架腔体未表示。点采样给出的海面比例与连通图具有分辨率误差，不能作为精确多边形面积。
+
+海深输入沿用身份已记录的 ETOPO2022 缓存。本地文件含 CDO 双线性预处理，`original_NOAA_bytes_reverified=false` 保持原值。源经度从 0° 开始；位于经度接缝的源单元分别映射到两侧，纬向权重按球面面积计算。每个原生海格采用负高程海洋支撑的条件面积均值海深，保存非负海洋高程与无海深支撑的冲突。
+
+初始整格海洋表示包含海面占比至少一半的格点，并保留有海面支撑的旧海格。通道修正使用对齐原生边界的 0.1° 海面采样图，先最小化新增整格数，再最小化球面路径长度。每条新增路线保存端点、经过的原生格及海面边界见证；候选格须有实际负高程支撑。明确指定的区域另采用 0.01° 采样。整格表示会合并同格内不同海面片段，产物同时记录缺少采样边界见证的整格开口数。
+
+几何策略文件须明确列出区域细化及资料冲突处理，例如：
+
+```json
+{
+  "policy": "binary_coast_channels_v1",
+  "reference_dry_exclusions": [
+    {"lon_lat": [337.5, 81.5], "basis": "retain_parent_dry_no_negative_marine_relief"}
+  ],
+  "regional_refinements": [
+    {"id": "magellan", "lon_bounds_deg": [286, 292], "lat_bounds_deg": [-56, -50], "seed_lon_lat": [289.5, -53.5]}
+  ]
+}
+```
+
+`reference_dry_exclusions` 只允许保留原本无水、海岸新判为海洋而无负高程海深支撑的具名格。它不能删除已有水柱，也不能作为一般缺测处理。格陵兰附近 22.5°W、81.5°N 的批准选择仍保留地理未解决标记；取得可信区域海深后需重新审查。其他未列明冲突阻止几何准备成功。
+
+`geometry.json` 与 NPZ 保存来源、采样支撑、球面面积、海深、通道路线和海陆差异。面积及体积分别记录多表示和少表示量，避免净误差掩盖相互抵消。只有整格图的海洋分量连通后，几何准备命令才返回成功；该结果的地理、动力和气候资格保持未取得。
+
+## 点值与补底
+
+原生点值使用已转换的 WOA13v2 PT/SR，保留配对原值。同层缺测沿湿连通海区补值；5500 m 以下沿用已经准备好的最深 WOA 平面。固定部分单元截到准备后的海深，单节点浅海保留该几何中的水深。参考库存采用点值乘参考容量的求积；MOM6 的有限体积层平均需要另做垂向映射。
+
+补底审查文件选择 `regional_profiles_then_same_column_zero_gradient_v1`，绑定 `native_initialization.json` 的 SHA256、证据文件及每根待补水柱的决定。文件必须恰好覆盖所有可补底水柱。已有值、表层缺测、内部缺测及无锚点水柱不会被自动替换。所有科学资料判断由具名审查文件传入，命令核对其完整性和身份；文件身份本身不授予区域资料科学资格。
+
+每根水柱的记录形式如下。`regional_profile_then_fallback` 可给部分底段提供区域 PT/SR，剩余底段按补底前同柱最深已解决点补齐；新增区域赋值点不作该次延拓的供体。`no_qualified_regional_profile` 则需要记录未选区域资料的原因及证据。
+
+```json
+{
+  "native_flat_index": 2,
+  "decision": "regional_profile_then_fallback",
+  "reason": "区域资料及未选样本见对应审查文件",
+  "evidence_index": 0,
+  "regional_points": [
+    {"node_index": 1, "ptemp": 8.0, "sr": 36.0, "source_trace": "制造示例；实际值须指向区域来源和映射记录"}
+  ]
+}
+```
+
+父审查对象还须含 `policy`、`native_receipt_sha256`、`evidence` 和 `columns`。证据条目含 `path`、`bytes`、`sha256`；路径相对原审查文件或采用绝对路径。完成产物原样保存审查文件，并在收据保存原位置，便于解析其来源。
+
+输出保留初始缺测掩膜，并分别记录区域赋值、同柱延拓、原生供体层、垂向距离、供体的原始锚点及其水平补值来源。新增赋值点的输出 CT 由 PT/SR 计算；全部既有 PT、CT、SR 和 SP 数值保持原字节。输入或软件在准备期间改变时，产物写失败收据；已有输出目录拒绝覆盖。
+
+## 敏感性与范围
+
+另一个算术方案使用原水柱最深两个已解决点线性延拓 PT/SR。每个候选记录两个供体、距离、对应体积及 CT/SR 库存差异；没有第二锚点或超出数值检查范围的候选分别保留状态，禁止裁剪到有效范围。比较使用两方案均有有效值的同一底段支撑。动力敏感性仍须通过实际运行和分项预算验证。
+
+准备批次 `omip2-20261007` 的几何记录 `native-coast-prepared-03/geometry.json` 列出 43,006 个海格和 35 个新增通道格，参考体积为 1.3402308523909478×10¹⁸ m³。原生点值准备剩余 147 个底段缺测节点，分布于 116 根水柱，占体积约 0.01989%，结果见 `native-coast-points-01/native_initialization.json`。独立结构检查器确认 552,217 个已有温盐点在补底后保持原值，结果见 `native-bottom-independent-01.json`。这些数量属于指定资料、节点和策略组合，修改输入须生成新记录。
+
+该记录的区域审查采用官方 WOA13v2 0.25° 年客观分析场。源样本限同一原生格，须在两端深度上温盐配对、GSHHG 判为海面，并在最近 ETOPO 采样点具有所需深度及单一深度连通分量支撑。逐样本先按原声明的固定 Boussinesq 压力转 PT/SR，再按深度插值、以球面面积归一化。ETOPO 采样连通性仍有误差，压力也保留原近似定义。HTTP 字节段及 ETag 已保存，完整原文件尚未全量校验，来源身份限这些已取得字节与生成记录。
+
+`quarter-regional-review-01/regional-review.json` 的区域规则选择了 125 个节点，其余 22 个采用同柱补底。其中 8 个节点的候选区域样本出现多个深度分量，审查文件记录了未自动混合的决定。`native-bottom-completed-02/native_initialization.json` 的两锚点线性方案在 142 个节点有效，4 个超出数值检查范围，1 个缺第二锚点；有效比较中的最大局部 PT、SR 差异约为 8.69°C 和 10.05 g/kg。局部差异和未定水域需要动力比较，全球体积占比较小不能代替该检查。
+
+## 复跑与检查
+
+在已安装产品环境中执行下列准备入口；Windows 数值命令须使用项目的单 CPU、180 秒、4 GiB 监督器，Linux 使用等价外部资源限制。下列 `SOURCE`、`PARENT_GEOMETRY`、`SHORELINE_RECEIPT`、`POLICY`、`NODES`、`BOTTOM_REVIEW` 均指实际文件或目录，输出必须采用新目录。
+
+```text
+python scripts/run_bounded_tests.py --module zhenmode benchmark prepare-native-geometry --parent-geometry PARENT_GEOMETRY --shoreline-acquisition SHORELINE_RECEIPT --policy POLICY --output GEOMETRY_OUTPUT
+python scripts/run_bounded_tests.py --module zhenmode benchmark prepare-native-initial --source-prepared SOURCE --geometry GEOMETRY_OUTPUT --nodes-file NODES --output POINTS_OUTPUT
+python scripts/run_bounded_tests.py --module zhenmode benchmark complete-native-bottom --native-prepared POINTS_OUTPUT --review-file BOTTOM_REVIEW --output COMPLETED_OUTPUT
+python scripts/run_bounded_tests.py --script scripts/check_native_bottom_preparation.py --native-prepared POINTS_OUTPUT --completed COMPLETED_OUTPUT --output NEW_CHECK_JSON
+```
+
+未解决的海洋连通或温盐支撑令 CLI 返回 3。`complete_wet_support=true` 仅表示全部湿节点已赋值，`native_initialization_ready`、`mom_layer_initialization_ready` 和 `execution_ready` 继续为 false。当前参考节点及球面面积也须通过实际求解器接口验证，不能直接据有限温盐数组宣布完整 case 可运行。
+
+独立结构检查器不导入产品 helper，重新推导固定容量、逐柱寻找供体，并用 `math.fsum` 计算参考库存。检查器检出改变已有值、遗漏湿点、错误供体三个植入错误；它共享输入资料、NetCDF/NumPy 读取层和声明常数，不验证区域地理或热力学转换的科学独立性。数据测试另覆盖制造已知海面、正高程冲突、不能删除已有水柱、接缝、通道路线、区域优先、非法补值、源身份改变及越界敏感性。

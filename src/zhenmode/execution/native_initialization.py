@@ -49,6 +49,8 @@ def prepare_native_initialization(source_prepared, geometry, nodes_file, output)
     )
     receipt_shas = {str(p): sha256_file(p) for p in receipt_paths}
     origin, geo, nodes = (load_json(p) for p in receipt_paths)
+    if geo.get("geometry_kind") == "binary_coast_channels_v1" and geo.get("status") != "native_geometry_prepared":
+        raise ValueError("binary coastal geometry still has unresolved native connections")
     if origin.get("status") != "original_grid_thermodynamics_prepared":
         raise ValueError("completed original-grid WOA preparation is required")
     if set(nodes) != {"z_nodes_m"}:

@@ -6,44 +6,10 @@ import netCDF4
 import numpy as np
 import pytest
 
-from tests.data.test_woa_initialization import fixture
+from tests.support.data.native_initialization import native_inputs as _inputs
 from zhenmode.execution.benchmark import main
-from zhenmode.execution.initialization import prepare_woa_thermodynamics
 from zhenmode.execution.native_initialization import prepare_native_initialization
 from zhenmode.provenance.sources import sha256_file
-
-
-def _inputs(tmp_path, *, unanchored=False):
-    acquisition, pressure = fixture(tmp_path)
-    source = tmp_path / "source"
-    prepare_woa_thermodynamics(acquisition, pressure, source)
-    geometry = tmp_path / "geometry"
-    geometry.mkdir()
-    lon = np.array([90.0, 270.0])
-    lat = np.array([-45.0, 45.0])
-    bed = np.array([[0.5 if unanchored else 750.0, 6500.0], [750.0, 0.0]])
-    area = np.full((2, 2), np.pi * 6371000.0**2)
-    np.savez(
-        geometry / "grid.npz",
-        lon=lon,
-        lat=lat,
-        wet_mask=(bed > 0).astype(np.uint8),
-        area=area,
-        lon_bounds=[[0.0, 180.0], [180.0, 360.0]],
-        lat_bounds=[[-90.0, 0.0], [0.0, 90.0]],
-    )
-    np.savez(geometry / "bathymetry.npz", lon=lon, lat=lat, depth=bed)
-    (geometry / "geometry.json").write_text(
-        json.dumps(
-            {
-                "grid_sha256": sha256_file(geometry / "grid.npz"),
-                "bathymetry_sha256": sha256_file(geometry / "bathymetry.npz"),
-            }
-        )
-    )
-    nodes = tmp_path / "nodes.json"
-    nodes.write_text(json.dumps({"z_nodes_m": [0.0, -500.0, -4000.0, -6000.0, -7000.0]}))
-    return source, geometry, nodes, bed, area
 
 
 def test_native_points_axis_support_deep_extension_and_equivalent_states(tmp_path):
