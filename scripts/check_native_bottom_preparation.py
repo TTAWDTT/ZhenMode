@@ -82,6 +82,9 @@ def verify(prepared, completed, output):
     prepared, completed = Path(prepared), Path(completed)
     parent = json.loads((prepared / "native_initialization.json").read_text())
     report = json.loads((completed / "native_initialization.json").read_text())
+    assert report["parent_native_receipt_sha256"] == digest(
+        prepared / "native_initialization.json"
+    ), "supplied native parent receipt does not match completion"
     assert report["status"] == "native_points_completed_with_bottom_assumptions"
     for name, row in report["outputs"].items():
         assert digest(completed / name) == row["sha256"]
@@ -147,14 +150,15 @@ def verify(prepared, completed, output):
         controls.append("changed_resolved_value_refused")
     else:
         raise AssertionError("preservation comparator passed planted change")
-    altered = {n: a.copy() for n, a in after.items()}
-    altered["ptemp"][tuple(np.argwhere(missing)[0])] = np.nan
-    try:
-        assignments(before, altered, trace, policy, depth, wet)
-    except AssertionError:
-        controls.append("missing_wet_value_refused")
-    else:
-        raise AssertionError("support comparator passed planted missing value")
+    if missing.any():
+        altered = {n: a.copy() for n, a in after.items()}
+        altered["ptemp"][tuple(np.argwhere(missing)[0])] = np.nan
+        try:
+            assignments(before, altered, trace, policy, depth, wet)
+        except AssertionError:
+            controls.append("missing_wet_value_refused")
+        else:
+            raise AssertionError("support comparator passed planted missing value")
     if trace["same_column_bottom_extension"].any():
         planted = {n: a.copy() for n, a in trace.items()}
         planted["bottom_donor_native_level_index"][

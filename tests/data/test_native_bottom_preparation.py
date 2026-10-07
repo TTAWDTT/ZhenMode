@@ -6,6 +6,7 @@ import netCDF4
 import numpy as np
 import pytest
 
+from scripts.check_native_bottom_preparation import verify
 from tests.support.data.native_initialization import native_inputs as _inputs
 from zhenmode.execution.benchmark import main
 from zhenmode.execution.native_bottom import complete_native_bottom
@@ -228,3 +229,69 @@ def test_arithmetic_sensitivity_has_two_anchors_and_refuses_out_of_domain_withou
             assert data["linear_pt"][0] == pytest.approx(8.0, abs=1e-12)
         else:
             assert np.isnan(data["linear_pt"][0])
+
+
+@pytest.mark.parametrize("tracer", ["ptemp", "sr"])
+@pytest.mark.parametrize("literal", ["NaN", "Infinity", "-Infinity", "1e309"])
+def test_regional_nonfinite_review_is_refused_before_output_publication(tmp_path, tracer, literal):
+    prepared, review, _ = _prepared(tmp_path, regional=True)
+    policy = json.loads(review.read_text())
+    policy["columns"][0]["regional_points"][0][tracer] = json.loads(literal)
+    review.write_text(json.dumps(policy))
+    out = tmp_path / "bad"
+    with pytest.raises(ValueError, match="finite real"):
+        complete_native_bottom(prepared, review, out)
+    assert not out.exists()
+    # Correcting the input should permit a retry at the same unused target.
+    policy["columns"][0]["regional_points"][0][tracer] = 8.0 if tracer == "ptemp" else 36.0
+    review.write_text(json.dumps(policy))
+    assert complete_native_bottom(prepared, review, out)["complete_wet_support"]
+
+
+def test_independent_checker_accepts_complete_parent_with_no_bottom_assignments(tmp_path):
+    source, geometry, nodes, _, _ = _inputs(tmp_path)
+    prepared = tmp_path / "native"
+    parent = prepare_native_initialization(source, geometry, nodes, prepared)
+    assert parent["complete_wet_support"]
+    evidence = tmp_path / "regional-audit.json"
+    evidence.write_text(json.dumps({"data_kind": "manufactured", "bottom_gaps": 0}))
+    review = tmp_path / "review.json"
+    review.write_text(
+        json.dumps(
+            {
+                "policy": "regional_profiles_then_same_column_zero_gradient_v1",
+                "native_receipt_sha256": sha256_file(prepared / "native_initialization.json"),
+                "evidence": [
+                    {
+                        "path": evidence.name,
+                        "bytes": evidence.stat().st_size,
+                        "sha256": sha256_file(evidence),
+                    }
+                ],
+                "columns": [],
+            }
+        )
+    )
+    out = tmp_path / "complete"
+    completed = complete_native_bottom(prepared, review, out)
+    assert completed["bottom_assigned_nodes"] == 0 and completed["complete_wet_support"]
+    checked = tmp_path / "checked.json"
+    verify(prepared, out, checked)
+    result = json.loads(checked.read_text())
+    assert result["assigned_nodes"] == 0
+    assert result["negative_controls"] == ["changed_resolved_value_refused"]
+
+
+def test_independent_checker_refuses_changed_parent_receipt_with_unchanged_field_bytes(tmp_path):
+    prepared, review, _ = _prepared(tmp_path)
+    out = tmp_path / "complete"
+    complete_native_bottom(prepared, review, out)
+    source_sha = sha256_file(prepared / "native_point_fields.nc")
+    receipt = prepared / "native_initialization.json"
+    changed = json.loads(receipt.read_text())
+    changed["initial_datetime"] = "1959-01-01T00:00:00"
+    receipt.write_text(json.dumps(changed))
+    assert sha256_file(prepared / "native_point_fields.nc") == source_sha
+    with pytest.raises(AssertionError, match="parent receipt"):
+        verify(prepared, out, tmp_path / "false-success.json")
+    assert not (tmp_path / "false-success.json").exists()
