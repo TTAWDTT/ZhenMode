@@ -83,6 +83,13 @@ def make_solver_global(grid, physics, dt, forcing=None,
         conservative_kv/localize_conv. It does not yet match the actual fast-mode
         time-averaged tracer transport or define true moving-volume inventories.
         Default 'legacy' retains the frozen original numerical path.
+      - column_geometry='fixed_partial_v1' instead closes every fixed reference
+        column at its actual bed, including one-node shallow water. Horizontal
+        faces use the overlap of adjacent reference cells; flux differences
+        divide by local capacity and gradients use its weighted adjoint.
+        Requires conservative_kv/localize_conv; currently rejects GM/Redi and
+        dynamic_ice pending their separate qualification. This is a geometry
+        and operator candidate, not an eligible complete OMIP experiment.
       - match_barotropic_transport=True is an opt-in M2 transport candidate,
         requiring mode_split and nodal_dual_v1. Retains the original momentum
         predictor; replays accepted tracer stages with the actual OLD-face
@@ -139,15 +146,18 @@ def make_solver_global(grid, physics, dt, forcing=None,
         integer_count(name, value)
     if nu_nsub is not None and not (isinstance(nu_nsub, str) and nu_nsub == 'cfl'):
         integer_count('nu_nsub', nu_nsub, minimum=1)
-    if match_barotropic_transport and (not mode_split or column_geometry != 'nodal_dual_v1'):
-        raise ValueError("match_barotropic_transport requires mode_split=True and column_geometry='nodal_dual_v1'")
+    if match_barotropic_transport and (not mode_split or column_geometry not in {'nodal_dual_v1', 'fixed_partial_v1'}):
+        raise ValueError("match_barotropic_transport requires mode_split=True and reference column geometry")
     if process_time_scheme not in ('legacy', 'consistent_split_v1', 'subcycled_rk2_v2', 'symmetric_fast_v3'):
         raise ValueError("unknown process_time_scheme")
     if process_time_scheme != 'legacy' and not match_barotropic_transport:
         raise ValueError(f"{process_time_scheme} requires match_barotropic_transport=True")
-    if column_geometry == 'nodal_dual_v1':
+    if column_geometry in {'nodal_dual_v1', 'fixed_partial_v1'}:
         if not conservative_kv or not localize_conv:
-            raise ValueError("nodal_dual_v1 requires conservative_kv=True and localize_conv=True")
+            raise ValueError("reference column geometry requires conservative_kv=True and localize_conv=True")
+    if column_geometry == 'fixed_partial_v1':
+        if physics.kappa_gm > 0 or physics.kappa_redi > 0 or dynamic_ice:
+            raise ValueError('fixed_partial_v1 requires separately qualified GM/Redi and sea-ice operators')
     if polar_cap_rows > 0 and 2 * (polar_cap_rows + polar_cap_taper) > grid.ny:
         raise ValueError('polar cap bands must not overlap; reduce rows/taper or disable the cap')
     base = make_fd_params(grid, column_geometry=column_geometry)
@@ -191,7 +201,7 @@ def make_solver_global(grid, physics, dt, forcing=None,
     # Effective shallow-water depth = vertical grid span
     H_sw = float(jnp.sum(jnp.array(grid.dz)))
     dz_norm = (jnp.array(grid.dz).reshape(1, 1, -1) / H_sw)
-    if column_geometry == 'nodal_dual_v1':
+    if column_geometry in {'nodal_dual_v1', 'fixed_partial_v1'}:
         column_thickness = np.asarray(base.dz_node) * np.asarray(base.wet_mask_z)
         column_depth = np.sum(column_thickness, axis=-1)
         H_sw = jnp.asarray(np.where(column_depth > 0., column_depth, 1.))
@@ -365,6 +375,19 @@ def make_solver_global(grid, physics, dt, forcing=None,
         if maximum_kappa_v * (dt / 2.) * np.max(row_rate) > 0.4:
             raise ValueError("nodal_dual_v1 vertical tracer diffusion exceeds its explicit CFL margin")
 
+    if column_geometry == 'fixed_partial_v1':
+        widths = np.asarray(base.dz_node)
+        wet = np.asarray(base.wet_mask_z) > .5
+        interface_rate = (wet[..., :-1] & wet[..., 1:]) / np.asarray(base.dz_iface)
+        row_rate = (np.pad(interface_rate, ((0,0),(0,0),(1,0)))
+                    + np.pad(interface_rate, ((0,0),(0,0),(0,1)))) / widths
+        maximum_rate = float(np.max(row_rate))
+        conv_nsub = max(1, int(np.ceil(physics.kappa_conv * dt * maximum_rate / .4)))
+        adv_nsub = max(1, int(np.ceil(dt * 4.e-3 / (.5 * np.min(widths[wet])))))
+        maximum_kappa_v = physics.kappa_v + float(np.max(np.asarray(coastal_kappa_v_2d)))
+        if max(physics.nu_v, maximum_kappa_v) * (dt/2.) * maximum_rate > .4:
+            raise ValueError('fixed_partial_v1 vertical diffusion exceeds its explicit CFL margin')
+
     params = FDPhysParams(
         dx_2d=base.dx_2d, dy=base.dy, cos_lat=base.cos_lat,
         inv_dx=base.inv_dx, inv_dy=base.inv_dy,
@@ -446,6 +469,8 @@ def make_solver_global(grid, physics, dt, forcing=None,
         process_time_scheme=process_time_scheme,
         thermodynamics=physics.thermodynamics,
         eos_pressure_dbar=(None if eos_pressure_dbar is None else jnp.asarray(eos_pressure_dbar)),
+        face_contacts=base.face_contacts, contact_depths_m=base.contact_depths_m,
+        node_depth_m=base.node_depth_m,
     )
 
     if projection_preconditioner == 'jacobi':
@@ -458,9 +483,8 @@ def make_solver_global(grid, physics, dt, forcing=None,
     # Scalars (int/float/str/None) are passed through unchanged.
     if dtype == 'float32':
         params = params._replace(**{
-            f: (v.astype(state_dtype)
-                if isinstance(v, jnp.ndarray) and v.dtype == jnp.float64
-                else v)
+            f: jax.tree.map(lambda a: a.astype(state_dtype)
+                            if isinstance(a,jnp.ndarray) and a.dtype==jnp.float64 else a,v)
             for f in params._fields for v in [getattr(params, f)]})
 
     return _compile_solver(params, physics, (nx, ny, nz), state_dtype,

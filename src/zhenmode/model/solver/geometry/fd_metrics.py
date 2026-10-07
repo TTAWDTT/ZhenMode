@@ -1,7 +1,8 @@
 """Finite-difference metric arrays and vertical control thicknesses."""
 
-from zhenmode.model.solver.geometry.grid import nodal_control_thickness
+from zhenmode.model.solver.geometry.grid import fixed_reference_nodal_cells, nodal_control_thickness
 from zhenmode.model.solver.numerics.backend import jnp, np
+from zhenmode.model.solver.numerics.contacts import OFFSETS, shift_vertical
 from zhenmode.model.solver.state import FDParams
 
 
@@ -11,9 +12,22 @@ def make_fd_params(grid, column_geometry='legacy'):
     Precomputes all metric inverse fields so the FD operators are pure
     array arithmetic (no division inside the hot loop).
     """
-    if column_geometry not in {'legacy', 'nodal_dual_v1'}:
-        raise ValueError("column_geometry must be legacy or nodal_dual_v1")
+    if column_geometry not in {'legacy', 'nodal_dual_v1', 'fixed_partial_v1'}:
+        raise ValueError("unknown column_geometry")
     nx, ny, nz = grid.nx, grid.ny, grid.nz
+    if column_geometry == 'fixed_partial_v1':
+        # The volume-weighted contact identities use dx=L*cos_lat and
+        # A=dx*dy. Arbitrary independent row metrics cannot use that operator.
+        dx, cosine, meridional = (np.asarray(a) for a in (grid.dx_2d, grid.cos_lat, grid.dy))
+        if (dx.shape != (nx, ny) or cosine.shape != (ny,) or meridional.ndim != 0
+                or any(a.dtype.kind not in 'fiu' for a in (dx, cosine, meridional))
+                or any(not np.isfinite(a).all() or np.any(a <= 0) for a in (dx, cosine, meridional))):
+            raise ValueError('fixed_partial_v1 requires finite positive compatible spherical metrics')
+        precision = np.result_type(dx.dtype, cosine.dtype)
+        tolerance = max(1e-12, 8 * np.finfo(precision).eps) if precision.kind == 'f' else 1e-12
+        longitude_length = dx.astype(float) / cosine.astype(float)[None, :]
+        if not np.allclose(longitude_length, longitude_length[0, 0], rtol=tolerance, atol=0):
+            raise ValueError('fixed_partial_v1 requires compatible dx=L*cos_lat and area=dx*dy')
     dx_2d = jnp.array(grid.dx_2d)                # (nx, ny)
     dy = float(grid.dy)
     cos_lat = jnp.array(grid.cos_lat)            # (ny,)
@@ -74,6 +88,7 @@ def make_fd_params(grid, column_geometry='legacy'):
 
     surface_mask = jnp.zeros(nz).at[0].set(1.0).reshape(1, 1, -1)
     bottom_mask = jnp.zeros(nz).at[-1].set(1.0).reshape(1, 1, -1)
+    face_contacts = contact_depths = node_depths = None
 
     if column_geometry == 'nodal_dual_v1':
         thickness = nodal_control_thickness(grid.z)
@@ -87,6 +102,35 @@ def make_fd_params(grid, column_geometry='legacy'):
         next_wet = jnp.concatenate((wet_mask_z[..., 1:], jnp.zeros_like(wet_mask_z[..., :1])), axis=-1)
         bottom_mask = wet_mask_z * (1. - next_wet)
 
+    if column_geometry == 'fixed_partial_v1':
+        cells = fixed_reference_nodal_cells(grid.z, grid.depth, grid.wet_mask)
+        if not np.array_equal(np.asarray(wet_mask_z), cells['wet_node_mask']):
+            raise ValueError('fixed partial geometry disagrees with grid wet nodes')
+        wet_mask_z = jnp.asarray(cells['wet_node_mask'], dtype=dx_2d.dtype)
+        # Dry widths are safe denominators, never water: every inventory and
+        # face thickness multiplies by the wet mask before use.
+        dz_node = jnp.asarray(np.where(cells['wet_node_mask'], cells['thickness_m'], 1.))
+        dz_surface = dz_node[..., :1]
+        bottom_mask = jnp.asarray(cells['bottom_node_mask'], dtype=dx_2d.dtype)
+        contacts, depths = [], []
+        for axis in (0,1):
+            following_top = jnp.roll(jnp.asarray(cells['cell_top_m']),-1,axis=axis)
+            following_bottom = jnp.roll(jnp.asarray(cells['cell_bottom_m']),-1,axis=axis)
+            following_wet = jnp.roll(wet_mask_z,-1,axis=axis)
+            weights, midpoints = [], []
+            for offset in OFFSETS:
+                top = jnp.maximum(jnp.asarray(cells['cell_top_m']),shift_vertical(following_top,offset))
+                bottom = jnp.minimum(jnp.asarray(cells['cell_bottom_m']),shift_vertical(following_bottom,offset))
+                weight = jnp.maximum(bottom-top,0.)*wet_mask_z*shift_vertical(following_wet,offset)
+                if axis==1:
+                    weight = weight.at[:,-1].set(0.)
+                weights.append(weight)
+                midpoints.append(jnp.where(weight>0.,.5*(top+bottom),0.))
+            contacts.append(jnp.stack(weights))
+            depths.append(jnp.stack(midpoints))
+        face_contacts, contact_depths = tuple(contacts), tuple(depths)
+        node_depths = jnp.asarray(cells['node_depth_m']).reshape(1,1,-1)
+
     return FDParams(
         dx_2d=dx_2d, dy=dy, cos_lat=cos_lat,
         inv_dx=inv_dx, inv_dy=inv_dy, inv_dx2=inv_dx2, inv_dy2=inv_dy2,
@@ -99,4 +143,6 @@ def make_fd_params(grid, column_geometry='legacy'):
         dz_3d=dz_3d, dz_surface=dz_surface, dz_iface=dz_iface, dz_node=dz_node,
         surface_mask=surface_mask, bottom_mask=bottom_mask,
         nx=nx, ny=ny, nz=nz,
+        face_contacts=face_contacts, contact_depths_m=contact_depths, node_depth_m=node_depths,
+        column_geometry=column_geometry,
     )
