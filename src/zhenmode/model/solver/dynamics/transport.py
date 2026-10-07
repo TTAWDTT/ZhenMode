@@ -3,6 +3,7 @@
 from zhenmode.model.solver.numerics.backend import jnp
 from zhenmode.model.solver.numerics.contacts import (
     contact_divergence,
+    contact_material_derivative,
     contact_transports,
     neighbours,
 )
@@ -130,12 +131,17 @@ def _advection_flux_form(u, v, w, p):
     The summed nonlinear tendency is de-aliased once by _dealias_h_fd, then
     land-masked. (D25)
     """
-    du_dx, du_dy = _gradient_face_gated_3d(u, p)
-    dv_dx, dv_dy = _gradient_face_gated_3d(v, p)
     du_dz = _d_dz(_fill_ghost_bottom(u, p), p)
     dv_dz = _d_dz(_fill_ghost_bottom(v, p), p)
-    adv_u = -(u * du_dx + v * du_dy + w * du_dz)
-    adv_v = -(u * dv_dx + v * dv_dy + w * dv_dz)
+    if getattr(p, 'column_geometry', 'legacy') == 'fixed_partial_v1':
+        faces = contact_transports(u, v, p)
+        adv_u = -(contact_material_derivative(u, faces, p) + w * du_dz)
+        adv_v = -(contact_material_derivative(v, faces, p) + w * dv_dz)
+    else:
+        du_dx, du_dy = _gradient_face_gated_3d(u, p)
+        dv_dx, dv_dy = _gradient_face_gated_3d(v, p)
+        adv_u = -(u * du_dx + v * du_dy + w * du_dz)
+        adv_v = -(u * dv_dx + v * dv_dy + w * dv_dz)
     adv_u = _dealias_h_fd(adv_u, p)
     adv_v = _dealias_h_fd(adv_v, p)
     return adv_u * p.wet_mask_z, adv_v * p.wet_mask_z

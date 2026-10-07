@@ -8,13 +8,14 @@ import numpy as np
 import pytest
 
 from tests.support.grid import all_wet_grid
-from zhenmode.model.config import C_P, RHO_0, PhysicsConfig
+from zhenmode.model.config import C_P, G_EARTH, RHO_0, PhysicsConfig
 from zhenmode.model.diagnostics.snapshot import compute_budget_diagnostics
 from zhenmode.model.solver.dynamics.projection import (
     _column_projection_diagonal,
     _project_column_divergence,
 )
 from zhenmode.model.solver.dynamics.transport import (
+    _advection_flux_form,
     _advection_scalar,
     _column_divergence,
     _layer_face_transports,
@@ -28,6 +29,7 @@ from zhenmode.model.solver.numerics.horizontal import (
     _apply_polar_cap,
     _divergence_h,
     _gradient_conservative_3d,
+    _gradient_face_gated_3d,
     _horizontal_tracer_diffusion,
 )
 from zhenmode.model.solver.numerics.vertical import _d2_dz2_flux
@@ -407,8 +409,11 @@ def test_cross_node_actual_step_momentum_gradient_matches_finite_difference():
 @pytest.mark.parametrize("thermodynamics", ["linear", "teos10_reference"])
 def test_partial_contact_arrays_and_actual_step_preserve_explicit_float32(thermodynamics):
     grid, h, (step, init, _, p, _) = _case(
-        cross_nodes=True, thermodynamics=thermodynamics, dtype="float32",
-        match_barotropic_transport=True, process_time_scheme="symmetric_fast_v3",
+        cross_nodes=True,
+        thermodynamics=thermodynamics,
+        dtype="float32",
+        match_barotropic_transport=True,
+        process_time_scheme="symmetric_fast_v3",
     )
     for values in (*p.face_contacts, *p.contact_depths_m, p.node_depth_m, p.dz_node):
         assert values.dtype == jnp.float32
@@ -443,3 +448,139 @@ def test_public_partial_metrics_dispatch_to_contacts_and_reject_incompatible_met
     invalid[:, 1] *= 1.1
     with pytest.raises(ValueError, match="compatible dx"):
         make_fd_params(replace(grid, dx_2d=invalid), column_geometry="fixed_partial_v1")
+
+
+@pytest.mark.parametrize("split", [False, True])
+def test_partial_eta_force_is_cancelled_at_each_node_before_external_step(split):
+    from zhenmode.model.solver.dynamics.pressure import _reference_depth_gradient
+    from zhenmode.model.solver.dynamics.tendencies import _compute_momentum_residual
+
+    _, h, (_, init, _, p, _) = _case(cross_nodes=True, mode_split=split)
+    eta = jnp.asarray(np.random.default_rng(208401).normal(size=(4, 4))) * p.wet_mask
+    state = init()._replace(eta=eta)
+    for residual in _compute_momentum_residual(state, p):
+        np.testing.assert_allclose(residual, 0.0, rtol=0, atol=1e-18)
+    full = _gradient_conservative_3d(eta[..., None], p)
+    averaged = _reference_depth_gradient(eta, p)
+    # Planted old cancellation leaves node-dependent eta shear at bottom steps.
+    wrong = [
+        G_EARTH * (mean[..., None] - node) * p.wet_mask_z
+        for mean, node in zip(averaged, full, strict=True)
+    ]
+    assert max(float(jnp.max(jnp.abs(a))) for a in wrong) > 1e-9
+
+
+@pytest.mark.parametrize("scheme", ["legacy", "symmetric_fast_v3"])
+@pytest.mark.parametrize("dtype", ["float32", "float64"])
+def test_actual_barotropic_cap_uses_depth_capacity_while_eta_uses_area(scheme, dtype):
+    from zhenmode.model.solver.dynamics.barotropic import _free_surface_step_fd
+
+    matched = scheme != "legacy"
+    grid, _, (_, _, _, p, _) = _case(
+        cross_nodes=True,
+        dtype=dtype,
+        match_barotropic_transport=matched,
+        process_time_scheme=scheme,
+    )
+    p = p._replace(polar_cap_rows=1, polar_cap_taper=1)
+    values = (
+        np.broadcast_to(np.array([-2.0, -1.0, 1.0, 2.0])[:, None], (4, 4)).copy() * grid.wet_mask
+    )
+    u = jnp.asarray(values, dtype=dtype)
+    v = u * p.interior_mask_z[..., 0]
+    # Zero-duration probe isolates the actual stepper's eta/velocity filters.
+    eta, capped_u, capped_v = _free_surface_step_fd(u, u, v, p, dt_half=0.0)
+    fractions = np.array([1.0, 0.5, 0.5, 1.0])[None, :]
+    depth = grid.depth
+    expected = []
+    for field, weights in ((values, grid.wet_mask), (values, depth), (np.asarray(v), depth)):
+        total = weights.sum(axis=0, keepdims=True)
+        mean = (field * weights).sum(axis=0, keepdims=True) / np.where(total > 0, total, 1)
+        expected.append((field + fractions * (mean - field)) * grid.wet_mask)
+    tolerance = 32 * np.finfo(dtype).eps
+    for actual, reference in zip((eta, capped_u, capped_v), expected, strict=True):
+        assert actual.dtype == jnp.dtype(dtype)
+        np.testing.assert_allclose(actual, reference, rtol=tolerance, atol=tolerance)
+    for before, after in ((u, capped_u), (v, capped_v)):
+        np.testing.assert_allclose(
+            np.sum(np.asarray(after) * depth, axis=0),
+            np.sum(np.asarray(before) * depth, axis=0),
+            rtol=tolerance,
+            atol=tolerance,
+        )
+    np.testing.assert_allclose(
+        np.sum(np.asarray(eta) * grid.wet_mask, axis=0),
+        np.sum(values, axis=0),
+        rtol=tolerance,
+        atol=tolerance,
+    )
+    wrong = _apply_polar_cap(u, p.wet_mask, p)
+    assert np.max(np.abs(np.sum(np.asarray(wrong - u) * depth, axis=0))) > 1.0
+
+
+def test_contact_momentum_advection_matches_independent_all_pair_material_balance():
+    from zhenmode.model.solver.numerics.contacts import contact_material_derivative
+
+    grid, h, (_, _, _, p, _) = _case(cross_nodes=True)
+    rng = np.random.default_rng(208402)
+    u, v = rng.normal(size=(2, *h.shape)) * grid.wet_mask_3d
+    tops, bottoms = np.cumsum(h, axis=-1) - h, np.cumsum(h, axis=-1)
+    reference = [np.zeros_like(h), np.zeros_like(h)]
+    for axis in (0, 1):
+        for i in range(4):
+            for j in range(4):
+                if axis == 1 and j == 3:
+                    continue
+                ii, jj = ((i + 1) % 4, j) if axis == 0 else (i, j + 1)
+                for k in range(4):
+                    for level in range(4):
+                        if h[i, j, k] == 0 or h[ii, jj, level] == 0:
+                            continue
+                        weight = max(
+                            0.0,
+                            min(bottoms[i, j, k], bottoms[ii, jj, level])
+                            - max(tops[i, j, k], tops[ii, jj, level]),
+                        )
+                        velocity = u if axis == 0 else v
+                        flux = weight * 0.5 * (velocity[i, j, k] + velocity[ii, jj, level])
+                        if axis == 1:
+                            flux *= 0.5 * (grid.cos_lat[j] + grid.cos_lat[jj])
+                        for field, result in zip((u, v), reference, strict=True):
+                            term = 0.5 * flux * (field[ii, jj, level] - field[i, j, k])
+                            left = grid.dx_2d[i, j] if axis == 0 else grid.dy * grid.cos_lat[j]
+                            right = grid.dx_2d[ii, jj] if axis == 0 else grid.dy * grid.cos_lat[jj]
+                            result[i, j, k] += term / (left * h[i, j, k])
+                            result[ii, jj, level] += term / (right * h[ii, jj, level])
+    faces = _layer_face_transports(jnp.asarray(u), jnp.asarray(v), p)
+    for field, expected in zip((u, v), reference, strict=True):
+        np.testing.assert_allclose(
+            contact_material_derivative(jnp.asarray(field), faces, p),
+            expected,
+            rtol=2e-13,
+            atol=1e-18,
+        )
+    np.testing.assert_array_equal(
+        contact_material_derivative(jnp.full(h.shape, 17.0), faces, p), 0.0
+    )
+
+    def independent_filter(field):
+        transformed = np.fft.fft(field, axis=0) * np.asarray(p.dealias_lon_mask)
+        padded = np.pad(
+            np.fft.ifft(transformed, axis=0).real, ((0, 0), (2, 2), (0, 0)), mode="edge"
+        )
+        return (
+            sum(w * padded[:, offset : offset + 4] for offset, w in enumerate((1, 4, 6, 4, 1)))
+            / 16
+            * grid.wet_mask_3d
+        )
+
+    actual = _advection_flux_form(jnp.asarray(u), jnp.asarray(v), jnp.zeros_like(p.dz_node), p)
+    for value, expected in zip(actual, reference, strict=True):
+        np.testing.assert_allclose(value, independent_filter(-expected), rtol=2e-13, atol=1e-18)
+    # Same-index stencil misses the actual shallow-to-next-node contribution.
+    probe = jnp.zeros_like(p.dz_node).at[1, :, 1].set(1.0)
+    fluxes = _layer_face_transports(probe, jnp.zeros_like(probe), p)
+    material = contact_material_derivative(probe, fluxes, p)
+    assert float(material[0, 0, 0]) == pytest.approx(0.125 / (3 * grid.dx_2d[0, 0]), rel=1e-15)
+    legacy = probe * _gradient_face_gated_3d(probe, p)[0]
+    assert legacy[0, 0, 0] == 0.0

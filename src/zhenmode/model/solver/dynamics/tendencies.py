@@ -271,7 +271,13 @@ def _compute_momentum_residual(state, p):
     # spurious eta-PGF wherever the layer gate differs from the column gate).
     # Monolithic: keep the historical bare _d_dx/_d_dy subtraction bit-exact to
     # the pre-split solver. (D12)
-    if p.column_geometry in {'nodal_dual_v1', 'fixed_partial_v1'}:
+    if p.column_geometry == 'fixed_partial_v1':
+        # Contact forces vary with node capacity. Cancel the complete eta
+        # force, not its column mean; eta belongs to the external-mode step.
+        eta_pgf_x, eta_pgf_y = _gradient_conservative_3d(state.eta[:, :, None], p)
+        dudt = dudt + G_EARTH * eta_pgf_x
+        dvdt = dvdt + G_EARTH * eta_pgf_y
+    elif p.column_geometry == 'nodal_dual_v1':
         eta_pgf_x, eta_pgf_y = _reference_depth_gradient(state.eta, p)
         dudt = dudt + G_EARTH * eta_pgf_x[..., None]
         dvdt = dvdt + G_EARTH * eta_pgf_y[..., None]

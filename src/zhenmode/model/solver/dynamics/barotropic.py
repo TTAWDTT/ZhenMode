@@ -40,6 +40,13 @@ def _filter_barotropic_eta(eta, params, duration):
     updated = _refill_volume(updated * relaxation, updated, area, ocean_area, params)
     return _apply_polar_cap(updated, params.wet_mask, params)
 
+def _cap_barotropic_velocity(field, params):
+    """Preserve row depth-integrated velocity through the fixed-partial cap."""
+    if params.column_geometry == 'fixed_partial_v1':
+        return _apply_polar_cap(field, params.wet_mask, params, capacity=params.H_sw)
+    return _apply_polar_cap(field, params.wet_mask, params)
+
+
 def _symmetric_free_surface_step(eta, velocity_x, velocity_y, params, duration,
                                  forcing_x=None, forcing_y=None, column_face_transport=None):
     """Drift-kick-drift with constrained midpoint rotation and actual half-step faces."""
@@ -72,8 +79,8 @@ def _symmetric_free_surface_step(eta, velocity_x, velocity_y, params, duration,
     mean_faces = tuple(0.5 * (first + second) for first, second in zip(first_faces, second_faces, strict=True))
     final_eta = _filter_barotropic_eta(transported_eta * params.wet_mask, params, duration)
     decay = jnp.exp(-params.sponge_rate_2d * duration)
-    final_x = _apply_polar_cap(next_x * decay, params.wet_mask, params)
-    final_y = _apply_polar_cap(next_y * decay, params.wet_mask, params) * normal_mask
+    final_x = _cap_barotropic_velocity(next_x * decay, params)
+    final_y = _cap_barotropic_velocity(next_y * decay, params) * normal_mask
     return (final_eta, final_x, final_y), mean_faces
 
 def _free_surface_step_fd(eta, u, v, p, F_rho_x=None, F_rho_y=None, dt_half=None,
@@ -179,7 +186,7 @@ def _free_surface_step_fd(eta, u, v, p, F_rho_x=None, F_rho_y=None, dt_half=None
     # (eta != 0) with land (eta == 0), forcing a zonally-uniform value that
     # creates a spurious PGF at EVERY coastline point in the band. (D21)
     def _cap(field2d):
-        return _apply_polar_cap(field2d, p.wet_mask, p)
+        return _cap_barotropic_velocity(field2d, p)
 
     # CONSISTENT-TRIPLE CAP: cap eta FIRST, then drive the barotropic momentum
     # update from the CAPPED eta's pressure gradient, then cap the resulting

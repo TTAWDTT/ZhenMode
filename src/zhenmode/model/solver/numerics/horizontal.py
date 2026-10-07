@@ -341,7 +341,7 @@ def _polar_cap_weights(ncap, ntaper):
     ramp = jnp.cos(x) ** 2
     return jnp.concatenate([full, ramp])
 
-def _apply_polar_cap(field, wm, p):
+def _apply_polar_cap(field, wm, p, *, capacity=None):
     """Tapered wet-point zonal-average polar cap on a 2D or 3D field.
 
     Blends the wet-point zonal mean of the poleward rows in over polar_cap_taper
@@ -353,6 +353,8 @@ def _apply_polar_cap(field, wm, p):
     Non-legacy float32 candidates reduce and blend only the cap bands in float64,
     then return the original dtype. Incremental blending preserves constant wet
     fields exactly. This does not make rounded tracer inventories conservative.
+    A supplied 2-D capacity weights velocity means by column depth; eta keeps
+    its area/wet mean. Fixed partial 3-D fields always use node capacities.
     """
     ncap = p.polar_cap_rows
     if ncap <= 0:
@@ -364,13 +366,13 @@ def _apply_polar_cap(field, wm, p):
     wts = _polar_cap_weights(ncap, p.polar_cap_taper).astype(field.dtype)
 
     def _cap_band(f, w, wts_band, h=None):
-        if field.ndim == 3 and getattr(p, 'column_geometry', 'legacy') == 'fixed_partial_v1':
+        if h is not None:
             # Partial bottom capacities differ along longitude. An unweighted
             # wet-point mean would change tracer inventory in this band.
             capacity = h.astype(jnp.float64) * w
             total = jnp.sum(capacity, axis=0, keepdims=True)
             mean = jnp.sum(f.astype(jnp.float64) * capacity, axis=0, keepdims=True) / jnp.where(total > 0., total, 1.)
-            fraction = wts_band.astype(jnp.float64)[None, :, None]
+            fraction = wts_band.astype(jnp.float64).reshape((1, nb) + (1,) * (field.ndim - 2))
             return ((f.astype(jnp.float64) + fraction * (mean-f)) * w).astype(field.dtype)
         if field.dtype == jnp.float32 and getattr(p, 'process_time_scheme', 'legacy') != 'legacy':
             wet64 = w.astype(jnp.float64)
@@ -398,8 +400,11 @@ def _apply_polar_cap(field, wm, p):
     # (measured on the real ETOPO relief: peak |u| pinned to j=ny-1, 1.0 ->
     # 24.8 m/s between day 1.0 and day 2.0). (D21)
     partial = field.ndim == 3 and getattr(p, 'column_geometry', 'legacy') == 'fixed_partial_v1'
-    south = _cap_band(field[:, :nb], wm[:, :nb], wts, p.dz_node[:, :nb] if partial else None)
-    north = _cap_band(field[:, -nb:], wm[:, -nb:], jnp.flip(wts), p.dz_node[:, -nb:] if partial else None)
+    weights = p.dz_node if partial else capacity
+    if weights is not None and weights.shape != field.shape:
+        raise ValueError('polar cap capacity must have the field shape')
+    south = _cap_band(field[:, :nb], wm[:, :nb], wts, weights[:, :nb] if weights is not None else None)
+    north = _cap_band(field[:, -nb:], wm[:, -nb:], jnp.flip(wts), weights[:, -nb:] if weights is not None else None)
     return jnp.concatenate([south, field[:, nb:-nb], north], axis=1)
 
 

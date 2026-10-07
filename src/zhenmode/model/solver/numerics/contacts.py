@@ -101,3 +101,22 @@ def contact_advection(field, faces, p):
     tracer_x = jnp.where(x >= 0.0, field[None], neighbours(field, 0))
     tracer_y = jnp.where(y >= 0.0, field[None], neighbours(field, 1))
     return contact_divergence(x * tracer_x, y * tracer_y, p)
+
+
+def contact_material_derivative(field, faces, p):
+    """Horizontal advective derivative on the actual velocity-contact fluxes.
+
+    Equivalent to D(F*mean(field))-field*D(F), evaluated via differences to
+    preserve constants without subtracting two large flux divergences. The
+    existing nodal vertical derivative and dealias filter are separate stages;
+    this does not claim full momentum/energy conservation or reconstruction
+    accuracy for horizontally uniform vertical shear over stepped bottoms.
+    """
+    differences = [
+        0.5 * flux * (neighbours(field, axis) - field[None]) for axis, flux in enumerate(faces)
+    ]
+    x, y = differences
+    return (
+        (jnp.sum(x, axis=0) + incoming(x, 0)) * p.inv_dx
+        + (jnp.sum(y, axis=0) + incoming(y, 1)) * p.inv_dy / p.cos_lat[None, :, None]
+    ) / p.dz_node
