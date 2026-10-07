@@ -170,3 +170,35 @@ def test_late_policy_change_never_reports_completed_inputs(tmp_path, monkeypatch
         prepare_fd_native_inputs(native, policy, out)
     report = json.loads((out / "fd_initialization.json").read_text())
     assert report["status"] == "failed" and not report["execution_ready"]
+
+
+@pytest.mark.parametrize("perturbation", ["one_ulp", "substantive", "shape", "nonzero_at_zero"])
+def test_rebuilt_float_metrics_allow_rounding_but_refuse_definition_changes(tmp_path, perturbation):
+    native, policy = _prepared(tmp_path)
+    out = tmp_path / "fd"
+    prepare_fd_native_inputs(native, policy, out)
+    path = out / "fd-native-inputs.npz"
+    with np.load(path) as data:
+        arrays = {k: data[k].copy() for k in data.files}
+    if perturbation == "one_ulp":
+        for name in ("cos_lat", "f", "dx_2d", "dy", "eos_pressure_dbar"):
+            old = arrays[name]
+            arrays[name] = np.where(old != 0, np.nextafter(old, np.inf), old)
+    if perturbation == "substantive":
+        arrays["f"] *= 1.000001
+    if perturbation == "shape":
+        arrays["f"] = arrays["f"][0]
+    if perturbation == "nonzero_at_zero":
+        arrays["eos_pressure_dbar"][..., 0] = 1e-20
+    np.savez_compressed(path, **arrays)
+    receipt = out / "fd_initialization.json"
+    metadata = json.loads(receipt.read_text())
+    metadata["output"].update(sha256=sha256_file(path), bytes=path.stat().st_size)
+    receipt.write_text(json.dumps(metadata))
+    if perturbation == "one_ulp":
+        grid, _, _, pressure = load_fd_native_inputs(out)
+        np.testing.assert_array_equal(grid.f, arrays["f"])
+        np.testing.assert_array_equal(pressure, arrays["eos_pressure_dbar"])
+    else:
+        with pytest.raises(ValueError, match="metrics/reference pressure"):
+            load_fd_native_inputs(out)

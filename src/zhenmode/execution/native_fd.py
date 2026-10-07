@@ -44,6 +44,11 @@ _FIELDS = {
     "eos_pressure_dbar",
 }
 
+# Rebuilding trig metrics with another NumPy/libm may differ by a few binary64
+# ULPs. Keep exact shapes and zero values; permit only an operation-level
+# relative rounding allowance, far below any physical geometry tolerance.
+_REBUILT_METRIC_RTOL = 16 * np.finfo(np.float64).eps
+
 
 def _policy(policy):
     if (
@@ -314,7 +319,11 @@ def load_fd_native_inputs(directory):
         arrays = {k: data[k].copy() for k in data.files}
     derived = _metrics_and_geometry(arrays)
     for name, values in derived.items():
-        if not np.array_equal(values, arrays[name]):
+        if (
+            arrays[name].shape != values.shape
+            or arrays[name].dtype.kind not in "fiu"
+            or not np.allclose(values, arrays[name], rtol=_REBUILT_METRIC_RTOL, atol=0)
+        ):
             raise ValueError(
                 "FD native input metrics/reference pressure disagree with their definitions"
             )
