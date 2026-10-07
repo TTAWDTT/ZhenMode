@@ -66,6 +66,7 @@ PACKAGE_SOURCE_MODULES = (
     'zhenmode/execution/native_initialization',
     'zhenmode/execution/native_geometry',
     'zhenmode/execution/native_bottom',
+    'zhenmode/execution/native_fd',
     'zhenmode/execution/datasets',
     'zhenmode/execution/preparation',
     'zhenmode/execution/cli',

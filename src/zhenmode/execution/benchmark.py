@@ -150,9 +150,16 @@ def main(argv=None):
     bottom.add_argument('--native-prepared',required=True)
     bottom.add_argument('--review-file',required=True)
     bottom.add_argument('--output',required=True)
+    fd_initial=commands.add_parser('prepare-fd-initial',help='prepare explicit fixed-partial CT/SR/pressure and area metrics for the FD factory; no integration')
+    fd_initial.add_argument('--native-prepared',required=True)
+    fd_initial.add_argument('--policy',required=True)
+    fd_initial.add_argument('--output',required=True)
     args = parser.parse_args(argv)
     try:
-        if args.command == 'complete-native-bottom':
+        if args.command == 'prepare-fd-initial':
+            from zhenmode.execution.native_fd import prepare_fd_native_inputs
+            result=prepare_fd_native_inputs(args.native_prepared,args.policy,args.output)
+        elif args.command == 'complete-native-bottom':
             from zhenmode.execution.native_bottom import complete_native_bottom
             result=complete_native_bottom(args.native_prepared,args.review_file,args.output)
         elif args.command == 'prepare-native-geometry':

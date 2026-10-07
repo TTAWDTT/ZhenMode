@@ -76,3 +76,31 @@ python scripts/run_bounded_tests.py --script scripts/check_native_bottom_prepara
 未解决的海洋连通或温盐支撑令 CLI 返回 3。`complete_wet_support=true` 仅表示全部湿节点已赋值，`native_initialization_ready`、`mom_layer_initialization_ready` 和 `execution_ready` 继续为 false。当前参考节点及球面面积也须通过实际求解器接口验证，不能直接据有限温盐数组宣布完整 case 可运行。
 
 独立结构检查器不导入产品 helper，重新推导固定容量、逐柱寻找供体，并用 `math.fsum` 计算参考库存。检查器检出改变已有值、遗漏湿点、错误供体三个植入错误；它共享输入资料、NetCDF/NumPy 读取层和声明常数，不验证区域地理或热力学转换的科学独立性。数据测试另覆盖制造已知海面、正高程冲突、不能删除已有水柱、接缝、通道路线、区域优先、非法补值、源身份改变及越界敏感性。
+
+## FD 输入桥
+
+`prepare-fd-initial` 将完整固定部分单元点值导出为正式 FD 输入文件。`load_fd_native_inputs` 返回实际 `GlobalOceanGrid`、CT、SR 和全网格 dbar 压力，供调用者传入 `make_solver_global` 与 `init_state`。调用者仍须选择 `fixed_partial_v1`、`teos10_reference` 及自己的机制配置；数据入口不切换生产默认，也不启动积分。
+
+策略文件须明确选择有效球面积度量、固定 Boussinesq 参考压力及无水节点的数值占位值：
+
+```json
+{
+  "schema_version": 1,
+  "horizontal_metric": "geographic_area_v1",
+  "pressure_definition": "fixed_boussinesq_reference_v1",
+  "inactive_ct_deg_c": 15.0,
+  "inactive_sr_g_kg": 35.0
+}
+```
+
+入口保留全部湿点 CT/SR 字节，只在无水节点填入策略指定的有限占位值。压力为全节点 `rho0*g*depth/10000`，使用项目常数 1025 kg/m³ 和 9.81 m/s²；每个被评价节点均须满足组件数值检查范围，包括无水参考节点。入口拒绝超范围压力，保持输入节点，禁止裁剪或自动补值。探索用 8000/9000 m 干节点因此不能直接传入；7950 m 干节点替换方案的原型工厂接纳记录见 `outputs/omip2-20261007/fd-native-entrance-02/receipt.json`，其积分步数为0、完整case资格为false。方案保留了实际湿节点，无水参考模板改变仍需动力检验；该原型记录不构成本节正式入口的运行验收。
+
+原生球面积 `A` 进入 `dx=A/dy`、`dy=R*dlat`，并保留中心 `cos(lat)`。有效度量满足既有面联系的 `dx=L*cos(lat)` 与 `A=dx*dy` 兼容规则；输出记录它与历史沿经度方向的宽度的差异。物理面宽、向量度量及动力精度须另行验证，输入接受不能替代这些检查。
+
+准备命令保存 `fd-native-inputs.npz` 和 `fd_initialization.json`，保留原生初态时间及 WOA 气候时间定义。读取时再次核对文件身份、容量、球面积、有效度量、压力定义、数组形状和无水占位值。即使人工重绑了文件摘要，定义不符的压力、容量或广播型示踪物仍会被拒绝；准备过程中输入变化则保留失败收据。
+
+```text
+python scripts/run_bounded_tests.py --module zhenmode benchmark prepare-fd-initial --native-prepared COMPLETED_OUTPUT --policy FD_POLICY --output NEW_FD_INPUT_DIRECTORY
+```
+
+该文件格式只取得数据准备状态。产物保留 `completed_timesteps=0`、`initialization_entry_verified=false`、`execution_ready=false`；实际工厂读取、机制运行及重启／评价仍要由各自执行记录确认。
