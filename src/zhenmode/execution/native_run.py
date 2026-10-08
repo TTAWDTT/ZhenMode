@@ -11,6 +11,7 @@ import argparse
 import json
 import os
 import sys
+import tempfile
 import time
 from dataclasses import asdict
 from datetime import datetime
@@ -26,7 +27,62 @@ from zhenmode.provenance.sources import (
 
 
 def _write(path, value):
-    Path(path).write_text(json.dumps(value, indent=2, allow_nan=False) + "\n", encoding="utf8")
+    path = Path(path)
+    text = json.dumps(value, indent=2, allow_nan=False) + "\n"
+    temporary = None
+    try:
+        with tempfile.NamedTemporaryFile(mode="w", encoding="utf8", dir=path.parent,
+                                         prefix=f".{path.name}.", delete=False) as stream:
+            temporary = Path(stream.name)
+            stream.write(text)
+            stream.flush()
+            os.fsync(stream.fileno())
+        os.replace(temporary, path)
+    finally:
+        if temporary is not None:
+            temporary.unlink(missing_ok=True)
+
+
+def _validate_timestep(params):
+    """Reject unsafe explicit steps before publishing any accepted state.
+
+    Gershgorin bounds apply to the actual fixed-partial contact Laplacian
+    and its square. The fast-wave bound includes both horizontal directions.
+    This is a conservative startup bound, not a nonlinear stability proof.
+    """
+    import numpy as np
+
+    from zhenmode.model.config import G_EARTH
+    from zhenmode.model.solver.numerics.backend import jnp
+    from zhenmode.model.solver.numerics.contacts import incoming
+
+    wet = np.asarray(params.wet_mask_z) > .5
+    volume = params.dx_2d[..., None] * params.dy * params.dz_node
+    fx = params.face_contacts[0] * params.dy * params.inv_dx[None]
+    cosine = .5 * (params.cos_lat + jnp.roll(params.cos_lat, -1))
+    fy = (params.face_contacts[1] * cosine[None, None, :, None]
+          * (params.dx_2d / params.cos_lat[None, :])[None, ..., None] * params.inv_dy)
+    diagonal = np.asarray((fx.sum(0) + incoming(fx, 0)
+                           + fy.sum(0) + incoming(fy, 1)) / volume)
+    lambda_h = 2 * float(diagonal[wet].max())
+    widths = np.asarray(params.dz_node)
+    spacing = np.diff(np.asarray(params.node_depth_m), axis=-1)
+    interface = (wet[..., :-1] & wet[..., 1:]) / spacing
+    vertical_rate = (np.pad(interface, ((0, 0), (0, 0), (1, 0)))
+                     + np.pad(interface, ((0, 0), (0, 0), (0, 1)))) / widths
+    lambda_v = 2 * float(vertical_rate[wet].max())
+    rate = (max(params.nu_h, params.kappa_h) * lambda_h
+            + max(params.nu_bi, params.kappa_bi) * lambda_h**2
+            + max(params.nu_v, params.kappa_v) * lambda_v)
+    linear_limit = 2 / rate if rate > 0 else float("inf")
+    depth = float(np.asarray(params.H_sw)[np.asarray(params.wet_mask) > .5].max())
+    metric = min(float(np.asarray(params.dx_2d).min()), float(params.dy))
+    wave_limit = .5 * metric / np.sqrt(2 * G_EARTH * depth)
+    limit = min(linear_limit, wave_limit)
+    if params.dt > limit:
+        raise ValueError(f"requested dt {params.dt:g}s exceeds conservative explicit limit {limit:g}s")
+    return {"linear_limit_s": None if not np.isfinite(linear_limit) else linear_limit,
+            "external_wave_limit_s": float(wave_limit), "maximum_dt_s": float(limit)}
 
 
 def run_fd_wind(
@@ -231,6 +287,7 @@ def integrate_fd_wind(config, *, required_backend="gpu"):
             polar_cap_taper=config["polar_cap_taper"],
             match_barotropic_transport=config["match_transport"],
         )
+        report["time_step_limits"] = _validate_timestep(params)
         origin = (datetime.fromisoformat(config["start"]) - datetime(1970, 1, 1)).total_seconds()
         input_ids = {
             "native_receipt": sha256_file(prepared / "fd_initialization.json"),
@@ -274,6 +331,10 @@ def integrate_fd_wind(config, *, required_backend="gpu"):
             start_seconds=origin + step * params.dt,
             end_seconds=origin + (step + config["steps"]) * params.dt,
         )
+        report["initialization_data_kind"] = report["data_kind"]
+        report["forcing_data_kind"] = reader.data_kind
+        if report["data_kind"] != reader.data_kind:
+            report["data_kind"] = "mixed"
         wet = np.asarray(params.wet_mask) > 0
         advance = make_budget_step(params)
 
