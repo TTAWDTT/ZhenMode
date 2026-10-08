@@ -123,6 +123,32 @@ def publish(c, arrays, information, directory):
     return report
 
 
+def write_report(path, receipt):
+    """Render measured values directly from the same JSON receipt, without ranking."""
+    keys = ("eta_error", "u_error", "phase_rad", "amplitude", "energy", "volume", "T", "S")
+    lines = [
+        f"# Standing wave: {receipt['case']}",
+        "",
+        "| Model | " + " | ".join(keys) + " | Failed screening metrics |",
+        "| --- | " + " | ".join("---:" for _ in keys) + " | --- |",
+    ]
+    for name, report in receipt["models"].items():
+        values = " | ".join(f"{report['metrics'][key]:.8g}" for key in keys)
+        failed = ", ".join(report["failed_metrics"]) or "none"
+        lines.append(f"| {name} | {values} | {failed} |")
+    lines += [
+        "",
+        "Velocity error is depth-mean; phase is in radians. Error, amplitude, energy and volume are relative; T/S errors are in degC/psu.",
+        "",
+        "Execution completion and engineering screening are separate. Industrial qualification and performance comparison are not claimed.",
+        "",
+        *["- " + value for value in receipt["limitations"]],
+        "",
+    ]
+    with Path(path).open("x", encoding="utf8") as stream:
+        stream.write("\n".join(lines))
+
+
 def launch(config, model, directory, *, wall_seconds=600):
     """One owned CPU/process group; ZhenMode and Oceananigans require CUDA."""
     command = [
@@ -264,6 +290,7 @@ def run(
             ],
         )
         write_json(root / "comparison.json", receipt, create=True)
+        write_report(root / "comparison.md", receipt)
     except BaseException as error:
         receipt.update(status="failed", reason=type(error).__name__ + ": " + str(error))
         raise

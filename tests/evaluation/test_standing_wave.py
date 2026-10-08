@@ -447,3 +447,12 @@ def test_analytic_reference_has_independent_quarter_period_anchor():
     np.testing.assert_allclose(
         u[:, 1], [0, 0.01 * np.sqrt(9.81 / 100), 0, -0.01 * np.sqrt(9.81 / 100)], rtol=0, atol=1e-17
     )
+
+
+def test_v1_coordinate_roundoff_matches_declared_native_grid_tolerance():
+    c, a = oceananigans_fixture()
+    a["x_u"][a["x_u"] == 0] = -1e-11
+    w.validate(c, a)
+    a["x_u"][a["x_u"] < 0] = -1e-5
+    with pytest.raises(ValueError, match="positions"):
+        w.validate(c, a)

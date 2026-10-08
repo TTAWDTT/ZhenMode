@@ -321,8 +321,14 @@ def validate(c, a):
             c["nx"] <= count <= 2 * ne and a["x_" + component].shape == (count,),
             "wrong native velocity grid",
         )
+        # v1 accepts the same metre-level roundoff already allowed by its
+        # independent native-coordinate check above. Preserve exact v0 bounds.
+        coordinate_roundoff = 0.0 if c["schema"] == SCHEMA_V0 else 1e-9
         require(
-            np.all((a["x_" + component] >= 0) & (a["x_" + component] <= c["Lx_m"])),
+            np.all(
+                (a["x_" + component] >= -coordinate_roundoff)
+                & (a["x_" + component] <= c["Lx_m"] + coordinate_roundoff)
+            ),
             "velocity coordinates outside domain",
         )
         require(
