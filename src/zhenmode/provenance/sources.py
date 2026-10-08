@@ -69,6 +69,7 @@ PACKAGE_SOURCE_MODULES = (
     'zhenmode/execution/native_fd',
     'zhenmode/execution/native_run',
     'zhenmode/execution/native_sis2',
+    'zhenmode/execution/native_ice_case',
     'zhenmode/execution/datasets',
     'zhenmode/execution/preparation',
     'zhenmode/execution/cli',

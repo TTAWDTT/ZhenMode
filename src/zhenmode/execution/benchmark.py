@@ -169,9 +169,16 @@ def main(argv=None):
     sis_build=commands.add_parser('compile-sis2-bridge',help='link native SIS2 exchange against a verified coupled object build; no ocean integration')
     sis_build.add_argument('--coupled-build',required=True)
     sis_build.add_argument('--output',required=True)
+    sis_case=commands.add_parser('prepare-sis2-case',help='prepare native sea-ice supergrid and topography matching approved FD inputs; no integration')
+    sis_case.add_argument('--native-prepared',required=True)
+    sis_case.add_argument('--output',required=True)
+    sis_case.add_argument('--start',default='1958-01-01T00:00:00')
     args = parser.parse_args(argv)
     try:
-        if args.command == 'compile-sis2-bridge':
+        if args.command == 'prepare-sis2-case':
+            from zhenmode.execution.native_ice_case import prepare_sis2_case
+            result=prepare_sis2_case(args.native_prepared,args.output,start=args.start)
+        elif args.command == 'compile-sis2-bridge':
             from zhenmode.execution.native_sis2 import compile_sis2_bridge
             result=compile_sis2_bridge(args.coupled_build,args.output)
         elif args.command == 'run-fd-wind':
