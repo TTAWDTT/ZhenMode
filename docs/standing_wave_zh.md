@@ -27,7 +27,7 @@ zhenmode benchmark standing-wave --case coarse --output NEW_OUTPUT \
 | MOM6 | C 网格；eta 初始化为精确格均值；四个原生移动层，无 ALE 重映射 | f49a000；SPLIT=true、SPLIT_RK2B=false；声明的零非绝热源问题采用 ADIABATIC=true |
 | Oceananigans | C 网格；eta 精确格均值；z-star 按原生网格实际层厚输出 | 0.113.5、作者提交1e8587b；原生 SplitRungeKutta3、SplitExplicitFreeSurface，请求8个子步；保留作者默认时间平均核，并记录实际子步设置 |
 
-Oceananigans 的原生线性浮力使用相对于15°C/35 psu的 T/S 异常，以匹配共同密度参考；另推进两个非零物理温盐标量见证，保持常量输运检查有意义。它因此推进四个标量；该额外工作明确记录，不据此进行速度排名。选择原生 RK3 的依据是固定作者 z-star 守恒测试明确指出 AB2 不保守；选择在本轮结果产生前记录，没有依据分数调参。
+Oceananigans 的原生线性浮力使用相对于15°C/35 psu的 T/S 异常，以匹配共同密度参考；另推进两个非零物理温盐标量见证，保持常量输运检查有意义。它因此推进四个标量；该额外工作明确记录，不据此进行速度排名。选择原生 RK3 的依据是[固定作者 z-star 守恒测试](https://github.com/CliMA/Oceananigans.jl/blob/1e8587b17171b0bba5bc6728118c3dbbd3c8acf6/test/vertical_coordinate/conservation_explicit.jl#L11)对 AB2 守恒性的说明。
 
 四个参考层容量为 [100/6,100/3,100/3,100/6] m。初始表面位移在 FD 诊断及 MOM 中作用于顶层，在 Oceananigans 中通过原生 z-star 均匀伸缩全部层；协议 v1 明确这项离散差异。MOM 和 Oceananigans 的 eta 按格均值与对应解析格积分比较，FD eta 按点值比较，u 按原生位置比较。没有隐含重网格。
 

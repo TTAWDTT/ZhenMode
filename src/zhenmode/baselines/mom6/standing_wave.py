@@ -203,7 +203,8 @@ def convert(c, directory, resources):
         "ADIABATIC": "True",
     }
     for k, v in expected.items():
-        assert resolved[k] == v, (k, resolved.get(k), v)
+        if resolved.get(k) != v:
+            raise ValueError(f"MOM6 resolved {k}={resolved.get(k)!r}, expected {v!r}")
     write_json(
         case / "resolved-options.json",
         dict(checked_options=expected, actual_options=resolved),
@@ -216,8 +217,10 @@ def convert(c, directory, resources):
         netCDF4.Dataset(case / "MOM_IC.nc") as ic,
         netCDF4.Dataset(case / "ocean_geometry.nc") as geom,
     ):
-        assert np.array_equal(d["Time"][:], np.arange(1000.0, 32001.0, 1000.0))
-        assert np.all(geom["wet"][:] == 1)
+        if not np.array_equal(d["Time"][:], np.arange(1000.0, 32001.0, 1000.0)):
+            raise ValueError("MOM6 native output times are incomplete or changed")
+        if not np.all(geom["wet"][:] == 1):
+            raise ValueError("MOM6 native wet mask differs from the all-wet case")
         np.testing.assert_allclose(geom["D"][:], 100.0, rtol=0, atol=1e-12)
         np.testing.assert_allclose(geom["Ah"][:], dx * dy, rtol=1e-13)
 
@@ -225,12 +228,15 @@ def convert(c, directory, resources):
             value = d[name][:]
             if name == "v":
                 mask = np.ma.getmaskarray(value)
-                assert not mask[:, :, 1:-1].any(), "unknown missing interior normal velocities"
+                if mask[:, :, 1:-1].any():
+                    raise ValueError("unknown missing interior normal velocities")
                 # Native FMS does not write closed-wall velocity diagnostics. Physical BC is v=0.
-                assert np.all(mask[:, :, 0]) and np.all(mask[:, :, -1])
+                if not (np.all(mask[:, :, 0]) and np.all(mask[:, :, -1])):
+                    raise ValueError("MOM6 wall diagnostics do not match the declared boundary masks")
                 value = value.filled(0.0)
             else:
-                assert not np.ma.getmaskarray(value).any(), "masked interior prognostic values"
+                if np.ma.getmaskarray(value).any():
+                    raise ValueError("masked interior prognostic values")
             return np.concatenate(
                 (np.asarray(ic[initial][:]), np.asarray(value)), axis=0
             ).transpose(0, 3, 2, 1)

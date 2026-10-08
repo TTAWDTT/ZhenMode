@@ -16,7 +16,7 @@ from zhenmode.benchmarks.standing_wave import contract, digest, validate_contrac
 from zhenmode.evaluation.standing_wave import score, validate
 from zhenmode.execution.resources import run_cuda_worker, run_process_group
 from zhenmode.execution.runs import write_json
-from zhenmode.provenance.sources import package_source_hashes, sha256_file
+from zhenmode.provenance.sources import package_source_hashes, sha256_file, source_root
 
 MODELS = ("zhenmode", "mom6", "oceananigans")
 MODEL_IDS = {"zhenmode": "ocean-solver", "mom6": "MOM6", "oceananigans": "Oceananigans"}
@@ -173,7 +173,7 @@ def launch(config, model, directory, *, wall_seconds=600):
     if model != "mom6":
         env.update(
             JAX_PLATFORMS="cuda",
-            CUDA_VISIBLE_DEVICES="0",
+            CUDA_VISIBLE_DEVICES=os.environ.get("CUDA_VISIBLE_DEVICES", "0"),
             XLA_PYTHON_CLIENT_PREALLOCATE="false",
             XLA_PYTHON_CLIENT_MEM_FRACTION=".40",
             XLA_FLAGS="--xla_gpu_autotune_level=0",
@@ -218,16 +218,7 @@ def run(
         raise ValueError("MOM6 executable and pinned source directory are required")
     if "oceananigans" in models and oceananigans_cache is None:
         raise ValueError("a prepared Oceananigans environment is required")
-    revision = source_revision
-    if revision is None:
-        try:
-            revision = subprocess.check_output(
-                ["git", "rev-parse", "HEAD"], text=True, stderr=subprocess.DEVNULL
-            ).strip()
-        except subprocess.CalledProcessError as error:
-            raise ValueError(
-                "installed/outside-Git runs require --source-revision; actual source bytes are also recorded"
-            ) from error
+    revision = reported_revision(source_revision)
     if not re.fullmatch(r"[0-9a-f]{40}", revision):
         raise ValueError("source-revision must be a full Git revision")
     c = contract(case)
@@ -297,6 +288,27 @@ def run(
     finally:
         write_json(root / "run.json", receipt)
     return receipt
+
+
+def reported_revision(explicit=None):
+    """Resolve only this package's checkout; unrelated cwd repositories cannot identify it."""
+    if explicit is not None:
+        return explicit
+    checkout = source_root(__file__).parent
+    if not (checkout / ".git").exists():
+        raise ValueError(
+            "installed runs require --source-revision; actual package bytes are also recorded"
+        )
+    try:
+        return subprocess.check_output(
+            ["git", "-C", str(checkout), "rev-parse", "HEAD"],
+            text=True,
+            stderr=subprocess.DEVNULL,
+        ).strip()
+    except subprocess.CalledProcessError as error:
+        raise ValueError(
+            "cannot read package checkout revision; supply --source-revision"
+        ) from error
 
 
 def main(argv=None):

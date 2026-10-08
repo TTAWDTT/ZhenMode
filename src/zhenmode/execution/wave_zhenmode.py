@@ -3,13 +3,15 @@
 from __future__ import annotations
 
 import argparse
+import importlib.metadata
+import sys
 import time
 from pathlib import Path
 
 import numpy as np
 
 from zhenmode.benchmarks.standing_wave import digest
-from zhenmode.execution.runs import write_json
+from zhenmode.execution.runs import environment_identity, write_json
 from zhenmode.execution.standing_wave import metadata, native_arrays
 from zhenmode.provenance.sources import load_json, package_source_hashes, sha256_file
 
@@ -28,6 +30,26 @@ ZERO_COEFFICIENTS = (
 )
 
 
+def runtime_identity():
+    """Identify the real interpreter, dependency versions and loaded native JAX implementation."""
+    import jaxlib
+
+    info = environment_identity()
+    interpreter = Path(sys._base_executable).resolve()
+    info["actual_executable"] = str(interpreter)
+    info["actual_executable_sha256"] = sha256_file(interpreter)
+    info["native_jaxlib_sha256"] = {
+        path.relative_to(Path(jaxlib.__file__).parent).as_posix(): sha256_file(path)
+        for path in sorted(Path(jaxlib.__file__).parent.rglob("*"))
+        if path.is_file() and path.suffix in (".so", ".pyd", ".dll")
+    }
+    for dist in importlib.metadata.distributions():
+        name = dist.metadata.get("Name") or ""
+        if name.lower().startswith(("jax-cuda", "nvidia-")):
+            info["packages"][name] = dist.version
+    return info
+
+
 def integrate(config_file):
     from zhenmode.model.config import PhysicsConfig
     from zhenmode.model.solver.factory import make_solver_global
@@ -39,6 +61,7 @@ def integrate(config_file):
     config = load_json(config_file)
     c, root = config["contract"], Path.cwd()
     sources = package_source_hashes(__file__)
+    runtime = runtime_identity()
     nx, ny, nz = c["nx"], c["ny"], c["nz"]
     dx, dy = c["Lx_m"] / nx, c["Ly_m"] / ny
     x, y = (np.arange(nx) + 0.5) * dx, (np.arange(ny) + 0.5) * dy
@@ -115,6 +138,7 @@ def integrate(config_file):
         dict(
             source_sha=config["source_revision"],
             source_files_sha256=sources,
+            runtime=runtime,
             backend=jax.default_backend(),
             device=str(jax.devices()[0]),
             initialization_s=initialization_s,
@@ -142,10 +166,15 @@ def convert(c, directory, resources):
         c,
         "ocean-solver",
         source_sha=run["source_sha"],
-        executable_sha256=run["source_files_sha256"]["zhenmode/model/solver/timestepping/step"],
+        executable_sha256=run["runtime"]["actual_executable_sha256"],
         input_sha256=run["input_sha256"],
         config_sha256=digest(
-            {"contract": c, "controls": run["actual_controls"], "physics": run["physics_zero"]}
+            {
+                "contract": c,
+                "controls": run["actual_controls"],
+                "physics": run["physics_zero"],
+                "runtime": run["runtime"],
+            }
         ),
         initialization_s=run["initialization_s"],
         integration_s=run["integration_s"],

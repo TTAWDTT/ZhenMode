@@ -4,6 +4,7 @@ import json
 
 import netCDF4
 import numpy as np
+import pytest
 
 from tests.support.standing_wave import cgrid, fixture
 from zhenmode.baselines.oceananigans.adapter import convert
@@ -70,3 +71,27 @@ def test_native_time_first_netcdf_axes_and_layer_order(tmp_path):
     np.testing.assert_array_equal(arrays["h"].reshape(nt, nx, ny, nz), h)
     np.testing.assert_array_equal(arrays["u"], a["u"])
     np.testing.assert_array_equal(arrays["v"], a["v"])
+
+
+def test_unverified_julia_launcher_is_rejected_before_model_run(tmp_path, monkeypatch):
+    from zhenmode.baselines.oceananigans import adapter
+    from zhenmode.provenance.sources import sha256_file
+
+    recorded = tmp_path / "verified-julia"
+    selected = tmp_path / "other-julia"
+    recorded.write_bytes(b"verified interpreter")
+    selected.write_bytes(b"different interpreter")
+    info = {
+        "runtime": {"julia_executable": str(recorded)},
+        "julia_executable_sha256": sha256_file(recorded),
+    }
+    monkeypatch.setattr(adapter, "verify", lambda cache: info)
+    monkeypatch.setattr(adapter.subprocess, "check_output", lambda *args, **kwargs: str(selected))
+    configuration = tmp_path / "config.json"
+    configuration.write_text(
+        json.dumps({"oceananigans_cache": str(tmp_path), "julia": "changed-launcher"})
+    )
+    monkeypatch.chdir(tmp_path)
+    with pytest.raises(ValueError, match="unverified executable"):
+        adapter.integrate(configuration)
+    assert not (tmp_path / "native-run.json").exists()

@@ -190,6 +190,25 @@ def integrate(config_file):
     root = Path.cwd()
     cache = Path(config["oceananigans_cache"])
     info = verify(cache)
+    actual_executable = Path(
+        subprocess.check_output(
+            [
+                config["julia"],
+                "--startup-file=no",
+                "--project=" + str(cache / "project"),
+                "-e",
+                'print(realpath(joinpath(Sys.BINDIR, "julia")))',
+            ],
+            env=_environment(),
+            text=True,
+            timeout=30,
+        ).strip()
+    )
+    if (
+        actual_executable.resolve() != Path(info["runtime"]["julia_executable"]).resolve()
+        or sha256_file(actual_executable) != info["julia_executable_sha256"]
+    ):
+        raise ValueError("selected Julia launcher runs an unverified executable")
     driver = PACKAGE / "standing_wave.jl"
     identities = {
         "driver_sha256": sha256_file(driver),
@@ -209,6 +228,8 @@ def integrate(config_file):
         create=True,
     )
     subprocess.run(command, cwd=root, env=_environment(), check=True)
+    if sha256_file(actual_executable) != info["julia_executable_sha256"]:
+        raise ValueError("executed Julia program changed during the run")
     verify(cache)
     if (
         sha256_file(driver) != identities["driver_sha256"]

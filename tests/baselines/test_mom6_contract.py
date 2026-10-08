@@ -178,3 +178,27 @@ def test_standing_wave_cell_mean_preparation_uses_exact_spatial_integral(tmp_pat
         assert ds["x"].units == "m"
         np.testing.assert_array_equal(ds["eta"][-1, :, :], -100.)
     assert receipt["execution_status"] == "proposed"
+
+
+def test_wave_native_option_guard_remains_active_with_optimized_python(tmp_path):
+    import os
+    import subprocess
+    import sys
+
+    (tmp_path / "native-run.json").write_text("{}")
+    (tmp_path / "run.log").write_text("manufactured native log")
+    (tmp_path / "MOM_parameter_doc.all").write_text("SPLIT = False ! deliberate mismatch\n")
+    code = (
+        "from zhenmode.benchmarks.standing_wave import contract; "
+        "from zhenmode.baselines.mom6.standing_wave import convert; "
+        "convert(contract(), " + repr(str(tmp_path)) + ", {})"
+    )
+    result = subprocess.run(
+        [sys.executable, "-O", "-c", code],
+        capture_output=True,
+        text=True,
+        env=dict(os.environ, PYTHONOPTIMIZE="1"),
+        timeout=30,
+    )
+    assert result.returncode != 0
+    assert "MOM6 resolved SPLIT" in result.stderr

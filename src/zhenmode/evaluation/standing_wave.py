@@ -176,6 +176,13 @@ def validate(c, a):
         "missing numerical-process records",
     )
     require(m["snapshot_kind"] == "instantaneous", "time-averaged output is not a snapshot")
+    expected_sampling = c["native_sampling"][m["model"]]
+    require(
+        m["sampling_eta"] == expected_sampling["eta"]
+        and m["sampling_u"] == expected_sampling["u"]
+        and m["velocity_layout"] == expected_sampling["layout"],
+        "model sampling/layout differs from its frozen contract",
+    )
     if m["velocity_layout"] == "cgrid":
         require(
             m["sampling_eta"] == "cell_mean"

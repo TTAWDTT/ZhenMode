@@ -456,3 +456,11 @@ def test_v1_coordinate_roundoff_matches_declared_native_grid_tolerance():
     a["x_u"][a["x_u"] < 0] = -1e-5
     with pytest.raises(ValueError, match="positions"):
         w.validate(c, a)
+
+
+def test_model_identity_cannot_claim_another_models_native_layout():
+    c, a = oceananigans_fixture()
+    a["metadata"]["model"] = "ocean-solver"
+    a["metadata"]["recorded_numerics"]["resolved_options"] = c["ocean_options"]
+    with pytest.raises(ValueError, match="model sampling/layout"):
+        w.validate(c, a)
