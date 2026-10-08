@@ -5,7 +5,7 @@ import json
 
 import pytest
 
-from zhenmode.execution.datasets import JRA_VARIABLES, fetch_jra, select_jra_files
+from zhenmode.preparation.acquisition import JRA_VARIABLES, fetch_jra, select_jra_files
 
 
 def catalog(payload=b'ocean'):

@@ -8,7 +8,7 @@ import pytest
 
 from tests.support.data.native_initialization import woa_source_fixture as fixture
 from zhenmode.execution.benchmark import main
-from zhenmode.execution.initialization import prepare_woa_thermodynamics
+from zhenmode.preparation.woa import prepare_woa_thermodynamics
 from zhenmode.provenance.sources import sha256_file
 
 
@@ -134,7 +134,7 @@ def test_all_missing_source_does_not_announce_success(tmp_path):
 
 @pytest.mark.parametrize('document',['acquisition','pressure'])
 def test_receipt_mutation_during_conversion_is_not_blessed(tmp_path,monkeypatch,document):
-    import zhenmode.execution.initialization as initialization
+    import zhenmode.preparation.woa as initialization
     acquisition,pressure=fixture(tmp_path)
     original=initialization._coordinate
     changed=False

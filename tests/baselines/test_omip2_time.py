@@ -11,7 +11,7 @@ import pytest
 from tests.support.jra55_inputs import original_fixture
 from zhenmode.baselines.mom6 import omip2_time
 from zhenmode.baselines.mom6.omip2_time import corrected_time_reader, prepare_time_inputs
-from zhenmode.execution.preparation import prepare_jra_window
+from zhenmode.preparation.forcing import prepare_jra_window
 
 
 @pytest.mark.parametrize('atmos,coupling', [(0,3600), (True,3600), (3600.,3600),

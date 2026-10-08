@@ -24,8 +24,8 @@ def prepare_sis2_case(native_prepared, output, *, start="1958-01-01T00:00:00"):
     coupling candidate; radiation, full physics and long-run qualification
     remain properties of the eventual run, not this geometry preparation.
     """
-    from zhenmode.execution.native_fd import load_fd_native_inputs
     from zhenmode.model.config import CP0_TEOS10, G_EARTH, R_EARTH, RHO_0
+    from zhenmode.preparation.fd import load_fd_native_inputs
 
     timestamp = datetime.fromisoformat(start)
     if timestamp.tzinfo is not None or timestamp.isoformat(timespec="seconds") != start:

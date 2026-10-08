@@ -14,18 +14,16 @@ import netCDF4
 import numpy as np
 from scipy.sparse import save_npz
 
-from zhenmode.execution.initialization import _checked_file
 from zhenmode.model.config import CP0_TEOS10, RHO_0
 from zhenmode.model.inputs.forcing.jra55 import conservative_rectilinear_weights
 from zhenmode.model.inputs.initial_conditions import smooth_native_paired_holes
 from zhenmode.model.solver.geometry.grid import fixed_reference_nodal_cells
 from zhenmode.model.solver.physics.teos10 import conservative_from_potential, validate_state
 from zhenmode.provenance.sources import (
+    checked_file,
     load_json,
-    production_source_modules,
+    package_source_hashes,
     sha256_file,
-    source_paths,
-    source_root,
 )
 
 
@@ -58,7 +56,7 @@ def prepare_native_initialization(source_prepared, geometry, nodes_file, output)
     z = np.asarray(nodes["z_nodes_m"])
     if z.dtype.kind not in "fiu":
         raise ValueError("native nodes must be real numeric metres")
-    source = _checked_file(source_prepared, origin["output"])
+    source = checked_file(source_prepared, origin["output"])
     grid_path, bed_path = geometry / "grid.npz", geometry / "bathymetry.npz"
     identities = {
         source: origin["output"]["sha256"],
@@ -132,10 +130,7 @@ def prepare_native_initialization(source_prepared, geometry, nodes_file, output)
         "execution_ready": False,
         "climate_qualification": False,
         "levels": [],
-        "package_source_sha256": {
-            n: sha256_file(p)
-            for n, p in source_paths(source_root(__file__), production_source_modules()).items()
-        },
+        "package_source_sha256": package_source_hashes(__file__),
     }
     target = output / "native_point_fields.nc"
     try:
@@ -401,10 +396,7 @@ def prepare_native_initialization(source_prepared, geometry, nodes_file, output)
         for path in receipt_paths:
             if sha256_file(path) != receipt_shas[str(path)]:
                 raise ValueError("native input receipt changed during preparation")
-        sources = {
-            n: sha256_file(p)
-            for n, p in source_paths(source_root(__file__), production_source_modules()).items()
-        }
+        sources = package_source_hashes(__file__)
         if sources != report["package_source_sha256"]:
             raise ValueError("executed native preparation package changed")
         for row in report["levels"]:

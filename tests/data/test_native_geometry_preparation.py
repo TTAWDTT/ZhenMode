@@ -6,13 +6,13 @@ import netCDF4
 import numpy as np
 import pytest
 
-from zhenmode.execution.native_geometry import prepare_native_geometry
 from zhenmode.model.inputs.coastline import (
     connect_binary_channels,
     marine_native_edges,
     marine_regions,
     wet_components,
 )
+from zhenmode.preparation.coast import prepare_native_geometry
 from zhenmode.provenance.sources import sha256_file
 
 

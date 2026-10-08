@@ -16,7 +16,7 @@
 | `diagnostics/` | 当前海洋的热量、盐量、能量和混合层是什么情况，各阶段改变了多少？ |
 | `io/` | 怎样保存结果、记录来源，并从可信的 checkpoint 恢复？ |
 
-`model` 不负责 MOM6 的构建运行、实验配置继承或统一评分。这些分别属于同级的 [baselines/mom6](../baselines/mom6/README.md)、`execution` 和 `evaluation`。正式模型不反向依赖它们，也不依赖研究原型；共用源码身份与文件校验工具位于同级 `provenance`。
+`model` 不负责 MOM6 的构建运行、实验配置继承或统一评分。这些分别属于同级的 [baselines/mom6](../baselines/mom6/README.md)、`execution` 和 `evaluation`。正式模型不反向依赖它们，也不依赖研究原型；共用源码身份与文件校验工具位于同级 `provenance`。离线原始资料和原生输入产品由同级 `preparation` 准备，SIS2 外部进程由同级 `coupling` 管理，见[准备与耦合导读](../../../docs/preparation_coupling_zh.md)。
 
 运行入口是 `ocean-solver`，也可以通过 `zhenmode model` 调用同一个入口。安装、小算例和真实数据要求见[仓库 README](../../../README.md)与[输入说明](../../../cases/README.md)。
 
@@ -39,7 +39,8 @@ model/
 │   ├── numerics/
 │   │   ├── backend.py
 │   │   ├── horizontal.py
-│   │   └── vertical.py
+│   │   ├── vertical.py
+│   │   └── contacts.py
 │   ├── dynamics/
 │   │   ├── tendencies.py
 │   │   ├── transport.py
@@ -50,6 +51,8 @@ model/
 │   │   ├── air_sea.py
 │   │   ├── eos.py
 │   │   ├── surface.py
+│   │   ├── sis2.py
+│   │   ├── teos10.py
 │   │   ├── vertical.py
 │   │   └── isopycnal.py
 │   └── timestepping/
@@ -57,6 +60,7 @@ model/
 │       └── subcycles.py
 ├── inputs/
 │   ├── bathymetry.py
+│   ├── coastline.py
 │   ├── initial_conditions.py
 │   ├── sources.py
 │   ├── quality.py
@@ -115,6 +119,7 @@ model/
 | [numerics/backend.py](solver/numerics/backend.py) | 集中 NumPy/JAX 导入和既有 JAX 双精度设置；具体状态精度仍由运行配置选择。 |
 | [numerics/horizontal.py](solver/numerics/horizontal.py) | 水平导数、梯度、散度、扩散、湿面通量、纬向边界处理、极区滤波及扩散子步估算。 |
 | [numerics/vertical.py](solver/numerics/vertical.py) | 非均匀垂向差分、海底虚拟值填充、界面扩散通量及通量散度。这里只提供数值工具，不决定混合系数。 |
+| [numerics/contacts.py](solver/numerics/contacts.py) | 固定垂向部分单元之间的接触面积、深度匹配、插值和通量归集，供压力及输运算子复用。 |
 | [dynamics/tendencies.py](solver/dynamics/tendencies.py) | 组合动量、温盐的变化率及分项，供时间积分和输出分析使用；调用输运与物理过程。 |
 | [dynamics/transport.py](solver/dynamics/transport.py) | 水平和垂向输运、连续性推导的垂向速度、示踪物平流，以及选定方案的限幅和 FCT 输运。 |
 | [dynamics/pressure.py](solver/dynamics/pressure.py) | 由密度计算静力压力及压力梯度，提供三维动量和外模所需的压力加速度。 |
@@ -123,6 +128,7 @@ model/
 | [physics/eos.py](solver/physics/eos.py) | EOS选择及热容量：默认线性关系；显式CT/SR参考变体用非线性密度和CP0，不改变生产默认。 |
 | [physics/teos10.py](solver/physics/teos10.py) | TEOS组件：温度转换、SA/CT/dbar密度、导数、共同压力水团比较和表面冻结门槛；参考变体已接FD无冰组件，完整case未就绪，见[验证范围](../../../docs/thermodynamics_zh.md)。 |
 | [physics/surface.py](solver/physics/surface.py) | 表面热量在混合层中的分配权重，以及生产动态海冰闭合和相关热盐交换。 |
+| [physics/sis2.py](solver/physics/sis2.py) | 将原生 SIS2 的分项通量施加到 GPU 海洋状态，处理 frazil、质量、盐、焓及表面压力；原生进程和驱动属于同级 `coupling`。 |
 | [physics/air_sea.py](solver/physics/air_sea.py) | 显式选择的LY2009/Gill开水面交换：实时海温/海流参与应力、感热、潜热和蒸发；净辐射及虚拟盐表面算子。纯计算，不读取数据；尚不支持完整冰/雪/穿透。 |
 | [physics/vertical.py](solver/physics/vertical.py) | 选择垂向混合系数与扩散形式，判断局地对流并计算相应通量；复用 `numerics/vertical.py`。 |
 | [physics/isopycnal.py](solver/physics/isopycnal.py) | 沿等密度面的 Redi 混合和 Gent–McWilliams 涡旋参数化。 |
@@ -138,6 +144,7 @@ model/
 | 文件 | 职责 |
 | --- | --- |
 | [bathymetry.py](inputs/bathymetry.py) | 打开并读取 ETOPO 海深数据，结合 `geometry/grid.py` 构造模型网格。 |
+| [coastline.py](inputs/coastline.py) | GSHHG 海岸读取、海域分类、湿域连通与显式海峡修正，供离线海岸准备复用。 |
 | [initial_conditions.py](inputs/initial_conditions.py) | 读取 WOA 温盐，处理缺失值并插值到模型网格，生成初始场。 |
 | [sources.py](inputs/sources.py) | 选择数据路径、识别显式格式、读取带类型的 NPZ 或 NetCDF 气候场，并绑定不可变输入字节快照。 |
 | [quality.py](inputs/quality.py) | 只读审计 WOA 输入坐标、单位、缺失值及湿格支持，生成质量报告和掩膜；提供严格支持检查与质量报告包校验，不替数据补值。 |

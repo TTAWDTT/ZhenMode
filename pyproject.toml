@@ -36,7 +36,7 @@ include = ["zhenmode*"]
 
 [tool.setuptools.package-data]
 "zhenmode.baselines.mom6" = ["*.json", "cases/*.json", "README.md"]
-"zhenmode.execution" = ["sis2_bridge.f90"]
+"zhenmode.coupling" = ["sis2_bridge.f90"]
 
 [tool.setuptools.cmdclass]
 build_py = "scripts.build_distribution.CleanBuildPy"

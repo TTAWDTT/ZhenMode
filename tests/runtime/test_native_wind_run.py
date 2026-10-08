@@ -8,13 +8,13 @@ import pytest
 
 from tests.support.data.fd_native import prepared_native_inputs as _prepared
 from tests.support.data.jra55 import WEATHER
-from zhenmode.execution.native_run import integrate_fd_wind
+from zhenmode.execution.wind_run import integrate_fd_wind
 from zhenmode.provenance.sources import sha256_file
 
 
 def _inputs(tmp_path):
     native, policy = _prepared(tmp_path)
-    from zhenmode.execution.native_fd import prepare_fd_native_inputs
+    from zhenmode.preparation.fd import prepare_fd_native_inputs
 
     inputs = tmp_path / "fd-inputs"
     prepare_fd_native_inputs(native, policy, inputs)
@@ -140,25 +140,25 @@ def test_changed_time_step_is_refused_without_changing_the_parent_checkpoint(tmp
 
 
 def test_progress_publication_failure_preserves_last_complete_report(tmp_path, monkeypatch):
-    from zhenmode.execution import native_run
+    from zhenmode.execution import wind_run
 
     path = tmp_path / "run.json"
-    native_run._write(path, {"accepted_steps": 3})
+    wind_run._write(path, {"accepted_steps": 3})
     original = path.read_bytes()
 
     def fail_replace(*args):
         raise OSError("publication interrupted")
 
-    monkeypatch.setattr(native_run.os, "replace", fail_replace)
+    monkeypatch.setattr(wind_run.os, "replace", fail_replace)
     with pytest.raises(OSError, match="publication interrupted"):
-        native_run._write(path, {"accepted_steps": 4})
+        wind_run._write(path, {"accepted_steps": 4})
     assert path.read_bytes() == original
     assert not list(tmp_path.glob(".run.json.*"))
 
 
 def test_unsafe_explicit_step_is_refused_before_integration():
     from tests.support.fd.fixed_partial import fixed_partial_case as _case
-    from zhenmode.execution.native_run import _validate_timestep
+    from zhenmode.execution.wind_run import _validate_timestep
 
     _, _, (_, _, _, params, _) = _case(cross_nodes=True)
     safe = params._replace(dt=1.e-6)

@@ -6,13 +6,13 @@ import numpy as np
 import pytest
 
 from tests.support.jra55_inputs import original_fixture
-from zhenmode.execution.preparation import coastal_routing, prepare_jra_window, route_discharge
 from zhenmode.model.inputs.forcing.jra55 import (
     TIME_UNITS,
     JRA55Forcing,
     bilinear_rectilinear_weights,
     remap_rectilinear_means,
 )
+from zhenmode.preparation.forcing import coastal_routing, prepare_jra_window, route_discharge
 from zhenmode.provenance.sources import sha256_file
 
 
@@ -131,12 +131,12 @@ def test_positive_native_area_must_match_independent_bounds(tmp_path, change):
 
 
 def test_interrupted_preprocessing_keeps_failed_receipt(tmp_path, monkeypatch):
-    from zhenmode.execution import preparation
+    from zhenmode.preparation import forcing
 
     received, grid, area, epoch = original_fixture(tmp_path)
     def interrupt(*args, **kwargs):
         raise KeyboardInterrupt()
-    monkeypatch.setattr(preparation, 'remap_rectilinear_means', interrupt)
+    monkeypatch.setattr(forcing, 'remap_rectilinear_means', interrupt)
     with pytest.raises(KeyboardInterrupt):
         prepare_jra_window(received, grid, area, tmp_path/'interrupted', start=epoch,
                            end=epoch+21600, maximum_routing_distance_m=20e6)

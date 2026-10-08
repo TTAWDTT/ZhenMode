@@ -20,9 +20,10 @@ class CleanBuildPy(build_py):
             raise RuntimeError("build staging must be inside the managed build directory: " + str(staging))
         super().run()
         expected = {Path(path).resolve() for path in self.get_outputs(include_bytecode=False)}
-        # Only generated Python payloads in this command's staging tree are touched.
-        # Source, research, data and other cached artifacts are never traversed.
-        for path in staging.rglob("*.py"):
+        # Remove retired Python modules and packaged native drivers from this
+        # generated tree. Preserve unrelated caches and never traverse sources.
+        payloads = [*staging.rglob("*.py"), *(staging / "zhenmode").rglob("*.f90")]
+        for path in payloads:
             resolved = path.resolve()
             if not resolved.is_relative_to(staging):
                 raise RuntimeError("build staging path escapes its root: " + str(path))

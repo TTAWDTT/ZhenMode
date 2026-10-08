@@ -4,7 +4,7 @@ import json
 import netCDF4
 import numpy as np
 
-from zhenmode.execution.initialization import prepare_woa_thermodynamics
+from zhenmode.preparation.woa import prepare_woa_thermodynamics
 from zhenmode.provenance.sources import sha256_file
 
 

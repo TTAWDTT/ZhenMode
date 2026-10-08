@@ -183,33 +183,33 @@ def main(argv=None):
             from zhenmode.baselines.mom6.tripolar import prepare_tripolar_grid
             result=prepare_tripolar_grid(args.acquisition,args.south_boundary,args.output)
         elif args.command == 'prepare-sis2-case':
-            from zhenmode.execution.native_ice_case import prepare_sis2_case
+            from zhenmode.coupling.geometry import prepare_sis2_case
             result=prepare_sis2_case(args.native_prepared,args.output,start=args.start)
         elif args.command == 'compile-sis2-bridge':
-            from zhenmode.execution.native_sis2 import compile_sis2_bridge
+            from zhenmode.coupling.sis2 import compile_sis2_bridge
             result=compile_sis2_bridge(args.coupled_build,args.output)
         elif args.command == 'run-fd-wind':
-            from zhenmode.execution.native_run import run_fd_wind
+            from zhenmode.execution.wind_run import run_fd_wind
             result=run_fd_wind(args.native_prepared,args.forcing_manifest,args.output,start=args.start,
                 dt_seconds=args.dt_seconds,steps=args.steps,wall_seconds=args.wall_seconds,resume=args.resume,
                 polar_cap_rows=args.polar_cap_rows,polar_cap_taper=args.polar_cap_taper,match_transport=args.match_transport)
         elif args.command == 'prepare-fd-initial':
-            from zhenmode.execution.native_fd import prepare_fd_native_inputs
+            from zhenmode.preparation.fd import prepare_fd_native_inputs
             result=prepare_fd_native_inputs(args.native_prepared,args.policy,args.output)
         elif args.command == 'complete-native-bottom':
-            from zhenmode.execution.native_bottom import complete_native_bottom
+            from zhenmode.preparation.bottom import complete_native_bottom
             result=complete_native_bottom(args.native_prepared,args.review_file,args.output)
         elif args.command == 'prepare-native-geometry':
-            from zhenmode.execution.native_geometry import prepare_native_geometry
+            from zhenmode.preparation.coast import prepare_native_geometry
             result=prepare_native_geometry(args.parent_geometry,args.shoreline_acquisition,args.policy,args.output)
         elif args.command == 'prepare-native-initial':
-            from zhenmode.execution.native_initialization import prepare_native_initialization
+            from zhenmode.preparation.native_initial import prepare_native_initialization
             result=prepare_native_initialization(args.source_prepared,args.geometry,args.nodes_file,args.output)
         elif args.command == 'prepare-initial-source':
-            from zhenmode.execution.initialization import prepare_woa_thermodynamics
+            from zhenmode.preparation.woa import prepare_woa_thermodynamics
             result=prepare_woa_thermodynamics(args.acquisition,args.pressure_reference,args.output)
         elif args.command == 'prepare-forcing':
-            from zhenmode.execution.preparation import prepare_jra_window
+            from zhenmode.preparation.forcing import prepare_jra_window
 
             origin = datetime(1970, 1, 1)
             result = prepare_jra_window(args.acquisition, args.grid, args.runoff_area, args.output,
@@ -217,7 +217,7 @@ def main(argv=None):
                 end=(datetime.fromisoformat(args.end)-origin).total_seconds(),
                 maximum_routing_distance_m=args.maximum_routing_distance_m)
         elif args.command == 'fetch-jra':
-            from zhenmode.execution.datasets import fetch_jra
+            from zhenmode.preparation.acquisition import fetch_jra
 
             result = fetch_jra(args.catalog, args.destination, args.year)
         elif args.command == "check-forcing":

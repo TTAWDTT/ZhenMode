@@ -178,7 +178,8 @@ def test_precalculation_identity_snapshot_rejects_changed_inputs(tmp_path, monke
     receipt, _, _ = _mock_acquisition(tmp_path, monkeypatch)
     module = tmp_path / "fixture-module.py"
     module.write_text("original fixture source")
-    monkeypatch.setattr(tripolar, "source_paths", lambda *args: {"fixture_module": module})
+    from zhenmode.provenance import sources
+    monkeypatch.setattr(sources, "source_paths", lambda *args: {"fixture_module": module})
     original = tripolar.supergrid_metrics
 
     def mutate_after_calculation(*args):

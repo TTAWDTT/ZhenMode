@@ -18,10 +18,8 @@ import numpy as np
 
 from zhenmode.provenance.sources import (
     load_json,
-    production_source_modules,
+    package_source_hashes,
     sha256_file,
-    source_paths,
-    source_root,
 )
 
 RADIUS_M = 6371000.0
@@ -139,10 +137,7 @@ def prepare_tripolar_grid(acquisition_file, south_boundary, output):
     """Write an identity-bound candidate; whole-cell coastline is a later gate."""
     acquisition_file, output = Path(acquisition_file).resolve(), Path(output).resolve()
     acquisition_identity = sha256_file(acquisition_file)
-    identities = {
-        n: sha256_file(p)
-        for n, p in source_paths(source_root(__file__), production_source_modules()).items()
-    }
+    identities = package_source_hashes(__file__)
     acquisition = load_json(acquisition_file)
     if (
         acquisition.get("host") != "ftp.gfdl.noaa.gov"
@@ -220,8 +215,7 @@ def prepare_tripolar_grid(acquisition_file, south_boundary, output):
         sha256_file(source) != row["sha256"]
         or sha256_file(archive) != acquisition["archive_sha256"]
         or sha256_file(acquisition_file) != acquisition_identity
-        or identities != {n: sha256_file(p) for n, p in
-                          source_paths(source_root(__file__), production_source_modules()).items()}
+        or identities != package_source_hashes(__file__)
     ):
         raise ValueError("tripolar source changed during preparation")
     if output.exists():
@@ -260,8 +254,7 @@ def prepare_tripolar_grid(acquisition_file, south_boundary, output):
             sha256_file(source) != row["sha256"]
             or sha256_file(archive) != acquisition["archive_sha256"]
             or sha256_file(acquisition_file) != acquisition_identity
-            or identities != {n: sha256_file(p) for n, p in
-                              source_paths(source_root(__file__), production_source_modules()).items()}
+            or identities != package_source_hashes(__file__)
         ):
             raise ValueError("tripolar source changed during publication")
         if output.exists():

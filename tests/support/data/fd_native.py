@@ -2,7 +2,7 @@
 import json
 
 from tests.support.data.native_initialization import native_inputs
-from zhenmode.execution.native_initialization import prepare_native_initialization
+from zhenmode.preparation.native_initial import prepare_native_initialization
 
 
 def prepared_native_inputs(tmp_path, *, complete=True, deepest=7000.0):

@@ -42,6 +42,8 @@ src/zhenmode/
 │       ├── snapshot.py    NumPy 状态快照诊断
 │       ├── mixed_layer.py 密度阈值混合层深度
 │       └── budgets.py     接受阶段的库存、通量与影子步预算
+├── preparation/           离线输入获取、强迫映射、海岸和温盐初态准备
+├── coupling/              原生 SIS2 客户端、驱动和共享耦合网格
 ├── baselines/mom6/        对照接入、固定版本和内置小算例
 ├── execution/             配置展开、试验、扫参与独立 run 管理
 ├── evaluation/            唯一评分实现、可比性检查与报告
@@ -71,7 +73,7 @@ flowchart TD
 
 共用函数按职责归属。例如压力模块共用湿柱密度积分，混合过程共用 `numerics/vertical.py` 的界面通量，输出和恢复共用 `io/records.py` 的字段映射。NumPy 与 JAX 的季节计算保持独立；解析解和 NumPy 测试参考计算也保持独立。
 
-`model` 仅依赖自身和 `provenance`，不导入对照、实验管理、评价或研究原型。MOM6 接入可以复用输入读取和网格准备；MOM6 自身的动力与时间积分来自固定上游源码，源码和编译产物放在隔离缓存。共用输入处理不自动保证物理条件可比。
+`model` 仅依赖自身和 `provenance`，不导入对照、离线准备、原生耦合客户端、实验管理、评价或研究原型。`preparation` 在积分前生成有来源记录的文件；`model.inputs` 在运行时读取输入并绑定强迫；`coupling` 管外部组件进程和交换格式，GPU 上的海洋表面响应仍在 `model.solver.physics.sis2`。准备与耦合的逐文件职责见[导读](preparation_coupling_zh.md)。MOM6 接入可以复用输入读取和网格准备；MOM6 自身的动力与时间积分来自固定上游源码，源码和编译产物放在隔离缓存。共用输入处理不自动保证物理条件可比。
 
 ## 状态与默认方法
 
