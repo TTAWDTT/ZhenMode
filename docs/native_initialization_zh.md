@@ -1,6 +1,6 @@
 # 原生海岸、水柱与温盐准备
 
-`prepare-native-geometry` 生成全球 1°、360×180 的整格海陆表示；`prepare-native-initial` 在固定垂向部分单元上准备 WOA 点值；`complete-native-bottom` 按逐柱区域资料审查补齐水柱底段。三条命令保存文件身份、处理方法和参考库存。完整 MOM6 层映射、FD 度量适配、动力敏感性及机制运行仍须分别完成。
+`prepare-native-geometry` 生成全球 1°、360×180 的整格海陆表示；`prepare-native-initial` 在固定垂向部分单元上准备 WOA 点值；`complete-native-bottom` 按逐柱区域资料审查补齐水柱底段。三条命令保存文件身份、处理方法和参考库存。FD 输入桥及风驱动短步进已接入；完整 MOM6 层映射、FD 度量的物理精度、动力敏感性及完整机制运行仍须分别验证。
 
 ## 海岸与海深
 
@@ -104,3 +104,39 @@ python scripts/run_bounded_tests.py --module zhenmode benchmark prepare-fd-initi
 ```
 
 该文件格式只取得数据准备状态。产物保留 `completed_timesteps=0`、`initialization_entry_verified=false`、`execution_ready=false`；实际工厂读取、机制运行及重启／评价仍要由各自执行记录确认。
+## 真实 GPU 风驱动运行与续跑
+
+`zhenmode benchmark run-fd-wind` 将准备好的固定部分单元 CT/SR 初态和原生 JRA 文件送进
+实际 FD 积分器，保存六个状态字段、绝对步数和逐步预算。它是明确命名的风驱动组件运行：
+当前海温和海流参与风应力计算，热、雨雪、蒸发、径流、陆冰排水、盐恢复和海冰尚未施加。
+读取全部天气字段也不会把这些过程计作已启用，输出保持完整 case 资格为 false。
+
+在 Linux/WSL 的 CUDA 环境中执行：
+
+```bash
+zhenmode benchmark run-fd-wind \
+  --native-prepared FD_INPUTS --forcing-manifest JRA_DIR/forcing.json \
+  --start 1958-01-01T00:00:00 --dt-seconds 0.1 --steps 4 --output RUN_A
+zhenmode benchmark run-fd-wind \
+  --native-prepared FD_INPUTS --forcing-manifest JRA_DIR/forcing.json \
+  --start 1958-01-01T00:00:00 --dt-seconds 0.1 --steps 2 \
+  --resume RUN_A/checkpoint.npz --output RUN_B
+```
+
+第二条命令从第 4 步继续两步，天气取样使用原始起点加绝对步数，不重置到首个时刻。
+检查点复用已有严格格式，绑定几何、有效参数、输入、产品源码和运行环境；改变 dt、
+参数或来源会拒绝接续。已有输出目录会拒绝覆盖。资源监督使用单 GPU、一个主机 CPU、
+8192 MiB 主机 RSS 上限，短窗默认墙时 360 秒，可显式声明不超过 10800 秒。
+RSS 为进程组采样监督，GPU 使用 0.40 分配器比例，两者均不冒称设备或 cgroup 硬配额。
+
+`run.json` 保存启用范围、模拟时间、逐步读取／应力／核心及预算计时；`budgets.json`
+保留实际残差，进程完成不等于守恒或稳定性通过。极区滤波按现有每步固定比例应用，
+应与物理混合区分。`--match-transport` 可显式启用已有输运修正候选，默认行为保持。
+
+跨进程 GPU 重算可能因编译自动调优出现浮点差异。核查可复现性时，可按 GPU 运行说明
+使用 `XLA_FLAGS=--xla_gpu_autotune_level=0`；本轮同配置的真实连续 6 步与 4+2 步续跑，
+52 份状态／累计预算／预算历史数组的 dtype、shape 和完整 C-order 字节相同（含正负零）。
+比较记录为 `D:/Github/ocean-solver/outputs/fd-real-step-20261008/gpu-restart-bit-comparison-det-01.json`。
+该结果限于此次版本、设备、环境和短窗。
+可将 `JAX_COMPILATION_CACHE_DIR` 指向本任务自己的缓存目录，复用编译结果；冷编译与
+缓存启动须分开计时。真实气候验证、完整冰海交换和正式误差—成本比较仍需后续运行。
