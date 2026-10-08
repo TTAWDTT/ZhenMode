@@ -39,7 +39,9 @@ zhenmode sweep expand experiments/zhenmode/global-045deg/sweep-vertical-mixing.y
 
 `zhenmode baseline mom6` 提供 `doctor → fetch → build → prepare → run → convert → evaluate`，固定上游依赖并使用隔离缓存，见 [MOM6 使用说明](docs/baselines_zh.md)。
 
-以 [OMIP-2 参照 benchmark 规范](docs/benchmark_spec_zh.md)定义下一阶段共同机制、观测评价与成本口径；[机制符合表](docs/benchmark_compliance_zh.md)列出实际基础和缺口。可安装命令已支持合同冻结与计划展开；两种模式尚未取得完整执行与气候评价资格。以下命令只检查或规划，不启动积分：
+当前推进顺序是整理代码、逐项接入对照和标准 bench，再依据量化结果改良方法。每项比较先固定共同 case、适用范围和评价协议，显式记录物理与离散差异；解析算例和受限物理实验可以分别评价对应的数值能力。
+
+[OMIP-2 参照 benchmark 规范](docs/benchmark_spec_zh.md)定义全球海洋与海冰气候实验的共同机制、观测评价和成本口径；[机制符合表](docs/benchmark_compliance_zh.md)记录该范围的基础与缺口。可安装命令支持合同冻结与计划展开，完整执行与气候评价资格仍需单独验证。以下命令只检查或规划，不启动积分：
 
 ```sh
 zhenmode benchmark describe
