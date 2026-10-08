@@ -154,9 +154,26 @@ def main(argv=None):
     fd_initial.add_argument('--native-prepared',required=True)
     fd_initial.add_argument('--policy',required=True)
     fd_initial.add_argument('--output',required=True)
+    wind_run=commands.add_parser('run-fd-wind',help='actual bounded GPU wind-driven component with saved budgets/restart; heat/freshwater/ice remain inactive')
+    wind_run.add_argument('--native-prepared',required=True)
+    wind_run.add_argument('--forcing-manifest',required=True)
+    wind_run.add_argument('--output',required=True)
+    wind_run.add_argument('--start',default='1958-01-01T00:00:00')
+    wind_run.add_argument('--dt-seconds',type=float,required=True)
+    wind_run.add_argument('--steps',type=int,required=True)
+    wind_run.add_argument('--wall-seconds',type=int,default=360)
+    wind_run.add_argument('--resume')
+    wind_run.add_argument('--polar-cap-rows',type=int,default=2)
+    wind_run.add_argument('--polar-cap-taper',type=int,default=3)
+    wind_run.add_argument('--match-transport',action='store_true')
     args = parser.parse_args(argv)
     try:
-        if args.command == 'prepare-fd-initial':
+        if args.command == 'run-fd-wind':
+            from zhenmode.execution.native_run import run_fd_wind
+            result=run_fd_wind(args.native_prepared,args.forcing_manifest,args.output,start=args.start,
+                dt_seconds=args.dt_seconds,steps=args.steps,wall_seconds=args.wall_seconds,resume=args.resume,
+                polar_cap_rows=args.polar_cap_rows,polar_cap_taper=args.polar_cap_taper,match_transport=args.match_transport)
+        elif args.command == 'prepare-fd-initial':
             from zhenmode.execution.native_fd import prepare_fd_native_inputs
             result=prepare_fd_native_inputs(args.native_prepared,args.policy,args.output)
         elif args.command == 'complete-native-bottom':
@@ -221,6 +238,8 @@ def main(argv=None):
                     json.dump(result, stream, indent=2, ensure_ascii=False, allow_nan=False)
                     stream.write("\n")
         print(json.dumps(result, indent=2, ensure_ascii=False, allow_nan=False))
+        if args.command=='run-fd-wind' and result['status']=='failed':
+            return 1
         if args.command in ('prepare-native-initial','complete-native-bottom') and not result['complete_wet_support']:
             return 3
         if args.command == 'prepare-native-geometry' and result['status'] != 'native_geometry_prepared':
