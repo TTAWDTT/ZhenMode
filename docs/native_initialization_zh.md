@@ -1,6 +1,6 @@
 # 原生海岸、水柱与温盐准备
 
-`prepare-native-geometry` 生成全球 1°、360×180 的整格海陆表示；`prepare-native-initial` 在固定垂向部分单元上准备 WOA 点值；`complete-native-bottom` 按逐柱区域资料审查补齐水柱底段。三条命令保存文件身份、处理方法和参考库存。完整 MOM6 层映射、FD 度量适配、动力敏感性及机制运行仍须分别完成。
+`prepare-native-geometry` 生成全球 1°、360×180 的整格海陆表示；`prepare-native-initial` 在固定垂向部分单元上准备 WOA 点值；`complete-native-bottom` 按逐柱区域资料审查补齐水柱底段。三条命令保存文件身份、处理方法和参考库存。FD 输入桥及风驱动短步进已接入；完整 MOM6 层映射、FD 度量的物理精度、动力敏感性及完整机制运行仍须分别验证。
 
 ## 海岸与海深
 
@@ -104,3 +104,69 @@ python scripts/run_bounded_tests.py --module zhenmode benchmark prepare-fd-initi
 ```
 
 该文件格式只取得数据准备状态。产物保留 `completed_timesteps=0`、`initialization_entry_verified=false`、`execution_ready=false`；实际工厂读取、机制运行及重启／评价仍要由各自执行记录确认。
+## 真实 GPU 风驱动运行与续跑
+
+`zhenmode benchmark run-fd-wind` 将准备好的固定部分单元 CT/SR 初态和原生 JRA 文件送进
+实际 FD 积分器，保存六个状态字段、绝对步数和逐步预算。它是明确命名的风驱动组件运行：
+当前海温和海流参与风应力计算，热、雨雪、蒸发、径流、陆冰排水、盐恢复和海冰尚未施加。
+读取全部天气字段也不会把这些过程计作已启用，输出保持完整 case 资格为 false。
+
+在 Linux/WSL 的 CUDA 环境中执行：
+
+```bash
+zhenmode benchmark run-fd-wind \
+  --native-prepared FD_INPUTS --forcing-manifest JRA_DIR/forcing.json \
+  --start 1958-01-01T00:00:00 --dt-seconds 0.1 --steps 4 --output RUN_A
+zhenmode benchmark run-fd-wind \
+  --native-prepared FD_INPUTS --forcing-manifest JRA_DIR/forcing.json \
+  --start 1958-01-01T00:00:00 --dt-seconds 0.1 --steps 2 \
+  --resume RUN_A/checkpoint.npz --output RUN_B
+```
+
+第二条命令从第 4 步继续两步，天气取样使用原始起点加绝对步数，不重置到首个时刻。
+检查点复用已有严格格式，绑定几何、有效参数、输入、产品源码和运行环境；改变 dt、
+参数或来源会拒绝接续。已有输出目录会拒绝覆盖。资源监督使用单 GPU、一个主机 CPU、
+8192 MiB 主机 RSS 上限，短窗默认墙时 360 秒，可显式声明不超过 10800 秒。
+RSS 为进程组采样监督，GPU 使用 0.40 分配器比例，两者均不冒称设备或 cgroup 硬配额。
+
+`run.json` 保存启用范围、模拟时间、逐步读取／应力／核心及预算计时；`budgets.json`
+保留实际残差，进程完成不等于守恒或稳定性通过。极区滤波按现有每步固定比例应用，
+应与物理混合区分。`--match-transport` 可显式启用已有输运修正候选，默认行为保持。
+
+跨进程 GPU 重算可能因编译自动调优出现浮点差异。核查可复现性时，可按 GPU 运行说明
+使用 `XLA_FLAGS=--xla_gpu_autotune_level=0`；本轮同配置的真实连续 6 步与 4+2 步续跑，
+52 份状态／累计预算／预算历史数组的 dtype、shape 和完整 C-order 字节相同（含正负零）。
+比较记录为 `D:/Github/ocean-solver/outputs/fd-real-step-20261008/gpu-restart-bit-comparison-det-01.json`。
+该结果限于此次版本、设备、环境和短窗。
+可将 `JAX_COMPILATION_CACHE_DIR` 指向本任务自己的缓存目录，复用编译结果；冷编译与
+缓存启动须分开计时。真实气候验证、完整冰海交换和正式误差—成本比较仍需后续运行。
+
+
+### 原生 SIS2 与 GPU 海洋交换
+
+`NativeSIS2` 在一个持续运行的 CPU 进程中调用固定构建的 SIS2；FD 海洋步进和表面库存更新在 GPU 上执行。海冰厚度类别、雪、热力学剖面和动力学状态保留在 SIS2 内部，完整重启交给原生 `ice_model_restart`。`JaxStateG.ice` 仍属于原有简化海冰路线，不能替代 SIS2 的状态；此耦合路线关闭简化海冰闭合。
+
+可安装的连接入口是 `zhenmode benchmark compile-sis2-bridge --coupled-build BUILD --output OUTPUT`。它先核对已有构建的源树和中间文件记录，再把随包安装的 `sis2_bridge.f90` 链接到原生对象和库，并保存链接命令、驱动源码、可执行文件及依赖身份。新驱动只安排调用和交换数据；SIS2 的热力学、动力学和输运仍由原生模块计算。`NativeSIS2.exchange` 接收海洋表层的 A 网格速度、PT（K）、SR（g/kg）、海面高度和 frazil 能量；推进时还要求各海冰类别的完整大气通量，以及显式的径流、陆冰和相应热通量。
+
+海水表层采用参考单元厚度加海面位移计算质量、盐和热库存，参考垂向几何保持固定。过冷 CT 先升至 TEOS10 表面冻结点，正的能量缺额传给 SIS2；未使用的 frazil 能量缺额返回海水，并从海水焓中扣除。原生盐通量的单位为 kg/m²/s，正方向离开海水；SIS2 的长波通量正方向进入海水，感热和潜热正方向离开海水。质量交换携带的原生焓、雪和陆冰融化潜热分别接入海洋；液态降水采用 0°C 液态参考焓。海水库存包含 `eta * surface_tracer`。可选 `surface_pressure_pa` 同时进入三维压力梯度和外模态，接收 SIS2 的大气／海冰表面负载。该字段省略时沿用原有入口。
+
+STEP 回复绑定原生 `interval_seconds`。表面交换使用该时长；可选 `duration` 用于核对。时长不一致或湿表层容量耗尽会被拒绝：在 JIT 动态输入下返回不可接受的非有限温盐状态，由运行器的有限性检查阻止接受。当前表面负载也可传给 `diagnostics(state, surface_pressure_pa=...)`，使压力诊断与步进采用同一负载。桥接编译前后核对原构建记录中的 MPI 包装器和 Fortran 编译器身份。
+
+五步人工输入试验使用 4×4×4 FD 网格、固定垂向部分单元和 TEOS10 CT/SR，海冰使用同水平位置的 4×4 原生网格。双方在该试验中采用 SIS2 给出的单元面积。前两步冷却并降雪，后三步升温；试验还施加非均匀 frazil、非零应力、径流和陆冰。RTX 4060 Laptop 执行海洋主积分，SIS2 在一个 CPU 上运行；每步 1 秒，共推进 5 秒。各步分别保存交换源、海洋核心库存变化、两者合计与外部输入的差，以及两个组件的时间。热、盐差值包含海洋核心的库存变化，不能将交换算子的恒等式当成整个模式的守恒结论。
+
+相关记录在 `outputs/fd-real-step-20261008/sis2-native-probe-01`：`case-gpu-coupled-05/result.json` 保存上述实际耦合运行，`case-gpu-coupled-installed-01/result.json` 保存仓库外 wheel 安装后的重复运行。`native-full-restart-comparison-02.json` 核对原生 SIS2 连续三步与两步后保存、恢复再一步：本配置重启文件中的全部 45 个 NetCDF 变量均具有相同形状、类型和数据字节。这项比较只覆盖海冰重启；GPU 海洋与 SIS2 共同时间的联合重启还需要单独验证。独立表面库存／压力平衡控制通过 6 项测试，另一个已有测试核对带预算记录的步进与实际核心解一致；一次扩大到全部阶段预算参数组合的运行在 180 秒上限中止，其记录保留。
+
+上述人工输入试验未使用真实 JRA 全局强迫。短波仅在表层沉积，穿透分布、实际全球海岸与极区几何、混合配置及成对长期运行仍需要接通和验证。记录中的 `full_case_qualification` 保持 `false`，小网格时间不能用于宣称全球加速或工业级资格。
+
+
+### 全球 SIS2 几何与原生 FMS 交换
+
+`zhenmode benchmark prepare-sis2-case --native-prepared FD_INPUT --output CASE` 写出 SIS2 可读取的海深和显式 supergrid。海陆掩膜及湿格海深来自已准备的 FD 输入，子格面积按球面矩形积分，并由原生 mosaic 读取器合并。此次全球读取中，43,006 个湿格、湿格海深和经纬位置均与 FD 相同；经纬坐标差为零、湿格海深数据字节相同，面积最大相对差为 1.2104989141785517e-14。解析 `spherical` 配置的中点面积有约 12.7 ppm 差异，因此该入口采用文件网格。准备记录的 `native_read_verified=false` 表示单次准备命令没有运行原生读取；实际读取另存 `native-read.json`。
+
+`NativeSIS2.bulk` 在实际 SIS2 表层温度、流速和粗糙度上调用固定原生 FMS 模块，输入气象状态的高度为 10 m。开水面的九项输出已与此前通过作者系数检查的 JAX 组件对照；比较采用同一组原生表层温度和流速，包含 SIS2 的 A→C→A 重构。原生粗糙度会在快速海冰更新后变化，下一次交换使用更新的值；海面／海冰不施加地形粗糙度倍率。此对照覆盖开水面 bulk，海冰系数尚未独立验证。
+
+原始 JRA55-do 年度径流、陆冰和原始放流格点面积重新核对后，两个淡水字段按已批准的新海岸重路由，原始与映射质量通量一致。其余九个气象文件按 SHA-256 核对后复用，水平位置、单元面积及权重不变。重新路由的真实陆冰输入涉及 394 个湿格；真实降雪涉及 11,313 个湿格。记录在 `outputs/fd-real-step-20261008/jra-revised-coast-01`。
+
+实际全球短窗已使用真实 WOA CT/SR、上述几何和重新路由的 JRA 输入：原生 SIS2 完成 1 秒快速与慢速更新，GPU 海洋完成十个 0.1 秒步进，两者共同推进至 1 秒。交换包含热、雨雪、蒸发、径流和陆冰；海洋主积分保留在 RTX 4060 Laptop GPU，SIS2 在 CPU 上运行。记录为 `sis2-native-probe-01/case-global-jra-gpu-coupled-01/result.json` 和 `ocean-exchange-budget.json`。计入海面位移的海洋库存与实际施加量之间仍有热、盐差值：分别约 -2.747e9 J 和 -7.342e3 kg；水差为零。这些差值包含核心步进，已单独保存，不能视为全部来源闭合。
+
+该真实运行保留组件范围：短波在表面沉积、GM/Redi 和盐恢复关闭，辐射沿用既有 MOM 候选设置。大步长耗散、联合重启、完整过程配置及长期评价还在实现和验证；`full_case_qualification=false`。原生读取、bulk 对照和真实 1 秒运行分别支持对应结论。

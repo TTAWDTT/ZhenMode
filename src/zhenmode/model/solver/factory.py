@@ -48,7 +48,7 @@ def make_solver_global(grid, physics, dt, forcing=None,
                        projection_rtol=None, projection_preconditioner='none',
                        projection_max_refinements=2, column_geometry='legacy',
                        match_barotropic_transport=False, process_time_scheme='legacy',
-                       eos_pressure_dbar=None):
+                       eos_pressure_dbar=None, surface_pressure_pa=None):
     """Create a JIT-compiled global FD ocean solver.
 
     Key properties:
@@ -162,6 +162,10 @@ def make_solver_global(grid, physics, dt, forcing=None,
         raise ValueError('polar cap bands must not overlap; reduce rows/taper or disable the cap')
     base = make_fd_params(grid, column_geometry=column_geometry)
     nx, ny, nz = base.nx, base.ny, base.nz
+    if surface_pressure_pa is not None:
+        load = np.asarray(surface_pressure_pa)
+        if load.shape != (nx, ny) or not np.isfinite(load).all():
+            raise ValueError('surface pressure must be a finite (nx, ny) Pa field')
     if projection_niter is None:
         legacy_cap = os.environ.get('OCEAN_PAV_NITER')
         projection_niter_source = 'default' if legacy_cap is None else 'environment:OCEAN_PAV_NITER'
@@ -471,6 +475,7 @@ def make_solver_global(grid, physics, dt, forcing=None,
         eos_pressure_dbar=(None if eos_pressure_dbar is None else jnp.asarray(eos_pressure_dbar)),
         face_contacts=base.face_contacts, contact_depths_m=base.contact_depths_m,
         node_depth_m=base.node_depth_m,
+        surface_pressure_pa=(None if surface_pressure_pa is None else jnp.asarray(surface_pressure_pa)),
     )
 
     if projection_preconditioner == 'jacobi':
@@ -507,7 +512,7 @@ def _compile_solver(params, physics, shape, state_dtype, *, dynamic_forcing, ret
     step_dyn = None
     if dynamic_forcing:
         @jax.jit
-        def step_dyn(state, tau_x, tau_y, q_heat, T_atm_3d=None):
+        def step_dyn(state, tau_x, tau_y, q_heat, T_atm_3d=None, surface_pressure_pa=None):
             updates = {
                 'tau_x_2d': tau_x,
                 'tau_y_2d': tau_y,
@@ -518,14 +523,18 @@ def _compile_solver(params, physics, shape, state_dtype, *, dynamic_forcing, ret
             # callers that omit this argument remain bit-compatible.
             if T_atm_3d is not None:
                 updates['T_atm_3d'] = T_atm_3d
+            if surface_pressure_pa is not None:
+                updates['surface_pressure_pa'] = surface_pressure_pa
             return _step_impl(state, params._replace(**updates))
 
     @jax.jit
-    def diagnostics(state):
+    def diagnostics(state, surface_pressure_pa=None):
+        current = (params if surface_pressure_pa is None else
+                   params._replace(surface_pressure_pa=surface_pressure_pa))
         rho_prime = _density_anomaly(state.T, state.S, params)
         rho = RHO_0 + rho_prime
-        pressure = _compute_hydrostatic_pressure(state, params)
-        w = _compute_vertical_velocity(state, params)
+        pressure = _compute_hydrostatic_pressure(state, current)
+        w = _compute_vertical_velocity(state, current)
         return rho, pressure, w
 
     @jax.jit

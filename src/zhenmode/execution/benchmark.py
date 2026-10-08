@@ -158,11 +158,41 @@ def main(argv=None):
     tripolar.add_argument('--acquisition',required=True)
     tripolar.add_argument('--south-boundary',required=True,type=float)
     tripolar.add_argument('--output',required=True)
+    wind_run=commands.add_parser('run-fd-wind',help='actual bounded GPU wind-driven component with saved budgets/restart; heat/freshwater/ice remain inactive')
+    wind_run.add_argument('--native-prepared',required=True)
+    wind_run.add_argument('--forcing-manifest',required=True)
+    wind_run.add_argument('--output',required=True)
+    wind_run.add_argument('--start',default='1958-01-01T00:00:00')
+    wind_run.add_argument('--dt-seconds',type=float,required=True)
+    wind_run.add_argument('--steps',type=int,required=True)
+    wind_run.add_argument('--wall-seconds',type=int,default=360)
+    wind_run.add_argument('--resume')
+    wind_run.add_argument('--polar-cap-rows',type=int,default=2)
+    wind_run.add_argument('--polar-cap-taper',type=int,default=3)
+    wind_run.add_argument('--match-transport',action='store_true')
+    sis_build=commands.add_parser('compile-sis2-bridge',help='link native SIS2 exchange against a verified coupled object build; no ocean integration')
+    sis_build.add_argument('--coupled-build',required=True)
+    sis_build.add_argument('--output',required=True)
+    sis_case=commands.add_parser('prepare-sis2-case',help='prepare native sea-ice supergrid and topography matching approved FD inputs; no integration')
+    sis_case.add_argument('--native-prepared',required=True)
+    sis_case.add_argument('--output',required=True)
+    sis_case.add_argument('--start',default='1958-01-01T00:00:00')
     args = parser.parse_args(argv)
     try:
         if args.command == 'prepare-tripolar-grid':
             from zhenmode.baselines.mom6.tripolar import prepare_tripolar_grid
             result=prepare_tripolar_grid(args.acquisition,args.south_boundary,args.output)
+        elif args.command == 'prepare-sis2-case':
+            from zhenmode.execution.native_ice_case import prepare_sis2_case
+            result=prepare_sis2_case(args.native_prepared,args.output,start=args.start)
+        elif args.command == 'compile-sis2-bridge':
+            from zhenmode.execution.native_sis2 import compile_sis2_bridge
+            result=compile_sis2_bridge(args.coupled_build,args.output)
+        elif args.command == 'run-fd-wind':
+            from zhenmode.execution.native_run import run_fd_wind
+            result=run_fd_wind(args.native_prepared,args.forcing_manifest,args.output,start=args.start,
+                dt_seconds=args.dt_seconds,steps=args.steps,wall_seconds=args.wall_seconds,resume=args.resume,
+                polar_cap_rows=args.polar_cap_rows,polar_cap_taper=args.polar_cap_taper,match_transport=args.match_transport)
         elif args.command == 'prepare-fd-initial':
             from zhenmode.execution.native_fd import prepare_fd_native_inputs
             result=prepare_fd_native_inputs(args.native_prepared,args.policy,args.output)
@@ -228,6 +258,8 @@ def main(argv=None):
                     json.dump(result, stream, indent=2, ensure_ascii=False, allow_nan=False)
                     stream.write("\n")
         print(json.dumps(result, indent=2, ensure_ascii=False, allow_nan=False))
+        if args.command=='run-fd-wind' and result['status']=='failed':
+            return 1
         if args.command in ('prepare-native-initial','complete-native-bottom') and not result['complete_wet_support']:
             return 3
         if args.command == 'prepare-native-geometry' and result['status'] != 'native_geometry_prepared':
