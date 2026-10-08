@@ -166,9 +166,15 @@ def main(argv=None):
     wind_run.add_argument('--polar-cap-rows',type=int,default=2)
     wind_run.add_argument('--polar-cap-taper',type=int,default=3)
     wind_run.add_argument('--match-transport',action='store_true')
+    sis_build=commands.add_parser('compile-sis2-bridge',help='link native SIS2 exchange against a verified coupled object build; no ocean integration')
+    sis_build.add_argument('--coupled-build',required=True)
+    sis_build.add_argument('--output',required=True)
     args = parser.parse_args(argv)
     try:
-        if args.command == 'run-fd-wind':
+        if args.command == 'compile-sis2-bridge':
+            from zhenmode.execution.native_sis2 import compile_sis2_bridge
+            result=compile_sis2_bridge(args.coupled_build,args.output)
+        elif args.command == 'run-fd-wind':
             from zhenmode.execution.native_run import run_fd_wind
             result=run_fd_wind(args.native_prepared,args.forcing_manifest,args.output,start=args.start,
                 dt_seconds=args.dt_seconds,steps=args.steps,wall_seconds=args.wall_seconds,resume=args.resume,

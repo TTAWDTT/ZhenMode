@@ -33,6 +33,8 @@ def _compute_hydrostatic_pressure(state, p):
     """
     p_bc = _baroclinic_pressure(state, p)
     p_bt = RHO_0 * G_EARTH * state.eta[:, :, None]
+    if p.surface_pressure_pa is not None:
+        p_bt = p_bt + p.surface_pressure_pa[..., None]
     return p_bt + p_bc
 
 def _compute_pressure_gradient(state, p):
@@ -64,6 +66,8 @@ def _contact_pressure_gradient(state,p):
     dp=G_EARTH*.5*(rho[...,:-1]+rho[...,1:])*p.dz_3d
     full=jnp.concatenate((jnp.zeros_like(rho[...,:1]),jnp.cumsum(dp,axis=-1)),axis=-1)
     full=full+RHO_0*G_EARTH*state.eta[...,None]
+    if p.surface_pressure_pa is not None:
+        full = full + p.surface_pressure_pa[..., None]
     differences=[]
     for axis in (0,1):
         other=jnp.roll(full,-1,axis=axis)
@@ -109,6 +113,8 @@ def _compute_bt_rho_pgf(state, p):
         return (jnp.sum(acceleration_x * p.dz_norm, axis=-1),
                 jnp.sum(acceleration_y * p.dz_norm, axis=-1))
     p_bc = _baroclinic_pressure(state, p)
+    if p.surface_pressure_pa is not None:
+        p_bc = p_bc + p.surface_pressure_pa[..., None]
     # Layer-centered, face-gated 3D PGF, transport-weighted over the wet column.
     gx3, gy3 = _gradient_conservative_3d(p_bc, p)
     pgf_x_lay = 0.5 * (gx3[..., :-1] + gx3[..., 1:])

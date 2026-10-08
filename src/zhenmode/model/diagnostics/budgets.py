@@ -252,7 +252,7 @@ def make_budget_step(params):
     """
     from zhenmode.model.solver.timestepping.step import _step_impl
     @jax.jit
-    def advance(state, forcing=None, atmosphere=None):
+    def advance(state, forcing=None, atmosphere=None, surface_pressure_pa=None):
         updates = {}
         if forcing is not None:
             if len(forcing) != 3:
@@ -260,6 +260,8 @@ def make_budget_step(params):
             updates.update(tau_x_2d=forcing[0], tau_y_2d=forcing[1], Q_heat_2d=forcing[2])
         if atmosphere is not None:
             updates["T_atm_3d"] = atmosphere
+        if surface_pressure_pa is not None:
+            updates["surface_pressure_pa"] = surface_pressure_pa
         current_params = params._replace(**updates)
         recorder = _StageRecorder(current_params)
         updated = _step_impl(state, current_params, budget=recorder)
