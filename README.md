@@ -49,14 +49,14 @@ zhenmode benchmark plan --profile integration-6h --method zhenmode --dt-seconds 
 zhenmode baseline mom6 omip2-plan --profile integration-6h
 ```
 
-驻波的正式三方入口、协议和适用范围见[三方驻波比较](docs/standing_wave_zh.md)。
+`zhenmode baseline oceananigans` 提供固定原生 CUDA 对照的准备和校验。驻波的正式三方入口、协议和适用范围见[三方驻波比较](docs/standing_wave_zh.md)，九组真实运行见[实测结果](docs/standing_wave_results_zh.md)。
 
 ## 开发
 
 | 目录 | 用途 |
 | --- | --- |
 | `src/zhenmode/model/` | 正式模式：组装、输入、动力与物理过程、积分、诊断、输出和重启 |
-| `src/zhenmode/baselines/mom6/` | MOM6 接入、固定版本与内置小算例；上游源码和构建产物使用独立缓存 |
+| `src/zhenmode/baselines/` | MOM6、Oceananigans 原生适配与固定版本；上游源码和构建产物使用独立缓存 |
 | `src/zhenmode/preparation/` | 离线资料获取、强迫映射、海岸与温盐初态准备；不推进海洋 |
 | `src/zhenmode/coupling/` | 原生 SIS2 客户端、Fortran 驱动及共享网格准备 |
 | `src/zhenmode/execution/` | 配置展开、实验执行、扫参、运行身份和状态管理 |

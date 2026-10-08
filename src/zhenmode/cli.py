@@ -12,8 +12,8 @@ Usage: zhenmode COMMAND [ARGS]
   sweep       Expand a parameter sweep and estimate resources (no execution)
   runs        Inspect independent run manifests
   evaluate    Score results or check comparison eligibility
-  baseline    Prepare and run a pinned external baseline (MOM6)
-  benchmark   Freeze the industry-reference physical scope or plan a profile
+  baseline    Prepare and run pinned MOM6 or Oceananigans baselines
+  benchmark   Run standing-wave comparisons, freeze scope, or plan a profile
   mms         Run the independent manufactured-solution operator checks
 
 Each command provides --help. Plain model flags also select the production FD

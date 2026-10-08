@@ -33,6 +33,8 @@ Oceananigans 的原生线性浮力使用相对于15°C/35 psu的 T/S 异常，�
 
 ## 评分和结果
 
+本轮九组真实运行与适用范围见[实测结果](standing_wave_results_zh.md)。
+
 ```sh
 zhenmode evaluate wave freeze --case coarse --out CONTRACT.json
 zhenmode evaluate wave score --contract CONTRACT.json --output MODEL/output.npz --report NEW_SCORE.json
