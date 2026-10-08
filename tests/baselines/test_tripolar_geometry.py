@@ -171,3 +171,48 @@ def test_corrupt_acquisition_fails_before_output_directory(tmp_path, monkeypatch
     with pytest.raises(ValueError):
         tripolar.prepare_tripolar_grid(receipt, -78.6, out)
     assert not out.exists()
+
+
+@pytest.mark.parametrize("changed", ["acquisition", "module"])
+def test_precalculation_identity_snapshot_rejects_changed_inputs(tmp_path, monkeypatch, changed):
+    receipt, _, _ = _mock_acquisition(tmp_path, monkeypatch)
+    module = tmp_path / "fixture-module.py"
+    module.write_text("original fixture source")
+    monkeypatch.setattr(tripolar, "source_paths", lambda *args: {"fixture_module": module})
+    original = tripolar.supergrid_metrics
+
+    def mutate_after_calculation(*args):
+        result = original(*args)
+        if changed == "acquisition":
+            receipt.write_text(receipt.read_text() + "\n")
+        else:
+            module.write_text("changed fixture source")
+        return result
+
+    monkeypatch.setattr(tripolar, "supergrid_metrics", mutate_after_calculation)
+    out = tmp_path / "refused"
+    with pytest.raises(ValueError, match="changed during preparation"):
+        tripolar.prepare_tripolar_grid(receipt, -78.6, out)
+    assert not out.exists()
+
+
+def test_failed_netcdf_publication_leaves_destination_retryable(tmp_path, monkeypatch):
+    receipt, _, _ = _mock_acquisition(tmp_path, monkeypatch)
+    original = tripolar.netCDF4.Dataset
+
+    def fail_output(path, mode="r", *args, **kwargs):
+        if mode == "w":
+            Path(path).write_bytes(b"partial NetCDF")
+            raise OSError("publication interrupted")
+        return original(path, mode, *args, **kwargs)
+
+    from pathlib import Path
+
+    monkeypatch.setattr(tripolar.netCDF4, "Dataset", fail_output)
+    out = tmp_path / "prepared"
+    with pytest.raises(OSError, match="publication interrupted"):
+        tripolar.prepare_tripolar_grid(receipt, -78.6, out)
+    assert not out.exists()
+    assert not list(tmp_path.glob(".prepared.staging-*"))
+    monkeypatch.setattr(tripolar.netCDF4, "Dataset", original)
+    assert tripolar.prepare_tripolar_grid(receipt, -78.6, out)["output"]["path"] == "ocean_hgrid.nc"
