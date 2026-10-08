@@ -21,6 +21,22 @@ from zhenmode.provenance.sources import sha256_file
 
 OCEAN_FIELDS = ("u", "v", "t", "s", "frazil", "sea_level")
 LAND_FIELDS = ("runoff", "calving", "runoff_hflx", "calving_hflx")
+WEATHER_FIELDS = ("temperature_k", "specific_humidity", "pressure_pa", "wind_u", "wind_v")
+BULK_FIELDS = (
+    "t_flux",
+    "q_flux",
+    "lw_up",
+    "u_flux",
+    "v_flux",
+    "u_star",
+    "dhdt",
+    "dedt",
+    "drdt",
+    "cd",
+    "ch",
+    "ce",
+    "saturated_humidity",
+)
 AIR_FIELDS = tuple(
     "u_flux v_flux u_star t_flux q_flux lw_flux sw_flux_vis_dir sw_flux_vis_dif "
     "sw_flux_nir_dir sw_flux_nir_dif sw_down_vis_dir sw_down_vis_dif "
@@ -168,6 +184,7 @@ class NativeSIS2:
         timeout=30,
         start="1958-01-01T00:00:00",
         elapsed_seconds=0,
+        stack_words=4000000,
     ):
         if os.name != "posix":
             raise ValueError("native SIS2 bridge requires Linux/WSL")
@@ -180,6 +197,8 @@ class NativeSIS2:
             raise ValueError("native start must be Gregorian YYYY-MM-DDTHH:MM:SS")
         if type(elapsed_seconds) is not int or not 0 <= elapsed_seconds < 2**31:
             raise ValueError("native elapsed clock must fit a nonnegative 32-bit interval")
+        if type(stack_words) is not int or not 0 < stack_words <= 10000000:
+            raise ValueError("native domains buffer must be 1..10000000 real words")
         self.program, self.case = Path(program).resolve(), Path(case).resolve()
         if sha256_file(self.program) != program_sha256:
             raise ValueError("native SIS2 executable identity mismatch")
@@ -190,7 +209,7 @@ class NativeSIS2:
         self.process = None
         try:
             self.process = subprocess.Popen(
-                [str(self.program), str(dt_seconds), str(steps), start, str(elapsed_seconds)],
+                [str(self.program), str(dt_seconds), str(steps), start, str(elapsed_seconds), str(stack_words)],
                 cwd=self.case,
                 stdin=subprocess.PIPE,
                 stdout=subprocess.PIPE,
@@ -271,6 +290,58 @@ class NativeSIS2:
             result = decode_reply(str(request) + ".out", self.shape, fluxes=advance)
             self.step = expected_step
             return result
+        except BaseException:
+            self.close(force=True)
+            raise
+
+    def bulk(self, ocean, weather):
+        """Call native FMS bulk transfer at live ice category skin temperatures.
+
+        Five weather fields are at 10 m. Radiation absorption and precipitation
+        are supplied separately to exchange(), with an explicit case policy.
+        No sea-ice clock is advanced by this diagnostic bulk calculation.
+        """
+        groups = [(ocean, OCEAN_FIELDS), (weather, WEATHER_FIELDS)]
+        arrays = []
+        for values, names in groups:
+            if set(values) != set(names):
+                raise ValueError("native bulk field set mismatch")
+            for name in names:
+                value = np.asarray(values[name], dtype="<f8")
+                if value.shape != self.shape[:2] or not np.isfinite(value).all():
+                    raise ValueError("invalid native bulk field: " + name)
+                arrays.append(value)
+        if (
+            np.any(arrays[2] <= 0)
+            or np.any(arrays[3] < 0)
+            or np.any(arrays[4] < 0)
+            or np.any(arrays[6] <= 0)
+            or np.any(arrays[8] <= 0)
+            or np.any((arrays[7] < 0) | (arrays[7] >= 1))
+        ):
+            raise ValueError("invalid native bulk SI temperature, pressure, humidity or salinity")
+        self.sequence += 1
+        request = self.case / f"bulk-{self.sequence:08}.bin"
+        if "\n" in str(request) or len(str(request)) > 980:
+            raise ValueError("native bulk path exceeds protocol limits")
+        with request.open("xb") as stream:
+            for value in arrays:
+                stream.write(value.tobytes(order="F"))
+        try:
+            self.process.stdin.write(("BULK " + str(request) + "\n").encode())
+            self.process.stdin.flush()
+            header = self._until("ZMSIS_BULK").split()
+            if len(header) != 2 or int(header[1]) != self.step:
+                raise ValueError("native bulk clock reply mismatch")
+            output = Path(str(request) + ".out")
+            if output.stat().st_size != np.prod(self.shape) * len(BULK_FIELDS) * 8:
+                raise ValueError("native bulk reply size mismatch")
+            data = np.fromfile(output, dtype="<f8").reshape(
+                (*self.shape, len(BULK_FIELDS)), order="F"
+            )
+            if not np.isfinite(data).all():
+                raise ValueError("nonfinite native bulk result")
+            return {n: data[..., i].copy() for i, n in enumerate(BULK_FIELDS)}
         except BaseException:
             self.close(force=True)
             raise
