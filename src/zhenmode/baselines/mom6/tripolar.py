@@ -9,6 +9,8 @@ that generated the archived OM_1deg areas. Source angular positions are held.
 from __future__ import annotations
 
 import json
+import shutil
+import tempfile
 from pathlib import Path
 
 import netCDF4
@@ -135,7 +137,12 @@ def extend_southern_mercator(lon, lat, south_boundary):
 
 def prepare_tripolar_grid(acquisition_file, south_boundary, output):
     """Write an identity-bound candidate; whole-cell coastline is a later gate."""
-    acquisition_file, output = Path(acquisition_file), Path(output)
+    acquisition_file, output = Path(acquisition_file).resolve(), Path(output).resolve()
+    acquisition_identity = sha256_file(acquisition_file)
+    identities = {
+        n: sha256_file(p)
+        for n, p in source_paths(source_root(__file__), production_source_modules()).items()
+    }
     acquisition = load_json(acquisition_file)
     if (
         acquisition.get("host") != "ftp.gfdl.noaa.gov"
@@ -179,15 +186,11 @@ def prepare_tripolar_grid(acquisition_file, south_boundary, output):
     residual = float(abs(area.sum() / analytic_domain_area - 1))
     if not np.all(coarse_area > 0) or residual > 1e-10:
         raise ValueError("candidate cell areas fail positivity or analytic domain closure")
-    identities = {
-        n: sha256_file(p)
-        for n, p in source_paths(source_root(__file__), production_source_modules()).items()
-    }
     report = {
         "schema_version": 1,
         "status": "mom_tripolar_metric_candidate_prepared",
         "source_grid_sha256": row["sha256"],
-        "source_acquisition_sha256": sha256_file(acquisition_file),
+        "source_acquisition_sha256": acquisition_identity,
         "source_archive_sha256": acquisition["archive_sha256"],
         "publisher_archive_checksum_verified": False,
         "metric_convention": "sphere_6371000_gc_lengths_fms_lonlat_integral_area_v1",
@@ -216,35 +219,58 @@ def prepare_tripolar_grid(acquisition_file, south_boundary, output):
     if (
         sha256_file(source) != row["sha256"]
         or sha256_file(archive) != acquisition["archive_sha256"]
-        or sha256_file(acquisition_file) != report["source_acquisition_sha256"]
+        or sha256_file(acquisition_file) != acquisition_identity
+        or identities != {n: sha256_file(p) for n, p in
+                          source_paths(source_root(__file__), production_source_modules()).items()}
     ):
         raise ValueError("tripolar source changed during preparation")
-    output.mkdir(parents=True, exist_ok=False)
-    target = output / "ocean_hgrid.nc"
-    with netCDF4.Dataset(target, "w", format="NETCDF3_64BIT_OFFSET") as data:
-        for name, size in (("nx", nx), ("ny", ny), ("nxp", nx + 1), ("nyp", ny + 1)):
-            data.createDimension(name, size)
-        for name, value, dims, units in (
-            ("x", x, ("nyp", "nxp"), "degrees_east"),
-            ("y", y, ("nyp", "nxp"), "degrees_north"),
-            ("dx", dx, ("nyp", "nx"), "m"),
-            ("dy", dy, ("ny", "nxp"), "m"),
-            ("area", area, ("ny", "nx"), "m2"),
-        ):
-            variable = data.createVariable(name, "f8", dims)
-            variable.units = units
-            variable[:] = value
-        data.metric_convention = report["metric_convention"]
-        data.source_grid_sha256 = row["sha256"]
-        data.qualification = (
-            "candidate metrics only; no mask, forcing, initial fields or actual MOM6 read"
+    if output.exists():
+        raise FileExistsError(output)
+    output.parent.mkdir(parents=True, exist_ok=True)
+    staging = Path(tempfile.mkdtemp(dir=output.parent, prefix=f".{output.name}.staging-"))
+    try:
+        target = staging / "ocean_hgrid.nc"
+        with netCDF4.Dataset(target, "w", format="NETCDF3_64BIT_OFFSET") as data:
+            for name, size in (("nx", nx), ("ny", ny), ("nxp", nx + 1), ("nyp", ny + 1)):
+                data.createDimension(name, size)
+            for name, value, dims, units in (
+                ("x", x, ("nyp", "nxp"), "degrees_east"),
+                ("y", y, ("nyp", "nxp"), "degrees_north"),
+                ("dx", dx, ("nyp", "nx"), "m"),
+                ("dy", dy, ("ny", "nxp"), "m"),
+                ("area", area, ("ny", "nx"), "m2"),
+            ):
+                variable = data.createVariable(name, "f8", dims)
+                variable.units = units
+                variable[:] = value
+            data.metric_convention = report["metric_convention"]
+            data.source_grid_sha256 = row["sha256"]
+            data.qualification = (
+                "candidate metrics only; no mask, forcing, initial fields or actual MOM6 read"
+            )
+        report["output"] = {
+            "path": target.name,
+            "sha256": sha256_file(target),
+            "bytes": target.stat().st_size,
+        }
+        (staging / "tripolar_grid.json").write_text(
+            json.dumps(report, indent=2, allow_nan=False) + "\n", encoding="utf8"
         )
-    report["output"] = {
-        "path": target.name,
-        "sha256": sha256_file(target),
-        "bytes": target.stat().st_size,
-    }
-    (output / "tripolar_grid.json").write_text(
-        json.dumps(report, indent=2, allow_nan=False) + "\n", encoding="utf8"
-    )
+        if (
+            sha256_file(source) != row["sha256"]
+            or sha256_file(archive) != acquisition["archive_sha256"]
+            or sha256_file(acquisition_file) != acquisition_identity
+            or identities != {n: sha256_file(p) for n, p in
+                              source_paths(source_root(__file__), production_source_modules()).items()}
+        ):
+            raise ValueError("tripolar source changed during publication")
+        if output.exists():
+            raise FileExistsError(output)
+        staging.rename(output)
+    except BaseException:
+        if staging.exists():
+            if staging.resolve().parent != output.parent.resolve():
+                raise RuntimeError("tripolar staging directory escaped its output parent")
+            shutil.rmtree(staging)
+        raise
     return report
