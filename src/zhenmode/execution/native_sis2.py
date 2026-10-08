@@ -10,6 +10,8 @@ from __future__ import annotations
 import json
 import os
 import select
+import shlex
+import shutil
 import subprocess
 import time
 from datetime import datetime
@@ -38,6 +40,26 @@ SURFACE_FIELDS = tuple(
 )
 
 
+def _link_tools(recipe):
+    """Verify both the MPI wrapper and its actual Fortran compiler."""
+    from zhenmode.baselines.mom6.omip2 import _command
+
+    actual = {}
+    for name in ("mpif90", "gfortran"):
+        path = shutil.which(name)
+        if path is None:
+            raise ValueError("missing native link compiler: " + name)
+        actual[name] = {"path": path, "sha256": sha256_file(path),
+                        "version": _command([path, "--version"])}
+        if actual[name] != recipe.get("tools", {}).get(name):
+            raise ValueError("native link compiler differs from recorded build: " + name)
+    command = shlex.split(_command([actual["mpif90"]["path"], "--showme:command"]))
+    compiler = shutil.which(command[0]) if command else None
+    if compiler is None or Path(compiler).resolve() != Path(actual["gfortran"]["path"]).resolve():
+        raise ValueError("MPI wrapper selects a different Fortran compiler")
+    return actual
+
+
 def compile_sis2_bridge(coupled_build, output):
     """Link the packaged driver against recorded, unchanged native build objects."""
     from zhenmode.baselines.mom6.coupled_sources import source_tree
@@ -50,6 +72,7 @@ def compile_sis2_bridge(coupled_build, output):
     recipe = load_json(root / "recipe.json")
     sources = load_json(root / "executed-sources.json")
     artifacts = load_json(root / "artifact-checkpoint.json")["artifacts"]
+    link_tools = _link_tools(recipe)
     if (
         recipe["target"] != "ice_ocean_SIS2"
         or source_tree(root / "sources") != sources
@@ -65,7 +88,7 @@ def compile_sis2_bridge(coupled_build, output):
     )
     if not objects:
         raise ValueError("native SIS2 build has no reusable objects")
-    command = ["mpif90", "-O1", "-fdefault-real-8", "-fdefault-double-8", "-ffree-line-length-none"]
+    command = [link_tools["mpif90"]["path"], "-O1", "-fdefault-real-8", "-fdefault-double-8", "-ffree-line-length-none"]
     for directory in ("ice_ocean_SIS2", "fms", "icebergs", "ice_param", "atmos_null", "land_null"):
         command += ["-I" + str(build / directory), "-L" + str(build / directory)]
     program = output / "sis2_bridge"
@@ -94,6 +117,7 @@ def compile_sis2_bridge(coupled_build, output):
         sha256_file(driver) == driver_id
         and _build_artifacts(build) == artifacts
         and source_tree(root / "sources") == sources
+        and _link_tools(recipe) == link_tools
     )
     receipt = {
         "command": command,
@@ -105,6 +129,7 @@ def compile_sis2_bridge(coupled_build, output):
         "inputs_unchanged": unchanged,
         "program_sha256": sha256_file(program) if program.exists() else None,
         "native_build_recipe": recipe,
+        "link_tools": link_tools,
         "full_case_qualification": False,
     }
     if completed.returncode == 0:
@@ -115,7 +140,7 @@ def compile_sis2_bridge(coupled_build, output):
     return receipt
 
 
-def decode_reply(path, shape, *, fluxes):
+def decode_reply(path, shape, *, fluxes, interval_seconds=None):
     """Decode exact payload length; salt flux is kg/m²/s OUT of ocean.
 
     Net LW and SW are INTO ocean; sensible/latent and evaporation are OUT.
@@ -146,6 +171,10 @@ def decode_reply(path, shape, *, fluxes):
         raise ValueError("invalid native ice area or category fraction")
     if np.any(np.abs(fractions.sum(-1)[wet] - 1) > 1e-12):
         raise ValueError("native ice categories do not cover wet cell")
+    if fluxes and interval_seconds is not None:
+        if type(interval_seconds) is not int or interval_seconds <= 0:
+            raise ValueError("native exchange interval must be a positive integer")
+        result["interval_seconds"] = interval_seconds
     return result
 
 
@@ -184,6 +213,7 @@ class NativeSIS2:
         if sha256_file(self.program) != program_sha256:
             raise ValueError("native SIS2 executable identity mismatch")
         self.identity = program_sha256
+        self.dt_seconds = dt_seconds
         self.timeout, self.steps, self.step = timeout, steps, 0
         self.sequence, self.pending = 0, b""
         self.log = (self.case / "native-sis2.log").open("xb")
@@ -268,7 +298,8 @@ class NativeSIS2:
             expected_step = self.step + int(advance)
             if len(reply) != 2 or int(reply[1]) != expected_step:
                 raise ValueError("native ice clock reply mismatch")
-            result = decode_reply(str(request) + ".out", self.shape, fluxes=advance)
+            result = decode_reply(str(request) + ".out", self.shape, fluxes=advance,
+                                  interval_seconds=self.dt_seconds if advance else None)
             self.step = expected_step
             return result
         except BaseException:

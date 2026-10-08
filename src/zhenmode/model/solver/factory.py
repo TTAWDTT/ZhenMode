@@ -528,11 +528,13 @@ def _compile_solver(params, physics, shape, state_dtype, *, dynamic_forcing, ret
             return _step_impl(state, params._replace(**updates))
 
     @jax.jit
-    def diagnostics(state):
+    def diagnostics(state, surface_pressure_pa=None):
+        current = (params if surface_pressure_pa is None else
+                   params._replace(surface_pressure_pa=surface_pressure_pa))
         rho_prime = _density_anomaly(state.T, state.S, params)
         rho = RHO_0 + rho_prime
-        pressure = _compute_hydrostatic_pressure(state, params)
-        w = _compute_vertical_velocity(state, params)
+        pressure = _compute_hydrostatic_pressure(state, current)
+        w = _compute_vertical_velocity(state, current)
         return rho, pressure, w
 
     @jax.jit
