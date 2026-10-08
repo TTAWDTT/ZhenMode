@@ -3,7 +3,7 @@ started = time_ns()
 println("native_start_ns=", started); flush(stdout)
 using Pkg, JSON3, NCDatasets, CUDA, Oceananigans
 using Oceananigans.Grids: MutableVerticalDiscretization, on_architecture
-using Oceananigans.Operators: Δzᶜᶜᶜ
+using Oceananigans.Operators: Δrᶜᶜᶜ
 using Oceananigans.TimeSteppers: time_step!
 
 config = JSON3.read(read(ARGS[1],String))
@@ -49,6 +49,7 @@ for (name,field,axis) in (("y_eta",model.free_surface.displacement,"y"),("y_u",m
 end
 defVar(output,"time",Float64,("time",))
 defVar(output,"eta",Float64,("x","y","time"))
+defVar(output,"native_zstar_scale",Float64,("x","y","time"))
 for name in ("h","T","S","T_anomaly","S_anomaly","u")
     defVar(output,name,Float64,("x","y","z","time"))
 end
@@ -62,9 +63,14 @@ output.attrib["reference_salinity_psu"] = c.S_psu
 function snapshot!(n)
     CUDA.synchronize()
     g = on_architecture(CPU(),model.grid)
-    h = [Δzᶜᶜᶜ(i,j,k,g) for i in 1:Nx,j in 1:Ny,k in 1:Nz]
+    # Copying a grid constructs fresh mutable-coordinate storage. Read scaling
+    # from the evolving device grid itself, never from the reconstructed copy.
+    coordinate = on_architecture(CPU(), model.grid.z)
+    scale = Array(coordinate.σᶜᶜⁿ[1:Nx, 1:Ny, 1])
+    h = [Δrᶜᶜᶜ(i,j,k,g) * scale[i,j] for i in 1:Nx,j in 1:Ny,k in 1:Nz]
     output["time"][n] = model.clock.time
     output["eta"][:,:,n] = host(model.free_surface.displacement)[:,:,1]
+    output["native_zstar_scale"][:,:,n] = scale
     output["h"][:,:,:,n] = h
     for (name,field) in (("T",model.tracers.physical_T),("S",model.tracers.physical_S),
                          ("T_anomaly",model.tracers.T),("S_anomaly",model.tracers.S),

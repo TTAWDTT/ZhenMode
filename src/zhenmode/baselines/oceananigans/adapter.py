@@ -232,10 +232,15 @@ def convert(c, directory, resources):
             value = native[name][:]
             if np.ma.is_masked(value):
                 raise ValueError("missing native Oceananigans state: " + name)
-            if name == "eta":
-                fields[name] = np.asarray(value).transpose(2, 0, 1)
-            else:
-                fields[name] = np.asarray(value).transpose(3, 0, 1, 2)[..., ::-1].copy()
+            horizontal_y = "yf" if name == "v" else "y"
+            order = (
+                ("time", "x", horizontal_y) if name == "eta" else ("time", "x", horizontal_y, "z")
+            )
+            dimensions = native[name].dimensions
+            if len(dimensions) != len(order) or set(dimensions) != set(order):
+                raise ValueError("unknown native field dimensions: " + name)
+            values = np.asarray(value).transpose(tuple(dimensions.index(axis) for axis in order))
+            fields[name] = values if name == "eta" else values[..., ::-1].copy()
         x, y = np.meshgrid(native["x_eta"][:], native["y_eta"][:], indexing="ij")
         ux, uy = np.meshgrid(native["x_u"][:], native["y_u"][:], indexing="ij")
         vx, vy = np.meshgrid(native["x_v"][:], native["y_v"][:], indexing="ij")
