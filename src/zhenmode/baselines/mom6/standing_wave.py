@@ -138,7 +138,16 @@ def integrate(config_file):
     )
     exe = Path(config["mom_executable"])
     revision = subprocess.check_output(
-        ["git", "-C", config["mom_source"], "rev-parse", "HEAD"], text=True
+        [
+            "git",
+            "-c",
+            "safe.directory=" + str(Path(config["mom_source"]).resolve()),
+            "-C",
+            config["mom_source"],
+            "rev-parse",
+            "HEAD",
+        ],
+        text=True,
     ).strip()
     if revision != MOM6:
         raise ValueError("MOM6 source differs from fixed wave revision")
