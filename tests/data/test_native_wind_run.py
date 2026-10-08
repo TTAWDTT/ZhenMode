@@ -6,8 +6,8 @@ import netCDF4
 import numpy as np
 import pytest
 
-from tests.data.test_jra55 import WEATHER
-from tests.data.test_native_fd_inputs import _prepared
+from tests.support.data.fd_native import prepared_native_inputs as _prepared
+from tests.support.data.jra55 import WEATHER
 from zhenmode.execution.native_run import integrate_fd_wind
 from zhenmode.provenance.sources import sha256_file
 
@@ -157,7 +157,7 @@ def test_progress_publication_failure_preserves_last_complete_report(tmp_path, m
 
 
 def test_unsafe_explicit_step_is_refused_before_integration():
-    from tests.fd.test_fixed_partial_geometry import _case
+    from tests.support.fd.fixed_partial import fixed_partial_case as _case
     from zhenmode.execution.native_run import _validate_timestep
 
     _, _, (_, _, _, params, _) = _case(cross_nodes=True)

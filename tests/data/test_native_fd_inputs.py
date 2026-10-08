@@ -6,35 +6,12 @@ import netCDF4
 import numpy as np
 import pytest
 
-from tests.support.data.native_initialization import native_inputs
+from tests.support.data.fd_native import prepared_native_inputs as _prepared
 from zhenmode.execution.benchmark import main
 from zhenmode.execution.native_fd import load_fd_native_inputs, prepare_fd_native_inputs
-from zhenmode.execution.native_initialization import prepare_native_initialization
 from zhenmode.model.config import G_EARTH, RHO_0, PhysicsConfig
 from zhenmode.model.solver.factory import make_solver_global
 from zhenmode.provenance.sources import sha256_file
-
-
-def _prepared(tmp_path, *, complete=True, deepest=7000.0):
-    source, geometry, nodes, _, _ = native_inputs(tmp_path, unanchored=not complete)
-    node_definition = json.loads(nodes.read_text())
-    node_definition["z_nodes_m"][-1] = -deepest
-    nodes.write_text(json.dumps(node_definition))
-    native = tmp_path / "native"
-    prepare_native_initialization(source, geometry, nodes, native)
-    policy = tmp_path / "fd-policy.json"
-    policy.write_text(
-        json.dumps(
-            {
-                "schema_version": 1,
-                "horizontal_metric": "geographic_area_v1",
-                "pressure_definition": "fixed_boussinesq_reference_v1",
-                "inactive_ct_deg_c": 15.0,
-                "inactive_sr_g_kg": 35.0,
-            }
-        )
-    )
-    return native, policy
 
 
 def test_prepared_data_roundtrips_to_actual_factory_with_exact_wet_values_and_capacity(tmp_path):
