@@ -125,6 +125,7 @@ program sis2_native_server
         qs=0.
         ! Ocean roughness evolves after each fast step; disable topographic rescaling.
         rough_scale=ice%rough_mom(:,:,k)
+        ! Pinned FMS positional tail is (dt, land, seawater, avail).
         call surface_flux(weather(:,:,1),weather(:,:,2),weather(:,:,4),weather(:,:,5),weather(:,:,3), &
           z10,weather(:,:,3),ice%t_surf(:,:,k),weather(:,:,1),qs,ice%u_surf(:,:,k),ice%v_surf(:,:,k), &
           ice%rough_mom(:,:,k),ice%rough_heat(:,:,k),ice%rough_moist(:,:,k),rough_scale,gust, &
