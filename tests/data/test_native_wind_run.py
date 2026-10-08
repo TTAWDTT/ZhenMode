@@ -121,6 +121,8 @@ def test_actual_wind_steps_save_all_state_and_restart_the_identical_trajectory(t
     assert report["full_surface_blockers"]["nonzero_calving"] > 0
     assert not report["full_case_qualification"] and not report["freshwater_routing_applied"]
     assert not np.any(a["cumulative__source_inputs"])
+    assert report["initialization_data_kind"] == report["forcing_data_kind"] == "manufactured"
+    assert report["time_step_limits"]["maximum_dt_s"] >= .1
 
 
 def test_changed_time_step_is_refused_without_changing_the_parent_checkpoint(tmp_path):
@@ -135,3 +137,43 @@ def test_changed_time_step_is_refused_without_changing_the_parent_checkpoint(tmp
     assert sha256_file(checkpoint) == original
     report = json.loads((out / "run.json").read_text())
     assert report["status"] == "failed" and report["completed_timesteps"] == 0
+
+
+def test_progress_publication_failure_preserves_last_complete_report(tmp_path, monkeypatch):
+    from zhenmode.execution import native_run
+
+    path = tmp_path / "run.json"
+    native_run._write(path, {"accepted_steps": 3})
+    original = path.read_bytes()
+
+    def fail_replace(*args):
+        raise OSError("publication interrupted")
+
+    monkeypatch.setattr(native_run.os, "replace", fail_replace)
+    with pytest.raises(OSError, match="publication interrupted"):
+        native_run._write(path, {"accepted_steps": 4})
+    assert path.read_bytes() == original
+    assert not list(tmp_path.glob(".run.json.*"))
+
+
+def test_unsafe_explicit_step_is_refused_before_integration():
+    from tests.fd.test_fixed_partial_geometry import _case
+    from zhenmode.execution.native_run import _validate_timestep
+
+    _, _, (_, _, _, params, _) = _case(cross_nodes=True)
+    safe = params._replace(dt=1.e-6)
+    limit = _validate_timestep(safe)["maximum_dt_s"]
+    with pytest.raises(ValueError, match="conservative explicit limit"):
+        _validate_timestep(safe._replace(dt=2 * limit))
+
+
+def test_initialization_and_forcing_kinds_are_reported_separately(tmp_path):
+    config = _inputs(tmp_path)
+    receipt = tmp_path / "fd-inputs" / "fd_initialization.json"
+    value = json.loads(receipt.read_text())
+    value["data_kind"] = "observed"  # Deliberate metadata combination in this synthetic control.
+    receipt.write_text(json.dumps(value))
+    report = _run(config | {"steps": 1}, tmp_path / "mixed")
+    assert report["data_kind"] == "mixed"
+    assert report["initialization_data_kind"] == "observed"
+    assert report["forcing_data_kind"] == "manufactured"
