@@ -61,5 +61,12 @@ WOA13v2原始网格转换使用 `zhenmode benchmark prepare-initial-source --acq
 
 这些输出仍是原始网格源产品，`native_initialization_ready=false`、`execution_ready=false`。原生重映射、湿柱支持、补值/外推、浅海/底部、完整水柱体积和初始库存需单独准备验证。MOM所读盐度为原SP，参考变体采用SR≈SA；不能将同一文件改标签来混用。
 
+原生点场准备命令是 `zhenmode benchmark prepare-native-initial --source-prepared WOA_CONVERSION --geometry RECTANGULAR_GEOMETRY --nodes-file NODES.json --output NEW_NATIVE`。`NODES.json` 仅含 `z_nodes_m` 数组，负值向下；几何目录含身份匹配的 `geometry.json/grid.npz/bathymetry.npz`，面积另从球面bounds核对。当前入口要求与WOA相同水平坐标，只进行经度周期重排、垂向点值线性插值、同层湿域平滑补值及最深源以下零梯度延拓。PT/SR先映射，之后由PT/SR生成等价CT及供MOM读取的SP；不将CT改标签当位温。初始化时刻为1958-01-01，源年度气候time另存收据。
+
+显式 FD 固定部分单元候选的接触、压力、容量和局部检查范围见
+[固定参考部分单元](fixed_partial_cells_zh.md)。局部算子核验不授予完整 case 资格。
+
+输出含三维固定参考厚度、PT/CT/SR/SP点场、原始成对支持／水平补值／深层延拓／未解决掩膜、最近原始锚点及湿图路径距离、每层补值线性系统和未知位置、源码／输入身份和已解决支持上的库存。最近锚点不是平滑值的唯一供体，实际平滑值由完整边界锚点和保存的系统定义。无锚点分量保留缺失并返回退出码3；相应库存明确是部分库存，不能当成全球初态。MOM仍须独立完成原生层重映射及库存检查；FD运行仍须统一水平面积度量、补全跨节点参考面联系与压力平衡，并完成全域稳定性和过程资格。即使点场全部有限，收据的完整模式执行资格仍为false。ETOPO的既有CDO来源状态随收据保留；负高程不能代替独立海陆分类。
+
 直接模型运行拒绝已存在的 `global_<tag>.npz`，请为新运行选择独立 `--tag` 或 `--out-dir`。受中断的严格 checkpoint 续跑仍核对原配置与源码；已完成或已保存失败结果的目录不会被覆盖。
 最终结果先写入同目录临时文件并 fsync，再以原子硬链接发布，拒绝覆盖竞争写入；checkpoint 则原子替换。文件系统须支持同目录硬链接；不支持时明确失败。发布前写入中断不会留下残缺的最终结果，异常退出可能留有独立临时文件，不阻止同名 checkpoint 续跑。

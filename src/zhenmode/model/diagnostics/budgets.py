@@ -8,6 +8,7 @@ from zhenmode.model.config import RHO_0
 from zhenmode.model.solver.dynamics.transport import (
     _face_transport_divergence,
     _layer_face_transports,
+    _sum_layer_transports,
     _vertical_transport_iface,
 )
 from zhenmode.model.solver.numerics.backend import jnp
@@ -93,13 +94,13 @@ class _StageRecorder:
         self.drag_energy_loss = self.drag_energy_loss + 0.5 * RHO_0 * jnp.sum((velocity_before - velocity_after) * self.volume)
         before_faces = _layer_face_transports(before.u, before.v, self.params)
         after_faces = _layer_face_transports(after.u, after.v, self.params)
-        difference = jnp.max(jnp.stack([jnp.max(jnp.abs(jnp.sum(new - old, axis=-1)))
+        difference = jnp.max(jnp.stack([jnp.max(jnp.abs(_sum_layer_transports(new-old)))
                                         for new, old in zip(after_faces, before_faces, strict=True)]))
         self.drag_face_change = jnp.maximum(self.drag_face_change, difference)
         self.drag_halves = self.drag_halves + 1.
 
     def tracer_transport(self, layer_transport, weight=0.5):
-        self.tracer_face_mean = tuple(total + weight * jnp.sum(flux, axis=-1)
+        self.tracer_face_mean = tuple(total + weight * _sum_layer_transports(flux)
                                       for total, flux in zip(self.tracer_face_mean, layer_transport, strict=True))
 
     def barotropic_transport(self, eta_before, eta_after, face_mean, filter_change):
@@ -111,12 +112,12 @@ class _StageRecorder:
         self.transport_audited_steps = jnp.asarray(1., dtype=jnp.float64)
 
     def before_transport_filter(self, state):
-        self.prefilter_faces = tuple(jnp.sum(flux, axis=-1)
+        self.prefilter_faces = tuple(_sum_layer_transports(flux)
                                      for flux in _layer_face_transports(state.u, state.v, self.params))
 
     def after_transport_filter(self, state):
         if self.prefilter_faces is not None:
-            final_faces = tuple(jnp.sum(flux, axis=-1)
+            final_faces = tuple(_sum_layer_transports(flux)
                                 for flux in _layer_face_transports(state.u, state.v, self.params))
             mismatch = jnp.max(jnp.stack([jnp.max(jnp.abs(final - before))
                                           for final, before in zip(final_faces, self.prefilter_faces, strict=True)]))
@@ -251,7 +252,7 @@ def make_budget_step(params):
     """
     from zhenmode.model.solver.timestepping.step import _step_impl
     @jax.jit
-    def advance(state, forcing=None, atmosphere=None):
+    def advance(state, forcing=None, atmosphere=None, surface_pressure_pa=None):
         updates = {}
         if forcing is not None:
             if len(forcing) != 3:
@@ -259,6 +260,8 @@ def make_budget_step(params):
             updates.update(tau_x_2d=forcing[0], tau_y_2d=forcing[1], Q_heat_2d=forcing[2])
         if atmosphere is not None:
             updates["T_atm_3d"] = atmosphere
+        if surface_pressure_pa is not None:
+            updates["surface_pressure_pa"] = surface_pressure_pa
         current_params = params._replace(**updates)
         recorder = _StageRecorder(current_params)
         updated = _step_impl(state, current_params, budget=recorder)

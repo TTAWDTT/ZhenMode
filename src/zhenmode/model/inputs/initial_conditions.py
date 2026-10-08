@@ -360,3 +360,183 @@ def _fill_ocean_horizontal(field, wet_mask, max_pass=50):
         if np.isfinite(gm):
             f = np.where(still_nan, gm, f)
     return f
+
+
+def smooth_native_paired_holes(fields, wet_mask, lon, lat):
+    """Dirichlet infill of paired holes on one declared native wet level.
+
+    Fields have shape (nfield, nx, ny); original finite paired values remain
+    exact. A spherical four-neighbour graph closes latitude and wraps longitude.
+    Positive face conductances are length/distance on a uniform angular grid.
+    Unanchored hole components remain NaN and are listed, never given a global
+    mean. Nearest original anchors/distances describe support proximity, not
+    the sole donor of the harmonic value (all boundary anchors influence it).
+    This is the explicit new preparation policy, separate from the old reader.
+    """
+    import heapq
+    from collections import deque
+
+    from scipy.sparse import coo_matrix
+    from scipy.sparse.linalg import spsolve
+
+    raw = np.ma.asarray(fields)
+    if raw.dtype.kind not in 'fiu':
+        raise ValueError('native infill fields must be real numeric arrays')
+    for coordinate in (wet_mask,lon,lat):
+        if np.ma.isMaskedArray(coordinate) and np.ma.getmaskarray(coordinate).any():
+            raise ValueError('native infill coordinates or wet mask are masked')
+    if any(np.asarray(axis).ndim != 1 or np.asarray(axis).dtype.kind not in 'fiu' for axis in (lon,lat)):
+        raise ValueError('native infill axes must be real one-dimensional coordinates')
+    values = np.asarray(np.ma.asarray(raw, dtype=float).filled(np.nan))
+    wet = np.asarray(wet_mask)
+    x, y = np.asarray(lon, dtype=float), np.asarray(lat, dtype=float)
+    if (values.ndim != 3 or not values.shape[0] or values.shape[1:] != (len(x), len(y))
+            or wet.shape != values.shape[1:] or not np.isin(wet, [0, 1]).all()
+            or len(x) < 2 or len(y) < 2 or not np.isfinite(x).all()
+            or not np.isfinite(y).all() or np.any(np.abs(y) >= 90)
+            or not np.all(np.diff(x) > 0) or not np.all(np.diff(y) > 0)
+            or not np.allclose(np.diff(x), 360./len(x), rtol=0, atol=1e-10)
+            or not np.allclose(np.diff(y), np.diff(y)[0], rtol=0, atol=1e-10)
+            or np.isinf(values).any()):
+        raise ValueError('native infill requires paired numeric fields and a uniform periodic angular grid')
+    wet = wet.astype(bool)
+    paired = np.isfinite(values).all(axis=0) & wet
+    holes = wet & ~paired
+    result = np.where(paired[None], values, np.nan)
+    supported = np.zeros(wet.shape, dtype=bool)
+    seen = np.zeros(wet.shape, dtype=bool)
+    unsupported = []
+    nx, ny = wet.shape
+    dlon, dlat = np.deg2rad(360./nx), np.deg2rad(y[1]-y[0])
+    cos_lat = np.cos(np.deg2rad(y))
+
+    def neighbours(i, j):
+        for ii,jj in (((i-1)%nx,j), ((i+1)%nx,j), (i,j-1), (i,j+1)):
+            if 0 <= jj < ny and wet[ii,jj]:
+                yield ii,jj
+
+    for i,j in zip(*np.where(holes), strict=True):
+        if seen[i,j]:
+            continue
+        component, queue, anchored = [], deque([(i,j)]), False
+        seen[i,j] = True
+        while queue:
+            ii,jj = queue.popleft()
+            component.append((ii,jj))
+            for ni,nj in neighbours(ii,jj):
+                anchored |= bool(paired[ni,nj])
+                if holes[ni,nj] and not seen[ni,nj]:
+                    seen[ni,nj] = True
+                    queue.append((ni,nj))
+        if anchored:
+            for ii,jj in component:
+                supported[ii,jj] = True
+        else:
+            unsupported.append({'native_flat_indices':[int(ii*ny+jj) for ii,jj in component]})
+
+    positions = np.argwhere(supported)
+    index = np.full(wet.shape, -1, dtype=np.int64)
+    index[supported] = np.arange(len(positions))
+    rows, cols, coefficients = [], [], []
+    rhs = np.zeros((len(positions), values.shape[0]))
+    nearest = np.full(wet.shape, -1, dtype=np.int64)
+    distance = np.full(wet.shape, -1., dtype=float)
+    nearest[paired] = np.flatnonzero(paired)
+    distance[paired] = 0.
+    heap = []
+
+    def edge(i,j,ni,nj):
+        if j == nj:
+            conductance = dlat/(dlon*cos_lat[j])
+            length = 2.*6371000.*np.arcsin(cos_lat[j]*np.sin(dlon/2.))
+        else:
+            conductance = dlon*np.cos(np.deg2rad(.5*(y[j]+y[nj])))/dlat
+            length = 6371000.*dlat
+        return conductance, length
+
+    for row,(i,j) in enumerate(positions):
+        diagonal = 0.
+        for ni,nj in neighbours(i,j):
+            weight,length = edge(i,j,ni,nj)
+            diagonal += weight
+            if paired[ni,nj]:
+                rhs[row] += weight*values[:,ni,nj]
+                heapq.heappush(heap,(length,int(ni*ny+nj),int(i),int(j)))
+            else:
+                if index[ni,nj] < 0:
+                    raise ValueError('anchored native component has an unresolved neighbour')
+                rows.append(row)
+                cols.append(int(index[ni,nj]))
+                coefficients.append(-weight)
+        rows.append(row)
+        cols.append(row)
+        coefficients.append(diagonal)
+    matrix = coo_matrix((coefficients,(rows,cols)),shape=(len(positions),len(positions))).tocsr()
+    residual = 0.
+    if len(positions):
+        solved = np.asarray(spsolve(matrix,rhs)).reshape(rhs.shape)
+        residual = float(np.max(np.abs(matrix@solved-rhs))/max(1.,float(np.max(np.abs(rhs)))))
+        if not np.isfinite(solved).all() or residual > 1e-10:
+            raise ValueError('native harmonic infill failed its linear-system residual')
+        result[:,supported] = solved.T
+    while heap:
+        length,donor,i,j = heapq.heappop(heap)
+        if distance[i,j] >= 0.:
+            continue
+        distance[i,j],nearest[i,j] = length,donor
+        for ni,nj in neighbours(i,j):
+            if supported[ni,nj] and distance[ni,nj] < 0.:
+                heapq.heappush(heap,(length+edge(i,j,ni,nj)[1],donor,ni,nj))
+    if np.any(supported & (nearest < 0)):
+        raise ValueError('native infill proximity trace is incomplete')
+    return {'fields':result, 'original_paired_mask':paired, 'infill_mask':supported,
+            'unresolved_mask':holes & ~supported, 'unsupported_components':unsupported,
+            'nearest_original_anchor_flat_index':nearest, 'nearest_anchor_path_distance_m':distance,
+            'linear_system_relative_residual':residual,
+            'infill_matrix':matrix, 'infill_unknown_flat_indices':np.flatnonzero(supported)}
+
+
+def extend_native_bottom_pairs(fields, wet_mask, depths_m):
+    """Explicit same-column PT/SR fallback below the deepest resolved point.
+
+    Returns float64 values and a donor/depth-distance trace; never fills
+    interior or surface gaps. The caller must establish regional-profile
+    priority and record the chosen policy. A linear continuation from the two
+    deepest resolved points is an arithmetic sensitivity candidate only: it
+    is neither selected nor silently clipped to a thermodynamic domain.
+    """
+    values,wet,depths = np.asarray(fields),np.asarray(wet_mask),np.asarray(depths_m)
+    if (values.ndim!=4 or values.shape[0]!=2 or values.dtype.kind not in 'fiu'
+        or wet.shape!=values.shape[1:] or not np.isin(wet,[0,1]).all()
+        or depths.shape!=(values.shape[-1],) or depths.dtype.kind not in 'fiu'
+        or not np.isfinite(depths).all() or depths[0]!=0 or np.any(np.diff(depths)<=0)
+        or np.any(np.diff(wet.astype(int),axis=-1)>0) or np.isinf(values).any()):
+        raise ValueError('bottom fallback requires real PT/SR and contiguous wet nodes on ordered depths')
+    wet=wet.astype(bool)
+    finite=np.isfinite(values).all(axis=0)&wet
+    if np.any(wet & np.isfinite(values).any(axis=0) & ~finite):
+        raise ValueError('bottom fallback requires paired support, not a single finite tracer')
+    indices=np.arange(len(depths))[None,None,:]
+    last=np.max(np.where(finite,indices,-1),axis=-1)
+    fill=wet&~finite&(indices>last[...,None])&(last[...,None]>=0)
+    result=values.astype(float).copy()
+    alternate=result.copy()
+    donors=np.full(wet.shape,-1,dtype=np.int64)
+    distance=np.zeros(wet.shape,dtype=float)
+    alternate_support=np.zeros(wet.shape,dtype=bool)
+    for i,j in zip(*np.nonzero(fill.any(axis=-1)),strict=True):
+        level=int(last[i,j])
+        targets=np.flatnonzero(fill[i,j])
+        result[:,i,j,targets]=values[:,i,j,level][:,None]
+        alternate[:,i,j,targets]=values[:,i,j,level][:,None]
+        donors[i,j,targets]=level
+        distance[i,j,targets]=depths[targets]-depths[level]
+        previous=np.flatnonzero(finite[i,j,:level])
+        if len(previous):
+            before=int(previous[-1])
+            slope=(values[:,i,j,level]-values[:,i,j,before])/(depths[level]-depths[before])
+            alternate[:,i,j,targets]=values[:,i,j,level][:,None]+slope[:,None]*distance[i,j,targets][None,:]
+            alternate_support[i,j,targets]=True
+    return {'fields':result,'bottom_filled_mask':fill,'unresolved_mask':wet&~finite&~fill,
+            'donor_native_level_index':donors,'extension_distance_m':distance,
+            'linear_sensitivity_fields':alternate,'linear_sensitivity_support':alternate_support}

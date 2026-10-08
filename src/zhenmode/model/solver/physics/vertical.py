@@ -55,7 +55,7 @@ def _vertical_diffusion(tracer, kappa, p):
 
 def _vertical_momentum_diffusion(velocity, p):
     """Use the reference-cell flux balance for the nodal geometry candidate."""
-    if p.column_geometry == 'nodal_dual_v1':
+    if p.column_geometry in {'nodal_dual_v1', 'fixed_partial_v1'}:
         return _d2_dz2_flux(velocity, p.nu_v, p)
     return p.nu_v * _d2_dz2(velocity, p)
 

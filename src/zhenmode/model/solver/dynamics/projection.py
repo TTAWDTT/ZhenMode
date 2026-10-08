@@ -3,11 +3,32 @@
 from zhenmode.model.config import G_EARTH
 from zhenmode.model.solver.dynamics.transport import _column_divergence, _vertical_transport_iface
 from zhenmode.model.solver.numerics.backend import jax, jnp
+from zhenmode.model.solver.numerics.contacts import incoming, recipients
 from zhenmode.model.solver.numerics.horizontal import _gradient_conservative_3d
 
 
 def _column_projection_diagonal(p):
     """Exact diagonal of -A*B*G3, including closed wet faces and walls."""
+    if getattr(p, 'column_geometry', 'legacy') == 'fixed_partial_v1':
+        h = p.dz_node
+        xp = jnp.sum(p.face_contacts[0],axis=0)
+        xm = incoming(p.face_contacts[0],0)
+        target_x = recipients(p.face_contacts[0])
+        prior_x = jnp.roll(xp,1,axis=0)
+        diagonal_x = .25*p.inv_dx**2*((xp-xm)**2/h
+                     +target_x**2/jnp.roll(h,-1,axis=0)+prior_x**2/jnp.roll(h,1,axis=0))
+        if p.nx<=2:
+            diagonal_x=jnp.zeros_like(diagonal_x)
+        cosine=p.cos_lat[None,:,None]
+        y_faces=p.face_contacts[1]*.5*(cosine+jnp.roll(cosine,-1,axis=1))[None]
+        yp=jnp.sum(y_faces,axis=0)
+        ym=incoming(y_faces,1)
+        target_y=recipients(y_faces)
+        prior_y=jnp.roll(yp,1,axis=1).at[:,0].set(0.)
+        diagonal_y=.25*p.inv_dy**2/cosine*((yp-ym)**2/(h*cosine)
+                    +target_y**2/jnp.roll(h*cosine,-1,axis=1)
+                    +prior_y**2/jnp.roll(h*cosine,1,axis=1))
+        return p.dx_2d*p.dy*p.wet_mask*jnp.sum(diagonal_x+diagonal_y,axis=-1)
     wet = p.wet_mask_z
     positive_x = wet * jnp.roll(wet, -1, axis=0)
     negative_x = wet * jnp.roll(wet, 1, axis=0)

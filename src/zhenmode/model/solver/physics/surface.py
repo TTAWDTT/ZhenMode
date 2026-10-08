@@ -12,7 +12,8 @@ def _surface_heat_weights(p):
         return p.surface_mask * p.wet_mask_z / p.dz_surface
     requested_depth = (p.mixed_layer_depth_2d if p.mixed_layer_depth_2d is not None
                        else jnp.full_like(p.wet_mask, mixed_depth))
-    depth = jnp.where(p.mixed_layer_mask_2d > 0.5, requested_depth, p.dz_surface)
+    surface_depth = p.dz_surface[..., 0] if getattr(p, 'column_geometry', 'legacy') == 'fixed_partial_v1' else p.dz_surface
+    depth = jnp.where(p.mixed_layer_mask_2d > 0.5, requested_depth, surface_depth)
     layer_top = jnp.cumsum(p.dz_node, axis=-1) - p.dz_node
     overlap = jnp.clip(depth[:, :, None] - layer_top, 0., p.dz_node) * p.wet_mask_z
     wet_depth = jnp.maximum(jnp.sum(overlap, axis=-1, keepdims=True), 1e-12)

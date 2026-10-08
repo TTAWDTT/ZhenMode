@@ -79,7 +79,7 @@ def test_spherical_scalar_mms_is_second_order_without_using_wall_error():
         grid = replace(grid, lon=longitude, lat=latitude, cos_lat=cosine, dy=spacing,
                        dx_2d=np.broadcast_to(spacing * cosine, (len(longitude), len(latitude))).copy())
         base = make_fd_params(grid, column_geometry="nodal_dual_v1")
-        params = SimpleNamespace(**base._asdict(), column_geometry="nodal_dual_v1",
+        params = SimpleNamespace(**base._asdict(),
                                  coastal_kappa_h_2d=jnp.zeros((grid.nx, grid.ny)))
         field = np.cos(np.deg2rad(longitude))[:, None] * cosine[None, :]
         field = np.broadcast_to(field[..., None], params.wet_mask_z.shape)

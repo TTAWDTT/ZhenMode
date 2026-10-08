@@ -24,7 +24,8 @@ def fixture():
     p = SimpleNamespace(ny=3, wet_mask_z=jnp.asarray(wet), cos_lat=jnp.asarray(cosine),
                         inv_dx=jnp.asarray(1. / dx[..., None]), inv_dy=1. / 1000.,
                         dz_node=jnp.asarray(h), dz_3d=jnp.asarray(np.diff(depth)),
-                        T_ref=15., S_ref=35., monotone_adv=True, fct_adv=False)
+                        T_ref=15., S_ref=35., monotone_adv=True, fct_adv=False,
+                        column_geometry="nodal_dual_v1", surface_pressure_pa=None)
     return p, dx * 1000., depth
 
 

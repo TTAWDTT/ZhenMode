@@ -82,7 +82,14 @@ def compute_budget_diagnostics(state, grid, rho0=RHO_0, cp=None, *, column_geome
     S = np.asarray(state.S, dtype=np.float64)
     area = np.asarray(grid.dx_2d, dtype=np.float64) * float(grid.dy)
     wet3 = np.asarray(grid.wet_mask_3d, dtype=np.float64)
-    dz_node = node_thickness(grid.z, column_geometry=column_geometry)
+    if column_geometry == 'fixed_partial_v1':
+        from zhenmode.model.solver.geometry.grid import fixed_reference_nodal_cells
+        cells = fixed_reference_nodal_cells(grid.z, grid.depth, grid.wet_mask)
+        if not np.array_equal(wet3, cells['wet_node_mask']):
+            raise ValueError('fixed partial snapshot disagrees with grid wet nodes')
+        widths = cells['thickness_m']
+    else:
+        widths = node_thickness(grid.z, column_geometry=column_geometry)[None, None, :]
 
     if T.shape != wet3.shape or S.shape != wet3.shape:
         raise ValueError(
@@ -90,7 +97,7 @@ def compute_budget_diagnostics(state, grid, rho0=RHO_0, cp=None, *, column_geome
     if wet3.ndim != 3:
         raise ValueError("wet_mask_3d must be 3-D")
 
-    volume = (area[:, :, None] * dz_node[None, None, :]) * wet3
+    volume = (area[:, :, None] * widths) * wet3
     total_volume = float(volume.sum())
     if total_volume <= 0.0:
         raise ValueError("total wet volume is zero; check the grid/mask")
