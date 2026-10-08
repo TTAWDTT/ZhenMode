@@ -24,10 +24,8 @@ from zhenmode.model.inputs.coastline import (
 from zhenmode.model.solver.geometry.grid import _overlap_matrix
 from zhenmode.provenance.sources import (
     load_json,
-    production_source_modules,
+    package_source_hashes,
     sha256_file,
-    source_paths,
-    source_root,
 )
 
 
@@ -136,10 +134,7 @@ def prepare_native_geometry(parent_geometry, shoreline_acquisition, policy_file,
         "subcell_topology_merging_is_approximate": True,
         "execution_ready": False,
         "climate_qualification": False,
-        "package_source_sha256": {
-            n: sha256_file(p)
-            for n, p in source_paths(source_root(__file__), production_source_modules()).items()
-        },
+        "package_source_sha256": package_source_hashes(__file__),
     }
     try:
         with netCDF4.Dataset(source) as data:
@@ -420,10 +415,7 @@ def prepare_native_geometry(parent_geometry, shoreline_acquisition, policy_file,
         for path, expected in identities.items():
             if sha256_file(path) != expected:
                 raise ValueError("native geometry source/receipt changed during preparation")
-        if report["package_source_sha256"] != {
-            n: sha256_file(p)
-            for n, p in source_paths(source_root(__file__), production_source_modules()).items()
-        }:
+        if report["package_source_sha256"] != package_source_hashes(__file__):
             raise ValueError("native geometry executed package changed")
         report["outputs"] = {
             p.name: {"bytes": p.stat().st_size, "sha256": sha256_file(p)}

@@ -21,20 +21,11 @@ from zhenmode.model.solver.physics.teos10 import (
     validate_state,
 )
 from zhenmode.provenance.sources import (
+    checked_file,
     load_json,
-    production_source_modules,
+    package_source_hashes,
     sha256_file,
-    source_paths,
-    source_root,
 )
-
-
-def _checked_file(parent, row, key='path'):
-    path=(parent/row[key]).resolve()
-    if (type(row.get('bytes')) is not int or row['bytes']<=0 or not path.is_file()
-            or path.stat().st_size!=row['bytes'] or sha256_file(path)!=row['sha256']):
-        raise ValueError('initial source file identity mismatch: '+str(path))
-    return path
 
 
 def _coordinate(ds, name, units):
@@ -99,8 +90,8 @@ def prepare_woa_thermodynamics(acquisition, pressure_reference, output):
             chosen[row['role']]=row
     if set(chosen)!={'temperature','salinity'}:
         raise ValueError('annual original WOA temperature and salinity are required')
-    paths={name:_checked_file(acquisition.parent,row) for name,row in chosen.items()}
-    pressure_path=_checked_file(pressure_reference.parent,pressure_info)
+    paths={name:checked_file(acquisition.parent,row) for name,row in chosen.items()}
+    pressure_path=checked_file(pressure_reference.parent,pressure_info)
     output.mkdir(parents=True,exist_ok=False)
     report={'schema_version':1,'status':'running','scope':'WOA_original_grid_not_native_initialization',
             'acquisition_sha256':acquisition_sha,'pressure_receipt_sha256':pressure_receipt_sha,
@@ -109,8 +100,7 @@ def prepare_woa_thermodynamics(acquisition, pressure_reference, output):
             'pressure_sha256':pressure_info['sha256'],'missing_support_policy':'preserve_paired_original_mask',
             'salinity_definition':'SR_approximates_SA_no_geographic_anomaly',
             'native_initialization_ready':False,'execution_ready':False,'climate_qualification':False,
-            'package_source_sha256':{name:sha256_file(path) for name,path in
-                source_paths(source_root(__file__),production_source_modules()).items()},
+            'package_source_sha256':package_source_hashes(__file__),
             'levels':[]}
     try:
         with ExitStack() as stack:
@@ -234,8 +224,7 @@ def prepare_woa_thermodynamics(acquisition, pressure_reference, output):
             raise ValueError('initial source receipt changed during conversion')
         if not any(level['paired_original_cells'] for level in report['levels']):
             raise ValueError('no paired original WOA support to convert')
-        actual_sources = {name:sha256_file(path) for name,path in
-            source_paths(source_root(__file__),production_source_modules()).items()}
+        actual_sources = package_source_hashes(__file__)
         if actual_sources != report['package_source_sha256']:
             raise ValueError('executed package changed during conversion')
         report.update(status='original_grid_thermodynamics_prepared',

@@ -51,6 +51,8 @@ PACKAGE_SOURCE_MODULES = (
     'zhenmode/baselines/mom6/omip2_time',
     'zhenmode/baselines/mom6/tripolar',
     'zhenmode/cli',
+    'zhenmode/coupling/__init__',
+    'zhenmode/preparation/__init__',
     'zhenmode/evaluation/__init__',
     'zhenmode/evaluation/cli',
     'zhenmode/evaluation/external',
@@ -63,16 +65,16 @@ PACKAGE_SOURCE_MODULES = (
     'zhenmode/evaluation/table',
     'zhenmode/execution/__init__',
     'zhenmode/execution/benchmark',
-    'zhenmode/execution/initialization',
-    'zhenmode/execution/native_initialization',
-    'zhenmode/execution/native_geometry',
-    'zhenmode/execution/native_bottom',
-    'zhenmode/execution/native_fd',
-    'zhenmode/execution/native_run',
-    'zhenmode/execution/native_sis2',
-    'zhenmode/execution/native_ice_case',
-    'zhenmode/execution/datasets',
-    'zhenmode/execution/preparation',
+    'zhenmode/preparation/woa',
+    'zhenmode/preparation/native_initial',
+    'zhenmode/preparation/coast',
+    'zhenmode/preparation/bottom',
+    'zhenmode/preparation/fd',
+    'zhenmode/execution/wind_run',
+    'zhenmode/coupling/sis2',
+    'zhenmode/coupling/geometry',
+    'zhenmode/preparation/acquisition',
+    'zhenmode/preparation/forcing',
     'zhenmode/execution/cli',
     'zhenmode/execution/options',
     'zhenmode/execution/profiling',
@@ -250,3 +252,25 @@ def sha256_file(path):
         for chunk in iter(lambda: stream.read(1024 * 1024), b""):
             digest.update(chunk)
     return digest.hexdigest()
+
+
+def checked_file(parent, row, key="path"):
+    """Resolve an input reference and require its declared size and byte hash."""
+    path = (parent / row[key]).resolve()
+    if (
+        type(row.get("bytes")) is not int
+        or row["bytes"] <= 0
+        or not path.is_file()
+        or path.stat().st_size != row["bytes"]
+        or sha256_file(path) != row["sha256"]
+    ):
+        raise ValueError("initial source file identity mismatch: " + str(path))
+    return path
+
+
+def package_source_hashes(location):
+    """Hash the complete required Python envelope afresh; never cache identities."""
+    return {
+        name: sha256_file(path)
+        for name, path in source_paths(source_root(location), production_source_modules()).items()
+    }

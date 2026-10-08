@@ -13,17 +13,15 @@ from pathlib import Path
 import netCDF4
 import numpy as np
 
-from zhenmode.execution.initialization import _checked_file
 from zhenmode.model.config import CP0_TEOS10, RHO_0
 from zhenmode.model.inputs.initial_conditions import extend_native_bottom_pairs
 from zhenmode.model.solver.geometry.grid import fixed_reference_nodal_cells
 from zhenmode.model.solver.physics.teos10 import conservative_from_potential, validate_state
 from zhenmode.provenance.sources import (
+    checked_file,
     load_json,
-    production_source_modules,
+    package_source_hashes,
     sha256_file,
-    source_paths,
-    source_root,
 )
 
 
@@ -50,12 +48,12 @@ def complete_native_bottom(native_prepared, review_file, output):
         or not isinstance(review["columns"], list)
     ):
         raise ValueError("bottom review must bind native receipt and explicit regional priority")
-    evidence = [_checked_file(review_file.parent, row) for row in review["evidence"]]
+    evidence = [checked_file(review_file.parent, row) for row in review["evidence"]]
     if not evidence:
         raise ValueError(
             "regional review needs recorded evidence, including unavailable/unsupported profiles"
         )
-    source = _checked_file(native_prepared, parent["output"])
+    source = checked_file(native_prepared, parent["output"])
     geometry = native_prepared / parent["geometry_output"]["path"]
     identities = {
         receipt: receipt_sha,
@@ -238,10 +236,7 @@ def complete_native_bottom(native_prepared, review_file, output):
         "geometry": parent["geometry"],
         "source_time_definition": parent["source_time_definition"],
         "bathymetry_source_provenance": parent["bathymetry_source_provenance"],
-        "package_source_sha256": {
-            n: sha256_file(p)
-            for n, p in source_paths(source_root(__file__), production_source_modules()).items()
-        },
+        "package_source_sha256": package_source_hashes(__file__),
     }
     try:
         target = output / "native_point_fields.nc"
@@ -384,10 +379,7 @@ def complete_native_bottom(native_prepared, review_file, output):
         for p, expected in identities.items():
             if sha256_file(p) != expected:
                 raise ValueError("bottom completion source/review changed during preparation")
-        if report["package_source_sha256"] != {
-            n: sha256_file(p)
-            for n, p in source_paths(source_root(__file__), production_source_modules()).items()
-        }:
+        if report["package_source_sha256"] != package_source_hashes(__file__):
             raise ValueError("executed bottom completion package changed")
         report.update(
             status="native_points_completed_with_bottom_assumptions"

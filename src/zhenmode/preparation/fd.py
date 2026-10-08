@@ -12,16 +12,14 @@ from pathlib import Path
 import netCDF4
 import numpy as np
 
-from zhenmode.execution.initialization import _checked_file
 from zhenmode.model.config import G_EARTH, OMEGA, R_EARTH, RHO_0
 from zhenmode.model.solver.geometry.grid import GlobalOceanGrid, fixed_reference_nodal_cells
 from zhenmode.model.solver.physics.teos10 import validate_state
 from zhenmode.provenance.sources import (
+    checked_file,
     load_json,
-    production_source_modules,
+    package_source_hashes,
     sha256_file,
-    source_paths,
-    source_root,
 )
 
 _FIELDS = {
@@ -145,7 +143,7 @@ def prepare_fd_native_inputs(native_prepared, policy_file, output):
         raise ValueError(
             "FD input bridge requires complete, explicit fixed-partial native point data"
         )
-    source = _checked_file(native_prepared, parent["output"])
+    source = checked_file(native_prepared, parent["output"])
     geometry = native_prepared / parent["geometry_output"]["path"]
     identities = {
         receipt: receipt_sha,
@@ -218,10 +216,7 @@ def prepare_fd_native_inputs(native_prepared, policy_file, output):
     # No pressure clipping, node deletion or wet infill occurs in this bridge.
     validate_state(sr, ct, metrics["eos_pressure_dbar"])
     output.mkdir(parents=True, exist_ok=False)
-    software = {
-        n: sha256_file(p)
-        for n, p in source_paths(source_root(__file__), production_source_modules()).items()
-    }
+    software = package_source_hashes(__file__)
     report = {
         "schema_version": 1,
         "status": "running",
@@ -280,10 +275,7 @@ def prepare_fd_native_inputs(native_prepared, policy_file, output):
         for path, expected in identities.items():
             if sha256_file(path) != expected:
                 raise ValueError("FD native input source/policy changed during preparation")
-        if software != {
-            n: sha256_file(p)
-            for n, p in source_paths(source_root(__file__), production_source_modules()).items()
-        }:
+        if software != package_source_hashes(__file__):
             raise ValueError("executed FD native input package changed")
     except (Exception, KeyboardInterrupt) as error:
         report.update(status="failed", reason_type=type(error).__name__, reason=str(error))
@@ -312,7 +304,7 @@ def load_fd_native_inputs(directory):
     ):
         raise ValueError("completed FD native input receipt is required")
     _policy(report["policy"])
-    source = _checked_file(directory, report["output"])
+    source = checked_file(directory, report["output"])
     with np.load(source, allow_pickle=False) as data:
         if set(data.files) != _FIELDS:
             raise ValueError("FD native input bundle fields disagree")

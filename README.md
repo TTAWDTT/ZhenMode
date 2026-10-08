@@ -53,6 +53,8 @@ zhenmode baseline mom6 omip2-plan --profile integration-6h
 | --- | --- |
 | `src/zhenmode/model/` | 正式模式：组装、输入、动力与物理过程、积分、诊断、输出和重启 |
 | `src/zhenmode/baselines/mom6/` | MOM6 接入、固定版本与内置小算例；上游源码和构建产物使用独立缓存 |
+| `src/zhenmode/preparation/` | 离线资料获取、强迫映射、海岸与温盐初态准备；不推进海洋 |
+| `src/zhenmode/coupling/` | 原生 SIS2 客户端、Fortran 驱动及共享网格准备 |
 | `src/zhenmode/execution/` | 配置展开、实验执行、扫参、运行身份和状态管理 |
 | `src/zhenmode/evaluation/` | 唯一评分实现、可比性检查和报告 |
 | `cases/`, `configs/`, `experiments/`, `protocols/` | 用户编辑的问题、方法预设、试验定义和评价规则 |
@@ -61,6 +63,6 @@ zhenmode baseline mom6 omip2-plan --profile integration-6h
 
 模型内部按 `solver`（求解）、`inputs`（输入）、`runtime`（运行）、`io`（产物与重启）、`diagnostics`（诊断）组织；配置与解析验证分别为 `config.py`、`verification.py`。每个文件的职责与运行链路见 [模型导读](src/zhenmode/model/README.md)。
 
-参见 [方法与架构](docs/production_architecture_zh.md)、[开发与测试](docs/development.md)。研究原型、私人监控和运行产物仅保留在本地，不参与安装或正式测试。
+资料准备和耦合模块的逐文件职责见 [准备与耦合导读](docs/preparation_coupling_zh.md)。参见 [方法与架构](docs/production_architecture_zh.md)、[开发与测试](docs/development.md)。研究原型、私人监控和运行产物仅保留在本地，不参与安装或正式测试。
 
 模型不依赖对照、实验管理或评分模块。`ocean-solver` 命令继续直接运行同一个正式模式；Python 导入改用 `zhenmode.model.*`，不保留旧包转接层。旧源码生成的严格 checkpoint 和 Python pickle 需在其原 Git 版本读取，不能通过本次路径迁移绕过源码身份校验。

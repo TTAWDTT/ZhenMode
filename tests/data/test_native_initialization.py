@@ -8,7 +8,7 @@ import pytest
 
 from tests.support.data.native_initialization import native_inputs as _inputs
 from zhenmode.execution.benchmark import main
-from zhenmode.execution.native_initialization import prepare_native_initialization
+from zhenmode.preparation.native_initial import prepare_native_initialization
 from zhenmode.provenance.sources import sha256_file
 
 
@@ -96,7 +96,7 @@ def test_source_units_and_changed_geometry_identity_are_rejected(tmp_path):
 
 
 def test_late_receipt_change_never_publishes_completed_native_status(tmp_path, monkeypatch):
-    import zhenmode.execution.native_initialization as implementation
+    import zhenmode.preparation.native_initial as implementation
 
     source, geometry, nodes, _, _ = _inputs(tmp_path)
     original = implementation.smooth_native_paired_holes

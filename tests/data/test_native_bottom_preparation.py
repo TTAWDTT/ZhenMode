@@ -9,8 +9,8 @@ import pytest
 from scripts.check_native_bottom_preparation import verify
 from tests.support.data.native_initialization import native_inputs as _inputs
 from zhenmode.execution.benchmark import main
-from zhenmode.execution.native_bottom import complete_native_bottom
-from zhenmode.execution.native_initialization import prepare_native_initialization
+from zhenmode.preparation.bottom import complete_native_bottom
+from zhenmode.preparation.native_initial import prepare_native_initialization
 from zhenmode.provenance.sources import sha256_file
 
 
@@ -132,7 +132,7 @@ def test_review_cannot_omit_a_column_replace_known_water_or_hide_source_identity
 
 
 def test_late_review_evidence_mutation_never_publishes_success(tmp_path, monkeypatch):
-    import zhenmode.execution.native_bottom as implementation
+    import zhenmode.preparation.bottom as implementation
 
     prepared, review, _ = _prepared(tmp_path)
     original = implementation.shutil.copyfile

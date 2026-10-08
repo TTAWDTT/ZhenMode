@@ -13,7 +13,7 @@ python -m zhenmode mms
 
 `requirements.txt` 固定 CPU 开发验证环境；`pyproject.toml` 定义可安装包的依赖和入口。GPU 环境见 [GPU 运行](gpu_runtime_zh.md)。
 
-`tests/fd`、`tests/runtime`、`tests/data` 对应模型与输入；`tests/baselines`、`tests/evaluation`、`tests/experiments` 对应接入、评分与实验契约。`test_optin_*` 覆盖正式包提供的可选接口，不代表默认生产方案。独立解析解、NumPy 参考计算和故障负例保留在测试中，不能改为同一实现的回调自证。研究专属测试位于本地研究工作区，不参与正式收集。
+`tests/fd`、`tests/runtime`、`tests/data` 对应模型、运行与输入；`tests/coupling` 对应外部组件交换；`tests/baselines`、`tests/evaluation`、`tests/experiments` 对应对照、评分与实验契约。旧 `tests/validation` 的评分测试已归入 `tests/evaluation`，保留原断言和独立参考。`test_optin_*` 覆盖正式包提供的可选接口，不代表默认生产方案。独立解析解、NumPy 参考计算和故障负例保留在测试中，不能改为同一实现的回调自证。研究专属测试位于本地研究工作区，不参与正式收集。
 
 Windows 本地有界调用使用单 CPU、180 秒、4 GiB，可按明确范围拆分：
 
@@ -47,7 +47,7 @@ MOM6时间格式适配：`zhenmode baseline mom6 omip2-time-inputs --prepared-in
 
 为同一命令追加`--original-prepared NEW_INPUT --native-prepared NEW_FMS_INPUT`并选择另一新输出目录，可独立比较真实1958年首六小时、每小时的11字段。先核对两层收据及每个实际文件；参考直接从适配前CF时刻/bounds和值计算，检查所有格点，同时保留三个样本与全场求和，不调用被测读取器生成期望值。实际Fortran输出为native-real64列优先stream，检查器核对完整长度、逐值误差及输出hash。输入是制造数据时仍标记manufactured；该小检查固定首窗和一小时步长，不能冒充任意年度或完整耦合验证。
 
-内部调用直接引用所属模块；结构见 [方法与架构](production_architecture_zh.md)。旧源码的运行和严格 checkpoint 需检出对应 Git 提交，不通过路径别名或替换 hash 绕过身份检查。
+内部调用直接引用所属模块；结构见 [方法与架构](production_architecture_zh.md)和[准备与耦合导读](preparation_coupling_zh.md)。离线准备使用 `zhenmode.preparation.*`，原生 SIS2 使用 `zhenmode.coupling.sis2`，有界风驱动运行使用 `zhenmode.execution.wind_run`；现有 CLI 命令与参数保持。旧源码的运行和严格 checkpoint 需检出对应 Git 提交，不通过路径别名或替换 hash 绕过身份检查。
 
 非线性热力学组件和固定 GSW/MOM6 参考检查见[温盐与密度](thermodynamics_zh.md)。日常测试用 `python scripts/run_bounded_tests.py tests/fd/test_teos10.py -q`；完整 Fortran 复算在 Linux 外层使用同样资源上限。组件尚未切换生产状态变量或 EOS。
 

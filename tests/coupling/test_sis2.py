@@ -9,7 +9,7 @@ import numpy as np
 import pytest
 
 from tests.support.grid import all_wet_grid
-from zhenmode.execution.native_sis2 import FLUX_FIELDS, SURFACE_FIELDS, decode_reply
+from zhenmode.coupling.sis2 import FLUX_FIELDS, SURFACE_FIELDS, decode_reply
 from zhenmode.model.config import CP0_TEOS10, G_EARTH, RHO_0, PhysicsConfig
 from zhenmode.model.solver.dynamics.pressure import _compute_pressure_gradient
 from zhenmode.model.solver.factory import make_solver_global
@@ -129,19 +129,19 @@ def test_native_link_compiler_identity_is_bound(tmp_path, monkeypatch):
     import shlex
 
     from zhenmode.baselines.mom6 import omip2
-    from zhenmode.execution import native_sis2
+    from zhenmode.coupling import sis2
     from zhenmode.provenance.sources import sha256_file
 
     files = {name: tmp_path / name for name in ["mpif90", "gfortran"]}
     for name, path in files.items():
         path.write_text(name)
-    monkeypatch.setattr(native_sis2.shutil, "which", lambda name: str(files[name]) if name in files else name)
+    monkeypatch.setattr(sis2.shutil, "which", lambda name: str(files[name]) if name in files else name)
     monkeypatch.setattr(omip2, "_command", lambda command: "compiler-v1" if command[-1] == "--version" else shlex.quote(str(files["gfortran"])))
     recipe = {"tools": {name: {"path": str(path), "sha256": sha256_file(path), "version": "compiler-v1"} for name, path in files.items()}}
-    assert native_sis2._link_tools(recipe) == recipe["tools"]
+    assert sis2._link_tools(recipe) == recipe["tools"]
     files["gfortran"].write_text("changed compiler")
     with pytest.raises(ValueError, match="differs from recorded"):
-        native_sis2._link_tools(recipe)
+        sis2._link_tools(recipe)
 
 
 def test_pressure_diagnostics_use_the_same_dynamic_load_as_the_step():

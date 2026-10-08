@@ -179,7 +179,6 @@ def integrate_fd_wind(config, *, required_backend="gpu"):
     import jax
     import numpy as np
 
-    from zhenmode.execution.native_fd import load_fd_native_inputs
     from zhenmode.execution.runs import environment_identity
     from zhenmode.model.config import PhysicsConfig
     from zhenmode.model.diagnostics.budgets import (
@@ -201,6 +200,7 @@ def integrate_fd_wind(config, *, required_backend="gpu"):
         validate_state,
     )
     from zhenmode.model.solver.state import JaxStateG
+    from zhenmode.preparation.fd import load_fd_native_inputs
 
     output = Path(config["output"])
     prepared = Path(config["native_prepared"])

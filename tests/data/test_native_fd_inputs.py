@@ -8,9 +8,9 @@ import pytest
 
 from tests.support.data.fd_native import prepared_native_inputs as _prepared
 from zhenmode.execution.benchmark import main
-from zhenmode.execution.native_fd import load_fd_native_inputs, prepare_fd_native_inputs
 from zhenmode.model.config import G_EARTH, RHO_0, PhysicsConfig
 from zhenmode.model.solver.factory import make_solver_global
+from zhenmode.preparation.fd import load_fd_native_inputs, prepare_fd_native_inputs
 from zhenmode.provenance.sources import sha256_file
 
 
@@ -131,7 +131,7 @@ def test_loader_checks_rebound_bundle_definition_not_only_its_digest(tmp_path, d
 
 
 def test_late_policy_change_never_reports_completed_inputs(tmp_path, monkeypatch):
-    import zhenmode.execution.native_fd as implementation
+    import zhenmode.preparation.fd as implementation
 
     native, policy = _prepared(tmp_path)
     original = implementation.np.savez_compressed

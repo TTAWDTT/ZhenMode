@@ -19,6 +19,9 @@ def test_cached_build_excludes_retired_modules_and_keeps_non_python_cache(tmp_pa
     stale_package = staging / "zhenmode" / "candidates"
     stale_package.mkdir(parents=True)
     (stale_package / "__init__.py").write_text("retired = True\n")
+    retired_driver = staging / "zhenmode" / "execution" / "sis2_bridge.f90"
+    retired_driver.parent.mkdir()
+    retired_driver.write_text("retired driver\n")
     (staging / "material_top.py").write_text("retired = True\n")
     cache = staging / "unrelated.cache"
     cache.write_bytes(b"retain this cache")
@@ -34,6 +37,7 @@ def test_cached_build_excludes_retired_modules_and_keeps_non_python_cache(tmp_pa
     assert (staging / "kept.py").read_bytes() == (source / "kept.py").read_bytes()
     assert (package / "__init__.py").read_text() == "VALUE = 1\n"
     assert cache.read_bytes() == b"retain this cache"
+    assert not retired_driver.exists()
     assert all(p.is_relative_to(tmp_path) for p in map(Path, command.get_outputs(False)))
 
 

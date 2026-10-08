@@ -8,7 +8,9 @@ import pytest
 
 from tests.support.paths import REPOSITORY_ROOT
 from zhenmode.provenance.sources import (
+    checked_file,
     current_source_files,
+    package_source_hashes,
     production_source_modules,
     source_paths,
     verify_current_source_hashes,
@@ -17,6 +19,41 @@ from zhenmode.provenance.sources import (
 
 def hashes(files):
     return {name: hashlib.sha256(path.read_bytes()).hexdigest() for name, path in files.items()}
+
+
+def test_package_hash_collection_uses_actual_files_and_rereads_mutated_bytes(tmp_path):
+    source = tmp_path / "src"
+    shutil.copytree(REPOSITORY_ROOT / "src", source, ignore=shutil.ignore_patterns("__pycache__"))
+    actual = {p.relative_to(source).with_suffix("").as_posix(): p
+              for p in (source / "zhenmode").rglob("*.py")}
+    before = package_source_hashes(source)
+    assert before == hashes(actual)
+    changed = "zhenmode/preparation/forcing"
+    actual[changed].write_bytes(actual[changed].read_bytes() + b"\n# independent tamper control\n")
+    after = package_source_hashes(source)
+    assert after == hashes(actual)
+    assert before[changed] != after[changed]
+
+
+@pytest.mark.parametrize("corruption", [None, "size", "boolean_size", "bytes", "missing"])
+def test_shared_input_verifier_rejects_corrupted_references(tmp_path, corruption):
+    path = tmp_path / "input.bin"
+    path.write_bytes(b"original input bytes")
+    reference = {"path": path.name, "bytes": path.stat().st_size,
+                 "sha256": hashlib.sha256(path.read_bytes()).hexdigest()}
+    if corruption == "size":
+        reference["bytes"] += 1
+    elif corruption == "boolean_size":
+        reference["bytes"] = True
+    elif corruption == "bytes":
+        path.write_bytes(b"modified input bytes")
+    elif corruption == "missing":
+        path.unlink()
+    if corruption:
+        with pytest.raises(ValueError, match="file identity mismatch"):
+            checked_file(tmp_path, reference)
+    else:
+        assert checked_file(tmp_path, reference) == path.resolve()
 
 
 def test_identity_covers_every_actual_package_file_without_local_materials():
