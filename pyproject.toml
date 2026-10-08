@@ -35,6 +35,7 @@ where = ["src"]
 include = ["zhenmode*"]
 
 [tool.setuptools.package-data]
+"zhenmode.baselines.oceananigans" = ["*.json", "*.jl"]
 "zhenmode.baselines.mom6" = ["*.json", "cases/*.json", "README.md"]
 "zhenmode.coupling" = ["sis2_bridge.f90"]
 

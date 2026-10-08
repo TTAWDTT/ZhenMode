@@ -49,6 +49,8 @@ zhenmode benchmark plan --profile integration-6h --method zhenmode --dt-seconds 
 zhenmode baseline mom6 omip2-plan --profile integration-6h
 ```
 
+驻波的正式三方入口、协议和适用范围见[三方驻波比较](docs/standing_wave_zh.md)。
+
 ## 开发
 
 | 目录 | 用途 |

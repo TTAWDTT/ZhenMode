@@ -9,6 +9,7 @@
 | 离线准备和原生耦合的代码职责 | [准备与耦合导读](preparation_coupling_zh.md) |
 | 原生几何与初态 | [海岸、水柱与补底](native_initialization_zh.md) |
 | 配置、实验与扫参 | [预设](../configs/README.md)、[实验说明](experiments_zh.md) |
+| 三方驻波 bench | [运行、协议与代码职责](standing_wave_zh.md) |
 | 评分与比较 | [评价说明](evaluation_zh.md) |
 | 行业参照 benchmark | [具体规范](benchmark_spec_zh.md)、[ZhenMode／MOM6 机制符合表](benchmark_compliance_zh.md) |
 | 外部对照 | [MOM6](baselines_zh.md) |
