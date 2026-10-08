@@ -12,7 +12,7 @@ from pathlib import Path
 
 import numpy as np
 
-from zhenmode.benchmarks.standing_wave import contract, digest, validate_contract
+from zhenmode.benchmarks.standing_wave import contract, digest, study_contract, validate_contract
 from zhenmode.evaluation.standing_wave import score, validate
 from zhenmode.execution.resources import run_cuda_worker, run_process_group
 from zhenmode.execution.runs import write_json
@@ -209,6 +209,7 @@ def run(
     oceananigans_cache=None,
     julia="julia",
     source_revision=None,
+    study=None,
 ):
     if os.name != "posix":
         raise ValueError("standing-wave execution requires Linux/WSL and CUDA")
@@ -221,7 +222,8 @@ def run(
     revision = reported_revision(source_revision)
     if not re.fullmatch(r"[0-9a-f]{40}", revision):
         raise ValueError("source-revision must be a full Git revision")
-    c = contract(case)
+    c = contract(case) if study is None else study_contract(*study)
+    case = c["case"]
     validate_contract(c)
     root = Path(output).resolve()
     root.mkdir(parents=True, exist_ok=False)
@@ -321,6 +323,7 @@ def main(argv=None):
     parser.add_argument("--oceananigans-cache")
     parser.add_argument("--julia", default="julia")
     parser.add_argument("--source-revision")
+    parser.add_argument("--study", nargs=2, type=int, metavar=("NX", "DT_SECONDS"))
     args = parser.parse_args(argv)
     result = run(
         args.case,
@@ -331,6 +334,7 @@ def main(argv=None):
         oceananigans_cache=args.oceananigans_cache,
         julia=args.julia,
         source_revision=args.source_revision,
+        study=args.study,
     )
     print(
         json.dumps(

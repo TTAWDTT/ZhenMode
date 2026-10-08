@@ -56,6 +56,7 @@ PACKAGE_SOURCE_MODULES = (
     'zhenmode/benchmarks/__init__',
     'zhenmode/benchmarks/standing_wave',
     'zhenmode/evaluation/standing_wave',
+    'zhenmode/evaluation/wave_study',
     'zhenmode/cli',
     'zhenmode/coupling/__init__',
     'zhenmode/preparation/__init__',

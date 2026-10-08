@@ -15,6 +15,7 @@ from zhenmode.benchmarks.standing_wave import (
     contract,
     digest,
     legacy_contract,
+    study_contract,
     validate_contract,
 )
 from zhenmode.provenance.sources import sha256_file
@@ -544,6 +545,7 @@ def main(argv=None):
     f.add_argument("--half", action="store_true")
     f.add_argument("--schema", choices=(SCHEMA_V0, "standing-wave-v1"), default="standing-wave-v1")
     f.add_argument("--out", type=Path, required=True)
+    f.add_argument("--study", nargs=2, type=int, metavar=("NX", "DT_SECONDS"))
     s = sub.add_parser("score")
     s.add_argument("--contract", type=Path, required=True)
     s.add_argument("--output", type=Path, required=True)
@@ -556,12 +558,15 @@ def main(argv=None):
     b.add_argument("--report", type=Path, required=True)
     args = p.parse_args(argv)
     if args.command == "freeze":
+        if args.study and (args.half or args.schema == SCHEMA_V0):
+            raise ValueError("space/time study requires the separate study protocol")
+        frozen = study_contract(*args.study) if args.study else (
+            legacy_contract if args.schema == SCHEMA_V0 else contract
+        )(args.case, args.half)
         with args.out.open("x", encoding="utf8") as stream:
             stream.write(
                 json.dumps(
-                    (legacy_contract if args.schema == SCHEMA_V0 else contract)(
-                        args.case, args.half
-                    ),
+                    frozen,
                     indent=2,
                     allow_nan=False,
                 )

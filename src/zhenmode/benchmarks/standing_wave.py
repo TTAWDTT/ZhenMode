@@ -7,6 +7,8 @@ import numpy as np
 
 SCHEMA_V0 = "standing-wave-v0"
 SCHEMA = "standing-wave-v1"
+STUDY_SCHEMA = "standing-wave-space-time-v1"
+STUDY_PAIRS = ((64, 25), (128, 25), (256, 25), (256, 50), (256, 100))
 MOM6 = "f49a00096df607b48354603e2398e14e189fd62e"
 OCEANANIGANS = "1e8587b17171b0bba5bc6728118c3dbbd3c8acf6"
 
@@ -117,13 +119,30 @@ def contract(case="coarse", half=False):
     return value
 
 
+def study_contract(nx, dt):
+    """Five frozen controls: vary space at dt=25, or time at nx=256."""
+    if type(nx) is not int or type(dt) is not int or (nx, dt) not in STUDY_PAIRS:
+        raise ValueError("unsupported frozen space/time study pair")
+    value = contract({64: "coarse", 128: "medium", 256: "fine"}[nx])
+    value.update(schema=STUDY_SCHEMA, dt=float(dt), study="separate_space_time")
+    for name in ("DT", "DTBT", "DT_THERM", "DT_FORCING"):
+        value["mom_time_options"][name] = float(dt)
+    return value
+
+
 def validate_contract(value):
     """Accept exact versioned definitions; v1 also rejects bool/numeric ambiguity."""
     if not isinstance(value, dict):
         raise ValueError("contract must be an object")
     builder = legacy_contract if value.get("schema") == SCHEMA_V0 else contract
     try:
-        expected = builder(value.get("case"), value.get("amplitude_m") == 0.005)
+        if value.get("schema") == STUDY_SCHEMA:
+            dt = value.get("dt")
+            if type(dt) not in (int, float) or not np.isfinite(dt) or dt != int(dt):
+                raise ValueError("invalid study timestep")
+            expected = study_contract(value.get("nx"), int(dt))
+        else:
+            expected = builder(value.get("case"), value.get("amplitude_m") == 0.005)
     except (KeyError, TypeError) as error:
         raise ValueError("unknown frozen wave case") from error
     if digest(value) != digest(expected):
