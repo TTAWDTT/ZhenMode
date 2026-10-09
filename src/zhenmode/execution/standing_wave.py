@@ -6,7 +6,12 @@ import argparse
 import json
 from pathlib import Path
 
-from zhenmode.benchmarks.standing_wave import contract, study_contract, validate_contract
+from zhenmode.benchmarks.standing_wave import (
+    contract,
+    method_contract,
+    study_contract,
+    validate_contract,
+)
 from zhenmode.evaluation.standing_wave import score
 from zhenmode.execution.native_channel import execute
 
@@ -51,8 +56,16 @@ def run(
     julia="julia",
     source_revision=None,
     study=None,
+    method="baseline",
+    half=False,
 ):
-    c = contract(case) if study is None else study_contract(*study)
+    if method not in ("baseline", "symmetric-external-mode") or (study and method != "baseline"):
+        raise ValueError("unsupported wave method/study combination")
+    c = (
+        (contract(case, half) if method == "baseline" else method_contract(case, half))
+        if study is None
+        else study_contract(*study)
+    )
     return execute(
         c,
         output,
@@ -85,6 +98,10 @@ def main(argv=None):
     parser.add_argument("--julia", default="julia")
     parser.add_argument("--source-revision")
     parser.add_argument("--study", nargs=2, type=int, metavar=("NX", "DT_SECONDS"))
+    parser.add_argument("--half", action="store_true")
+    parser.add_argument(
+        "--method", choices=("baseline", "symmetric-external-mode"), default="baseline"
+    )
     args = parser.parse_args(argv)
     result = run(
         args.case,
@@ -96,6 +113,8 @@ def main(argv=None):
         julia=args.julia,
         source_revision=args.source_revision,
         study=args.study,
+        method=args.method,
+        half=args.half,
     )
     print(
         json.dumps(

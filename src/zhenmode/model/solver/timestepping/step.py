@@ -151,7 +151,7 @@ def _linear_half_step(state, p, dt_half, budget=None, *, momentum_diffusion=None
         budget.sponge_sources(diffusion_state, decay)
 
     # Coriolis rotation (2D f-field, exact)
-    if p.process_time_scheme != 'legacy':
+    if p.process_time_scheme != 'legacy' or p.external_mode_scheme == 'symmetric':
         u, v = _rotate_baroclinic_shear(u, v, p, dt_half)
     else:
         u, v = _coriolis_rotation_2d(u, v, p.f, dt_half)

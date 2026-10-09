@@ -192,7 +192,11 @@ def convert(c, directory, resources):
         integration_s=run["integration_s"],
         resources=resources,
         numerics=dict(
-            time_scheme="existing L/N/L plus forward-backward free surface, legacy full step, CUDA float64",
+            time_scheme=(
+                "legacy L/N/L processes; symmetric external pressure/continuity, single mean rotation; CUDA float64"
+                if run["actual_controls"].get("external_mode_scheme") == "symmetric"
+                else "existing L/N/L plus forward-backward free surface, legacy full step, CUDA float64"
+            ),
             transport="full momentum and T/S transport active",
             filters="native filtering; no cap or sponge",
             vertical_coordinate="fixed nodal dual cells; h includes diagnostic surface displacement",

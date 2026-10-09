@@ -9,11 +9,13 @@ SCHEMA = "channel-dynamics-v1"
 CASES = ("geostrophic-adjustment", "thermal-wind")
 
 
-def contract(case, level="coarse"):
+def contract(case, level="coarse", method="baseline"):
     if case not in CASES or level not in ("coarse", "medium", "fine"):
         raise ValueError("unknown frozen channel benchmark")
     if case == "thermal-wind" and level != "coarse":
         raise ValueError("thermal-wind currently freezes one measured-size grid")
+    if method not in ("baseline", "symmetric-external-mode"):
+        raise ValueError("unknown channel method")
     c = wave_contract()
     c.update(schema=SCHEMA, benchmark=case, case=level, dt=50.0, f=1e-4)
     c["oceananigans_options"]["coriolis"] = "FPlane"
@@ -67,13 +69,17 @@ def contract(case, level="coarse"):
         c["thresholds"]["S_error_psu"] = (
             c["thresholds"]["T_error_C"] * (-c["eos"]["drho_dT"]) / c["eos"]["drho_dS"]
         )
+    if method == "symmetric-external-mode":
+        c["schema"] = "channel-dynamics-method-v1"
+        c["method"] = method
+        c["ocean_options"]["external_mode_scheme"] = "symmetric"
     return c
 
 
 def validate_contract(c):
-    if not isinstance(c, dict) or c.get("schema") != SCHEMA:
+    if not isinstance(c, dict) or c.get("schema") not in (SCHEMA, "channel-dynamics-method-v1"):
         raise ValueError("unknown channel protocol")
-    expected = contract(c.get("benchmark"), c.get("case"))
+    expected = contract(c.get("benchmark"), c.get("case"), c.get("method", "baseline"))
     if digest(c) != digest(expected):
         raise ValueError("channel configuration differs from frozen definition")
 

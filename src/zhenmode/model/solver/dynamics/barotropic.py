@@ -115,6 +115,15 @@ def _free_surface_step_fd(eta, u, v, p, F_rho_x=None, F_rho_y=None, dt_half=None
         if p.column_geometry in {'nodal_dual_v1', 'fixed_partial_v1'}:
             column_divergence_offset = _column_divergence(u, v, p) - _reference_depth_divergence(ubt, vbt, p)
 
+    if p.external_mode_scheme == 'symmetric':
+        # The external step owns the mean rotation; the linear half-step rotates
+        # only vertical shear. Supply actual full-column faces to both drifts.
+        faces = _layer_face_transports(u, v, p)
+        column_faces = tuple(_sum_layer_transports(flux) for flux in faces)
+        (eta_new, mean_x, mean_y), _ = _symmetric_free_surface_step(
+            eta, ubt, vbt, p, dt_half, F_rho_x, F_rho_y, column_faces)
+        return eta_new, u + (mean_x - ubt)[..., None], v + (mean_y - vbt)[..., None]
+
     F_x = jnp.zeros_like(ubt)
     F_y = jnp.zeros_like(vbt)
     if F_rho_x is not None:

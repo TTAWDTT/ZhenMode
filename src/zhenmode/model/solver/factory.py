@@ -48,7 +48,8 @@ def make_solver_global(grid, physics, dt, forcing=None,
                        projection_rtol=None, projection_preconditioner='none',
                        projection_max_refinements=2, column_geometry='legacy',
                        match_barotropic_transport=False, process_time_scheme='legacy',
-                       eos_pressure_dbar=None, surface_pressure_pa=None):
+                       eos_pressure_dbar=None, surface_pressure_pa=None,
+                       external_mode_scheme='forward_backward'):
     """Create a JIT-compiled global FD ocean solver.
 
     Key properties:
@@ -109,9 +110,20 @@ def make_solver_global(grid, physics, dt, forcing=None,
         half-continuity steps around midpoint fast momentum, constrained walls,
         and exact linear bottom drag around the full step. Diffusion, filters
         and coupled forcing errors remain unqualified; not whole-model RK2.
+      - external_mode_scheme='symmetric' changes only the unsplit reference
+        external pressure/continuity step and assigns mean rotation to it.
+        Other processes keep legacy timing. This opt-in requires nodal_dual_v1
+        and zero bottom drag; it does not establish complete-model accuracy.
     """
     finite_number('dt', dt, positive=True)
     finite_number('dt_bt', dt_bt, positive=True)
+    if external_mode_scheme not in ('forward_backward', 'symmetric'):
+        raise ValueError('unknown external_mode_scheme')
+    if external_mode_scheme == 'symmetric':
+        if mode_split or process_time_scheme != 'legacy' or column_geometry != 'nodal_dual_v1':
+            raise ValueError('symmetric external mode requires unsplit legacy with nodal_dual_v1')
+        if physics.r_bot != 0:
+            raise ValueError('symmetric external candidate requires separate bottom-drag qualification')
     validate_grid(grid)
     if dtype not in {'float32', 'float64'}:
         raise ValueError('dtype must be float32 or float64')
@@ -476,6 +488,7 @@ def make_solver_global(grid, physics, dt, forcing=None,
         face_contacts=base.face_contacts, contact_depths_m=base.contact_depths_m,
         node_depth_m=base.node_depth_m,
         surface_pressure_pa=(None if surface_pressure_pa is None else jnp.asarray(surface_pressure_pa)),
+        external_mode_scheme=external_mode_scheme,
     )
 
     if projection_preconditioner == 'jacobi':

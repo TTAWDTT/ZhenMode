@@ -168,9 +168,10 @@ FDPhysParams = namedtuple('FDPhysParams', [
     'eos_pressure_dbar',  # explicitly supplied sea pressure, fixed during a run
     'face_contacts', 'contact_depths_m', 'node_depth_m',
     'surface_pressure_pa',  # optional atmosphere/ice load at ocean surface, Pa
+    'external_mode_scheme',  # opt-in unsplit mean-pressure/rotation update
 ])
 
-FDPhysParams.__new__.__defaults__ = (None, False, False, False, False, False, False, False, None, None, None, -1.8, 0.0, False, 1.0, 150, None, 'none', None, 'default', 2, 'legacy', False, 'legacy', 'linear', None, None, None, None, None)
+FDPhysParams.__new__.__defaults__ = (None, False, False, False, False, False, False, False, None, None, None, -1.8, 0.0, False, 1.0, 150, None, 'none', None, 'default', 2, 'legacy', False, 'legacy', 'linear', None, None, None, None, None, 'forward_backward')
 
 def _state_identity(state):
     # Incoming invalid states still need a failure report; do not pass them

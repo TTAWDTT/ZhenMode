@@ -48,8 +48,8 @@ def write_report(path, receipt):
         stream.write("\n".join(lines))
 
 
-def run(case, output, level="coarse", **options):
-    c = contract(case, level)
+def run(case, output, level="coarse", method="baseline", **options):
+    c = contract(case, level, method)
     return execute(
         c,
         output,
@@ -72,6 +72,7 @@ def main(argv=None):
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("--case", choices=CASES, required=True)
     p.add_argument("--level", choices=("coarse", "medium", "fine"), default="coarse")
+    p.add_argument("--method", choices=("baseline", "symmetric-external-mode"), default="baseline")
     output = p.add_mutually_exclusive_group(required=True)
     output.add_argument("--output", type=Path)
     output.add_argument("--freeze", type=Path)
@@ -81,12 +82,13 @@ def main(argv=None):
     p.add_argument("--julia", default="julia")
     args = p.parse_args(argv)
     if args.freeze:
-        write_json(args.freeze, contract(args.case, args.level), create=True)
+        write_json(args.freeze, contract(args.case, args.level, args.method), create=True)
         return 0
     result = run(
         args.case,
         args.output,
         args.level,
+        method=args.method,
         models=args.models,
         mom_executable=args.mom_executable,
         mom_source=args.mom_source,

@@ -36,7 +36,7 @@ def integrate(config_file):
     else:
         initial_contract = case / "mom-initial-contract-v0.json"
         grid_case = {64: "coarse", 128: "medium", 256: "fine"}[c["nx"]]
-        write_json(initial_contract, legacy_contract(grid_case), create=True)
+        write_json(initial_contract, legacy_contract(grid_case, half=c["amplitude_m"] == .005), create=True)
         prepare_wave_input(initial_contract, case / "INPUT")
     (case / "RESTART").mkdir()
     (case / "MOM_override").write_text("", encoding="utf8")
