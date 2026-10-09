@@ -90,7 +90,11 @@ def integrate(config_file):
         DO_DYNAMICS=True,
         OFFLINE=False,
         ENABLE_THERMODYNAMICS=True,
-        ADIABATIC=c.get("benchmark") != "thermal-wind",
+        USE_EOS=True,
+        ADVECT_TS=True,
+        # All these cases omit diapycnal mass fluxes and buoyancy forcing.
+        # EOS and horizontal T/S advection remain active in the adiabatic route.
+        ADIABATIC=True,
         LAPLACIAN=False,
         BIHARMONIC=False,
         KH=0.0,
@@ -208,7 +212,8 @@ def convert(c, directory, resources):
         "BOTTOMDRAGLAW": "False",
         "THICKNESSDIFFUSE": "False",
         "BULKMIXEDLAYER": "False",
-        "ADIABATIC": "False" if c.get("benchmark") == "thermal-wind" else "True",
+        "ADIABATIC": "True",
+        "USE_EOS": "True",
     }
     for k, v in expected.items():
         actual = resolved.get(k)
