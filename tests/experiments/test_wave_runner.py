@@ -4,7 +4,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from zhenmode.execution import standing_wave as wave
+from zhenmode.execution import native_channel
 
 
 def test_installed_package_does_not_take_unrelated_cwd_commit(tmp_path, monkeypatch):
@@ -12,25 +12,25 @@ def test_installed_package_does_not_take_unrelated_cwd_commit(tmp_path, monkeypa
     installed = tmp_path / "installed"
     installed.mkdir()
     monkeypatch.chdir(tmp_path)
-    monkeypatch.setattr(wave, "source_root", lambda where: installed / "site-packages")
+    monkeypatch.setattr(native_channel, "source_root", lambda where: installed / "site-packages")
     with pytest.raises(ValueError, match="installed runs require"):
-        wave.reported_revision()
-    assert wave.reported_revision("a" * 40) == "a" * 40
+        native_channel.reported_revision()
+    assert native_channel.reported_revision("a" * 40) == "a" * 40
 
 
 def test_checkout_revision_query_is_scoped_to_actual_package(tmp_path, monkeypatch):
     checkout = tmp_path / "product"
     checkout.mkdir()
     (checkout / ".git").mkdir()
-    monkeypatch.setattr(wave, "source_root", lambda where: checkout / "src")
+    monkeypatch.setattr(native_channel, "source_root", lambda where: checkout / "src")
     observed = []
 
     def query(command, **kwargs):
         observed.append(command)
         return "a" * 40
 
-    monkeypatch.setattr(wave.subprocess, "check_output", query)
-    assert wave.reported_revision() == "a" * 40
+    monkeypatch.setattr(native_channel.subprocess, "check_output", query)
+    assert native_channel.reported_revision() == "a" * 40
     assert observed[0][:3] == ["git", "-C", str(checkout)]
 
 
@@ -44,9 +44,9 @@ def test_launcher_preserves_caller_gpu_visibility(tmp_path, monkeypatch):
             "peak_host_rss_bytes": 100,
         }
 
-    monkeypatch.setattr(wave, "run_cuda_worker", supervise)
+    monkeypatch.setattr(native_channel, "run_cuda_worker", supervise)
     monkeypatch.setenv("CUDA_VISIBLE_DEVICES", "GPU-task-device")
-    wave.launch(tmp_path / "config.json", "zhenmode", tmp_path)
+    native_channel.launch(tmp_path / "config.json", "zhenmode", tmp_path)
     assert observed == ["GPU-task-device"]
 
 
