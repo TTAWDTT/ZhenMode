@@ -86,9 +86,16 @@ def integrate(config_file):
         ny=ny,
     )
     physics = PhysicsConfig(**dict.fromkeys(ZERO_COEFFICIENTS, 0.0))
+    forcing = None
+    if "wind_stress" in c:
+        forcing = (
+            np.full((nx, ny), c["wind_stress"]["tau_x_N_m2"]),
+            np.full((nx, ny), c["wind_stress"]["tau_y_N_m2"]),
+            np.zeros((nx, ny)),
+        )
     begin = time.monotonic()
     step, initialize, _, params, _ = make_solver_global(
-        grid, physics, dt=c["dt"], return_params=True, **c["ocean_options"]
+        grid, physics, dt=c["dt"], return_params=True, forcing=forcing, **c["ocean_options"]
     )
     state = initialize()
     if "benchmark" in c:

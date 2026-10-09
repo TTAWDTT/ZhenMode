@@ -114,11 +114,15 @@ def main(argv=None):
     if arguments and arguments[0] == "prepare-wind-sample":
         from zhenmode.preparation.wind_sample import main as wind_sample
         return wind_sample(arguments[1:])
+    if arguments and arguments[0] == "forced-channel":
+        from zhenmode.execution.forced_channel import main as forced
+        return forced(arguments[1:])
     parser = argparse.ArgumentParser(prog="zhenmode benchmark")
     commands = parser.add_subparsers(dest="command", required=True)
     commands.add_parser("standing-wave", help="run native full models on one frozen Cartesian wave")
     commands.add_parser("channel", help="run rotating adjustment or stratified thermal-wind benchmarks")
     commands.add_parser("prepare-wind-sample", help="derive a verified real-weather stress sample")
+    commands.add_parser("forced-channel", help="run a prescribed real-weather stress control")
     commands.add_parser("describe", help="show the installed frozen physical definition")
     freeze = commands.add_parser("freeze", help="create a contract receipt, never overwrite")
     freeze.add_argument("--output", required=True)

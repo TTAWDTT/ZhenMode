@@ -77,6 +77,10 @@ def contract(case, level="coarse", method="baseline"):
 
 
 def validate_contract(c):
+    if isinstance(c, dict) and c.get("schema") == "real-wind-channel-v1":
+        from zhenmode.benchmarks.forced_channel import validate_contract as validate_forced
+
+        return validate_forced(c)
     if not isinstance(c, dict) or c.get("schema") not in (SCHEMA, "channel-dynamics-method-v1"):
         raise ValueError("unknown channel protocol")
     expected = contract(c.get("benchmark"), c.get("case"), c.get("method", "baseline"))

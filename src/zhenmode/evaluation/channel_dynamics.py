@@ -137,8 +137,8 @@ def reference_tracers(c, a, quadrature=32):
     return base + spice, c["S_psu"] + alpha / beta * spice
 
 
-def validate(c, a):
-    validate_native(c, a, validate_contract)
+def validate(c, a, definition_validator=validate_contract):
+    validate_native(c, a, definition_validator)
     width = 0 if a["metadata"]["model"] == "ocean-solver" else c["Ly_m"] / c["ny"]
     eta = reference_surface(c, a["time"][:1], a["y_eta"], width)[0]
     require(np.max(np.abs(a["eta"][0] - eta)) < 5e-11, "wrong initial channel sea level")
@@ -166,6 +166,8 @@ def validate(c, a):
 
 
 def score(c, a):
+    if "wind_stress" in c:
+        raise ValueError("forced trajectories require the dedicated response/budget evaluator")
     validate(c, a)
     width = 0 if a["metadata"]["model"] == "ocean-solver" else c["Ly_m"] / c["ny"]
     eta = reference_surface(c, a["time"], a["y_eta"], width)

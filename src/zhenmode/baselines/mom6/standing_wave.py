@@ -32,11 +32,16 @@ def integrate(config_file):
     # Geometry/initial values are unchanged; the suite declares v1 separately.
     if "benchmark" in c:
         from zhenmode.baselines.mom6.channel_initial import prepare
+
         prepare(c, case / "INPUT")
     else:
         initial_contract = case / "mom-initial-contract-v0.json"
         grid_case = {64: "coarse", 128: "medium", 256: "fine"}[c["nx"]]
-        write_json(initial_contract, legacy_contract(grid_case, half=c["amplitude_m"] == .005), create=True)
+        write_json(
+            initial_contract,
+            legacy_contract(grid_case, half=c["amplitude_m"] == 0.005),
+            create=True,
+        )
         prepare_wave_input(initial_contract, case / "INPUT")
     (case / "RESTART").mkdir()
     (case / "MOM_override").write_text("", encoding="utf8")
@@ -130,6 +135,12 @@ def integrate(config_file):
     )
     if "benchmark" in c:
         settings.update(VELOCITY_FILE="standing_wave_initial.nc", U_IC_VAR="u", V_IC_VAR="v")
+    if "wind_stress" in c:
+        settings.update(
+            WIND_CONFIG="const",
+            CONST_WIND_TAUX=c["wind_stress"]["tau_x_N_m2"],
+            CONST_WIND_TAUY=c["wind_stress"]["tau_y_N_m2"],
+        )
     # LAYOUT is a native integer pair.
     text = (
         "\n".join(
@@ -215,11 +226,19 @@ def convert(c, directory, resources):
         "ADIABATIC": "True",
         "USE_EOS": "True",
     }
+    if "wind_stress" in c:
+        expected.update(
+            WIND_CONFIG="const",
+            CONST_WIND_TAUX=str(c["wind_stress"]["tau_x_N_m2"]),
+            CONST_WIND_TAUY=str(c["wind_stress"]["tau_y_N_m2"]),
+        )
     for k, v in expected.items():
         actual = resolved.get(k)
         match = actual == v
         if k == "F_0" and c["f"] != 0 and actual is not None:
             match = np.isclose(float(actual), c["f"], rtol=5e-12, atol=0)
+        if k in ("CONST_WIND_TAUX", "CONST_WIND_TAUY") and actual is not None:
+            match = np.isclose(float(actual), float(v), rtol=5e-12, atol=0)
         if not match:
             raise ValueError(f"MOM6 resolved {k}={resolved.get(k)!r}, expected {v!r}")
     write_json(
@@ -234,7 +253,9 @@ def convert(c, directory, resources):
         netCDF4.Dataset(case / "MOM_IC.nc") as ic,
         netCDF4.Dataset(case / "ocean_geometry.nc") as geom,
     ):
-        if not np.array_equal(d["Time"][:], np.arange(c["output_s"], duration(c) + 1, c["output_s"])):
+        if not np.array_equal(
+            d["Time"][:], np.arange(c["output_s"], duration(c) + 1, c["output_s"])
+        ):
             raise ValueError("MOM6 native output times are incomplete or changed")
         if not np.all(geom["wet"][:] == 1):
             raise ValueError("MOM6 native wet mask differs from the all-wet case")
@@ -249,7 +270,9 @@ def convert(c, directory, resources):
                     raise ValueError("unknown missing interior normal velocities")
                 # Native FMS does not write closed-wall velocity diagnostics. Physical BC is v=0.
                 if not (np.all(mask[:, :, 0]) and np.all(mask[:, :, -1])):
-                    raise ValueError("MOM6 wall diagnostics do not match the declared boundary masks")
+                    raise ValueError(
+                        "MOM6 wall diagnostics do not match the declared boundary masks"
+                    )
                 value = value.filled(0.0)
             else:
                 if np.ma.getmaskarray(value).any():

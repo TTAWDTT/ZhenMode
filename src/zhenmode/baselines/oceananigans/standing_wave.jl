@@ -24,7 +24,14 @@ equation_of_state = LinearEquationOfState(Float64; thermal_expansion=o.thermal_e
 buoyancy = SeawaterBuoyancy(Float64; equation_of_state, gravitational_acceleration=c.gravity)
 free_surface = SplitExplicitFreeSurface(grid; gravitational_acceleration=c.gravity, substeps=Int(o.requested_substeps))
 rotation = c.f == 0 ? nothing : FPlane(Float64; f=c.f)
+boundary_conditions = NamedTuple()
+if haskey(c, :wind_stress)
+    u_bc = FieldBoundaryConditions(top=FluxBoundaryCondition(-c.wind_stress.tau_x_N_m2/c.rho0))
+    v_bc = FieldBoundaryConditions(top=FluxBoundaryCondition(-c.wind_stress.tau_y_N_m2/c.rho0))
+    boundary_conditions = (u=u_bc, v=v_bc)
+end
 model = HydrostaticFreeSurfaceModel(grid; free_surface, buoyancy, coriolis=rotation, closure=nothing,
+                                   boundary_conditions,
                                    momentum_advection=VectorInvariant(), tracer_advection=Centered(order=2),
                                    timestepper=Symbol(o.timestepper), vertical_coordinate=ZStarCoordinate(),
                                    tracers=(:T,:S,:physical_T,:physical_S))
