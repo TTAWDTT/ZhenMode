@@ -138,7 +138,7 @@ def integrate(config_file):
         "&MOM_input_nml\n output_directory='./', input_filename='n', restart_input_dir='INPUT/', restart_output_dir='RESTART/', parameter_filename='MOM_input','MOM_override'\n/\n&diag_manager_nml\n/\n&fms_nml\n domains_stack_size=955296, stack_size=0\n/\n"
     )
     (case / "diag_table").write_text(
-        f'"Native channel"\n1 1 1 0 0 0\n"prog",{c["output_s"]},"seconds",1,"seconds","Time"\n'
+        f'"Native channel"\n1 1 1 0 0 0\n"prog",{int(c["output_s"])},"seconds",1,"seconds","Time"\n'
         + "".join(
             '"ocean_model","' + n + '","' + n + '","prog","all",.false.,"none",1\n'
             for n in ["u", "v", "h", "e", "temp", "salt"]
