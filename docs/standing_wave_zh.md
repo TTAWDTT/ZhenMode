@@ -49,8 +49,10 @@ v0 和 v1 共用唯一的评分实现。既有固定尺度 eta／深度平均 u 
 ## 代码职责
 
 - `benchmarks/standing_wave.py`：共同物理定义、版本化合同及数值方案声明。
-- `evaluation/standing_wave.py`：唯一解析参考、原生几何／输出校验及评分；不调用模式。
-- `execution/standing_wave.py`：串行资源监督、来源和状态记录、共同结果序列化。
+- `evaluation/standing_wave.py`：驻波解析参考与唯一评分；不调用模式。
+- `evaluation/native_channel.py`：驻波和通道算例共用的原生几何／输出／来源校验。
+- `execution/standing_wave.py`：驻波入口和报告组装。
+- `execution/native_channel.py`：共用的串行资源监督、来源和状态记录及结果序列化。
 - `execution/wave_zhenmode.py`：既有 FD 核心的 case 组装和原生输出。
 - `baselines/mom6/standing_wave.py`：MOM 输入、实际运行、已生效参数核查及诊断转换。
 - `baselines/oceananigans/`：隔离 Julia 环境、固定源码、原生驱动与输出转换。

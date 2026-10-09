@@ -51,6 +51,8 @@ zhenmode baseline mom6 omip2-plan --profile integration-6h
 
 `zhenmode baseline oceananigans` 提供固定原生 CUDA 对照的准备和校验。驻波的正式三方入口、协议和适用范围见[三方驻波比较](docs/standing_wave_zh.md)，九组真实运行见[实测结果](docs/standing_wave_results_zh.md)。
 
+驻波的[空间／时间控制](docs/wave_space_time_zh.md)、[旋转调整与分层热成风](docs/channel_dynamics_zh.md)及[真实来源风应力短窗](docs/real_wind_control_zh.md)分别检验对应机制。新增 30 个原生运行、对称外模的改动和适用范围见[机制对照实测](docs/dynamics_bench_results_zh.md)。
+
 ## 开发
 
 | 目录 | 用途 |
