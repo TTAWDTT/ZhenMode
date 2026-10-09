@@ -91,6 +91,7 @@ PACKAGE_SOURCE_MODULES = (
     'zhenmode/coupling/geometry',
     'zhenmode/preparation/acquisition',
     'zhenmode/preparation/forcing',
+    'zhenmode/preparation/wind_sample',
     'zhenmode/execution/cli',
     'zhenmode/execution/options',
     'zhenmode/execution/profiling',
