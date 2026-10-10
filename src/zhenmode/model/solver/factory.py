@@ -49,7 +49,8 @@ def make_solver_global(grid, physics, dt, forcing=None,
                        projection_max_refinements=2, column_geometry='legacy',
                        match_barotropic_transport=False, process_time_scheme='legacy',
                        eos_pressure_dbar=None, surface_pressure_pa=None,
-                       external_mode_scheme='forward_backward'):
+                       external_mode_scheme='forward_backward',
+                       meridional_boundary_scheme='clamped_nodes'):
     """Create a JIT-compiled global FD ocean solver.
 
     Key properties:
@@ -114,6 +115,11 @@ def make_solver_global(grid, physics, dt, forcing=None,
         external pressure/continuity step and assigns mean rotation to it.
         Other processes keep legacy timing. This opt-in requires nodal_dual_v1
         and zero bottom drag; it does not establish complete-model accuracy.
+      - meridional_boundary_scheme='closed_faces' retains velocity at every
+        cell centre; outer mass/tracer faces stay closed. Normal momentum uses
+        odd wall reflection, and mean rotation acts at all wet centres.
+        Currently limited to the symmetric external mode on an all-wet, flat,
+        Cartesian inviscid channel without polar filtering or dynamic ice.
     """
     finite_number('dt', dt, positive=True)
     finite_number('dt_bt', dt_bt, positive=True)
@@ -126,6 +132,23 @@ def make_solver_global(grid, physics, dt, forcing=None,
         if active_drag != 0:
             raise ValueError('symmetric external candidate requires separate bottom-drag qualification')
     validate_grid(grid)
+    if meridional_boundary_scheme not in ('clamped_nodes', 'closed_faces'):
+        raise ValueError('unknown meridional_boundary_scheme')
+    if meridional_boundary_scheme == 'closed_faces':
+        if external_mode_scheme != 'symmetric':
+            raise ValueError('closed_faces requires the symmetric external mode')
+        if (not np.all(np.asarray(grid.wet_mask) == 1)
+                or (grid.wet_mask_3d is not None and not np.all(np.asarray(grid.wet_mask_3d) == 1))
+                or not np.all(np.asarray(grid.depth) == -np.asarray(grid.z)[-1])
+                or not np.all(np.asarray(grid.cos_lat) == 1)
+                or not np.all(np.asarray(grid.dx_2d) == np.asarray(grid.dx_2d)[0, 0])):
+            raise ValueError('closed_faces currently requires an all-wet flat Cartesian channel')
+        if (any(getattr(physics, name) != 0 for name in (
+                'nu_h', 'nu_v', 'nu_bi', 'kappa_h', 'kappa_v', 'kappa_bi',
+                'kappa_conv', 'kappa_gm', 'kappa_redi'))
+                or polar_cap_rows != 0 or polar_cap_taper != 0 or dynamic_ice
+                or coastal_kappa_h != 0 or coastal_kappa_v != 0):
+            raise ValueError('closed_faces requires separate mixing, polar-filter and ice qualification')
     if dtype not in {'float32', 'float64'}:
         raise ValueError('dtype must be float32 or float64')
     if physics.thermodynamics not in {'linear', 'teos10_reference'}:
@@ -410,7 +433,8 @@ def make_solver_global(grid, physics, dt, forcing=None,
         inv_dx=base.inv_dx, inv_dy=base.inv_dy,
         inv_dx2=base.inv_dx2, inv_dy2=base.inv_dy2,
         f=base.f, wet_mask=base.wet_mask, wet_mask_z=base.wet_mask_z,
-        interior_mask_z=base.interior_mask_z,
+        interior_mask_z=(jnp.ones_like(base.interior_mask_z)
+                         if meridional_boundary_scheme == 'closed_faces' else base.interior_mask_z),
         dz_denom_interior=base.dz_denom_interior,
         dz_bnd_top=base.dz_bnd_top, dz_bnd_bot=base.dz_bnd_bot,
         d2z_hm=base.d2z_hm, d2z_hp=base.d2z_hp, d2z_denom=base.d2z_denom,
@@ -490,6 +514,7 @@ def make_solver_global(grid, physics, dt, forcing=None,
         node_depth_m=base.node_depth_m,
         surface_pressure_pa=(None if surface_pressure_pa is None else jnp.asarray(surface_pressure_pa)),
         external_mode_scheme=external_mode_scheme,
+        meridional_boundary_scheme=meridional_boundary_scheme,
     )
 
     if projection_preconditioner == 'jacobi':

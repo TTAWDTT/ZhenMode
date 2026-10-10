@@ -10,11 +10,19 @@ from zhenmode.model.solver.numerics.contacts import (
 )
 
 
-def _mirror_latitude(u):
-    """One edge-value ghost on each meridional wall, for any field rank."""
+def _mirror_latitude(u, *, normal=False, width=1):
+    """Reflect normal velocity oddly at a wall halfway between centre and ghost.
+
+    The default retains the historical edge-value scalar/tangential padding.
+    Wider odd padding also reflects the second interior centre for filtering.
+    """
     pad = [(0, 0)] * u.ndim
-    pad[1] = (1, 1)
-    return jnp.pad(u, pad, mode='edge')
+    pad[1] = (width, width)
+    padded = jnp.pad(u, pad, mode='symmetric' if normal else 'edge')
+    if normal:
+        padded = padded.at[:, :width].multiply(-1.)
+        padded = padded.at[:, -width:].multiply(-1.)
+    return padded
 
 
 def _wet_face_pair(wet, axis):
@@ -261,7 +269,7 @@ def _divergence_h(u, v, p):
     div_y = (Fy - jnp.roll(Fy, 1, axis=1)) * p.inv_dy / p.cos_lat[None, :, None]
     return div_x + div_y
 
-def _dealias_h_fd(field, p):
+def _dealias_h_fd(field, p, *, normal=False):
     """2-dx grid-scale filter for pointwise-nonlinear products (FD analogue of the
     spectral 2/3-rule dealias).
 
@@ -280,12 +288,12 @@ def _dealias_h_fd(field, p):
     f_hat = f_hat * p.dealias_lon_mask
     f_lon = jnp.real(jnp.fft.ifft(f_hat, axis=0))
     # 5-pt binomial low-pass [1,4,6,4,1]/16 in lat (axis 1, edge-padded wall).
-    fp = jnp.pad(f_lon, ((0, 0), (2, 2), (0, 0)), mode='edge')
+    fp = _mirror_latitude(f_lon, normal=normal, width=2)
     f_sm = (fp[:, :-4] + 4.0 * fp[:, 1:-3] + 6.0 * fp[:, 2:-2]
             + 4.0 * fp[:, 3:-1] + fp[:, 4:]) / 16.0
     return f_sm
 
-def _gradient_face_gated_3d(field, p):
+def _gradient_face_gated_3d(field, p, *, normal=False):
     """Face-gated horizontal gradient for advection: d/dx, d/dy with each face
     difference zeroed at every wet/ghost (or wet/dry) interface.
 
@@ -307,7 +315,7 @@ def _gradient_face_gated_3d(field, p):
     grad_x = p.inv_dx[..., 0:1] * 0.5 * (d_fp + d_fm)
     # Meridional (axis 1, closed N/S walls): mirror-ghost edge padding as in
     # _d_dy (zero normal gradient at the wall) PLUS the wet/wet face gate.
-    f_pad = _mirror_latitude(field)
+    f_pad = _mirror_latitude(field, normal=normal)
     wm_pad = _mirror_latitude(wm)
     open_yp = wm_pad[:, 2:] * wm_pad[:, 1:-1]           # face (j+1/2)
     open_ym = wm_pad[:, 1:-1] * wm_pad[:, :-2]          # face (j-1/2)

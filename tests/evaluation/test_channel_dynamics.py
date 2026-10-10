@@ -12,8 +12,9 @@ from zhenmode.evaluation.native_channel import load
 
 
 @pytest.mark.parametrize("model", ["ocean-solver", "MOM6", "Oceananigans"])
-def test_independent_rotating_adjustment_plant_roundtrips_and_scores(tmp_path, model):
-    c = contract("geostrophic-adjustment")
+@pytest.mark.parametrize("method", ["baseline", "symmetric-external-mode", "symmetric-closed-faces"])
+def test_independent_rotating_adjustment_plant_roundtrips_and_scores(tmp_path, model, method):
+    c = contract("geostrophic-adjustment", method=method)
     a = planted(c, model)
     path = tmp_path / "plant.npz"
     np.savez_compressed(path, **(a | {"metadata": np.array(json.dumps(a["metadata"]))}))

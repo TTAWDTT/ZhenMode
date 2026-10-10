@@ -1,0 +1,749 @@
+{
+  "schema": "closed-faces-development-results-v1",
+  "source_revision": "cd1ee3c3a0d496c2df48005c9bda4b26dc1b4079",
+  "method": "symmetric-closed-faces",
+  "native_runs_this_batch": 11,
+  "candidate_runs": 9,
+  "post_result_same_wheel_controls": 2,
+  "scope": "Development idealized channel controls; no industrial qualification, general model ranking or performance comparison",
+  "plan_sha256": "7f096b3e73696b7cd34c6157eb667b1f1e19868457c060efee79039cceb4f317",
+  "paired_followup_plan_sha256": "a908bb2accb2e1adf9c97e791c4be38913f1dd8848b85dba29dc2caf877f4b9e",
+  "wheel_sha256": "d1dfb1b3fb3f1888ee6c11dffabeb91f21ff821e1cccf23e8afb99d68a695b31",
+  "runs": {
+    "wave-nx64-dt25": {
+      "directory": "D:\\Github\\ocean-solver\\outputs\\closed-faces-20261010\\wave-nx64-dt25",
+      "metrics": {
+        "S": 0.0,
+        "T": 0.0,
+        "amplitude": 7.515080033826393e-07,
+        "energy": 1.4999376560798083e-06,
+        "eta_error": 0.0028594482991087656,
+        "phase_rad": 0.010086760903482764,
+        "u_error": 0.0029648597823413217,
+        "v_over_U": 0.0,
+        "volume": 2.220446049250313e-16
+      },
+      "failed_metrics": [],
+      "source_revision": "cd1ee3c3a0d496c2df48005c9bda4b26dc1b4079",
+      "device": "cuda:0",
+      "backend": "gpu",
+      "actual_controls": {
+        "column_geometry": "nodal_dual_v1",
+        "conservative_kv": true,
+        "external_mode_scheme": "symmetric",
+        "fct_adv": false,
+        "localize_conv": true,
+        "meridional_boundary_scheme": "closed_faces",
+        "mode_split": false,
+        "monotone_adv": false,
+        "polar_cap_rows": 0,
+        "polar_cap_taper": 0,
+        "process_time_scheme": "legacy",
+        "project_adv_vel": false
+      },
+      "wall_diagnostics": {
+        "edge_centre_v_max_m_s": 0.0,
+        "interior_face_transport_max_m2_s": 0.0,
+        "north_transport_max_m2_s": 0.0,
+        "relative_mass_tendency_max": 4.68165200096534e-17,
+        "samples": 33,
+        "scope": "saved instantaneous states, not every accepted step",
+        "south_face": "zero incoming transport in production divergence"
+      },
+      "initialization_s": 3.9255960989999963,
+      "compilation_s": 2.699860779000005,
+      "integration_s": 2.4603921920000005,
+      "worker_wall_s": 12.231002592000003,
+      "sampled_peak_RSS_bytes": 958529536,
+      "files_sha256": {
+        "initial.npz": "01488e4078771cd0c3831cefc1a34e12fe036d103b8787d149ca7d84af42781d",
+        "native.npz": "4fcf4b80585dbf11c01ae6fb4e56b609c96a09801e795dbcb212e89c1c9cd74c",
+        "native-run.json": "fe234c97267c1328c38ea458299465f8280ae0c12442af99223bf7431fd2010b",
+        "output.npz": "cc06fdd7740439dee0424e54a916bc29a2142f99de0d7846a0b0affb80050da4",
+        "score.json": "29c4f57179db4a3846323a88c17123f960141d118de511a8469befcf7799f57c",
+        "resources.json": "483b2a90cf9dc7c760f404993240d31e6f2e3a87d035d88beea98a7ea0961000"
+      }
+    },
+    "wave-nx128-dt25": {
+      "directory": "D:\\Github\\ocean-solver\\outputs\\closed-faces-20261010\\wave-nx128-dt25",
+      "metrics": {
+        "S": 0.0,
+        "T": 0.0,
+        "amplitude": 7.533102988066531e-07,
+        "energy": 1.5035664466811482e-06,
+        "eta_error": 0.0007146009288127145,
+        "phase_rad": 0.002521416791059862,
+        "u_error": 0.0007421282635089032,
+        "v_over_U": 0.0,
+        "volume": 4.440892098500626e-16
+      },
+      "failed_metrics": [],
+      "source_revision": "cd1ee3c3a0d496c2df48005c9bda4b26dc1b4079",
+      "device": "cuda:0",
+      "backend": "gpu",
+      "actual_controls": {
+        "column_geometry": "nodal_dual_v1",
+        "conservative_kv": true,
+        "external_mode_scheme": "symmetric",
+        "fct_adv": false,
+        "localize_conv": true,
+        "meridional_boundary_scheme": "closed_faces",
+        "mode_split": false,
+        "monotone_adv": false,
+        "polar_cap_rows": 0,
+        "polar_cap_taper": 0,
+        "process_time_scheme": "legacy",
+        "project_adv_vel": false
+      },
+      "wall_diagnostics": {
+        "edge_centre_v_max_m_s": 0.0,
+        "interior_face_transport_max_m2_s": 0.0,
+        "north_transport_max_m2_s": 0.0,
+        "relative_mass_tendency_max": 1.7629291214139234e-17,
+        "samples": 33,
+        "scope": "saved instantaneous states, not every accepted step",
+        "south_face": "zero incoming transport in production divergence"
+      },
+      "initialization_s": 4.311790732999995,
+      "compilation_s": 3.058809740000001,
+      "integration_s": 2.5934057980000063,
+      "worker_wall_s": 12.632062950000005,
+      "sampled_peak_RSS_bytes": 964079616,
+      "files_sha256": {
+        "initial.npz": "beabe67fd764e5a1be23720b4d0699658eb4e8915a0c7d0196cfdd62cbf27149",
+        "native.npz": "24bdcc22c9a6520ae5f538c20c3da3325d26e7a0e5c1ca8abb0a22bd9ca3ddce",
+        "native-run.json": "acac2a11c111e22791ab5498045ff36de358cd70ea80e89d2351eae2b1aab884",
+        "output.npz": "f3832b7333177e89f023f58a7b7085bed4bac64209f63a38a74349619c276cb5",
+        "score.json": "92c809715cda365f70baf5e0de1ab2a9c1433cd055a21948cc31147c5cdb4dd3",
+        "resources.json": "8ad94a297e995a7341f66ba3e7d390b4dd0d72b1198108cb8907ef54f900c845"
+      }
+    },
+    "wave-nx256-dt25": {
+      "directory": "D:\\Github\\ocean-solver\\outputs\\closed-faces-20261010\\wave-nx256-dt25",
+      "metrics": {
+        "S": 0.0,
+        "T": 0.0,
+        "amplitude": 7.537535122725814e-07,
+        "energy": 1.5044595917945713e-06,
+        "eta_error": 0.0001800852486504376,
+        "phase_rad": 0.0006292260044627645,
+        "u_error": 0.00018663405741741504,
+        "v_over_U": 0.0,
+        "volume": 2.220446049250313e-16
+      },
+      "failed_metrics": [],
+      "source_revision": "cd1ee3c3a0d496c2df48005c9bda4b26dc1b4079",
+      "device": "cuda:0",
+      "backend": "gpu",
+      "actual_controls": {
+        "column_geometry": "nodal_dual_v1",
+        "conservative_kv": true,
+        "external_mode_scheme": "symmetric",
+        "fct_adv": false,
+        "localize_conv": true,
+        "meridional_boundary_scheme": "closed_faces",
+        "mode_split": false,
+        "monotone_adv": false,
+        "polar_cap_rows": 0,
+        "polar_cap_taper": 0,
+        "process_time_scheme": "legacy",
+        "project_adv_vel": false
+      },
+      "wall_diagnostics": {
+        "edge_centre_v_max_m_s": 0.0,
+        "interior_face_transport_max_m2_s": 0.0,
+        "north_transport_max_m2_s": 0.0,
+        "relative_mass_tendency_max": 1.9794071080258492e-17,
+        "samples": 33,
+        "scope": "saved instantaneous states, not every accepted step",
+        "south_face": "zero incoming transport in production divergence"
+      },
+      "initialization_s": 4.391124927,
+      "compilation_s": 3.121481889000002,
+      "integration_s": 2.6764518059999958,
+      "worker_wall_s": 14.838697099999997,
+      "sampled_peak_RSS_bytes": 992456704,
+      "files_sha256": {
+        "initial.npz": "182cebd1fd6be05eb299bf9e0a0d6e4c248565ea0c863fac4a8d4d00927a78dd",
+        "native.npz": "b81a15689111a10756727f2463bf5b9bbd6e57276796d8fbdcf6eb8cc90af46a",
+        "native-run.json": "adf29e48aea690aff45b22d076e1dbba26fe8936b06ca8cdce0f665aa1f22e77",
+        "output.npz": "75b8bee815425a87f0bbbf76f441f3d9f701b47d9d461fa80aa62bbfbfcd3694",
+        "score.json": "758bfadd5317574c8d442bbd41c17eef766d1f74e90c818a9c94823be886bb7e",
+        "resources.json": "cd50ec21eca15125052e7a19170f381ecf1158010d3f24868abb30efbf668ff1"
+      }
+    },
+    "wave-nx256-dt50": {
+      "directory": "D:\\Github\\ocean-solver\\outputs\\closed-faces-20261010\\wave-nx256-dt50",
+      "metrics": {
+        "S": 0.0,
+        "T": 0.0,
+        "amplitude": 3.012296189375263e-06,
+        "energy": 6.021553454527151e-06,
+        "eta_error": 0.00017876018887097613,
+        "phase_rad": 0.0006244976378677905,
+        "u_error": 0.00018540882402848452,
+        "v_over_U": 0.0,
+        "volume": 2.220446049250313e-16
+      },
+      "failed_metrics": [],
+      "source_revision": "cd1ee3c3a0d496c2df48005c9bda4b26dc1b4079",
+      "device": "cuda:0",
+      "backend": "gpu",
+      "actual_controls": {
+        "column_geometry": "nodal_dual_v1",
+        "conservative_kv": true,
+        "external_mode_scheme": "symmetric",
+        "fct_adv": false,
+        "localize_conv": true,
+        "meridional_boundary_scheme": "closed_faces",
+        "mode_split": false,
+        "monotone_adv": false,
+        "polar_cap_rows": 0,
+        "polar_cap_taper": 0,
+        "process_time_scheme": "legacy",
+        "project_adv_vel": false
+      },
+      "wall_diagnostics": {
+        "edge_centre_v_max_m_s": 0.0,
+        "interior_face_transport_max_m2_s": 0.0,
+        "north_transport_max_m2_s": 0.0,
+        "relative_mass_tendency_max": 2.3474173539168063e-17,
+        "samples": 33,
+        "scope": "saved instantaneous states, not every accepted step",
+        "south_face": "zero incoming transport in production divergence"
+      },
+      "initialization_s": 4.340845694999999,
+      "compilation_s": 3.1043824890000025,
+      "integration_s": 1.5136753790000057,
+      "worker_wall_s": 11.630818896999997,
+      "sampled_peak_RSS_bytes": 977805312,
+      "files_sha256": {
+        "initial.npz": "182cebd1fd6be05eb299bf9e0a0d6e4c248565ea0c863fac4a8d4d00927a78dd",
+        "native.npz": "44e216fb029e7212f50c7fe2506e03adb3f9cd683932327837d123785f3b67e6",
+        "native-run.json": "a1aeabae9bbe863b8976f6f1d0df998b1b2297e69d38eaeab39a2b3d08fd4e28",
+        "output.npz": "b19aaabf691d576598595bb04d4465baf9c2a688c40afc95ff261b376a128785",
+        "score.json": "41ac584038c7780c92d95f70457985a9a196fe6bc0bf656918b0d99a7d91df2c",
+        "resources.json": "f6c4723d941d7a990da2f72caefc78acface182f295be24d1d3fd7e01af26dee"
+      }
+    },
+    "wave-nx256-dt100": {
+      "directory": "D:\\Github\\ocean-solver\\outputs\\closed-faces-20261010\\wave-nx256-dt100",
+      "metrics": {
+        "S": 0.0,
+        "T": 0.0,
+        "amplitude": 1.2046598414361398e-05,
+        "energy": 2.409029395855633e-05,
+        "eta_error": 0.00017346211299796386,
+        "phase_rad": 0.0006055837656469875,
+        "u_error": 0.00018057926721364265,
+        "v_over_U": 0.0,
+        "volume": 2.220446049250313e-16
+      },
+      "failed_metrics": [],
+      "source_revision": "cd1ee3c3a0d496c2df48005c9bda4b26dc1b4079",
+      "device": "cuda:0",
+      "backend": "gpu",
+      "actual_controls": {
+        "column_geometry": "nodal_dual_v1",
+        "conservative_kv": true,
+        "external_mode_scheme": "symmetric",
+        "fct_adv": false,
+        "localize_conv": true,
+        "meridional_boundary_scheme": "closed_faces",
+        "mode_split": false,
+        "monotone_adv": false,
+        "polar_cap_rows": 0,
+        "polar_cap_taper": 0,
+        "process_time_scheme": "legacy",
+        "project_adv_vel": false
+      },
+      "wall_diagnostics": {
+        "edge_centre_v_max_m_s": 0.0,
+        "interior_face_transport_max_m2_s": 0.0,
+        "north_transport_max_m2_s": 0.0,
+        "relative_mass_tendency_max": 1.2808496437456556e-17,
+        "samples": 33,
+        "scope": "saved instantaneous states, not every accepted step",
+        "south_face": "zero incoming transport in production divergence"
+      },
+      "initialization_s": 4.382212455999991,
+      "compilation_s": 3.2122283500000037,
+      "integration_s": 0.9903324890000107,
+      "worker_wall_s": 11.02786855699999,
+      "sampled_peak_RSS_bytes": 986075136,
+      "files_sha256": {
+        "initial.npz": "182cebd1fd6be05eb299bf9e0a0d6e4c248565ea0c863fac4a8d4d00927a78dd",
+        "native.npz": "0931f9c74402143e6307b65699f97b05a8db5f66cae1d1cfa7d078383858c925",
+        "native-run.json": "fc9c53c5f70b0b74f53e09e124dd01e66c2ae4b0f31f2297a7f2047b15e5f85a",
+        "output.npz": "ab3b03db78e17306fd3e4eb9788e4fb87a9850a8388e1506f671754b8d428c59",
+        "score.json": "4efbeb8a7551d7665fba9a99dfc3d0afad1993c207d7028a8dd84065071a37f5",
+        "resources.json": "6325c63814b7b0a2a2115f9cb5c54939a60c9c38a7e952d18ed2e2e68db2970c"
+      }
+    },
+    "rotating-coarse": {
+      "directory": "D:\\Github\\ocean-solver\\outputs\\closed-faces-20261010\\rotating-coarse",
+      "metrics": {
+        "S_error_psu": 0.0,
+        "S_inventory": 1.1102230246251565e-16,
+        "T_error_C": 0.0,
+        "T_inventory": 2.220446049250313e-16,
+        "eta_error": 0.0003913441950270093,
+        "u_error": 0.000260955630599318,
+        "v_error": 0.00047816226092287285,
+        "volume": 0.0
+      },
+      "failed_metrics": [],
+      "source_revision": "cd1ee3c3a0d496c2df48005c9bda4b26dc1b4079",
+      "device": "cuda:0",
+      "backend": "gpu",
+      "actual_controls": {
+        "column_geometry": "nodal_dual_v1",
+        "conservative_kv": true,
+        "external_mode_scheme": "symmetric",
+        "fct_adv": false,
+        "localize_conv": true,
+        "meridional_boundary_scheme": "closed_faces",
+        "mode_split": false,
+        "monotone_adv": false,
+        "polar_cap_rows": 0,
+        "polar_cap_taper": 0,
+        "process_time_scheme": "legacy",
+        "project_adv_vel": false
+      },
+      "wall_diagnostics": {
+        "edge_centre_v_max_m_s": 6.65681804487853e-05,
+        "interior_face_transport_max_m2_s": 0.09037959102115989,
+        "north_transport_max_m2_s": 0.0,
+        "relative_mass_tendency_max": 3.991717740775413e-17,
+        "samples": 33,
+        "scope": "saved instantaneous states, not every accepted step",
+        "south_face": "zero incoming transport in production divergence"
+      },
+      "initialization_s": 3.956971607,
+      "compilation_s": 2.6846752280000032,
+      "integration_s": 1.3056821079999992,
+      "worker_wall_s": 10.827475180000008,
+      "sampled_peak_RSS_bytes": 962387968,
+      "files_sha256": {
+        "initial.npz": "5cccec2539eaa769012809720ae9baa4c2fde91d996358d22d46549808891678",
+        "native.npz": "8e099516b27826db0884dba9bf5ab72d6a2a44e9ea658536e4e5044cba9ae65e",
+        "native-run.json": "9a9a4ee11742e7f3e76e5ee1ba07d1b9dff181feed2e6b1f3d60fda3ad26a7b4",
+        "output.npz": "4466f558573ef8ad1060955f35d4c6dba4123ed20871851016c17107a45d1811",
+        "score.json": "7a791ed359963ba662dc577352daf09048679bad171ae87dac412392304a7115",
+        "resources.json": "5986cab72271e821ddfa3d12cf198ff10b08d66734953fe5ee2b04204ffeec12"
+      }
+    },
+    "rotating-medium": {
+      "directory": "D:\\Github\\ocean-solver\\outputs\\closed-faces-20261010\\rotating-medium",
+      "metrics": {
+        "S_error_psu": 0.0,
+        "S_inventory": 2.220446049250313e-16,
+        "T_error_C": 0.0,
+        "T_inventory": 2.220446049250313e-16,
+        "eta_error": 9.957614845648149e-05,
+        "u_error": 6.630786490309116e-05,
+        "v_error": 0.00012057450233872806,
+        "volume": 2.220446049250313e-16
+      },
+      "failed_metrics": [],
+      "source_revision": "cd1ee3c3a0d496c2df48005c9bda4b26dc1b4079",
+      "device": "cuda:0",
+      "backend": "gpu",
+      "actual_controls": {
+        "column_geometry": "nodal_dual_v1",
+        "conservative_kv": true,
+        "external_mode_scheme": "symmetric",
+        "fct_adv": false,
+        "localize_conv": true,
+        "meridional_boundary_scheme": "closed_faces",
+        "mode_split": false,
+        "monotone_adv": false,
+        "polar_cap_rows": 0,
+        "polar_cap_taper": 0,
+        "process_time_scheme": "legacy",
+        "project_adv_vel": false
+      },
+      "wall_diagnostics": {
+        "edge_centre_v_max_m_s": 3.328915513033424e-05,
+        "interior_face_transport_max_m2_s": 0.09040683253394595,
+        "north_transport_max_m2_s": 0.0,
+        "relative_mass_tendency_max": 4.318648971851705e-17,
+        "samples": 33,
+        "scope": "saved instantaneous states, not every accepted step",
+        "south_face": "zero incoming transport in production divergence"
+      },
+      "initialization_s": 4.272367363000001,
+      "compilation_s": 3.075774058999997,
+      "integration_s": 1.6934277660000134,
+      "worker_wall_s": 11.630787937999997,
+      "sampled_peak_RSS_bytes": 969216000,
+      "files_sha256": {
+        "initial.npz": "f16d2c2a2d869ba0ed85979573c78c955d2541a18b4e551d992f5fc2429bf4b3",
+        "native.npz": "e188d5c3ccd8382f4349d7eefeb2c0dd604a60d1ab001124046e67f151e9ba04",
+        "native-run.json": "c2ec60ce7f77d81e1d76163c2590b7affc0d23938d14a5f01140a7fd74015079",
+        "output.npz": "fa2dc7887a98ec7ec2ee498f13ce06aa03822ebfbe534a6939e04c65f3189c65",
+        "score.json": "c6857fbfe563b39a5e57716041083f5097b21bf7215a2122969c16d40b4c2cf5",
+        "resources.json": "b11c21bfe7c6d5459427eb2d61c0cf899efc759f21df0751485483bc224c0937"
+      }
+    },
+    "rotating-fine": {
+      "directory": "D:\\Github\\ocean-solver\\outputs\\closed-faces-20261010\\rotating-fine",
+      "metrics": {
+        "S_error_psu": 0.0,
+        "S_inventory": 1.1102230246251565e-16,
+        "T_error_C": 0.0,
+        "T_inventory": 2.220446049250313e-16,
+        "eta_error": 3.1591442395829046e-05,
+        "u_error": 2.0737333693354447e-05,
+        "v_error": 3.458715469403419e-05,
+        "volume": 0.0
+      },
+      "failed_metrics": [],
+      "source_revision": "cd1ee3c3a0d496c2df48005c9bda4b26dc1b4079",
+      "device": "cuda:0",
+      "backend": "gpu",
+      "actual_controls": {
+        "column_geometry": "nodal_dual_v1",
+        "conservative_kv": true,
+        "external_mode_scheme": "symmetric",
+        "fct_adv": false,
+        "localize_conv": true,
+        "meridional_boundary_scheme": "closed_faces",
+        "mode_split": false,
+        "monotone_adv": false,
+        "polar_cap_rows": 0,
+        "polar_cap_taper": 0,
+        "process_time_scheme": "legacy",
+        "project_adv_vel": false
+      },
+      "wall_diagnostics": {
+        "edge_centre_v_max_m_s": 1.6645207630706537e-05,
+        "interior_face_transport_max_m2_s": 0.09041364132737027,
+        "north_transport_max_m2_s": 0.0,
+        "relative_mass_tendency_max": 2.7853439946734733e-17,
+        "samples": 33,
+        "scope": "saved instantaneous states, not every accepted step",
+        "south_face": "zero incoming transport in production divergence"
+      },
+      "initialization_s": 4.224809479000015,
+      "compilation_s": 3.0145265969999855,
+      "integration_s": 1.5134829959999934,
+      "worker_wall_s": 11.428238190999991,
+      "sampled_peak_RSS_bytes": 981024768,
+      "files_sha256": {
+        "initial.npz": "903f609596166f1236b807274c46bbd486cda8d778177d8ff094275067148163",
+        "native.npz": "57fb436e2596c4775bf6bcc213b964f233d1e48bed1badd9897f68cadf79eaae",
+        "native-run.json": "b9a07015778716b60bc74e9680c72c33588b4478362c3e37e42e9f19c81153ef",
+        "output.npz": "9c32ea8d9af91f8457ac2d3d68e8bb554563eb7ce8bb93da076e5041e3aa9573",
+        "score.json": "a6a414ef3da107463d3b665486f06be83017242e416edcdb20d3a7fc49142da1",
+        "resources.json": "26fde097c0cfe7f0fb7abd440319f8fe6148a1699022c7e1b6e96b2a90909412"
+      }
+    },
+    "thermal-wind": {
+      "directory": "D:\\Github\\ocean-solver\\outputs\\closed-faces-20261010\\thermal-wind",
+      "metrics": {
+        "S_error_psu": 9.318821934190505e-06,
+        "S_inventory": 2.220446049250313e-16,
+        "T_error_C": 0.00013024871178933346,
+        "T_inventory": 2.425881717726952e-11,
+        "eta_error": 0.00211630672699529,
+        "u_error": 0.0016188949521864409,
+        "v_error": 0.001028016931638084,
+        "volume": 1.1102230246251565e-16
+      },
+      "failed_metrics": [],
+      "source_revision": "cd1ee3c3a0d496c2df48005c9bda4b26dc1b4079",
+      "device": "cuda:0",
+      "backend": "gpu",
+      "actual_controls": {
+        "column_geometry": "nodal_dual_v1",
+        "conservative_kv": true,
+        "external_mode_scheme": "symmetric",
+        "fct_adv": false,
+        "localize_conv": true,
+        "meridional_boundary_scheme": "closed_faces",
+        "mode_split": false,
+        "monotone_adv": false,
+        "polar_cap_rows": 0,
+        "polar_cap_taper": 0,
+        "process_time_scheme": "legacy",
+        "project_adv_vel": false
+      },
+      "wall_diagnostics": {
+        "edge_centre_v_max_m_s": 1.0309842116220347e-06,
+        "interior_face_transport_max_m2_s": 0.0019386663642487647,
+        "north_transport_max_m2_s": 0.0,
+        "relative_mass_tendency_max": 3.057338313522859e-17,
+        "samples": 33,
+        "scope": "saved instantaneous states, not every accepted step",
+        "south_face": "zero incoming transport in production divergence"
+      },
+      "initialization_s": 4.503303270999993,
+      "compilation_s": 3.26626718899999,
+      "integration_s": 3.5462281650000023,
+      "worker_wall_s": 14.235557384000003,
+      "sampled_peak_RSS_bytes": 995438592,
+      "files_sha256": {
+        "initial.npz": "a5ff404140ac832fb323e3a28f23ab1b871e7eadf21bd6c7af67e91eff31f486",
+        "native.npz": "a7500801bf4c2e654d9ac2ef0917455dd8cbaff70568a8150a16eefc5df3b798",
+        "native-run.json": "a6ff8f82ea2c3bea1c719284093610ea6f73d40530fc73d7b25ae24dd537c1bf",
+        "output.npz": "4785c6bf0c13aa6c7def460d7ab945e4342d3ccdad61f9e7f1bb23d66e675654",
+        "score.json": "d966189c757835d5f8d2bc54ce8b3faaa7fa973ec4a18ef10d6a6ae9b6c7ecc7",
+        "resources.json": "cd4b8adfb7ee335a8730b2cadd6d1075f6b2340fbd128de3e8fea325200ad478"
+      }
+    },
+    "paired-old-rotating-fine": {
+      "directory": "D:\\Github\\ocean-solver\\outputs\\closed-faces-20261010\\paired-old-rotating-fine",
+      "metrics": {
+        "S_error_psu": 0.0,
+        "S_inventory": 1.1102230246251565e-16,
+        "T_error_C": 0.0,
+        "T_inventory": 2.220446049250313e-16,
+        "eta_error": 0.004016399144168402,
+        "u_error": 0.002025963943971872,
+        "v_error": 0.003083887806366381,
+        "volume": 2.220446049250313e-16
+      },
+      "failed_metrics": [],
+      "source_revision": "cd1ee3c3a0d496c2df48005c9bda4b26dc1b4079",
+      "device": "cuda:0",
+      "backend": "gpu",
+      "actual_controls": {
+        "column_geometry": "nodal_dual_v1",
+        "conservative_kv": true,
+        "external_mode_scheme": "symmetric",
+        "fct_adv": false,
+        "localize_conv": true,
+        "mode_split": false,
+        "monotone_adv": false,
+        "polar_cap_rows": 0,
+        "polar_cap_taper": 0,
+        "process_time_scheme": "legacy",
+        "project_adv_vel": false
+      },
+      "wall_diagnostics": null,
+      "initialization_s": 4.545116417000003,
+      "compilation_s": 3.2305173599999932,
+      "integration_s": 1.411943569999977,
+      "worker_wall_s": 13.232344304000009,
+      "sampled_peak_RSS_bytes": 1009590272,
+      "files_sha256": {
+        "initial.npz": "903f609596166f1236b807274c46bbd486cda8d778177d8ff094275067148163",
+        "native.npz": "e44d88ca539290b76d61d76217b89269cda7e7b026581250009c2a4bd0f50136",
+        "native-run.json": "81855231ea8f4553d3cd2673ad5965c7ca2a73eda704e46771864e93d00e65bd",
+        "output.npz": "57f657be5c59fe0205bba9fc217480fdaf062eadd07da5f3f89e07a42cb47f88",
+        "score.json": "77b3b5659d962ca94547cb5a6862fee578baa81a0f64bce31907eb17d8aa4ce2",
+        "resources.json": "3ac02869bde7dcbbee5cdea6b0fd1656235c5549dd352b2272e65f0e9641f411"
+      }
+    },
+    "paired-old-thermal-wind": {
+      "directory": "D:\\Github\\ocean-solver\\outputs\\closed-faces-20261010\\paired-old-thermal-wind",
+      "metrics": {
+        "S_error_psu": 9.318787932973585e-06,
+        "S_inventory": 2.220446049250313e-16,
+        "T_error_C": 0.0001302489557589244,
+        "T_inventory": 2.425881717726952e-11,
+        "eta_error": 0.0021127610214750885,
+        "u_error": 0.0016188947911952277,
+        "v_error": 0.0010280102672568176,
+        "volume": 2.220446049250313e-16
+      },
+      "failed_metrics": [],
+      "source_revision": "cd1ee3c3a0d496c2df48005c9bda4b26dc1b4079",
+      "device": "cuda:0",
+      "backend": "gpu",
+      "actual_controls": {
+        "column_geometry": "nodal_dual_v1",
+        "conservative_kv": true,
+        "external_mode_scheme": "symmetric",
+        "fct_adv": false,
+        "localize_conv": true,
+        "mode_split": false,
+        "monotone_adv": false,
+        "polar_cap_rows": 0,
+        "polar_cap_taper": 0,
+        "process_time_scheme": "legacy",
+        "project_adv_vel": false
+      },
+      "wall_diagnostics": null,
+      "initialization_s": 4.593675751000006,
+      "compilation_s": 3.322394742,
+      "integration_s": 3.2649409439999886,
+      "worker_wall_s": 13.633548774000019,
+      "sampled_peak_RSS_bytes": 1014124544,
+      "files_sha256": {
+        "initial.npz": "a5ff404140ac832fb323e3a28f23ab1b871e7eadf21bd6c7af67e91eff31f486",
+        "native.npz": "de47e24cff6d006ac49fc058e12f6ce90123cec1497b981920922c9753f6775e",
+        "native-run.json": "bc0a9cb9c4462e8fd36163830506248d4f605b7a49dedb3e885fb028942aab62",
+        "output.npz": "cbd677261c6ca9c272c07f5c62d79f6c1f6296ce13a674f1c2262dfe663aa74d",
+        "score.json": "eb8b4b8169354e12c8fc79ebdab48010ae0e1b47b61b90a2a54fb247576fcc6c",
+        "resources.json": "7c87d7afa154df334ccc5849e3bb6b339b84a1ff8c3780a31b5a64165bb66ff3"
+      }
+    }
+  },
+  "periodic_wave_all_native_arrays_equal_to_historical": {
+    "wave-nx64-dt25": true,
+    "wave-nx128-dt25": true,
+    "wave-nx256-dt25": true,
+    "wave-nx256-dt50": true,
+    "wave-nx256-dt100": true
+  },
+  "rotating_resolution": [
+    {
+      "ny": 64,
+      "old_metrics": {
+        "S_error_psu": 0.0,
+        "S_inventory": 1.1102230246251565e-16,
+        "T_error_C": 0.0,
+        "T_inventory": 2.220446049250313e-16,
+        "eta_error": 0.016069998990403796,
+        "u_error": 0.00811290762699202,
+        "v_error": 0.012340372233131407,
+        "volume": 0.0
+      },
+      "new_metrics": {
+        "S_error_psu": 0.0,
+        "S_inventory": 1.1102230246251565e-16,
+        "T_error_C": 0.0,
+        "T_inventory": 2.220446049250313e-16,
+        "eta_error": 0.0003913441950270093,
+        "u_error": 0.000260955630599318,
+        "v_error": 0.00047816226092287285,
+        "volume": 0.0
+      },
+      "eta_reduction": 41.063593620686504
+    },
+    {
+      "ny": 128,
+      "old_metrics": {
+        "S_error_psu": 0.0,
+        "S_inventory": 2.220446049250313e-16,
+        "T_error_C": 0.0,
+        "T_inventory": 2.220446049250313e-16,
+        "eta_error": 0.008033181927903416,
+        "u_error": 0.004052785489312556,
+        "v_error": 0.00616829370831859,
+        "volume": 0.0
+      },
+      "new_metrics": {
+        "S_error_psu": 0.0,
+        "S_inventory": 2.220446049250313e-16,
+        "T_error_C": 0.0,
+        "T_inventory": 2.220446049250313e-16,
+        "eta_error": 9.957614845648149e-05,
+        "u_error": 6.630786490309116e-05,
+        "v_error": 0.00012057450233872806,
+        "volume": 2.220446049250313e-16
+      },
+      "eta_reduction": 80.67375624007207
+    },
+    {
+      "ny": 256,
+      "old_metrics": {
+        "S_error_psu": 0.0,
+        "S_inventory": 1.1102230246251565e-16,
+        "T_error_C": 0.0,
+        "T_inventory": 2.220446049250313e-16,
+        "eta_error": 0.004016399144168402,
+        "u_error": 0.002025963943971872,
+        "v_error": 0.003083887806366381,
+        "volume": 2.220446049250313e-16
+      },
+      "new_metrics": {
+        "S_error_psu": 0.0,
+        "S_inventory": 1.1102230246251565e-16,
+        "T_error_C": 0.0,
+        "T_inventory": 2.220446049250313e-16,
+        "eta_error": 3.1591442395829046e-05,
+        "u_error": 2.0737333693354447e-05,
+        "v_error": 3.458715469403419e-05,
+        "volume": 0.0
+      },
+      "eta_reduction": 127.13566838273518
+    }
+  ],
+  "rotating_eta_refinement_ratios": [
+    3.9300997386742806,
+    3.1519975317628526
+  ],
+  "paired_comparisons": {
+    "rotating-fine": {
+      "initial_state_arrays_equal": true,
+      "old_same_wheel_matches_historical_native_arrays": true,
+      "old_metrics": {
+        "S_error_psu": 0.0,
+        "S_inventory": 1.1102230246251565e-16,
+        "T_error_C": 0.0,
+        "T_inventory": 2.220446049250313e-16,
+        "eta_error": 0.004016399144168402,
+        "u_error": 0.002025963943971872,
+        "v_error": 0.003083887806366381,
+        "volume": 2.220446049250313e-16
+      },
+      "new_metrics": {
+        "S_error_psu": 0.0,
+        "S_inventory": 1.1102230246251565e-16,
+        "T_error_C": 0.0,
+        "T_inventory": 2.220446049250313e-16,
+        "eta_error": 3.1591442395829046e-05,
+        "u_error": 2.0737333693354447e-05,
+        "v_error": 3.458715469403419e-05,
+        "volume": 0.0
+      }
+    },
+    "thermal-wind": {
+      "initial_state_arrays_equal": true,
+      "old_same_wheel_matches_historical_native_arrays": true,
+      "old_metrics": {
+        "S_error_psu": 9.318787932973585e-06,
+        "S_inventory": 2.220446049250313e-16,
+        "T_error_C": 0.0001302489557589244,
+        "T_inventory": 2.425881717726952e-11,
+        "eta_error": 0.0021127610214750885,
+        "u_error": 0.0016188947911952277,
+        "v_error": 0.0010280102672568176,
+        "volume": 2.220446049250313e-16
+      },
+      "new_metrics": {
+        "S_error_psu": 9.318821934190505e-06,
+        "S_inventory": 2.220446049250313e-16,
+        "T_error_C": 0.00013024871178933346,
+        "T_inventory": 2.425881717726952e-11,
+        "eta_error": 0.00211630672699529,
+        "u_error": 0.0016188949521864409,
+        "v_error": 0.001028016931638084,
+        "volume": 1.1102230246251565e-16
+      },
+      "eta_relative_change": 0.001678233119676742
+    }
+  },
+  "historical_external_fine_metrics": {
+    "mom6": {
+      "S_error_psu": 7.257511435955654e-14,
+      "S_inventory": 2.220446049250313e-16,
+      "T_error_C": 3.686689513925675e-14,
+      "T_inventory": 4.440892098500626e-16,
+      "eta_error": 0.0020269782880354068,
+      "u_error": 0.001047291008287874,
+      "v_error": 0.0013782915667414609,
+      "volume": 2.220446049250313e-16
+    },
+    "oceananigans": {
+      "S_error_psu": 3.5191079417373735e-14,
+      "S_inventory": 2.220446049250313e-16,
+      "T_error_C": 8.773843161284478e-15,
+      "T_inventory": 2.220446049250313e-16,
+      "eta_error": 0.0005043269684665954,
+      "u_error": 0.00016151215166086818,
+      "v_error": 0.00027904486899305763,
+      "volume": 2.220446049250313e-16
+    }
+  },
+  "lineage": "Historical PR59 and linear-wall results informed this method. Controls and trajectories share PDE/operator assumptions; two same-wheel controls added after candidate results. All are development evidence.",
+  "cpu_tests": {
+    "passed": 142,
+    "wall_s": 41.656,
+    "peak_interpreter_RSS_bytes": 405446656,
+    "log_sha256": "5e506f91b26b9a7403f5e120a9b53b53b38326426f167c38df1f71d00cb015b2"
+  }
+}

@@ -55,6 +55,8 @@ zhenmode baseline mom6 omip2-plan --profile integration-6h
 
 新外模另有[八组分辨率实测](docs/symmetric_resolution_results_zh.md)：五个驻波空间／时间控制及三档旋转调整。实际积分与线性算子诊断分别记录，用于确定后续模块改进的依据。
 
+[封闭边界面改进](docs/closed_faces_results_zh.md)在实际 GPU 旋转通道中降低误差，并保留旧默认方案；同时记录驻波回归和分层算例的轻微误差增加。
+
 ## 开发
 
 | 目录 | 用途 |

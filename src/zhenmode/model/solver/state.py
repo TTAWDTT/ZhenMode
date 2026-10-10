@@ -169,9 +169,10 @@ FDPhysParams = namedtuple('FDPhysParams', [
     'face_contacts', 'contact_depths_m', 'node_depth_m',
     'surface_pressure_pa',  # optional atmosphere/ice load at ocean surface, Pa
     'external_mode_scheme',  # opt-in unsplit mean-pressure/rotation update
+    'meridional_boundary_scheme',  # clamped nodes or reflected closed faces
 ])
 
-FDPhysParams.__new__.__defaults__ = (None, False, False, False, False, False, False, False, None, None, None, -1.8, 0.0, False, 1.0, 150, None, 'none', None, 'default', 2, 'legacy', False, 'legacy', 'linear', None, None, None, None, None, 'forward_backward')
+FDPhysParams.__new__.__defaults__ = (None, False, False, False, False, False, False, False, None, None, None, -1.8, 0.0, False, 1.0, 150, None, 'none', None, 'default', 2, 'legacy', False, 'legacy', 'linear', None, None, None, None, None, 'forward_backward', 'clamped_nodes')
 
 def _state_identity(state):
     # Incoming invalid states still need a failure report; do not pass them
