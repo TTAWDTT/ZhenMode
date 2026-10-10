@@ -41,9 +41,9 @@ def channel_divergence(u, v, params):
 def channel_gradient(field, params):
     """Negative adjoint of channel_divergence on uniform cell weights."""
     inverse_dx = params.inv_dx[..., :1] if field.ndim == 3 else params.inv_dx[..., 0]
-    gx = (-jnp.roll(field, -2, axis=0) + 8 * jnp.roll(field, -1, axis=0)
-          - 8 * jnp.roll(field, 1, axis=0) + jnp.roll(field, 2, axis=0)) * inverse_dx / 12
+    gx = (8 * (jnp.roll(field, -1, axis=0) - jnp.roll(field, 1, axis=0))
+          - (jnp.roll(field, -2, axis=0) - jnp.roll(field, 2, axis=0))) * inverse_dx / 12
     padded = _reflected_latitude(field, normal=False)
-    gy = (-padded[:, 4:] + 8 * padded[:, 3:-1]
-          - 8 * padded[:, 1:-3] + padded[:, :-4]) * params.inv_dy / 12
+    gy = (8 * (padded[:, 3:-1] - padded[:, 1:-3])
+          - (padded[:, 4:] - padded[:, :-4])) * params.inv_dy / 12
     return gx, gy

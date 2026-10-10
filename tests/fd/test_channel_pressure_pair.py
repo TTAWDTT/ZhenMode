@@ -101,6 +101,17 @@ def test_periodic_pressure_symbol_and_unforced_constant_field():
     assert all(np.max(abs(np.asarray(g))) == 0 for g in _gradient_conservative_3d(jnp.ones_like(field), p))
 
 
+def test_gradient_annihilates_directional_constants_with_large_pressure_offset():
+    _, (_, _, _, p, _) = make_channel(8)
+    rng = np.random.default_rng(610)
+    x_only = jnp.asarray(np.broadcast_to(1e6 + rng.normal(size=(8, 1, 4)), (8, 8, 4)))
+    y_only = jnp.asarray(np.broadcast_to(1e6 + rng.normal(size=(1, 8, 4)), (8, 8, 4)))
+    _, gy = _gradient_conservative_3d(x_only, p)
+    gx, _ = _gradient_conservative_3d(y_only, p)
+    assert np.max(abs(np.asarray(gy))) == 0
+    assert np.max(abs(np.asarray(gx))) == 0
+
+
 def test_full_step_restart_and_wrong_spatial_pair_rejection(tmp_path):
     grid, (advance, initialize, _, p, _) = make_channel(8)
     phi = np.pi * (np.arange(8) + .5) / 8
