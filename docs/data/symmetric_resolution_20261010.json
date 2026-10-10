@@ -1,0 +1,941 @@
+{
+  "schema": "symmetric-resolution-development-summary-v1",
+  "completed_native_runs": 8,
+  "local_output_root": "D:\\Github\\ocean-solver\\outputs\\symmetric-mode-study-20261010",
+  "entries": [
+    {
+      "run": "wave-nx64-dt25",
+      "model": "zhenmode",
+      "metrics": {
+        "S": 0.0,
+        "T": 0.0,
+        "amplitude": 7.515080033826393e-07,
+        "energy": 1.4999376560798083e-06,
+        "eta_error": 0.0028594482991087656,
+        "phase_rad": 0.010086760903482764,
+        "u_error": 0.0029648597823413217,
+        "v_over_U": 0.0,
+        "volume": 2.220446049250313e-16
+      },
+      "failed_metrics": [],
+      "source_sha": "c0107e481779a91afdff46a1f0a4d7776350eb4f",
+      "executable_sha256": "e50d468e8b0adfb05733f5b87b3cff34829c4a8c1aea50c865aa8bdfe4bb150f",
+      "output_sha256": "0f50aeae83e9e64d4bc8ef1180938eb7c8bffc7240d2b18c9698c0e7b17ae287",
+      "score_file_sha256": "895179bc4b84bf90942c2da947fd08be3befe23f215a0e27b8414feb192092ae",
+      "contract_file_sha256": "4998c201b561a12e92be982f47cad4bd1486d3d92e8fd0eb9403fc91bd0c12ee",
+      "contract_canonical_sha256": "4f841ff129b8e36553e8e7a36cc18e9823bbd5ee6bce1ee4c6e80e7a54a68c94",
+      "comparison_file_sha256": "02e879b6bf104af85ae40a1a6b8631b0079dc23241d13a75464ebb4c3eb742c5",
+      "resources": {
+        "cpu_affinity": 1,
+        "elapsed_wall_seconds": 10.623422259000002,
+        "gpu_allocator_fraction": 0.4,
+        "gpu_memory_enforcement": "JAX allocator fraction; not a whole-device memory limit",
+        "host_memory_enforcement": "aggregate process-group /proc RSS sampled at 0.2 s; not a hard cgroup cap",
+        "memory_mib": 4096,
+        "peak_host_rss_bytes": 955314176,
+        "stop_reason": null,
+        "termination_grace_seconds": 0,
+        "wall_seconds": 600
+      }
+    },
+    {
+      "run": "wave-nx128-dt25",
+      "model": "zhenmode",
+      "metrics": {
+        "S": 0.0,
+        "T": 0.0,
+        "amplitude": 7.533102988066531e-07,
+        "energy": 1.5035664466811482e-06,
+        "eta_error": 0.0007146009288127145,
+        "phase_rad": 0.002521416791059862,
+        "u_error": 0.0007421282635089032,
+        "v_over_U": 0.0,
+        "volume": 4.440892098500626e-16
+      },
+      "failed_metrics": [],
+      "source_sha": "c0107e481779a91afdff46a1f0a4d7776350eb4f",
+      "executable_sha256": "e50d468e8b0adfb05733f5b87b3cff34829c4a8c1aea50c865aa8bdfe4bb150f",
+      "output_sha256": "73e57115da64e6fe39ea98e302cf6c36d0ab7b01da3eb4df3c1e01d28816ec6e",
+      "score_file_sha256": "b7b68ada4684225c8944f786c57373db61cdc57251e2c90c40492e83c40d7e79",
+      "contract_file_sha256": "49d7d682287e6c9437b434d27de1961d2e7f127eb639024eb6c2fa886d73c65b",
+      "contract_canonical_sha256": "7e40d076ab855ff1af860fcdfaae2cc62ac45e4611c6b407b7b0117c138931bb",
+      "comparison_file_sha256": "8692227b2adc2409fc5c4264249d225580d717bfb448f134ae7be0df6353660b",
+      "resources": {
+        "cpu_affinity": 1,
+        "elapsed_wall_seconds": 11.225691839999996,
+        "gpu_allocator_fraction": 0.4,
+        "gpu_memory_enforcement": "JAX allocator fraction; not a whole-device memory limit",
+        "host_memory_enforcement": "aggregate process-group /proc RSS sampled at 0.2 s; not a hard cgroup cap",
+        "memory_mib": 4096,
+        "peak_host_rss_bytes": 957104128,
+        "stop_reason": null,
+        "termination_grace_seconds": 0,
+        "wall_seconds": 600
+      }
+    },
+    {
+      "run": "wave-nx256-dt25",
+      "model": "zhenmode",
+      "metrics": {
+        "S": 0.0,
+        "T": 0.0,
+        "amplitude": 7.537535122725814e-07,
+        "energy": 1.5044595917945713e-06,
+        "eta_error": 0.0001800852486504376,
+        "phase_rad": 0.0006292260044627645,
+        "u_error": 0.00018663405741741504,
+        "v_over_U": 0.0,
+        "volume": 2.220446049250313e-16
+      },
+      "failed_metrics": [],
+      "source_sha": "c0107e481779a91afdff46a1f0a4d7776350eb4f",
+      "executable_sha256": "e50d468e8b0adfb05733f5b87b3cff34829c4a8c1aea50c865aa8bdfe4bb150f",
+      "output_sha256": "49e9f4e5e6f56e1f1fcbfb80bce06b5a79a9f4ce9466fa2e4535165a9ca41b64",
+      "score_file_sha256": "b8c010854269591b1fbadc5e3cb3cc026b03504f3d91ad1cc0615574053b797f",
+      "contract_file_sha256": "e71946daf81c84fecd847be55ac090f0362f7378c8247b18ed56a31206ef42eb",
+      "contract_canonical_sha256": "105de4190ca24a90c5727053441fecd3f2f07b35e2a915d8da74c1a6433af79c",
+      "comparison_file_sha256": "89c43fa55090d147e9d7eca362226d520f9f6a8dddbe5255292437103f8a8e37",
+      "resources": {
+        "cpu_affinity": 1,
+        "elapsed_wall_seconds": 13.430496780999999,
+        "gpu_allocator_fraction": 0.4,
+        "gpu_memory_enforcement": "JAX allocator fraction; not a whole-device memory limit",
+        "host_memory_enforcement": "aggregate process-group /proc RSS sampled at 0.2 s; not a hard cgroup cap",
+        "memory_mib": 4096,
+        "peak_host_rss_bytes": 1030176768,
+        "stop_reason": null,
+        "termination_grace_seconds": 0,
+        "wall_seconds": 600
+      }
+    },
+    {
+      "run": "wave-nx256-dt50",
+      "model": "zhenmode",
+      "metrics": {
+        "S": 0.0,
+        "T": 0.0,
+        "amplitude": 3.012296189375263e-06,
+        "energy": 6.021553454527151e-06,
+        "eta_error": 0.00017876018887097613,
+        "phase_rad": 0.0006244976378677905,
+        "u_error": 0.00018540882402848452,
+        "v_over_U": 0.0,
+        "volume": 2.220446049250313e-16
+      },
+      "failed_metrics": [],
+      "source_sha": "c0107e481779a91afdff46a1f0a4d7776350eb4f",
+      "executable_sha256": "e50d468e8b0adfb05733f5b87b3cff34829c4a8c1aea50c865aa8bdfe4bb150f",
+      "output_sha256": "349b08c1db38060d0409ccc87590cbe6b8df9fd2f924243a3d4ee43b2c25562f",
+      "score_file_sha256": "31dc4a8df701bf86ff73ed913e40ed963dc512d90aa474639c47043ab33e9467",
+      "contract_file_sha256": "baa259fbf85bc573866e4de36c3ce5994c09bb1334230451047859719162283d",
+      "contract_canonical_sha256": "c25cd7ac8ba372081f02cce5ece7f562b5b8802edcff0801decd1fb06408a5a1",
+      "comparison_file_sha256": "39e5710d700b64b6f5ab7037a676c94db512af1b58a560a0956a6acfca9b3fbd",
+      "resources": {
+        "cpu_affinity": 1,
+        "elapsed_wall_seconds": 10.42346718400001,
+        "gpu_allocator_fraction": 0.4,
+        "gpu_memory_enforcement": "JAX allocator fraction; not a whole-device memory limit",
+        "host_memory_enforcement": "aggregate process-group /proc RSS sampled at 0.2 s; not a hard cgroup cap",
+        "memory_mib": 4096,
+        "peak_host_rss_bytes": 985673728,
+        "stop_reason": null,
+        "termination_grace_seconds": 0,
+        "wall_seconds": 600
+      }
+    },
+    {
+      "run": "wave-nx256-dt100",
+      "model": "zhenmode",
+      "metrics": {
+        "S": 0.0,
+        "T": 0.0,
+        "amplitude": 1.2046598414361398e-05,
+        "energy": 2.409029395855633e-05,
+        "eta_error": 0.00017346211299796386,
+        "phase_rad": 0.0006055837656469875,
+        "u_error": 0.00018057926721364265,
+        "v_over_U": 0.0,
+        "volume": 2.220446049250313e-16
+      },
+      "failed_metrics": [],
+      "source_sha": "c0107e481779a91afdff46a1f0a4d7776350eb4f",
+      "executable_sha256": "e50d468e8b0adfb05733f5b87b3cff34829c4a8c1aea50c865aa8bdfe4bb150f",
+      "output_sha256": "6725baefb6e1aec87e9e9568d11c7e4e0a0ac8b27eb6048631771a129e94e211",
+      "score_file_sha256": "827c5242b8b41ece9459ace1aba1edb13c1eaef8d53284c0df0ba9c6d8079550",
+      "contract_file_sha256": "441c496aa6119b7082ca0ea88752aaa1df5ae144b65e535b2dd9ba06b7a07229",
+      "contract_canonical_sha256": "44c30c6f111ff61983906a2271a4e9dfb0156e7198d3c440be6c050ccb57ffc4",
+      "comparison_file_sha256": "298939c389f3a415cf29f4d116224df53e0f84a67e9ab54b0d64fe1e2fe8e4d9",
+      "resources": {
+        "cpu_affinity": 1,
+        "elapsed_wall_seconds": 10.021832904000007,
+        "gpu_allocator_fraction": 0.4,
+        "gpu_memory_enforcement": "JAX allocator fraction; not a whole-device memory limit",
+        "host_memory_enforcement": "aggregate process-group /proc RSS sampled at 0.2 s; not a hard cgroup cap",
+        "memory_mib": 4096,
+        "peak_host_rss_bytes": 984068096,
+        "stop_reason": null,
+        "termination_grace_seconds": 0,
+        "wall_seconds": 600
+      }
+    },
+    {
+      "run": "rotating-coarse",
+      "model": "zhenmode",
+      "metrics": {
+        "S_error_psu": 0.0,
+        "S_inventory": 1.1102230246251565e-16,
+        "T_error_C": 0.0,
+        "T_inventory": 2.220446049250313e-16,
+        "eta_error": 0.016069998990403796,
+        "u_error": 0.00811290762699202,
+        "v_error": 0.012340372233131407,
+        "volume": 0.0
+      },
+      "failed_metrics": [],
+      "source_sha": "c0107e481779a91afdff46a1f0a4d7776350eb4f",
+      "executable_sha256": "e50d468e8b0adfb05733f5b87b3cff34829c4a8c1aea50c865aa8bdfe4bb150f",
+      "output_sha256": "03c3bac545bf178b78b093cba4975f63d5d9d654ab8b72efdcc06501037fb329",
+      "score_file_sha256": "963256d4e042863d280315955afe8b9023da5447a9614cbff5755af7f97861cf",
+      "contract_file_sha256": "2a7d6309e7cbb4ce539b85dce587e41214961776af205d10440c252190a5b3bd",
+      "contract_canonical_sha256": "9931892e784d21ff696669069551f3b8bdd6ed222dc1653b2b1e33d395d695d9",
+      "comparison_file_sha256": "081646b386276dd4de0872e32a504823715c418aae4c91e79ee9eb75cdac7920",
+      "resources": {
+        "cpu_affinity": 1,
+        "elapsed_wall_seconds": 9.823824164000001,
+        "gpu_allocator_fraction": 0.4,
+        "gpu_memory_enforcement": "JAX allocator fraction; not a whole-device memory limit",
+        "host_memory_enforcement": "aggregate process-group /proc RSS sampled at 0.2 s; not a hard cgroup cap",
+        "memory_mib": 4096,
+        "peak_host_rss_bytes": 956473344,
+        "stop_reason": null,
+        "termination_grace_seconds": 0,
+        "wall_seconds": 600
+      }
+    },
+    {
+      "run": "rotating-medium",
+      "model": "zhenmode",
+      "metrics": {
+        "S_error_psu": 0.0,
+        "S_inventory": 2.220446049250313e-16,
+        "T_error_C": 0.0,
+        "T_inventory": 2.220446049250313e-16,
+        "eta_error": 0.008033181927903416,
+        "u_error": 0.004052785489312556,
+        "v_error": 0.00616829370831859,
+        "volume": 0.0
+      },
+      "failed_metrics": [],
+      "source_sha": "c0107e481779a91afdff46a1f0a4d7776350eb4f",
+      "executable_sha256": "e50d468e8b0adfb05733f5b87b3cff34829c4a8c1aea50c865aa8bdfe4bb150f",
+      "output_sha256": "474ee58a25bd8d1069fd660040cdd3c8599b9c0f3e2ca4094b9ec6d2d0943927",
+      "score_file_sha256": "80b02c382c033a8fb654f9eaf64a4853b276d8cb3fad9c7bc3d1ae3ef1f07a55",
+      "contract_file_sha256": "a9a0429ec996ec3139f62bfc005b4c336d6eb706afe2e0f3cb153c992853c1cb",
+      "contract_canonical_sha256": "ccda41c9a400a2c1dba5aaf7d07f25d0b57edac659a2acad4ebdfbe5cbeedb51",
+      "comparison_file_sha256": "dad0ec1a06200a1744e43729fedcbbe912a611a5589dcf35472cffb6f590f7d3",
+      "resources": {
+        "cpu_affinity": 1,
+        "elapsed_wall_seconds": 10.022023415999996,
+        "gpu_allocator_fraction": 0.4,
+        "gpu_memory_enforcement": "JAX allocator fraction; not a whole-device memory limit",
+        "host_memory_enforcement": "aggregate process-group /proc RSS sampled at 0.2 s; not a hard cgroup cap",
+        "memory_mib": 4096,
+        "peak_host_rss_bytes": 953774080,
+        "stop_reason": null,
+        "termination_grace_seconds": 0,
+        "wall_seconds": 600
+      }
+    },
+    {
+      "run": "rotating-fine",
+      "model": "zhenmode",
+      "metrics": {
+        "S_error_psu": 0.0,
+        "S_inventory": 1.1102230246251565e-16,
+        "T_error_C": 0.0,
+        "T_inventory": 2.220446049250313e-16,
+        "eta_error": 0.004016399144168402,
+        "u_error": 0.002025963943971872,
+        "v_error": 0.003083887806366381,
+        "volume": 2.220446049250313e-16
+      },
+      "failed_metrics": [],
+      "source_sha": "c0107e481779a91afdff46a1f0a4d7776350eb4f",
+      "executable_sha256": "e50d468e8b0adfb05733f5b87b3cff34829c4a8c1aea50c865aa8bdfe4bb150f",
+      "output_sha256": "4d252590e426f6c0abd8999b65106c15ca8d4915ad833c09a60ea044e0af00ec",
+      "score_file_sha256": "5516ea5daf38f4a080487014acfddb1007ff75009ed5949f6341c26df6ec3fe0",
+      "contract_file_sha256": "9b79ff06416d7b9534bb8c71afa5e06fcf0ef18f20c35b4bb5329468cc39ed99",
+      "contract_canonical_sha256": "0b461ec7344ada5fe18f3b354cc1be75528f7b86bf800ef098b9acb91cfacb91",
+      "comparison_file_sha256": "c1cdf89a828417814b109250e5ee885d30c2ad516b57e00584b762cb045c38c4",
+      "resources": {
+        "cpu_affinity": 1,
+        "elapsed_wall_seconds": 10.624253847999995,
+        "gpu_allocator_fraction": 0.4,
+        "gpu_memory_enforcement": "JAX allocator fraction; not a whole-device memory limit",
+        "host_memory_enforcement": "aggregate process-group /proc RSS sampled at 0.2 s; not a hard cgroup cap",
+        "memory_mib": 4096,
+        "peak_host_rss_bytes": 982188032,
+        "stop_reason": null,
+        "termination_grace_seconds": 0,
+        "wall_seconds": 600
+      }
+    }
+  ],
+  "wave_study": {
+    "configurations": 5,
+    "inputs": [
+      {
+        "comparison_sha256": "02e879b6bf104af85ae40a1a6b8631b0079dc23241d13a75464ebb4c3eb742c5",
+        "contract_sha256": "4f841ff129b8e36553e8e7a36cc18e9823bbd5ee6bce1ee4c6e80e7a54a68c94",
+        "path": "/mnt/d/Github/ocean-solver/outputs/symmetric-mode-study-20261010/wave-nx64-dt25"
+      },
+      {
+        "comparison_sha256": "8692227b2adc2409fc5c4264249d225580d717bfb448f134ae7be0df6353660b",
+        "contract_sha256": "7e40d076ab855ff1af860fcdfaae2cc62ac45e4611c6b407b7b0117c138931bb",
+        "path": "/mnt/d/Github/ocean-solver/outputs/symmetric-mode-study-20261010/wave-nx128-dt25"
+      },
+      {
+        "comparison_sha256": "89c43fa55090d147e9d7eca362226d520f9f6a8dddbe5255292437103f8a8e37",
+        "contract_sha256": "105de4190ca24a90c5727053441fecd3f2f07b35e2a915d8da74c1a6433af79c",
+        "path": "/mnt/d/Github/ocean-solver/outputs/symmetric-mode-study-20261010/wave-nx256-dt25"
+      },
+      {
+        "comparison_sha256": "39e5710d700b64b6f5ab7037a676c94db512af1b58a560a0956a6acfca9b3fbd",
+        "contract_sha256": "c25cd7ac8ba372081f02cce5ece7f562b5b8802edcff0801decd1fb06408a5a1",
+        "path": "/mnt/d/Github/ocean-solver/outputs/symmetric-mode-study-20261010/wave-nx256-dt50"
+      },
+      {
+        "comparison_sha256": "298939c389f3a415cf29f4d116224df53e0f84a67e9ab54b0d64fe1e2fe8e4d9",
+        "contract_sha256": "44c30c6f111ff61983906a2271a4e9dfb0156e7198d3c440be6c050ccb57ffc4",
+        "path": "/mnt/d/Github/ocean-solver/outputs/symmetric-mode-study-20261010/wave-nx256-dt100"
+      }
+    ],
+    "interpretation": "Modal linear trends include fit residuals; no whole-model order or independent spatial/time error decomposition is claimed.",
+    "method": "symmetric-external-mode",
+    "models": [
+      "zhenmode"
+    ],
+    "native_runs": 5,
+    "rows": [
+      {
+        "dt_s": 25,
+        "failed_metrics": [],
+        "metrics": {
+          "S": 0.0,
+          "T": 0.0,
+          "amplitude": 7.515080033826393e-07,
+          "energy": 1.4999376560798083e-06,
+          "eta_error": 0.0028594482991087656,
+          "phase_rad": 0.010086760903482764,
+          "u_error": 0.0029648597823413217,
+          "v_over_U": 0.0,
+          "volume": 2.220446049250313e-16
+        },
+        "model": "zhenmode",
+        "nx": 64,
+        "trends": {
+          "log_amplitude_change_per_period": 1.03313979970398e-09,
+          "log_amplitude_fit_max_residual": 3.877685864152155e-07,
+          "modal_amplitude": [
+            1.0000000000000002,
+            1.0000000284754207,
+            1.0000001095664535,
+            1.0000002309296834,
+            1.0000003740990644,
+            1.0000005173059296,
+            1.000000638800085,
+            1.0000007201604146,
+            1.0000007490858327,
+            1.0000007212414537,
+            1.000000640886431,
+            1.000000520201968,
+            1.0000003774364663,
+            1.0000002341572103,
+            1.0000001120203095,
+            1.0000000295308482,
+            0.9999999992614987,
+            1.000000025935041,
+            1.0000001056615964,
+            1.0000002264644865,
+            1.0000003700436215,
+            1.0000005145341422,
+            1.000000637850845,
+            1.0000007210991213,
+            1.0000007515080032,
+            1.0000007244118545,
+            1.0000006439635782,
+            1.000000522473299,
+            1.000000378490233,
+            1.000000233940662,
+            1.0000001107714704,
+            1.0000000276117034,
+            0.99999999695268
+          ],
+          "normalization": {
+            "eta_m": 0.01,
+            "velocity_m_s": 0.0031320919526731652
+          },
+          "phase_fit_max_residual_rad": 4.1598445843504805e-07,
+          "phase_rad": [
+            0.0,
+            0.1960344730970435,
+            0.392068924399435,
+            0.5881033354331147,
+            0.7841376938572762,
+            0.9801719953383319,
+            1.1762062441980436,
+            1.3722404527383072,
+            1.5682746393513018,
+            1.7643088257124926,
+            1.96034303349307,
+            2.156377281094941,
+            2.35241158089711,
+            2.5484459374147153,
+            2.744480346630612,
+            2.9405147965887752,
+            3.1365492691625816,
+            3.332583742748619,
+            3.5286181955040243,
+            3.724652608657501,
+            3.9206869693961623,
+            4.116721272874539,
+            4.312755523012182,
+            4.508789731930963,
+            4.70482391810398,
+            4.900858103503914,
+            5.096892310206219,
+            5.292926556988889,
+            5.488960856461844,
+            5.68499521316303,
+            5.881029622898767,
+            6.077064073413308,
+            6.2730985462761035
+          ],
+          "relative_frequency_bias": -0.0016054086077406104
+        }
+      },
+      {
+        "dt_s": 25,
+        "failed_metrics": [],
+        "metrics": {
+          "S": 0.0,
+          "T": 0.0,
+          "amplitude": 7.533102988066531e-07,
+          "energy": 1.5035664466811482e-06,
+          "eta_error": 0.0007146009288127145,
+          "phase_rad": 0.002521416791059862,
+          "u_error": 0.0007421282635089032,
+          "v_over_U": 0.0,
+          "volume": 4.440892098500626e-16
+        },
+        "model": "zhenmode",
+        "nx": 128,
+        "trends": {
+          "log_amplitude_change_per_period": -1.4594943404426338e-09,
+          "log_amplitude_fit_max_residual": 3.8975625537489597e-07,
+          "modal_amplitude": [
+            1.0,
+            1.0000000286121475,
+            1.0000001100822038,
+            1.000000231979623,
+            1.0000003757130795,
+            1.0000005193763577,
+            1.0000006410983562,
+            1.0000007223799274,
+            1.0000007509031372,
+            1.0000007223840683,
+            1.0000006411941516,
+            1.0000005196695467,
+            1.0000003762287875,
+            1.000000232592802,
+            1.000000110524456,
+            1.0000000285648147,
+            0.9999999992388977,
+            1.000000027139458,
+            1.0000001081807417,
+            1.0000002301547437,
+            1.000000374534612,
+            1.0000005192761616,
+            1.000000642199765,
+            1.0000007244253397,
+            1.0000007533102988,
+            1.0000007244149998,
+            1.000000642180961,
+            1.0000005192219388,
+            1.0000003743539878,
+            1.0000002296863346,
+            1.0000001072303522,
+            1.000000025544856,
+            0.9999999969213795
+          ],
+          "normalization": {
+            "eta_m": 0.01,
+            "velocity_m_s": 0.0031320919526731652
+          },
+          "phase_fit_max_residual_rad": 4.168039908769572e-07,
+          "phase_rad": [
+            0.0,
+            0.19627089043568266,
+            0.3925417589471121,
+            0.5888125869582985,
+            0.7850833620764057,
+            0.981354079978057,
+            1.1776247450573396,
+            1.3738953697378045,
+            1.5701659725594992,
+            1.7664365753428772,
+            1.9627071998717192,
+            2.1589778646037643,
+            2.355248581902468,
+            2.551519356193996,
+            2.7477901833100873,
+            2.9440610511047396,
+            3.140331941254553,
+            3.336602831988539,
+            3.5328737013593905,
+            3.7291445305799225,
+            3.9254153069210442,
+            4.121686025713898,
+            4.31795669112217,
+            4.514227315539179,
+            4.710497917688711,
+            4.906768519726486,
+            5.103039143806797,
+            5.29930980866308,
+            5.495580526739145,
+            5.691851302307967,
+            5.888122130852012,
+            6.0843929997839545,
+            6.280663890388526
+          ],
+          "relative_frequency_bias": -0.00040134751229103927
+        }
+      },
+      {
+        "dt_s": 25,
+        "failed_metrics": [],
+        "metrics": {
+          "S": 0.0,
+          "T": 0.0,
+          "amplitude": 7.537535122725814e-07,
+          "energy": 1.5044595917945713e-06,
+          "eta_error": 0.0001800852486504376,
+          "phase_rad": 0.0006292260044627645,
+          "u_error": 0.00018663405741741504,
+          "v_over_U": 0.0,
+          "volume": 2.220446049250313e-16
+        },
+        "model": "zhenmode",
+        "nx": 256,
+        "trends": {
+          "log_amplitude_change_per_period": -2.081521282748897e-09,
+          "log_amplitude_fit_max_residual": 3.902452351714606e-07,
+          "modal_amplitude": [
+            1.0,
+            1.0000000286464208,
+            1.0000001102114755,
+            1.0000002322427481,
+            1.0000003761174718,
+            1.0000005198949289,
+            1.0000006416737126,
+            1.000000722935157,
+            1.000000751357183,
+            1.0000007226687522,
+            1.0000006412695468,
+            1.0000005195346522,
+            1.0000003759252813,
+            1.0000002322008383,
+            1.0000001101508296,
+            1.0000000283251487,
+            0.9999999992366222,
+            1.0000000274451526,
+            1.0000001088156731,
+            1.0000002310820808,
+            1.0000003756607294,
+            1.0000005204627105,
+            1.0000006432851205,
+            1.000000725252019,
+            1.0000007537535125,
+            1.000000724407023,
+            1.0000006417266387,
+            1.0000005184021923,
+            1.0000003733163207,
+            1.0000002286235656,
+            1.0000001063507595,
+            1.0000000250383512,
+            0.9999999969271012
+          ],
+          "normalization": {
+            "eta_m": 0.01,
+            "velocity_m_s": 0.0031320919526731652
+          },
+          "phase_fit_max_residual_rad": 4.1700201203198617e-07,
+          "phase_rad": [
+            0.0,
+            0.19633002148165973,
+            0.39266002100655617,
+            0.5889899799731412,
+            0.7853198859755539,
+            0.9816497346930224,
+            1.1779795305378242,
+            1.374309285964071,
+            1.5706390195489182,
+            1.7669687531491656,
+            1.9632985085767651,
+            2.159628304303346,
+            2.3559581526883178,
+            2.5522880581353746,
+            2.74861801643822,
+            2.944948015403128,
+            3.141278036657354,
+            3.337608058388002,
+            3.5339380586218074,
+            3.7302680185679296,
+            3.9265979255186645,
+            4.122927774849785,
+            4.319257570786425,
+            4.51558732579001,
+            4.711917058646998,
+            4.908246791558602,
+            5.104576546698314,
+            5.300906342787767,
+            5.497236192228539,
+            5.693566099226738,
+            5.889896059183448,
+            6.08622605942832,
+            6.282556081175123
+          ],
+          "relative_frequency_bias": -0.00010019619911316724
+        }
+      },
+      {
+        "dt_s": 50,
+        "failed_metrics": [],
+        "metrics": {
+          "S": 0.0,
+          "T": 0.0,
+          "amplitude": 3.012296189375263e-06,
+          "energy": 6.021553454527151e-06,
+          "eta_error": 0.00017876018887097613,
+          "phase_rad": 0.0006244976378677905,
+          "u_error": 0.00018540882402848452,
+          "v_over_U": 0.0,
+          "volume": 2.220446049250313e-16
+        },
+        "model": "zhenmode",
+        "nx": 256,
+        "trends": {
+          "log_amplitude_change_per_period": -1.4604871453718094e-09,
+          "log_amplitude_fit_max_residual": 1.553469027269652e-06,
+          "modal_amplitude": [
+            1.0,
+            1.0000001145900232,
+            1.000000440904253,
+            1.0000009292366034,
+            1.0000015052091336,
+            1.0000020811110857,
+            1.0000025692670855,
+            1.0000028953920297,
+            1.000003009893096,
+            1.0000028953971356,
+            1.0000025693646362,
+            1.0000020814064778,
+            1.0000015057270615,
+            1.0000009298517232,
+            1.0000004413483417,
+            1.0000001145453508,
+            0.9999999992440635,
+            1.000000113127005,
+            1.0000004390184565,
+            1.0000009274333868,
+            1.0000015040561918,
+            1.0000020810360843,
+            1.000002570388058,
+            1.0000028974465445,
+            1.0000030122961896,
+            1.0000028974113497,
+            1.0000025703259505,
+            1.000002080930875,
+            1.0000015038287173,
+            1.0000009269317642,
+            1.0000004380533307,
+            1.0000001115355772,
+            0.9999999969424544
+          ],
+          "normalization": {
+            "eta_m": 0.01,
+            "velocity_m_s": 0.0031320919526731652
+          },
+          "phase_fit_max_residual_rad": 1.6677638923212612e-06,
+          "phase_rad": [
+            0.0,
+            0.19633060139786648,
+            0.39266111506659795,
+            0.5889914666437828,
+            0.785321606461679,
+            0.9816515171081752,
+            1.1779812160671956,
+            1.3743107530376548,
+            1.570640202345552,
+            1.7669696516150861,
+            1.963299188433841,
+            2.1596288870456997,
+            2.355958797089838,
+            2.552288936082719,
+            2.7486192867677057,
+            2.944949799723851,
+            3.1412804008406603,
+            3.3376110025409758,
+            3.5339415170710162,
+            3.7302718698558746,
+            3.926602010891237,
+            4.12293192242057,
+            4.319261621699682,
+            4.515591158400069,
+            4.711920607033809,
+            4.908250055561343,
+            5.1045795919399115,
+            5.300909290686583,
+            5.497239201517408,
+            5.693569341792223,
+            5.889899693902745,
+            6.086230207986156,
+            6.282560809541718
+          ],
+          "relative_frequency_bias": -9.959810168391758e-05
+        }
+      },
+      {
+        "dt_s": 100,
+        "failed_metrics": [],
+        "metrics": {
+          "S": 0.0,
+          "T": 0.0,
+          "amplitude": 1.2046598414361398e-05,
+          "energy": 2.409029395855633e-05,
+          "eta_error": 0.00017346211299796386,
+          "phase_rad": 0.0006055837656469875,
+          "u_error": 0.00018057926721364265,
+          "v_over_U": 0.0,
+          "volume": 2.220446049250313e-16
+        },
+        "model": "zhenmode",
+        "nx": 256,
+        "trends": {
+          "log_amplitude_change_per_period": 9.003528717192726e-10,
+          "log_amplitude_fit_max_residual": 6.206444414432362e-06,
+          "modal_amplitude": [
+            1.0,
+            1.000000458374677,
+            1.0000017637135652,
+            1.0000037172884932,
+            1.0000060216911997,
+            1.0000083261218173,
+            1.0000102798030324,
+            1.0000115853816134,
+            1.0000120441825746,
+            1.0000115864272066,
+            1.0000102818232366,
+            1.0000083289296149,
+            1.0000060249294684,
+            1.0000037204189183,
+            1.000001766086657,
+            1.000000459381049,
+            0.9999999992593149,
+            1.0000004558910027,
+            1.0000017599287845,
+            1.0000037129992418,
+            1.0000060178457923,
+            1.0000083235599366,
+            1.0000102790234122,
+            1.000011586413275,
+            1.0000120465984144,
+            1.0000115894900126,
+            1.0000102847115901,
+            1.000008330968401,
+            1.0000060257523637,
+            1.000003720015056,
+            1.0000017647218136,
+            1.000000457423895,
+            0.9999999969747136
+          ],
+          "normalization": {
+            "eta_m": 0.01,
+            "velocity_m_s": 0.0031320919526731652
+          },
+          "phase_fit_max_residual_rad": 6.6708597969977745e-06,
+          "phase_rad": [
+            0.0,
+            0.19633292110340245,
+            0.3926654913769794,
+            0.5889974134078952,
+            0.7853284884804661,
+            0.9816586468227142,
+            1.1779879582135069,
+            1.3743166213385545,
+            1.5706449335236885,
+            1.7669732454639964,
+            1.9633019078494673,
+            2.1596312180135184,
+            2.355961374716222,
+            2.5522924479269484,
+            2.7486243681869245,
+            2.9449569371608,
+            3.1412898577768074,
+            3.337622779388405,
+            3.533955351109781,
+            3.730287275226307,
+            3.926618352552072,
+            4.12294851281302,
+            4.3192778254022475,
+            4.515606488844382,
+            4.711934800561986,
+            4.908263111554943,
+            5.104591772914148,
+            5.30092108233539,
+            5.49725123878918,
+            5.693582312245877,
+            5.889914233052739,
+            6.086246802566283,
+            6.282579723413939
+          ],
+          "relative_frequency_bias": -9.720568151827536e-05
+        }
+      }
+    ],
+    "schema": "standing-wave-study-report-v2",
+    "spatial_axis": {
+      "dt_s": 25,
+      "nx": [
+        64,
+        128,
+        256
+      ]
+    },
+    "time_axis": {
+      "dt_s": [
+        100,
+        50,
+        25
+      ],
+      "nx": 256
+    }
+  },
+  "linear_wall_diagnostic": {
+    "schema": "post-result-linear-wall-diagnostic-v1",
+    "controls": "closed eigenmode, skew norm, conserved mass, deliberately leaking face",
+    "lineage": "shares linear PDE/constants and written FD face/gradient/mask definition; SciPy exponential differs from JAX time stepping. This is mechanism diagnosis, not independent certification.",
+    "native_runs_added": 0,
+    "rows": [
+      {
+        "ny": 64,
+        "representations": {
+          "current_clamped_centres": {
+            "continuum_errors": {
+              "eta": 0.016069998353540536,
+              "u": 0.00811290477841643,
+              "v": 0.012340348496722827
+            },
+            "difference_from_native_depth_mean": {
+              "eta": 2.0312017100368306e-05,
+              "u": 1.3013651705685727e-05,
+              "v": 1.791507242437139e-05
+            }
+          },
+          "hypothetical_closed_faces": {
+            "continuum_errors": {
+              "eta": 0.00039113263701236504,
+              "u": 0.0002608171230719167,
+              "v": 0.0004781828029359584
+            },
+            "difference_from_native_depth_mean": {
+              "eta": 0.016064020359551158,
+              "u": 0.008111477984783934,
+              "v": 0.012330739114188222
+            }
+          }
+        },
+        "edge_two_row_error_squared_fraction": {
+          "eta": 0.033092582667504776,
+          "u": 0.08042333735825181,
+          "v": 0.046346545421874996
+        }
+      },
+      {
+        "ny": 128,
+        "representations": {
+          "current_clamped_centres": {
+            "continuum_errors": {
+              "eta": 0.00803316224255958,
+              "u": 0.004052768300802914,
+              "v": 0.006168262499409731
+            },
+            "difference_from_native_depth_mean": {
+              "eta": 2.0421764164421573e-05,
+              "u": 1.3047312652901934e-05,
+              "v": 1.803634812470893e-05
+            }
+          },
+          "hypothetical_closed_faces": {
+            "continuum_errors": {
+              "eta": 9.778590105428938e-05,
+              "u": 6.519822804013184e-05,
+              "v": 0.00011958481278283036
+            },
+            "difference_from_native_depth_mean": {
+              "eta": 0.008032436772298248,
+              "u": 0.004052608235912826,
+              "v": 0.006167091354170026
+            }
+          }
+        },
+        "edge_two_row_error_squared_fraction": {
+          "eta": 0.016972254024221724,
+          "u": 0.04029056310467888,
+          "v": 0.023190986175239833
+        }
+      },
+      {
+        "ny": 256,
+        "representations": {
+          "current_clamped_centres": {
+            "continuum_errors": {
+              "eta": 0.004016350423288214,
+              "u": 0.0020259235973333206,
+              "v": 0.0030838276378946346
+            },
+            "difference_from_native_depth_mean": {
+              "eta": 2.049663665292542e-05,
+              "u": 1.3055785948804778e-05,
+              "v": 1.8113316879182014e-05
+            }
+          },
+          "hypothetical_closed_faces": {
+            "continuum_errors": {
+              "eta": 2.4446646019821946e-05,
+              "u": 1.629917838673618e-05,
+              "v": 2.9898647275622977e-05
+            },
+            "difference_from_native_depth_mean": {
+              "eta": 0.004016307421235698,
+              "u": 0.0020259428827922327,
+              "v": 0.0030837400068962025
+            }
+          }
+        },
+        "edge_two_row_error_squared_fraction": {
+          "eta": 0.008590337121941353,
+          "u": 0.02015456886137136,
+          "v": 0.011597877871125028
+        }
+      }
+    ]
+  },
+  "historical_wave_study": {
+    "path": "D:\\Github\\ocean-solver\\outputs\\dynamics-bench-20261009\\wave-study.json",
+    "sha256": "0bddb739794c2e658b2d011a2028c581f928a29053f479f1da24901faeec5a8f"
+  },
+  "diagnostic_lineage": "Linear surrogate shares written spatial stencil/PDE/constants; it is not a native run or independent certification. Face-only variant is hypothetical.",
+  "industrial_qualified": false,
+  "performance_comparison": false
+}

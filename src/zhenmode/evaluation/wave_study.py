@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 
-from zhenmode.benchmarks.standing_wave import STUDY_PAIRS, STUDY_SCHEMA, digest
+from zhenmode.benchmarks.standing_wave import METHOD_STUDY_SCHEMA, STUDY_PAIRS, STUDY_SCHEMA, digest
 from zhenmode.evaluation.standing_wave import exact, load, require, score, validate
 from zhenmode.execution.runs import write_json
 from zhenmode.provenance.sources import sha256_file
@@ -49,27 +49,39 @@ def modal_trends(c, a):
     }
 
 
-def analyze(directories, output):
-    """Require all five configurations and all three models, then rescore actual outputs."""
+MODELS = ("zhenmode", "mom6", "oceananigans")
+
+
+def analyze(directories, output, models=MODELS):
+    """Rescore all five pairs for explicitly selected models; default remains three."""
+    require(
+        bool(models) and len(models) == len(set(models)) and set(models) <= set(MODELS),
+        "select distinct supported study models",
+    )
     rows, identities = [], []
     programs, package = {}, None
+    definition = None
     seen = set()
     for directory in map(Path, directories):
         c = json.loads((directory / "contract.json").read_text())
-        require(c["schema"] == STUDY_SCHEMA, "requires the separate space/time protocol")
+        require(c["schema"] in (STUDY_SCHEMA, METHOD_STUDY_SCHEMA), "requires the separate space/time protocol")
+        current = (c["schema"], c.get("method", "baseline"))
+        if definition is None:
+            definition = current
+        require(current == definition, "study methods/protocols differ")
         pair = (c["nx"], int(c["dt"]))
         require(pair not in seen, "duplicate study configuration")
         seen.add(pair)
         receipt = json.loads((directory / "comparison.json").read_text())
         require(
             receipt["status"] == "completed"
-            and set(receipt["models"]) == {"zhenmode", "mom6", "oceananigans"},
-            "incomplete three-model study",
+            and set(receipt["models"]) == set(models),
+            "incomplete selected-model study",
         )
         if package is None:
             package = receipt["package_source_sha256"]
         require(package == receipt["package_source_sha256"], "study package sources differ")
-        for model in ("zhenmode", "mom6", "oceananigans"):
+        for model in models:
             path = directory / model / "output.npz"
             a = load(path)
             report = score(c, a)
@@ -111,13 +123,15 @@ def analyze(directories, output):
     result = dict(
         schema="standing-wave-study-report-v1",
         configurations=5,
-        native_runs=15,
+        native_runs=5 * len(models),
         rows=rows,
         inputs=identities,
         spatial_axis={"dt_s": 25, "nx": [64, 128, 256]},
         time_axis={"nx": 256, "dt_s": [100, 50, 25]},
         interpretation="Modal linear trends include fit residuals; no whole-model order or independent spatial/time error decomposition is claimed.",
     )
+    if definition != (STUDY_SCHEMA, "baseline") or tuple(models) != MODELS:
+        result.update(schema="standing-wave-study-report-v2", models=list(models), method=definition[1])
     write_json(output, result, create=True)
     return result
 
@@ -126,8 +140,9 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--runs", nargs=5, required=True, type=Path)
     parser.add_argument("--output", required=True, type=Path)
+    parser.add_argument("--models", nargs="+", choices=MODELS, default=MODELS)
     args = parser.parse_args(argv)
-    analyze(args.runs, args.output)
+    analyze(args.runs, args.output, tuple(args.models))
 
 
 if __name__ == "__main__":

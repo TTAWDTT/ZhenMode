@@ -60,3 +60,31 @@ def test_runtime_receipt_identifies_real_interpreter_and_jax_binary_files():
     assert info["packages"]["jaxlib"]
     assert info["native_jaxlib_sha256"]
     assert all(len(value) == 64 for value in info["native_jaxlib_sha256"].values())
+
+
+def test_study_entry_routes_the_new_method_and_rejects_ignored_half_amplitude(tmp_path, monkeypatch):
+    from zhenmode.benchmarks.standing_wave import METHOD_STUDY_SCHEMA
+    from zhenmode.execution import standing_wave
+
+    seen = []
+    monkeypatch.setattr(standing_wave, "execute", lambda c, *a, **k: seen.append(c))
+    standing_wave.run("coarse", tmp_path / "run", study=(128, 25), method="symmetric-external-mode")
+    assert seen[0]["schema"] == METHOD_STUDY_SCHEMA
+    assert seen[0]["nx"] == 128 and seen[0]["dt"] == 25
+    assert seen[0]["ocean_options"]["external_mode_scheme"] == "symmetric"
+    with pytest.raises(ValueError, match="fixed full amplitude"):
+        standing_wave.run("coarse", tmp_path / "ignored-half", study=(64, 25), half=True)
+
+
+def test_freeze_cli_routes_method_study_and_preserves_default(tmp_path):
+    import json
+
+    from zhenmode.benchmarks.standing_wave import study_contract
+    from zhenmode.evaluation.standing_wave import main
+
+    target = tmp_path / "candidate.json"
+    main(["freeze", "--study", "64", "25", "--method", "symmetric-external-mode", "--out", str(target)])
+    assert json.loads(target.read_text()) == study_contract(64, 25, "symmetric-external-mode")
+    legacy = tmp_path / "baseline.json"
+    main(["freeze", "--study", "64", "25", "--out", str(legacy)])
+    assert json.loads(legacy.read_text()) == study_contract(64, 25)

@@ -59,12 +59,14 @@ def run(
     method="baseline",
     half=False,
 ):
-    if method not in ("baseline", "symmetric-external-mode") or (study and method != "baseline"):
+    if method not in ("baseline", "symmetric-external-mode"):
         raise ValueError("unsupported wave method/study combination")
+    if study is not None and half:
+        raise ValueError("space/time study has a fixed full amplitude")
     c = (
         (contract(case, half) if method == "baseline" else method_contract(case, half))
         if study is None
-        else study_contract(*study)
+        else study_contract(*study, method=method)
     )
     return execute(
         c,
