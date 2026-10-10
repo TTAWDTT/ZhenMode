@@ -12,7 +12,6 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from tests.fd.test_external_mode_candidate import core
 from zhenmode.model.io.restart import load_restart, make_restart_contract, save_restart
 from zhenmode.model.solver.dynamics.transport import (
     _column_divergence,
@@ -166,6 +165,8 @@ def test_factory_limits_new_scheme_without_changing_old_default():
         make_solver_global(replace(grid, depth=np.full((8, 8), 40.)), physics, 1., **options)
     with pytest.raises(ValueError, match='mixing'):
         make_solver_global(grid, replace(physics, nu_h=1.), 1., **options)
-    _, _, _, old, _ = core('symmetric')
+    defaults = {name: value for name, value in options.items()
+                if name != 'meridional_boundary_scheme'}
+    _, _, _, old, _ = make_solver_global(grid, physics, 1., **defaults)
     assert old.meridional_boundary_scheme == 'clamped_nodes'
     assert np.all(np.asarray(old.interior_mask_z)[:, [0, -1]] == 0)
