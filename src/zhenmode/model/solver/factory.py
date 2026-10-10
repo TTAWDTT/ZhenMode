@@ -50,7 +50,8 @@ def make_solver_global(grid, physics, dt, forcing=None,
                        match_barotropic_transport=False, process_time_scheme='legacy',
                        eos_pressure_dbar=None, surface_pressure_pa=None,
                        external_mode_scheme='forward_backward',
-                       meridional_boundary_scheme='clamped_nodes'):
+                       meridional_boundary_scheme='clamped_nodes',
+                       pressure_continuity_scheme='centered_second'):
     """Create a JIT-compiled global FD ocean solver.
 
     Key properties:
@@ -120,6 +121,11 @@ def make_solver_global(grid, physics, dt, forcing=None,
         odd wall reflection, and mean rotation acts at all wet centres.
         Currently limited to the symmetric external mode on an all-wet, flat,
         Cartesian inviscid channel without polar filtering or dynamic ice.
+      - pressure_continuity_scheme='centered_fourth' widens the paired pressure
+        and continuity stencils, including actual tracer/vertical face transport.
+        Requires closed_faces and at least five centres along each axis;
+        projected advection is not qualified. Other discretizations retain
+        their original order; this is not a fourth-order complete model.
     """
     finite_number('dt', dt, positive=True)
     finite_number('dt_bt', dt_bt, positive=True)
@@ -132,6 +138,13 @@ def make_solver_global(grid, physics, dt, forcing=None,
         if active_drag != 0:
             raise ValueError('symmetric external candidate requires separate bottom-drag qualification')
     validate_grid(grid)
+    if pressure_continuity_scheme not in ('centered_second', 'centered_fourth'):
+        raise ValueError('unknown pressure_continuity_scheme')
+    if pressure_continuity_scheme == 'centered_fourth':
+        if meridional_boundary_scheme != 'closed_faces' or project_adv_vel:
+            raise ValueError('centered_fourth requires closed_faces without projected advection')
+        if grid.nx < 5 or grid.ny < 5:
+            raise ValueError('centered_fourth requires at least five centres per horizontal axis')
     if meridional_boundary_scheme not in ('clamped_nodes', 'closed_faces'):
         raise ValueError('unknown meridional_boundary_scheme')
     if meridional_boundary_scheme == 'closed_faces':
@@ -515,6 +528,7 @@ def make_solver_global(grid, physics, dt, forcing=None,
         surface_pressure_pa=(None if surface_pressure_pa is None else jnp.asarray(surface_pressure_pa)),
         external_mode_scheme=external_mode_scheme,
         meridional_boundary_scheme=meridional_boundary_scheme,
+        pressure_continuity_scheme=pressure_continuity_scheme,
     )
 
     if projection_preconditioner == 'jacobi':

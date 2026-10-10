@@ -72,7 +72,7 @@ def main(argv=None):
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("--case", choices=CASES, required=True)
     p.add_argument("--level", choices=("coarse", "medium", "fine"), default="coarse")
-    p.add_argument("--method", choices=("baseline", "symmetric-external-mode", "symmetric-closed-faces"), default="baseline")
+    p.add_argument("--method", choices=("baseline", "symmetric-external-mode", "symmetric-closed-faces", "fourth-order-channel"), default="baseline")
     output = p.add_mutually_exclusive_group(required=True)
     output.add_argument("--output", type=Path)
     output.add_argument("--freeze", type=Path)
