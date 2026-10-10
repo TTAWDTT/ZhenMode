@@ -59,12 +59,12 @@ def run(
     method="baseline",
     half=False,
 ):
-    if method not in ("baseline", "symmetric-external-mode"):
+    if method not in ("baseline", "symmetric-external-mode", "symmetric-closed-faces"):
         raise ValueError("unsupported wave method/study combination")
     if study is not None and half:
         raise ValueError("space/time study has a fixed full amplitude")
     c = (
-        (contract(case, half) if method == "baseline" else method_contract(case, half))
+        (contract(case, half) if method == "baseline" else method_contract(case, half, method))
         if study is None
         else study_contract(*study, method=method)
     )
@@ -102,7 +102,7 @@ def main(argv=None):
     parser.add_argument("--study", nargs=2, type=int, metavar=("NX", "DT_SECONDS"))
     parser.add_argument("--half", action="store_true")
     parser.add_argument(
-        "--method", choices=("baseline", "symmetric-external-mode"), default="baseline"
+        "--method", choices=("baseline", "symmetric-external-mode", "symmetric-closed-faces"), default="baseline"
     )
     args = parser.parse_args(argv)
     result = run(

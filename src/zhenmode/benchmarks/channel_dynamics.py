@@ -14,7 +14,7 @@ def contract(case, level="coarse", method="baseline"):
         raise ValueError("unknown frozen channel benchmark")
     if case == "thermal-wind" and level != "coarse":
         raise ValueError("thermal-wind currently freezes one measured-size grid")
-    if method not in ("baseline", "symmetric-external-mode"):
+    if method not in ("baseline", "symmetric-external-mode", "symmetric-closed-faces"):
         raise ValueError("unknown channel method")
     c = wave_contract()
     c.update(schema=SCHEMA, benchmark=case, case=level, dt=50.0, f=1e-4)
@@ -69,10 +69,12 @@ def contract(case, level="coarse", method="baseline"):
         c["thresholds"]["S_error_psu"] = (
             c["thresholds"]["T_error_C"] * (-c["eos"]["drho_dT"]) / c["eos"]["drho_dS"]
         )
-    if method == "symmetric-external-mode":
+    if method != "baseline":
         c["schema"] = "channel-dynamics-method-v1"
         c["method"] = method
         c["ocean_options"]["external_mode_scheme"] = "symmetric"
+    if method == "symmetric-closed-faces":
+        c["ocean_options"]["meridional_boundary_scheme"] = "closed_faces"
     return c
 
 

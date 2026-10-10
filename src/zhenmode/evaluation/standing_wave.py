@@ -218,7 +218,7 @@ def main(argv=None):
     f.add_argument("--schema", choices=(SCHEMA_V0, "standing-wave-v1"), default="standing-wave-v1")
     f.add_argument("--out", type=Path, required=True)
     f.add_argument("--study", nargs=2, type=int, metavar=("NX", "DT_SECONDS"))
-    f.add_argument("--method", choices=("baseline", "symmetric-external-mode"), default="baseline")
+    f.add_argument("--method", choices=("baseline", "symmetric-external-mode", "symmetric-closed-faces"), default="baseline")
     s = sub.add_parser("score")
     s.add_argument("--contract", type=Path, required=True)
     s.add_argument("--output", type=Path, required=True)
@@ -238,8 +238,9 @@ def main(argv=None):
         builder = legacy_contract if args.schema == SCHEMA_V0 else (
             contract if args.method == "baseline" else method_contract
         )
-        frozen = study_contract(*args.study, method=args.method) if args.study else builder(
-            args.case, args.half
+        frozen = study_contract(*args.study, method=args.method) if args.study else (
+            builder(args.case, args.half) if args.method == "baseline"
+            else method_contract(args.case, args.half, args.method)
         )
         with args.out.open("x", encoding="utf8") as stream:
             stream.write(

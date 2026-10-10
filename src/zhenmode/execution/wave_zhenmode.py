@@ -121,8 +121,28 @@ def integrate(config_file):
     compilation_s = time.monotonic() - tick
     initialization_s = time.monotonic() - begin
     history = []
+    wall_samples = []
+
+    if params.meridional_boundary_scheme == "closed_faces":
+        from zhenmode.model.solver.dynamics.transport import (
+            _face_transport_divergence,
+            _layer_face_transports,
+        )
+
+        @jax.jit
+        def wall_diagnostic(u, v):
+            fx, fy = _layer_face_transports(u, v, params)
+            divergence = _face_transport_divergence(fx, fy, params)
+            # South incoming transport is zero in the production divergence;
+            # north outgoing transport is the actual returned face array.
+            return (jnp.max(jnp.abs(fy[:, -1])),
+                    jnp.abs(jnp.sum(divergence)) / jnp.maximum(jnp.sum(jnp.abs(divergence)), 1e-30),
+                    jnp.max(jnp.abs(v[:, jnp.array([0, ny - 1])])),
+                    jnp.max(jnp.abs(fy[:, :-1])))
 
     def save():
+        if params.meridional_boundary_scheme == "closed_faces":
+            wall_samples.append([float(value) for value in wall_diagnostic(state.u, state.v)])
         history.append(
             {name: np.asarray(getattr(state, name)).copy() for name in ("u", "v", "T", "S", "eta")}
         )
@@ -166,6 +186,15 @@ def integrate(config_file):
             input_sha256=sha256_file(root / "initial.npz"),
             physics_zero={name: getattr(physics, name) for name in ZERO_COEFFICIENTS},
             actual_controls=c["ocean_options"],
+            wall_diagnostics=(dict(
+                scope="saved instantaneous states, not every accepted step",
+                south_face="zero incoming transport in production divergence",
+                samples=len(wall_samples),
+                north_transport_max_m2_s=max(row[0] for row in wall_samples),
+                relative_mass_tendency_max=max(row[1] for row in wall_samples),
+                edge_centre_v_max_m_s=max(row[2] for row in wall_samples),
+                interior_face_transport_max_m2_s=max(row[3] for row in wall_samples),
+            ) if wall_samples else None),
             coordinate_system="Cartesian metres in coordinate slots; exact physical metrics",
         ),
         create=True,

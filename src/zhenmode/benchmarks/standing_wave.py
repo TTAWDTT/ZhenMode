@@ -125,23 +125,29 @@ def study_contract(nx, dt, method="baseline"):
     """Five frozen controls: vary space at dt=25, or time at nx=256."""
     if type(nx) is not int or type(dt) is not int or (nx, dt) not in STUDY_PAIRS:
         raise ValueError("unsupported frozen space/time study pair")
-    if method not in ("baseline", "symmetric-external-mode"):
+    if method not in ("baseline", "symmetric-external-mode", "symmetric-closed-faces"):
         raise ValueError("unsupported study method")
     value = contract({64: "coarse", 128: "medium", 256: "fine"}[nx])
     value.update(schema=STUDY_SCHEMA, dt=float(dt), study="separate_space_time")
     for name in ("DT", "DTBT", "DT_THERM", "DT_FORCING"):
         value["mom_time_options"][name] = float(dt)
-    if method == "symmetric-external-mode":
+    if method != "baseline":
         value.update(schema=METHOD_STUDY_SCHEMA, method=method)
         value["ocean_options"]["external_mode_scheme"] = "symmetric"
+    if method == "symmetric-closed-faces":
+        value["ocean_options"]["meridional_boundary_scheme"] = "closed_faces"
     return value
 
 
-def method_contract(case="fine", half=False):
+def method_contract(case="fine", half=False, method="symmetric-external-mode"):
     """Opt-in external-mode change; other processes and legacy definitions are retained."""
+    if method not in ("symmetric-external-mode", "symmetric-closed-faces"):
+        raise ValueError("unknown external method")
     value = contract(case, half)
-    value.update(schema=METHOD_SCHEMA, method="symmetric-external-mode")
+    value.update(schema=METHOD_SCHEMA, method=method)
     value["ocean_options"]["external_mode_scheme"] = "symmetric"
+    if method == "symmetric-closed-faces":
+        value["ocean_options"]["meridional_boundary_scheme"] = "closed_faces"
     return value
 
 
@@ -152,7 +158,7 @@ def validate_contract(value):
     builder = legacy_contract if value.get("schema") == SCHEMA_V0 else contract
     try:
         if value.get("schema") == METHOD_SCHEMA:
-            expected = method_contract(value.get("case"), value.get("amplitude_m") == 0.005)
+            expected = method_contract(value.get("case"), value.get("amplitude_m") == 0.005, value.get("method"))
         elif value.get("schema") in (STUDY_SCHEMA, METHOD_STUDY_SCHEMA):
             dt = value.get("dt")
             if type(dt) not in (int, float) or not np.isfinite(dt) or dt != int(dt):
