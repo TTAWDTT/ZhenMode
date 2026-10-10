@@ -171,9 +171,10 @@ FDPhysParams = namedtuple('FDPhysParams', [
     'external_mode_scheme',  # opt-in unsplit mean-pressure/rotation update
     'meridional_boundary_scheme',  # clamped nodes or reflected closed faces
     'pressure_continuity_scheme',  # paired spatial stencil on the channel
+    'tracer_transport_scheme',  # concentration or nodal-product reconstruction
 ])
 
-FDPhysParams.__new__.__defaults__ = (None, False, False, False, False, False, False, False, None, None, None, -1.8, 0.0, False, 1.0, 150, None, 'none', None, 'default', 2, 'legacy', False, 'legacy', 'linear', None, None, None, None, None, 'forward_backward', 'clamped_nodes', 'centered_second')
+FDPhysParams.__new__.__defaults__ = (None, False, False, False, False, False, False, False, None, None, None, -1.8, 0.0, False, 1.0, 150, None, 'none', None, 'default', 2, 'legacy', False, 'legacy', 'linear', None, None, None, None, None, 'forward_backward', 'clamped_nodes', 'centered_second', 'centered_second')
 
 def _state_identity(state):
     # Incoming invalid states still need a failure report; do not pass them

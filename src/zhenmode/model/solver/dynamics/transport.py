@@ -1,7 +1,7 @@
 """Wet-face transport, continuity and tracer advection."""
 
 from zhenmode.model.solver.numerics.backend import jnp
-from zhenmode.model.solver.numerics.channel import channel_face_velocities
+from zhenmode.model.solver.numerics.channel import channel_face_velocities, channel_tracer_fluxes
 from zhenmode.model.solver.numerics.contacts import (
     contact_divergence,
     contact_material_derivative,
@@ -167,6 +167,13 @@ def _limited_tracer_slope(tracer, wet, axis):
     return (0.5 * signs * jnp.minimum(jnp.abs(left_delta), jnp.abs(right_delta))
             * wet * previous_wet * following_wet)
 
+def _horizontal_tracer_fluxes(T, u, v, p, face_transport):
+    """Dispatch scalar transport while preserving the historical flux path."""
+    if getattr(p, 'tracer_transport_scheme', 'centered_second') == 'product_fourth':
+        return channel_tracer_fluxes(T, u, v, p, face_transport)
+    return _legacy_horizontal_tracer_fluxes(T, u, v, p, face_transport)
+
+
 def _legacy_horizontal_tracer_fluxes(T,u,v,p,face_transport):
     wm=p.wet_mask_z
     if (face_transport is None
@@ -280,7 +287,7 @@ def _advection_scalar(T, u, v, Fz_in, p, return_boundary=False, face_transport=N
             tracer_fluxes.append(flux*concentration)
         horizontal_div=contact_divergence(*tracer_fluxes,p)/p.dz_node
     else:
-        Fx,Fy=_legacy_horizontal_tracer_fluxes(T,u,v,p,face_transport)
+        Fx,Fy=_horizontal_tracer_fluxes(T,u,v,p,face_transport)
         Fx_up=jnp.roll(Fx,1,axis=0)
         Fy_up=jnp.roll(Fy,1,axis=1).at[:,0].set(0.)
         horizontal_div=((Fx-Fx_up)*p.inv_dx[...,0:1]
