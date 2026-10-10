@@ -53,6 +53,8 @@ zhenmode baseline mom6 omip2-plan --profile integration-6h
 
 驻波的[空间／时间控制](docs/wave_space_time_zh.md)、[旋转调整与分层热成风](docs/channel_dynamics_zh.md)及[真实来源风应力短窗](docs/real_wind_control_zh.md)分别检验对应机制。本批累计 37 个原生运行（含 review 后的七个复跑）、对称外模的改动和适用范围见[机制对照实测](docs/dynamics_bench_results_zh.md)。
 
+新外模另有[八组分辨率实测](docs/symmetric_resolution_results_zh.md)：五个驻波空间／时间控制及三档旋转调整。实际积分与线性算子诊断分别记录，用于确定后续模块改进的依据。
+
 ## 开发
 
 | 目录 | 用途 |
