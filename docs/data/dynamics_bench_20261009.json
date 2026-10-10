@@ -1,7 +1,7 @@
 {
   "schema": "dynamics-bench-receipt-summary-v1",
   "local_output_root": "D:\\Github\\ocean-solver\\outputs\\dynamics-bench-20261009",
-  "completed_native_runs": 30,
+  "completed_native_runs": 37,
   "interpretation": "Developmental comparisons, not independent industrial certification or performance ranking.",
   "entries": [
     {
@@ -1044,10 +1044,249 @@
         "termination_grace_seconds": 0,
         "wall_seconds": 600
       }
+    },
+    {
+      "run": "review58-20261010/wave-fine-candidate-02",
+      "model": "zhenmode",
+      "comparison_sha256": "688f892c9f582b73a83545398dd944ddd63d0e9967b186f6546028b64083340c",
+      "contract_file_sha256": "ba07d672d034a0a0f5aea752c2c286a380f1f3033dc6fc1eb9f985a1cbb89cbe",
+      "contract_canonical_sha256": "92625f9ff44c463842bf197f5ee85244a62cc3753bfce4f2ab8c254f24393405",
+      "score_sha256": "a95666f95ff940615d35363b0a72438f2a0941b4533f462f3b86d3253510747d",
+      "output_sha256": "292e2db89563bdd71ed649a9bbffd0cd82b95d05811bce6fe6c69a3bb4113d74",
+      "source_sha": "4d7f0710c84ad464fe9f0b8598d49260027e8037",
+      "executable_sha256": "e50d468e8b0adfb05733f5b87b3cff34829c4a8c1aea50c865aa8bdfe4bb150f",
+      "metrics": {
+        "S": 0.0,
+        "T": 0.0,
+        "amplitude": 7.537535122725814e-07,
+        "energy": 1.5044595917945713e-06,
+        "eta_error": 0.0001800852486504376,
+        "phase_rad": 0.0006292260044627645,
+        "u_error": 0.00018663405741741504,
+        "v_over_U": 0.0,
+        "volume": 2.220446049250313e-16
+      },
+      "failed_metrics": [],
+      "engineering_screen_pass": true,
+      "resources": {
+        "cpu_affinity": 1,
+        "elapsed_wall_seconds": 12.630780830999981,
+        "gpu_allocator_fraction": 0.4,
+        "gpu_memory_enforcement": "JAX allocator fraction; not a whole-device memory limit",
+        "host_memory_enforcement": "aggregate process-group /proc RSS sampled at 0.2 s; not a hard cgroup cap",
+        "memory_mib": 4096,
+        "peak_host_rss_bytes": 984784896,
+        "stop_reason": null,
+        "termination_grace_seconds": 0,
+        "wall_seconds": 600
+      }
+    },
+    {
+      "run": "review58-20261010/geostrophic-candidate-02",
+      "model": "zhenmode",
+      "comparison_sha256": "afe5aa336e03fa002d89e49453675f936f220366c96518493a6c43fdbbb74ce9",
+      "contract_file_sha256": "9b79ff06416d7b9534bb8c71afa5e06fcf0ef18f20c35b4bb5329468cc39ed99",
+      "contract_canonical_sha256": "0b461ec7344ada5fe18f3b354cc1be75528f7b86bf800ef098b9acb91cfacb91",
+      "score_sha256": "9387acf283f4a442b8cb5fb3f39e690b9af022e005e2b319d157e48b5c783ec7",
+      "output_sha256": "9c6930be8c1eeb7b719f4508ce6a399fc0b2e2edfd4e81e2ceea8c40d35aa60c",
+      "source_sha": "4d7f0710c84ad464fe9f0b8598d49260027e8037",
+      "executable_sha256": "e50d468e8b0adfb05733f5b87b3cff34829c4a8c1aea50c865aa8bdfe4bb150f",
+      "metrics": {
+        "S_error_psu": 0.0,
+        "S_inventory": 1.1102230246251565e-16,
+        "T_error_C": 0.0,
+        "T_inventory": 2.220446049250313e-16,
+        "eta_error": 0.004016399144168402,
+        "u_error": 0.002025963943971872,
+        "v_error": 0.003083887806366381,
+        "volume": 2.220446049250313e-16
+      },
+      "failed_metrics": [],
+      "engineering_screen_pass": true,
+      "resources": {
+        "cpu_affinity": 1,
+        "elapsed_wall_seconds": 10.82623629599999,
+        "gpu_allocator_fraction": 0.4,
+        "gpu_memory_enforcement": "JAX allocator fraction; not a whole-device memory limit",
+        "host_memory_enforcement": "aggregate process-group /proc RSS sampled at 0.2 s; not a hard cgroup cap",
+        "memory_mib": 4096,
+        "peak_host_rss_bytes": 981872640,
+        "stop_reason": null,
+        "termination_grace_seconds": 0,
+        "wall_seconds": 600
+      }
+    },
+    {
+      "run": "review58-20261010/thermal-candidate-02",
+      "model": "zhenmode",
+      "comparison_sha256": "50643128700aa118da5cc295c65555ca5285179a057cbde3004e8ae9e8e4cf58",
+      "contract_file_sha256": "4a49c6ef14a25a02d5bfcd3d81c28d585fe9ba17e7279683dd069f85dade33f9",
+      "contract_canonical_sha256": "09daf5867b9da78fc70ccd9a4e40111b4211a2bc0eea11228aae22b49b70f54f",
+      "score_sha256": "6e7b4f8788ebf3cdf5f77355375454a32bdb2ed88364686cd8699b98f40df8b0",
+      "output_sha256": "2cdbf99fb8f3a39974ba1b7011f22a21815891f398ea15bb228ab4244c55be6d",
+      "source_sha": "4d7f0710c84ad464fe9f0b8598d49260027e8037",
+      "executable_sha256": "e50d468e8b0adfb05733f5b87b3cff34829c4a8c1aea50c865aa8bdfe4bb150f",
+      "metrics": {
+        "S_error_psu": 9.318787932973585e-06,
+        "S_inventory": 2.220446049250313e-16,
+        "T_error_C": 0.0001302489557589244,
+        "T_inventory": 2.425881717726952e-11,
+        "eta_error": 0.0021127610214750885,
+        "u_error": 0.0016188947911952277,
+        "v_error": 0.0010280102672568176,
+        "volume": 2.220446049250313e-16
+      },
+      "failed_metrics": [],
+      "engineering_screen_pass": true,
+      "resources": {
+        "cpu_affinity": 1,
+        "elapsed_wall_seconds": 13.029627645000005,
+        "gpu_allocator_fraction": 0.4,
+        "gpu_memory_enforcement": "JAX allocator fraction; not a whole-device memory limit",
+        "host_memory_enforcement": "aggregate process-group /proc RSS sampled at 0.2 s; not a hard cgroup cap",
+        "memory_mib": 4096,
+        "peak_host_rss_bytes": 1013940224,
+        "stop_reason": null,
+        "termination_grace_seconds": 0,
+        "wall_seconds": 600
+      }
+    },
+    {
+      "run": "review58-20261010/real-wind-baseline-02",
+      "model": "mom6",
+      "comparison_sha256": "73fe62be27ce748fbbda78ca77aebb9f553fcd26aace7dfd5e76831f4882985d",
+      "contract_file_sha256": "f07103d57c6dac7b804fd6d255680fbc64f3867e30a2f13e52bea8fb72fe1412",
+      "contract_canonical_sha256": "e053c6f970b891034d8fb80abecf8017ae9e299225de8253d1151cf60ad4db9d",
+      "score_sha256": "db4b3467f571c8bd72f00811f022c5dac3dad853a86d05385aaaec1af98b838f",
+      "output_sha256": "6e559a9c9379022c1c2a9a1c5dd300e4abd4ba2eeed876f48490846d103370a4",
+      "source_sha": "f49a00096df607b48354603e2398e14e189fd62e",
+      "executable_sha256": "35743c5cc1068b5d19f7ae36d358a8e83d3da43c12429211a61e545c9f4caac9",
+      "metrics": {
+        "S_inventory_drift": 4.440892098500626e-16,
+        "T_inventory_drift": 6.661338147750939e-16,
+        "depth_mean_u_rms_m_s": 0.003641310993252717,
+        "depth_mean_v_rms_m_s": 0.006752476837987924,
+        "eta_rms_m": 0.03653598789911394,
+        "volume_drift": 4.440892098500626e-16,
+        "work_residual_relative": 0.0003571790349730943
+      },
+      "failed_metrics": [],
+      "engineering_screen_pass": true,
+      "resources": {
+        "cpu_affinity": 1,
+        "elapsed_wall_seconds": 77.78699852199998,
+        "host_memory_enforcement": "aggregate process-group /proc RSS sampled at 0.2 s; not a hard cgroup cap",
+        "memory_mib": 4096,
+        "peak_host_rss_bytes": 766853120,
+        "stop_reason": null,
+        "termination_grace_seconds": 0,
+        "wall_seconds": 600
+      }
+    },
+    {
+      "run": "review58-20261010/real-wind-baseline-02",
+      "model": "oceananigans",
+      "comparison_sha256": "73fe62be27ce748fbbda78ca77aebb9f553fcd26aace7dfd5e76831f4882985d",
+      "contract_file_sha256": "f07103d57c6dac7b804fd6d255680fbc64f3867e30a2f13e52bea8fb72fe1412",
+      "contract_canonical_sha256": "e053c6f970b891034d8fb80abecf8017ae9e299225de8253d1151cf60ad4db9d",
+      "score_sha256": "eef29772ce48b23dfe74c093da6362e9ecd8d304eb03120ab78f06b07e06a606",
+      "output_sha256": "464346593bc798bd4e34c8c48d57da374e65420dcbe6e98344fe42ab68819c21",
+      "source_sha": "1e8587b17171b0bba5bc6728118c3dbbd3c8acf6",
+      "executable_sha256": "2976d17aba35be5d546e8e315e521bd9be3e58c2e64abfd588f186696e807b7d",
+      "metrics": {
+        "S_inventory_drift": 2.220446049250313e-16,
+        "T_inventory_drift": 2.220446049250313e-16,
+        "depth_mean_u_rms_m_s": 0.0036409304177785714,
+        "depth_mean_v_rms_m_s": 0.006764908270827754,
+        "eta_rms_m": 0.03662060093726653,
+        "volume_drift": 2.220446049250313e-16,
+        "work_residual_relative": 0.0006877918276275474
+      },
+      "failed_metrics": [],
+      "engineering_screen_pass": true,
+      "resources": {
+        "cpu_affinity": 1,
+        "elapsed_wall_seconds": 167.85375758700013,
+        "host_memory_enforcement": "aggregate process-group /proc RSS sampled at 0.2 s; not a hard cgroup cap",
+        "memory_mib": 4096,
+        "peak_host_rss_bytes": 2883182592,
+        "stop_reason": null,
+        "termination_grace_seconds": 0,
+        "wall_seconds": 600
+      }
+    },
+    {
+      "run": "review58-20261010/real-wind-baseline-02",
+      "model": "zhenmode",
+      "comparison_sha256": "73fe62be27ce748fbbda78ca77aebb9f553fcd26aace7dfd5e76831f4882985d",
+      "contract_file_sha256": "f07103d57c6dac7b804fd6d255680fbc64f3867e30a2f13e52bea8fb72fe1412",
+      "contract_canonical_sha256": "e053c6f970b891034d8fb80abecf8017ae9e299225de8253d1151cf60ad4db9d",
+      "score_sha256": "8a2ff691608d46307d5161cf974cfa132e2dba9a233a909d1d288ab453a04d03",
+      "output_sha256": "0c18bf58b6b077cd69391e0f18d1dfdb0ec30ed76c12b018952538d852f89d44",
+      "source_sha": "4d7f0710c84ad464fe9f0b8598d49260027e8037",
+      "executable_sha256": "e50d468e8b0adfb05733f5b87b3cff34829c4a8c1aea50c865aa8bdfe4bb150f",
+      "metrics": {
+        "S_inventory_drift": 1.1102230246251565e-16,
+        "T_inventory_drift": 0.0,
+        "depth_mean_u_rms_m_s": 0.005459389916463225,
+        "depth_mean_v_rms_m_s": 0.005242394415816932,
+        "eta_rms_m": 0.020143932483997394,
+        "volume_drift": 0.0,
+        "work_residual_relative": 0.0005259006349782706
+      },
+      "failed_metrics": [],
+      "engineering_screen_pass": true,
+      "resources": {
+        "cpu_affinity": 1,
+        "elapsed_wall_seconds": 10.02680021599997,
+        "gpu_allocator_fraction": 0.4,
+        "gpu_memory_enforcement": "JAX allocator fraction; not a whole-device memory limit",
+        "host_memory_enforcement": "aggregate process-group /proc RSS sampled at 0.2 s; not a hard cgroup cap",
+        "memory_mib": 4096,
+        "peak_host_rss_bytes": 946098176,
+        "stop_reason": null,
+        "termination_grace_seconds": 0,
+        "wall_seconds": 600
+      }
+    },
+    {
+      "run": "review58-20261010/real-wind-candidate-02",
+      "model": "zhenmode",
+      "comparison_sha256": "3abe0ee8cf5f9dc8a0db67b294bd5db855847547d50a770a107e204314a1e8e0",
+      "contract_file_sha256": "f653146b32fae046d069b263720d33ce59e67332dc176c12f2ffb23564eb3acf",
+      "contract_canonical_sha256": "a8af7503c22ff19fd9ce33f8ce5714cf35501bc82750dfbd460b7135e5179b91",
+      "score_sha256": "1da80f68b50b21ad1f9b9b454423db5b710c755d007e2a9f3db9cf36bb2d4ab6",
+      "output_sha256": "a7d84b3af57d4ec6f200a60ee1e19da8936a6d5200410826deacdef32bc52cea",
+      "source_sha": "4d7f0710c84ad464fe9f0b8598d49260027e8037",
+      "executable_sha256": "e50d468e8b0adfb05733f5b87b3cff34829c4a8c1aea50c865aa8bdfe4bb150f",
+      "metrics": {
+        "S_inventory_drift": 1.1102230246251565e-16,
+        "T_inventory_drift": 2.220446049250313e-16,
+        "depth_mean_u_rms_m_s": 0.003654281093876611,
+        "depth_mean_v_rms_m_s": 0.006764452071170878,
+        "eta_rms_m": 0.03659584371415007,
+        "volume_drift": 0.0,
+        "work_residual_relative": 0.0007598678485219694
+      },
+      "failed_metrics": [],
+      "engineering_screen_pass": true,
+      "resources": {
+        "cpu_affinity": 1,
+        "elapsed_wall_seconds": 10.230004699999881,
+        "gpu_allocator_fraction": 0.4,
+        "gpu_memory_enforcement": "JAX allocator fraction; not a whole-device memory limit",
+        "host_memory_enforcement": "aggregate process-group /proc RSS sampled at 0.2 s; not a hard cgroup cap",
+        "memory_mib": 4096,
+        "peak_host_rss_bytes": 959709184,
+        "stop_reason": null,
+        "termination_grace_seconds": 0,
+        "wall_seconds": 600
+      }
     }
   ],
   "wave_study_sha256": "0bddb739794c2e658b2d011a2028c581f928a29053f479f1da24901faeec5a8f",
   "wind_sample_sha256": "19fc0d12d80421825868a794a952209313af4ea9a750ac2878520851e9b22ffd",
+  "corrected_wind_sample_sha256": "e862d14ad4d041cd06f7bd75e4b372eb66be935c920319e2185aaabb91a0c93d",
   "legacy_numeric_regression": {
     "time": 0.0,
     "x_eta": 0.0,
