@@ -120,6 +120,7 @@ model/
 | [numerics/horizontal.py](solver/numerics/horizontal.py) | 水平导数、梯度、散度、扩散、湿面通量、纬向边界处理、极区滤波及扩散子步估算。 |
 | [numerics/vertical.py](solver/numerics/vertical.py) | 非均匀垂向差分、海底虚拟值填充、界面扩散通量及通量散度。这里只提供数值工具，不决定混合系数。 |
 | [numerics/contacts.py](solver/numerics/contacts.py) | 固定垂向部分单元之间的接触面积、深度匹配、插值和通量归集，供压力及输运算子复用。 |
+| [numerics/channel.py](solver/numerics/channel.py) | 全湿平底笛卡尔通道的成对四阶面通量与压力梯度；保留墙面闭合和负伴随关系，资格限制由工厂检查。 |
 | [dynamics/tendencies.py](solver/dynamics/tendencies.py) | 组合动量、温盐的变化率及分项，供时间积分和输出分析使用；调用输运与物理过程。 |
 | [dynamics/transport.py](solver/dynamics/transport.py) | 水平和垂向输运、连续性推导的垂向速度、示踪物平流，以及选定方案的限幅和 FCT 输运。 |
 | [dynamics/pressure.py](solver/dynamics/pressure.py) | 由密度计算静力压力及压力梯度，提供三维动量和外模所需的压力加速度。 |
