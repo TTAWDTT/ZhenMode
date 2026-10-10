@@ -116,7 +116,7 @@ def test_manifest_requires_complete_real_hashes(corruption):
         verify_current_source_hashes(REPOSITORY_ROOT, manifest)
 
 
-@pytest.mark.parametrize("module", ["model/runtime/run", "model/solver/dynamics/transport", "model/solver/timestepping/step", "model/solver/numerics/contacts"])
+@pytest.mark.parametrize("module", ["model/runtime/run", "model/solver/dynamics/transport", "model/solver/timestepping/step", "model/solver/numerics/contacts", "model/solver/numerics/channel"])
 def test_changes_to_launcher_and_actual_operators_are_rejected(tmp_path, module):
     shutil.copytree(REPOSITORY_ROOT / "src", tmp_path / "src", ignore=shutil.ignore_patterns("__pycache__"))
     manifest = hashes(current_source_files(tmp_path))

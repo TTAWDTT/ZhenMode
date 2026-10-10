@@ -147,6 +147,7 @@ PACKAGE_SOURCE_MODULES = (
     'zhenmode/model/solver/geometry/grid',
     'zhenmode/model/solver/numerics/__init__',
     'zhenmode/model/solver/numerics/backend',
+    'zhenmode/model/solver/numerics/channel',
     'zhenmode/model/solver/numerics/contacts',
     'zhenmode/model/solver/numerics/horizontal',
     'zhenmode/model/solver/numerics/vertical',
