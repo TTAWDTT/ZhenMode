@@ -15,24 +15,46 @@ CUDA.allowscalar(false)
 Nx, Ny, Nz = Int(c.nx), Int(c.ny), Int(c.nz)
 Δx, Δy = c.Lx_m/Nx, c.Ly_m/Ny
 # Native z-star faces are bottom-to-top. Output carries actual native thicknesses.
-z_faces = [-c.H_m, -5c.H_m/6, -c.H_m/2, -c.H_m/6, 0.0]
+z_faces = haskey(c, :benchmark) ? reverse(vcat(0.0, -cumsum(Float64.(c.initial_h_m)))) :
+          [-c.H_m, -5c.H_m/6, -c.H_m/2, -c.H_m/6, 0.0]
 grid = RectilinearGrid(GPU(), Float64; size=(Nx,Ny,Nz), topology=(Periodic,Bounded,Bounded),
                        x=(0,c.Lx_m), y=(0,c.Ly_m), z=MutableVerticalDiscretization(z_faces))
 equation_of_state = LinearEquationOfState(Float64; thermal_expansion=o.thermal_expansion,
                                          haline_contraction=o.haline_contraction)
 buoyancy = SeawaterBuoyancy(Float64; equation_of_state, gravitational_acceleration=c.gravity)
 free_surface = SplitExplicitFreeSurface(grid; gravitational_acceleration=c.gravity, substeps=Int(o.requested_substeps))
-model = HydrostaticFreeSurfaceModel(grid; free_surface, buoyancy, coriolis=nothing, closure=nothing,
+rotation = c.f == 0 ? nothing : FPlane(Float64; f=c.f)
+boundary_conditions = NamedTuple()
+if haskey(c, :wind_stress)
+    u_bc = FieldBoundaryConditions(top=FluxBoundaryCondition(-c.wind_stress.tau_x_N_m2/c.rho0))
+    v_bc = FieldBoundaryConditions(top=FluxBoundaryCondition(-c.wind_stress.tau_y_N_m2/c.rho0))
+    boundary_conditions = (u=u_bc, v=v_bc)
+end
+model = HydrostaticFreeSurfaceModel(grid; free_surface, buoyancy, coriolis=rotation, closure=nothing,
+                                   boundary_conditions,
                                    momentum_advection=VectorInvariant(), tracer_advection=Centered(order=2),
                                    timestepper=Symbol(o.timestepper), vertical_coordinate=ZStarCoordinate(),
                                    tracers=(:T,:S,:physical_T,:physical_S))
 # Native linear EOS uses anomalies; two advected physical witnesses keep the
 # nonzero-constant tracer control informative and expose representation differences.
 η₀(x,y,z) = c.amplitude_m * cos(2π*x/c.Lx_m) * sin(π/Nx)/(π/Nx)
-set!(model; η=η₀, T=0, S=0, physical_T=c.T_C, physical_S=c.S_psu)
+if haskey(c, :benchmark)
+    initial = NCDataset("initial-oceananigans.nc", "r")
+    try
+        Ti, Si, Ui = Array(initial["T"][:,:,:]), Array(initial["S"][:,:,:]), Array(initial["u"][:,:,:])
+        set!(model; η=Array(initial["eta"][:,:]), u=Ui, v=0,
+             T=Ti.-c.T_C, S=Si.-c.S_psu, physical_T=Ti, physical_S=Si)
+    finally
+        close(initial)
+    end
+else
+    set!(model; η=η₀, T=0, S=0, physical_T=c.T_C, physical_S=c.S_psu)
+end
+@assert isnothing(rotation) || model.coriolis.f == c.f
 CUDA.synchronize()
 @assert model.timestepper.Nstages == 3
-steps = haskey(config,:pilot_steps) ? Int(config.pilot_steps) : Int(c.period_s/c.dt)
+end_time = haskey(c,:duration_s) ? c.duration_s : c.period_s
+steps = haskey(config,:pilot_steps) ? Int(config.pilot_steps) : Int(end_time/c.dt)
 every = Int(c.output_s/c.dt)
 Ns = 1 + steps ÷ every
 host(field) = Array(interior(field))
@@ -56,6 +78,7 @@ end
 defVar(output,"v",Float64,("x","yf","z","time"))
 output.attrib["vertical_order"] = "bottom_to_top"
 output.attrib["model_description"] = sprint(show,model)
+output.attrib["coriolis_f_s_1"] = c.f
 output.attrib["substepping"] = sprint(show,model.free_surface.substepping)
 output.attrib["reference_temperature_C"] = c.T_C
 output.attrib["reference_salinity_psu"] = c.S_psu

@@ -11,8 +11,9 @@ from pathlib import Path
 import numpy as np
 
 from zhenmode.benchmarks.standing_wave import digest
+from zhenmode.evaluation.native_channel import duration
+from zhenmode.execution.native_channel import metadata, native_arrays
 from zhenmode.execution.runs import environment_identity, write_json
-from zhenmode.execution.standing_wave import metadata, native_arrays
 from zhenmode.provenance.sources import load_json, package_source_hashes, sha256_file
 
 ZERO_COEFFICIENTS = (
@@ -72,7 +73,7 @@ def integrate(config_file):
         dx_2d=np.full((nx, ny), dx),
         dy=dy,
         cos_lat=np.ones(ny),
-        f=np.zeros((nx, ny)),
+        f=np.full((nx, ny), c["f"]),
         z=z,
         dz=-np.diff(z),
         nz=nz,
@@ -85,15 +86,33 @@ def integrate(config_file):
         ny=ny,
     )
     physics = PhysicsConfig(**dict.fromkeys(ZERO_COEFFICIENTS, 0.0))
+    forcing = None
+    if "wind_stress" in c:
+        forcing = (
+            np.full((nx, ny), c["wind_stress"]["tau_x_N_m2"]),
+            np.full((nx, ny), c["wind_stress"]["tau_y_N_m2"]),
+            np.zeros((nx, ny)),
+        )
     begin = time.monotonic()
     step, initialize, _, params, _ = make_solver_global(
-        grid, physics, dt=c["dt"], return_params=True, **c["ocean_options"]
+        grid, physics, dt=c["dt"], return_params=True, forcing=forcing, **c["ocean_options"]
     )
-    state = initialize()._replace(
-        eta=jnp.asarray(
-            np.broadcast_to(c["amplitude_m"] * np.cos(2 * np.pi * x / c["Lx_m"])[:, None], (nx, ny))
+    state = initialize()
+    if "benchmark" in c:
+        from zhenmode.benchmarks.channel_dynamics import initial_native
+
+        fields = initial_native(c, "ocean-solver")
+        state = state._replace(
+            **{name: jnp.asarray(fields[name]) for name in ("eta", "u", "v", "T", "S")}
         )
-    )
+    else:
+        state = state._replace(
+            eta=jnp.asarray(
+                np.broadcast_to(
+                    c["amplitude_m"] * np.cos(2 * np.pi * x / c["Lx_m"])[:, None], (nx, ny)
+                )
+            )
+        )
     jax.block_until_ready(state)
     with (root / "initial.npz").open("xb") as stream:
         np.savez_compressed(stream, **state._asdict())
@@ -110,7 +129,7 @@ def integrate(config_file):
 
     save()
     tick = time.monotonic()
-    steps = int(c["period_s"] / c["dt"])
+    steps = int(duration(c) / c["dt"])
     every = int(c["output_s"] / c["dt"])
     for index in range(1, steps + 1):
         state = compiled(state)
@@ -126,7 +145,7 @@ def integrate(config_file):
         np.savez_compressed(
             stream,
             **arrays,
-            time=np.arange(0, c["period_s"] + 1, c["output_s"], dtype=float),
+            time=np.arange(0, duration(c) + 1, c["output_s"], dtype=float),
             x=x,
             y=y,
             dz_node=np.asarray(params.dz_node),
@@ -180,7 +199,11 @@ def convert(c, directory, resources):
         integration_s=run["integration_s"],
         resources=resources,
         numerics=dict(
-            time_scheme="existing L/N/L plus forward-backward free surface, legacy full step, CUDA float64",
+            time_scheme=(
+                "legacy L/N/L processes; symmetric external pressure/continuity, single mean rotation; CUDA float64"
+                if run["actual_controls"].get("external_mode_scheme") == "symmetric"
+                else "existing L/N/L plus forward-backward free surface, legacy full step, CUDA float64"
+            ),
             transport="full momentum and T/S transport active",
             filters="native filtering; no cap or sponge",
             vertical_coordinate="fixed nodal dual cells; h includes diagnostic surface displacement",

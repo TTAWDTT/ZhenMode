@@ -13,8 +13,9 @@ import numpy as np
 
 from zhenmode.baselines.mom6.adapter import prepare_wave_input
 from zhenmode.benchmarks.standing_wave import MOM6, digest, legacy_contract
+from zhenmode.evaluation.native_channel import duration
+from zhenmode.execution.native_channel import metadata, native_arrays
 from zhenmode.execution.runs import write_json
-from zhenmode.execution.standing_wave import metadata, native_arrays
 from zhenmode.provenance.sources import load_json, sha256_file
 
 
@@ -29,15 +30,25 @@ def integrate(config_file):
     c, case = config["contract"], Path.cwd()
     # The established input writer keeps its original v0 contract interface.
     # Geometry/initial values are unchanged; the suite declares v1 separately.
-    initial_contract = case / "mom-initial-contract-v0.json"
-    write_json(initial_contract, legacy_contract(c["case"]), create=True)
-    prepare_wave_input(initial_contract, case / "INPUT")
+    if "benchmark" in c:
+        from zhenmode.baselines.mom6.channel_initial import prepare
+
+        prepare(c, case / "INPUT")
+    else:
+        initial_contract = case / "mom-initial-contract-v0.json"
+        grid_case = {64: "coarse", 128: "medium", 256: "fine"}[c["nx"]]
+        write_json(
+            initial_contract,
+            legacy_contract(grid_case, half=c["amplitude_m"] == 0.005),
+            create=True,
+        )
+        prepare_wave_input(initial_contract, case / "INPUT")
     (case / "RESTART").mkdir()
     (case / "MOM_override").write_text("", encoding="utf8")
     settings = dict(
         NIGLOBAL=c["nx"],
-        NJGLOBAL=8,
-        NK=4,
+        NJGLOBAL=c["ny"],
+        NK=c["nz"],
         LAYOUT="1, 1",
         REENTRANT_X=True,
         REENTRANT_Y=False,
@@ -48,10 +59,10 @@ def integrate(config_file):
         LENLON=c["Lx_m"],
         LENLAT=c["Ly_m"],
         TOPO_CONFIG="flat",
-        MAXIMUM_DEPTH=100.0,
+        MAXIMUM_DEPTH=c["H_m"],
         MINIMUM_DEPTH=0.0,
         ROTATION="beta",
-        F_0=0.0,
+        F_0=c["f"],
         BETA=0.0,
         RHO_0=1025.0,
         G_EARTH=9.81,
@@ -74,7 +85,7 @@ def integrate(config_file):
         TS_FILE="standing_wave_initial.nc",
         TEMP_IC_VAR="ptemp",
         SALT_IC_VAR="salt",
-        VELOCITY_CONFIG="zero",
+        VELOCITY_CONFIG="file" if "benchmark" in c else "zero",
         DT=c["dt"],
         DTBT=c["dt"],
         DT_THERM=c["dt"],
@@ -84,6 +95,10 @@ def integrate(config_file):
         DO_DYNAMICS=True,
         OFFLINE=False,
         ENABLE_THERMODYNAMICS=True,
+        USE_EOS=True,
+        ADVECT_TS=True,
+        # All these cases omit diapycnal mass fluxes and buoyancy forcing.
+        # EOS and horizontal T/S advection remain active in the adiabatic route.
         ADIABATIC=True,
         LAPLACIAN=False,
         BIHARMONIC=False,
@@ -113,11 +128,19 @@ def integrate(config_file):
         WIND_CONFIG="zero",
         BUOY_CONFIG="NONE",
         TIMEUNIT=1.0,
-        DAYMAX=32000.0,
+        DAYMAX=duration(c),
         SAVE_INITIAL_CONDS=True,
         WRITE_GEOM=1,
         RESTART_CONTROL=0,
     )
+    if "benchmark" in c:
+        settings.update(VELOCITY_FILE="standing_wave_initial.nc", U_IC_VAR="u", V_IC_VAR="v")
+    if "wind_stress" in c:
+        settings.update(
+            WIND_CONFIG="const",
+            CONST_WIND_TAUX=c["wind_stress"]["tau_x_N_m2"],
+            CONST_WIND_TAUY=c["wind_stress"]["tau_y_N_m2"],
+        )
     # LAYOUT is a native integer pair.
     text = (
         "\n".join(
@@ -130,7 +153,7 @@ def integrate(config_file):
         "&MOM_input_nml\n output_directory='./', input_filename='n', restart_input_dir='INPUT/', restart_output_dir='RESTART/', parameter_filename='MOM_input','MOM_override'\n/\n&diag_manager_nml\n/\n&fms_nml\n domains_stack_size=955296, stack_size=0\n/\n"
     )
     (case / "diag_table").write_text(
-        '"Paired standing wave"\n1 1 1 0 0 0\n"prog",1000,"seconds",1,"seconds","Time"\n'
+        f'"Native channel"\n1 1 1 0 0 0\n"prog",{int(c["output_s"])},"seconds",1,"seconds","Time"\n'
         + "".join(
             '"ocean_model","' + n + '","' + n + '","prog","all",.false.,"none",1\n'
             for n in ["u", "v", "h", "e", "temp", "salt"]
@@ -191,7 +214,7 @@ def convert(c, directory, resources):
         "USE_REGRIDDING": "False",
         "RHO_0": "1025.0",
         "G_EARTH": "9.81",
-        "F_0": "0.0",
+        "F_0": str(c["f"]),
         "BETA": "0.0",
         "KV": "0.0",
         "KHTR": "0.0",
@@ -201,9 +224,22 @@ def convert(c, directory, resources):
         "THICKNESSDIFFUSE": "False",
         "BULKMIXEDLAYER": "False",
         "ADIABATIC": "True",
+        "USE_EOS": "True",
     }
+    if "wind_stress" in c:
+        expected.update(
+            WIND_CONFIG="const",
+            CONST_WIND_TAUX=str(c["wind_stress"]["tau_x_N_m2"]),
+            CONST_WIND_TAUY=str(c["wind_stress"]["tau_y_N_m2"]),
+        )
     for k, v in expected.items():
-        if resolved.get(k) != v:
+        actual = resolved.get(k)
+        match = actual == v
+        if k == "F_0" and c["f"] != 0 and actual is not None:
+            match = np.isclose(float(actual), c["f"], rtol=5e-12, atol=0)
+        if k in ("CONST_WIND_TAUX", "CONST_WIND_TAUY") and actual is not None:
+            match = np.isclose(float(actual), float(v), rtol=5e-12, atol=0)
+        if not match:
             raise ValueError(f"MOM6 resolved {k}={resolved.get(k)!r}, expected {v!r}")
     write_json(
         case / "resolved-options.json",
@@ -217,11 +253,13 @@ def convert(c, directory, resources):
         netCDF4.Dataset(case / "MOM_IC.nc") as ic,
         netCDF4.Dataset(case / "ocean_geometry.nc") as geom,
     ):
-        if not np.array_equal(d["Time"][:], np.arange(1000.0, 32001.0, 1000.0)):
+        if not np.array_equal(
+            d["Time"][:], np.arange(c["output_s"], duration(c) + 1, c["output_s"])
+        ):
             raise ValueError("MOM6 native output times are incomplete or changed")
         if not np.all(geom["wet"][:] == 1):
             raise ValueError("MOM6 native wet mask differs from the all-wet case")
-        np.testing.assert_allclose(geom["D"][:], 100.0, rtol=0, atol=1e-12)
+        np.testing.assert_allclose(geom["D"][:], c["H_m"], rtol=0, atol=1e-12)
         np.testing.assert_allclose(geom["Ah"][:], dx * dy, rtol=1e-13)
 
         def field(name, initial):
@@ -232,7 +270,9 @@ def convert(c, directory, resources):
                     raise ValueError("unknown missing interior normal velocities")
                 # Native FMS does not write closed-wall velocity diagnostics. Physical BC is v=0.
                 if not (np.all(mask[:, :, 0]) and np.all(mask[:, :, -1])):
-                    raise ValueError("MOM6 wall diagnostics do not match the declared boundary masks")
+                    raise ValueError(
+                        "MOM6 wall diagnostics do not match the declared boundary masks"
+                    )
                 value = value.filled(0.0)
             else:
                 if np.ma.getmaskarray(value).any():
@@ -257,7 +297,7 @@ def convert(c, directory, resources):
     initialization_s = float(re.search(r"^Initialization\s+1\s+(\S+)", text, re.M)[1])
     integration_s = float(re.search(r"^Main loop\s+1\s+(\S+)", text, re.M)[1])
     fields = dict(
-        time=np.arange(0, c["period_s"] + 1, c["output_s"], dtype=float),
+        time=np.arange(0, duration(c) + 1, c["output_s"], dtype=float),
         eta=eta,
         h=h,
         T=T,
@@ -279,7 +319,7 @@ def convert(c, directory, resources):
             time_scheme="native SPLIT=True SPLIT_RK2B=False",
             transport="full momentum and T/S transport",
             filters="native numerical filtering; no added sponge",
-            vertical_coordinate="four moving native layer interfaces, no ALE remapping",
+            vertical_coordinate=f"{c['nz']} moving native layer interfaces, no ALE remapping",
             substeps="DT=DTBT=DT_THERM=DT_FORCING",
             resolved_options=c["mom_time_options"],
         ),

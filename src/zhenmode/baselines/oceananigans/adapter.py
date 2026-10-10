@@ -11,9 +11,10 @@ import netCDF4
 import numpy as np
 
 from zhenmode.benchmarks.standing_wave import OCEANANIGANS, digest
+from zhenmode.evaluation.native_channel import duration
+from zhenmode.execution.native_channel import metadata, native_arrays
 from zhenmode.execution.resources import run_process_group
 from zhenmode.execution.runs import write_json
-from zhenmode.execution.standing_wave import metadata, native_arrays
 from zhenmode.provenance.sources import load_json, sha256_file
 
 PACKAGE = Path(__file__).parent
@@ -209,10 +210,16 @@ def integrate(config_file):
         or sha256_file(actual_executable) != info["julia_executable_sha256"]
     ):
         raise ValueError("selected Julia launcher runs an unverified executable")
+    initial_path = None
+    initial_hash = None
+    if "benchmark" in config["contract"]:
+        from zhenmode.baselines.oceananigans.channel_initial import prepare
+        initial_path, initial_hash = prepare(config["contract"], root)
     driver = PACKAGE / "standing_wave.jl"
     identities = {
         "driver_sha256": sha256_file(driver),
         "configuration_sha256": sha256_file(config_file),
+        **({"initial_sha256": initial_hash} if initial_path else {}),
         "environment_receipt_sha256": sha256_file(cache / "receipt.json"),
     }
     command = [
@@ -231,6 +238,8 @@ def integrate(config_file):
     if sha256_file(actual_executable) != info["julia_executable_sha256"]:
         raise ValueError("executed Julia program changed during the run")
     verify(cache)
+    if initial_path and sha256_file(initial_path) != initial_hash:
+        raise ValueError("native initial conditions changed during execution")
     if (
         sha256_file(driver) != identities["driver_sha256"]
         or sha256_file(config_file) != identities["configuration_sha256"]
@@ -245,7 +254,7 @@ def convert(c, directory, resources):
     with netCDF4.Dataset(root / "native.nc") as native:
         time = np.asarray(native["time"][:])
         if np.ma.is_masked(native["time"][:]) or not np.array_equal(
-            time, np.arange(0, c["period_s"] + 1, c["output_s"])
+            time, np.arange(0, duration(c) + 1, c["output_s"])
         ):
             raise ValueError("native Oceananigans did not save all required actual times")
         fields = {"time": time}
@@ -268,10 +277,12 @@ def convert(c, directory, resources):
         initialization_s = float(native.initialization_s)
         integration_s = float(native.integration_s)
         if (
-            int(native.accepted_steps) != int(c["period_s"] / c["dt"])
+            int(native.accepted_steps) != int(duration(c) / c["dt"])
             or native.vertical_order != "bottom_to_top"
         ):
             raise ValueError("native step count or layer order differs from frozen case")
+        if "benchmark" in c and float(native.coriolis_f_s_1) != c["f"]:
+            raise ValueError("native Coriolis parameter differs from the case")
         native_details = {
             "model": native.model_description,
             "substepping": native.substepping,
@@ -287,7 +298,7 @@ def convert(c, directory, resources):
         "Oceananigans",
         source_sha=OCEANANIGANS,
         executable_sha256=env["julia_executable_sha256"],
-        input_sha256=run["inputs"]["configuration_sha256"],
+        input_sha256=run["inputs"].get("initial_sha256", run["inputs"]["configuration_sha256"]),
         config_sha256=digest(
             {
                 "contract": c,
