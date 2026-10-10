@@ -1,6 +1,7 @@
 """Wet-face transport, continuity and tracer advection."""
 
 from zhenmode.model.solver.numerics.backend import jnp
+from zhenmode.model.solver.numerics.channel import channel_face_velocities
 from zhenmode.model.solver.numerics.contacts import (
     contact_divergence,
     contact_material_derivative,
@@ -29,6 +30,9 @@ def _layer_face_transports(velocity_x, velocity_y, params):
     """Static nodal volume flux per face width; y includes cos(face latitude)."""
     if getattr(params,'column_geometry','legacy')=='fixed_partial_v1':
         return contact_transports(velocity_x,velocity_y,params)
+    if getattr(params, 'pressure_continuity_scheme', 'centered_second') == 'centered_fourth':
+        fx, fy = channel_face_velocities(velocity_x, velocity_y)
+        return fx * params.dz_node, fy * params.dz_node
     thickness_x = _face_thickness(params, 0)
     thickness_y = _face_thickness(params, 1)
     cosine_face = 0.5 * (params.cos_lat + jnp.roll(params.cos_lat, -1))
@@ -165,6 +169,9 @@ def _limited_tracer_slope(tracer, wet, axis):
 
 def _legacy_horizontal_tracer_fluxes(T,u,v,p,face_transport):
     wm=p.wet_mask_z
+    if (face_transport is None
+            and getattr(p, 'pressure_continuity_scheme', 'centered_second') == 'centered_fourth'):
+        face_transport = _layer_face_transports(u, v, p)
     # ── Zonal flux at face (i+1/2), periodic in x ──
     # Fx = u_face * T_face (centered unless monotone_adv), face-gated on both
     # cells wet; +x-directed (u>0 carries T eastward).

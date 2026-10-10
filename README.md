@@ -57,6 +57,8 @@ zhenmode baseline mom6 omip2-plan --profile integration-6h
 
 [封闭边界面改进](docs/closed_faces_results_zh.md)在实际 GPU 旋转通道中降低误差，并保留旧默认方案；同时记录驻波回归和分层算例的轻微误差增加。
 
+[成对压力与连续性试验](docs/channel_pressure_results_zh.md)进一步检查分层平衡，记录同初态 GPU 对照中的改善与固定时间步下的误差下限。
+
 ## 开发
 
 | 目录 | 用途 |

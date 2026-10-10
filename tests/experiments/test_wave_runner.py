@@ -62,7 +62,7 @@ def test_runtime_receipt_identifies_real_interpreter_and_jax_binary_files():
     assert all(len(value) == 64 for value in info["native_jaxlib_sha256"].values())
 
 
-@pytest.mark.parametrize("method", ["symmetric-external-mode", "symmetric-closed-faces"])
+@pytest.mark.parametrize("method", ["symmetric-external-mode", "symmetric-closed-faces", "fourth-order-channel"])
 def test_study_entry_routes_the_new_method_and_rejects_ignored_half_amplitude(tmp_path, monkeypatch, method):
     from zhenmode.benchmarks.standing_wave import METHOD_STUDY_SCHEMA
     from zhenmode.execution import standing_wave
@@ -73,13 +73,15 @@ def test_study_entry_routes_the_new_method_and_rejects_ignored_half_amplitude(tm
     assert seen[0]["schema"] == METHOD_STUDY_SCHEMA
     assert seen[0]["nx"] == 128 and seen[0]["dt"] == 25
     assert seen[0]["ocean_options"]["external_mode_scheme"] == "symmetric"
-    if method == "symmetric-closed-faces":
+    if method in ("symmetric-closed-faces", "fourth-order-channel"):
         assert seen[0]["ocean_options"]["meridional_boundary_scheme"] == "closed_faces"
+    if method == "fourth-order-channel":
+        assert seen[0]["ocean_options"]["pressure_continuity_scheme"] == "centered_fourth"
     with pytest.raises(ValueError, match="fixed full amplitude"):
         standing_wave.run("coarse", tmp_path / "ignored-half", study=(64, 25), half=True)
 
 
-@pytest.mark.parametrize("method", ["symmetric-external-mode", "symmetric-closed-faces"])
+@pytest.mark.parametrize("method", ["symmetric-external-mode", "symmetric-closed-faces", "fourth-order-channel"])
 def test_freeze_cli_routes_method_study_and_preserves_default(tmp_path, method):
     import json
 

@@ -2,6 +2,7 @@
 
 from zhenmode.model.config import OMEGA, R_EARTH
 from zhenmode.model.solver.numerics.backend import jnp, np
+from zhenmode.model.solver.numerics.channel import channel_divergence, channel_gradient
 from zhenmode.model.solver.numerics.contacts import (
     contact_diffusion,
     contact_divergence,
@@ -74,6 +75,8 @@ def _divergence_conservative(ubt, vbt, p):
     divergence telescopes to zero under the area weight A_ij = R^2*cos(lat)*dphi^2.
     The bare centered form leaks volume at coastlines and walls. (D2)
     """
+    if getattr(p, 'pressure_continuity_scheme', 'centered_second') == 'centered_fourth':
+        return channel_divergence(ubt, vbt, p)
     wm = p.wet_mask                                   # (nx, ny)
     cos_lat = p.cos_lat                               # (ny,)
     # Zonal (axis 0, periodic): face (i+1/2,j) open iff cell i and i+1 both wet.
@@ -100,6 +103,8 @@ def _gradient_conservative(eta, p):
     divided by the cell cos). The centered _d_dx/_d_dy is NOT the adjoint: pairing
     it with the conservative divergence injects energy into the free mode. (D3)
     """
+    if getattr(p, 'pressure_continuity_scheme', 'centered_second') == 'centered_fourth':
+        return channel_gradient(eta, p)
     wm = p.wet_mask
     cos_lat = p.cos_lat                               # (ny,)
     inv_dx = p.inv_dx[..., 0]                          # (nx, ny)
@@ -123,6 +128,8 @@ def _gradient_conservative_3d(field, p):
 
     No flux reaches into land zeros across a coastline. (D4)
     """
+    if getattr(p, 'pressure_continuity_scheme', 'centered_second') == 'centered_fourth':
+        return channel_gradient(field, p)
     if getattr(p, 'column_geometry', 'legacy') == 'fixed_partial_v1':
         return contact_gradient(field,p)
     wm = p.wet_mask_z                                 # (nx, ny, nz)
@@ -149,6 +156,8 @@ def _divergence_conservative_3d(Fx, Fy, p):
     The bare _d_dx/_d_dy divergence of a coastal flux reads the land zeros inside
     its stencil and injects a spurious coastal source. (D4)
     """
+    if getattr(p, 'pressure_continuity_scheme', 'centered_second') == 'centered_fourth':
+        return channel_divergence(Fx, Fy, p)
     if getattr(p, 'column_geometry', 'legacy') == 'fixed_partial_v1':
         return _divergence_h(Fx, Fy, p)
     wm = p.wet_mask_z                                 # (nx, ny, nz)
@@ -253,6 +262,8 @@ def _divergence_h(u, v, p):
     mirror-pads the closed N/S walls and carries the same cos(face)/cos(cell)
     spherical factors as _divergence_conservative. (D6)
     """
+    if getattr(p, 'pressure_continuity_scheme', 'centered_second') == 'centered_fourth':
+        return channel_divergence(u, v, p)
     if getattr(p, 'column_geometry', 'legacy') == 'fixed_partial_v1':
         return contact_divergence(*contact_transports(u,v,p),p)/p.dz_node
     wm = p.wet_mask_z
