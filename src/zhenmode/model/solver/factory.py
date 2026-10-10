@@ -122,7 +122,8 @@ def make_solver_global(grid, physics, dt, forcing=None,
     if external_mode_scheme == 'symmetric':
         if mode_split or process_time_scheme != 'legacy' or column_geometry != 'nodal_dual_v1':
             raise ValueError('symmetric external mode requires unsplit legacy with nodal_dual_v1')
-        if physics.r_bot != 0:
+        active_drag = physics.cd if physics.bottom_friction == 'quadratic' else physics.r_bot
+        if active_drag != 0:
             raise ValueError('symmetric external candidate requires separate bottom-drag qualification')
     validate_grid(grid)
     if dtype not in {'float32', 'float64'}:

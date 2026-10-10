@@ -12,7 +12,7 @@ from zhenmode.model.config import PhysicsConfig
 from zhenmode.model.solver.factory import make_solver_global
 
 
-def core(scheme="forward_backward", f=1e-4, dt=100.0):
+def core(scheme="forward_backward", f=1e-4, dt=100.0, **physics_changes):
     grid = all_wet_grid(nx=8, ny=32, nz=4)
     grid = replace(
         grid,
@@ -42,6 +42,7 @@ def core(scheme="forward_backward", f=1e-4, dt=100.0):
             )
         }
     )
+    physics = replace(physics, **physics_changes)
     return make_solver_global(
         grid,
         physics,
@@ -84,6 +85,37 @@ def test_complete_step_mean_rotation_has_declared_single_or_legacy_double_owner(
 def test_candidate_factory_rejects_unsupported_combinations():
     with pytest.raises(ValueError, match="unknown external"):
         core("unknown")
+
+
+@pytest.mark.parametrize(
+    "law,r_bot,cd,accepted",
+    [("linear", 0.01, 0, False), ("quadratic", 0, 0.01, False),
+     ("linear", 0, 0.01, True), ("quadratic", 0.01, 0, True)],
+)
+def test_candidate_checks_the_active_bottom_drag_coefficient(law, r_bot, cd, accepted):
+    if accepted:
+        core("symmetric", bottom_friction=law, r_bot=r_bot, cd=cd)
+    else:
+        with pytest.raises(ValueError, match="bottom-drag qualification"):
+            core("symmetric", bottom_friction=law, r_bot=r_bot, cd=cd)
+
+
+def test_external_half_step_removes_rotated_wall_shear_before_nonlinear_stage():
+    from zhenmode.model.solver.dynamics.barotropic import _free_surface_step_fd
+    from zhenmode.model.solver.timestepping.step import _linear_half_step, _rotate_baroclinic_shear
+
+    _, initialize, _, p, _ = core("symmetric")
+    shear = np.array([1.0, 0.5, -0.5, -1.0])
+    shear -= np.sum(shear * np.asarray(p.dz_node)) / 50
+    state = initialize()._replace(u=jnp.broadcast_to(jnp.asarray(0.0003 * shear), (8, 32, 4)))
+    u_rotated, v_rotated = _rotate_baroclinic_shear(state.u, state.v, p, p.dt / 2)
+    assert np.max(abs(np.asarray(v_rotated)[:, [0, -1], :])) > 1e-9
+    _, _, v = _free_surface_step_fd(state.eta, u_rotated, v_rotated, p)
+    assert np.max(abs(np.asarray(v)[:, [0, -1], :])) == 0
+    # The wall constraint must not erase the physical interior shear.
+    np.testing.assert_allclose(np.asarray(v)[:, 16, :], np.asarray(v_rotated)[:, 16, :], atol=2e-15)
+    stage = _linear_half_step(state, p, p.dt / 2)
+    assert np.max(abs(np.asarray(stage.v)[:, [0, -1], :])) == 0
 
 
 def test_external_pressure_block_has_quadratic_energy_ripple():

@@ -6,16 +6,18 @@ import numpy as np
 
 from zhenmode.benchmarks.channel_dynamics import contract as channel_contract
 from zhenmode.benchmarks.standing_wave import digest
+from zhenmode.preparation.wind_sample import validate_sample
 from zhenmode.provenance.sources import load_json, sha256_file
 
 
 def contract(stress_file, method="baseline"):
     path = Path(stress_file).resolve()
     sample = load_json(path)
+    validate_sample(sample)
     if (
         sample.get("data_kind")
         not in ("observed_weather_derived_stress", "manufactured_weather_derived_stress")
-        or sample.get("schema") != "jra-point-mean-stress-v1"
+        or sample.get("schema") != "jra-point-mean-stress-v2"
     ):
         raise ValueError("requires identified weather derivation")
     if sample["source_dates"] != [

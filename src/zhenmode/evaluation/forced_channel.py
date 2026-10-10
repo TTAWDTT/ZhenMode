@@ -51,11 +51,12 @@ def score(c, a):
         S_inventory_drift=float(np.max(abs(salt / salt[0] - 1))),
         work_residual_relative=float(np.max(abs(energy - energy[0] - work))) / denominator,
     )
-    failures = [
-        key
-        for key in ("volume_drift", "T_inventory_drift", "S_inventory_drift")
-        if metrics[key] > 1e-8
-    ]
+    limits = {
+        "volume_drift": c["thresholds"]["volume"],
+        "T_inventory_drift": c["thresholds"]["tracer_inventory"],
+        "S_inventory_drift": c["thresholds"]["tracer_inventory"],
+    }
+    failures = [key for key, limit in limits.items() if metrics[key] > limit]
     m = a["metadata"]
     return dict(
         schema=c["schema"],
