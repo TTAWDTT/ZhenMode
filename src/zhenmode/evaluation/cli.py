@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
 from pathlib import Path
 
 from zhenmode.evaluation.pipeline import compare, evaluate, import_historical
@@ -10,8 +11,13 @@ from zhenmode.evaluation.protocols import load_json
 
 
 def main(argv=None):
+    arguments = list(sys.argv[1:] if argv is None else argv)
+    if arguments and arguments[0] == "wave":
+        from zhenmode.evaluation.standing_wave import main as wave
+        return wave(arguments[1:])
     parser = argparse.ArgumentParser(prog="zhenmode evaluate")
     commands = parser.add_subparsers(dest="command", required=True)
+    commands.add_parser("wave", help="freeze, score or compare native standing-wave trajectories")
     score = commands.add_parser("score", help="validate a protocol and score one completed run")
     for name in ("input", "protocol", "run-manifest", "out-dir"):
         score.add_argument("--" + name, required=True)

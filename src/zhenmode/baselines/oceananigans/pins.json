@@ -1,0 +1,8 @@
+{
+  "version": "0.113.5",
+  "commit": "1e8587b17171b0bba5bc6728118c3dbbd3c8acf6",
+  "tag": "v0.113.5",
+  "cuda_version": "5.9.1",
+  "repository": "https://github.com/CliMA/Oceananigans.jl",
+  "git_tree_sha1": "caa4ef998c8fc3c0ba68d8cd3261f62187e64b58"
+}

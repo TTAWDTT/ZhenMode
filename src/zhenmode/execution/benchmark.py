@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import http.client
 import json
+import sys
 from datetime import datetime
 from pathlib import Path
 
@@ -103,8 +104,13 @@ def plan(profile, method, dt_seconds):
 
 
 def main(argv=None):
+    arguments = list(sys.argv[1:] if argv is None else argv)
+    if arguments and arguments[0] == "standing-wave":
+        from zhenmode.execution.standing_wave import main as wave
+        return wave(arguments[1:])
     parser = argparse.ArgumentParser(prog="zhenmode benchmark")
     commands = parser.add_subparsers(dest="command", required=True)
+    commands.add_parser("standing-wave", help="run native full models on one frozen Cartesian wave")
     commands.add_parser("describe", help="show the installed frozen physical definition")
     freeze = commands.add_parser("freeze", help="create a contract receipt, never overwrite")
     freeze.add_argument("--output", required=True)

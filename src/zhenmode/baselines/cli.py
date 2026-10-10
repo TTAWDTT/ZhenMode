@@ -4,6 +4,7 @@ from __future__ import annotations
 import argparse
 import json
 import subprocess
+import sys
 from pathlib import Path
 
 from zhenmode.baselines.mom6 import adapter as mom6
@@ -11,8 +12,13 @@ from zhenmode.baselines.mom6 import forcing
 
 
 def main(argv=None):
+    arguments = list(sys.argv[1:] if argv is None else argv)
+    if arguments and arguments[0] == "oceananigans":
+        from zhenmode.baselines.oceananigans.adapter import main as oceananigans
+        return oceananigans(arguments[1:])
     parser = argparse.ArgumentParser(prog="zhenmode baseline")
     methods = parser.add_subparsers(dest="method", required=True)
+    methods.add_parser("oceananigans", help="prepare or inspect the pinned native Julia/CUDA environment")
     model = methods.add_parser("mom6")
     commands = model.add_subparsers(dest="command", required=True)
     forcing.add_arguments(commands.add_parser("export-forcing", help="export shared forcing to MOM6 A-grid inputs"))
