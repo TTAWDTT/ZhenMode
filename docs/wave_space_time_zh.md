@@ -37,3 +37,22 @@ zhenmode evaluate wave-study --runs NX64_DT25 NX128_DT25 NX256_DT25 NX256_DT50 N
 工具选择：已查 BootLoops 工具索引，没有海洋模式运行器；本仓库已具备三方驱动、
 资源监督、原生数组校验和评分，故只扩展其冻结配置并增加模态分析，复用全部驱动。
 本轮数据用于误差诊断和方法选择；用于选择的值不再作为后续独立认证数据。
+
+## 新外模研究
+
+`--method symmetric-external-mode` 将相同五个组合冻结为独立的
+`standing-wave-space-time-method-v1`，只改变 ZhenMode 外模选择。原研究的默认定义、
+三方完整性要求和报告保持。单模式分析必须显式选择 `--models zhenmode`，仍要求五个
+组合全部存在、同一方法和同一源码／程序身份；报告记录实际模型列表与五个运行，
+缺少对照组不能被视为完整三方研究。不同方法的目录不得混进一个研究。
+
+```sh
+zhenmode evaluate wave freeze --study 64 25 --method symmetric-external-mode --out NEW.json
+zhenmode benchmark standing-wave --study 64 25 --method symmetric-external-mode \
+  --models zhenmode --output NEW_RUN --source-revision ZHENMODE_COMMIT
+zhenmode evaluate wave-study --models zhenmode \
+  --runs NX64_DT25 NX128_DT25 NX256_DT25 NX256_DT50 NX256_DT100 --output NEW_STUDY.json
+```
+
+研究中的振幅固定为 0.01 m，`--study` 与 `--half` 同用会拒绝。与旧研究比较时分别
+保留各自的源码和数据身份，旧对照不计作新源码的运行，也不用于跨硬件速度排名。
