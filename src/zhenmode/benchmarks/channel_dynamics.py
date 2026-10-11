@@ -14,7 +14,7 @@ def contract(case, level="coarse", method="baseline"):
         raise ValueError("unknown frozen channel benchmark")
     if case == "thermal-wind" and level != "coarse":
         raise ValueError("thermal-wind currently freezes one measured-size grid")
-    if method not in ("baseline", "symmetric-external-mode", "symmetric-closed-faces", "fourth-order-channel", "fourth-order-transport", "surface-density-pressure"):
+    if method not in ("baseline", "symmetric-external-mode", "symmetric-closed-faces", "fourth-order-channel", "fourth-order-transport", "surface-density-pressure", "balanced-density-rotation"):
         raise ValueError("unknown channel method")
     c = wave_contract()
     c.update(schema=SCHEMA, benchmark=case, case=level, dt=50.0, f=1e-4)
@@ -73,14 +73,16 @@ def contract(case, level="coarse", method="baseline"):
         c["schema"] = "channel-dynamics-method-v1"
         c["method"] = method
         c["ocean_options"]["external_mode_scheme"] = "symmetric"
-    if method in ("symmetric-closed-faces", "fourth-order-channel", "fourth-order-transport", "surface-density-pressure"):
+    if method in ("symmetric-closed-faces", "fourth-order-channel", "fourth-order-transport", "surface-density-pressure", "balanced-density-rotation"):
         c["ocean_options"]["meridional_boundary_scheme"] = "closed_faces"
-    if method in ("fourth-order-channel", "fourth-order-transport", "surface-density-pressure"):
+    if method in ("fourth-order-channel", "fourth-order-transport", "surface-density-pressure", "balanced-density-rotation"):
         c["ocean_options"]["pressure_continuity_scheme"] = "centered_fourth"
-    if method in ("fourth-order-transport", "surface-density-pressure"):
+    if method in ("fourth-order-transport", "surface-density-pressure", "balanced-density-rotation"):
         c["ocean_options"]["tracer_transport_scheme"] = "product_fourth"
-    if method == "surface-density-pressure":
+    if method in ("surface-density-pressure", "balanced-density-rotation"):
         c["ocean_options"]["hydrostatic_surface_scheme"] = "linear_density"
+    if method == "balanced-density-rotation":
+        c["ocean_options"]["density_rotation_scheme"] = "joint_shear"
     return c
 
 
