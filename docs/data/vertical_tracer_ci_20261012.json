@@ -1,0 +1,15 @@
+{
+  "run": {
+    "conclusion": "",
+    "headSha": "8426e97bd42f9e135000736e33863f7773c52e8d",
+    "status": "in_progress",
+    "url": "https://github.com/TTAWDTT/ZhenMode/actions/runs/38166315545"
+  },
+  "executed_commit": "2e08feb8a78b63c827decb862ff135089bf1d65a",
+  "validation_commit": "8426e97bd42f9e135000736e33863f7773c52e8d",
+  "production_source_unchanged": true,
+  "src_tree": "2ad41a82fedd4558112a9ba9d10b38fb660658e5",
+  "pytest_summary": null,
+  "mms_summary": [],
+  "note": "pending; earlier CI failed only test-fixture ownership rule; no completion claim"
+}
