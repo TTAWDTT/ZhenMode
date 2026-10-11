@@ -47,3 +47,21 @@ def channel_gradient(field, params):
     gy = (8 * (padded[:, 3:-1] - padded[:, 1:-3])
           - (padded[:, 4:] - padded[:, :-4])) * params.inv_dy / 12
     return gx, gy
+
+
+def channel_tracer_fluxes(tracer, u, v, params, face_transport=None):
+    """Reconstruct nodal products; keep supplied volume corrections conservative.
+
+    The base flux differentiates u*T and v*T with the same wider stencil as
+    continuity. Supplied extra transport carries a centred concentration, so
+    its order is separate; constant tracer still follows that actual volume
+    flux. Signed interpolation does not provide a monotonicity guarantee.
+    """
+    fx, fy = channel_face_velocities(u * tracer, v * tracer)
+    if face_transport is not None:
+        base_x, base_y = channel_face_velocities(u, v)
+        concentration_x = .5 * (tracer + jnp.roll(tracer, -1, axis=0))
+        concentration_y = .5 * (tracer + jnp.roll(tracer, -1, axis=1))
+        fx = fx + (face_transport[0] / params.dz_node - base_x) * concentration_x
+        fy = fy + (face_transport[1] / params.dz_node - base_y) * concentration_y
+    return fx, fy.at[:, -1].set(0.)

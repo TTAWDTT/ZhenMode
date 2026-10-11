@@ -51,7 +51,8 @@ def make_solver_global(grid, physics, dt, forcing=None,
                        eos_pressure_dbar=None, surface_pressure_pa=None,
                        external_mode_scheme='forward_backward',
                        meridional_boundary_scheme='clamped_nodes',
-                       pressure_continuity_scheme='centered_second'):
+                       pressure_continuity_scheme='centered_second',
+                       tracer_transport_scheme='centered_second'):
     """Create a JIT-compiled global FD ocean solver.
 
     Key properties:
@@ -126,6 +127,11 @@ def make_solver_global(grid, physics, dt, forcing=None,
         Requires closed_faces and at least five centres along each axis;
         projected advection is not qualified. Other discretizations retain
         their original order; this is not a fourth-order complete model.
+      - tracer_transport_scheme='product_fourth' reconstructs horizontal
+        nodal velocity/tracer products with the paired channel stencil.
+        Requires centered_fourth pressure/continuity and un-limited advection;
+        vertical donor transport and time integration retain their order.
+        Signed fluxes have no general monotonicity or stability guarantee.
     """
     finite_number('dt', dt, positive=True)
     finite_number('dt_bt', dt_bt, positive=True)
@@ -138,6 +144,11 @@ def make_solver_global(grid, physics, dt, forcing=None,
         if active_drag != 0:
             raise ValueError('symmetric external candidate requires separate bottom-drag qualification')
     validate_grid(grid)
+    if tracer_transport_scheme not in ('centered_second', 'product_fourth'):
+        raise ValueError('unknown tracer_transport_scheme')
+    if tracer_transport_scheme == 'product_fourth':
+        if pressure_continuity_scheme != 'centered_fourth' or monotone_adv or fct_adv:
+            raise ValueError('product_fourth requires the paired fourth-order channel without tracer limiters')
     if pressure_continuity_scheme not in ('centered_second', 'centered_fourth'):
         raise ValueError('unknown pressure_continuity_scheme')
     if pressure_continuity_scheme == 'centered_fourth':
@@ -529,6 +540,7 @@ def make_solver_global(grid, physics, dt, forcing=None,
         external_mode_scheme=external_mode_scheme,
         meridional_boundary_scheme=meridional_boundary_scheme,
         pressure_continuity_scheme=pressure_continuity_scheme,
+        tracer_transport_scheme=tracer_transport_scheme,
     )
 
     if projection_preconditioner == 'jacobi':
