@@ -87,7 +87,7 @@ def contract(case, level="coarse", method="baseline"):
 
 
 def validate_contract(c):
-    if isinstance(c, dict) and c.get("schema") == "frozen-internal-wave-v1":
+    if isinstance(c, dict) and c.get("schema") in ("frozen-internal-wave-v1", "vertical-tracer-development-v1"):
         from zhenmode.benchmarks.internal_wave import validate_contract as validate_internal
 
         return validate_internal(c)
@@ -157,7 +157,7 @@ def initial_points(c, x, y, z):
 
 def initial_native(c, model):
     """Point-valued FD or native C-grid layer initial data; no model or oracle calls."""
-    if c.get("schema") == "frozen-internal-wave-v1":
+    if c.get("benchmark") == "internal-wave" and c.get("schema") in ("frozen-internal-wave-v1", "vertical-tracer-development-v1"):
         from zhenmode.benchmarks.internal_wave import initial_native as initial_internal
 
         return initial_internal(c, model)
