@@ -52,7 +52,8 @@ def make_solver_global(grid, physics, dt, forcing=None,
                        external_mode_scheme='forward_backward',
                        meridional_boundary_scheme='clamped_nodes',
                        pressure_continuity_scheme='centered_second',
-                       tracer_transport_scheme='centered_second'):
+                       tracer_transport_scheme='centered_second',
+                       hydrostatic_surface_scheme='reference_plane'):
     """Create a JIT-compiled global FD ocean solver.
 
     Key properties:
@@ -132,6 +133,10 @@ def make_solver_global(grid, physics, dt, forcing=None,
         Requires centered_fourth pressure/continuity and un-limited advection;
         vertical donor transport and time integration retain their order.
         Signed fluxes have no general monotonicity or stability guarantee.
+      - hydrostatic_surface_scheme='linear_density' integrates the top linear
+        density anomaly from z=0 to eta in the restricted fourth-order channel.
+        Continuity and reference capacities remain linear/static; this is not
+        a complete nonlinear-free-surface or energy-conservation qualification.
     """
     finite_number('dt', dt, positive=True)
     finite_number('dt_bt', dt_bt, positive=True)
@@ -144,6 +149,12 @@ def make_solver_global(grid, physics, dt, forcing=None,
         if active_drag != 0:
             raise ValueError('symmetric external candidate requires separate bottom-drag qualification')
     validate_grid(grid)
+    if hydrostatic_surface_scheme not in ('reference_plane', 'linear_density'):
+        raise ValueError('unknown hydrostatic_surface_scheme')
+    if hydrostatic_surface_scheme == 'linear_density':
+        if (pressure_continuity_scheme != 'centered_fourth'
+                or physics.thermodynamics != 'linear' or np.asarray(grid.z)[0] != 0):
+            raise ValueError('linear_density surface pressure requires the fourth-order linear-EOS channel with top z=0')
     if tracer_transport_scheme not in ('centered_second', 'product_fourth'):
         raise ValueError('unknown tracer_transport_scheme')
     if tracer_transport_scheme == 'product_fourth':
@@ -541,6 +552,7 @@ def make_solver_global(grid, physics, dt, forcing=None,
         meridional_boundary_scheme=meridional_boundary_scheme,
         pressure_continuity_scheme=pressure_continuity_scheme,
         tracer_transport_scheme=tracer_transport_scheme,
+        hydrostatic_surface_scheme=hydrostatic_surface_scheme,
     )
 
     if projection_preconditioner == 'jacobi':

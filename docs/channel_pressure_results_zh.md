@@ -73,7 +73,7 @@ ZhenMode 的成对四阶空间模板在相同初态和评分下改善了热成�
 
 首版另完成了 11 次探索运行，但遗漏新增文件的源码登记；第二批稳定表达式运行
 也在登记修复前中断。这些文件全部保留，并排除出正式比较。正式 11 次运行来自
-登记完整的新 wheel 和仓库外干净安装，采用 RTX 4060 Laptop、CUDA、float64，
+登记完整的新 wheel 和独立目录安装，采用 RTX 4060 Laptop、CUDA、float64，
 每次受 1 CPU／600 s／4 GiB 采样进程组 RSS 预算约束。
 [数值、对照和哈希](data/channel_pressure_20261011.json)包含正式收据及排除说明；
 原始正式输出位于 `outputs/thermal-balance-20261010/final/`。
