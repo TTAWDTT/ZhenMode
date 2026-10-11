@@ -4,7 +4,13 @@ import argparse
 import json
 from pathlib import Path
 
-from zhenmode.benchmarks.configuration_scan import PROBLEMS, contract, rows, validate_contract
+from zhenmode.benchmarks.configuration_scan import (
+    PROBLEMS,
+    contract,
+    followup_rows,
+    rows,
+    validate_contract,
+)
 from zhenmode.execution.native_channel import MODELS, execute
 from zhenmode.execution.runs import write_json
 
@@ -43,7 +49,7 @@ def main(argv=None):
     p.add_argument("--julia", default="julia")
     a = p.parse_args(argv)
     if a.plan:
-        write_json(a.plan, dict(schema="native-scan-plan-v1", rows=rows(), execution="not_started"), create=True)
+        write_json(a.plan, dict(schema="native-scan-plan-v1", rows=rows(), followups=followup_rows(), execution="not_started"), create=True)
         return 0
     if not all((a.problem, a.model, a.setting)):
         p.error("--output requires --problem, --model and --setting")

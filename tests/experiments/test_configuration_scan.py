@@ -71,6 +71,20 @@ def test_vertical_scan_keeps_depth_and_end_half_capacities():
     np.testing.assert_equal(c["thermal_wind"], contract("thermal-wind", "zhenmode", "base")["thermal_wind"])
 
 
+def test_refined_grid_followup_changes_only_the_external_step():
+    from zhenmode.benchmarks.configuration_scan import followup_rows
+
+    assert followup_rows()[0] not in rows()
+    before = contract("thermal-wind", "mom6", "grid-double")
+    after = contract(**followup_rows()[0])
+    assert after["mom_time_options"]["DTBT"] == 12.5
+    assert after["mom_time_options"]["SPLIT_RK2B"] is False
+    before.pop("scan")
+    after.pop("scan")
+    after["mom_time_options"]["DTBT"] = 50.0
+    assert digest(before) == digest(after)
+
+
 def test_mom_input_applies_actual_substeps_and_transport(tmp_path, monkeypatch):
     from zhenmode.baselines.mom6 import standing_wave as mom
 

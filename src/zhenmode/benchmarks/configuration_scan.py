@@ -17,7 +17,7 @@ MODEL_SETTINGS = {
 }
 THERMAL_SETTINGS = {
     "zhenmode": ("grid-double", "vertical-double", "zhen-centered-tracer"),
-    "mom6": ("grid-double", "vertical-double", "mom-ppm-h3", "mom-ppm"),
+    "mom6": ("grid-double", "vertical-double", "mom-ppm-h3", "mom-ppm", "mom-grid-double-fast4"),
     "oceananigans": ("grid-double", "vertical-double", "oa-centered4", "oa-weno5"),
 }
 
@@ -47,7 +47,7 @@ def contract(problem, model, setting):
         else:
             c["nx"] //= 2
             c["ny"] //= 2
-    if setting == "grid-double":
+    if setting in ("grid-double", "mom-grid-double-fast4"):
         c["nx"] *= 2
         c["ny"] *= 2
     if setting == "vertical-double":
@@ -59,7 +59,7 @@ def contract(problem, model, setting):
     if setting.startswith("mom-"):
         o = c["mom_time_options"]
         o["DTBT"] = c["dt"] / 4
-        o["SPLIT_RK2B"] = setting != "mom-fast4"
+        o["SPLIT_RK2B"] = setting not in ("mom-fast4", "mom-grid-double-fast4")
         if setting == "mom-less-damping":
             o["BEBT"] = .06  # above the author's approximately 0.05 practical lower bound
         if setting in ("mom-ppm-h3", "mom-ppm"):
@@ -91,4 +91,9 @@ def validate_contract(c):
 def rows():
     """Finite declared matrix; no search depending on observed scores."""
     return [dict(problem=p, model=m, setting=s) for p in PROBLEMS
-            for m in MODEL_SETTINGS for s in settings(p, m)]
+            for m in MODEL_SETTINGS for s in settings(p, m) if s != "mom-grid-double-fast4"]
+
+
+def followup_rows():
+    """Separate adaptive combination; never relabel an original matrix row."""
+    return [dict(problem="thermal-wind", model="mom6", setting="mom-grid-double-fast4")]
