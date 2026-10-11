@@ -54,6 +54,16 @@ def _compute_hydrostatic_pressure(state, p):
         p_bt = p_bt + p.surface_pressure_pa[..., None]
     return p_bt + p_bc
 
+
+def _density_pressure_gradient(state, p):
+    """Three-dimensional density/load force, excluding reference rho0*g*eta."""
+    pressure = _density_pressure(state, p)
+    if p.surface_pressure_pa is not None:
+        pressure = pressure + p.surface_pressure_pa[..., None]
+    gx, gy = _gradient_conservative_3d(pressure, p)
+    return -gx / RHO_0, -gy / RHO_0
+
+
 def _compute_pressure_gradient(state, p):
     """Horizontal pressure gradient force per unit mass (FD).
 

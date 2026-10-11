@@ -6,6 +6,7 @@ from zhenmode.model.solver.dynamics.barotropic import (
 )
 from zhenmode.model.solver.dynamics.pressure import (
     _compute_bt_rho_pgf,
+    _density_pressure_gradient,
 )
 from zhenmode.model.solver.dynamics.projection import _project_column_divergence
 from zhenmode.model.solver.dynamics.tendencies import (
@@ -51,8 +52,8 @@ def _coriolis_rotation_2d(u, v, f, dt):
     v_new = -sin_a * u + cos_a * v
     return u_new, v_new
 
-def _rotate_baroclinic_shear(velocity_x, velocity_y, params, duration):
-    """Rotate only the wet-depth anomaly; the fast mode rotates its own mean."""
+def _rotate_baroclinic_shear(velocity_x, velocity_y, params, duration, forcing=None):
+    """Rotate the wet-depth anomaly, optionally with a held-fixed shear force."""
     mean_x, mean_y = _barotropic_velocity(velocity_x, velocity_y, params)
     shear_x = (velocity_x - mean_x[..., None]) * params.wet_mask_z
     shear_y = (velocity_y - mean_y[..., None]) * params.wet_mask_z
@@ -60,6 +61,14 @@ def _rotate_baroclinic_shear(velocity_x, velocity_y, params, duration):
     if params.process_time_scheme == 'symmetric_fast_v3':
         rotation = rotation * params.interior_mask_z[..., 0]
     rotated_x, rotated_y = _coriolis_rotation_2d(shear_x, shear_y, rotation, duration)
+    if forcing is not None:
+        angle = rotation[..., None] * duration
+        # Stable integrals of the rotation matrix, including f=0 and tiny f.
+        sine_integral = duration * jnp.sinc(angle / jnp.pi)
+        cosine_integral = .5 * duration * angle * jnp.sinc(angle / (2 * jnp.pi))**2
+        force_x, force_y = forcing
+        rotated_x = rotated_x + sine_integral * force_x + cosine_integral * force_y
+        rotated_y = rotated_y - cosine_integral * force_x + sine_integral * force_y
     return (velocity_x + (rotated_x - shear_x) * params.wet_mask_z,
             velocity_y + (rotated_y - shear_y) * params.wet_mask_z)
 
@@ -152,7 +161,13 @@ def _linear_half_step(state, p, dt_half, budget=None, *, momentum_diffusion=None
 
     # Coriolis rotation (2D f-field, exact)
     if p.process_time_scheme != 'legacy' or p.external_mode_scheme == 'symmetric':
-        u, v = _rotate_baroclinic_shear(u, v, p, dt_half)
+        shear_force = None
+        if getattr(p, 'density_rotation_scheme', 'split_sources') == 'joint_shear':
+            force_x, force_y = _density_pressure_gradient(state, p)
+            mean_x = jnp.sum(force_x * p.dz_norm, axis=-1)
+            mean_y = jnp.sum(force_y * p.dz_norm, axis=-1)
+            shear_force = (force_x - mean_x[..., None], force_y - mean_y[..., None])
+        u, v = _rotate_baroclinic_shear(u, v, p, dt_half, forcing=shear_force)
     else:
         u, v = _coriolis_rotation_2d(u, v, p.f, dt_half)
 

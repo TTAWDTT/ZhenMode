@@ -4,6 +4,7 @@ from zhenmode.model.config import G_EARTH, RHO_0
 from zhenmode.model.solver.dynamics.pressure import (
     _compute_bt_rho_pgf,
     _compute_pressure_gradient,
+    _density_pressure_gradient,
     _reference_depth_gradient,
 )
 from zhenmode.model.solver.dynamics.transport import (
@@ -289,9 +290,16 @@ def _compute_momentum_residual(state, p):
         dudt = dudt + G_EARTH * _d_dx(state.eta[:, :, None], p)
         dvdt = dvdt + G_EARTH * _d_dy(state.eta[:, :, None], p)
     # barotropic PGF from density anomaly
-    bt_rho_x, bt_rho_y = _compute_bt_rho_pgf(state, p)
-    dudt = dudt - bt_rho_x[:, :, None]
-    dvdt = dvdt - bt_rho_y[:, :, None]
+    if getattr(p, 'density_rotation_scheme', 'split_sources') == 'joint_shear':
+        # L now owns shear as well as mean density force. Remove the same 3D
+        # source here; subtracting only its mean would count shear twice.
+        density_x, density_y = _density_pressure_gradient(state, p)
+        dudt = dudt - density_x
+        dvdt = dvdt - density_y
+    else:
+        bt_rho_x, bt_rho_y = _compute_bt_rho_pgf(state, p)
+        dudt = dudt - bt_rho_x[:, :, None]
+        dvdt = dvdt - bt_rho_y[:, :, None]
     # barotropic wind
     bt_wind_x = p.tau_x_2d / (RHO_0 * p.H_sw)
     bt_wind_y = p.tau_y_2d / (RHO_0 * p.H_sw)

@@ -53,7 +53,8 @@ def make_solver_global(grid, physics, dt, forcing=None,
                        meridional_boundary_scheme='clamped_nodes',
                        pressure_continuity_scheme='centered_second',
                        tracer_transport_scheme='centered_second',
-                       hydrostatic_surface_scheme='reference_plane'):
+                       hydrostatic_surface_scheme='reference_plane',
+                       density_rotation_scheme='split_sources'):
     """Create a JIT-compiled global FD ocean solver.
 
     Key properties:
@@ -137,6 +138,10 @@ def make_solver_global(grid, physics, dt, forcing=None,
         density anomaly from z=0 to eta in the restricted fourth-order channel.
         Continuity and reference capacities remain linear/static; this is not
         a complete nonlinear-free-surface or energy-conservation qualification.
+      - density_rotation_scheme='joint_shear' groups held-fixed density force
+        and Coriolis shear in the L half-step. Mean force keeps its external
+        owner; N retains advection. Requires the surface-density channel in
+        float64 without sponge. Variable-force coupling remains a split method.
     """
     finite_number('dt', dt, positive=True)
     finite_number('dt_bt', dt_bt, positive=True)
@@ -149,6 +154,11 @@ def make_solver_global(grid, physics, dt, forcing=None,
         if active_drag != 0:
             raise ValueError('symmetric external candidate requires separate bottom-drag qualification')
     validate_grid(grid)
+    if density_rotation_scheme not in ('split_sources', 'joint_shear'):
+        raise ValueError('unknown density_rotation_scheme')
+    if density_rotation_scheme == 'joint_shear':
+        if hydrostatic_surface_scheme != 'linear_density' or sponge_days != 0 or dtype != 'float64':
+            raise ValueError('joint_shear requires the float64 surface-density channel without sponge')
     if hydrostatic_surface_scheme not in ('reference_plane', 'linear_density'):
         raise ValueError('unknown hydrostatic_surface_scheme')
     if hydrostatic_surface_scheme == 'linear_density':
@@ -553,6 +563,7 @@ def make_solver_global(grid, physics, dt, forcing=None,
         pressure_continuity_scheme=pressure_continuity_scheme,
         tracer_transport_scheme=tracer_transport_scheme,
         hydrostatic_surface_scheme=hydrostatic_surface_scheme,
+        density_rotation_scheme=density_rotation_scheme,
     )
 
     if projection_preconditioner == 'jacobi':
