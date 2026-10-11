@@ -1,0 +1,1105 @@
+{
+  "recorded_utc": "2026-10-11T16:39:39.066506+00:00",
+  "scope": "independent recomputation from existing native actual h/eta and field outputs; no integration or production oracle imports",
+  "audit_source_sha256": "49db1fd077bc517c6c296dde51c058f48d1996e011552ef749ae33091a0f8058",
+  "plan_sha256": "6d9032d41031e23de33a653c7504556efea2a7d8b1abcaa1ea07cb170b80e09d",
+  "controls": {
+    "constant_three_RMS": "pass",
+    "zero_RMS": "pass",
+    "clean_comparison": "pass",
+    "doubled_metric_rejected": "pass",
+    "nonfinite_rejected": "pass"
+  },
+  "terminal_rows_checked": 21,
+  "completed_outputs_recomputed": 21,
+  "rows": [
+    {
+      "index": 0,
+      "model": "zhenmode",
+      "profile": "primary",
+      "control": "null",
+      "output_sha256": "2f94a3ed5a8f67b6fb415cd683d2f4fd3dfb4010d81251d64aac6a1cb8082dee",
+      "score_sha256": "64bc01432961dd792267b7eecf50ae4da425dfbe2a342a3d317a1a7a9e457c72",
+      "native_run_sha256": "e60fd60905a7aa5eb5eb755fbdf8b76f98b762fa20ab0fa0df5f8af83de2b78a",
+      "metrics": {
+        "eta_error": 0.0,
+        "u_error": 0.0,
+        "v_error": 0.0,
+        "T_error_C": 0.0,
+        "S_error_psu": 0.0,
+        "volume": 0.0,
+        "T_inventory": 0.0,
+        "S_inventory": 0.0
+      },
+      "metric_difference_from_production": {
+        "eta_error": 0.0,
+        "u_error": 0.0,
+        "v_error": 0.0,
+        "T_error_C": 0.0,
+        "S_error_psu": 0.0,
+        "volume": 0.0,
+        "T_inventory": 0.0,
+        "S_inventory": 0.0
+      },
+      "composite": 0.0,
+      "failed_metrics": [],
+      "screen_pass": true,
+      "actual_options": {
+        "column_geometry": "nodal_dual_v1",
+        "conservative_kv": true,
+        "density_rotation_scheme": "joint_shear",
+        "external_mode_scheme": "symmetric",
+        "fct_adv": false,
+        "hydrostatic_surface_scheme": "linear_density",
+        "localize_conv": true,
+        "meridional_boundary_scheme": "closed_faces",
+        "mode_split": false,
+        "monotone_adv": false,
+        "polar_cap_rows": 0,
+        "polar_cap_taper": 0,
+        "pressure_continuity_scheme": "centered_fourth",
+        "process_time_scheme": "legacy",
+        "project_adv_vel": false,
+        "tracer_transport_scheme": "centered_second"
+      }
+    },
+    {
+      "index": 1,
+      "model": "mom6",
+      "profile": "primary",
+      "control": "null",
+      "output_sha256": "f627a740595ae207050b27b7824bf8f55f99920e1cac214f0aff35bfc5808036",
+      "score_sha256": "10c1b7f97da648c76f50c2a9a6e0ec584bd40fd137fa8f3a5a6421fa7ed8986a",
+      "native_run_sha256": "73c2afe43dc5ecb5c2036159afc22dd1c306e67dbcf0318c6fad85fbffcca06d",
+      "metrics": {
+        "eta_error": 1.0812830623469602e-08,
+        "u_error": 0.0,
+        "v_error": 0.0,
+        "T_error_C": 7.944109290391273e-16,
+        "S_error_psu": 0.0,
+        "volume": 0.0,
+        "T_inventory": 0.0,
+        "S_inventory": 0.0
+      },
+      "metric_difference_from_production": {
+        "eta_error": 0.0,
+        "u_error": 0.0,
+        "v_error": 0.0,
+        "T_error_C": -9.860761315262648e-32,
+        "S_error_psu": 0.0,
+        "volume": 0.0,
+        "T_inventory": 0.0,
+        "S_inventory": 0.0
+      },
+      "composite": 1.0812830623469601e-07,
+      "failed_metrics": [],
+      "screen_pass": true,
+      "actual_options": {
+        "BEBT": "0.1",
+        "DT": "12.5",
+        "DTBT": "12.5",
+        "DT_FORCING": "12.5",
+        "DT_THERM": "12.5",
+        "SPLIT": "True",
+        "SPLIT_RK2B": "True",
+        "TRACER_ADVECTION_SCHEME": "PPM:H3"
+      }
+    },
+    {
+      "index": 2,
+      "model": "oceananigans",
+      "profile": "primary",
+      "control": "null",
+      "output_sha256": "77845d83fc06c306b3e57362736772e6c3a300fc499d53cf54fe7e4a057b20fa",
+      "score_sha256": "20dc39e6d55bde2710c0bf6b9ff78a311d4b4e27d56db9b753efab64e9d2ec8e",
+      "native_run_sha256": "f1c1150b326d2725afa92465307af215d3393e1907782dd10f3a56f36b86d7e1",
+      "metrics": {
+        "eta_error": 0.0,
+        "u_error": 0.0,
+        "v_error": 0.0,
+        "T_error_C": 4.58653363727921e-16,
+        "S_error_psu": 0.0,
+        "volume": 0.0,
+        "T_inventory": 0.0,
+        "S_inventory": 0.0
+      },
+      "metric_difference_from_production": {
+        "eta_error": 0.0,
+        "u_error": 0.0,
+        "v_error": 0.0,
+        "T_error_C": 0.0,
+        "S_error_psu": 0.0,
+        "volume": 0.0,
+        "T_inventory": 0.0,
+        "S_inventory": 0.0
+      },
+      "composite": 2.293266818639605e-11,
+      "failed_metrics": [],
+      "screen_pass": true,
+      "actual_options": {
+        "actual": {
+          "actual_fractional_substep": 0.24980576327742565,
+          "actual_substeps": 5,
+          "model": "HydrostaticFreeSurfaceModel{CUDAGPU, RectilinearGrid}(time = 0 seconds, iteration = 0)\n\u251c\u2500\u2500 grid: 8\u00d732\u00d716 RectilinearGrid{Float64, Periodic, Bounded, Bounded} on CUDAGPU with 3\u00d73\u00d73 halo\n\u251c\u2500\u2500 timestepper: SplitRungeKuttaTimeStepper\n\u251c\u2500\u2500 tracers: (T, S, physical_T, physical_S)\n\u251c\u2500\u2500 closure: Nothing\n\u251c\u2500\u2500 buoyancy: SeawaterBuoyancy with g=9.81 and LinearEquationOfState(thermal_expansion=0.0002, haline_contraction=0.00076) with g\u0302 = NegativeZDirection()\n\u251c\u2500\u2500 free surface: SplitExplicitFreeSurface with gravitational acceleration 9.81 m s\u207b\u00b2\n\u2502   \u2514\u2500\u2500 substepping: FixedSubstepNumber(5)\n\u251c\u2500\u2500 advection scheme: \n\u2502   \u251c\u2500\u2500 momentum: VectorInvariant\n\u2502   \u251c\u2500\u2500 T: WENO{3, Float64, Oceananigans.Utils.BackendOptimizedDivision}(order=5)\n\u2502   \u251c\u2500\u2500 S: WENO{3, Float64, Oceananigans.Utils.BackendOptimizedDivision}(order=5)\n\u2502   \u251c\u2500\u2500 physical_T: WENO{3, Float64, Oceananigans.Utils.BackendOptimizedDivision}(order=5)\n\u2502   \u2514\u2500\u2500 physical_S: WENO{3, Float64, Oceananigans.Utils.BackendOptimizedDivision}(order=5)\n\u251c\u2500\u2500 vertical_coordinate: ZStarCoordinate\n\u2514\u2500\u2500 coriolis: FPlane{Oceananigans.Advection.EnstrophyConserving{Float64}, Float64}",
+          "substepping": "Oceananigans.Models.HydrostaticFreeSurfaceModels.SplitExplicitFreeSurfaces.FixedSubstepNumber{Float64, NTuple{5, Float64}}(0.24980576327742565, (-0.0067610647292848484, 0.07210598326148977, 0.21946620144535423, 0.36868370221742663, 0.34650517780501416), (0.24980576327742565, 0.25149471621269276, 0.233482226027187, 0.17865830406153305, 0.08655899042116165))",
+          "thermodynamic_variables": "native linear-EOS anomalies plus two advected physical witnesses",
+          "tracer_advection": {
+            "S": "WENO{3, Float64, Oceananigans.Utils.BackendOptimizedDivision}(order=5)\n\u251c\u2500\u2500 buffer_scheme: WENO{2, Float64, Oceananigans.Utils.BackendOptimizedDivision}(order=3)\n\u2502   \u2514\u2500\u2500 buffer_scheme: Centered(order=2)\n\u2514\u2500\u2500 advecting_velocity_scheme: Centered(order=4)",
+            "T": "WENO{3, Float64, Oceananigans.Utils.BackendOptimizedDivision}(order=5)\n\u251c\u2500\u2500 buffer_scheme: WENO{2, Float64, Oceananigans.Utils.BackendOptimizedDivision}(order=3)\n\u2502   \u2514\u2500\u2500 buffer_scheme: Centered(order=2)\n\u2514\u2500\u2500 advecting_velocity_scheme: Centered(order=4)",
+            "physical_S": "WENO{3, Float64, Oceananigans.Utils.BackendOptimizedDivision}(order=5)\n\u251c\u2500\u2500 buffer_scheme: WENO{2, Float64, Oceananigans.Utils.BackendOptimizedDivision}(order=3)\n\u2502   \u2514\u2500\u2500 buffer_scheme: Centered(order=2)\n\u2514\u2500\u2500 advecting_velocity_scheme: Centered(order=4)",
+            "physical_T": "WENO{3, Float64, Oceananigans.Utils.BackendOptimizedDivision}(order=5)\n\u251c\u2500\u2500 buffer_scheme: WENO{2, Float64, Oceananigans.Utils.BackendOptimizedDivision}(order=3)\n\u2502   \u2514\u2500\u2500 buffer_scheme: Centered(order=2)\n\u2514\u2500\u2500 advecting_velocity_scheme: Centered(order=4)"
+          }
+        },
+        "requested": {
+          "closure": "nothing",
+          "coriolis": "FPlane",
+          "free_surface": "SplitExplicitFreeSurface",
+          "haline_contraction": 0.00076,
+          "momentum_advection": "VectorInvariant",
+          "requested_substeps": 8,
+          "source_commit": "1e8587b17171b0bba5bc6728118c3dbbd3c8acf6",
+          "thermal_expansion": 0.00019999999999999998,
+          "thermodynamic_variables": "T/S anomalies about 15 C/35 psu; physical constant-scalar witnesses",
+          "timestepper": "SplitRungeKutta3",
+          "tracer_advection": "WENO5",
+          "version": "0.113.5",
+          "vertical_coordinate": "ZStarCoordinate"
+        }
+      }
+    },
+    {
+      "index": 3,
+      "model": "zhenmode",
+      "profile": "primary",
+      "control": "main",
+      "output_sha256": "49bde36a6434227d169e5c856edd3e503c59b99ded99dafd31b651146c71867c",
+      "score_sha256": "5b4ce989f20da74a25e0228d34017b16331a11d2a26bd248e5608114c9a12cfc",
+      "native_run_sha256": "d66543b9795ac35c6f9bf5f794fae677975614af58d3310cb695ebc969f2b154",
+      "metrics": {
+        "eta_error": 0.043959783735724685,
+        "u_error": 0.0045963303468261755,
+        "v_error": 0.0016552655021936848,
+        "T_error_C": 2.4651486440152727e-05,
+        "S_error_psu": 0.0,
+        "volume": 4.336808689942018e-19,
+        "T_inventory": 4.617562842507139e-15,
+        "S_inventory": 4.336808689942018e-19
+      },
+      "metric_difference_from_production": {
+        "eta_error": 0.0,
+        "u_error": 0.0,
+        "v_error": -2.168404344971009e-19,
+        "T_error_C": -3.3881317890172014e-21,
+        "S_error_psu": 0.0,
+        "volume": -2.216109240560371e-16,
+        "T_inventory": -1.5639616338103401e-16,
+        "S_inventory": -2.216109240560371e-16
+      },
+      "composite": 1.2325743220076362,
+      "failed_metrics": [
+        "T_error_C"
+      ],
+      "screen_pass": false,
+      "actual_options": {
+        "column_geometry": "nodal_dual_v1",
+        "conservative_kv": true,
+        "density_rotation_scheme": "joint_shear",
+        "external_mode_scheme": "symmetric",
+        "fct_adv": false,
+        "hydrostatic_surface_scheme": "linear_density",
+        "localize_conv": true,
+        "meridional_boundary_scheme": "closed_faces",
+        "mode_split": false,
+        "monotone_adv": false,
+        "polar_cap_rows": 0,
+        "polar_cap_taper": 0,
+        "pressure_continuity_scheme": "centered_fourth",
+        "process_time_scheme": "legacy",
+        "project_adv_vel": false,
+        "tracer_transport_scheme": "centered_second"
+      }
+    },
+    {
+      "index": 4,
+      "model": "mom6",
+      "profile": "primary",
+      "control": "main",
+      "output_sha256": "514b1934d4c97f475449637de62ff116b3f2523a8da4e320a8edcce04e6e5290",
+      "score_sha256": "397a8e3b6bb6495654add5e324d3e98ed77448d63ca03aafdd494976ce776e9f",
+      "native_run_sha256": "53fb57c6ea4e1004945be9aabe8d5c4231dfae549408950046c017d0d5c94f5b",
+      "metrics": {
+        "eta_error": 0.0036699334480504446,
+        "u_error": 0.0016454318734514454,
+        "v_error": 0.0016977149957658987,
+        "T_error_C": 4.534887418057027e-07,
+        "S_error_psu": 2.340977742490958e-13,
+        "volume": 1.4761412578390143e-16,
+        "T_inventory": 5.369511259234461e-16,
+        "S_inventory": 3.977937770849316e-16
+      },
+      "metric_difference_from_production": {
+        "eta_error": -3.903127820947816e-18,
+        "u_error": -1.3010426069826053e-18,
+        "v_error": 1.0842021724855044e-18,
+        "T_error_C": 3.3013109119236356e-18,
+        "S_error_psu": 0.0,
+        "volume": -7.443047914112988e-17,
+        "T_inventory": 9.286191607338345e-17,
+        "S_inventory": -4.629543276513104e-17
+      },
+      "composite": 0.03669933448050444,
+      "failed_metrics": [],
+      "screen_pass": true,
+      "actual_options": {
+        "BEBT": "0.1",
+        "DT": "12.5",
+        "DTBT": "12.5",
+        "DT_FORCING": "12.5",
+        "DT_THERM": "12.5",
+        "SPLIT": "True",
+        "SPLIT_RK2B": "True",
+        "TRACER_ADVECTION_SCHEME": "PPM:H3"
+      }
+    },
+    {
+      "index": 5,
+      "model": "oceananigans",
+      "profile": "primary",
+      "control": "main",
+      "output_sha256": "0908ef1906227cef95a152a5c27f2bbfbafd7ac350a4e6a7d2d0cb4358080377",
+      "score_sha256": "a5e9fc0d4b718fc749d38e686263101fb028f708182a2e8f8f812bd6da2c606b",
+      "native_run_sha256": "b8311ee9d7847752bd1c3300ef4a17e4112a51916e13dc1b06cd61a8b9502738",
+      "metrics": {
+        "eta_error": 0.0027158895578717384,
+        "u_error": 0.001800629464551662,
+        "v_error": 0.0019171201211894133,
+        "T_error_C": 2.4571900229153465e-06,
+        "S_error_psu": 5.554159557114026e-14,
+        "volume": 3.957337929572091e-17,
+        "T_inventory": 7.746624522408929e-17,
+        "S_inventory": 2.614011437862551e-16
+      },
+      "metric_difference_from_production": {
+        "eta_error": -3.0357660829594124e-18,
+        "u_error": 1.951563910473908e-18,
+        "v_error": -2.168404344971009e-19,
+        "T_error_C": -1.8770250111155296e-18,
+        "S_error_psu": 0.0,
+        "volume": -1.824712256293104e-16,
+        "T_inventory": -1.4457835970094202e-16,
+        "S_inventory": -1.826880660638075e-16
+      },
+      "composite": 0.12285950114576731,
+      "failed_metrics": [],
+      "screen_pass": true,
+      "actual_options": {
+        "actual": {
+          "actual_fractional_substep": 0.24980576327742565,
+          "actual_substeps": 5,
+          "model": "HydrostaticFreeSurfaceModel{CUDAGPU, RectilinearGrid}(time = 0 seconds, iteration = 0)\n\u251c\u2500\u2500 grid: 8\u00d732\u00d716 RectilinearGrid{Float64, Periodic, Bounded, Bounded} on CUDAGPU with 3\u00d73\u00d73 halo\n\u251c\u2500\u2500 timestepper: SplitRungeKuttaTimeStepper\n\u251c\u2500\u2500 tracers: (T, S, physical_T, physical_S)\n\u251c\u2500\u2500 closure: Nothing\n\u251c\u2500\u2500 buoyancy: SeawaterBuoyancy with g=9.81 and LinearEquationOfState(thermal_expansion=0.0002, haline_contraction=0.00076) with g\u0302 = NegativeZDirection()\n\u251c\u2500\u2500 free surface: SplitExplicitFreeSurface with gravitational acceleration 9.81 m s\u207b\u00b2\n\u2502   \u2514\u2500\u2500 substepping: FixedSubstepNumber(5)\n\u251c\u2500\u2500 advection scheme: \n\u2502   \u251c\u2500\u2500 momentum: VectorInvariant\n\u2502   \u251c\u2500\u2500 T: WENO{3, Float64, Oceananigans.Utils.BackendOptimizedDivision}(order=5)\n\u2502   \u251c\u2500\u2500 S: WENO{3, Float64, Oceananigans.Utils.BackendOptimizedDivision}(order=5)\n\u2502   \u251c\u2500\u2500 physical_T: WENO{3, Float64, Oceananigans.Utils.BackendOptimizedDivision}(order=5)\n\u2502   \u2514\u2500\u2500 physical_S: WENO{3, Float64, Oceananigans.Utils.BackendOptimizedDivision}(order=5)\n\u251c\u2500\u2500 vertical_coordinate: ZStarCoordinate\n\u2514\u2500\u2500 coriolis: FPlane{Oceananigans.Advection.EnstrophyConserving{Float64}, Float64}",
+          "substepping": "Oceananigans.Models.HydrostaticFreeSurfaceModels.SplitExplicitFreeSurfaces.FixedSubstepNumber{Float64, NTuple{5, Float64}}(0.24980576327742565, (-0.0067610647292848484, 0.07210598326148977, 0.21946620144535423, 0.36868370221742663, 0.34650517780501416), (0.24980576327742565, 0.25149471621269276, 0.233482226027187, 0.17865830406153305, 0.08655899042116165))",
+          "thermodynamic_variables": "native linear-EOS anomalies plus two advected physical witnesses",
+          "tracer_advection": {
+            "S": "WENO{3, Float64, Oceananigans.Utils.BackendOptimizedDivision}(order=5)\n\u251c\u2500\u2500 buffer_scheme: WENO{2, Float64, Oceananigans.Utils.BackendOptimizedDivision}(order=3)\n\u2502   \u2514\u2500\u2500 buffer_scheme: Centered(order=2)\n\u2514\u2500\u2500 advecting_velocity_scheme: Centered(order=4)",
+            "T": "WENO{3, Float64, Oceananigans.Utils.BackendOptimizedDivision}(order=5)\n\u251c\u2500\u2500 buffer_scheme: WENO{2, Float64, Oceananigans.Utils.BackendOptimizedDivision}(order=3)\n\u2502   \u2514\u2500\u2500 buffer_scheme: Centered(order=2)\n\u2514\u2500\u2500 advecting_velocity_scheme: Centered(order=4)",
+            "physical_S": "WENO{3, Float64, Oceananigans.Utils.BackendOptimizedDivision}(order=5)\n\u251c\u2500\u2500 buffer_scheme: WENO{2, Float64, Oceananigans.Utils.BackendOptimizedDivision}(order=3)\n\u2502   \u2514\u2500\u2500 buffer_scheme: Centered(order=2)\n\u2514\u2500\u2500 advecting_velocity_scheme: Centered(order=4)",
+            "physical_T": "WENO{3, Float64, Oceananigans.Utils.BackendOptimizedDivision}(order=5)\n\u251c\u2500\u2500 buffer_scheme: WENO{2, Float64, Oceananigans.Utils.BackendOptimizedDivision}(order=3)\n\u2502   \u2514\u2500\u2500 buffer_scheme: Centered(order=2)\n\u2514\u2500\u2500 advecting_velocity_scheme: Centered(order=4)"
+          }
+        },
+        "requested": {
+          "closure": "nothing",
+          "coriolis": "FPlane",
+          "free_surface": "SplitExplicitFreeSurface",
+          "haline_contraction": 0.00076,
+          "momentum_advection": "VectorInvariant",
+          "requested_substeps": 8,
+          "source_commit": "1e8587b17171b0bba5bc6728118c3dbbd3c8acf6",
+          "thermal_expansion": 0.00019999999999999998,
+          "thermodynamic_variables": "T/S anomalies about 15 C/35 psu; physical constant-scalar witnesses",
+          "timestepper": "SplitRungeKutta3",
+          "tracer_advection": "WENO5",
+          "version": "0.113.5",
+          "vertical_coordinate": "ZStarCoordinate"
+        }
+      }
+    },
+    {
+      "index": 6,
+      "model": "zhenmode",
+      "profile": "primary",
+      "control": "half",
+      "output_sha256": "a80ed7a21847ec96cdaf886fa3b14deb743d5adf695657c7fd9e4c7b1721e8c0",
+      "score_sha256": "e84275524b53770ef73d9672cea25349dfbf729eedc8554f8c03e00b82d084c8",
+      "native_run_sha256": "b560b9a1b948fccfddf5837af4628e7ef23fd5ab0d703416221a50caa5a26b3d",
+      "metrics": {
+        "eta_error": 0.044142515554903956,
+        "u_error": 0.004596251190271526,
+        "v_error": 0.0016551745464238967,
+        "T_error_C": 1.2326909760901187e-05,
+        "S_error_psu": 0.0,
+        "volume": 6.505213034913027e-19,
+        "T_inventory": 9.998512434661322e-16,
+        "S_inventory": 5.963111948670274e-19
+      },
+      "metric_difference_from_production": {
+        "eta_error": 0.0,
+        "u_error": 0.0,
+        "v_error": -2.168404344971009e-19,
+        "T_error_C": 0.0,
+        "S_error_psu": 0.0,
+        "volume": -2.2139408362154e-16,
+        "T_inventory": -1.1037178115902435e-16,
+        "S_inventory": -2.2144829373016428e-16
+      },
+      "composite": 1.2326909760901186,
+      "failed_metrics": [
+        "T_error_C"
+      ],
+      "screen_pass": false,
+      "actual_options": {
+        "column_geometry": "nodal_dual_v1",
+        "conservative_kv": true,
+        "density_rotation_scheme": "joint_shear",
+        "external_mode_scheme": "symmetric",
+        "fct_adv": false,
+        "hydrostatic_surface_scheme": "linear_density",
+        "localize_conv": true,
+        "meridional_boundary_scheme": "closed_faces",
+        "mode_split": false,
+        "monotone_adv": false,
+        "polar_cap_rows": 0,
+        "polar_cap_taper": 0,
+        "pressure_continuity_scheme": "centered_fourth",
+        "process_time_scheme": "legacy",
+        "project_adv_vel": false,
+        "tracer_transport_scheme": "centered_second"
+      }
+    },
+    {
+      "index": 7,
+      "model": "mom6",
+      "profile": "primary",
+      "control": "half",
+      "output_sha256": "da70c7a91471dce308b22655c99d1e548cf01fdb97dd8fd49799ff2403e3bcbd",
+      "score_sha256": "466ed34be0e91b6a2508685d5ef33768cff051f15b11f1a96dfd50dd01039459",
+      "native_run_sha256": "9f7c051171153d2e8a3a10b6a14db8cdcddd7a1853262801fa8aaf39345fe9ca",
+      "metrics": {
+        "eta_error": 0.0036390195519288102,
+        "u_error": 0.0016452025207747993,
+        "v_error": 0.0016977234867702464,
+        "T_error_C": 2.2672556570648445e-07,
+        "S_error_psu": 2.2631793874000012e-13,
+        "volume": 1.1503385050071202e-16,
+        "T_inventory": 2.2985086056692694e-16,
+        "S_inventory": 8.151574033832265e-16
+      },
+      "metric_difference_from_production": {
+        "eta_error": -4.7704895589362195e-18,
+        "u_error": -1.5178830414797062e-18,
+        "v_error": -4.336808689942018e-18,
+        "T_error_C": -4.505606474462039e-18,
+        "S_error_psu": 0.0,
+        "volume": -1.0701075442431929e-16,
+        "T_inventory": -2.1423834928313568e-16,
+        "S_inventory": -7.302101631689872e-17
+      },
+      "composite": 0.0363901955192881,
+      "failed_metrics": [],
+      "screen_pass": true,
+      "actual_options": {
+        "BEBT": "0.1",
+        "DT": "12.5",
+        "DTBT": "12.5",
+        "DT_FORCING": "12.5",
+        "DT_THERM": "12.5",
+        "SPLIT": "True",
+        "SPLIT_RK2B": "True",
+        "TRACER_ADVECTION_SCHEME": "PPM:H3"
+      }
+    },
+    {
+      "index": 8,
+      "model": "oceananigans",
+      "profile": "primary",
+      "control": "half",
+      "output_sha256": "2e45334cbc2422cc87782c907a71859aa1964bc351d43ec03368d2b1f14eb592",
+      "score_sha256": "61b2559fb7cdec3cb3db6a8861896c66fce3473b897d8147b7cc2d67a179a08f",
+      "native_run_sha256": "849c7333e1f01078a4409deff178a0e74023c37a0214bcc1c606bf7a68a17d3e",
+      "metrics": {
+        "eta_error": 0.002673844265744505,
+        "u_error": 0.001800412703845527,
+        "v_error": 0.0019171330399664862,
+        "T_error_C": 1.2288309188049036e-06,
+        "S_error_psu": 5.5395496494827555e-14,
+        "volume": 3.323079658668071e-17,
+        "T_inventory": 7.340048707726865e-17,
+        "S_inventory": 6.531775988138921e-16
+      },
+      "metric_difference_from_production": {
+        "eta_error": -2.6020852139652106e-18,
+        "u_error": 3.0357660829594124e-18,
+        "v_error": -1.3010426069826053e-18,
+        "T_error_C": -1.029145030913975e-18,
+        "S_error_psu": 0.0,
+        "volume": -1.888138083383506e-16,
+        "T_inventory": -1.4864411784776266e-16,
+        "S_inventory": -1.2956215961201778e-17
+      },
+      "composite": 0.12288309188049035,
+      "failed_metrics": [],
+      "screen_pass": true,
+      "actual_options": {
+        "actual": {
+          "actual_fractional_substep": 0.24980576327742565,
+          "actual_substeps": 5,
+          "model": "HydrostaticFreeSurfaceModel{CUDAGPU, RectilinearGrid}(time = 0 seconds, iteration = 0)\n\u251c\u2500\u2500 grid: 8\u00d732\u00d716 RectilinearGrid{Float64, Periodic, Bounded, Bounded} on CUDAGPU with 3\u00d73\u00d73 halo\n\u251c\u2500\u2500 timestepper: SplitRungeKuttaTimeStepper\n\u251c\u2500\u2500 tracers: (T, S, physical_T, physical_S)\n\u251c\u2500\u2500 closure: Nothing\n\u251c\u2500\u2500 buoyancy: SeawaterBuoyancy with g=9.81 and LinearEquationOfState(thermal_expansion=0.0002, haline_contraction=0.00076) with g\u0302 = NegativeZDirection()\n\u251c\u2500\u2500 free surface: SplitExplicitFreeSurface with gravitational acceleration 9.81 m s\u207b\u00b2\n\u2502   \u2514\u2500\u2500 substepping: FixedSubstepNumber(5)\n\u251c\u2500\u2500 advection scheme: \n\u2502   \u251c\u2500\u2500 momentum: VectorInvariant\n\u2502   \u251c\u2500\u2500 T: WENO{3, Float64, Oceananigans.Utils.BackendOptimizedDivision}(order=5)\n\u2502   \u251c\u2500\u2500 S: WENO{3, Float64, Oceananigans.Utils.BackendOptimizedDivision}(order=5)\n\u2502   \u251c\u2500\u2500 physical_T: WENO{3, Float64, Oceananigans.Utils.BackendOptimizedDivision}(order=5)\n\u2502   \u2514\u2500\u2500 physical_S: WENO{3, Float64, Oceananigans.Utils.BackendOptimizedDivision}(order=5)\n\u251c\u2500\u2500 vertical_coordinate: ZStarCoordinate\n\u2514\u2500\u2500 coriolis: FPlane{Oceananigans.Advection.EnstrophyConserving{Float64}, Float64}",
+          "substepping": "Oceananigans.Models.HydrostaticFreeSurfaceModels.SplitExplicitFreeSurfaces.FixedSubstepNumber{Float64, NTuple{5, Float64}}(0.24980576327742565, (-0.0067610647292848484, 0.07210598326148977, 0.21946620144535423, 0.36868370221742663, 0.34650517780501416), (0.24980576327742565, 0.25149471621269276, 0.233482226027187, 0.17865830406153305, 0.08655899042116165))",
+          "thermodynamic_variables": "native linear-EOS anomalies plus two advected physical witnesses",
+          "tracer_advection": {
+            "S": "WENO{3, Float64, Oceananigans.Utils.BackendOptimizedDivision}(order=5)\n\u251c\u2500\u2500 buffer_scheme: WENO{2, Float64, Oceananigans.Utils.BackendOptimizedDivision}(order=3)\n\u2502   \u2514\u2500\u2500 buffer_scheme: Centered(order=2)\n\u2514\u2500\u2500 advecting_velocity_scheme: Centered(order=4)",
+            "T": "WENO{3, Float64, Oceananigans.Utils.BackendOptimizedDivision}(order=5)\n\u251c\u2500\u2500 buffer_scheme: WENO{2, Float64, Oceananigans.Utils.BackendOptimizedDivision}(order=3)\n\u2502   \u2514\u2500\u2500 buffer_scheme: Centered(order=2)\n\u2514\u2500\u2500 advecting_velocity_scheme: Centered(order=4)",
+            "physical_S": "WENO{3, Float64, Oceananigans.Utils.BackendOptimizedDivision}(order=5)\n\u251c\u2500\u2500 buffer_scheme: WENO{2, Float64, Oceananigans.Utils.BackendOptimizedDivision}(order=3)\n\u2502   \u2514\u2500\u2500 buffer_scheme: Centered(order=2)\n\u2514\u2500\u2500 advecting_velocity_scheme: Centered(order=4)",
+            "physical_T": "WENO{3, Float64, Oceananigans.Utils.BackendOptimizedDivision}(order=5)\n\u251c\u2500\u2500 buffer_scheme: WENO{2, Float64, Oceananigans.Utils.BackendOptimizedDivision}(order=3)\n\u2502   \u2514\u2500\u2500 buffer_scheme: Centered(order=2)\n\u2514\u2500\u2500 advecting_velocity_scheme: Centered(order=4)"
+          }
+        },
+        "requested": {
+          "closure": "nothing",
+          "coriolis": "FPlane",
+          "free_surface": "SplitExplicitFreeSurface",
+          "haline_contraction": 0.00076,
+          "momentum_advection": "VectorInvariant",
+          "requested_substeps": 8,
+          "source_commit": "1e8587b17171b0bba5bc6728118c3dbbd3c8acf6",
+          "thermal_expansion": 0.00019999999999999998,
+          "thermodynamic_variables": "T/S anomalies about 15 C/35 psu; physical constant-scalar witnesses",
+          "timestepper": "SplitRungeKutta3",
+          "tracer_advection": "WENO5",
+          "version": "0.113.5",
+          "vertical_coordinate": "ZStarCoordinate"
+        }
+      }
+    },
+    {
+      "index": 9,
+      "model": "zhenmode",
+      "profile": "horizontal-coarse",
+      "control": "main",
+      "output_sha256": "f580819dc87d30d6d4e79dfb7e725b9a3446307bffe9dbc2109356bc8d7fedf0",
+      "score_sha256": "ddff65e0c408a08adb304464e0080c7f5a0bec210372f37a85b3ea1fb9d2c073",
+      "native_run_sha256": "022405709c5b854dfc220e83f3788b846c70866fdc30165f5bf74030ef546bfc",
+      "metrics": {
+        "eta_error": 0.04381323089891527,
+        "u_error": 0.004559954342670503,
+        "v_error": 0.0016358061869723576,
+        "T_error_C": 2.465885464226023e-05,
+        "S_error_psu": 0.0,
+        "volume": 5.421010862427522e-19,
+        "T_inventory": 4.5252430275199984e-15,
+        "S_inventory": 5.963111948670274e-19
+      },
+      "metric_difference_from_production": {
+        "eta_error": 6.938893903907228e-18,
+        "u_error": 8.673617379884035e-19,
+        "v_error": 2.168404344971009e-19,
+        "T_error_C": 0.0,
+        "S_error_psu": 0.0,
+        "volume": -2.2150250383878856e-16,
+        "T_inventory": -2.667137344314341e-17,
+        "S_inventory": -2.2144829373016428e-16
+      },
+      "composite": 1.2329427321130115,
+      "failed_metrics": [
+        "T_error_C"
+      ],
+      "screen_pass": false,
+      "actual_options": {
+        "column_geometry": "nodal_dual_v1",
+        "conservative_kv": true,
+        "density_rotation_scheme": "joint_shear",
+        "external_mode_scheme": "symmetric",
+        "fct_adv": false,
+        "hydrostatic_surface_scheme": "linear_density",
+        "localize_conv": true,
+        "meridional_boundary_scheme": "closed_faces",
+        "mode_split": false,
+        "monotone_adv": false,
+        "polar_cap_rows": 0,
+        "polar_cap_taper": 0,
+        "pressure_continuity_scheme": "centered_fourth",
+        "process_time_scheme": "legacy",
+        "project_adv_vel": false,
+        "tracer_transport_scheme": "centered_second"
+      }
+    },
+    {
+      "index": 10,
+      "model": "mom6",
+      "profile": "horizontal-coarse",
+      "control": "main",
+      "output_sha256": "8bd47e83f059bf72fb7f4ca75cb396d04f7ecf9f66754ce7c9229c4cf10e3302",
+      "score_sha256": "aff2259daf7e59c0804b9906be7665f16093b169a0a5b567fc5a5bae9bd87b99",
+      "native_run_sha256": "131885213d3baace071ddca2b08964d20c8dccabd9feb12d8473d335c4c0f75e",
+      "metrics": {
+        "eta_error": 0.008869339763321502,
+        "u_error": 0.005614415657134147,
+        "v_error": 0.006069340093652294,
+        "T_error_C": 1.1663944770902352e-06,
+        "S_error_psu": 2.208400342883857e-13,
+        "volume": 2.706168622523819e-16,
+        "T_inventory": 1.2533919215018674e-15,
+        "S_inventory": 1.6278753518783606e-15
+      },
+      "metric_difference_from_production": {
+        "eta_error": -3.469446951953614e-18,
+        "u_error": 8.673617379884035e-19,
+        "v_error": 8.673617379884035e-19,
+        "T_error_C": 8.231042664943664e-19,
+        "S_error_psu": 0.0,
+        "volume": -6.245004513516506e-17,
+        "T_inventory": -7.887570804832045e-17,
+        "S_inventory": 7.356311740314148e-17
+      },
+      "composite": 0.08869339763321502,
+      "failed_metrics": [],
+      "screen_pass": true,
+      "actual_options": {
+        "BEBT": "0.1",
+        "DT": "12.5",
+        "DTBT": "12.5",
+        "DT_FORCING": "12.5",
+        "DT_THERM": "12.5",
+        "SPLIT": "True",
+        "SPLIT_RK2B": "True",
+        "TRACER_ADVECTION_SCHEME": "PPM:H3"
+      }
+    },
+    {
+      "index": 11,
+      "model": "oceananigans",
+      "profile": "horizontal-coarse",
+      "control": "main",
+      "output_sha256": "34a5f437e97c0542a9b9604b3d60e03714603740ec02433172bdf3637119332e",
+      "score_sha256": "e0426abe52788cd7df3cc0cc922518c189e44096509ea5eb0235b665f1f61f37",
+      "native_run_sha256": "043b10f798d0333034f82cbd76ece894fba564912486749c5f703b3f2b10634d",
+      "metrics": {
+        "eta_error": 0.009764826898485915,
+        "u_error": 0.005835713932787703,
+        "v_error": 0.006329293780355922,
+        "T_error_C": 2.7308768452673576e-06,
+        "S_error_psu": 3.660006423329794e-14,
+        "volume": 4.580754178751256e-17,
+        "T_inventory": 4.5536491244391186e-17,
+        "S_inventory": 7.698377525733324e-16
+      },
+      "metric_difference_from_production": {
+        "eta_error": 1.734723475976807e-18,
+        "u_error": -8.673617379884035e-19,
+        "v_error": -8.673617379884035e-19,
+        "T_error_C": -5.560771298724482e-19,
+        "S_error_psu": 0.0,
+        "volume": 4.580754178751256e-17,
+        "T_inventory": -1.7650811368064012e-16,
+        "S_inventory": 1.037039377982385e-16
+      },
+      "composite": 0.13654384226336788,
+      "failed_metrics": [],
+      "screen_pass": true,
+      "actual_options": {
+        "actual": {
+          "actual_fractional_substep": 0.24980576327742565,
+          "actual_substeps": 5,
+          "model": "HydrostaticFreeSurfaceModel{CUDAGPU, RectilinearGrid}(time = 0 seconds, iteration = 0)\n\u251c\u2500\u2500 grid: 8\u00d716\u00d716 RectilinearGrid{Float64, Periodic, Bounded, Bounded} on CUDAGPU with 3\u00d73\u00d73 halo\n\u251c\u2500\u2500 timestepper: SplitRungeKuttaTimeStepper\n\u251c\u2500\u2500 tracers: (T, S, physical_T, physical_S)\n\u251c\u2500\u2500 closure: Nothing\n\u251c\u2500\u2500 buoyancy: SeawaterBuoyancy with g=9.81 and LinearEquationOfState(thermal_expansion=0.0002, haline_contraction=0.00076) with g\u0302 = NegativeZDirection()\n\u251c\u2500\u2500 free surface: SplitExplicitFreeSurface with gravitational acceleration 9.81 m s\u207b\u00b2\n\u2502   \u2514\u2500\u2500 substepping: FixedSubstepNumber(5)\n\u251c\u2500\u2500 advection scheme: \n\u2502   \u251c\u2500\u2500 momentum: VectorInvariant\n\u2502   \u251c\u2500\u2500 T: WENO{3, Float64, Oceananigans.Utils.BackendOptimizedDivision}(order=5)\n\u2502   \u251c\u2500\u2500 S: WENO{3, Float64, Oceananigans.Utils.BackendOptimizedDivision}(order=5)\n\u2502   \u251c\u2500\u2500 physical_T: WENO{3, Float64, Oceananigans.Utils.BackendOptimizedDivision}(order=5)\n\u2502   \u2514\u2500\u2500 physical_S: WENO{3, Float64, Oceananigans.Utils.BackendOptimizedDivision}(order=5)\n\u251c\u2500\u2500 vertical_coordinate: ZStarCoordinate\n\u2514\u2500\u2500 coriolis: FPlane{Oceananigans.Advection.EnstrophyConserving{Float64}, Float64}",
+          "substepping": "Oceananigans.Models.HydrostaticFreeSurfaceModels.SplitExplicitFreeSurfaces.FixedSubstepNumber{Float64, NTuple{5, Float64}}(0.24980576327742565, (-0.0067610647292848484, 0.07210598326148977, 0.21946620144535423, 0.36868370221742663, 0.34650517780501416), (0.24980576327742565, 0.25149471621269276, 0.233482226027187, 0.17865830406153305, 0.08655899042116165))",
+          "thermodynamic_variables": "native linear-EOS anomalies plus two advected physical witnesses",
+          "tracer_advection": {
+            "S": "WENO{3, Float64, Oceananigans.Utils.BackendOptimizedDivision}(order=5)\n\u251c\u2500\u2500 buffer_scheme: WENO{2, Float64, Oceananigans.Utils.BackendOptimizedDivision}(order=3)\n\u2502   \u2514\u2500\u2500 buffer_scheme: Centered(order=2)\n\u2514\u2500\u2500 advecting_velocity_scheme: Centered(order=4)",
+            "T": "WENO{3, Float64, Oceananigans.Utils.BackendOptimizedDivision}(order=5)\n\u251c\u2500\u2500 buffer_scheme: WENO{2, Float64, Oceananigans.Utils.BackendOptimizedDivision}(order=3)\n\u2502   \u2514\u2500\u2500 buffer_scheme: Centered(order=2)\n\u2514\u2500\u2500 advecting_velocity_scheme: Centered(order=4)",
+            "physical_S": "WENO{3, Float64, Oceananigans.Utils.BackendOptimizedDivision}(order=5)\n\u251c\u2500\u2500 buffer_scheme: WENO{2, Float64, Oceananigans.Utils.BackendOptimizedDivision}(order=3)\n\u2502   \u2514\u2500\u2500 buffer_scheme: Centered(order=2)\n\u2514\u2500\u2500 advecting_velocity_scheme: Centered(order=4)",
+            "physical_T": "WENO{3, Float64, Oceananigans.Utils.BackendOptimizedDivision}(order=5)\n\u251c\u2500\u2500 buffer_scheme: WENO{2, Float64, Oceananigans.Utils.BackendOptimizedDivision}(order=3)\n\u2502   \u2514\u2500\u2500 buffer_scheme: Centered(order=2)\n\u2514\u2500\u2500 advecting_velocity_scheme: Centered(order=4)"
+          }
+        },
+        "requested": {
+          "closure": "nothing",
+          "coriolis": "FPlane",
+          "free_surface": "SplitExplicitFreeSurface",
+          "haline_contraction": 0.00076,
+          "momentum_advection": "VectorInvariant",
+          "requested_substeps": 8,
+          "source_commit": "1e8587b17171b0bba5bc6728118c3dbbd3c8acf6",
+          "thermal_expansion": 0.00019999999999999998,
+          "thermodynamic_variables": "T/S anomalies about 15 C/35 psu; physical constant-scalar witnesses",
+          "timestepper": "SplitRungeKutta3",
+          "tracer_advection": "WENO5",
+          "version": "0.113.5",
+          "vertical_coordinate": "ZStarCoordinate"
+        }
+      }
+    },
+    {
+      "index": 12,
+      "model": "zhenmode",
+      "profile": "horizontal-coarse",
+      "control": "half",
+      "output_sha256": "f9fd0b5879be503e20f1882d57b7579f755a834e3d04012618e8575c6168a1b7",
+      "score_sha256": "399e75ebc7c35458efc6254fa78d0d0b81f8b11e869d8b3ce36ea9f6d1ad3a62",
+      "native_run_sha256": "0883a51d87bfdae50123ed163a93aa989fe750a114d8b87b02002f6c2fb71e1c",
+      "metrics": {
+        "eta_error": 0.043985825899578515,
+        "u_error": 0.004559919087479547,
+        "v_error": 0.0016357146421693235,
+        "T_error_C": 1.2330593522412659e-05,
+        "S_error_psu": 0.0,
+        "volume": 9.75781955236954e-19,
+        "T_inventory": 1.1251308044968322e-15,
+        "S_inventory": 9.75781955236954e-19
+      },
+      "metric_difference_from_production": {
+        "eta_error": -6.938893903907228e-18,
+        "u_error": 8.673617379884035e-19,
+        "v_error": 2.168404344971009e-19,
+        "T_error_C": 0.0,
+        "S_error_psu": 0.0,
+        "volume": -2.2106882296979435e-16,
+        "T_inventory": -2.0713682505335562e-16,
+        "S_inventory": -2.2106882296979435e-16
+      },
+      "composite": 1.2330593522412658,
+      "failed_metrics": [
+        "T_error_C"
+      ],
+      "screen_pass": false,
+      "actual_options": {
+        "column_geometry": "nodal_dual_v1",
+        "conservative_kv": true,
+        "density_rotation_scheme": "joint_shear",
+        "external_mode_scheme": "symmetric",
+        "fct_adv": false,
+        "hydrostatic_surface_scheme": "linear_density",
+        "localize_conv": true,
+        "meridional_boundary_scheme": "closed_faces",
+        "mode_split": false,
+        "monotone_adv": false,
+        "polar_cap_rows": 0,
+        "polar_cap_taper": 0,
+        "pressure_continuity_scheme": "centered_fourth",
+        "process_time_scheme": "legacy",
+        "project_adv_vel": false,
+        "tracer_transport_scheme": "centered_second"
+      }
+    },
+    {
+      "index": 13,
+      "model": "mom6",
+      "profile": "horizontal-coarse",
+      "control": "half",
+      "output_sha256": "6c10c341bcf40e3ec1ba79dc0c007384ffbd0ae4271ec9239cd19ea5171274b5",
+      "score_sha256": "f26f9a8b9294ccaeacd00ac56b42e3a118ed3833a23622a9e02a9298b0225a42",
+      "native_run_sha256": "74be112d89d41bd3c8384a9c968d6b245100f8d8e1af14460cea7a6a0bfbfa9d",
+      "metrics": {
+        "eta_error": 0.008856800026656828,
+        "u_error": 0.005614358609399367,
+        "v_error": 0.006069348915951809,
+        "T_error_C": 5.831877332291519e-07,
+        "S_error_psu": 2.411696661257294e-13,
+        "volume": 1.1676857397668883e-16,
+        "T_inventory": 9.550736937424809e-16,
+        "S_inventory": 6.358303640541241e-16
+      },
+      "metric_difference_from_production": {
+        "eta_error": -1.734723475976807e-18,
+        "u_error": -8.673617379884035e-19,
+        "v_error": -1.734723475976807e-18,
+        "T_error_C": 3.789413647778926e-19,
+        "S_error_psu": 0.0,
+        "volume": -1.0527603094834248e-16,
+        "T_inventory": 6.689527404235562e-17,
+        "S_inventory": 8.07188517415458e-17
+      },
+      "composite": 0.08856800026656828,
+      "failed_metrics": [],
+      "screen_pass": true,
+      "actual_options": {
+        "BEBT": "0.1",
+        "DT": "12.5",
+        "DTBT": "12.5",
+        "DT_FORCING": "12.5",
+        "DT_THERM": "12.5",
+        "SPLIT": "True",
+        "SPLIT_RK2B": "True",
+        "TRACER_ADVECTION_SCHEME": "PPM:H3"
+      }
+    },
+    {
+      "index": 14,
+      "model": "oceananigans",
+      "profile": "horizontal-coarse",
+      "control": "half",
+      "output_sha256": "d761976b4ad93a7cbc0afb1ee74472886ea57a719ab66a70f0c1b38630324229",
+      "score_sha256": "fe791af8a00a174ba59d7c29fe72bb6c3b1ca7b0d16cb3d373d251dda6675994",
+      "native_run_sha256": "2c69c470faab449f92b60c672ce0b0de273906112f5211e1a6854f74aabf8aa0",
+      "metrics": {
+        "eta_error": 0.009753500359253818,
+        "u_error": 0.005835645265242711,
+        "v_error": 0.006329306488183054,
+        "T_error_C": 1.3656578723693216e-06,
+        "S_error_psu": 4.567431075616773e-14,
+        "volume": 4.580754178751256e-17,
+        "T_inventory": 7.589415207398531e-17,
+        "S_inventory": 6.0509323246416e-16
+      },
+      "metric_difference_from_production": {
+        "eta_error": 0.0,
+        "u_error": 8.673617379884035e-19,
+        "v_error": -8.673617379884035e-19,
+        "T_error_C": -9.230541542703738e-19,
+        "S_error_psu": 6.310887241768095e-30,
+        "volume": 4.580754178751256e-17,
+        "T_inventory": -1.46150452851046e-16,
+        "S_inventory": -6.10405823109339e-17
+      },
+      "composite": 0.13656578723693213,
+      "failed_metrics": [],
+      "screen_pass": true,
+      "actual_options": {
+        "actual": {
+          "actual_fractional_substep": 0.24980576327742565,
+          "actual_substeps": 5,
+          "model": "HydrostaticFreeSurfaceModel{CUDAGPU, RectilinearGrid}(time = 0 seconds, iteration = 0)\n\u251c\u2500\u2500 grid: 8\u00d716\u00d716 RectilinearGrid{Float64, Periodic, Bounded, Bounded} on CUDAGPU with 3\u00d73\u00d73 halo\n\u251c\u2500\u2500 timestepper: SplitRungeKuttaTimeStepper\n\u251c\u2500\u2500 tracers: (T, S, physical_T, physical_S)\n\u251c\u2500\u2500 closure: Nothing\n\u251c\u2500\u2500 buoyancy: SeawaterBuoyancy with g=9.81 and LinearEquationOfState(thermal_expansion=0.0002, haline_contraction=0.00076) with g\u0302 = NegativeZDirection()\n\u251c\u2500\u2500 free surface: SplitExplicitFreeSurface with gravitational acceleration 9.81 m s\u207b\u00b2\n\u2502   \u2514\u2500\u2500 substepping: FixedSubstepNumber(5)\n\u251c\u2500\u2500 advection scheme: \n\u2502   \u251c\u2500\u2500 momentum: VectorInvariant\n\u2502   \u251c\u2500\u2500 T: WENO{3, Float64, Oceananigans.Utils.BackendOptimizedDivision}(order=5)\n\u2502   \u251c\u2500\u2500 S: WENO{3, Float64, Oceananigans.Utils.BackendOptimizedDivision}(order=5)\n\u2502   \u251c\u2500\u2500 physical_T: WENO{3, Float64, Oceananigans.Utils.BackendOptimizedDivision}(order=5)\n\u2502   \u2514\u2500\u2500 physical_S: WENO{3, Float64, Oceananigans.Utils.BackendOptimizedDivision}(order=5)\n\u251c\u2500\u2500 vertical_coordinate: ZStarCoordinate\n\u2514\u2500\u2500 coriolis: FPlane{Oceananigans.Advection.EnstrophyConserving{Float64}, Float64}",
+          "substepping": "Oceananigans.Models.HydrostaticFreeSurfaceModels.SplitExplicitFreeSurfaces.FixedSubstepNumber{Float64, NTuple{5, Float64}}(0.24980576327742565, (-0.0067610647292848484, 0.07210598326148977, 0.21946620144535423, 0.36868370221742663, 0.34650517780501416), (0.24980576327742565, 0.25149471621269276, 0.233482226027187, 0.17865830406153305, 0.08655899042116165))",
+          "thermodynamic_variables": "native linear-EOS anomalies plus two advected physical witnesses",
+          "tracer_advection": {
+            "S": "WENO{3, Float64, Oceananigans.Utils.BackendOptimizedDivision}(order=5)\n\u251c\u2500\u2500 buffer_scheme: WENO{2, Float64, Oceananigans.Utils.BackendOptimizedDivision}(order=3)\n\u2502   \u2514\u2500\u2500 buffer_scheme: Centered(order=2)\n\u2514\u2500\u2500 advecting_velocity_scheme: Centered(order=4)",
+            "T": "WENO{3, Float64, Oceananigans.Utils.BackendOptimizedDivision}(order=5)\n\u251c\u2500\u2500 buffer_scheme: WENO{2, Float64, Oceananigans.Utils.BackendOptimizedDivision}(order=3)\n\u2502   \u2514\u2500\u2500 buffer_scheme: Centered(order=2)\n\u2514\u2500\u2500 advecting_velocity_scheme: Centered(order=4)",
+            "physical_S": "WENO{3, Float64, Oceananigans.Utils.BackendOptimizedDivision}(order=5)\n\u251c\u2500\u2500 buffer_scheme: WENO{2, Float64, Oceananigans.Utils.BackendOptimizedDivision}(order=3)\n\u2502   \u2514\u2500\u2500 buffer_scheme: Centered(order=2)\n\u2514\u2500\u2500 advecting_velocity_scheme: Centered(order=4)",
+            "physical_T": "WENO{3, Float64, Oceananigans.Utils.BackendOptimizedDivision}(order=5)\n\u251c\u2500\u2500 buffer_scheme: WENO{2, Float64, Oceananigans.Utils.BackendOptimizedDivision}(order=3)\n\u2502   \u2514\u2500\u2500 buffer_scheme: Centered(order=2)\n\u2514\u2500\u2500 advecting_velocity_scheme: Centered(order=4)"
+          }
+        },
+        "requested": {
+          "closure": "nothing",
+          "coriolis": "FPlane",
+          "free_surface": "SplitExplicitFreeSurface",
+          "haline_contraction": 0.00076,
+          "momentum_advection": "VectorInvariant",
+          "requested_substeps": 8,
+          "source_commit": "1e8587b17171b0bba5bc6728118c3dbbd3c8acf6",
+          "thermal_expansion": 0.00019999999999999998,
+          "thermodynamic_variables": "T/S anomalies about 15 C/35 psu; physical constant-scalar witnesses",
+          "timestepper": "SplitRungeKutta3",
+          "tracer_advection": "WENO5",
+          "version": "0.113.5",
+          "vertical_coordinate": "ZStarCoordinate"
+        }
+      }
+    },
+    {
+      "index": 15,
+      "model": "zhenmode",
+      "profile": "vertical-fine",
+      "control": "main",
+      "output_sha256": "3f3be2916e2f95414c1cb36eb0acbbd361c76d375528f945a0f220b8879eb2d4",
+      "score_sha256": "0ede4b8176506361a13786529f43085739d45ba38353373bb8fa125946a2ca41",
+      "native_run_sha256": "d5fe22bc0d172a5b808ecd159c8a549d6553442678d25146106f548828bc9bb0",
+      "metrics": {
+        "eta_error": 0.021118061129547665,
+        "u_error": 0.002190067436800951,
+        "v_error": 0.0007735909743782708,
+        "T_error_C": 1.1819195178010533e-05,
+        "S_error_psu": 0.0,
+        "volume": 3.7947076036992655e-19,
+        "T_inventory": 2.238769065965318e-15,
+        "S_inventory": 3.2526065174565133e-19
+      },
+      "metric_difference_from_production": {
+        "eta_error": 0.0,
+        "u_error": 0.0,
+        "v_error": 0.0,
+        "T_error_C": 0.0,
+        "S_error_psu": 0.0,
+        "volume": -2.2166513416466138e-16,
+        "T_inventory": 1.8323016715005025e-17,
+        "S_inventory": -2.2171934427328566e-16
+      },
+      "composite": 0.5909597589005267,
+      "failed_metrics": [],
+      "screen_pass": true,
+      "actual_options": {
+        "column_geometry": "nodal_dual_v1",
+        "conservative_kv": true,
+        "density_rotation_scheme": "joint_shear",
+        "external_mode_scheme": "symmetric",
+        "fct_adv": false,
+        "hydrostatic_surface_scheme": "linear_density",
+        "localize_conv": true,
+        "meridional_boundary_scheme": "closed_faces",
+        "mode_split": false,
+        "monotone_adv": false,
+        "polar_cap_rows": 0,
+        "polar_cap_taper": 0,
+        "pressure_continuity_scheme": "centered_fourth",
+        "process_time_scheme": "legacy",
+        "project_adv_vel": false,
+        "tracer_transport_scheme": "centered_second"
+      }
+    },
+    {
+      "index": 16,
+      "model": "mom6",
+      "profile": "vertical-fine",
+      "control": "main",
+      "output_sha256": "28f12d8eab5331a7c1dd148e6b671db6740687c8c34462f2ba9c7869020a5a92",
+      "score_sha256": "b00d90d60183b8e5077634e9596e1c09721ccf5d5ee2edf220d644b272529fce",
+      "native_run_sha256": "f9faa3ef08091c490bbd71bd1c8be152faeae09c827848722985966ca74bfe79",
+      "metrics": {
+        "eta_error": 0.003017267819374944,
+        "u_error": 0.001740116964829791,
+        "v_error": 0.0018146060885178505,
+        "T_error_C": 3.3580002990565237e-07,
+        "S_error_psu": 2.473995091474386e-13,
+        "volume": 8.960930955592694e-17,
+        "T_inventory": 5.40474782984024e-16,
+        "S_inventory": 2.765799742010522e-16
+      },
+      "metric_difference_from_production": {
+        "eta_error": -1.3010426069826053e-18,
+        "u_error": 6.505213034913027e-19,
+        "v_error": -2.6020852139652106e-18,
+        "T_error_C": -2.6592069983456725e-18,
+        "S_error_psu": 0.0,
+        "volume": -3.5447990029413567e-16,
+        "T_inventory": -3.4770363671610127e-16,
+        "S_inventory": -5.648693318649478e-17
+      },
+      "composite": 0.030172678193749438,
+      "failed_metrics": [],
+      "screen_pass": true,
+      "actual_options": {
+        "BEBT": "0.1",
+        "DT": "12.5",
+        "DTBT": "12.5",
+        "DT_FORCING": "12.5",
+        "DT_THERM": "12.5",
+        "SPLIT": "True",
+        "SPLIT_RK2B": "True",
+        "TRACER_ADVECTION_SCHEME": "PPM:H3"
+      }
+    },
+    {
+      "index": 17,
+      "model": "oceananigans",
+      "profile": "vertical-fine",
+      "control": "main",
+      "output_sha256": "883e73ba3d29c13d7bf05debc84b782fea7c4a15e1888ee5a42922dc9b427175",
+      "score_sha256": "0ea0d1d5ee7b084ff61fad90b2573d62675a98d6dda576bfb7d4bace2a6c6d9b",
+      "native_run_sha256": "153fd387886e3c9f76d1817d6e3ee88b940d3bff9897976e70f7b1cd48a3babd",
+      "metrics": {
+        "eta_error": 0.002348966726480023,
+        "u_error": 0.0014494827029373715,
+        "v_error": 0.0015810231411018422,
+        "T_error_C": 8.806389205709381e-07,
+        "S_error_psu": 5.477262897175491e-14,
+        "volume": 3.447762908503904e-17,
+        "T_inventory": 9.481347998385736e-17,
+        "S_inventory": 2.6926160953677503e-16
+      },
+      "metric_difference_from_production": {
+        "eta_error": -8.673617379884035e-19,
+        "u_error": 2.168404344971009e-19,
+        "v_error": -2.168404344971009e-19,
+        "T_error_C": -1.3816166160901706e-18,
+        "S_error_psu": 0.0,
+        "volume": -1.8756697583999227e-16,
+        "T_inventory": -1.2723112494117395e-16,
+        "S_inventory": -6.380529785077194e-17
+      },
+      "composite": 0.0440319460285469,
+      "failed_metrics": [],
+      "screen_pass": true,
+      "actual_options": {
+        "actual": {
+          "actual_fractional_substep": 0.24980576327742565,
+          "actual_substeps": 5,
+          "model": "HydrostaticFreeSurfaceModel{CUDAGPU, RectilinearGrid}(time = 0 seconds, iteration = 0)\n\u251c\u2500\u2500 grid: 8\u00d732\u00d732 RectilinearGrid{Float64, Periodic, Bounded, Bounded} on CUDAGPU with 3\u00d73\u00d73 halo\n\u251c\u2500\u2500 timestepper: SplitRungeKuttaTimeStepper\n\u251c\u2500\u2500 tracers: (T, S, physical_T, physical_S)\n\u251c\u2500\u2500 closure: Nothing\n\u251c\u2500\u2500 buoyancy: SeawaterBuoyancy with g=9.81 and LinearEquationOfState(thermal_expansion=0.0002, haline_contraction=0.00076) with g\u0302 = NegativeZDirection()\n\u251c\u2500\u2500 free surface: SplitExplicitFreeSurface with gravitational acceleration 9.81 m s\u207b\u00b2\n\u2502   \u2514\u2500\u2500 substepping: FixedSubstepNumber(5)\n\u251c\u2500\u2500 advection scheme: \n\u2502   \u251c\u2500\u2500 momentum: VectorInvariant\n\u2502   \u251c\u2500\u2500 T: WENO{3, Float64, Oceananigans.Utils.BackendOptimizedDivision}(order=5)\n\u2502   \u251c\u2500\u2500 S: WENO{3, Float64, Oceananigans.Utils.BackendOptimizedDivision}(order=5)\n\u2502   \u251c\u2500\u2500 physical_T: WENO{3, Float64, Oceananigans.Utils.BackendOptimizedDivision}(order=5)\n\u2502   \u2514\u2500\u2500 physical_S: WENO{3, Float64, Oceananigans.Utils.BackendOptimizedDivision}(order=5)\n\u251c\u2500\u2500 vertical_coordinate: ZStarCoordinate\n\u2514\u2500\u2500 coriolis: FPlane{Oceananigans.Advection.EnstrophyConserving{Float64}, Float64}",
+          "substepping": "Oceananigans.Models.HydrostaticFreeSurfaceModels.SplitExplicitFreeSurfaces.FixedSubstepNumber{Float64, NTuple{5, Float64}}(0.24980576327742565, (-0.0067610647292848484, 0.07210598326148977, 0.21946620144535423, 0.36868370221742663, 0.34650517780501416), (0.24980576327742565, 0.25149471621269276, 0.233482226027187, 0.17865830406153305, 0.08655899042116165))",
+          "thermodynamic_variables": "native linear-EOS anomalies plus two advected physical witnesses",
+          "tracer_advection": {
+            "S": "WENO{3, Float64, Oceananigans.Utils.BackendOptimizedDivision}(order=5)\n\u251c\u2500\u2500 buffer_scheme: WENO{2, Float64, Oceananigans.Utils.BackendOptimizedDivision}(order=3)\n\u2502   \u2514\u2500\u2500 buffer_scheme: Centered(order=2)\n\u2514\u2500\u2500 advecting_velocity_scheme: Centered(order=4)",
+            "T": "WENO{3, Float64, Oceananigans.Utils.BackendOptimizedDivision}(order=5)\n\u251c\u2500\u2500 buffer_scheme: WENO{2, Float64, Oceananigans.Utils.BackendOptimizedDivision}(order=3)\n\u2502   \u2514\u2500\u2500 buffer_scheme: Centered(order=2)\n\u2514\u2500\u2500 advecting_velocity_scheme: Centered(order=4)",
+            "physical_S": "WENO{3, Float64, Oceananigans.Utils.BackendOptimizedDivision}(order=5)\n\u251c\u2500\u2500 buffer_scheme: WENO{2, Float64, Oceananigans.Utils.BackendOptimizedDivision}(order=3)\n\u2502   \u2514\u2500\u2500 buffer_scheme: Centered(order=2)\n\u2514\u2500\u2500 advecting_velocity_scheme: Centered(order=4)",
+            "physical_T": "WENO{3, Float64, Oceananigans.Utils.BackendOptimizedDivision}(order=5)\n\u251c\u2500\u2500 buffer_scheme: WENO{2, Float64, Oceananigans.Utils.BackendOptimizedDivision}(order=3)\n\u2502   \u2514\u2500\u2500 buffer_scheme: Centered(order=2)\n\u2514\u2500\u2500 advecting_velocity_scheme: Centered(order=4)"
+          }
+        },
+        "requested": {
+          "closure": "nothing",
+          "coriolis": "FPlane",
+          "free_surface": "SplitExplicitFreeSurface",
+          "haline_contraction": 0.00076,
+          "momentum_advection": "VectorInvariant",
+          "requested_substeps": 8,
+          "source_commit": "1e8587b17171b0bba5bc6728118c3dbbd3c8acf6",
+          "thermal_expansion": 0.00019999999999999998,
+          "thermodynamic_variables": "T/S anomalies about 15 C/35 psu; physical constant-scalar witnesses",
+          "timestepper": "SplitRungeKutta3",
+          "tracer_advection": "WENO5",
+          "version": "0.113.5",
+          "vertical_coordinate": "ZStarCoordinate"
+        }
+      }
+    },
+    {
+      "index": 18,
+      "model": "zhenmode",
+      "profile": "vertical-fine",
+      "control": "half",
+      "output_sha256": "50dbaeaed8a3c61753fdce2d217e518dd244110b91042d77c8b2195d046390bb",
+      "score_sha256": "00c414a07265181924016e93272aebe790063f22489ff67ab9f5e558b9d63c54",
+      "native_run_sha256": "0a5b7ad989f3a55952b8049312d5ee4ac2aa34ca028fc21872eeba91b6efe824",
+      "metrics": {
+        "eta_error": 0.021300894718683346,
+        "u_error": 0.002189896293221286,
+        "v_error": 0.0007735577641469699,
+        "T_error_C": 5.910568868406282e-06,
+        "S_error_psu": 0.0,
+        "volume": 3.7947076036992655e-19,
+        "T_inventory": 4.776994771971133e-16,
+        "S_inventory": 2.710505431213761e-19
+      },
+      "metric_difference_from_production": {
+        "eta_error": 0.0,
+        "u_error": 0.0,
+        "v_error": 0.0,
+        "T_error_C": 0.0,
+        "S_error_psu": 0.0,
+        "volume": -2.2166513416466138e-16,
+        "T_inventory": 3.361026734705064e-17,
+        "S_inventory": -2.2177355438190993e-16
+      },
+      "composite": 0.5910568868406282,
+      "failed_metrics": [],
+      "screen_pass": true,
+      "actual_options": {
+        "column_geometry": "nodal_dual_v1",
+        "conservative_kv": true,
+        "density_rotation_scheme": "joint_shear",
+        "external_mode_scheme": "symmetric",
+        "fct_adv": false,
+        "hydrostatic_surface_scheme": "linear_density",
+        "localize_conv": true,
+        "meridional_boundary_scheme": "closed_faces",
+        "mode_split": false,
+        "monotone_adv": false,
+        "polar_cap_rows": 0,
+        "polar_cap_taper": 0,
+        "pressure_continuity_scheme": "centered_fourth",
+        "process_time_scheme": "legacy",
+        "project_adv_vel": false,
+        "tracer_transport_scheme": "centered_second"
+      }
+    },
+    {
+      "index": 19,
+      "model": "mom6",
+      "profile": "vertical-fine",
+      "control": "half",
+      "output_sha256": "b56ad82f0254155f35ca2846900e5a0fe177f2711aaba2cb7ef0b4338a734169",
+      "score_sha256": "3404c835c147102bbfd38286ffa28b4558440cd177b34e99b69e3547dcabb25c",
+      "native_run_sha256": "f40c9ad7680c21c7ebfc820d8c92c838cda4db2e2f20ebaef03dc27c7c98848a",
+      "metrics": {
+        "eta_error": 0.0029792652883607806,
+        "u_error": 0.0017398998227751306,
+        "v_error": 0.001814614882796308,
+        "T_error_C": 1.678747062170397e-07,
+        "S_error_psu": 2.461460260611392e-13,
+        "volume": 4.586175189613684e-17,
+        "T_inventory": 1.5178830414797062e-16,
+        "S_inventory": 2.1239520558991032e-16
+      },
+      "metric_difference_from_production": {
+        "eta_error": -1.3010426069826053e-18,
+        "u_error": 6.505213034913027e-19,
+        "v_error": -8.673617379884035e-19,
+        "T_error_C": -1.8542080610988668e-19,
+        "S_error_psu": 0.0,
+        "volume": -3.982274579539258e-16,
+        "T_inventory": -7.025630077706069e-17,
+        "S_inventory": -1.2067170179763664e-16
+      },
+      "composite": 0.029792652883607804,
+      "failed_metrics": [],
+      "screen_pass": true,
+      "actual_options": {
+        "BEBT": "0.1",
+        "DT": "12.5",
+        "DTBT": "12.5",
+        "DT_FORCING": "12.5",
+        "DT_THERM": "12.5",
+        "SPLIT": "True",
+        "SPLIT_RK2B": "True",
+        "TRACER_ADVECTION_SCHEME": "PPM:H3"
+      }
+    },
+    {
+      "index": 20,
+      "model": "oceananigans",
+      "profile": "vertical-fine",
+      "control": "half",
+      "output_sha256": "eea6344e8098518f2da95bedc7a1bb034a860405181a00cfc0c3522c5bd9bfc8",
+      "score_sha256": "c51fb9e2a61083b067c1d38cf22d20f9f0bda0a9f79eaad42c7f10a334f95330",
+      "native_run_sha256": "e3bc16823f7c14b6bb4ffe3e255ce774166c87d1b68f123586e939182d2d7519",
+      "metrics": {
+        "eta_error": 0.0022984324822549083,
+        "u_error": 0.001449218236021454,
+        "v_error": 0.0015810328510652413,
+        "T_error_C": 4.4038890900139173e-07,
+        "S_error_psu": 5.3449996014474824e-14,
+        "volume": 4.3042826247674526e-17,
+        "T_inventory": 4.949382917396328e-17,
+        "S_inventory": 5.789639601072594e-16
+      },
+      "metric_difference_from_production": {
+        "eta_error": 0.0,
+        "u_error": 1.951563910473908e-18,
+        "v_error": 2.3852447794681098e-18,
+        "T_error_C": 4.0244652906419945e-19,
+        "S_error_psu": 0.0,
+        "volume": -1.7900177867735678e-16,
+        "T_inventory": -1.7255077575106803e-16,
+        "S_inventory": -8.716985466783456e-17
+      },
+      "composite": 0.04403889090013917,
+      "failed_metrics": [],
+      "screen_pass": true,
+      "actual_options": {
+        "actual": {
+          "actual_fractional_substep": 0.24980576327742565,
+          "actual_substeps": 5,
+          "model": "HydrostaticFreeSurfaceModel{CUDAGPU, RectilinearGrid}(time = 0 seconds, iteration = 0)\n\u251c\u2500\u2500 grid: 8\u00d732\u00d732 RectilinearGrid{Float64, Periodic, Bounded, Bounded} on CUDAGPU with 3\u00d73\u00d73 halo\n\u251c\u2500\u2500 timestepper: SplitRungeKuttaTimeStepper\n\u251c\u2500\u2500 tracers: (T, S, physical_T, physical_S)\n\u251c\u2500\u2500 closure: Nothing\n\u251c\u2500\u2500 buoyancy: SeawaterBuoyancy with g=9.81 and LinearEquationOfState(thermal_expansion=0.0002, haline_contraction=0.00076) with g\u0302 = NegativeZDirection()\n\u251c\u2500\u2500 free surface: SplitExplicitFreeSurface with gravitational acceleration 9.81 m s\u207b\u00b2\n\u2502   \u2514\u2500\u2500 substepping: FixedSubstepNumber(5)\n\u251c\u2500\u2500 advection scheme: \n\u2502   \u251c\u2500\u2500 momentum: VectorInvariant\n\u2502   \u251c\u2500\u2500 T: WENO{3, Float64, Oceananigans.Utils.BackendOptimizedDivision}(order=5)\n\u2502   \u251c\u2500\u2500 S: WENO{3, Float64, Oceananigans.Utils.BackendOptimizedDivision}(order=5)\n\u2502   \u251c\u2500\u2500 physical_T: WENO{3, Float64, Oceananigans.Utils.BackendOptimizedDivision}(order=5)\n\u2502   \u2514\u2500\u2500 physical_S: WENO{3, Float64, Oceananigans.Utils.BackendOptimizedDivision}(order=5)\n\u251c\u2500\u2500 vertical_coordinate: ZStarCoordinate\n\u2514\u2500\u2500 coriolis: FPlane{Oceananigans.Advection.EnstrophyConserving{Float64}, Float64}",
+          "substepping": "Oceananigans.Models.HydrostaticFreeSurfaceModels.SplitExplicitFreeSurfaces.FixedSubstepNumber{Float64, NTuple{5, Float64}}(0.24980576327742565, (-0.0067610647292848484, 0.07210598326148977, 0.21946620144535423, 0.36868370221742663, 0.34650517780501416), (0.24980576327742565, 0.25149471621269276, 0.233482226027187, 0.17865830406153305, 0.08655899042116165))",
+          "thermodynamic_variables": "native linear-EOS anomalies plus two advected physical witnesses",
+          "tracer_advection": {
+            "S": "WENO{3, Float64, Oceananigans.Utils.BackendOptimizedDivision}(order=5)\n\u251c\u2500\u2500 buffer_scheme: WENO{2, Float64, Oceananigans.Utils.BackendOptimizedDivision}(order=3)\n\u2502   \u2514\u2500\u2500 buffer_scheme: Centered(order=2)\n\u2514\u2500\u2500 advecting_velocity_scheme: Centered(order=4)",
+            "T": "WENO{3, Float64, Oceananigans.Utils.BackendOptimizedDivision}(order=5)\n\u251c\u2500\u2500 buffer_scheme: WENO{2, Float64, Oceananigans.Utils.BackendOptimizedDivision}(order=3)\n\u2502   \u2514\u2500\u2500 buffer_scheme: Centered(order=2)\n\u2514\u2500\u2500 advecting_velocity_scheme: Centered(order=4)",
+            "physical_S": "WENO{3, Float64, Oceananigans.Utils.BackendOptimizedDivision}(order=5)\n\u251c\u2500\u2500 buffer_scheme: WENO{2, Float64, Oceananigans.Utils.BackendOptimizedDivision}(order=3)\n\u2502   \u2514\u2500\u2500 buffer_scheme: Centered(order=2)\n\u2514\u2500\u2500 advecting_velocity_scheme: Centered(order=4)",
+            "physical_T": "WENO{3, Float64, Oceananigans.Utils.BackendOptimizedDivision}(order=5)\n\u251c\u2500\u2500 buffer_scheme: WENO{2, Float64, Oceananigans.Utils.BackendOptimizedDivision}(order=3)\n\u2502   \u2514\u2500\u2500 buffer_scheme: Centered(order=2)\n\u2514\u2500\u2500 advecting_velocity_scheme: Centered(order=4)"
+          }
+        },
+        "requested": {
+          "closure": "nothing",
+          "coriolis": "FPlane",
+          "free_surface": "SplitExplicitFreeSurface",
+          "haline_contraction": 0.00076,
+          "momentum_advection": "VectorInvariant",
+          "requested_substeps": 8,
+          "source_commit": "1e8587b17171b0bba5bc6728118c3dbbd3c8acf6",
+          "thermal_expansion": 0.00019999999999999998,
+          "thermodynamic_variables": "T/S anomalies about 15 C/35 psu; physical constant-scalar witnesses",
+          "timestepper": "SplitRungeKutta3",
+          "tracer_advection": "WENO5",
+          "version": "0.113.5",
+          "vertical_coordinate": "ZStarCoordinate"
+        }
+      }
+    }
+  ],
+  "all_consistent": true,
+  "limitations": "shared prescribed hydrostatic PDE/EOS/native geometry; no all-layer-disjoint physical certification"
+}

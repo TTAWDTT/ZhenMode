@@ -1,0 +1,18 @@
+{
+  "specification": "q*tan(q)=1/2500, q in(pi,3pi/2); monotonic derivative tan(q)+q*sec(q)^2>0",
+  "bracket_lower": "3.141719972383751555585300305971387417165643985075791812974133",
+  "bracket_upper": "3.141719972383751555585300305971387417165643985075791812974134",
+  "bracket_width": "1e-60",
+  "root_working_dps": [
+    80,
+    160
+  ],
+  "arb_sign_dps": 90,
+  "root_float64": 3.1417199723837514,
+  "period_s": 59959.844083895536,
+  "omega_float64": 0.00010478988735174466,
+  "m_float64": 0.03141719972383752,
+  "control": "sqrt2 clean bracket certified signs; same-side corrupted bracket rejected",
+  "scope": "Unique reference root bracket; no claim of arbitrary precision for float64 PDE trajectories",
+  "elapsed_s": 0.011434611999987965
+}
