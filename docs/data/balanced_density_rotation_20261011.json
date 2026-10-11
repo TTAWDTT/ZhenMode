@@ -1,0 +1,866 @@
+{
+  "schema": "balanced-density-rotation-results-v1",
+  "source_revision": "5b4255a23acc66d8ef24f13b2ed8973b425d0fdd",
+  "native_runs": 10,
+  "candidate_runs": 9,
+  "same_wheel_old_controls": 1,
+  "parent_PR63": {
+    "functional": "b747eded64b9f789515b02e213afcf614b6e7aba",
+    "merge": "44788020c07adbcd031e12342d1a86c000880d16"
+  },
+  "runs": {
+    "wave-nx64-dt25": {
+      "metrics": {
+        "S": 0.0,
+        "T": 0.0,
+        "amplitude": 7.53917585250008e-07,
+        "energy": 1.5047883532570694e-06,
+        "eta_error": 2.6615607916402576e-05,
+        "phase_rad": 1.785366741193421e-05,
+        "u_error": 2.377011954537456e-05,
+        "v_over_U": 0.0,
+        "volume": 2.220446049250313e-16
+      },
+      "source_revision": "5b4255a23acc66d8ef24f13b2ed8973b425d0fdd",
+      "actual_controls": {
+        "column_geometry": "nodal_dual_v1",
+        "conservative_kv": true,
+        "density_rotation_scheme": "joint_shear",
+        "external_mode_scheme": "symmetric",
+        "fct_adv": false,
+        "hydrostatic_surface_scheme": "linear_density",
+        "localize_conv": true,
+        "meridional_boundary_scheme": "closed_faces",
+        "mode_split": false,
+        "monotone_adv": false,
+        "polar_cap_rows": 0,
+        "polar_cap_taper": 0,
+        "pressure_continuity_scheme": "centered_fourth",
+        "process_time_scheme": "legacy",
+        "project_adv_vel": false,
+        "tracer_transport_scheme": "product_fourth"
+      },
+      "device": "cuda:0",
+      "backend": "gpu",
+      "initialization_s": 4.50097251,
+      "compilation_s": 3.209066016999998,
+      "integration_s": 2.401921376000004,
+      "resources": {
+        "cpu_affinity": 1,
+        "elapsed_wall_seconds": 12.632940089000002,
+        "gpu_allocator_fraction": 0.4,
+        "gpu_memory_enforcement": "JAX allocator fraction; not a whole-device memory limit",
+        "host_memory_enforcement": "aggregate process-group /proc RSS sampled at 0.2 s; not a hard cgroup cap",
+        "memory_mib": 4096,
+        "peak_host_rss_bytes": 966975488,
+        "stop_reason": null,
+        "termination_grace_seconds": 0,
+        "wall_seconds": 600
+      },
+      "wall_diagnostics": {
+        "edge_centre_v_max_m_s": 0.0,
+        "interior_face_transport_max_m2_s": 0.0,
+        "north_transport_max_m2_s": 0.0,
+        "relative_mass_tendency_max": 3.5799855724060634e-17,
+        "samples": 33,
+        "scope": "saved instantaneous states, not every accepted step",
+        "south_face": "zero incoming transport in production divergence"
+      },
+      "sha256": {
+        "initial.npz": "01488e4078771cd0c3831cefc1a34e12fe036d103b8787d149ca7d84af42781d",
+        "native.npz": "fbbc5e5bed1f063035d3388ab0508b64d12759499c362c0b80f508668e26375d",
+        "native-run.json": "fb37bd6bf94bad281ffa90e36ce90dd57676d3337e21133bb77b2c3c849982c9",
+        "output.npz": "d6cea6cfbd1556929f03f31915bd92e92121c56d3776dde1d1871a98c874555b",
+        "score.json": "689cfbe4dec75a353b226c658b37b5aa7e8531e6f5783373fc05453410795a53",
+        "resources.json": "ab435a71844a6748cc93e15a1ea78bbc5ce2c62c3deb19128eedd4a997728c91"
+      }
+    },
+    "wave-nx128-dt25": {
+      "metrics": {
+        "S": 0.0,
+        "T": 0.0,
+        "amplitude": 7.53905675221489e-07,
+        "energy": 1.5047657955236104e-06,
+        "eta_error": 2.616110243648251e-05,
+        "phase_rad": 6.024369728345784e-07,
+        "u_error": 2.319850777803446e-05,
+        "v_over_U": 0.0,
+        "volume": 4.440892098500626e-16
+      },
+      "source_revision": "5b4255a23acc66d8ef24f13b2ed8973b425d0fdd",
+      "actual_controls": {
+        "column_geometry": "nodal_dual_v1",
+        "conservative_kv": true,
+        "density_rotation_scheme": "joint_shear",
+        "external_mode_scheme": "symmetric",
+        "fct_adv": false,
+        "hydrostatic_surface_scheme": "linear_density",
+        "localize_conv": true,
+        "meridional_boundary_scheme": "closed_faces",
+        "mode_split": false,
+        "monotone_adv": false,
+        "polar_cap_rows": 0,
+        "polar_cap_taper": 0,
+        "pressure_continuity_scheme": "centered_fourth",
+        "process_time_scheme": "legacy",
+        "project_adv_vel": false,
+        "tracer_transport_scheme": "product_fourth"
+      },
+      "device": "cuda:0",
+      "backend": "gpu",
+      "initialization_s": 4.512576409000005,
+      "compilation_s": 3.2775811610000005,
+      "integration_s": 2.4311593620000025,
+      "resources": {
+        "cpu_affinity": 1,
+        "elapsed_wall_seconds": 12.633530721,
+        "gpu_allocator_fraction": 0.4,
+        "gpu_memory_enforcement": "JAX allocator fraction; not a whole-device memory limit",
+        "host_memory_enforcement": "aggregate process-group /proc RSS sampled at 0.2 s; not a hard cgroup cap",
+        "memory_mib": 4096,
+        "peak_host_rss_bytes": 971960320,
+        "stop_reason": null,
+        "termination_grace_seconds": 0,
+        "wall_seconds": 600
+      },
+      "wall_diagnostics": {
+        "edge_centre_v_max_m_s": 0.0,
+        "interior_face_transport_max_m2_s": 0.0,
+        "north_transport_max_m2_s": 0.0,
+        "relative_mass_tendency_max": 2.7215400275111713e-17,
+        "samples": 33,
+        "scope": "saved instantaneous states, not every accepted step",
+        "south_face": "zero incoming transport in production divergence"
+      },
+      "sha256": {
+        "initial.npz": "beabe67fd764e5a1be23720b4d0699658eb4e8915a0c7d0196cfdd62cbf27149",
+        "native.npz": "d94b7232923c4162a75da7d808261b85700d42b6b209d1fe3b47ffe228106ff9",
+        "native-run.json": "70eb5f00bdbdba5c5e62895d575bbe63a4303c53a6f6b21a56f9182baed341aa",
+        "output.npz": "67bd84ec9a7271f71e51f0b4bdc42d114058c5702b4861da5094dc0ee3ecdc23",
+        "score.json": "fdc2c456551441d89929819ba105881b31f2400976ba053192a77541248855d9",
+        "resources.json": "09fcb5bf580c9fd203665b3f07f4dade929749fdddffb4df15e6b3281d82cf99"
+      }
+    },
+    "wave-nx256-dt25": {
+      "metrics": {
+        "S": 0.0,
+        "T": 0.0,
+        "amplitude": 7.539019162283722e-07,
+        "energy": 1.504758593284805e-06,
+        "eta_error": 2.617213523137958e-05,
+        "phase_rad": 1.5042584246411657e-06,
+        "u_error": 2.3208717594792448e-05,
+        "v_over_U": 0.0,
+        "volume": 2.220446049250313e-16
+      },
+      "source_revision": "5b4255a23acc66d8ef24f13b2ed8973b425d0fdd",
+      "actual_controls": {
+        "column_geometry": "nodal_dual_v1",
+        "conservative_kv": true,
+        "density_rotation_scheme": "joint_shear",
+        "external_mode_scheme": "symmetric",
+        "fct_adv": false,
+        "hydrostatic_surface_scheme": "linear_density",
+        "localize_conv": true,
+        "meridional_boundary_scheme": "closed_faces",
+        "mode_split": false,
+        "monotone_adv": false,
+        "polar_cap_rows": 0,
+        "polar_cap_taper": 0,
+        "pressure_continuity_scheme": "centered_fourth",
+        "process_time_scheme": "legacy",
+        "project_adv_vel": false,
+        "tracer_transport_scheme": "product_fourth"
+      },
+      "device": "cuda:0",
+      "backend": "gpu",
+      "initialization_s": 4.822693498,
+      "compilation_s": 3.5655292089999993,
+      "integration_s": 2.7341207270000005,
+      "resources": {
+        "cpu_affinity": 1,
+        "elapsed_wall_seconds": 15.237471823,
+        "gpu_allocator_fraction": 0.4,
+        "gpu_memory_enforcement": "JAX allocator fraction; not a whole-device memory limit",
+        "host_memory_enforcement": "aggregate process-group /proc RSS sampled at 0.2 s; not a hard cgroup cap",
+        "memory_mib": 4096,
+        "peak_host_rss_bytes": 1005326336,
+        "stop_reason": null,
+        "termination_grace_seconds": 0,
+        "wall_seconds": 600
+      },
+      "wall_diagnostics": {
+        "edge_centre_v_max_m_s": 0.0,
+        "interior_face_transport_max_m2_s": 0.0,
+        "north_transport_max_m2_s": 0.0,
+        "relative_mass_tendency_max": 1.1580835291313764e-17,
+        "samples": 33,
+        "scope": "saved instantaneous states, not every accepted step",
+        "south_face": "zero incoming transport in production divergence"
+      },
+      "sha256": {
+        "initial.npz": "182cebd1fd6be05eb299bf9e0a0d6e4c248565ea0c863fac4a8d4d00927a78dd",
+        "native.npz": "6125c3834ac6ba8911bf9877cf476719b97f33c47fe7723c7e12d0647eaebd7a",
+        "native-run.json": "9697d5917fec72d8a9c2b675bac186ba37e3f3ed058ecb60b1d8a4ba5895e95a",
+        "output.npz": "5683cbff350eb9be0c5324fc72afd186231363a469332bf2146df749b2d739da",
+        "score.json": "b0616aaaf9e2a8bdf215a275072674f0e8adfc741cdbaf73681b7038b8c982b1",
+        "resources.json": "a43e3c9eea144dbf16b6021fe9e2fc7067b923d1da7db96343da1970dd4f2e91"
+      }
+    },
+    "wave-nx256-dt50": {
+      "metrics": {
+        "S": 0.0,
+        "T": 0.0,
+        "amplitude": 3.0128985988309154e-06,
+        "energy": 6.022760469681643e-06,
+        "eta_error": 2.622793485354127e-05,
+        "phase_rad": 6.235474215947052e-06,
+        "u_error": 2.330773397971899e-05,
+        "v_over_U": 0.0,
+        "volume": 2.220446049250313e-16
+      },
+      "source_revision": "5b4255a23acc66d8ef24f13b2ed8973b425d0fdd",
+      "actual_controls": {
+        "column_geometry": "nodal_dual_v1",
+        "conservative_kv": true,
+        "density_rotation_scheme": "joint_shear",
+        "external_mode_scheme": "symmetric",
+        "fct_adv": false,
+        "hydrostatic_surface_scheme": "linear_density",
+        "localize_conv": true,
+        "meridional_boundary_scheme": "closed_faces",
+        "mode_split": false,
+        "monotone_adv": false,
+        "polar_cap_rows": 0,
+        "polar_cap_taper": 0,
+        "pressure_continuity_scheme": "centered_fourth",
+        "process_time_scheme": "legacy",
+        "project_adv_vel": false,
+        "tracer_transport_scheme": "product_fourth"
+      },
+      "device": "cuda:0",
+      "backend": "gpu",
+      "initialization_s": 4.836103109999996,
+      "compilation_s": 3.5759734210000005,
+      "integration_s": 1.5008057869999902,
+      "resources": {
+        "cpu_affinity": 1,
+        "elapsed_wall_seconds": 11.832306772000003,
+        "gpu_allocator_fraction": 0.4,
+        "gpu_memory_enforcement": "JAX allocator fraction; not a whole-device memory limit",
+        "host_memory_enforcement": "aggregate process-group /proc RSS sampled at 0.2 s; not a hard cgroup cap",
+        "memory_mib": 4096,
+        "peak_host_rss_bytes": 978444288,
+        "stop_reason": null,
+        "termination_grace_seconds": 0,
+        "wall_seconds": 600
+      },
+      "wall_diagnostics": {
+        "edge_centre_v_max_m_s": 0.0,
+        "interior_face_transport_max_m2_s": 0.0,
+        "north_transport_max_m2_s": 0.0,
+        "relative_mass_tendency_max": 1.9397328584047783e-17,
+        "samples": 33,
+        "scope": "saved instantaneous states, not every accepted step",
+        "south_face": "zero incoming transport in production divergence"
+      },
+      "sha256": {
+        "initial.npz": "182cebd1fd6be05eb299bf9e0a0d6e4c248565ea0c863fac4a8d4d00927a78dd",
+        "native.npz": "e10ee3342bfad6a666ea8d2d767ead061fff656676cccc21d7ccf6d1c2c006f3",
+        "native-run.json": "b7055d3304223ae467a45ea9da229d84f41076b949915cd09412f9b4c721f752",
+        "output.npz": "eabc0ab153412ce0bf3326c4e5f5a8633eb2cbdc1f7d298b33e7006a48ca771b",
+        "score.json": "40666febb8f28f9cd97dd9ace84dd231597b7e44eea39fefc4b1ba4b349e3f64",
+        "resources.json": "474a6b2a954c9a0bfb74cc462a869e87c70196dd29fc0e93e7752ce822241baf"
+      }
+    },
+    "wave-nx256-dt100": {
+      "metrics": {
+        "S": 0.0,
+        "T": 0.0,
+        "amplitude": 1.2049016749671182e-05,
+        "energy": 2.4095132881374326e-05,
+        "eta_error": 2.7119921558920394e-05,
+        "phase_rad": 2.5160743522912045e-05,
+        "u_error": 2.4850697745630128e-05,
+        "v_over_U": 0.0,
+        "volume": 2.220446049250313e-16
+      },
+      "source_revision": "5b4255a23acc66d8ef24f13b2ed8973b425d0fdd",
+      "actual_controls": {
+        "column_geometry": "nodal_dual_v1",
+        "conservative_kv": true,
+        "density_rotation_scheme": "joint_shear",
+        "external_mode_scheme": "symmetric",
+        "fct_adv": false,
+        "hydrostatic_surface_scheme": "linear_density",
+        "localize_conv": true,
+        "meridional_boundary_scheme": "closed_faces",
+        "mode_split": false,
+        "monotone_adv": false,
+        "polar_cap_rows": 0,
+        "polar_cap_taper": 0,
+        "pressure_continuity_scheme": "centered_fourth",
+        "process_time_scheme": "legacy",
+        "project_adv_vel": false,
+        "tracer_transport_scheme": "product_fourth"
+      },
+      "device": "cuda:0",
+      "backend": "gpu",
+      "initialization_s": 4.918120368999993,
+      "compilation_s": 3.6305450249999893,
+      "integration_s": 1.3499076820000084,
+      "resources": {
+        "cpu_affinity": 1,
+        "elapsed_wall_seconds": 12.034176441,
+        "gpu_allocator_fraction": 0.4,
+        "gpu_memory_enforcement": "JAX allocator fraction; not a whole-device memory limit",
+        "host_memory_enforcement": "aggregate process-group /proc RSS sampled at 0.2 s; not a hard cgroup cap",
+        "memory_mib": 4096,
+        "peak_host_rss_bytes": 991346688,
+        "stop_reason": null,
+        "termination_grace_seconds": 0,
+        "wall_seconds": 600
+      },
+      "wall_diagnostics": {
+        "edge_centre_v_max_m_s": 0.0,
+        "interior_face_transport_max_m2_s": 0.0,
+        "north_transport_max_m2_s": 0.0,
+        "relative_mass_tendency_max": 1.1672477339309201e-17,
+        "samples": 33,
+        "scope": "saved instantaneous states, not every accepted step",
+        "south_face": "zero incoming transport in production divergence"
+      },
+      "sha256": {
+        "initial.npz": "182cebd1fd6be05eb299bf9e0a0d6e4c248565ea0c863fac4a8d4d00927a78dd",
+        "native.npz": "effcbf2a094c3640d18fec682d90bcb17f480a0555f5512ae008054364d31979",
+        "native-run.json": "08261e7aae4215a3488e9ece6f24f731a802f4f86be909b3ec02dd3ea01b7959",
+        "output.npz": "d34be64108f1a0fc13f4b8651f6ec3c04c5da72fa85a4d4582eb9ef5d529d47f",
+        "score.json": "c66b61828c33b9ff8d093d80c32bba486d85a3e392a9bd6a39987111afe6e247",
+        "resources.json": "04b2c00d889f5a6aaab1c146bf03d4522fbf15730304d00eebeb6d1afb4c8a04"
+      }
+    },
+    "rotating-coarse": {
+      "metrics": {
+        "S_error_psu": 0.0,
+        "S_inventory": 1.1102230246251565e-16,
+        "T_error_C": 0.0,
+        "T_inventory": 2.220446049250313e-16,
+        "eta_error": 2.028972472145838e-05,
+        "u_error": 1.2989795041305108e-05,
+        "v_error": 1.7901399604203667e-05,
+        "volume": 0.0
+      },
+      "source_revision": "5b4255a23acc66d8ef24f13b2ed8973b425d0fdd",
+      "actual_controls": {
+        "column_geometry": "nodal_dual_v1",
+        "conservative_kv": true,
+        "density_rotation_scheme": "joint_shear",
+        "external_mode_scheme": "symmetric",
+        "fct_adv": false,
+        "hydrostatic_surface_scheme": "linear_density",
+        "localize_conv": true,
+        "meridional_boundary_scheme": "closed_faces",
+        "mode_split": false,
+        "monotone_adv": false,
+        "polar_cap_rows": 0,
+        "polar_cap_taper": 0,
+        "pressure_continuity_scheme": "centered_fourth",
+        "process_time_scheme": "legacy",
+        "project_adv_vel": false,
+        "tracer_transport_scheme": "product_fourth"
+      },
+      "device": "cuda:0",
+      "backend": "gpu",
+      "initialization_s": 4.3922051450000055,
+      "compilation_s": 3.093848416,
+      "integration_s": 1.420472346000011,
+      "resources": {
+        "cpu_affinity": 1,
+        "elapsed_wall_seconds": 11.231325791999993,
+        "gpu_allocator_fraction": 0.4,
+        "gpu_memory_enforcement": "JAX allocator fraction; not a whole-device memory limit",
+        "host_memory_enforcement": "aggregate process-group /proc RSS sampled at 0.2 s; not a hard cgroup cap",
+        "memory_mib": 4096,
+        "peak_host_rss_bytes": 965226496,
+        "stop_reason": null,
+        "termination_grace_seconds": 0,
+        "wall_seconds": 600
+      },
+      "wall_diagnostics": {
+        "edge_centre_v_max_m_s": 6.657490157973816e-05,
+        "interior_face_transport_max_m2_s": 0.09042496720347493,
+        "north_transport_max_m2_s": 0.0,
+        "relative_mass_tendency_max": 4.317694164053897e-17,
+        "samples": 33,
+        "scope": "saved instantaneous states, not every accepted step",
+        "south_face": "zero incoming transport in production divergence"
+      },
+      "sha256": {
+        "initial.npz": "5cccec2539eaa769012809720ae9baa4c2fde91d996358d22d46549808891678",
+        "native.npz": "0f70cfcee601ef93435e92fd01886d6c2658e42cdd867f9eba2559a4a7a1ebeb",
+        "native-run.json": "c79d0ffed5da85b568ba59232d196b3d70af4ec636fac7019660e817f9af7234",
+        "output.npz": "8aec4325d08f5d7337ced5ac2ab610093a19b24bf7089706a55825aa198c0f6b",
+        "score.json": "9af22b5712b0b2d3e9b444e745c1d0aed4adb3dd76a42bc2767454d376c89a65",
+        "resources.json": "52139bad10a45b5bde5c43b3bcb36c97dbf8a85aaf830250e9a78016531e5740"
+      }
+    },
+    "rotating-medium": {
+      "metrics": {
+        "S_error_psu": 0.0,
+        "S_inventory": 2.220446049250313e-16,
+        "T_error_C": 0.0,
+        "T_inventory": 2.220446049250313e-16,
+        "eta_error": 2.0371143968716684e-05,
+        "u_error": 1.3041508108850578e-05,
+        "v_error": 1.7974221286651083e-05,
+        "volume": 0.0
+      },
+      "source_revision": "5b4255a23acc66d8ef24f13b2ed8973b425d0fdd",
+      "actual_controls": {
+        "column_geometry": "nodal_dual_v1",
+        "conservative_kv": true,
+        "density_rotation_scheme": "joint_shear",
+        "external_mode_scheme": "symmetric",
+        "fct_adv": false,
+        "hydrostatic_surface_scheme": "linear_density",
+        "localize_conv": true,
+        "meridional_boundary_scheme": "closed_faces",
+        "mode_split": false,
+        "monotone_adv": false,
+        "polar_cap_rows": 0,
+        "polar_cap_taper": 0,
+        "pressure_continuity_scheme": "centered_fourth",
+        "process_time_scheme": "legacy",
+        "project_adv_vel": false,
+        "tracer_transport_scheme": "product_fourth"
+      },
+      "device": "cuda:0",
+      "backend": "gpu",
+      "initialization_s": 4.374395587999999,
+      "compilation_s": 3.162502509999996,
+      "integration_s": 1.4977039639999958,
+      "resources": {
+        "cpu_affinity": 1,
+        "elapsed_wall_seconds": 11.430936868000003,
+        "gpu_allocator_fraction": 0.4,
+        "gpu_memory_enforcement": "JAX allocator fraction; not a whole-device memory limit",
+        "host_memory_enforcement": "aggregate process-group /proc RSS sampled at 0.2 s; not a hard cgroup cap",
+        "memory_mib": 4096,
+        "peak_host_rss_bytes": 967016448,
+        "stop_reason": null,
+        "termination_grace_seconds": 0,
+        "wall_seconds": 600
+      },
+      "wall_diagnostics": {
+        "edge_centre_v_max_m_s": 3.328998404941422e-05,
+        "interior_face_transport_max_m2_s": 0.09041817886967488,
+        "north_transport_max_m2_s": 0.0,
+        "relative_mass_tendency_max": 5.037688619443223e-17,
+        "samples": 33,
+        "scope": "saved instantaneous states, not every accepted step",
+        "south_face": "zero incoming transport in production divergence"
+      },
+      "sha256": {
+        "initial.npz": "f16d2c2a2d869ba0ed85979573c78c955d2541a18b4e551d992f5fc2429bf4b3",
+        "native.npz": "fb7aaa4cfa490589e0258238fd1204c95ad328641ca6e75358f90304d8eed3d0",
+        "native-run.json": "42f8c944691c48f278db9c3d7dfdd17d0d6429f1a8d0693d336e7674d514e8ea",
+        "output.npz": "5df8b6d5f5e2c9184787c3761d2a83be1557fc20fc867e959ebe39b0f7177802",
+        "score.json": "b834d9b8763ccdcf6f4d5b44f45fe6b3a421e45d3c7fc838b8ee4aee5e87c269",
+        "resources.json": "2f7cd010d4d7397c431043201d918cefe738824760771b6d8d8400e470542939"
+      }
+    },
+    "rotating-fine": {
+      "metrics": {
+        "S_error_psu": 0.0,
+        "S_inventory": 1.1102230246251565e-16,
+        "T_error_C": 0.0,
+        "T_inventory": 0.0,
+        "eta_error": 2.0391250444043466e-05,
+        "u_error": 1.305433981310259e-05,
+        "v_error": 1.7992026482067553e-05,
+        "volume": 0.0
+      },
+      "source_revision": "5b4255a23acc66d8ef24f13b2ed8973b425d0fdd",
+      "actual_controls": {
+        "column_geometry": "nodal_dual_v1",
+        "conservative_kv": true,
+        "density_rotation_scheme": "joint_shear",
+        "external_mode_scheme": "symmetric",
+        "fct_adv": false,
+        "hydrostatic_surface_scheme": "linear_density",
+        "localize_conv": true,
+        "meridional_boundary_scheme": "closed_faces",
+        "mode_split": false,
+        "monotone_adv": false,
+        "polar_cap_rows": 0,
+        "polar_cap_taper": 0,
+        "pressure_continuity_scheme": "centered_fourth",
+        "process_time_scheme": "legacy",
+        "project_adv_vel": false,
+        "tracer_transport_scheme": "product_fourth"
+      },
+      "device": "cuda:0",
+      "backend": "gpu",
+      "initialization_s": 4.777983659,
+      "compilation_s": 3.5206554589999968,
+      "integration_s": 1.5441218090000177,
+      "resources": {
+        "cpu_affinity": 1,
+        "elapsed_wall_seconds": 12.034358088999994,
+        "gpu_allocator_fraction": 0.4,
+        "gpu_memory_enforcement": "JAX allocator fraction; not a whole-device memory limit",
+        "host_memory_enforcement": "aggregate process-group /proc RSS sampled at 0.2 s; not a hard cgroup cap",
+        "memory_mib": 4096,
+        "peak_host_rss_bytes": 985006080,
+        "stop_reason": null,
+        "termination_grace_seconds": 0,
+        "wall_seconds": 600
+      },
+      "wall_diagnostics": {
+        "edge_centre_v_max_m_s": 1.6645309783767273e-05,
+        "interior_face_transport_max_m2_s": 0.0904164780543977,
+        "north_transport_max_m2_s": 0.0,
+        "relative_mass_tendency_max": 2.2920340575030282e-17,
+        "samples": 33,
+        "scope": "saved instantaneous states, not every accepted step",
+        "south_face": "zero incoming transport in production divergence"
+      },
+      "sha256": {
+        "initial.npz": "903f609596166f1236b807274c46bbd486cda8d778177d8ff094275067148163",
+        "native.npz": "51269dbfe21e691a103582fc5e4197b82c7c388e4349223f9f48b026f7b9aa76",
+        "native-run.json": "8e434ae696144ff62c8743bdb1414f13d89a65838cb4d30cc3de34565af0de36",
+        "output.npz": "28649b65dd152372219dfa418f66284050810afb07fe6462b7cc13010206a95d",
+        "score.json": "dd2c23ea48b6aa39db87eb87d8acb257d8f67206641298cfa57a6d322e7f6f20",
+        "resources.json": "17789916a8b462d3abb91dd2ad1f4150a59b58da6b7c0b6f3e70958e677c95ba"
+      }
+    },
+    "thermal-wind": {
+      "metrics": {
+        "S_error_psu": 9.223497668515902e-07,
+        "S_inventory": 2.220446049250313e-16,
+        "T_error_C": 2.1419113057115227e-05,
+        "T_inventory": 1.8101076193488552e-12,
+        "eta_error": 0.0006677836272426845,
+        "u_error": 0.00030772332895368995,
+        "v_error": 0.00019708951720756346,
+        "volume": 1.1102230246251565e-16
+      },
+      "source_revision": "5b4255a23acc66d8ef24f13b2ed8973b425d0fdd",
+      "actual_controls": {
+        "column_geometry": "nodal_dual_v1",
+        "conservative_kv": true,
+        "density_rotation_scheme": "joint_shear",
+        "external_mode_scheme": "symmetric",
+        "fct_adv": false,
+        "hydrostatic_surface_scheme": "linear_density",
+        "localize_conv": true,
+        "meridional_boundary_scheme": "closed_faces",
+        "mode_split": false,
+        "monotone_adv": false,
+        "polar_cap_rows": 0,
+        "polar_cap_taper": 0,
+        "pressure_continuity_scheme": "centered_fourth",
+        "process_time_scheme": "legacy",
+        "project_adv_vel": false,
+        "tracer_transport_scheme": "product_fourth"
+      },
+      "device": "cuda:0",
+      "backend": "gpu",
+      "initialization_s": 4.881977820000003,
+      "compilation_s": 3.625887337999984,
+      "integration_s": 3.2514617070000043,
+      "resources": {
+        "cpu_affinity": 1,
+        "elapsed_wall_seconds": 14.238557620999984,
+        "gpu_allocator_fraction": 0.4,
+        "gpu_memory_enforcement": "JAX allocator fraction; not a whole-device memory limit",
+        "host_memory_enforcement": "aggregate process-group /proc RSS sampled at 0.2 s; not a hard cgroup cap",
+        "memory_mib": 4096,
+        "peak_host_rss_bytes": 993644544,
+        "stop_reason": null,
+        "termination_grace_seconds": 0,
+        "wall_seconds": 600
+      },
+      "wall_diagnostics": {
+        "edge_centre_v_max_m_s": 1.447527165524988e-06,
+        "interior_face_transport_max_m2_s": 0.00036634945762358895,
+        "north_transport_max_m2_s": 0.0,
+        "relative_mass_tendency_max": 1.3204109151174909e-17,
+        "samples": 33,
+        "scope": "saved instantaneous states, not every accepted step",
+        "south_face": "zero incoming transport in production divergence"
+      },
+      "sha256": {
+        "initial.npz": "a5ff404140ac832fb323e3a28f23ab1b871e7eadf21bd6c7af67e91eff31f486",
+        "native.npz": "72750698d6075881965aaf83a4c1fff2787e001e04f5b9fb4bc6f58b9c331cee",
+        "native-run.json": "91c019da71170b7dcf44b8decb42054c924ecf48524568512c2d128af9eca115",
+        "output.npz": "6173764435598f3c7286d148b6ea472f3d9503da51f9eebe98b3b16e94ef26d0",
+        "score.json": "45612967b6de7152894cbdce263b1d92132b0daf9d68aab0bc92d12cd9ba385b",
+        "resources.json": "524e0ada3558fc1e57559dc5906902d9649eb039f1a7a954569853d73043cdcb"
+      }
+    },
+    "paired-old-thermal-wind": {
+      "metrics": {
+        "S_error_psu": 9.236644281316469e-07,
+        "S_inventory": 2.220446049250313e-16,
+        "T_error_C": 2.1749855654204792e-05,
+        "T_inventory": 3.1732394489836224e-12,
+        "eta_error": 0.0006679224070859484,
+        "u_error": 0.000308213765543175,
+        "v_error": 0.00019698748514367556,
+        "volume": 2.220446049250313e-16
+      },
+      "source_revision": "5b4255a23acc66d8ef24f13b2ed8973b425d0fdd",
+      "actual_controls": {
+        "column_geometry": "nodal_dual_v1",
+        "conservative_kv": true,
+        "external_mode_scheme": "symmetric",
+        "fct_adv": false,
+        "hydrostatic_surface_scheme": "linear_density",
+        "localize_conv": true,
+        "meridional_boundary_scheme": "closed_faces",
+        "mode_split": false,
+        "monotone_adv": false,
+        "polar_cap_rows": 0,
+        "polar_cap_taper": 0,
+        "pressure_continuity_scheme": "centered_fourth",
+        "process_time_scheme": "legacy",
+        "project_adv_vel": false,
+        "tracer_transport_scheme": "product_fourth"
+      },
+      "device": "cuda:0",
+      "backend": "gpu",
+      "initialization_s": 4.650953653000016,
+      "compilation_s": 3.4245740730000023,
+      "integration_s": 3.1586446960000103,
+      "resources": {
+        "cpu_affinity": 1,
+        "elapsed_wall_seconds": 14.040326730999993,
+        "gpu_allocator_fraction": 0.4,
+        "gpu_memory_enforcement": "JAX allocator fraction; not a whole-device memory limit",
+        "host_memory_enforcement": "aggregate process-group /proc RSS sampled at 0.2 s; not a hard cgroup cap",
+        "memory_mib": 4096,
+        "peak_host_rss_bytes": 993173504,
+        "stop_reason": null,
+        "termination_grace_seconds": 0,
+        "wall_seconds": 600
+      },
+      "wall_diagnostics": {
+        "edge_centre_v_max_m_s": 1.443173001687407e-06,
+        "interior_face_transport_max_m2_s": 0.0003678768455911009,
+        "north_transport_max_m2_s": 0.0,
+        "relative_mass_tendency_max": 2.575968152132743e-17,
+        "samples": 33,
+        "scope": "saved instantaneous states, not every accepted step",
+        "south_face": "zero incoming transport in production divergence"
+      },
+      "sha256": {
+        "initial.npz": "a5ff404140ac832fb323e3a28f23ab1b871e7eadf21bd6c7af67e91eff31f486",
+        "native.npz": "3d0ee5279e1110c7424e96bad6e332000b8ce209f39452799540e7b18c785324",
+        "native-run.json": "72e54c2e3435dac8c59e7274d4db9c655f0933752677e05eda888d899619e6c7",
+        "output.npz": "e58e9b3e8764cc117ec7fb25ff2cf47ab545291b0073e7b7cb4377c3382786cf",
+        "score.json": "d2ce343108e3a0f08fe5b88e33b37271521da5b3f5c69a17dfcacfa2a59c987e",
+        "resources.json": "6654fb2a3c7a6c001f657ec626b873913eef99c87915e9b8281a495f62968974"
+      }
+    }
+  },
+  "eight_wave_native_arrays_unchanged": {
+    "wave-nx64-dt25": true,
+    "wave-nx128-dt25": true,
+    "wave-nx256-dt25": true,
+    "wave-nx256-dt50": true,
+    "wave-nx256-dt100": true,
+    "rotating-coarse": true,
+    "rotating-medium": true,
+    "rotating-fine": true
+  },
+  "same_wheel_old_thermal_arrays_reproduce_history": true,
+  "thermal_initial_arrays_equal": true,
+  "thermal_relative_change": {
+    "S_error_psu": -0.0014233105011046687,
+    "S_inventory": 0.0,
+    "T_error_C": -0.015206657108348454,
+    "T_inventory": -0.42957105870827794,
+    "eta_error": -0.00020777839130958764,
+    "u_error": -0.001591222211054566,
+    "v_error": 0.0005179621629947118,
+    "volume": -0.5
+  },
+  "thermal_field_decomposition": {
+    "thermal-wind": {
+      "density_related_T_rms_C": 2.1130401700573947e-05,
+      "neutral_T_equivalent_rms_C": 3.504929114032232e-06,
+      "cross_mean_square_C2": 3.1464355394397934e-20,
+      "total_T_rms_C": 2.141911305711511e-05
+    },
+    "paired-old-thermal-wind": {
+      "density_related_T_rms_C": 2.1464776930867355e-05,
+      "neutral_T_equivalent_rms_C": 3.5099248268963494e-06,
+      "cross_mean_square_C2": -3.645396087168368e-21,
+      "total_T_rms_C": 2.1749855654204718e-05
+    }
+  },
+  "old_stage_diagnostic": {
+    "equilibrium_stages": {
+      "initial_v_max": 0.0,
+      "L_half_v_max": 0.00011980108339391009,
+      "L_half_vertical_transport_max": 3.528259142583972e-07,
+      "complete_step_v_max": 4.2733650472595846e-10,
+      "complete_step_T_change_max": 8.277822871605167e-13
+    },
+    "opposing_transport": {
+      "local_average_tendency_max_C_s": 2.9309164082396692e-08,
+      "closed_stock_tendency_C_m_s": 4.2351647362715017e-20,
+      "independent_donor_formula_difference_max_C_s": 1.4227506535912076e-22
+    },
+    "scope": "CPU manufacture diagnostic; shared EOS/operators; separate donor flux truth; not standard score or certification"
+  },
+  "new_stage_diagnostic": {
+    "equilibrium_stages": {
+      "initial_v_max": 0.0,
+      "L_half_v_max": 1.823321703481637e-18,
+      "L_half_vertical_transport_max": 4.5217371515449064e-20,
+      "complete_step_v_max": 3.205952821442098e-18,
+      "complete_step_T_change_max": 0.0
+    },
+    "opposing_transport": {
+      "local_average_tendency_max_C_s": 2.9309164082396692e-08,
+      "closed_stock_tendency_C_m_s": 4.2351647362715017e-20,
+      "independent_donor_formula_difference_max_C_s": 1.4227506535912076e-22
+    },
+    "scope": "CPU manufacture diagnostic; shared EOS/operators; separate donor flux truth; not standard score or certification"
+  },
+  "pre_run_sha256": "d9478a7f8e0ce09554d2d74ec6871807fbc2a13237c602c8b617bf8abdf46633",
+  "wheel_sha256": "5bf6b18f4aa7c2cf5f0a06318b99cbbb6bf4bfb276c99caefb969001123c46eb",
+  "cpu_controls": {
+    "passed": 283,
+    "wall_seconds": 132.547,
+    "peak_interpreter_RSS_bytes": 766062592,
+    "log_sha256": "0fffe0a70550f7ff2399f45bc83e74e1a53de10060288ff85ca2e9a4f018846b"
+  },
+  "scope": "Development selection after PR63 and altered-front/stage diagnostics. Exact held-force shear rotation only; existing external mean, donor transport and static/linear continuity retained. No complete nonlinear-coupled time order, energy, industrial or speed qualification.",
+  "industrial_qualified": false,
+  "performance_comparison": false,
+  "wide_front_development_probes": {
+    "wide-front-dt50": {
+      "old_B_rms_C": 1.6486847619519698e-06,
+      "new_B_rms_C": 5.784424270570277e-09,
+      "reduction": 285.02141005459623,
+      "initial_state_arrays_equal": true,
+      "new_probe": {
+        "B_rms_C": 5.784424270570277e-09,
+        "configuration_sha256": "1f1d430dc613e6939d5e4c6cbeb09e30e6ea52a76778453af18e6c09b952182c",
+        "dt": 50.0,
+        "native_sha256": "c048d462e7e78943069162b6fc88bce3fad1920144d6a45c4ab865ed36b5adea",
+        "resources": {
+          "cpu_affinity": 1,
+          "elapsed_wall_seconds": 14.038438219999989,
+          "gpu_allocator_fraction": 0.4,
+          "gpu_memory_enforcement": "JAX allocator fraction; not a whole-device memory limit",
+          "host_memory_enforcement": "aggregate process-group /proc RSS sampled at 0.2 s; not a hard cgroup cap",
+          "memory_mib": 4096,
+          "peak_host_rss_bytes": 991006720,
+          "stop_reason": null,
+          "termination_grace_seconds": 0,
+          "wall_seconds": 600
+        },
+        "scope": "Altered-front development diagnostic; no standard score",
+        "source_revision": "5b4255a23acc66d8ef24f13b2ed8973b425d0fdd"
+      },
+      "old_probe": {
+        "B_endpoint_rms_C": 2.855292226623452e-06,
+        "B_peak_snapshot_rms_C": 2.855292226623452e-06,
+        "B_rms_C": 1.6486847619519698e-06,
+        "backend": "gpu",
+        "configuration_sha256": "f2322dcb3e22f85891b71e372d7327846e2b97e2bc0ccf38c7d608024e3a3088",
+        "native_sha256": "0715afda49851e440c914aae0d6be2ebea944eec60fc4eae98bc45a694b792a4",
+        "relative_spatial_derivative_error_smooth_mode": 3.093000577214511e-06,
+        "resources": {
+          "cpu_affinity": 1,
+          "elapsed_wall_seconds": 16.844198233,
+          "gpu_allocator_fraction": 0.4,
+          "gpu_memory_enforcement": "JAX allocator fraction; not a whole-device memory limit",
+          "host_memory_enforcement": "aggregate process-group /proc RSS sampled at 0.2 s; not a hard cgroup cap",
+          "memory_mib": 4096,
+          "peak_host_rss_bytes": 988078080,
+          "stop_reason": null,
+          "termination_grace_seconds": 0,
+          "wall_seconds": 600
+        },
+        "scope": "Changed front and velocity scale; development diagnosis only; no standard score",
+        "source_revision": "b747eded64b9f789515b02e213afcf614b6e7aba"
+      },
+      "sha256": {
+        "initial.npz": "2aefa706bba732ad61407e165f8024b3340ba96c5fe34f168bae37dd3e1c0560",
+        "native.npz": "c048d462e7e78943069162b6fc88bce3fad1920144d6a45c4ab865ed36b5adea",
+        "native-run.json": "45bfbe5e1f6e7c2c5a5658c38eff69eca0e6624bf0105c66a7f3f6b1993d43b0",
+        "configuration.json": "1f1d430dc613e6939d5e4c6cbeb09e30e6ea52a76778453af18e6c09b952182c",
+        "probe-result.json": "6fe648425c5355eb5b68d39eb728c6f2c1a4f33cf6130fa8f48706af146676bd",
+        "resources.json": "d3cfae64f41230166e40fff7a7826617775ab2b976f3071ec4edcbaba4495892"
+      }
+    },
+    "wide-front-dt25": {
+      "old_B_rms_C": 8.24947543624084e-07,
+      "new_B_rms_C": 5.784408894220545e-09,
+      "reduction": 142.61570347288642,
+      "initial_state_arrays_equal": true,
+      "new_probe": {
+        "B_rms_C": 5.784408894220545e-09,
+        "configuration_sha256": "234efbb18072810c9b165aa80d6a8331c5c16064a3f5853bf3d93b48490f35e5",
+        "dt": 25.0,
+        "native_sha256": "362e506d9f7e7a5bfe5bb1e6505f3ec23bdf9b50e35508878da9217db8404164",
+        "resources": {
+          "cpu_affinity": 1,
+          "elapsed_wall_seconds": 16.845096408000018,
+          "gpu_allocator_fraction": 0.4,
+          "gpu_memory_enforcement": "JAX allocator fraction; not a whole-device memory limit",
+          "host_memory_enforcement": "aggregate process-group /proc RSS sampled at 0.2 s; not a hard cgroup cap",
+          "memory_mib": 4096,
+          "peak_host_rss_bytes": 993935360,
+          "stop_reason": null,
+          "termination_grace_seconds": 0,
+          "wall_seconds": 600
+        },
+        "scope": "Altered-front development diagnostic; no standard score",
+        "source_revision": "5b4255a23acc66d8ef24f13b2ed8973b425d0fdd"
+      },
+      "old_probe": {
+        "B_endpoint_rms_C": 1.4289871566479332e-06,
+        "B_peak_snapshot_rms_C": 1.4289871566479332e-06,
+        "B_rms_C": 8.24947543624084e-07,
+        "backend": "gpu",
+        "configuration_sha256": "6949ded7e3ddce756695eb2ef17d02b497b2836a6ae832a3ffe9cbfb2639f5fe",
+        "driver_sha256": "ff0d2d042f146e8c0feed1ca7ba7cadd4b5bfce5362644b70405922068673556",
+        "dt": 25.0,
+        "native_sha256": "973da025ae935bc110ea209ba0c2a31120eb054fa3357a0b30ad05e8bd1b9e8a",
+        "ny": 32,
+        "relative_spatial_derivative_error_smooth_mode": 3.093000577214511e-06,
+        "resources": {
+          "cpu_affinity": 1,
+          "elapsed_wall_seconds": 19.250611297,
+          "gpu_allocator_fraction": 0.4,
+          "gpu_memory_enforcement": "JAX allocator fraction; not a whole-device memory limit",
+          "host_memory_enforcement": "aggregate process-group /proc RSS sampled at 0.2 s; not a hard cgroup cap",
+          "memory_mib": 4096,
+          "peak_host_rss_bytes": 1000058880,
+          "stop_reason": null,
+          "termination_grace_seconds": 0,
+          "wall_seconds": 600
+        },
+        "scope": "Changed front and velocity scale; development diagnosis only; no standard score",
+        "source_revision": "b747eded64b9f789515b02e213afcf614b6e7aba"
+      },
+      "sha256": {
+        "initial.npz": "2aefa706bba732ad61407e165f8024b3340ba96c5fe34f168bae37dd3e1c0560",
+        "native.npz": "362e506d9f7e7a5bfe5bb1e6505f3ec23bdf9b50e35508878da9217db8404164",
+        "native-run.json": "b5a1056cc928134148832441d304056ca640b57a569042eba18789986b762945",
+        "configuration.json": "234efbb18072810c9b165aa80d6a8331c5c16064a3f5853bf3d93b48490f35e5",
+        "probe-result.json": "2ca1f9ea613e89c1a9b356d469de00c033af77efc6c2c9eb733e1021243060bc",
+        "resources.json": "321167db389ef8c748d80f700a2b23db40479aa136552b666bb67b2615989598"
+      }
+    }
+  },
+  "all_native_runs_this_batch": 12,
+  "formal_native_runs": 10,
+  "development_native_runs": 2
+}

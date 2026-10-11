@@ -63,6 +63,8 @@ zhenmode baseline mom6 omip2-plan --profile integration-6h
 
 [海面密度压力项](docs/surface_density_pressure_results_zh.md)核查参考面与实际海面的压力定义，记录压力一致性改善及整体误差的有限变化。
 
+[密度力与科氏切变](docs/balanced_density_rotation_results_zh.md)检查中间积分阶段的平衡，分别报告原标准热成风和单独宽锋面控制。
+
 ## 开发
 
 | 目录 | 用途 |
