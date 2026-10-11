@@ -23,6 +23,23 @@ def _baroclinic_pressure(state, p):
     return p_bc
 
 
+def _density_pressure(state, p):
+    """Density anomaly pressure on fixed nodes, with an optional surface load.
+
+    For the restricted linear-EOS channel, continue the top two density nodes
+    linearly from z=0 to eta. The signed integral works for both raised and
+    depressed surfaces. It changes pressure only, not reference capacities or
+    the linear continuity equation.
+    """
+    pressure = _baroclinic_pressure(state, p)
+    if getattr(p, 'hydrostatic_surface_scheme', 'reference_plane') == 'linear_density':
+        rho = _density_anomaly(state.T[..., :2], state.S[..., :2], p)
+        slope = (rho[..., 0] - rho[..., 1]) / p.dz_3d[..., 0]
+        load = G_EARTH * state.eta * (rho[..., 0] + .5 * slope * state.eta)
+        pressure = pressure + load[..., None]
+    return pressure
+
+
 def _compute_hydrostatic_pressure(state, p):
     """Full hydrostatic pressure via cumulative trapezoidal integration.
 
@@ -31,7 +48,7 @@ def _compute_hydrostatic_pressure(state, p):
     beneath the bottom: no spurious horizontal gradient from columns of different
     ghost-water length. (D11)
     """
-    p_bc = _baroclinic_pressure(state, p)
+    p_bc = _density_pressure(state, p)
     p_bt = RHO_0 * G_EARTH * state.eta[:, :, None]
     if p.surface_pressure_pa is not None:
         p_bt = p_bt + p.surface_pressure_pa[..., None]
@@ -109,6 +126,16 @@ def _compute_bt_rho_pgf(state, p):
     the physical wet-column (JEBAR-type) coupling. (D26)
     """
     if p.column_geometry in {'nodal_dual_v1', 'fixed_partial_v1'}:
+        if getattr(p, 'hydrostatic_surface_scheme', 'reference_plane') == 'linear_density':
+            # Retain actual eta in the density load. Only rho0*g*eta belongs
+            # to the external pressure operator; zeroing state.eta would also
+            # remove this source. N subtracts this same mean and L applies it.
+            pressure = _density_pressure(state, p)
+            if p.surface_pressure_pa is not None:
+                pressure = pressure + p.surface_pressure_pa[..., None]
+            gx, gy = _gradient_conservative_3d(pressure, p)
+            return (-jnp.sum(gx * p.dz_norm, axis=-1) / RHO_0,
+                    -jnp.sum(gy * p.dz_norm, axis=-1) / RHO_0)
         acceleration_x, acceleration_y = _compute_pressure_gradient(state._replace(eta=jnp.zeros_like(state.eta)), p)
         return (jnp.sum(acceleration_x * p.dz_norm, axis=-1),
                 jnp.sum(acceleration_y * p.dz_norm, axis=-1))
