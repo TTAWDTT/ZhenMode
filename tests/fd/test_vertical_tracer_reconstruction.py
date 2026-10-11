@@ -6,7 +6,7 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from tests.fd.test_tracer_product_flux import channel
+from tests.support.tracer_channel import channel
 from zhenmode.model.solver.dynamics.transport import _advection_scalar, _vertical_transport_iface
 from zhenmode.model.solver.numerics.vertical import _vertical_tracer_face_values
 
