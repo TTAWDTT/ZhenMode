@@ -135,6 +135,7 @@ def integrate(config_file):
     )
     if "benchmark" in c:
         settings.update(VELOCITY_FILE="standing_wave_initial.nc", U_IC_VAR="u", V_IC_VAR="v")
+    settings.update(c["mom_time_options"])
     if "wind_stress" in c:
         settings.update(
             WIND_CONFIG="const",
@@ -226,6 +227,7 @@ def convert(c, directory, resources):
         "ADIABATIC": "True",
         "USE_EOS": "True",
     }
+    expected.update({k: literal(v).strip('"') for k, v in c["mom_time_options"].items()})
     if "wind_stress" in c:
         expected.update(
             WIND_CONFIG="const",
@@ -235,9 +237,7 @@ def convert(c, directory, resources):
     for k, v in expected.items():
         actual = resolved.get(k)
         match = actual == v
-        if k == "F_0" and c["f"] != 0 and actual is not None:
-            match = np.isclose(float(actual), c["f"], rtol=5e-12, atol=0)
-        if k in ("CONST_WIND_TAUX", "CONST_WIND_TAUY") and actual is not None:
+        if k in ("F_0", "DT", "DTBT", "DT_THERM", "DT_FORCING", "BEBT", "CONST_WIND_TAUX", "CONST_WIND_TAUY") and actual is not None:
             match = np.isclose(float(actual), float(v), rtol=5e-12, atol=0)
         if not match:
             raise ValueError(f"MOM6 resolved {k}={resolved.get(k)!r}, expected {v!r}")
@@ -316,11 +316,11 @@ def convert(c, directory, resources):
         integration_s=integration_s,
         resources=resources,
         numerics=dict(
-            time_scheme="native SPLIT=True SPLIT_RK2B=False",
+            time_scheme=f"native SPLIT={c['mom_time_options']['SPLIT']} SPLIT_RK2B={c['mom_time_options']['SPLIT_RK2B']}",
             transport="full momentum and T/S transport",
             filters="native numerical filtering; no added sponge",
             vertical_coordinate=f"{c['nz']} moving native layer interfaces, no ALE remapping",
-            substeps="DT=DTBT=DT_THERM=DT_FORCING",
+            substeps=f"DT={c['dt']}; DTBT={c['mom_time_options']['DTBT']}; DT_THERM=DT_FORCING=DT",
             resolved_options=c["mom_time_options"],
         ),
     )

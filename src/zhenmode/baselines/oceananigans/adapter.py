@@ -288,6 +288,23 @@ def convert(c, directory, resources):
             "substepping": native.substepping,
             "thermodynamic_variables": "native linear-EOS anomalies plus two advected physical witnesses",
         }
+        if c.get("schema") == "native-configuration-scan-v1":
+            native_details.update(
+                actual_substeps=int(native.actual_substeps),
+                actual_fractional_substep=float(native.actual_fractional_substep),
+                tracer_advection={name: str(getattr(native, "actual_" + name + "_advection"))
+                                  for name in ("T", "S", "physical_T", "physical_S")},
+            )
+            label = c["oceananigans_options"]["tracer_advection"]
+            token = {"Centered2": "Centered(order=2)", "Centered4": "Centered(order=4)",
+                     "WENO5": "WENO"}[label]
+            if any(token not in actual for actual in native_details["tracer_advection"].values()):
+                raise ValueError("actual native tracer advection differs from scan")
+            if label == "WENO5" and any("order=5" not in actual for actual in native_details["tracer_advection"].values()):
+                raise ValueError("actual native WENO order differs from scan")
+            if not (0 < native_details["actual_substeps"] <= c["oceananigans_options"]["requested_substeps"]
+                    and native_details["actual_fractional_substep"] > 0):
+                raise ValueError("invalid actual native substep record")
     write_json(
         root / "resolved-options.json",
         dict(requested=c["oceananigans_options"], actual=native_details),

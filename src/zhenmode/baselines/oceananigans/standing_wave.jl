@@ -30,9 +30,13 @@ if haskey(c, :wind_stress)
     v_bc = FieldBoundaryConditions(top=FluxBoundaryCondition(-c.wind_stress.tau_y_N_m2/c.rho0))
     boundary_conditions = (u=u_bc, v=v_bc)
 end
+tracer_scheme = o.tracer_advection == "Centered2" ? Centered(order=2) :
+                o.tracer_advection == "Centered4" ? Centered(order=4) :
+                o.tracer_advection == "WENO5" ? WENO(order=5) : error("Unknown tracer advection")
+@assert o.momentum_advection == "VectorInvariant"
 model = HydrostaticFreeSurfaceModel(grid; free_surface, buoyancy, coriolis=rotation, closure=nothing,
                                    boundary_conditions,
-                                   momentum_advection=VectorInvariant(), tracer_advection=Centered(order=2),
+                                   momentum_advection=VectorInvariant(), tracer_advection=tracer_scheme,
                                    timestepper=Symbol(o.timestepper), vertical_coordinate=ZStarCoordinate(),
                                    tracers=(:T,:S,:physical_T,:physical_S))
 # Native linear EOS uses anomalies; two advected physical witnesses keep the
@@ -80,6 +84,11 @@ output.attrib["vertical_order"] = "bottom_to_top"
 output.attrib["model_description"] = sprint(show,model)
 output.attrib["coriolis_f_s_1"] = c.f
 output.attrib["substepping"] = sprint(show,model.free_surface.substepping)
+output.attrib["actual_substeps"] = length(model.free_surface.substepping.averaging_weights)
+output.attrib["actual_fractional_substep"] = model.free_surface.substepping.fractional_step_size
+for name in (:T, :S, :physical_T, :physical_S)
+    output.attrib["actual_" * string(name) * "_advection"] = sprint(show, getproperty(model.advection, name))
+end
 output.attrib["reference_temperature_C"] = c.T_C
 output.attrib["reference_salinity_psu"] = c.S_psu
 
