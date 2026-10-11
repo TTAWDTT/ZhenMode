@@ -6,7 +6,7 @@ from zhenmode.model.solver.numerics.backend import jnp
 def _vertical_tracer_face_values(tracer, p):
     """Limited upwind candidates on midpoint faces of a nodal dual column.
 
-    Slopes use physical node distances, preserve affine profiles and never
+    Slopes use physical node distances, preserve affine interior profiles and never
     reconstruct through a dry face. These are face bounds, not a claim of
     multidimensional TVD for the complete free-surface time integration.
     """
@@ -15,7 +15,10 @@ def _vertical_tracer_face_values(tracer, p):
     secant = jnp.where(active, (tracer[..., 1:] - tracer[..., :-1]) / p.dz_iface, 0.)
     left, right = secant[..., :-1], secant[..., 1:]
     slope = jnp.where(left * right > 0., jnp.sign(left) * jnp.minimum(jnp.abs(left), jnp.abs(right)), 0.)
-    slopes = jnp.concatenate((secant[..., :1], slope, secant[..., -1:]), axis=-1)
+    # Boundary nodes are not cell centroids. One-sided extrapolation can
+    # export positive inventory from a zero endpoint at arbitrarily small dt.
+    # Retain donor states at these physical endpoints.
+    slopes = jnp.concatenate((jnp.zeros_like(secant[..., :1]), slope, jnp.zeros_like(secant[..., -1:])), axis=-1)
     above = tracer[..., :-1] + .5 * p.dz_iface * slopes[..., :-1]
     below = tracer[..., 1:] - .5 * p.dz_iface * slopes[..., 1:]
     lo, hi = jnp.minimum(tracer[..., :-1], tracer[..., 1:]), jnp.maximum(tracer[..., :-1], tracer[..., 1:])

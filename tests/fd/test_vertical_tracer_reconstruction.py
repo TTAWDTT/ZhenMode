@@ -17,8 +17,10 @@ def test_physical_affine_profile_has_exact_midpoint_values_on_nonuniform_nodes()
     p = SimpleNamespace(dz_iface=jnp.array(np.diff(depths))[None, None], wet_mask_z=jnp.ones_like(tracer))
     left, right = _vertical_tracer_face_values(tracer, p)
     expected = 15 - .02 * (depths[:-1] + depths[1:]) / 2
-    np.testing.assert_allclose(np.asarray(left)[0, 0], expected, atol=3e-15)
-    np.testing.assert_allclose(np.asarray(right)[0, 0], expected, atol=3e-15)
+    np.testing.assert_allclose(np.asarray(left)[0, 0, 1:], expected[1:], atol=3e-15)
+    np.testing.assert_allclose(np.asarray(right)[0, 0, :-1], expected[:-1], atol=3e-15)
+    assert float(left[0, 0, 0]) == float(tracer[0, 0, 0])
+    assert float(right[0, 0, -1]) == float(tracer[0, 0, -1])
 
 
 @pytest.mark.parametrize('values', ([0., 0., 1., 1., 1.], [0., 1., 0., -1., 0.], [5., 4., 1., 2., 6.]))
@@ -38,6 +40,14 @@ def test_dry_sentinel_does_not_change_last_wet_face():
     second = _vertical_tracer_face_values(a.at[..., -1].set(10000), p)
     for left, right in zip(first, second, strict=True):
         np.testing.assert_array_equal(np.asarray(left)[..., :2], np.asarray(right)[..., :2])
+
+
+def test_zero_endpoints_cannot_export_inventory_from_one_sided_slopes():
+    tracer = jnp.array([0., 1., 2., 1., 0.])[None, None]
+    p = SimpleNamespace(dz_iface=jnp.ones((1, 1, 4)), wet_mask_z=jnp.ones_like(tracer))
+    above, below = _vertical_tracer_face_values(tracer, p)
+    assert float(above[0, 0, 0]) == 0.
+    assert float(below[0, 0, -1]) == 0.
 
 
 def test_corrected_tracer_stays_constant_and_inventory_telescopes():
