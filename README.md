@@ -61,6 +61,8 @@ zhenmode baseline mom6 omip2-plan --profile integration-6h
 
 [示踪物乘积通量](docs/tracer_product_results_zh.md)单独检验水平输运，记录温盐改善、密度相关误差和其他指标的微小变化。
 
+[海面密度压力项](docs/surface_density_pressure_results_zh.md)核查参考面与实际海面的压力定义，记录压力一致性改善及整体误差的有限变化。
+
 ## 开发
 
 | 目录 | 用途 |
