@@ -105,6 +105,10 @@ def validate(c, a, definition_validator):
         "wrong schema/contract hash",
     )
     require(m["model"] in c["native_sampling"], "unsupported model")
+    if c.get("schema") == "frozen-internal-wave-v1":
+        from zhenmode.benchmarks.internal_wave import MODEL_NAMES
+
+        require(m["model"] == MODEL_NAMES[c["frozen_model"]], "output model differs from frozen selection")
     if c.get("schema") in ("native-configuration-scan-v1", "native-configuration-combinations-v1"):
         selected = {"zhenmode": "ocean-solver", "mom6": "MOM6", "oceananigans": "Oceananigans"}
         require(m["model"] == selected[c["scan"]["model"]], "output model differs from declared scan row")

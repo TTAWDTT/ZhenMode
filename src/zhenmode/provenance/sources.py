@@ -39,6 +39,9 @@ def source_root(location):
     return directory
 
 PACKAGE_SOURCE_MODULES = (
+    'zhenmode/benchmarks/internal_wave',
+    'zhenmode/evaluation/internal_wave',
+    'zhenmode/execution/internal_wave',
     'zhenmode/__init__',
     'zhenmode/__main__',
     'zhenmode/baselines/__init__',
