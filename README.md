@@ -69,6 +69,8 @@ zhenmode baseline mom6 omip2-plan --profile integration-6h
 
 [固定网格参数组合](docs/configuration_combinations_zh.md)进一步声明三方 111 条完整交叉设置及运行、复用和选择规则。
 
+[热成风组合实测](docs/configuration_combinations_results_zh.md)记录全部 111 条结果、各项误差与折中配置，并保留温盐、海面和计算成本的取舍。
+
 ## 开发
 
 | 目录 | 用途 |
