@@ -65,6 +65,8 @@ zhenmode baseline mom6 omip2-plan --profile integration-6h
 
 [密度力与科氏切变](docs/balanced_density_rotation_results_zh.md)检查中间积分阶段的平衡，分别报告原标准热成风和单独宽锋面控制。
 
+[三模式设置比较](docs/configuration_scan_results_zh.md)记录已有设置的完整试跑、指标取舍，以及加密网格与步长的配套检查。
+
 ## 开发
 
 | 目录 | 用途 |
