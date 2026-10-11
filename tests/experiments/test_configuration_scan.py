@@ -133,3 +133,97 @@ def test_native_main_scheme_cannot_be_forged_by_a_boundary_buffer(label):
     for wrong in descriptions.keys() - {label}:
         with pytest.raises(ValueError, match="main native"):
             check_scan_advection({"T": descriptions[wrong]}, label)
+
+
+def test_full_thermal_products_are_fixed_unique_and_preserve_physics():
+    from collections import Counter
+
+    from zhenmode.benchmarks.configuration_scan import combination_contract, combination_rows
+
+    declared = combination_rows()
+    assert Counter(r["model"] for r in declared) == {"zhenmode": 12, "mom6": 72, "oceananigans": 27}
+    controls = ("schema", "scan", "dt", "ocean_options", "mom_time_options", "oceananigans_options")
+    physical = {k: v for k, v in contract("thermal-wind", "zhenmode", "base").items() if k not in controls}
+    hashes = set()
+    effective = set()
+    for i, row in enumerate(declared):
+        c = combination_contract(i)
+        validate_contract(c)
+        assert row["index"] == i
+        assert {k: v for k, v in c.items() if k not in controls} == physical
+        hashes.add(digest(c))
+        key = {"zhenmode": "ocean_options", "mom6": "mom_time_options",
+               "oceananigans": "oceananigans_options"}[row["model"]]
+        effective.add(digest([row["model"], c["dt"], c[key]]))
+        if row["model"] == "mom6":
+            o = c[key]
+            assert o["DTBT"] == c["dt"] / row["external_divisor"]
+            assert o["BEBT"] == row["bebt"]
+            assert o["SPLIT_RK2B"] is row["rk2b"]
+            assert o["TRACER_ADVECTION_SCHEME"] == row["tracer"]
+        elif row["model"] == "oceananigans":
+            assert c[key]["requested_substeps"] == row["substeps"]
+            assert c[key]["tracer_advection"] == row["tracer"]
+        else:
+            assert c[key]["density_rotation_scheme"] == row["rotation"]
+            assert c[key]["tracer_transport_scheme"] == row["tracer"]
+    assert len(hashes) == 111
+    assert len(effective) == 111  # Row index alone must not manufacture uniqueness.
+
+
+@pytest.mark.parametrize("damage", ["physics", "threshold", "index", "model", "option", "boolean_index"])
+def test_combination_contract_rejects_mutation(damage):
+    from zhenmode.benchmarks.configuration_scan import combination_contract
+
+    c = combination_contract(12)
+    if damage == "physics":
+        c["thermal_wind"]["front_width_m"] *= 2
+    elif damage == "threshold":
+        c["thresholds"]["volume"] *= 2
+    elif damage == "index":
+        c["scan"]["index"] += 1
+    elif damage == "model":
+        c["scan"]["model"] = "zhenmode"
+    elif damage == "boolean_index":
+        c["scan"]["index"] = True
+    else:
+        c["mom_time_options"]["BEBT"] = 0
+    with pytest.raises(ValueError):
+        validate_contract(c)
+
+
+@pytest.mark.parametrize("index,model", [(0, "ocean-solver"), (12, "MOM6"), (84, "Oceananigans")])
+def test_combination_native_boundary_validates_model_and_resolved_options(index, model):
+    from tests.support.channel_dynamics import planted
+    from zhenmode.benchmarks.channel_dynamics import validate_contract as validate_channel
+    from zhenmode.benchmarks.configuration_scan import combination_contract
+    from zhenmode.evaluation.native_channel import validate
+
+    c = combination_contract(index)
+    a = planted(c, model)
+    validate(c, a, validate_channel)
+    wrong = "MOM6" if model == "ocean-solver" else "ocean-solver"
+    a["metadata"]["model"] = wrong
+    with pytest.raises(ValueError, match="output model"):
+        validate(c, a, validate_channel)
+    a["metadata"]["model"] = model
+    a["metadata"]["recorded_numerics"]["resolved_options"] = {}
+    with pytest.raises(ValueError, match="options differ"):
+        validate(c, a, validate_channel)
+
+
+def test_combination_cli_plan_and_execution(tmp_path, monkeypatch):
+    from zhenmode.execution import configuration_scan as scan
+
+    plan = tmp_path / "plan.json"
+    assert scan.main(["--plan", str(plan), "--combinations"]) == 0
+    assert len(json.loads(plan.read_text())["rows"]) == 111
+    seen = []
+    monkeypatch.setattr(scan, "execute", lambda c, *a, **k: seen.append((c, k)) or {"status": "completed", "models": {}})
+    assert scan.main(["--output", str(tmp_path / "run"), "--combination-index", "110"]) == 0
+    assert seen[0][1]["models"] == ("oceananigans",)
+    assert seen[0][0]["dt"] == 12.5
+    assert seen[0][0]["oceananigans_options"]["requested_substeps"] == 32
+    assert seen[0][0]["oceananigans_options"]["tracer_advection"] == "WENO5"
+    with pytest.raises(SystemExit):
+        scan.main(["--output", str(tmp_path), "--combination-index", "0", "--model", "mom6"])
