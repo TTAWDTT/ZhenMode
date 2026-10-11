@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import os
+import re
 import subprocess
 from pathlib import Path
 
@@ -247,6 +248,18 @@ def integrate(config_file):
         raise ValueError("native driver/configuration changed during execution")
 
 
+def check_scan_advection(actual, label):
+    """Check the main native scheme, not a lower-order boundary buffer in show()."""
+    for description in actual.values():
+        first = description.splitlines()[0].strip()
+        if label == "WENO5":
+            valid = re.fullmatch(r"WENO\{[^\n]+\}\(order=5\)", first) is not None
+        else:
+            valid = first == {"Centered2": "Centered(order=2)", "Centered4": "Centered(order=4)"}[label]
+        if not valid:
+            raise ValueError("actual main native tracer advection differs from scan")
+
+
 def convert(c, directory, resources):
     root = Path(directory)
     run = load_json(root / "native-run.json")
@@ -296,12 +309,7 @@ def convert(c, directory, resources):
                                   for name in ("T", "S", "physical_T", "physical_S")},
             )
             label = c["oceananigans_options"]["tracer_advection"]
-            token = {"Centered2": "Centered(order=2)", "Centered4": "Centered(order=4)",
-                     "WENO5": "WENO"}[label]
-            if any(token not in actual for actual in native_details["tracer_advection"].values()):
-                raise ValueError("actual native tracer advection differs from scan")
-            if label == "WENO5" and any("order=5" not in actual for actual in native_details["tracer_advection"].values()):
-                raise ValueError("actual native WENO order differs from scan")
+            check_scan_advection(native_details["tracer_advection"], label)
             if not (0 < native_details["actual_substeps"] <= c["oceananigans_options"]["requested_substeps"]
                     and native_details["actual_fractional_substep"] > 0):
                 raise ValueError("invalid actual native substep record")

@@ -107,3 +107,15 @@ def test_cli_routes_one_row_and_never_hides_other_model(monkeypatch, tmp_path):
     scan.run("thermal-wind", "oceananigans", "oa-weno5", tmp_path)
     assert seen[0][1]["models"] == ("oceananigans",)
     assert seen[0][0]["oceananigans_options"]["tracer_advection"] == "WENO5"
+
+
+@pytest.mark.parametrize("label", ["Centered2", "Centered4", "WENO5"])
+def test_native_main_scheme_cannot_be_forged_by_a_boundary_buffer(label):
+    from zhenmode.baselines.oceananigans.adapter import check_scan_advection
+
+    descriptions = {"Centered2": "Centered(order=2)", "Centered4": "Centered(order=4)",
+                    "WENO5": "WENO{3, Float64, BackendOptimizedDivision}(order=5)\n  buffer: Centered(order=2)\n  advecting velocity: Centered(order=4)"}
+    check_scan_advection(dict.fromkeys(("T", "S", "physical_T", "physical_S"), descriptions[label]), label)
+    for wrong in descriptions.keys() - {label}:
+        with pytest.raises(ValueError, match="main native"):
+            check_scan_advection({"T": descriptions[wrong]}, label)
