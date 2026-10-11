@@ -87,6 +87,12 @@ def contract(case, level="coarse", method="baseline"):
 
 
 def validate_contract(c):
+    if isinstance(c, dict) and c.get("schema") == "native-configuration-scan-v1":
+        from zhenmode.benchmarks.configuration_scan import validate_contract as validate_scan
+        validate_scan(c)
+        if c["scan"]["problem"] not in CASES:
+            raise ValueError("channel evaluator requires a channel scan")
+        return
     if isinstance(c, dict) and c.get("schema") == "real-wind-channel-v1":
         from zhenmode.benchmarks.forced_channel import validate_contract as validate_forced
 

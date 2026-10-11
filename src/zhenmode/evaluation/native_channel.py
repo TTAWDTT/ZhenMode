@@ -105,6 +105,9 @@ def validate(c, a, definition_validator):
         "wrong schema/contract hash",
     )
     require(m["model"] in c["native_sampling"], "unsupported model")
+    if c.get("schema") == "native-configuration-scan-v1":
+        selected = {"zhenmode": "ocean-solver", "mom6": "MOM6", "oceananigans": "Oceananigans"}
+        require(m["model"] == selected[c["scan"]["model"]], "output model differs from declared scan row")
     for name, size in [
         ("source_sha", 40),
         ("executable_sha256", 64),

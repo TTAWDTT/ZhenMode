@@ -55,6 +55,8 @@ PACKAGE_SOURCE_MODULES = (
     'zhenmode/baselines/mom6/standing_wave',
     'zhenmode/benchmarks/__init__',
     'zhenmode/benchmarks/standing_wave',
+    'zhenmode/benchmarks/configuration_scan',
+    'zhenmode/execution/configuration_scan',
     'zhenmode/evaluation/standing_wave',
     'zhenmode/evaluation/wave_study',
     'zhenmode/evaluation/native_channel',

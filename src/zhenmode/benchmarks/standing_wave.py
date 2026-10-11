@@ -171,6 +171,12 @@ def validate_contract(value):
     """Accept exact versioned definitions; v1 also rejects bool/numeric ambiguity."""
     if not isinstance(value, dict):
         raise ValueError("contract must be an object")
+    if value.get("schema") == "native-configuration-scan-v1":
+        from zhenmode.benchmarks.configuration_scan import validate_contract as validate_scan
+        validate_scan(value)
+        if value["scan"]["problem"] != "standing-wave":
+            raise ValueError("wave evaluator requires a wave scan")
+        return
     builder = legacy_contract if value.get("schema") == SCHEMA_V0 else contract
     try:
         if value.get("schema") == METHOD_SCHEMA:
