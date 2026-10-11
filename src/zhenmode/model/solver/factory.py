@@ -162,6 +162,10 @@ def make_solver_global(grid, physics, dt, forcing=None,
         raise ValueError('unknown vertical_tracer_scheme')
     if vertical_tracer_scheme == 'muscl_nodal_v1' and column_geometry != 'nodal_dual_v1':
         raise ValueError('muscl_nodal_v1 requires nodal_dual_v1 physical midpoint faces')
+    if vertical_tracer_scheme == 'muscl_nodal_v1':
+        spacing = np.abs(np.diff(np.asarray(grid.z)))
+        if not np.allclose(spacing, spacing[0], rtol=1e-12, atol=0.):
+            raise ValueError('muscl_nodal_v1 currently requires uniformly spaced vertical nodes; nonuniform CFL qualification is unresolved')
     if density_rotation_scheme not in ('split_sources', 'joint_shear'):
         raise ValueError('unknown density_rotation_scheme')
     if density_rotation_scheme == 'joint_shear':

@@ -41,7 +41,9 @@ def test_dry_sentinel_does_not_change_last_wet_face():
 
 
 def test_corrected_tracer_stays_constant_and_inventory_telescopes():
-    _, (_, _, _, p, _) = channel(8, vertical_tracer_scheme='muscl_nodal_v1')
+    _, (_, _, _, p, _) = channel(8)
+    # Pure flux identity on this nonuniform test geometry, not factory qualification.
+    p = p._replace(vertical_tracer_scheme='muscl_nodal_v1')
     rng = np.random.default_rng(121026)
     u, v = [jnp.array(rng.normal(size=(8, 8, 4)) * .01) for _ in range(2)]
     Fz = _vertical_transport_iface(u, v, p)
@@ -57,3 +59,5 @@ def test_factory_rejects_unsupported_vertical_geometry():
         channel(vertical_tracer_scheme='muscl_nodal_v1', column_geometry='legacy', external_mode_scheme='forward_backward')
     with pytest.raises(ValueError, match='unknown vertical'):
         channel(vertical_tracer_scheme='unknown')
+    with pytest.raises(ValueError, match='uniformly spaced'):
+        channel(vertical_tracer_scheme='muscl_nodal_v1')
