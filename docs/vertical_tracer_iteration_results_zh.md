@@ -35,7 +35,7 @@
 
 正式原生输出的配置、哈希、几何、误差/守恒和回放由另写路线核对，具体范围与共享参照见[原生审查记录](data/vertical_tracer_native_audit_20261012.json)。
 
-完整 CI 仍在进行，候选的软件验收尚未完成，不能据数值筛选已过宣布本轮完成。原生执行提交为 2e08feb8a78b63c827decb862ff135089bf1d65a，测试结构修复提交为 8426e97bd42f9e135000736e33863f7773c52e8d，两者 production 包源码完全相同；修复只将跨测试引用的夹具移到公共测试支持目录。36 项相关检查已通过，完整测试及制造解结果待[本次运行](https://github.com/TTAWDTT/ZhenMode/actions/runs/38166315545)结束后核验。
+数值执行提交 2e08feb8a78b63c827decb862ff135089bf1d65a 与测试结构修复提交 8426e97bd42f9e135000736e33863f7773c52e8d 的 production 包源码完全相同。全量 CI 有 1624 项测试通过，制造解检验为 ALL PASS，见[CI记录](data/vertical_tracer_ci_20261012.json)和[原始日志](https://github.com/TTAWDTT/ZhenMode/actions/runs/38166315545)。完整 CI 曾因测试文件之间的夹具引用被源码布局规则拒收，移至公共测试支持目录后重新验证；数值实现和原生数据未改变。新增数值与契约控制、历史原生回放、独立算子检查和科学筛选是分别记录的证据。
 
 ## 结果与接续
 
