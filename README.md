@@ -59,6 +59,8 @@ zhenmode baseline mom6 omip2-plan --profile integration-6h
 
 [成对压力与连续性试验](docs/channel_pressure_results_zh.md)进一步检查分层平衡，记录同初态 GPU 对照中的改善与固定时间步下的误差下限。
 
+[示踪物乘积通量](docs/tracer_product_results_zh.md)单独检验水平输运，记录温盐改善、密度相关误差和其他指标的微小变化。
+
 ## 开发
 
 | 目录 | 用途 |

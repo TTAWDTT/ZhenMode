@@ -1,0 +1,717 @@
+{
+  "schema": "channel-tracer-product-results-v1",
+  "source_revision": "3d573a308f76eba3482de881e67e68767e121286",
+  "method": "fourth-order-transport",
+  "native_runs": 11,
+  "runs": {
+    "wave-nx64-dt25": {
+      "metrics": {
+        "S": 0.0,
+        "T": 0.0,
+        "amplitude": 7.53917585250008e-07,
+        "energy": 1.5047883532570694e-06,
+        "eta_error": 2.6615607916402576e-05,
+        "phase_rad": 1.785366741193421e-05,
+        "u_error": 2.377011954537456e-05,
+        "v_over_U": 0.0,
+        "volume": 2.220446049250313e-16
+      },
+      "actual_controls": {
+        "column_geometry": "nodal_dual_v1",
+        "conservative_kv": true,
+        "external_mode_scheme": "symmetric",
+        "fct_adv": false,
+        "localize_conv": true,
+        "meridional_boundary_scheme": "closed_faces",
+        "mode_split": false,
+        "monotone_adv": false,
+        "polar_cap_rows": 0,
+        "polar_cap_taper": 0,
+        "pressure_continuity_scheme": "centered_fourth",
+        "process_time_scheme": "legacy",
+        "project_adv_vel": false,
+        "tracer_transport_scheme": "product_fourth"
+      },
+      "source_revision": "3d573a308f76eba3482de881e67e68767e121286",
+      "backend": "gpu",
+      "device": "cuda:0",
+      "channel_module_sha256": "226d3158ac5c84f1825b42ec0afaffe96efd3d8d798878be87799b4a3899b243",
+      "wall_diagnostics": {
+        "edge_centre_v_max_m_s": 0.0,
+        "interior_face_transport_max_m2_s": 0.0,
+        "north_transport_max_m2_s": 0.0,
+        "relative_mass_tendency_max": 3.5799855724060634e-17,
+        "samples": 33,
+        "scope": "saved instantaneous states, not every accepted step",
+        "south_face": "zero incoming transport in production divergence"
+      },
+      "integration_s": 2.572639463999998,
+      "compilation_s": 3.001510949,
+      "worker_wall_s": 12.433230618,
+      "sampled_peak_RSS_bytes": 940085248,
+      "files_sha256": {
+        "initial.npz": "01488e4078771cd0c3831cefc1a34e12fe036d103b8787d149ca7d84af42781d",
+        "native.npz": "fbbc5e5bed1f063035d3388ab0508b64d12759499c362c0b80f508668e26375d",
+        "output.npz": "6bf804b89148d2028b504dd74bd2aefcd198f0a9b079e890e523718e8f96e1bb",
+        "score.json": "a0a237db499a0fe1ecdf7c80138d7d011910c6d648cea3837112f9d22c4a2bd1",
+        "native-run.json": "29bb48a40bea3d69c170c9667694d33fd91447f125d7063dee8d8c272ea02284",
+        "resources.json": "5256f8883056ca3a56d5962f80a7655fc871394ce17cc45ed75dfc2e61fd7fd0"
+      }
+    },
+    "wave-nx128-dt25": {
+      "metrics": {
+        "S": 0.0,
+        "T": 0.0,
+        "amplitude": 7.53905675221489e-07,
+        "energy": 1.5047657955236104e-06,
+        "eta_error": 2.616110243648251e-05,
+        "phase_rad": 6.024369728345784e-07,
+        "u_error": 2.319850777803446e-05,
+        "v_over_U": 0.0,
+        "volume": 4.440892098500626e-16
+      },
+      "actual_controls": {
+        "column_geometry": "nodal_dual_v1",
+        "conservative_kv": true,
+        "external_mode_scheme": "symmetric",
+        "fct_adv": false,
+        "localize_conv": true,
+        "meridional_boundary_scheme": "closed_faces",
+        "mode_split": false,
+        "monotone_adv": false,
+        "polar_cap_rows": 0,
+        "polar_cap_taper": 0,
+        "pressure_continuity_scheme": "centered_fourth",
+        "process_time_scheme": "legacy",
+        "project_adv_vel": false,
+        "tracer_transport_scheme": "product_fourth"
+      },
+      "source_revision": "3d573a308f76eba3482de881e67e68767e121286",
+      "backend": "gpu",
+      "device": "cuda:0",
+      "channel_module_sha256": "226d3158ac5c84f1825b42ec0afaffe96efd3d8d798878be87799b4a3899b243",
+      "wall_diagnostics": {
+        "edge_centre_v_max_m_s": 0.0,
+        "interior_face_transport_max_m2_s": 0.0,
+        "north_transport_max_m2_s": 0.0,
+        "relative_mass_tendency_max": 2.7215400275111713e-17,
+        "samples": 33,
+        "scope": "saved instantaneous states, not every accepted step",
+        "south_face": "zero incoming transport in production divergence"
+      },
+      "integration_s": 2.480072118999999,
+      "compilation_s": 3.3211853980000043,
+      "worker_wall_s": 12.834013261000003,
+      "sampled_peak_RSS_bytes": 975163392,
+      "files_sha256": {
+        "initial.npz": "beabe67fd764e5a1be23720b4d0699658eb4e8915a0c7d0196cfdd62cbf27149",
+        "native.npz": "d94b7232923c4162a75da7d808261b85700d42b6b209d1fe3b47ffe228106ff9",
+        "output.npz": "a05c6d9f36bee1765314ce5c3ae1602f0e9214f1772344a98d43cca5e0179a31",
+        "score.json": "ef4f9088909d96ec66cc219a649f9040132c7c15df0b3138d70eb7f761fc7651",
+        "native-run.json": "f32ed096c7879392feacb462cc87d34c314e982f5f54252227e09dab4f863a9c",
+        "resources.json": "c4d66da43348a7f896e056bac32cf9b59a2436b78a6782cc33cd247aff75ac70"
+      }
+    },
+    "wave-nx256-dt25": {
+      "metrics": {
+        "S": 0.0,
+        "T": 0.0,
+        "amplitude": 7.539019162283722e-07,
+        "energy": 1.504758593284805e-06,
+        "eta_error": 2.617213523137958e-05,
+        "phase_rad": 1.5042584246411657e-06,
+        "u_error": 2.3208717594792448e-05,
+        "v_over_U": 0.0,
+        "volume": 2.220446049250313e-16
+      },
+      "actual_controls": {
+        "column_geometry": "nodal_dual_v1",
+        "conservative_kv": true,
+        "external_mode_scheme": "symmetric",
+        "fct_adv": false,
+        "localize_conv": true,
+        "meridional_boundary_scheme": "closed_faces",
+        "mode_split": false,
+        "monotone_adv": false,
+        "polar_cap_rows": 0,
+        "polar_cap_taper": 0,
+        "pressure_continuity_scheme": "centered_fourth",
+        "process_time_scheme": "legacy",
+        "project_adv_vel": false,
+        "tracer_transport_scheme": "product_fourth"
+      },
+      "source_revision": "3d573a308f76eba3482de881e67e68767e121286",
+      "backend": "gpu",
+      "device": "cuda:0",
+      "channel_module_sha256": "226d3158ac5c84f1825b42ec0afaffe96efd3d8d798878be87799b4a3899b243",
+      "wall_diagnostics": {
+        "edge_centre_v_max_m_s": 0.0,
+        "interior_face_transport_max_m2_s": 0.0,
+        "north_transport_max_m2_s": 0.0,
+        "relative_mass_tendency_max": 1.1580835291313764e-17,
+        "samples": 33,
+        "scope": "saved instantaneous states, not every accepted step",
+        "south_face": "zero incoming transport in production divergence"
+      },
+      "integration_s": 2.7369290369999995,
+      "compilation_s": 3.3285465320000007,
+      "worker_wall_s": 14.8371894,
+      "sampled_peak_RSS_bytes": 1010028544,
+      "files_sha256": {
+        "initial.npz": "182cebd1fd6be05eb299bf9e0a0d6e4c248565ea0c863fac4a8d4d00927a78dd",
+        "native.npz": "6125c3834ac6ba8911bf9877cf476719b97f33c47fe7723c7e12d0647eaebd7a",
+        "output.npz": "d874abac1cfcb27987774d69b17f0f92a13adfa28cb4c2a950e03fe3b73b040a",
+        "score.json": "8d05baca6631661cba021038ac6486a118b7469615564a40d499c172bbcb07fb",
+        "native-run.json": "ad07380bcb7558bf0c35755b9d3b701961dc0a8aa4b7fdaedb75002868ef72ab",
+        "resources.json": "8744a2df8105a85e311f530949a510f9e8e9bc5544182e64a93a92412cf1f909"
+      }
+    },
+    "wave-nx256-dt50": {
+      "metrics": {
+        "S": 0.0,
+        "T": 0.0,
+        "amplitude": 3.0128985988309154e-06,
+        "energy": 6.022760469681643e-06,
+        "eta_error": 2.622793485354127e-05,
+        "phase_rad": 6.235474215947052e-06,
+        "u_error": 2.330773397971899e-05,
+        "v_over_U": 0.0,
+        "volume": 2.220446049250313e-16
+      },
+      "actual_controls": {
+        "column_geometry": "nodal_dual_v1",
+        "conservative_kv": true,
+        "external_mode_scheme": "symmetric",
+        "fct_adv": false,
+        "localize_conv": true,
+        "meridional_boundary_scheme": "closed_faces",
+        "mode_split": false,
+        "monotone_adv": false,
+        "polar_cap_rows": 0,
+        "polar_cap_taper": 0,
+        "pressure_continuity_scheme": "centered_fourth",
+        "process_time_scheme": "legacy",
+        "project_adv_vel": false,
+        "tracer_transport_scheme": "product_fourth"
+      },
+      "source_revision": "3d573a308f76eba3482de881e67e68767e121286",
+      "backend": "gpu",
+      "device": "cuda:0",
+      "channel_module_sha256": "226d3158ac5c84f1825b42ec0afaffe96efd3d8d798878be87799b4a3899b243",
+      "wall_diagnostics": {
+        "edge_centre_v_max_m_s": 0.0,
+        "interior_face_transport_max_m2_s": 0.0,
+        "north_transport_max_m2_s": 0.0,
+        "relative_mass_tendency_max": 1.9397328584047783e-17,
+        "samples": 33,
+        "scope": "saved instantaneous states, not every accepted step",
+        "south_face": "zero incoming transport in production divergence"
+      },
+      "integration_s": 1.8252791399999921,
+      "compilation_s": 3.4119355329999905,
+      "worker_wall_s": 12.434125083999994,
+      "sampled_peak_RSS_bytes": 982540288,
+      "files_sha256": {
+        "initial.npz": "182cebd1fd6be05eb299bf9e0a0d6e4c248565ea0c863fac4a8d4d00927a78dd",
+        "native.npz": "e10ee3342bfad6a666ea8d2d767ead061fff656676cccc21d7ccf6d1c2c006f3",
+        "output.npz": "19a2cd4b7d52a8d681b3e6ca0bd38bcb5c309ec9a18bcf25be8b877c8b09b8ff",
+        "score.json": "8dcb631efcae0919fffbf8f5f887385465cb04149ee7712dea877ffb7c237809",
+        "native-run.json": "32f52fac248954ab7431b94e5504360bedd35b426fc529bef7d5138606a87d3b",
+        "resources.json": "fac9bbd5ed16391cc50edaf10f3343062767497faa228c768c4d7e6ce5cdba91"
+      }
+    },
+    "wave-nx256-dt100": {
+      "metrics": {
+        "S": 0.0,
+        "T": 0.0,
+        "amplitude": 1.2049016749671182e-05,
+        "energy": 2.4095132881374326e-05,
+        "eta_error": 2.7119921558920394e-05,
+        "phase_rad": 2.5160743522912045e-05,
+        "u_error": 2.4850697745630128e-05,
+        "v_over_U": 0.0,
+        "volume": 2.220446049250313e-16
+      },
+      "actual_controls": {
+        "column_geometry": "nodal_dual_v1",
+        "conservative_kv": true,
+        "external_mode_scheme": "symmetric",
+        "fct_adv": false,
+        "localize_conv": true,
+        "meridional_boundary_scheme": "closed_faces",
+        "mode_split": false,
+        "monotone_adv": false,
+        "polar_cap_rows": 0,
+        "polar_cap_taper": 0,
+        "pressure_continuity_scheme": "centered_fourth",
+        "process_time_scheme": "legacy",
+        "project_adv_vel": false,
+        "tracer_transport_scheme": "product_fourth"
+      },
+      "source_revision": "3d573a308f76eba3482de881e67e68767e121286",
+      "backend": "gpu",
+      "device": "cuda:0",
+      "channel_module_sha256": "226d3158ac5c84f1825b42ec0afaffe96efd3d8d798878be87799b4a3899b243",
+      "wall_diagnostics": {
+        "edge_centre_v_max_m_s": 0.0,
+        "interior_face_transport_max_m2_s": 0.0,
+        "north_transport_max_m2_s": 0.0,
+        "relative_mass_tendency_max": 1.1672477339309201e-17,
+        "samples": 33,
+        "scope": "saved instantaneous states, not every accepted step",
+        "south_face": "zero incoming transport in production divergence"
+      },
+      "integration_s": 1.089292195000013,
+      "compilation_s": 3.3505008369999985,
+      "worker_wall_s": 11.431435011000005,
+      "sampled_peak_RSS_bytes": 981622784,
+      "files_sha256": {
+        "initial.npz": "182cebd1fd6be05eb299bf9e0a0d6e4c248565ea0c863fac4a8d4d00927a78dd",
+        "native.npz": "effcbf2a094c3640d18fec682d90bcb17f480a0555f5512ae008054364d31979",
+        "output.npz": "0acbf3849a7f1f1b65adcf52c77032c2e361496b22ee08c3107c7dcdb98e8505",
+        "score.json": "74fc98c8039f863f9eb9e2a60581494812a201a1b3d7f2aafc239292b9899e56",
+        "native-run.json": "bc6d46372e8bcd61baa9c9dd883ec7228d41283060bbc978a7845c057652f670",
+        "resources.json": "a856d0e2892bcefc843e6423bad5fee9f46d1e461c0a72fe10f85a534e8c05b1"
+      }
+    },
+    "rotating-coarse": {
+      "metrics": {
+        "S_error_psu": 0.0,
+        "S_inventory": 1.1102230246251565e-16,
+        "T_error_C": 0.0,
+        "T_inventory": 2.220446049250313e-16,
+        "eta_error": 2.028972472145838e-05,
+        "u_error": 1.2989795041305108e-05,
+        "v_error": 1.7901399604203667e-05,
+        "volume": 0.0
+      },
+      "actual_controls": {
+        "column_geometry": "nodal_dual_v1",
+        "conservative_kv": true,
+        "external_mode_scheme": "symmetric",
+        "fct_adv": false,
+        "localize_conv": true,
+        "meridional_boundary_scheme": "closed_faces",
+        "mode_split": false,
+        "monotone_adv": false,
+        "polar_cap_rows": 0,
+        "polar_cap_taper": 0,
+        "pressure_continuity_scheme": "centered_fourth",
+        "process_time_scheme": "legacy",
+        "project_adv_vel": false,
+        "tracer_transport_scheme": "product_fourth"
+      },
+      "source_revision": "3d573a308f76eba3482de881e67e68767e121286",
+      "backend": "gpu",
+      "device": "cuda:0",
+      "channel_module_sha256": "226d3158ac5c84f1825b42ec0afaffe96efd3d8d798878be87799b4a3899b243",
+      "wall_diagnostics": {
+        "edge_centre_v_max_m_s": 6.657490157973816e-05,
+        "interior_face_transport_max_m2_s": 0.09042496720347493,
+        "north_transport_max_m2_s": 0.0,
+        "relative_mass_tendency_max": 4.317694164053897e-17,
+        "samples": 33,
+        "scope": "saved instantaneous states, not every accepted step",
+        "south_face": "zero incoming transport in production divergence"
+      },
+      "integration_s": 1.5980300210000138,
+      "compilation_s": 3.304159820999999,
+      "worker_wall_s": 11.630846246000004,
+      "sampled_peak_RSS_bytes": 957304832,
+      "files_sha256": {
+        "initial.npz": "5cccec2539eaa769012809720ae9baa4c2fde91d996358d22d46549808891678",
+        "native.npz": "0f70cfcee601ef93435e92fd01886d6c2658e42cdd867f9eba2559a4a7a1ebeb",
+        "output.npz": "6d83a12db51ec34ff5ec6e203967ee0854b410bbe62e123534c9adb101a73a64",
+        "score.json": "bdfab68cf1aa04e09d4b4ae3743b668f02c4ee9b4572dc121f86e25e5fc765cc",
+        "native-run.json": "a3dbb2e5d0a89c7989607d417e575b07e815c4a6fbbb1aadef9e22682aa9cb2e",
+        "resources.json": "ab2499045c53b27ca541b7de49a8a327d2fb0bcb499555d7211aa146eafb62db"
+      }
+    },
+    "rotating-medium": {
+      "metrics": {
+        "S_error_psu": 0.0,
+        "S_inventory": 2.220446049250313e-16,
+        "T_error_C": 0.0,
+        "T_inventory": 2.220446049250313e-16,
+        "eta_error": 2.0371143968716684e-05,
+        "u_error": 1.3041508108850578e-05,
+        "v_error": 1.7974221286651083e-05,
+        "volume": 0.0
+      },
+      "actual_controls": {
+        "column_geometry": "nodal_dual_v1",
+        "conservative_kv": true,
+        "external_mode_scheme": "symmetric",
+        "fct_adv": false,
+        "localize_conv": true,
+        "meridional_boundary_scheme": "closed_faces",
+        "mode_split": false,
+        "monotone_adv": false,
+        "polar_cap_rows": 0,
+        "polar_cap_taper": 0,
+        "pressure_continuity_scheme": "centered_fourth",
+        "process_time_scheme": "legacy",
+        "project_adv_vel": false,
+        "tracer_transport_scheme": "product_fourth"
+      },
+      "source_revision": "3d573a308f76eba3482de881e67e68767e121286",
+      "backend": "gpu",
+      "device": "cuda:0",
+      "channel_module_sha256": "226d3158ac5c84f1825b42ec0afaffe96efd3d8d798878be87799b4a3899b243",
+      "wall_diagnostics": {
+        "edge_centre_v_max_m_s": 3.328998404941422e-05,
+        "interior_face_transport_max_m2_s": 0.09041817886967488,
+        "north_transport_max_m2_s": 0.0,
+        "relative_mass_tendency_max": 5.037688619443223e-17,
+        "samples": 33,
+        "scope": "saved instantaneous states, not every accepted step",
+        "south_face": "zero incoming transport in production divergence"
+      },
+      "integration_s": 1.4915450489999955,
+      "compilation_s": 3.140266054999998,
+      "worker_wall_s": 11.632548766999989,
+      "sampled_peak_RSS_bytes": 951304192,
+      "files_sha256": {
+        "initial.npz": "f16d2c2a2d869ba0ed85979573c78c955d2541a18b4e551d992f5fc2429bf4b3",
+        "native.npz": "fb7aaa4cfa490589e0258238fd1204c95ad328641ca6e75358f90304d8eed3d0",
+        "output.npz": "927273bcb9f91dd4d5e32a0db2f1f11d5ee45471d7403fe4c0ec3c4e09e675ed",
+        "score.json": "41fda844a34f06b7e9ad5e72d475549b33fcc92afbbb5589c67ab822fe991e62",
+        "native-run.json": "a549643d2f08f9632120fd6f37a9d034a38d8c5bc25e663014228b5848be8699",
+        "resources.json": "4d567e0884a9257924eaca6465c36f8ee5434d88e4c5a5e7bf66b2a87faeba05"
+      }
+    },
+    "rotating-fine": {
+      "metrics": {
+        "S_error_psu": 0.0,
+        "S_inventory": 1.1102230246251565e-16,
+        "T_error_C": 0.0,
+        "T_inventory": 0.0,
+        "eta_error": 2.0391250444043466e-05,
+        "u_error": 1.305433981310259e-05,
+        "v_error": 1.7992026482067553e-05,
+        "volume": 0.0
+      },
+      "actual_controls": {
+        "column_geometry": "nodal_dual_v1",
+        "conservative_kv": true,
+        "external_mode_scheme": "symmetric",
+        "fct_adv": false,
+        "localize_conv": true,
+        "meridional_boundary_scheme": "closed_faces",
+        "mode_split": false,
+        "monotone_adv": false,
+        "polar_cap_rows": 0,
+        "polar_cap_taper": 0,
+        "pressure_continuity_scheme": "centered_fourth",
+        "process_time_scheme": "legacy",
+        "project_adv_vel": false,
+        "tracer_transport_scheme": "product_fourth"
+      },
+      "source_revision": "3d573a308f76eba3482de881e67e68767e121286",
+      "backend": "gpu",
+      "device": "cuda:0",
+      "channel_module_sha256": "226d3158ac5c84f1825b42ec0afaffe96efd3d8d798878be87799b4a3899b243",
+      "wall_diagnostics": {
+        "edge_centre_v_max_m_s": 1.6645309783767273e-05,
+        "interior_face_transport_max_m2_s": 0.0904164780543977,
+        "north_transport_max_m2_s": 0.0,
+        "relative_mass_tendency_max": 2.2920340575030282e-17,
+        "samples": 33,
+        "scope": "saved instantaneous states, not every accepted step",
+        "south_face": "zero incoming transport in production divergence"
+      },
+      "integration_s": 1.506393342000024,
+      "compilation_s": 3.3073583819999897,
+      "worker_wall_s": 11.63401350300002,
+      "sampled_peak_RSS_bytes": 976556032,
+      "files_sha256": {
+        "initial.npz": "903f609596166f1236b807274c46bbd486cda8d778177d8ff094275067148163",
+        "native.npz": "51269dbfe21e691a103582fc5e4197b82c7c388e4349223f9f48b026f7b9aa76",
+        "output.npz": "8a89ecf3729e5c30f8d3629df46a62799045a7af0ca62ee50776699f6a7bc8a4",
+        "score.json": "e09ea6db727e8cf503cc7b6e6cae0f2e5b245c5f4cf6c1826571ed7e5baad6b4",
+        "native-run.json": "26076935a43e2dc5100aa7247b3d6ed5aefac2728cf90f0923e154f32720df50",
+        "resources.json": "95ebac4d88d4cd18cf9913478db602b1d81bcbbff3810b0e41a72d13e01b5b8b"
+      }
+    },
+    "thermal-wind": {
+      "metrics": {
+        "S_error_psu": 9.236771145735105e-07,
+        "S_inventory": 2.220446049250313e-16,
+        "T_error_C": 2.1749869944137267e-05,
+        "T_inventory": 3.181788166273236e-12,
+        "eta_error": 0.0006686850872288622,
+        "u_error": 0.0003082176199005299,
+        "v_error": 0.0001969915232158899,
+        "volume": 2.220446049250313e-16
+      },
+      "actual_controls": {
+        "column_geometry": "nodal_dual_v1",
+        "conservative_kv": true,
+        "external_mode_scheme": "symmetric",
+        "fct_adv": false,
+        "localize_conv": true,
+        "meridional_boundary_scheme": "closed_faces",
+        "mode_split": false,
+        "monotone_adv": false,
+        "polar_cap_rows": 0,
+        "polar_cap_taper": 0,
+        "pressure_continuity_scheme": "centered_fourth",
+        "process_time_scheme": "legacy",
+        "project_adv_vel": false,
+        "tracer_transport_scheme": "product_fourth"
+      },
+      "source_revision": "3d573a308f76eba3482de881e67e68767e121286",
+      "backend": "gpu",
+      "device": "cuda:0",
+      "channel_module_sha256": "226d3158ac5c84f1825b42ec0afaffe96efd3d8d798878be87799b4a3899b243",
+      "wall_diagnostics": {
+        "edge_centre_v_max_m_s": 1.4759663233105012e-06,
+        "interior_face_transport_max_m2_s": 0.00036686076100031744,
+        "north_transport_max_m2_s": 0.0,
+        "relative_mass_tendency_max": 1.466511128148866e-17,
+        "samples": 33,
+        "scope": "saved instantaneous states, not every accepted step",
+        "south_face": "zero incoming transport in production divergence"
+      },
+      "integration_s": 3.441612985000006,
+      "compilation_s": 3.450040365999996,
+      "worker_wall_s": 14.439160068000007,
+      "sampled_peak_RSS_bytes": 988229632,
+      "files_sha256": {
+        "initial.npz": "a5ff404140ac832fb323e3a28f23ab1b871e7eadf21bd6c7af67e91eff31f486",
+        "native.npz": "c081ba4aae6cdb6d6f40dfb30a310be10e6280ce05e223e7fb6a7bbfe3bc5b2d",
+        "output.npz": "63019219a4c9548d47bc174e82b88cfedfe194daa5b691b718e4407bf8f0a621",
+        "score.json": "b0c3def2cb81a19909f0ee53fcb5ae65c01e5419925a7ac17d8888fb91752725",
+        "native-run.json": "ea3e23fbd3b198e06772b99148b020397a132c960eb4bc843b676016b603a4ba",
+        "resources.json": "654ec0bfb426f6181f93e5118b55dd37ac7a0068332bde591048948e03b198aa"
+      }
+    },
+    "paired-pressure-rotating-fine": {
+      "metrics": {
+        "S_error_psu": 0.0,
+        "S_inventory": 1.1102230246251565e-16,
+        "T_error_C": 0.0,
+        "T_inventory": 0.0,
+        "eta_error": 2.0391250444043466e-05,
+        "u_error": 1.305433981310259e-05,
+        "v_error": 1.7992026482067553e-05,
+        "volume": 0.0
+      },
+      "actual_controls": {
+        "column_geometry": "nodal_dual_v1",
+        "conservative_kv": true,
+        "external_mode_scheme": "symmetric",
+        "fct_adv": false,
+        "localize_conv": true,
+        "meridional_boundary_scheme": "closed_faces",
+        "mode_split": false,
+        "monotone_adv": false,
+        "polar_cap_rows": 0,
+        "polar_cap_taper": 0,
+        "pressure_continuity_scheme": "centered_fourth",
+        "process_time_scheme": "legacy",
+        "project_adv_vel": false
+      },
+      "source_revision": "3d573a308f76eba3482de881e67e68767e121286",
+      "backend": "gpu",
+      "device": "cuda:0",
+      "channel_module_sha256": "226d3158ac5c84f1825b42ec0afaffe96efd3d8d798878be87799b4a3899b243",
+      "wall_diagnostics": {
+        "edge_centre_v_max_m_s": 1.6645309783767273e-05,
+        "interior_face_transport_max_m2_s": 0.0904164780543977,
+        "north_transport_max_m2_s": 0.0,
+        "relative_mass_tendency_max": 2.2920340575030282e-17,
+        "samples": 33,
+        "scope": "saved instantaneous states, not every accepted step",
+        "south_face": "zero incoming transport in production divergence"
+      },
+      "integration_s": 1.42340178500001,
+      "compilation_s": 3.2457122389999995,
+      "worker_wall_s": 11.432429638999992,
+      "sampled_peak_RSS_bytes": 977960960,
+      "files_sha256": {
+        "initial.npz": "903f609596166f1236b807274c46bbd486cda8d778177d8ff094275067148163",
+        "native.npz": "51269dbfe21e691a103582fc5e4197b82c7c388e4349223f9f48b026f7b9aa76",
+        "output.npz": "8d770b5d7e2f273f872fd7e1ce6da4205f94a50f183812d72372ebc9a34175be",
+        "score.json": "8e747f6f65859b3e790134b6a8b1d00d61facc48ae69021d93ecb56671009aec",
+        "native-run.json": "fd2e7c52fb6c85b82a3d8bb0237be2d9b654f758acaa2bbfbbaf7f594ad25ce4",
+        "resources.json": "a155979c9752012a79a69d54d05a6997ca7d3c2ed1c5a1268b53a95b9d9cdf49"
+      }
+    },
+    "paired-pressure-thermal-wind": {
+      "metrics": {
+        "S_error_psu": 6.803831391985446e-06,
+        "S_inventory": 2.220446049250313e-16,
+        "T_error_C": 3.3596122021637066e-05,
+        "T_inventory": 3.1736835381934725e-12,
+        "eta_error": 0.0006686848134656228,
+        "u_error": 0.00030821695782276516,
+        "v_error": 0.00019699138795833252,
+        "volume": 2.220446049250313e-16
+      },
+      "actual_controls": {
+        "column_geometry": "nodal_dual_v1",
+        "conservative_kv": true,
+        "external_mode_scheme": "symmetric",
+        "fct_adv": false,
+        "localize_conv": true,
+        "meridional_boundary_scheme": "closed_faces",
+        "mode_split": false,
+        "monotone_adv": false,
+        "polar_cap_rows": 0,
+        "polar_cap_taper": 0,
+        "pressure_continuity_scheme": "centered_fourth",
+        "process_time_scheme": "legacy",
+        "project_adv_vel": false
+      },
+      "source_revision": "3d573a308f76eba3482de881e67e68767e121286",
+      "backend": "gpu",
+      "device": "cuda:0",
+      "channel_module_sha256": "226d3158ac5c84f1825b42ec0afaffe96efd3d8d798878be87799b4a3899b243",
+      "wall_diagnostics": {
+        "edge_centre_v_max_m_s": 1.4759645960499883e-06,
+        "interior_face_transport_max_m2_s": 0.00036684772562319126,
+        "north_transport_max_m2_s": 0.0,
+        "relative_mass_tendency_max": 1.443468101101518e-17,
+        "samples": 33,
+        "scope": "saved instantaneous states, not every accepted step",
+        "south_face": "zero incoming transport in production divergence"
+      },
+      "integration_s": 3.3499438450000127,
+      "compilation_s": 3.3921633820000068,
+      "worker_wall_s": 14.240630995000004,
+      "sampled_peak_RSS_bytes": 995131392,
+      "files_sha256": {
+        "initial.npz": "a5ff404140ac832fb323e3a28f23ab1b871e7eadf21bd6c7af67e91eff31f486",
+        "native.npz": "0ed68bec33cd2366e9e45c35e63caff9dc315f67c49824014acea031a9716c4a",
+        "output.npz": "9503de3db1606d479816a42379acbd263b45367c5337a165cd870ca3e4739d15",
+        "score.json": "7af4688b6b6dbdef5992ab9424d2cef0be10d3da6aaab47fbddb1e0fb4e14437",
+        "native-run.json": "18439d6bbcdb0a2d9fe047940acdef94506dad86f10d894098d95063cf30925f",
+        "resources.json": "5593bed6ccff965133c6cdd57788e181a9940695ec4138b6e6b7f3f0f5f31f57"
+      }
+    }
+  },
+  "paired": {
+    "rotating-fine": {
+      "old": {
+        "S_error_psu": 0.0,
+        "S_inventory": 1.1102230246251565e-16,
+        "T_error_C": 0.0,
+        "T_inventory": 0.0,
+        "eta_error": 2.0391250444043466e-05,
+        "u_error": 1.305433981310259e-05,
+        "v_error": 1.7992026482067553e-05,
+        "volume": 0.0
+      },
+      "new": {
+        "S_error_psu": 0.0,
+        "S_inventory": 1.1102230246251565e-16,
+        "T_error_C": 0.0,
+        "T_inventory": 0.0,
+        "eta_error": 2.0391250444043466e-05,
+        "u_error": 1.305433981310259e-05,
+        "v_error": 1.7992026482067553e-05,
+        "volume": 0.0
+      },
+      "initial_arrays_equal": true,
+      "control_native_arrays_equal_historical": true
+    },
+    "thermal-wind": {
+      "old": {
+        "S_error_psu": 6.803831391985446e-06,
+        "S_inventory": 2.220446049250313e-16,
+        "T_error_C": 3.3596122021637066e-05,
+        "T_inventory": 3.1736835381934725e-12,
+        "eta_error": 0.0006686848134656228,
+        "u_error": 0.00030821695782276516,
+        "v_error": 0.00019699138795833252,
+        "volume": 2.220446049250313e-16
+      },
+      "new": {
+        "S_error_psu": 9.236771145735105e-07,
+        "S_inventory": 2.220446049250313e-16,
+        "T_error_C": 2.1749869944137267e-05,
+        "T_inventory": 3.181788166273236e-12,
+        "eta_error": 0.0006686850872288622,
+        "u_error": 0.0003082176199005299,
+        "v_error": 0.0001969915232158899,
+        "volume": 2.220446049250313e-16
+      },
+      "initial_arrays_equal": true,
+      "control_native_arrays_equal_historical": true
+    }
+  },
+  "unchanged_wave_and_rotating_native_arrays": {
+    "wave-nx64-dt25": true,
+    "wave-nx128-dt25": true,
+    "wave-nx256-dt25": true,
+    "wave-nx256-dt50": true,
+    "wave-nx256-dt100": true,
+    "rotating-coarse": true,
+    "rotating-medium": true,
+    "rotating-fine": true
+  },
+  "thermal_error_reductions": {
+    "T_error_C": 1.54465852476019,
+    "S_error_psu": 7.366027895069133
+  },
+  "diagnostic": [
+    {
+      "nx": 16,
+      "relative_derivative_error": 0.0255046415955681,
+      "measured_symbol_m_inverse": 6.122934917841431e-05,
+      "second_order_symbol_m_inverse": 6.122934917841435e-05,
+      "continuous_k_m_inverse": 6.283185307179586e-05
+    },
+    {
+      "nx": 32,
+      "relative_derivative_error": 0.0064131488557954,
+      "measured_symbol_m_inverse": 6.242890304516097e-05,
+      "second_order_symbol_m_inverse": 6.242890304516103e-05,
+      "continuous_k_m_inverse": 6.283185307179586e-05
+    },
+    {
+      "nx": 64,
+      "relative_derivative_error": 0.0016056069643824626,
+      "measured_symbol_m_inverse": 6.273096981091872e-05,
+      "second_order_symbol_m_inverse": 6.273096981091878e-05,
+      "continuous_k_m_inverse": 6.283185307179586e-05
+    }
+  ],
+  "decomposition_before": {
+    "base_T_rms_C": 2.1453232359841345e-05,
+    "neutral_T_rms_C": 2.5854559289546852e-05,
+    "cross_C2": 1.5227226829194948e-19,
+    "total_T_rms_C": 3.359612202166062e-05,
+    "squared_decomposition_residual_C2": -1.0484466596996835e-25,
+    "scope": "Field decomposition with identical score weights; not separate causal error estimates"
+  },
+  "decomposition_after": {
+    "base_T_rms_C": 2.1464783526867875e-05,
+    "neutral_T_rms_C": 3.5099730353800196e-06,
+    "cross_C2": 2.252462004399274e-20,
+    "total_T_rms_C": 2.1749869944138006e-05,
+    "squared_decomposition_residual_C2": -3.7984189171539083e-26,
+    "scope": "Field decomposition with identical score weights; not separate causal error estimates"
+  },
+  "cpu_checks_passed": 256,
+  "wheel_sha256": "901ca4f6050a97553b0106dad6ad9e7bd67071b52979d04600303a866c4a1812",
+  "evidence_sha256": {
+    "diagnostic-plan.txt": "c951740af761960faf730b08cd7796cc222802b527f0fb1281e3c09b138c6412",
+    "decomposition-plan.txt": "5fcf0037d8bcaf750065d7e194e03329919c39f4205199604dd8a792bb9909da",
+    "native-plan.txt": "80096ce44e3f5686226d3746486682e13a50cc67d6c836246cc198652f66e167",
+    "diagnostic.json": "57e5a5cdbd20a9d2abc7aa9891465c43fe9540102aa5155cfb47243464906077",
+    "decomposition.json": "a941c2ff796ce60ec43edcd70215ead864b395cbdf90879a0a3e1a4c464c0cce",
+    "decomposition-after.json": "45d9b315d42a41f572f2a7a01f59c7e6da880b0d9e041329d97bd7d9b0bcb617",
+    "tests-01.log": "257db711035ffa8eace9d23a68af1e1c6edfeef720da9f8897b6741c038de61f"
+  },
+  "development_lineage": "PR61 data motivated the transport change. The uniform-flow symbol and variable-product controls are separate calculations but share the PDE and stencil assumptions. Original references and weights retained; this is development evidence, no industrial certification or speed ranking.",
+  "formal_output_root": "outputs/tracer-transport-20261011",
+  "industrial_qualified": false,
+  "performance_comparison": false,
+  "full_ci": {
+    "id": 38073467922,
+    "status": "success",
+    "includes": "full tests and MMS on functional commit"
+  }
+}
