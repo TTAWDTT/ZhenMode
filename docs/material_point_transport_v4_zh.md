@@ -21,3 +21,5 @@ Implementation refinement before native: failed affine control retained in contr
 计算改写：47细网格实际积分147.4586秒，454为9.5262秒，原pilot时间投影已撤销。新点原函数应用相同四点局部积分权重并反向累积，工作量随节点线性增长；实际顶行容量和predivision质量和/物理Fz0仍保留，内部与床面多项式门槛1e-14不变。140受影响控制通过；未来新本机pilot再决定时长，不先声称速度改善。新功能提交与完整CI/隔离native/source审查另绑定，47温标FAIL及0..7完成/8准备中断/9未执行始终保留。
 
 新增量/前缀计算方案的独立静态审查接受上述代数范围；真实rawflux=F*upwind时增量恒等式成立，generic调用不使用这个假设。这个阶段改变了核心源码，旧1D未改源码的桥不再成立；必须用新源身份独立核对/新的未使用1D与实际2D数据验证。原输出或旧CI都不能替代新功能的完整CI。
+
+区间余量修补：362源的1720pytest/MMS、十条原生和新1D通过，但未接触的实际二维RHS三档全部可行性false/alpha0，原声明allEulerintervalsfeasible门槛OPEN。误差/refinement通过来自fallback基准，不能当active-v4证书。仅对已经接触的失败24x23做定位，原基准全部满足原bounds且T_Euler>11.77，原求解alpha区间lo2.386e-14>hi−1.109e-14；数学等价的余量表达式结构性包含原先明确允许的零修正，得到lo0/hi−0，feasibletrue/alpha0，不添加epsilon或改变真实包络。新jointScalarBlend按LM=min(currentmin−q−low,allowance−low,0)、UM=max(currentmax−q−low,allowance−low,0)解相同约束，绝对floor交集、positive-lower-alpha与空区间拒绝仍保留。141本地控制和已接触场开发回归通过，独立实数代数审查接受；原3622DOPEN和所有旧失败保留，须新源码/真正CI/新的未用active非affine二维profile验证。

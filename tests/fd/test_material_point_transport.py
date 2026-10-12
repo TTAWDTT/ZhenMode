@@ -146,6 +146,21 @@ def test_shared_domain_blend_active_and_positive_lower_interval():
     assert float(alpha) == pytest.approx(2/3)
 
 
+def test_positive_baseline_always_has_feasible_zero_correction():
+    """The Euler envelope includes this valid baseline, even at tied bounds."""
+    rng = np.random.default_rng(20261013)
+    q = jnp.asarray(12+rng.normal(size=(2,3,17))*.2)
+    low = jnp.asarray(rng.uniform(-2e-7,2e-7,size=q.shape))
+    delta = jnp.asarray(rng.uniform(-1e-7,1e-7,size=q.shape))
+    p = SimpleNamespace(dt=12.5,adv_nsub=1,dz_iface=jnp.ones((1,1,16)))
+    mass = jnp.zeros((2,3,18))
+    alpha, feasible = jax.jit(lambda values,base,correction:
+                              joint_scalar_blend(values,base,correction,mass,p,minimum=0.))(q,low,delta)
+    assert np.min(np.asarray(q+p.dt*low)) > 0.
+    assert bool(feasible)
+    assert 0. <= float(alpha) <= 1.
+
+
 def test_affine_quarter_mode_rhs_and_joint_blend():
     nx, ny, n = 8, 32, 16
     grid = all_wet_grid(nx=nx, ny=ny, nz=n)

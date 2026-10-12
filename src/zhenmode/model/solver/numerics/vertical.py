@@ -188,17 +188,23 @@ def joint_scalar_blend(tracer, low_rate, delta_rate, mass_flux, p, minimum=None)
     if minimum is not None:
         surface = jnp.maximum(surface, minimum-tracer[..., 0])
     allowance = tracer[..., :1]-tracer+jnp.where(mass_flux[..., :1] > 0., surface[..., None], 0.)
-    lower = jnp.minimum(jnp.minimum(jnp.min(tracer, -1, keepdims=True)-tracer, allowance), low)
-    upper = jnp.maximum(jnp.maximum(jnp.max(tracer, -1, keepdims=True)-tracer, allowance), low)
+    # Express the same bounds as margins around the baseline increment. The
+    # literal zero represents its deliberate inclusion in the envelope. Forming
+    # a bound including low and then subtracting low can produce wrong-sign
+    # roundoff under fusion, falsely rejecting the valid zero correction.
+    lower = jnp.minimum(jnp.minimum(jnp.min(tracer, -1, keepdims=True)-tracer-low,
+                                    allowance-low), 0.)
+    upper = jnp.maximum(jnp.maximum(jnp.max(tracer, -1, keepdims=True)-tracer-low,
+                                    allowance-low), 0.)
     if minimum is not None:
-        lower = jnp.maximum(lower, minimum-tracer)
+        lower = jnp.maximum(lower, minimum-tracer-low)
     denominator = jnp.where(delta != 0., delta, 1.)
-    one, two = (lower-low)/denominator, (upper-low)/denominator
+    one, two = lower/denominator, upper/denominator
     lower_alpha = jnp.where(delta != 0., jnp.minimum(one, two), 0.)
     upper_alpha = jnp.where(delta != 0., jnp.maximum(one, two), 1.)
     lo, hi = jnp.maximum(0., jnp.max(lower_alpha)), jnp.minimum(1., jnp.min(upper_alpha))
     feasible = ((lo <= hi) & jnp.all(lower <= upper)
-                & jnp.all(jnp.where(delta == 0., (low >= lower) & (low <= upper), True)))
+                & jnp.all(jnp.where(delta == 0., (lower <= 0.) & (upper >= 0.), True)))
     return jnp.where(feasible, jnp.clip(hi, 0., 1.), 0.), feasible
 
 
