@@ -18,7 +18,7 @@ from zhenmode.model.solver.dynamics.transport import (
     _vertical_transport_iface,
 )
 from zhenmode.model.solver.factory import make_solver_global
-from zhenmode.model.solver.numerics.column import cubic_reverse_primitive
+from zhenmode.model.solver.numerics.column import cubic_reverse_primitive, point_mass_integral
 from zhenmode.model.solver.numerics.vertical import joint_scalar_blend, point_vertical_antiflux
 
 
@@ -41,6 +41,21 @@ def test_interior_cubic_primitive_and_original_surface(n):
                                    rtol=0., atol=1e-14*max(1., np.max(abs(exact))))
     # Do not describe the deliberately retained top trapezoid row as cubic.
     assert abs((primitive@d**2)[0]-100.**3/3) > 1.
+
+
+def test_factory_uses_actual_capacity_and_predivision_surface_mass():
+    grid, (_, _, _, p, _) = case()
+    d = -grid.z
+    original = np.diff(np.r_[0., .5*(d[:-1]+d[1:]), d[-1]])
+    np.testing.assert_array_equal(p.tracer_point_primitive[0], original)
+    rng = np.random.default_rng(20261012)
+    mass = jnp.asarray(rng.normal(size=(8,8,16))*.003)
+    evaluated = jax.jit(lambda m: point_mass_integral(m, p))(mass)
+    np.testing.assert_array_equal(evaluated[..., 0], jnp.sum(mass, axis=-1))
+    ideal = cubic_reverse_primitive(16, float(d[1]-d[0]))
+    np.testing.assert_array_equal(p.tracer_point_primitive[1:], ideal[1:])
+    # This input genuinely distinguishes the actual capacity from ideal spacing.
+    assert not np.array_equal(ideal[0], original)
 
 
 def fields(grid):

@@ -638,6 +638,12 @@ def make_solver_global(grid, physics, dt, forcing=None,
                                 if vertical_tracer_scheme == 'material_point_v4' else None),
     )
 
+    if params.tracer_point_primitive is not None:
+        # np.linspace capacities differ by ulps from ideal uniform spacing.
+        # Use the same actual capacity object as the transport/continuity owner.
+        params = params._replace(tracer_point_primitive=params.tracer_point_primitive.at[0].set(
+            params.dz_node.reshape(-1)))
+
     if projection_preconditioner == 'jacobi':
         diagonal = _column_projection_diagonal(params)
         params = params._replace(projection_inv_diagonal=1. / jnp.where(diagonal > 0., diagonal, 1.))

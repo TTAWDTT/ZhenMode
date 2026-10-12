@@ -34,3 +34,9 @@ def cubic_reverse_primitive(nodes, spacing):
     primitive[0, [0, -1]] *= .5
     primitive[-1] = 0.
     return primitive
+
+
+def point_mass_integral(mass, params):
+    """Point inverse with the actual, pre-division surface mass operand."""
+    result = jnp.einsum('kl,...l->...k', params.tracer_point_primitive, mass/params.dz_node)
+    return result.at[..., 0].set(jnp.sum(mass, axis=-1))

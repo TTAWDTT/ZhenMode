@@ -2,7 +2,7 @@
 
 from zhenmode.model.solver.numerics.backend import jnp
 from zhenmode.model.solver.numerics.channel import channel_face_velocities, channel_tracer_fluxes
-from zhenmode.model.solver.numerics.column import column_mean
+from zhenmode.model.solver.numerics.column import column_mean, point_mass_integral
 from zhenmode.model.solver.numerics.contacts import (
     contact_divergence,
     contact_material_derivative,
@@ -291,7 +291,7 @@ def _material_point_scalar_rate(T, Fz, mass_faces, shifted_faces, p, minimum=Non
     for axis, mass, base in zip((0, 1), mass_faces, shifted_faces, strict=True):
         face_q = .5*(shifted+jnp.roll(shifted, -1, axis=axis))
         gradient = physical_tracer_gradient(face_q, p)
-        point_integral = jnp.einsum('kl,...l->...k', primitive, mass/h)
+        point_integral = point_mass_integral(mass, p)
         moment = face_q[..., 0]*jnp.sum(mass, -1)+jnp.sum(h*gradient*point_integral, -1)
         magnitude = jnp.sum(jnp.abs(mass), -1, keepdims=True)
         anti_faces.append(jnp.abs(mass)/jnp.where(magnitude > 0., magnitude, 1.)
