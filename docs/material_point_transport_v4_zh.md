@@ -43,3 +43,6 @@ material_point_gradient_scheme默认minmod_v1，fourth_uniform_v1可选分支只
 依据是开发制造场正负振幅及无示踪波背景对照：初诊断漏水平flux层容量，单位错误已拒绝并保留；按真实生产fx*h/fy*h入口修正后，独立保存数组读回确认低阶倾向逐位相同，新的目标/最终倾向奇振幅偏差降至浮点取消量级。32层偶振幅误差略增加，不能宣称总误差或任意流场改善。外部原型与生产新分支需分别验收；候选动量沿用dual_face_v1，未把排名失败的point动量组合悄悄纳入。
 
 新解析degree0..4/实际scalar常量、反质量负例、温标与库存、低阶隔离、合同/unsupported和奇振幅控制加入现有受影响集合，共170项至少各一次通过。首测试执行168PASS/2软件测试FAIL保留，修JAX广播和移共享fixture后只受影响48项重验PASS；未放宽阈值。生产70d4085已完成133个包内Python文件身份、1750pytest/MMS、冻结后新1D与实际ACTIVE2D及10条原生/独立读回；六组分数较3c8均小幅降低，且低于两份冻结baseline，仅本固定面板当前最佳，全物理/全球SOTA仍OPEN。原3c8完整记录及所有历史失败保持，见[完整70报告](material_point_gradient_70_results_zh.md)。
+
+
+可选 `momentum_tangent_filter_scheme=gram_fourth_v1` 只替换切向动量平流倾向的末次滤波，默认 `binomial_v1` 保留原路径；法向动量、GM、示踪量与体积通量保持原算子。它使用固定均匀网格上的 `I−RᵀR/16`，其中 R 为纬向二阶差分，保留常量、仿射剖面和采样均值。固定均匀权重下的倾向范数不增不能推出动态体积下的动能、完整时间积分稳定性、正性或 TVD；纬向 Nyquist 也不保证完全消去。当前仅限 float64、完整湿均匀 Cartesian 闭合通道、material_point_v4/fourth_uniform_v1、cubic_uniform_v1、integrated_reference_v1、nodal_capacity、unsplit legacy 和 dual_face_v1 动量配置。该配置新增参数字段可能改变重启元数据指纹；旧默认的数值回放不等于旧重启元数据兼容。新配置仍须独立科学、原生和软件验收。

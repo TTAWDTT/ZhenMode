@@ -69,14 +69,14 @@ def validate_contract(c):
     if c.get("schema") == DEVELOPMENT_SCHEMA:
         if not isinstance(c.get("development"), dict):
             raise ValueError("development declaration must be an object")
-        expected = development_contract(c.get("case"), c.get("control"), c["development"].get("vertical_tracer_scheme"), c["development"].get("problem"), c["development"].get("hydrostatic_integral_scheme", "trapezoidal"), c["development"].get("column_mean_scheme", "nodal_capacity"), c["development"].get("tracer_flux_arithmetic", "legacy"), c["development"].get("momentum_vertical_velocity_scheme", "dual_face_v1"), c["development"].get("material_point_gradient_scheme", "minmod_v1"))
+        expected = development_contract(c.get("case"), c.get("control"), c["development"].get("vertical_tracer_scheme"), c["development"].get("problem"), c["development"].get("hydrostatic_integral_scheme", "trapezoidal"), c["development"].get("column_mean_scheme", "nodal_capacity"), c["development"].get("tracer_flux_arithmetic", "legacy"), c["development"].get("momentum_vertical_velocity_scheme", "dual_face_v1"), c["development"].get("material_point_gradient_scheme", "minmod_v1"), c["development"].get("momentum_tangent_filter_scheme", "binomial_v1"))
     else:
         expected = contract(c.get("frozen_model"), c.get("case"), c.get("control"))
     if digest(c) != digest(expected):
         raise ValueError("internal-wave contract differs from frozen definition")
 
 
-def development_contract(profile="primary", control="main", scheme="muscl_nodal_v1", problem="internal-wave", integral="trapezoidal", mean="nodal_capacity", arithmetic="legacy", momentum="dual_face_v1", gradient="minmod_v1"):
+def development_contract(profile="primary", control="main", scheme="muscl_nodal_v1", problem="internal-wave", integral="trapezoidal", mean="nodal_capacity", arithmetic="legacy", momentum="dual_face_v1", gradient="minmod_v1", tangent_filter="binomial_v1"):
     """New development experiment, never a replacement for the frozen holdout."""
     if scheme not in ("donor_cell", "muscl_nodal_v1", "muscl_endpoint_v2", "muscl_band_v3", "material_point_v4"):
         raise ValueError("unknown vertical development scheme")
@@ -92,6 +92,12 @@ def development_contract(profile="primary", control="main", scheme="muscl_nodal_
         raise ValueError("unknown material-point gradient scheme")
     if gradient != "minmod_v1" and scheme != "material_point_v4":
         raise ValueError("fourth_uniform_v1 gradient requires material_point_v4")
+    if tangent_filter not in ("binomial_v1", "gram_fourth_v1"):
+        raise ValueError("unknown momentum tangent-filter scheme")
+    if tangent_filter != "binomial_v1" and (scheme != "material_point_v4" or gradient != "fourth_uniform_v1"
+            or integral != "cubic_uniform_v1" or mean != "nodal_capacity"
+            or arithmetic != "integrated_reference_v1" or momentum != "dual_face_v1"):
+        raise ValueError("gram_fourth_v1 requires the qualified material-point fourth-gradient dual-face family")
     if problem == "internal-wave":
         c = contract("zhenmode", profile, control)
     elif problem == "thermal-wind" and profile == "coarse" and control == "main":
@@ -121,6 +127,9 @@ def development_contract(profile="primary", control="main", scheme="muscl_nodal_
     if gradient != "minmod_v1":
         c["ocean_options"]["material_point_gradient_scheme"] = gradient
         c["development"]["material_point_gradient_scheme"] = gradient
+    if tangent_filter != "binomial_v1":
+        c["ocean_options"]["momentum_tangent_filter_scheme"] = tangent_filter
+        c["development"]["momentum_tangent_filter_scheme"] = tangent_filter
     return c
 
 

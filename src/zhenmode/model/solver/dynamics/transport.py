@@ -17,6 +17,7 @@ from zhenmode.model.solver.numerics.horizontal import (
     _dealias_h_fd,
     _divergence_h,
     _face_thickness,
+    _filter_tangent_gram_fd,
     _gradient_face_gated_3d,
 )
 from zhenmode.model.solver.numerics.vertical import (
@@ -184,7 +185,10 @@ def _advection_flux_form(u, v, w, p):
         dv_dx, dv_dy = _gradient_face_gated_3d(v, p, normal=closed_faces)
         adv_u = -(u * du_dx + v * du_dy + w * du_dz)
         adv_v = -(u * dv_dx + v * dv_dy + w * dv_dz)
-    adv_u = _dealias_h_fd(adv_u, p)
+    if getattr(p, 'momentum_tangent_filter_scheme', 'binomial_v1') == 'gram_fourth_v1':
+        adv_u = _filter_tangent_gram_fd(adv_u, p)
+    else:
+        adv_u = _dealias_h_fd(adv_u, p)
     adv_v = _dealias_h_fd(adv_v, p, normal=closed_faces)
     return adv_u * p.wet_mask_z, adv_v * p.wet_mask_z
 

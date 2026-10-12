@@ -304,6 +304,30 @@ def _dealias_h_fd(field, p, *, normal=False):
             + 4.0 * fp[:, 3:-1] + fp[:, 4:]) / 16.0
     return f_sm
 
+def _filter_tangent_gram_fd(field, p):
+    """Optional fixed-uniform tangent tendency filter, P_x (I - R.T R/16).
+
+    R is the latitude second difference without prescribed tangent wall parity.
+    Constants, affine profiles and the sampled mean survive; the fixed uniform
+    L2 norm contracts. Negative entries and TV growth are possible. These are
+    tendency properties, not dynamic-volume or coupled time-step stability.
+    Only momentum adv_u opts in; normal momentum and GM keep their old filter.
+    """
+    if field.shape[1] < 4:
+        raise ValueError('gram_fourth_v1 requires at least four latitude samples')
+    spectrum = jnp.fft.fft(field, axis=0) * p.dealias_lon_mask
+    values = jnp.real(jnp.fft.ifft(spectrum, axis=0))
+    residual = (values[:, 2:] - values[:, 1:-1]) - (values[:, 1:-1] - values[:, :-2])
+    padding = [(0, 0)] * values.ndim
+    padding[1] = (0, 2)
+    adjoint = jnp.pad(residual, padding)
+    padding[1] = (1, 1)
+    adjoint = adjoint - 2 * jnp.pad(residual, padding)
+    padding[1] = (2, 0)
+    adjoint = adjoint + jnp.pad(residual, padding)
+    return values - adjoint / 16
+
+
 def _gradient_face_gated_3d(field, p, *, normal=False):
     """Face-gated horizontal gradient for advection: d/dx, d/dy with each face
     difference zeroed at every wet/ghost (or wet/dry) interface.

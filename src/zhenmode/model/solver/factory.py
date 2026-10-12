@@ -64,7 +64,8 @@ def make_solver_global(grid, physics, dt, forcing=None,
                        column_mean_scheme='nodal_capacity',
                        tracer_flux_arithmetic='legacy',
                        momentum_vertical_velocity_scheme='dual_face_v1',
-                       material_point_gradient_scheme='minmod_v1'):
+                       material_point_gradient_scheme='minmod_v1',
+                       momentum_tangent_filter_scheme='binomial_v1'):
     """Create a JIT-compiled global FD ocean solver.
 
     Key properties:
@@ -235,6 +236,23 @@ def make_solver_global(grid, physics, dt, forcing=None,
                 or mode_split or process_time_scheme != 'legacy'
                 or project_adv_vel or dtype != 'float64'):
             raise ValueError('point_primitive_v1 momentum requires the float64 unsplit integrated fourth-order nodal-capacity channel')
+    if momentum_tangent_filter_scheme not in ('binomial_v1', 'gram_fourth_v1'):
+        raise ValueError('unknown momentum_tangent_filter_scheme')
+    if momentum_tangent_filter_scheme == 'gram_fourth_v1':
+        if (vertical_tracer_scheme != 'material_point_v4'
+                or material_point_gradient_scheme != 'fourth_uniform_v1'
+                or tracer_flux_arithmetic != 'integrated_reference_v1'
+                or column_mean_scheme != 'nodal_capacity'
+                or hydrostatic_integral_scheme != 'cubic_uniform_v1'
+                or momentum_vertical_velocity_scheme != 'dual_face_v1'
+                or pressure_continuity_scheme != 'centered_fourth'
+                or external_mode_scheme != 'symmetric'
+                or meridional_boundary_scheme != 'closed_faces'
+                or mode_split or process_time_scheme != 'legacy'
+                or project_adv_vel or dtype != 'float64' or grid.ny < 4
+                or not np.all(np.asarray(grid.cos_lat) == 1.)
+                or not np.all(np.asarray(grid.dx_2d) == np.asarray(grid.dx_2d)[0, 0])):
+            raise ValueError('gram_fourth_v1 tangent filter requires the qualified float64 uniform integrated material-point closed channel with dual-face momentum')
     if density_rotation_scheme not in ('split_sources', 'joint_shear'):
         raise ValueError('unknown density_rotation_scheme')
     if density_rotation_scheme == 'joint_shear':
@@ -652,6 +670,7 @@ def make_solver_global(grid, physics, dt, forcing=None,
         tracer_flux_arithmetic=tracer_flux_arithmetic,
         momentum_vertical_velocity_scheme=momentum_vertical_velocity_scheme,
         material_point_gradient_scheme=material_point_gradient_scheme,
+        momentum_tangent_filter_scheme=momentum_tangent_filter_scheme,
         tracer_point_primitive=(jnp.asarray(cubic_reverse_primitive(grid.nz, abs(float(grid.z[1]-grid.z[0]))))
                                 if vertical_tracer_scheme == 'material_point_v4' else None),
     )
