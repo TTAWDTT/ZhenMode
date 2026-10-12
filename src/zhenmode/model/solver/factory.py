@@ -63,7 +63,8 @@ def make_solver_global(grid, physics, dt, forcing=None,
                        hydrostatic_integral_scheme='trapezoidal',
                        column_mean_scheme='nodal_capacity',
                        tracer_flux_arithmetic='legacy',
-                       momentum_vertical_velocity_scheme='dual_face_v1'):
+                       momentum_vertical_velocity_scheme='dual_face_v1',
+                       material_point_gradient_scheme='minmod_v1'):
     """Create a JIT-compiled global FD ocean solver.
 
     Key properties:
@@ -220,6 +221,11 @@ def make_solver_global(grid, physics, dt, forcing=None,
                 or tracer_transport_scheme != 'centered_second'
                 or monotone_adv or fct_adv or project_adv_vel):
             raise ValueError('material_point_v4 requires integrated arithmetic and the un-limited closed fourth-order nodal-capacity channel')
+    if material_point_gradient_scheme not in ('minmod_v1', 'fourth_uniform_v1'):
+        raise ValueError('unknown material_point_gradient_scheme')
+    if material_point_gradient_scheme == 'fourth_uniform_v1':
+        if vertical_tracer_scheme != 'material_point_v4' or dtype != 'float64':
+            raise ValueError('fourth_uniform_v1 gradient requires float64 material_point_v4')
     if momentum_vertical_velocity_scheme not in ('dual_face_v1', 'point_primitive_v1'):
         raise ValueError('unknown momentum_vertical_velocity_scheme')
     if momentum_vertical_velocity_scheme == 'point_primitive_v1':
@@ -645,6 +651,7 @@ def make_solver_global(grid, physics, dt, forcing=None,
                              if column_mean_scheme == 'cubic_consistent_v1' else None),
         tracer_flux_arithmetic=tracer_flux_arithmetic,
         momentum_vertical_velocity_scheme=momentum_vertical_velocity_scheme,
+        material_point_gradient_scheme=material_point_gradient_scheme,
         tracer_point_primitive=(jnp.asarray(cubic_reverse_primitive(grid.nz, abs(float(grid.z[1]-grid.z[0]))))
                                 if vertical_tracer_scheme == 'material_point_v4' else None),
     )

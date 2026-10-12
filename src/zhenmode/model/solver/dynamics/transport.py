@@ -24,6 +24,7 @@ from zhenmode.model.solver.numerics.vertical import (
     _d_dz,
     _fill_ghost_bottom,
     _vertical_tracer_face_values,
+    fourth_uniform_tracer_gradient,
     integrated_reference_scalar_rate,
     joint_scalar_blend,
     physical_tracer_gradient,
@@ -287,6 +288,9 @@ def _material_point_scalar_rate(T, Fz, mass_faces, shifted_faces, p, minimum=Non
     target. General fields and disconnected spans retain projection residuals.
     Both horizontal and vertical anti-fluxes use one domain-wide Euler blend.
     """
+    gradient_operator = (fourth_uniform_tracer_gradient
+                         if getattr(p, 'material_point_gradient_scheme', 'minmod_v1') == 'fourth_uniform_v1'
+                         else physical_tracer_gradient)
     reference = T.reshape(-1)[0]
     shifted = T-reference
     h = p.dz_node
@@ -298,7 +302,7 @@ def _material_point_scalar_rate(T, Fz, mass_faces, shifted_faces, p, minimum=Non
     anti_faces = []
     for axis, mass, base in zip((0, 1), mass_faces, shifted_faces, strict=True):
         face_q = .5*(shifted+jnp.roll(shifted, -1, axis=axis))
-        gradient = physical_tracer_gradient(face_q, p)
+        gradient = gradient_operator(face_q, p)
         point_integral = point_mass_integral(mass, p)
         moment = face_q[..., 0]*jnp.sum(mass, -1)+jnp.sum(h*gradient*point_integral, -1)
         magnitude = jnp.sum(jnp.abs(mass), -1, keepdims=True)
@@ -311,7 +315,7 @@ def _material_point_scalar_rate(T, Fz, mass_faces, shifted_faces, p, minimum=Non
     point_w = cubic_point_integral(vertical_divergence, p)
     point_w = point_w.at[..., 0].set(Fz[..., 0]).at[..., -1].set(0.)
     desired = (-(shifted_numerator-shifted*mass_numerator)/h
-               -point_w*physical_tracer_gradient(shifted, p)-T*mass_residual/h)
+               -point_w*gradient_operator(shifted, p)-T*mass_residual/h)
     anti_vertical = point_vertical_antiflux(desired-low_rate, horizontal_anti, Fz, p)
     delta = -(horizontal_anti+(anti_vertical[..., 1:]-anti_vertical[..., :-1]))/h
     blend, feasible = joint_scalar_blend(T, low_rate, delta, Fz, p, minimum)

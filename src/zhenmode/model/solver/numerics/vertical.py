@@ -135,6 +135,33 @@ def _fill_ghost_bottom(u, p):
     return jnp.where(kk >= kbot, u_bot, u)
 
 
+def fourth_uniform_tracer_gradient(tracer, p):
+    """Fourth-order physical-depth gradient for qualified uniform wet nodes.
+
+    Local concentration differences retain exact constant zero. This unlimited
+    target is used only by the opt-in material-point correction; its conservative
+    baseline keeps the original minmod slopes and shared Euler bounds.
+    """
+    spacing = p.dz_iface[..., :1]
+
+    def endpoint(values):
+        first = (48*(values[..., 1:2]-values[..., :1])
+                 -36*(values[..., 2:3]-values[..., :1])
+                 +16*(values[..., 3:4]-values[..., :1])
+                 -3*(values[..., 4:5]-values[..., :1]))/(12*spacing)
+        second = (-3*(values[..., :1]-values[..., 1:2])
+                  +18*(values[..., 2:3]-values[..., 1:2])
+                  -6*(values[..., 3:4]-values[..., 1:2])
+                  +(values[..., 4:5]-values[..., 1:2]))/(12*spacing)
+        return first, second
+
+    first, second = endpoint(tracer)
+    last, penultimate = endpoint(tracer[..., ::-1])
+    interior = (8*(tracer[..., 3:-1]-tracer[..., 1:-3])
+                -(tracer[..., 4:]-tracer[..., :-4]))/(12*spacing)
+    return jnp.concatenate((first, second, interior, -penultimate, -last), axis=-1)
+
+
 def physical_tracer_gradient(tracer, p):
     """Minmod physical-depth slopes with one-sided endpoint secants."""
     secant = (tracer[..., 1:]-tracer[..., :-1])/p.dz_iface

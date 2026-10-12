@@ -34,3 +34,12 @@ Implementation refinement before native: failed affine control retained in contr
 新增参数字段改变参数fingerprint；旧默认数值回放检查不等于旧checkpoint参数元数据兼容。显式point选项也改变factory同owner的w诊断，原Fz/tracer闭合未变。
 
 严格zero控制第一次对名义u=.01均匀流要求w逐位0而失败，日志保留。独立诊断确认实际Nm最大3.20731e-21 m/s、Fz/旧w/新w最大3.33992e-20m/s，所以该输入不满足实际离散散度为0的前提。没有改物理代码或阈值；真zero操作数u=v=0保持原逐位0检查，另加非零均匀流实际表面残差−Fz0与床面0的精确归属控制。名义连续场常量流不承诺离散w逐位零，完整质量残差不剪除。
+
+
+## 可选物理点梯度（尚待原生晋级验收）
+
+material_point_gradient_scheme默认minmod_v1，fourth_uniform_v1可选分支只用于material_point_v4的目标点值倾向与水平柱矩。五点中心及两端一侧四阶导数用局部浓度差构造，常量严格为0；工厂限定float64及原全湿均匀物理端点≥6通道。低阶muscl_band_v3基准继续使用原minmod梯度；全域Euler区间、实际质量残差、停滞面和端点通量归属保留。参数字段新增仍不认证旧checkpoint指纹兼容。
+
+依据是开发制造场正负振幅及无示踪波背景对照：初诊断漏水平flux层容量，单位错误已拒绝并保留；按真实生产fx*h/fy*h入口修正后，独立保存数组读回确认低阶倾向逐位相同，新的目标/最终倾向奇振幅偏差降至浮点取消量级。32层偶振幅误差略增加，不能宣称总误差或任意流场改善。外部原型与生产新分支需分别验收；候选动量沿用dual_face_v1，未把排名失败的point动量组合悄悄纳入。
+
+新解析degree0..4/实际scalar常量、反质量负例、温标与库存、低阶隔离、合同/unsupported和奇振幅控制加入现有受影响集合，共170项至少各一次通过。首测试执行168PASS/2软件测试FAIL保留，修JAX广播和移共享fixture后只受影响48项重验PASS；未放宽阈值。后续必须新sourcefreeze/133包/完整pytest-MMS/独立新控制及原生pilot，原3c8最佳和所有历史失败保持。

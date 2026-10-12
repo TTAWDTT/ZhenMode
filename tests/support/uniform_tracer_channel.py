@@ -2,6 +2,7 @@
 
 from dataclasses import replace
 
+import jax.numpy as jnp
 import numpy as np
 
 from tests.support.grid import all_wet_grid
@@ -26,3 +27,13 @@ def column_case(**changes):
                    hydrostatic_surface_scheme='linear_density', hydrostatic_integral_scheme='cubic_uniform_v1',
                    column_mean_scheme='cubic_consistent_v1', vertical_tracer_scheme='muscl_band_v3') | changes
     return grid, make_solver_global(grid, physics, 12.5, **options)
+
+
+def transport_fields(grid):
+    x = np.arange(grid.nx)[:, None, None]*2*np.pi/grid.nx
+    y = (np.arange(grid.ny)[None, :, None]+.5)*np.pi/grid.ny
+    d = -grid.z[None, None, :]
+    u = jnp.asarray(.002*np.sin(x)*np.cos(d*np.pi/100)+np.zeros((1, grid.ny, 1)))
+    v = jnp.asarray(.003*np.sin(y)*np.cos(d*np.pi/100)+np.zeros((grid.nx, 1, 1)))
+    T = jnp.asarray(15.-.02*d+.001*np.cos(x)*np.cos(y)*np.sin(d*np.pi/100))
+    return u, v, T

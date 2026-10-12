@@ -9,6 +9,7 @@ import pytest
 
 from tests.support.grid import all_wet_grid
 from tests.support.uniform_tracer_channel import column_case
+from tests.support.uniform_tracer_channel import transport_fields as fields
 from zhenmode.benchmarks.internal_wave import development_contract
 from zhenmode.model.config import PhysicsConfig
 from zhenmode.model.solver.dynamics.transport import (
@@ -77,14 +78,6 @@ def test_linear_work_primitive_against_independent_polynomial_integrals(n):
                                    atol=1e-14*max(1.,np.max(abs(exact))))
 
 
-def fields(grid):
-    x = np.arange(grid.nx)[:, None, None]*2*np.pi/grid.nx
-    y = (np.arange(grid.ny)[None, :, None]+.5)*np.pi/grid.ny
-    d = -grid.z[None, None, :]
-    u = jnp.asarray(.002*np.sin(x)*np.cos(d*np.pi/100)+np.zeros((1, grid.ny, 1)))
-    v = jnp.asarray(.003*np.sin(y)*np.cos(d*np.pi/100)+np.zeros((grid.nx, 1, 1)))
-    T = jnp.asarray(15.-.02*d+.001*np.cos(x)*np.cos(y)*np.sin(d*np.pi/100))
-    return u, v, T
 
 
 def test_actual_owner_constant_bad_mass_and_gauge_inventory():
