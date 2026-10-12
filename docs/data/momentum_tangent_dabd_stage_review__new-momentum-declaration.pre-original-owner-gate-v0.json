@@ -1,0 +1,18 @@
+{
+ "source":"dabd48abd898c20e0471a5ab9fc18e9b61cfa96d",
+ "worktree":"D:/CodexWorktrees/thermal-full-scan/ocean-solver",
+ "installed":"../installed",
+ "scope":"NEW finite instantaneous actual momentum entrypoint after freeze; no native time step, no whole-model/physics/globalSOTA qualification",
+ "grids":[{"Nx":12,"Ny":14,"Nz":9},{"Nx":24,"Ny":28,"Nz":9},{"Nx":48,"Ny":56,"Nz":9}],
+ "geometry":{"H":80.0,"Lx":14000.0,"Ly":22000.0,"dt":9.0,"fullywet":true,"normal_walls":"closed_halfgrid_odd"},
+ "physics":{"f":0,"eta":0,"T":15,"S":35,"all_diffusion_drag_wind_heat":0},
+ "candidate":{"column_geometry":"nodal_dual_v1","external_mode_scheme":"symmetric","meridional_boundary_scheme":"closed_faces","pressure_continuity_scheme":"centered_fourth","density_rotation_scheme":"joint_shear","hydrostatic_surface_scheme":"linear_density","hydrostatic_integral_scheme":"cubic_uniform_v1","column_mean_scheme":"nodal_capacity","vertical_tracer_scheme":"material_point_v4","tracer_flux_arithmetic":"integrated_reference_v1","material_point_gradient_scheme":"fourth_uniform_v1","momentum_vertical_velocity_scheme":"dual_face_v1","momentum_tangent_filter_scheme":"gram_fourth_v1","mode_split":false,"process_time_scheme":"legacy","project_adv_vel":false},
+ "field":{"A":[30.0,-30.0],"U0":0.012,"a":"2pi/Lx","b":"pi/Ly","Psi":"A sin(a*x) sin(b*y)","u":"U0+A*b*sin(a*x)*cos(b*y)","v":"-A*a*cos(a*x)*sin(b*y)","vertical":"constant u,v on every physical depth node, hence actual uz/vz must be zero"},
+ "truth":{"Ru":"-U0*A*a*b*cos(a*x)cos(b*y)-A^2*a*b^2*sin(a*x)cos(a*x)","Rv":"-U0*A*a^2*sin(a*x)sin(b*y)-A^2*a^2*b*sin(b*y)cos(b*y)"},
+ "gates":{"constant_owner_max":1e-17,"actual_owner_max":2e-12,"normal_max":2e-12,"matrix_scale_eps":128,"norm_sum_scale_eps":512,"finest_combined_L1_relative_max":0.05,"each_refinement_min":1.25,"every_grid_both_sign_uRMS":"strictly below old binomial","h_uniform_positive_static":"exact","actual_uz_vz":"exact zero","actual_w_scope":"saved descriptive upperdualface; zero vertical gradients remove its contribution, not a repair claim"},
+ "controls_before_data":["n4 direct Gram matrix/T1/null/constant/affine/e0; false1/4 exact trap","original n4 normal Bn on basis and constant; unchanged not normalconstantpreservation","actual tangent constant flow U0/v0 zeroowner","analytic comparator truth==truth PASS and -truth gives relative2 FAIL before production errors","hand product-rule derivative truth equals independent simplified closed truth","133 actual source Git/archive/build/wheel/installed identities and conservative default contract route"],
+ "REUSED":{"source":"70d408583aa99db63e49d958d89dcaccad273f0e","old_declaration":"../../material-point-gradient-v1/review/source-math-declaration.json","objects":"unchanged scalar/Fz/w/pressure/globaldefaulthelper AST and default-normalized advection; old scalar constant/gauge/stock/mass controls explicitly reused if exact AST equality succeeds","not_new_runs":true},
+ "timing":"After root static code approval: coarsest grid same production callset A+ and A- two timing repeats, no oracle error computation/display. Source identity separately read-only. Measured conservative plan then one fixed 3-grid/both-sign complete; no rerun completed comparison indices, no fit/data-based selection.",
+ "resources":{"cpu":1,"wall_seconds":180,"memory_mib":4096,"GPU":false},
+ "lineage":"New chosen field/grid/closed-form reference fixed before observations; verifier code authored independently, shares frozen installed PDE/JAX and declared mathematical conventions. Manufacture becomes contacted after finite comparison and is not a holdout. New fullCI/native/root score gates remain separate."
+}

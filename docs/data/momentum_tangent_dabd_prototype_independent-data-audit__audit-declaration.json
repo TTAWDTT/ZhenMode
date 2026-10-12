@@ -1,0 +1,13 @@
+{
+  "role": "nonauthor read-only independent finite artifact arithmetic",
+  "inputs": ["../arrays.npz", "../row-journal.jsonl", "../result.json", "../complete-resources.json", "../declaration.json", "../finite-plan.json", "../static-interface-seal.json", "../pre-execution-addendum01.json", "../../material-point-gradient-v1/wheel-identity.json"],
+  "sizes": {"Nx":8,"Ny":[12,24],"Nz":17,"H":90,"Ly":15000},
+  "no_input_output_read_before_this_declaration": "prototype finite plan and terminal-file metadata were read; no result values, arrays or journal outcomes were inspected",
+  "method": "fresh NumPy dense real Fourier cosine projector and explicit R/Gram Ft, independent edge-binomial reconstruction, closed analytic derivatives from declared fields; no prototype execution, project imports or scoring helpers",
+  "gates_unchanged": "128 eps matrix scales; 512 eps norm/sum; <=2e-12 normal numerical equality; strict analytic-w u RMS improvement on both meshes",
+  "controls_before_data": "stdlib Fraction n4 known T1/Ft-affine/null and coefficient1/4 trap; exact comparator deliberately mismatched; constructed equal numerical arrays pass and one altered element fails numerical comparator",
+  "precision": "float64 source data; float64 and np.longdouble accumulation in same single audit, report original-data precision ceiling; not a raised-precision source/model run or 30-digit claim",
+  "resources": {"CPU":1,"wall_seconds":180,"memory_bytes":4294967296,"sampled_RSS":true},
+  "runs": "one bounded first measurement only; no rerun or input retuning. Failures saved, not overwritten",
+  "lineage": "shared frozen declaration/recorded data, independent verifier code and dense-matrix/analytic arithmetic; data entered no parameter selection; not a holdout or whole-model physics acceptance"
+}

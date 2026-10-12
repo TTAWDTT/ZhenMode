@@ -1,0 +1,196 @@
+[
+  {
+    "failing_step": "Ft-1/4-plant",
+    "exact_instance": [
+      1,
+      -1,
+      1,
+      -1
+    ],
+    "lhs_squarednorm": "8",
+    "rhs_squarednorm": "4",
+    "residual": "4",
+    "verdict": "CAUGHT_FALSE_COPY"
+  },
+  {
+    "failing_step": "Fn-1/4-plant",
+    "exact_instance": [
+      1,
+      -1,
+      1,
+      -1
+    ],
+    "lhs_squarednorm": "36",
+    "rhs_squarednorm": "4",
+    "residual": "32",
+    "verdict": "CAUGHT_FALSE_COPY"
+  },
+  {
+    "failing_step": "Ft-pointwise-positivity",
+    "exact_instance": [
+      [
+        "1"
+      ],
+      [
+        "0"
+      ],
+      [
+        "0"
+      ],
+      [
+        "0"
+      ]
+    ],
+    "lhs": "-1/16",
+    "rhs": "0",
+    "residual": "-1/16",
+    "verdict": "REFUTED_OVERCLAIM_OUTSIDE_TARGET"
+  },
+  {
+    "failing_step": "Fn-pointwise-positivity",
+    "exact_instance": [
+      [
+        "1"
+      ],
+      [
+        "0"
+      ],
+      [
+        "0"
+      ],
+      [
+        "0"
+      ]
+    ],
+    "lhs": "-1/16",
+    "rhs": "0",
+    "residual": "-1/16",
+    "verdict": "REFUTED_OVERCLAIM_OUTSIDE_TARGET"
+  },
+  {
+    "failing_step": "Ft-TVD",
+    "exact_instance": [
+      [
+        "1"
+      ],
+      [
+        "0"
+      ],
+      [
+        "0"
+      ],
+      [
+        "0"
+      ]
+    ],
+    "lhs": "17/16",
+    "rhs": "1",
+    "residual": "1/16",
+    "verdict": "REFUTED_OVERCLAIM_OUTSIDE_TARGET"
+  },
+  {
+    "failing_step": "Fn-TVD",
+    "exact_instance": [
+      [
+        "1"
+      ],
+      [
+        "1"
+      ],
+      [
+        "1"
+      ],
+      [
+        "1"
+      ]
+    ],
+    "lhs": "1",
+    "rhs": "0",
+    "residual": "1",
+    "verdict": "REFUTED_OVERCLAIM_OUTSIDE_TARGET"
+  },
+  {
+    "failing_step": "Fn-constant-preservation",
+    "exact_instance": [
+      [
+        "1"
+      ],
+      [
+        "1"
+      ],
+      [
+        "1"
+      ],
+      [
+        "1"
+      ]
+    ],
+    "lhs": "5/8",
+    "rhs": "1",
+    "residual": "-3/8",
+    "verdict": "REFUTED_OVERCLAIM_OUTSIDE_TARGET"
+  },
+  {
+    "failing_step": "Ft-arbitrary-weight-contraction",
+    "exact_instance": [
+      [
+        "1"
+      ],
+      [
+        "0"
+      ],
+      [
+        "0"
+      ],
+      [
+        "0"
+      ]
+    ],
+    "lhs": "313/128",
+    "rhs": "1",
+    "residual": "185/128",
+    "verdict": "REFUTED_OVERCLAIM_OUTSIDE_TARGET"
+  },
+  {
+    "failing_step": "Fn-arbitrary-weight-contraction",
+    "exact_instance": [
+      [
+        "1"
+      ],
+      [
+        "0"
+      ],
+      [
+        "0"
+      ],
+      [
+        "0"
+      ]
+    ],
+    "lhs": "2537/256",
+    "rhs": "1",
+    "residual": "2281/256",
+    "verdict": "REFUTED_OVERCLAIM_OUTSIDE_TARGET"
+  },
+  {
+    "failing_step": "Fn-maximum-principle",
+    "exact_instance": [
+      [
+        "1"
+      ],
+      [
+        "1"
+      ],
+      [
+        "1"
+      ],
+      [
+        "1"
+      ]
+    ],
+    "lhs": "9/8",
+    "rhs": "1",
+    "residual": "1/8",
+    "verdict": "REFUTED_OVERCLAIM_OUTSIDE_TARGET"
+  }
+]

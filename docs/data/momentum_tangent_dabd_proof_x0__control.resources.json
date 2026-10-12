@@ -1,0 +1,70 @@
+{
+  "script": "control.py",
+  "exit_code": 0,
+  "elapsed_seconds": 0.7129096899999965,
+  "cpu_affinity": [
+    0
+  ],
+  "wall_limit_seconds": 180,
+  "address_space_limit_bytes": 4294967296,
+  "rss_sample_interval_seconds": 0.05,
+  "rss_peak_sampled_kib": 62748,
+  "samples": [
+    {
+      "elapsed_s": 0.007988201999999944,
+      "rss_kib": 1268
+    },
+    {
+      "elapsed_s": 0.058302896000000715,
+      "rss_kib": 12232
+    },
+    {
+      "elapsed_s": 0.10867096799999842,
+      "rss_kib": 15680
+    },
+    {
+      "elapsed_s": 0.15895496999999637,
+      "rss_kib": 18304
+    },
+    {
+      "elapsed_s": 0.20928804100000065,
+      "rss_kib": 21756
+    },
+    {
+      "elapsed_s": 0.259599055999999,
+      "rss_kib": 25416
+    },
+    {
+      "elapsed_s": 0.3098341239999982,
+      "rss_kib": 32800
+    },
+    {
+      "elapsed_s": 0.36008505099999866,
+      "rss_kib": 39244
+    },
+    {
+      "elapsed_s": 0.4103399569999979,
+      "rss_kib": 45620
+    },
+    {
+      "elapsed_s": 0.4606393780000033,
+      "rss_kib": 50156
+    },
+    {
+      "elapsed_s": 0.5108595669999971,
+      "rss_kib": 54500
+    },
+    {
+      "elapsed_s": 0.5611951200000007,
+      "rss_kib": 57100
+    },
+    {
+      "elapsed_s": 0.6116768549999989,
+      "rss_kib": 61820
+    },
+    {
+      "elapsed_s": 0.6620154040000017,
+      "rss_kib": 62748
+    }
+  ]
+}

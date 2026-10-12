@@ -1,0 +1,9 @@
+{"n": 4, "minimum_principal_minors": {"Ft": "21/64", "I-Ft": "0", "Fn": "0", "I-Fn": "1/256", "I-Ft2": "0", "I-Fn2": "1127/65536"}, "principal_minor_counts": {"Ft": 15, "I-Ft": 15, "Fn": 15, "I-Fn": 15, "I-Ft2": 15, "I-Fn2": 15}, "sine_cases": 4, "direct_basis_cases": 4, "elapsed_seconds": 0.6512028279999953, "status": "NO-FIRE finite screen"}
+{"n": 5, "minimum_principal_minors": {"Ft": "319/2048", "I-Ft": "0", "Fn": "0", "I-Fn": "25/65536", "I-Ft2": "0", "I-Fn2": "11394225/4294967296"}, "principal_minor_counts": {"Ft": 31, "I-Ft": 31, "Fn": 31, "I-Fn": 31, "I-Ft2": 31, "I-Fn2": 31}, "sine_cases": 5, "direct_basis_cases": 5, "elapsed_seconds": 1.6400654050000014, "status": "NO-FIRE finite screen"}
+Traceback (most recent call last):
+  File "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-wall-filter-proof-70/x0/hunt.py", line 38, in <module>
+    check(zero(L*v-lam*v),'L sine n='+str(n)+' k='+str(k))
+  File "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-wall-filter-proof-70/x0/hunt.py", line 7, in check
+    if not cond: raise AssertionError('FIRE_OR_GATE_FAILURE '+label)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: FIRE_OR_GATE_FAILURE L sine n=8 k=1

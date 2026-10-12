@@ -1,0 +1,26 @@
+PASS known-answer rational
+PASS weighted-Cauchy local SOS
+PASS sine recurrence
+PASS left odd endpoint
+PASS right odd endpoint reduced at k*pi
+PASS sine-norm telescoping summand
+PASS F normal symbol
+PASS B normal symbol
+PASS small-theta departures
+PASS n4 Gram defect identity
+PASS n4 bilinear Green identity
+PASS n4 complement identity
+PASS n4 symmetry
+PASS n4 affine kernel and rank
+PASS n4 fixed affine and sum
+PASS n4 transpose loop equals Gram
+PASS n4 alternating kill
+PASS n4 B polynomial
+PASS T1 exact
+PASS T2 exact
+PASS Ft 1/4 plant CAUGHT
+PASS Fn 1/4 plant CAUGHT
+PASS Ft positivity and TVD exclusion
+PASS Fn positivity and TVD exclusion
+PASS unequal-weight exclusions
+SUMMARY {"tag": "n4-pilot", "sizes": [4], "elapsed_seconds": 0.6600395210000016, "sampledRSS_peak_bytes": 68501504, "rss_sample_count": 56, "affinity": [0], "memory_limit_bytes": 4294967296, "cpu_seconds_limit": 180, "sympy_version": "1.14.0"}

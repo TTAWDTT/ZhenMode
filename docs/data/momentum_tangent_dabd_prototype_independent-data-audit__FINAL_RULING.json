@@ -1,0 +1,28 @@
+{
+  "gate": "PASS_FINITE_STANDALONE_DATA_ARITHMETIC_AND_SOURCE_IDENTITY",
+  "checks": 147,
+  "nonauthor": true,
+  "data_read_only": true,
+  "prototype_runs": 0,
+  "project_imports": 0,
+  "source_edit": false,
+  "independent_audit_runs": 1,
+  "failed_audit_runs": 0,
+  "wall_seconds": 1.111348496,
+  "sampled_RSS_peak_bytes": 37253120,
+  "RSS_samples": 105,
+  "original_complete_returncode": 0,
+  "source133_actual_hash_pass": true,
+  "normal_two_grids_uint64_same": true,
+  "analytic_u_both_grids_strict_improvement": true,
+  "analytic_v_RMS_archive_coverage": "GAP_NOT_ARCHIVED",
+  "physics_grade": "NOT_GRANTED",
+  "native_grade": "NOT_GRANTED",
+  "artifact_sha256": {
+    "audit-declaration.json": "d86599bb4285ec193ea17705b94fc930c625215006310d232e8d6bcd689c5474",
+    "audit.py": "276b3b8bb7f4a8fc8d67238ae5cf6dd4e364e59ce9e4b73f429690ff09e53799",
+    "audit-results.json": "d5e0324cfae85efc6eb17ba4cd083963939543894d963d940433c5d0eff548ea",
+    "audit.log": "944a991bea8e82167735a6b82f7a58b4d2f346fbbca6a6b98ba91f98327d013c",
+    "WORKFILE.md": "4814456e2ba4a4ae8e7f6cdf5bec11af464489be53b380418adc210c0a14e0b3"
+  }
+}

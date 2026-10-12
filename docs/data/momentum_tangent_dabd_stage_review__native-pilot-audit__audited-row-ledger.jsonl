@@ -1,0 +1,2 @@
+{"index": 0, "utc": "2026-10-12T23:12:52.128131+00:00", "file": "row-00-result.json", "result_sha256": "ed0f22cf2d7e2b9c9c0b9dedc8d6ca75528323d1771765c5db2e3a2cc5975e80"}
+{"index": 1, "utc": "2026-10-12T23:14:16.927499+00:00", "file": "row-01-result.json", "result_sha256": "43ae90f74a9ddfaa04a9d8695dc7526f08a02ba51956487ae9215f4b2ee4f36e", "mode": "resume_metadata_harness_only"}

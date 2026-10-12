@@ -1,0 +1,2362 @@
+{
+  "source": "dabd48abd898c20e0471a5ab9fc18e9b61cfa96d",
+  "entries": [
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/00-previous-primary-main/configuration.json",
+      "relative": "00-previous-primary-main/configuration.json",
+      "destination": "momentum_tangent_dabd_stage_00-previous-primary-main__configuration.json",
+      "bytes": 4934,
+      "sha256": "9c64a9e12e3e1631ca4251ed75394d11613ef69e38c2ee0ff484302561d5ce72"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/00-previous-primary-main/contract.json",
+      "relative": "00-previous-primary-main/contract.json",
+      "destination": "momentum_tangent_dabd_stage_00-previous-primary-main__contract.json",
+      "bytes": 4337,
+      "sha256": "5e42b4f94ebdbf3aa782794d97ab7208796c0034f83af3e9344f8d95dfd0e8d0"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/00-previous-primary-main/run.json",
+      "relative": "00-previous-primary-main/run.json",
+      "destination": "momentum_tangent_dabd_stage_00-previous-primary-main__run.json",
+      "bytes": 14792,
+      "sha256": "78fb24b6febe56778fb9f4b774add060430479dc0c00116bd163a99e82d166d9"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/00-previous-primary-main/zhenmode/resources.json",
+      "relative": "00-previous-primary-main/zhenmode/resources.json",
+      "destination": "momentum_tangent_dabd_stage_00-previous-primary-main__zhenmode__resources.json",
+      "bytes": 490,
+      "sha256": "c2d3a92c4a3dd1792d2b168f5166065acdce0fe8500db096c0f0fe4a958eaa7d"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/00-previous-primary-main/zhenmode/run.log",
+      "relative": "00-previous-primary-main/zhenmode/run.log",
+      "destination": "momentum_tangent_dabd_stage_00-previous-primary-main__zhenmode__run.log",
+      "bytes": 106,
+      "sha256": "9c957c847d244237cd9a51d4ef316037e32aa3d80712bd32a354e1afb6befcfa"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/build-input.json",
+      "relative": "build-input.json",
+      "destination": "momentum_tangent_dabd_stage_build-input.json",
+      "bytes": 16685,
+      "sha256": "d6065a03f4c1692a52e33419bbf032856777f3d74cc07fe40ff5e78b171e70ef"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/build_install.py",
+      "relative": "build_install.py",
+      "destination": "momentum_tangent_dabd_stage_build_install.py.txt",
+      "bytes": 1911,
+      "sha256": "33b3cc26b99137e972ddd4c0192f902359907a91c25d33d47cfb53ed5f6b7eba"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/check_pilot.py",
+      "relative": "check_pilot.py",
+      "destination": "momentum_tangent_dabd_stage_check_pilot.py.txt",
+      "bytes": 2177,
+      "sha256": "77ccddcc88b667efd531779df74522d550e325ca1cd509da4a9a7b4b11513622"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/ci-dispatch-receipt.json",
+      "relative": "ci-dispatch-receipt.json",
+      "destination": "momentum_tangent_dabd_stage_ci-dispatch-receipt.json",
+      "bytes": 317,
+      "sha256": "bff3067a4bef1bc4d93ccb8588d0eb72a4b90303c769bb34f005caa76ca8ac14"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/controls-attempt01-resources.json",
+      "relative": "controls-attempt01-resources.json",
+      "destination": "momentum_tangent_dabd_stage_controls-attempt01-resources.json",
+      "bytes": 365,
+      "sha256": "2ab8d547ba2640b68b2d99e91a6b67ac089638f1bed77a7280b57cc5e93c3816"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/controls-attempt01.log",
+      "relative": "controls-attempt01.log",
+      "destination": "momentum_tangent_dabd_stage_controls-attempt01.log",
+      "bytes": 709,
+      "sha256": "7025a713f663bc5bbe480245f2c645080fd0eaca039e6f97c9bd4a9d728978d2"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/controls-declaration.json",
+      "relative": "controls-declaration.json",
+      "destination": "momentum_tangent_dabd_stage_controls-declaration.json",
+      "bytes": 616,
+      "sha256": "7ec3199919aaf6cdce220ecf83ebe399e0543006c0e1156aa5b499f94a58a51a"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/controls-measured-plan.json",
+      "relative": "controls-measured-plan.json",
+      "destination": "momentum_tangent_dabd_stage_controls-measured-plan.json",
+      "bytes": 690,
+      "sha256": "c400a04654a22a52da5417d0acad64885a84e89b86629879d26db97fd10ea53f"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/controls-timing-resources.json",
+      "relative": "controls-timing-resources.json",
+      "destination": "momentum_tangent_dabd_stage_controls-timing-resources.json",
+      "bytes": 368,
+      "sha256": "d0215823694a55308f24f733ab6da2e877e8825a562945aed774cbebd0317a81"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/controls-timing.log",
+      "relative": "controls-timing.log",
+      "destination": "momentum_tangent_dabd_stage_controls-timing.log",
+      "bytes": 98,
+      "sha256": "5e72ac8e90c38c6c1c584bbced5bff4f6f7b73a50a49c8e3e8f55871062ddc73"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/controls_runner.py",
+      "relative": "controls_runner.py",
+      "destination": "momentum_tangent_dabd_stage_controls_runner.py.txt",
+      "bytes": 1538,
+      "sha256": "37aa8b7d2e855124bcd6c5483d08ea0d2a63515b3730a960ba66dfd7250c80e4"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/controls_timing.py",
+      "relative": "controls_timing.py",
+      "destination": "momentum_tangent_dabd_stage_controls_timing.py.txt",
+      "bytes": 939,
+      "sha256": "e16b2926e238c6494b08679f70fb2a23c17c533f6e2ad60c5849c8712fdc393d"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/declared-plan.json",
+      "relative": "declared-plan.json",
+      "destination": "momentum_tangent_dabd_stage_declared-plan.json",
+      "bytes": 74153,
+      "sha256": "5e1cf6f52319c1ed7b340928b78cb4539bb939ef2e67ff3f3147d6abd4a13e0c"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/design-declaration.json",
+      "relative": "design-declaration.json",
+      "destination": "momentum_tangent_dabd_stage_design-declaration.json",
+      "bytes": 2434,
+      "sha256": "b629ea2fd601f717bcfbe62316c8b663155f195a14fa1568f8c690784696c11a"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/design-interface-review.md",
+      "relative": "design-interface-review.md",
+      "destination": "momentum_tangent_dabd_stage_design-interface-review.md",
+      "bytes": 4585,
+      "sha256": "c9f679a6be954b0cf0f9a4240fd710d13023bcd1295492bd1ea8c6b560ae0efa"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/design-interface-ruling.json",
+      "relative": "design-interface-ruling.json",
+      "destination": "momentum_tangent_dabd_stage_design-interface-ruling.json",
+      "bytes": 856,
+      "sha256": "c9267f081a8fe84c913a979d7fcab4550b93409e3d1419fa3497a85b89422abb"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/full-ci-declaration.json",
+      "relative": "full-ci-declaration.json",
+      "destination": "momentum_tangent_dabd_stage_full-ci-declaration.json",
+      "bytes": 376,
+      "sha256": "9b8769380c9e63d392c4e942bc7a6a457024b591e57d6d477a9b1212879fe517"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/full-ci-terminal.json",
+      "relative": "full-ci-terminal.json",
+      "destination": "momentum_tangent_dabd_stage_full-ci-terminal.json",
+      "bytes": 586,
+      "sha256": "5455a4a3b3e961042d18ff7e38b1e9ebece0b48f4fa95c5d9e104ff39968d471"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/local-controls-final.json",
+      "relative": "local-controls-final.json",
+      "destination": "momentum_tangent_dabd_stage_local-controls-final.json",
+      "bytes": 883,
+      "sha256": "6009c0554dff245cb34cfdd30167776d03fb20e9619990857d3b849ce5e73c79"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/native-attempt01-launch-failure.json",
+      "relative": "native-attempt01-launch-failure.json",
+      "destination": "momentum_tangent_dabd_stage_native-attempt01-launch-failure.json",
+      "bytes": 743,
+      "sha256": "6905f4cdbfa7a462075bbe76cf75954fac9e2889241b28c4813b62f807909507"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/native-attempt02/00-previous-primary-main/comparison.json",
+      "relative": "native-attempt02/00-previous-primary-main/comparison.json",
+      "destination": "momentum_tangent_dabd_stage_native-attempt02__00-previous-primary-main__comparison.json",
+      "bytes": 16700,
+      "sha256": "6716b71f6d11223ed57aeef8aa7fa2844656eb2d04f43d0a92481fe6e94461aa"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/native-attempt02/00-previous-primary-main/comparison.md",
+      "relative": "native-attempt02/00-previous-primary-main/comparison.md",
+      "destination": "momentum_tangent_dabd_stage_native-attempt02__00-previous-primary-main__comparison.md",
+      "bytes": 607,
+      "sha256": "3eb27822578e313feeadaaac2f7b755ad699e90577ff929f20fd6a993c9722d8"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/native-attempt02/00-previous-primary-main/configuration.json",
+      "relative": "native-attempt02/00-previous-primary-main/configuration.json",
+      "destination": "momentum_tangent_dabd_stage_native-attempt02__00-previous-primary-main__configuration.json",
+      "bytes": 4934,
+      "sha256": "9c64a9e12e3e1631ca4251ed75394d11613ef69e38c2ee0ff484302561d5ce72"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/native-attempt02/00-previous-primary-main/contract.json",
+      "relative": "native-attempt02/00-previous-primary-main/contract.json",
+      "destination": "momentum_tangent_dabd_stage_native-attempt02__00-previous-primary-main__contract.json",
+      "bytes": 4337,
+      "sha256": "5e42b4f94ebdbf3aa782794d97ab7208796c0034f83af3e9344f8d95dfd0e8d0"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/native-attempt02/00-previous-primary-main/run.json",
+      "relative": "native-attempt02/00-previous-primary-main/run.json",
+      "destination": "momentum_tangent_dabd_stage_native-attempt02__00-previous-primary-main__run.json",
+      "bytes": 16700,
+      "sha256": "6716b71f6d11223ed57aeef8aa7fa2844656eb2d04f43d0a92481fe6e94461aa"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/native-attempt02/00-previous-primary-main/zhenmode/initial.npz",
+      "relative": "native-attempt02/00-previous-primary-main/zhenmode/initial.npz",
+      "destination": "momentum_tangent_dabd_stage_native-attempt02__00-previous-primary-main__zhenmode__initial.npz",
+      "bytes": 7536,
+      "sha256": "c50329a3dbf3f94ac2f88f3c3016308220a9395c436e9562aebe287c0f9fc93a"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/native-attempt02/00-previous-primary-main/zhenmode/native-run.json",
+      "relative": "native-attempt02/00-previous-primary-main/zhenmode/native-run.json",
+      "destination": "momentum_tangent_dabd_stage_native-attempt02__00-previous-primary-main__zhenmode__native-run.json",
+      "bytes": 20777,
+      "sha256": "6a1c834635c79b54c57aa7e30058dd9971af515e664e68c4d9711d6a8d7612f5"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/native-attempt02/00-previous-primary-main/zhenmode/native.npz",
+      "relative": "native-attempt02/00-previous-primary-main/zhenmode/native.npz",
+      "destination": "momentum_tangent_dabd_stage_native-attempt02__00-previous-primary-main__zhenmode__native.npz",
+      "bytes": 474204,
+      "sha256": "3a4188ccc82a6c04a0707d5e325ccd50b97da5ecd644b95e6751ca14f185d954"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/native-attempt02/00-previous-primary-main/zhenmode/output.npz",
+      "relative": "native-attempt02/00-previous-primary-main/zhenmode/output.npz",
+      "destination": "momentum_tangent_dabd_stage_native-attempt02__00-previous-primary-main__zhenmode__output.npz",
+      "bytes": 527080,
+      "sha256": "826c92c94de831f155aabc1286e86b1a1f3ab12f668bba2f51f6729932e31580"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/native-attempt02/00-previous-primary-main/zhenmode/resources.json",
+      "relative": "native-attempt02/00-previous-primary-main/zhenmode/resources.json",
+      "destination": "momentum_tangent_dabd_stage_native-attempt02__00-previous-primary-main__zhenmode__resources.json",
+      "bytes": 495,
+      "sha256": "9cad26fbcf52fc0131c422f1138f1270c42aed2a0c388a3cc5066fcb338ff902"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/native-attempt02/00-previous-primary-main/zhenmode/run.log",
+      "relative": "native-attempt02/00-previous-primary-main/zhenmode/run.log",
+      "destination": "momentum_tangent_dabd_stage_native-attempt02__00-previous-primary-main__zhenmode__run.log",
+      "bytes": 1826,
+      "sha256": "9b56e2f40555bb57e20091b4aaa30a2edc769565b0a9e312030490fc01631012"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/native-attempt02/00-previous-primary-main/zhenmode/score.json",
+      "relative": "native-attempt02/00-previous-primary-main/zhenmode/score.json",
+      "destination": "momentum_tangent_dabd_stage_native-attempt02__00-previous-primary-main__zhenmode__score.json",
+      "bytes": 1619,
+      "sha256": "aa3ea3b6e8e0af87633fd06f2feacf56d0fa6b494f0848c4db1db6e9d9245985"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/native-attempt02/01-candidate-primary-main/comparison.json",
+      "relative": "native-attempt02/01-candidate-primary-main/comparison.json",
+      "destination": "momentum_tangent_dabd_stage_native-attempt02__01-candidate-primary-main__comparison.json",
+      "bytes": 16707,
+      "sha256": "e2a37b54dd8e35d811882a420173f6545c5b4538f5f6808e360f54f5a3a92d28"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/native-attempt02/01-candidate-primary-main/comparison.md",
+      "relative": "native-attempt02/01-candidate-primary-main/comparison.md",
+      "destination": "momentum_tangent_dabd_stage_native-attempt02__01-candidate-primary-main__comparison.md",
+      "bytes": 606,
+      "sha256": "e741f46a3450c4578f5d67e746f78b34f8b60bbe027af3675210e9ff06c94c82"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/native-attempt02/01-candidate-primary-main/configuration.json",
+      "relative": "native-attempt02/01-candidate-primary-main/configuration.json",
+      "destination": "momentum_tangent_dabd_stage_native-attempt02__01-candidate-primary-main__configuration.json",
+      "bytes": 5412,
+      "sha256": "d4cd60f908d8eb2d533fe82086825e4722cf6d21de65d0680d8f177540668c27"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/native-attempt02/01-candidate-primary-main/contract.json",
+      "relative": "native-attempt02/01-candidate-primary-main/contract.json",
+      "destination": "momentum_tangent_dabd_stage_native-attempt02__01-candidate-primary-main__contract.json",
+      "bytes": 4799,
+      "sha256": "01221a21843c3a9898b6756fa66b51b23241c12a31bfca614b7781e188b32fd5"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/native-attempt02/01-candidate-primary-main/run.json",
+      "relative": "native-attempt02/01-candidate-primary-main/run.json",
+      "destination": "momentum_tangent_dabd_stage_native-attempt02__01-candidate-primary-main__run.json",
+      "bytes": 16707,
+      "sha256": "e2a37b54dd8e35d811882a420173f6545c5b4538f5f6808e360f54f5a3a92d28"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/native-attempt02/01-candidate-primary-main/zhenmode/initial.npz",
+      "relative": "native-attempt02/01-candidate-primary-main/zhenmode/initial.npz",
+      "destination": "momentum_tangent_dabd_stage_native-attempt02__01-candidate-primary-main__zhenmode__initial.npz",
+      "bytes": 7536,
+      "sha256": "c50329a3dbf3f94ac2f88f3c3016308220a9395c436e9562aebe287c0f9fc93a"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/native-attempt02/01-candidate-primary-main/zhenmode/native-run.json",
+      "relative": "native-attempt02/01-candidate-primary-main/zhenmode/native-run.json",
+      "destination": "momentum_tangent_dabd_stage_native-attempt02__01-candidate-primary-main__zhenmode__native-run.json",
+      "bytes": 21005,
+      "sha256": "5d7c1497d9ea598caba667edeca7fae76b6bb22e68a53b408e6bd11163b91a7b"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/native-attempt02/01-candidate-primary-main/zhenmode/native.npz",
+      "relative": "native-attempt02/01-candidate-primary-main/zhenmode/native.npz",
+      "destination": "momentum_tangent_dabd_stage_native-attempt02__01-candidate-primary-main__zhenmode__native.npz",
+      "bytes": 473598,
+      "sha256": "c0e53ec8f41dd1559ad8e446bbd0e365ede43d0bbdd1d3a97301277aa0f8d89e"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/native-attempt02/01-candidate-primary-main/zhenmode/output.npz",
+      "relative": "native-attempt02/01-candidate-primary-main/zhenmode/output.npz",
+      "destination": "momentum_tangent_dabd_stage_native-attempt02__01-candidate-primary-main__zhenmode__output.npz",
+      "bytes": 526554,
+      "sha256": "ec616a7970b6fbf6e7c2720359c5149e657608054ba468d2ce8c05e64a3c9780"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/native-attempt02/01-candidate-primary-main/zhenmode/resources.json",
+      "relative": "native-attempt02/01-candidate-primary-main/zhenmode/resources.json",
+      "destination": "momentum_tangent_dabd_stage_native-attempt02__01-candidate-primary-main__zhenmode__resources.json",
+      "bytes": 495,
+      "sha256": "33a017c6f432dbb6004270a4521e8fd026608ae5edcbfcc5f3c6ddf04142c9d2"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/native-attempt02/01-candidate-primary-main/zhenmode/run.log",
+      "relative": "native-attempt02/01-candidate-primary-main/zhenmode/run.log",
+      "destination": "momentum_tangent_dabd_stage_native-attempt02__01-candidate-primary-main__zhenmode__run.log",
+      "bytes": 1826,
+      "sha256": "9b56e2f40555bb57e20091b4aaa30a2edc769565b0a9e312030490fc01631012"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/native-attempt02/01-candidate-primary-main/zhenmode/score.json",
+      "relative": "native-attempt02/01-candidate-primary-main/zhenmode/score.json",
+      "destination": "momentum_tangent_dabd_stage_native-attempt02__01-candidate-primary-main__zhenmode__score.json",
+      "bytes": 1626,
+      "sha256": "cb2e78e049dc85d475835c43b33a5384fba6dde2ef34832c3cce1f77ca7efb62"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/native-attempt02/check_pilot.py",
+      "relative": "native-attempt02/check_pilot.py",
+      "destination": "momentum_tangent_dabd_stage_native-attempt02__check_pilot.py.txt",
+      "bytes": 2177,
+      "sha256": "77ccddcc88b667efd531779df74522d550e325ca1cd509da4a9a7b4b11513622"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/native-attempt02/declared-plan.json",
+      "relative": "native-attempt02/declared-plan.json",
+      "destination": "momentum_tangent_dabd_stage_native-attempt02__declared-plan.json",
+      "bytes": 74153,
+      "sha256": "9f2a6a872eeba7216d5d396b0a89ec1a7e36ed8aba9c535757b3e29af49a1aaa"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/native-attempt02/driver.log",
+      "relative": "native-attempt02/driver.log",
+      "destination": "momentum_tangent_dabd_stage_native-attempt02__driver.log",
+      "bytes": 4457,
+      "sha256": "7d31ecd057af1b5ac8336432274dcc3fd3999e730e8207c59e236458fa4540d7"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/native-attempt02/launch-declaration.json",
+      "relative": "native-attempt02/launch-declaration.json",
+      "destination": "momentum_tangent_dabd_stage_native-attempt02__launch-declaration.json",
+      "bytes": 568,
+      "sha256": "447947818d447685778ce3dabc0ab297c96fb29481674f4f5bfd7ff7653758b9"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/native-attempt02/pilot-check.log",
+      "relative": "native-attempt02/pilot-check.log",
+      "destination": "momentum_tangent_dabd_stage_native-attempt02__pilot-check.log",
+      "bytes": 3987,
+      "sha256": "5f05d5b0cc4c02738394a4ee0bbf8d103aabd29c6de8c438616295770e9dfaef"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/native-attempt02/pilot-decision.json",
+      "relative": "native-attempt02/pilot-decision.json",
+      "destination": "momentum_tangent_dabd_stage_native-attempt02__pilot-decision.json",
+      "bytes": 3986,
+      "sha256": "5e857c5e0658b52b4348756046175ac8947852a9d6013d1b70841c655154e6dc"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/native-attempt02/pre-execution-identity-check.json",
+      "relative": "native-attempt02/pre-execution-identity-check.json",
+      "destination": "momentum_tangent_dabd_stage_native-attempt02__pre-execution-identity-check.json",
+      "bytes": 954,
+      "sha256": "6c026bc565b4e482edb3a43ac625b94cd8e2f5894c779727f3a7ecee00574564"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/native-attempt02/protocol-before-runs.md",
+      "relative": "native-attempt02/protocol-before-runs.md",
+      "destination": "momentum_tangent_dabd_stage_native-attempt02__protocol-before-runs.md",
+      "bytes": 2227,
+      "sha256": "1acd72021445334d7e324afb821898f33cdb61a6f287a1b0a0bf71bd33f0de08"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/native-attempt02/row-journal.jsonl",
+      "relative": "native-attempt02/row-journal.jsonl",
+      "destination": "momentum_tangent_dabd_stage_native-attempt02__row-journal.jsonl",
+      "bytes": 4449,
+      "sha256": "d618af4305ed20f882af182287923bceefe5ee1a31c6a4b4975ea740592eb7f1"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/native-pilot-driver.log",
+      "relative": "native-pilot-driver.log",
+      "destination": "momentum_tangent_dabd_stage_native-pilot-driver.log",
+      "bytes": 1642,
+      "sha256": "cabd9224cc6e3c075d28e7431d70c8119dd053e0c4e1a336d93949ea75361d43"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/pilot-launch-declaration.json",
+      "relative": "pilot-launch-declaration.json",
+      "destination": "momentum_tangent_dabd_stage_pilot-launch-declaration.json",
+      "bytes": 684,
+      "sha256": "563cf95a5c3e81fdd9232e29338d87a3a431a4ca238bbaddfb4c3ffae3d53343"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/primary-vs-frozen70.json",
+      "relative": "primary-vs-frozen70.json",
+      "destination": "momentum_tangent_dabd_stage_primary-vs-frozen70.json",
+      "bytes": 4050,
+      "sha256": "62b7c1efbde52e210974316ff02ab7364f7830f72914950a7cfea6b2cf563419"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/protocol-before-runs.md",
+      "relative": "protocol-before-runs.md",
+      "destination": "momentum_tangent_dabd_stage_protocol-before-runs.md",
+      "bytes": 2227,
+      "sha256": "1acd72021445334d7e324afb821898f33cdb61a6f287a1b0a0bf71bd33f0de08"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/review/FINAL_REVIEW.failed-summary-v1.json",
+      "relative": "review/FINAL_REVIEW.failed-summary-v1.json",
+      "destination": "momentum_tangent_dabd_stage_review__FINAL_REVIEW.failed-summary-v1.json",
+      "bytes": 3619,
+      "sha256": "e91af5ab51e597249438c6df3f4624d1ef361fbb4f9951d226816f92e196e171"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/review/FINAL_REVIEW.json",
+      "relative": "review/FINAL_REVIEW.json",
+      "destination": "momentum_tangent_dabd_stage_review__FINAL_REVIEW.json",
+      "bytes": 4735,
+      "sha256": "103f19b92441248f1417eb14c5deb0ba7e3a627908f814fc02ce2759b67d4154"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/review/jax-runtime-identity.json",
+      "relative": "review/jax-runtime-identity.json",
+      "destination": "momentum_tangent_dabd_stage_review__jax-runtime-identity.json",
+      "bytes": 302,
+      "sha256": "5eb5f70d8614383bc080504f25a7d1a8a690ac7da80a1b865e86032931d00217"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/review/native-pilot-audit/audit-declaration.json",
+      "relative": "review/native-pilot-audit/audit-declaration.json",
+      "destination": "momentum_tangent_dabd_stage_review__native-pilot-audit__audit-declaration.json",
+      "bytes": 4924,
+      "sha256": "0db31a9845a89d6a168873c1e80f9b3070ff9b572849596dc1515678ae9565e5"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/review/native-pilot-audit/audit-summary.json",
+      "relative": "review/native-pilot-audit/audit-summary.json",
+      "destination": "momentum_tangent_dabd_stage_review__native-pilot-audit__audit-summary.json",
+      "bytes": 3140,
+      "sha256": "a5cab4058c282a42c4ed3791b7768fe4f53d81b34ce73dd450b4c1487c5f5c0b"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/review/native-pilot-audit/audited-row-ledger.jsonl",
+      "relative": "review/native-pilot-audit/audited-row-ledger.jsonl",
+      "destination": "momentum_tangent_dabd_stage_review__native-pilot-audit__audited-row-ledger.jsonl",
+      "bytes": 382,
+      "sha256": "3232b0fe47c7327dad310e3967529cfa1bca564a1f0dd294f249f3afc41d59c7"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/review/native-pilot-audit/AUDIT_REPORT.md",
+      "relative": "review/native-pilot-audit/AUDIT_REPORT.md",
+      "destination": "momentum_tangent_dabd_stage_review__native-pilot-audit__AUDIT_REPORT.md",
+      "bytes": 12667,
+      "sha256": "fd1430ade99ab9bbbb8e835d7f2b2f7b7a69eb9ec4d4b23f6384b6101b25fd82"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/review/native-pilot-audit/audit_saved_pilot.py",
+      "relative": "review/native-pilot-audit/audit_saved_pilot.py",
+      "destination": "momentum_tangent_dabd_stage_review__native-pilot-audit__audit_saved_pilot.py.txt",
+      "bytes": 26424,
+      "sha256": "59be3d193f43004db51ee2e261633a5c28a4145bda32e4078591328fee546ca0"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/review/native-pilot-audit/cheap-timing-result.json",
+      "relative": "review/native-pilot-audit/cheap-timing-result.json",
+      "destination": "momentum_tangent_dabd_stage_review__native-pilot-audit__cheap-timing-result.json",
+      "bytes": 9794,
+      "sha256": "948f13a7dfd7325e3a48a2b832be98ffc8c6cd3f18219da8a30acf0aae0c0756"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/review/native-pilot-audit/ci-live-observation01.json",
+      "relative": "review/native-pilot-audit/ci-live-observation01.json",
+      "destination": "momentum_tangent_dabd_stage_review__native-pilot-audit__ci-live-observation01.json",
+      "bytes": 6290,
+      "sha256": "c08515b9979fb9a06bd2370b8110efbc13afe5da813e4b5cad1c45239a1f6633"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/review/native-pilot-audit/ci-log-retrieval.json",
+      "relative": "review/native-pilot-audit/ci-log-retrieval.json",
+      "destination": "momentum_tangent_dabd_stage_review__native-pilot-audit__ci-log-retrieval.json",
+      "bytes": 561,
+      "sha256": "8ba085e4749b878acd5ba8e80056e6076956f5f2e6be45fa4c953c55738edcc1"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/review/native-pilot-audit/ci-observation-time-erratum.json",
+      "relative": "review/native-pilot-audit/ci-observation-time-erratum.json",
+      "destination": "momentum_tangent_dabd_stage_review__native-pilot-audit__ci-observation-time-erratum.json",
+      "bytes": 604,
+      "sha256": "8b8fbf24aff8d8855074471b2f6590a9499395a17e7f350d8a9d884485a3520f"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/review/native-pilot-audit/ci-parser-controls.json",
+      "relative": "review/native-pilot-audit/ci-parser-controls.json",
+      "destination": "momentum_tangent_dabd_stage_review__native-pilot-audit__ci-parser-controls.json",
+      "bytes": 837,
+      "sha256": "1844a7519ab4dff5d2ea6b01070ba274cd0791d701789286b47f893ad79e8539"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/review/native-pilot-audit/ci-raw-full.log",
+      "relative": "review/native-pilot-audit/ci-raw-full.log",
+      "destination": "momentum_tangent_dabd_stage_review__native-pilot-audit__ci-raw-full.log",
+      "bytes": 114610,
+      "sha256": "79fdff7ccdecb6055f7a197bb6b7d439f29b5a482fd312e2ac43e9122093821f"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/review/native-pilot-audit/ci-readback-result.json",
+      "relative": "review/native-pilot-audit/ci-readback-result.json",
+      "destination": "momentum_tangent_dabd_stage_review__native-pilot-audit__ci-readback-result.json",
+      "bytes": 4361,
+      "sha256": "4529136b91f92874dc1f197601f327402052705b4470e20f7e556ba62fa8b8ba"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/review/native-pilot-audit/ci-run-terminal.json",
+      "relative": "review/native-pilot-audit/ci-run-terminal.json",
+      "destination": "momentum_tangent_dabd_stage_review__native-pilot-audit__ci-run-terminal.json",
+      "bytes": 5692,
+      "sha256": "2a9650b7f4412b428ed560a27daad589a35cd2b0713e92ce4738ba355aeeea8d"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/review/native-pilot-audit/CI_READBACK_DECLARATION.json",
+      "relative": "review/native-pilot-audit/CI_READBACK_DECLARATION.json",
+      "destination": "momentum_tangent_dabd_stage_review__native-pilot-audit__CI_READBACK_DECLARATION.json",
+      "bytes": 1583,
+      "sha256": "fdc6b83b0776cf3a23c29a891e6e9c13643045ff28863aa437ad05b473c854b6"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/review/native-pilot-audit/controls-result.json",
+      "relative": "review/native-pilot-audit/controls-result.json",
+      "destination": "momentum_tangent_dabd_stage_review__native-pilot-audit__controls-result.json",
+      "bytes": 553,
+      "sha256": "b420aa27dd6be4c9bcd282d74f6a4afad17a300a12730409ee03dfacdbec8051"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/review/native-pilot-audit/failure-full-20261012T231252399612.json",
+      "relative": "review/native-pilot-audit/failure-full-20261012T231252399612.json",
+      "destination": "momentum_tangent_dabd_stage_review__native-pilot-audit__failure-full-20261012T231252399612.json",
+      "bytes": 1204,
+      "sha256": "d8652570acf8866bc1c16c317e062d7ba41c3aa6f9bf578c3c28101f547c6a51"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/review/native-pilot-audit/FINAL_AUDIT_RECEIPT.json",
+      "relative": "review/native-pilot-audit/FINAL_AUDIT_RECEIPT.json",
+      "destination": "momentum_tangent_dabd_stage_review__native-pilot-audit__FINAL_AUDIT_RECEIPT.json",
+      "bytes": 5253,
+      "sha256": "b0806fcaab63eb9db3c75cb54ad3b18812505af17fa6b157a50e6b4ffc832532"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/review/native-pilot-audit/metadata-contract-diff.json",
+      "relative": "review/native-pilot-audit/metadata-contract-diff.json",
+      "destination": "momentum_tangent_dabd_stage_review__native-pilot-audit__metadata-contract-diff.json",
+      "bytes": 3276,
+      "sha256": "5ddf6001527fade1a3f35f66d1a908e78093b2383cd7d6bb64f6218bff2da8cd"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/review/native-pilot-audit/metadata-recovery-controls.json",
+      "relative": "review/native-pilot-audit/metadata-recovery-controls.json",
+      "destination": "momentum_tangent_dabd_stage_review__native-pilot-audit__metadata-recovery-controls.json",
+      "bytes": 166,
+      "sha256": "7e3f77d07bfeeadef72c71017aa1726b63a3f01aa6ff1a1e9aaa976543121afe"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/review/native-pilot-audit/read_ci.py",
+      "relative": "review/native-pilot-audit/read_ci.py",
+      "destination": "momentum_tangent_dabd_stage_review__native-pilot-audit__read_ci.py.txt",
+      "bytes": 7822,
+      "sha256": "c91c5033a27c1c1358fe0cb89a37349ded94b6faebd5fb8200fb06cbaefe7786"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/review/native-pilot-audit/resume-declaration.json",
+      "relative": "review/native-pilot-audit/resume-declaration.json",
+      "destination": "momentum_tangent_dabd_stage_review__native-pilot-audit__resume-declaration.json",
+      "bytes": 1698,
+      "sha256": "f46ed3f830d3dfe7f83c0ec185a41e64e76008e49017bb66db6cbdb17bb70332"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/review/native-pilot-audit/resume_saved_row1.py",
+      "relative": "review/native-pilot-audit/resume_saved_row1.py",
+      "destination": "momentum_tangent_dabd_stage_review__native-pilot-audit__resume_saved_row1.py.txt",
+      "bytes": 8483,
+      "sha256": "8fb45f726b56391a59840d21eada0ad921c8216c6562a08fb347d8a4965124cd"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/review/native-pilot-audit/row-00-result.json",
+      "relative": "review/native-pilot-audit/row-00-result.json",
+      "destination": "momentum_tangent_dabd_stage_review__native-pilot-audit__row-00-result.json",
+      "bytes": 10784,
+      "sha256": "ed0f22cf2d7e2b9c9c0b9dedc8d6ca75528323d1771765c5db2e3a2cc5975e80"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/review/native-pilot-audit/row-01-result.json",
+      "relative": "review/native-pilot-audit/row-01-result.json",
+      "destination": "momentum_tangent_dabd_stage_review__native-pilot-audit__row-01-result.json",
+      "bytes": 13673,
+      "sha256": "43ae90f74a9ddfaa04a9d8695dc7526f08a02ba51956487ae9215f4b2ee4f36e"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/review/native-pilot-audit/source-bridge-result.json",
+      "relative": "review/native-pilot-audit/source-bridge-result.json",
+      "destination": "momentum_tangent_dabd_stage_review__native-pilot-audit__source-bridge-result.json",
+      "bytes": 17189,
+      "sha256": "a8c8881136d89d02637f718299654649cf7efcc0a2560abaf682aac4e0f0f3fb"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/review/new-momentum-arrays.npz",
+      "relative": "review/new-momentum-arrays.npz",
+      "destination": "momentum_tangent_dabd_stage_review__new-momentum-arrays.npz",
+      "bytes": 10250230,
+      "sha256": "073ca1d545104728c6d243b4e56b329e3e6786928a64b6d4dc120767921a90ef"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/review/new-momentum-complete-resources.json",
+      "relative": "review/new-momentum-complete-resources.json",
+      "destination": "momentum_tangent_dabd_stage_review__new-momentum-complete-resources.json",
+      "bytes": 505,
+      "sha256": "124af4d4110b937d9bf1b43cecd81ca67c63dc72f651c56ea3e9b4a24b421acf"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/review/new-momentum-complete.log",
+      "relative": "review/new-momentum-complete.log",
+      "destination": "momentum_tangent_dabd_stage_review__new-momentum-complete.log",
+      "bytes": 4602,
+      "sha256": "ffbe2643b8fdf4064aa4a9a908ca805eb7c28997f15f8e0e02f7f86dc1f260bd"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/review/new-momentum-declaration.failed-json-edit-v1.json",
+      "relative": "review/new-momentum-declaration.failed-json-edit-v1.json",
+      "destination": "momentum_tangent_dabd_stage_review__new-momentum-declaration.failed-json-edit-v1.json",
+      "bytes": 6,
+      "sha256": "abdfbffecbe18ed94df9829819e596ee285b52a94aa108514452a9121721c789"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/review/new-momentum-declaration.json",
+      "relative": "review/new-momentum-declaration.json",
+      "destination": "momentum_tangent_dabd_stage_review__new-momentum-declaration.json",
+      "bytes": 5598,
+      "sha256": "f4d63f7dffb8d3b4039d0e62e39da6ed7f448402da2fa4bc101bec7a57653b20"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/review/new-momentum-declaration.pre-original-owner-gate-v0.json",
+      "relative": "review/new-momentum-declaration.pre-original-owner-gate-v0.json",
+      "destination": "momentum_tangent_dabd_stage_review__new-momentum-declaration.pre-original-owner-gate-v0.json",
+      "bytes": 3666,
+      "sha256": "d6712236017d981dd0b7b578971fce33d11b4972cfcaf679f44f149c4a5cafae"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/review/new-momentum-finite-plan.json",
+      "relative": "review/new-momentum-finite-plan.json",
+      "destination": "momentum_tangent_dabd_stage_review__new-momentum-finite-plan.json",
+      "bytes": 1391,
+      "sha256": "ff2574681bc324545c54cb9f67461958f767ce038090513febbfa9f88c9f74ce"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/review/new-momentum-result.json",
+      "relative": "review/new-momentum-result.json",
+      "destination": "momentum_tangent_dabd_stage_review__new-momentum-result.json",
+      "bytes": 34248,
+      "sha256": "bee3c6972926c98f28d6c670f8b889db83f3bcd6084dc8811f3d6080ccd82ac7"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/review/new-momentum-rows.jsonl",
+      "relative": "review/new-momentum-rows.jsonl",
+      "destination": "momentum_tangent_dabd_stage_review__new-momentum-rows.jsonl",
+      "bytes": 4571,
+      "sha256": "e03585f9db12f7bb4d3b790cbed9f389d14da357c27ba8facbe5611aa015fab8"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/review/new-momentum-timing-attempt02-resources.json",
+      "relative": "review/new-momentum-timing-attempt02-resources.json",
+      "destination": "momentum_tangent_dabd_stage_review__new-momentum-timing-attempt02-resources.json",
+      "bytes": 504,
+      "sha256": "7154167c6a932a4e6483eb8f90038bdd8d6087c9c26dbc2839023565b34a67b6"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/review/new-momentum-timing-attempt02.log",
+      "relative": "review/new-momentum-timing-attempt02.log",
+      "destination": "momentum_tangent_dabd_stage_review__new-momentum-timing-attempt02.log",
+      "bytes": 1161,
+      "sha256": "e2f7caf5a15ecd9788e1397651abc18960bd693e52571645dd85f88fef1c294d"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/review/new-momentum-timing-attempt03-resources.json",
+      "relative": "review/new-momentum-timing-attempt03-resources.json",
+      "destination": "momentum_tangent_dabd_stage_review__new-momentum-timing-attempt03-resources.json",
+      "bytes": 505,
+      "sha256": "9f2d1fa296996bbe18d082d0febfec5190caeb8b1a9930221ba36e74e2474a68"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/review/new-momentum-timing-attempt03.log",
+      "relative": "review/new-momentum-timing-attempt03.log",
+      "destination": "momentum_tangent_dabd_stage_review__new-momentum-timing-attempt03.log",
+      "bytes": 27,
+      "sha256": "c1fffd80ec39449af18f80e62fe3305c5c40df8322f9a155f09d616f61fc3148"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/review/new-momentum-timing-resources.json",
+      "relative": "review/new-momentum-timing-resources.json",
+      "destination": "momentum_tangent_dabd_stage_review__new-momentum-timing-resources.json",
+      "bytes": 503,
+      "sha256": "5b87b5d7fea8edffedccd4c982fae3992ed0647d02504e669486acdd762f1bd5"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/review/new-momentum-timing.failed-wrong-Bn-fixture-v2.json",
+      "relative": "review/new-momentum-timing.failed-wrong-Bn-fixture-v2.json",
+      "destination": "momentum_tangent_dabd_stage_review__new-momentum-timing.failed-wrong-Bn-fixture-v2.json",
+      "bytes": 23403,
+      "sha256": "1f4a91b4baf169f6cba216c660de5cd74e47a49d83820846928b91eaa32d5bb7"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/review/new-momentum-timing.json",
+      "relative": "review/new-momentum-timing.json",
+      "destination": "momentum_tangent_dabd_stage_review__new-momentum-timing.json",
+      "bytes": 23591,
+      "sha256": "6981bb85de0b0e56b5b173eb5d7493e3d541390a0fe55f179d50948befb80c7e"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/review/new-momentum-timing.log",
+      "relative": "review/new-momentum-timing.log",
+      "destination": "momentum_tangent_dabd_stage_review__new-momentum-timing.log",
+      "bytes": 271,
+      "sha256": "35f9a744d69f631d424833dd47d67d7449a298757ee01644aef7e5d8ee2e48cb"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/review/new_momentum_mms.failed-wrong-Bn-fixture-v2.py",
+      "relative": "review/new_momentum_mms.failed-wrong-Bn-fixture-v2.py",
+      "destination": "momentum_tangent_dabd_stage_review__new_momentum_mms.failed-wrong-Bn-fixture-v2.py.txt",
+      "bytes": 13298,
+      "sha256": "1c3004511a834afd4c3273c6e0dbd9c2d37dc08cc0220ef39c7c6d4143728ac7"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/review/new_momentum_mms.py",
+      "relative": "review/new_momentum_mms.py",
+      "destination": "momentum_tangent_dabd_stage_review__new_momentum_mms.py.txt",
+      "bytes": 13431,
+      "sha256": "6dc6e6eab64da4f40274f944aa66a045ff010fcfa8910a873639315af673a1df"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/review/packaging-source-supplement.json",
+      "relative": "review/packaging-source-supplement.json",
+      "destination": "momentum_tangent_dabd_stage_review__packaging-source-supplement.json",
+      "bytes": 1899,
+      "sha256": "89f03f01568092520d2c664d484d47b07a68012c5a8656c74e3ba3573387bb28"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/review/packaging-source-supplement.log",
+      "relative": "review/packaging-source-supplement.log",
+      "destination": "momentum_tangent_dabd_stage_review__packaging-source-supplement.log",
+      "bytes": 1900,
+      "sha256": "0691e573acda5bce972b10a8edf04285f4dd1347022f11235870559e5feaf71d"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/review/packaging_supplement.py",
+      "relative": "review/packaging_supplement.py",
+      "destination": "momentum_tangent_dabd_stage_review__packaging_supplement.py.txt",
+      "bytes": 2166,
+      "sha256": "a5d163bd89d62a4c62378e9eb054102cb4ca39831ea108330175efe07925ec5f"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/review/pre-execution-Bn-fixture-correction.json",
+      "relative": "review/pre-execution-Bn-fixture-correction.json",
+      "destination": "momentum_tangent_dabd_stage_review__pre-execution-Bn-fixture-correction.json",
+      "bytes": 950,
+      "sha256": "f785cffd4eda08820d58cd63b2628349bf6455cf01163d9a7323135202bb04fc"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/review/pre-execution-Bn-fixture-correction02.json",
+      "relative": "review/pre-execution-Bn-fixture-correction02.json",
+      "destination": "momentum_tangent_dabd_stage_review__pre-execution-Bn-fixture-correction02.json",
+      "bytes": 692,
+      "sha256": "2f682e55cc20e3573710a4eca7233c294b01b23e550f33aa7e145ff7b169fb51"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/review/root-pre-numeric-seal.json",
+      "relative": "review/root-pre-numeric-seal.json",
+      "destination": "momentum_tangent_dabd_stage_review__root-pre-numeric-seal.json",
+      "bytes": 1092,
+      "sha256": "e238b0fc066910a7c3796b93502336b383bf9122f091d5dd803a9118a6165cad"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/review/root-pre-numeric-seal02.json",
+      "relative": "review/root-pre-numeric-seal02.json",
+      "destination": "momentum_tangent_dabd_stage_review__root-pre-numeric-seal02.json",
+      "bytes": 1543,
+      "sha256": "454afdfcc832d68446951b349bc640531a3a9f2d41083314a72d635e391792a9"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/review/run_review.py",
+      "relative": "review/run_review.py",
+      "destination": "momentum_tangent_dabd_stage_review__run_review.py.txt",
+      "bytes": 1215,
+      "sha256": "a38193e25fd49adbcea0119e4e801609d015a4dfd462d3d24c70705f5fe146a1"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/review/source-identity-attempt01-resources.json",
+      "relative": "review/source-identity-attempt01-resources.json",
+      "destination": "momentum_tangent_dabd_stage_review__source-identity-attempt01-resources.json",
+      "bytes": 502,
+      "sha256": "2f5e369a67909b3527ab7b00fb4c4e490452b676b8286569331080b66c09c3b7"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/review/source-identity-attempt01.log",
+      "relative": "review/source-identity-attempt01.log",
+      "destination": "momentum_tangent_dabd_stage_review__source-identity-attempt01.log",
+      "bytes": 1001,
+      "sha256": "585b590b6a52f70d878f4dc375abd9afd0361e0186722de1daf41790fe5f6b43"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/review/source-identity-attempt02-resources.json",
+      "relative": "review/source-identity-attempt02-resources.json",
+      "destination": "momentum_tangent_dabd_stage_review__source-identity-attempt02-resources.json",
+      "bytes": 497,
+      "sha256": "1ea91e16685477d37d3f8b159886014aec0408bbce5bf34d2606af8524c8a264"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/review/source-identity-attempt02.log",
+      "relative": "review/source-identity-attempt02.log",
+      "destination": "momentum_tangent_dabd_stage_review__source-identity-attempt02.log",
+      "bytes": 625,
+      "sha256": "457130eb3fea6249c3b7cc2ca241dba70ba1a67839d9f4be31aef76dd036acd7"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/review/source-identity-attempt03-resources.json",
+      "relative": "review/source-identity-attempt03-resources.json",
+      "destination": "momentum_tangent_dabd_stage_review__source-identity-attempt03-resources.json",
+      "bytes": 503,
+      "sha256": "f2a625c962186fe0312056d98b38decf4d9118416824ecce7744741dbfcfbbcd"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/review/source-identity-attempt03.log",
+      "relative": "review/source-identity-attempt03.log",
+      "destination": "momentum_tangent_dabd_stage_review__source-identity-attempt03.log",
+      "bytes": 76,
+      "sha256": "513c5c2cdc5fb4cb1b2f8499d0913ed9b539a8eb70c136ab8e155187a9e7ecce"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/review/source-identity-result.failed-Linux-status-v2.json",
+      "relative": "review/source-identity-result.failed-Linux-status-v2.json",
+      "destination": "momentum_tangent_dabd_stage_review__source-identity-result.failed-Linux-status-v2.json",
+      "bytes": 959,
+      "sha256": "4fd3e57a0c43128cae233f5eade3bf33fae408023fbb3c9db20419f468d42423"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/review/source-identity-result.failed-Windows-gitdir-v1.json",
+      "relative": "review/source-identity-result.failed-Windows-gitdir-v1.json",
+      "destination": "momentum_tangent_dabd_stage_review__source-identity-result.failed-Windows-gitdir-v1.json",
+      "bytes": 1201,
+      "sha256": "321968b80499a1210e008ab3ee4bf406475c7b4cfdef102c4e5a945796f98ba6"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/review/source-identity-result.json",
+      "relative": "review/source-identity-result.json",
+      "destination": "momentum_tangent_dabd_stage_review__source-identity-result.json",
+      "bytes": 37798,
+      "sha256": "185a47bef3aebf6693757a397d89806afb3aea57d9df514222ee340cb98bc237"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/review/source_identity.failed-Linux-status-v2.py",
+      "relative": "review/source_identity.failed-Linux-status-v2.py",
+      "destination": "momentum_tangent_dabd_stage_review__source_identity.failed-Linux-status-v2.py.txt",
+      "bytes": 5955,
+      "sha256": "96fb2167c1f5703cd347b88c5a7b749992755e15e41d50d41f73945815e1abc8"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/review/source_identity.failed-Windows-gitdir-v1.py",
+      "relative": "review/source_identity.failed-Windows-gitdir-v1.py",
+      "destination": "momentum_tangent_dabd_stage_review__source_identity.failed-Windows-gitdir-v1.py.txt",
+      "bytes": 5524,
+      "sha256": "d9472d06171ceb6cdf71b8d8f806ffbb2845d5a25cd16773ab6aee1da80add6f"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/review/source_identity.py",
+      "relative": "review/source_identity.py",
+      "destination": "momentum_tangent_dabd_stage_review__source_identity.py.txt",
+      "bytes": 6196,
+      "sha256": "478569970822162e6e89b4dcd4480ea0e84ee9e9f00bc55bd635f28875ab8974"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/review/windows-git-clean-identity.json",
+      "relative": "review/windows-git-clean-identity.json",
+      "destination": "momentum_tangent_dabd_stage_review__windows-git-clean-identity.json",
+      "bytes": 385,
+      "sha256": "2ac8ee1777ac7c8b3114e6e830d45be25c072d4c0f0141b6f37e7ec3ea8a0b57"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/review/WORKFILE.md",
+      "relative": "review/WORKFILE.md",
+      "destination": "momentum_tangent_dabd_stage_review__WORKFILE.md",
+      "bytes": 15751,
+      "sha256": "63f181646b32a0028a0fcc3e6fba845b4e329ea61b78bf882be320a57f4b2e03"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/row-journal.jsonl",
+      "relative": "row-journal.jsonl",
+      "destination": "momentum_tangent_dabd_stage_row-journal.jsonl",
+      "bytes": 434,
+      "sha256": "9ab82ab46ddcd5388e569bd45b8f8bfbd1cdac293306c3d2da1e007c2ca986c1"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/run_iteration.py",
+      "relative": "run_iteration.py",
+      "destination": "momentum_tangent_dabd_stage_run_iteration.py.txt",
+      "bytes": 6555,
+      "sha256": "102ce9a19577ed7fb3479c0110ad56fe809051f4404e0e92600131de45ff491e"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/run_iteration_attempt02.py",
+      "relative": "run_iteration_attempt02.py",
+      "destination": "momentum_tangent_dabd_stage_run_iteration_attempt02.py.txt",
+      "bytes": 6597,
+      "sha256": "5d55db171d268d69687134339abe5d436feecccac5cf2ab16f6a52e51b3247da"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/static-review/FINAL_RULING.json",
+      "relative": "static-review/FINAL_RULING.json",
+      "destination": "momentum_tangent_dabd_stage_static-review__FINAL_RULING.json",
+      "bytes": 1874,
+      "sha256": "d5db6362884f584ed74a067d4de56545bb2c0f5c949774f1230ff39f3d70f1b4"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/static-review/FINAL_RULING.pre-hash-correction-v1.json",
+      "relative": "static-review/FINAL_RULING.pre-hash-correction-v1.json",
+      "destination": "momentum_tangent_dabd_stage_static-review__FINAL_RULING.pre-hash-correction-v1.json",
+      "bytes": 1557,
+      "sha256": "a3b9b59d597e5460c59116c5d1a772806cfecf82f82beeb2760a6768589f2ac6"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/static-review/source-snapshot.failed-path-v1.json",
+      "relative": "static-review/source-snapshot.failed-path-v1.json",
+      "destination": "momentum_tangent_dabd_stage_static-review__source-snapshot.failed-path-v1.json",
+      "bytes": 1191,
+      "sha256": "7f8cd78c9b09ceb89c9c918a56437c9ed8955dbb4ab9c4adf20b4677cf5e4d8a"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/static-review/source-snapshot.json",
+      "relative": "static-review/source-snapshot.json",
+      "destination": "momentum_tangent_dabd_stage_static-review__source-snapshot.json",
+      "bytes": 15834,
+      "sha256": "6ae7cec5f6d543b230bab464f471f2cb1bce3e15112fba0087f475e6bd34a7f3"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/static-review/WORKFILE.md",
+      "relative": "static-review/WORKFILE.md",
+      "destination": "momentum_tangent_dabd_stage_static-review__WORKFILE.md",
+      "bytes": 9682,
+      "sha256": "2a9b096420dc06e86c5aea08e565af3ca43974f261c103bf4219971aac8e4923"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/test_momentum_tangent_filter_draft.py.txt",
+      "relative": "test_momentum_tangent_filter_draft.py.txt",
+      "destination": "momentum_tangent_dabd_stage_test_momentum_tangent_filter_draft.py.txt",
+      "bytes": 7127,
+      "sha256": "62859ce6609814eab3aceb26b41bdff6e1a84709e73c559737338357e778f6c0"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/wheel-build.log",
+      "relative": "wheel-build.log",
+      "destination": "momentum_tangent_dabd_stage_wheel-build.log",
+      "bytes": 838,
+      "sha256": "74a1c7093f10314bf42ccedef495bcfe75a06e66f7b39794c5fe962b99a3973a"
+    },
+    {
+      "label": "stage",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/wheel-identity.json",
+      "relative": "wheel-identity.json",
+      "destination": "momentum_tangent_dabd_stage_wheel-identity.json",
+      "bytes": 14701,
+      "sha256": "8adf8e02889f243542f6a98ed9c8a350c0ff5d4d58028f76a300f1972f55c220"
+    },
+    {
+      "label": "proof",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-wall-filter-proof-70/cross-verify/exact-results.json",
+      "relative": "cross-verify/exact-results.json",
+      "destination": "momentum_tangent_dabd_proof_cross-verify__exact-results.json",
+      "bytes": 3180,
+      "sha256": "f5ae62424b6d051a0e63b0ed0a927655e0f5346ac8a306a1baa43c6c7d6df455"
+    },
+    {
+      "label": "proof",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-wall-filter-proof-70/cross-verify/exact-run.log",
+      "relative": "cross-verify/exact-run.log",
+      "destination": "momentum_tangent_dabd_proof_cross-verify__exact-run.log",
+      "bytes": 429,
+      "sha256": "118dbf18e5c4f1576176b267750edebfbf38cd9083c09d59d20306ee875c618e"
+    },
+    {
+      "label": "proof",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-wall-filter-proof-70/cross-verify/independent_exact.py",
+      "relative": "cross-verify/independent_exact.py",
+      "destination": "momentum_tangent_dabd_proof_cross-verify__independent_exact.py.txt",
+      "bytes": 6043,
+      "sha256": "e2dead200b6bf9511af74cead7d833482e264c252536b76d3444df9bc21903cb"
+    },
+    {
+      "label": "proof",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-wall-filter-proof-70/cross-verify/read-order.jsonl",
+      "relative": "cross-verify/read-order.jsonl",
+      "destination": "momentum_tangent_dabd_proof_cross-verify__read-order.jsonl",
+      "bytes": 2432,
+      "sha256": "9adda5aa6b63cb575f3aedc795f7a9df1a587b9a6693f8ea3a4f985e89426226"
+    },
+    {
+      "label": "proof",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-wall-filter-proof-70/cross-verify/SCOREBOARD.json",
+      "relative": "cross-verify/SCOREBOARD.json",
+      "destination": "momentum_tangent_dabd_proof_cross-verify__SCOREBOARD.json",
+      "bytes": 956,
+      "sha256": "a7b84e315410122f3a40ba34933bd898db20801003d6ae82b7d02b05f22d29fc"
+    },
+    {
+      "label": "proof",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-wall-filter-proof-70/cross-verify/WORKFILE.md",
+      "relative": "cross-verify/WORKFILE.md",
+      "destination": "momentum_tangent_dabd_proof_cross-verify__WORKFILE.md",
+      "bytes": 17637,
+      "sha256": "213d29f277e13392653aeeeceef025a51b0d273f7105e13f7f49e013cb6ecaaf"
+    },
+    {
+      "label": "proof",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-wall-filter-proof-70/FINAL_VERDICT.json",
+      "relative": "FINAL_VERDICT.json",
+      "destination": "momentum_tangent_dabd_proof_FINAL_VERDICT.json",
+      "bytes": 2614,
+      "sha256": "cd275ce08952f02f1f6869c7818910f419a8e826f9728c06a2b2ce9f7688a230"
+    },
+    {
+      "label": "proof",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-wall-filter-proof-70/primary/SCOREBOARD.json",
+      "relative": "primary/SCOREBOARD.json",
+      "destination": "momentum_tangent_dabd_proof_primary__SCOREBOARD.json",
+      "bytes": 328,
+      "sha256": "e40e0c27ed68a5d3cff17723320a554561e5192a8346c4d147584056b970b9c6"
+    },
+    {
+      "label": "proof",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-wall-filter-proof-70/primary/WORKFILE.md",
+      "relative": "primary/WORKFILE.md",
+      "destination": "momentum_tangent_dabd_proof_primary__WORKFILE.md",
+      "bytes": 4284,
+      "sha256": "b74f91933a84852abd88d377c8faf5c27b1b984729d93e16665612efadd4c8f6"
+    },
+    {
+      "label": "proof",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-wall-filter-proof-70/SCOREBOARD.json",
+      "relative": "SCOREBOARD.json",
+      "destination": "momentum_tangent_dabd_proof_SCOREBOARD.json",
+      "bytes": 675,
+      "sha256": "2c44e3912ea95658699d086f4b3c2e6666cdfb31308b037cf5eeb1bf673bc330"
+    },
+    {
+      "label": "proof",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-wall-filter-proof-70/skeptic1/bugreports.json",
+      "relative": "skeptic1/bugreports.json",
+      "destination": "momentum_tangent_dabd_proof_skeptic1__bugreports.json",
+      "bytes": 2933,
+      "sha256": "6863c6ca7a875b1cfa28d8e656bbb4ee8312b5378d60031854ffa49bed30e669"
+    },
+    {
+      "label": "proof",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-wall-filter-proof-70/skeptic1/controls.json",
+      "relative": "skeptic1/controls.json",
+      "destination": "momentum_tangent_dabd_proof_skeptic1__controls.json",
+      "bytes": 27038,
+      "sha256": "db5a0e1d32a233f5b4b93a9c47b0c948e08c3ccb6c4acea5c63b8023bd77f489"
+    },
+    {
+      "label": "proof",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-wall-filter-proof-70/skeptic1/exact_audit.py",
+      "relative": "skeptic1/exact_audit.py",
+      "destination": "momentum_tangent_dabd_proof_skeptic1__exact_audit.py.txt",
+      "bytes": 9052,
+      "sha256": "c98bf8ffce63b57e252bd1e171e7c684adc71113412879147180074d5e825d6f"
+    },
+    {
+      "label": "proof",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-wall-filter-proof-70/skeptic1/FINAL_REVIEW.md",
+      "relative": "skeptic1/FINAL_REVIEW.md",
+      "destination": "momentum_tangent_dabd_proof_skeptic1__FINAL_REVIEW.md",
+      "bytes": 3014,
+      "sha256": "84830fa74687f79d1b9091abcfa794e44bb28766ee973e075c38f970601f2e9e"
+    },
+    {
+      "label": "proof",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-wall-filter-proof-70/skeptic1/hash_manifest.json",
+      "relative": "skeptic1/hash_manifest.json",
+      "destination": "momentum_tangent_dabd_proof_skeptic1__hash_manifest.json",
+      "bytes": 3093,
+      "sha256": "3ea9e782b89fbb89843639436888d62ff700d1692c58cd25f563b4c0851fb473"
+    },
+    {
+      "label": "proof",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-wall-filter-proof-70/skeptic1/receipt.json",
+      "relative": "skeptic1/receipt.json",
+      "destination": "momentum_tangent_dabd_proof_skeptic1__receipt.json",
+      "bytes": 529,
+      "sha256": "e4d161bfdeb9cf55a5ce3a75ce80621e3c63ce8101305d1c9f09aab2ead34a89"
+    },
+    {
+      "label": "proof",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-wall-filter-proof-70/skeptic1/SCOREBOARD.md",
+      "relative": "skeptic1/SCOREBOARD.md",
+      "destination": "momentum_tangent_dabd_proof_skeptic1__SCOREBOARD.md",
+      "bytes": 2284,
+      "sha256": "d5924f1e2686325fd15b7c88d21c81c6751b66e979750a819dabd0a10eeff8ff"
+    },
+    {
+      "label": "proof",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-wall-filter-proof-70/skeptic1/SKELETON.md",
+      "relative": "skeptic1/SKELETON.md",
+      "destination": "momentum_tangent_dabd_proof_skeptic1__SKELETON.md",
+      "bytes": 3702,
+      "sha256": "c2ec0f1a810d529f45656b1d1d980f7a0de61e4d33ee3328309fb504868c90dc"
+    },
+    {
+      "label": "proof",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-wall-filter-proof-70/skeptic1/stderr.txt",
+      "relative": "skeptic1/stderr.txt",
+      "destination": "momentum_tangent_dabd_proof_skeptic1__stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "proof",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-wall-filter-proof-70/skeptic1/stdout.txt",
+      "relative": "skeptic1/stdout.txt",
+      "destination": "momentum_tangent_dabd_proof_skeptic1__stdout.txt",
+      "bytes": 633,
+      "sha256": "fec03ac767dc99eeaf295188c2eaf881d6159900b7b5c42cc8c923623c00c0fe"
+    },
+    {
+      "label": "proof",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-wall-filter-proof-70/skeptic1/WORKFILE.md",
+      "relative": "skeptic1/WORKFILE.md",
+      "destination": "momentum_tangent_dabd_proof_skeptic1__WORKFILE.md",
+      "bytes": 13747,
+      "sha256": "fdc4cb9d11b51d09487112a9ba5ed3eb532efe4577f868ffff566c71b7883acd"
+    },
+    {
+      "label": "proof",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-wall-filter-proof-70/skeptic2/exact_n4.json",
+      "relative": "skeptic2/exact_n4.json",
+      "destination": "momentum_tangent_dabd_proof_skeptic2__exact_n4.json",
+      "bytes": 11587,
+      "sha256": "e5fece97cdb2ccc3d6276eb17faaae6a02abec1d0efe68d0ca30ad4cf678be3b"
+    },
+    {
+      "label": "proof",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-wall-filter-proof-70/skeptic2/exact_n4.py",
+      "relative": "skeptic2/exact_n4.py",
+      "destination": "momentum_tangent_dabd_proof_skeptic2__exact_n4.py.txt",
+      "bytes": 5391,
+      "sha256": "7d18975da0bebabc816ecd8c5f4e6cd3497a514b3939ef63d780c5f1dbeb6a04"
+    },
+    {
+      "label": "proof",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-wall-filter-proof-70/skeptic2/FINAL_REVIEW.md",
+      "relative": "skeptic2/FINAL_REVIEW.md",
+      "destination": "momentum_tangent_dabd_proof_skeptic2__FINAL_REVIEW.md",
+      "bytes": 2917,
+      "sha256": "f884eb00035a4848aa14c9ff51e8d46dfc88da4dfc5d895510a4a01ad1772669"
+    },
+    {
+      "label": "proof",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-wall-filter-proof-70/skeptic2/hash_manifest.json",
+      "relative": "skeptic2/hash_manifest.json",
+      "destination": "momentum_tangent_dabd_proof_skeptic2__hash_manifest.json",
+      "bytes": 2394,
+      "sha256": "bcfd36f293eb6ff748646d01106e7a4e22342f74a9bcdc2dc1cc18726a739d9b"
+    },
+    {
+      "label": "proof",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-wall-filter-proof-70/skeptic2/SCOREBOARD.md",
+      "relative": "skeptic2/SCOREBOARD.md",
+      "destination": "momentum_tangent_dabd_proof_skeptic2__SCOREBOARD.md",
+      "bytes": 1118,
+      "sha256": "c1c4ca628b4e893c25d478f9a378edec13b89702d094ece313ee4b312ab317b4"
+    },
+    {
+      "label": "proof",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-wall-filter-proof-70/skeptic2/SKELETON.md",
+      "relative": "skeptic2/SKELETON.md",
+      "destination": "momentum_tangent_dabd_proof_skeptic2__SKELETON.md",
+      "bytes": 1516,
+      "sha256": "2aa6352ffca2a3324d58032e4443444d0299c7e5e0ae96fd49017e325e38947d"
+    },
+    {
+      "label": "proof",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-wall-filter-proof-70/skeptic2/WORKFILE.md",
+      "relative": "skeptic2/WORKFILE.md",
+      "destination": "momentum_tangent_dabd_proof_skeptic2__WORKFILE.md",
+      "bytes": 16362,
+      "sha256": "9e92ea33d8a5472bb3a9dbd63d18a5855afcc49e332cdcad9daa15affd9e06c1"
+    },
+    {
+      "label": "proof",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-wall-filter-proof-70/skeptic2-admissibility.json",
+      "relative": "skeptic2-admissibility.json",
+      "destination": "momentum_tangent_dabd_proof_skeptic2-admissibility.json",
+      "bytes": 946,
+      "sha256": "397b2d22df7d582279e667634c6349290eb35a80876a576b66b2fc82eb21c01f"
+    },
+    {
+      "label": "proof",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-wall-filter-proof-70/spectral/controls.failed-v1.json",
+      "relative": "spectral/controls.failed-v1.json",
+      "destination": "momentum_tangent_dabd_proof_spectral__controls.failed-v1.json",
+      "bytes": 2544,
+      "sha256": "f600ee641837000fe9feb35e5a1844374c1a6c1b3f768149710a0812ab325909"
+    },
+    {
+      "label": "proof",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-wall-filter-proof-70/spectral/controls.json",
+      "relative": "spectral/controls.json",
+      "destination": "momentum_tangent_dabd_proof_spectral__controls.json",
+      "bytes": 3136,
+      "sha256": "2cb450022d3c3bf6e73ddc3934fd73ec6dab5af60ef6c575bbdcb66584b7fa3f"
+    },
+    {
+      "label": "proof",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-wall-filter-proof-70/spectral/controls.passed-v2.json",
+      "relative": "spectral/controls.passed-v2.json",
+      "destination": "momentum_tangent_dabd_proof_spectral__controls.passed-v2.json",
+      "bytes": 2881,
+      "sha256": "d61b520fc7426d884669709234bfa532e7fcfb58865688e3fdc477aaa01b35f0"
+    },
+    {
+      "label": "proof",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-wall-filter-proof-70/spectral/control_stderr.failed-v1.txt",
+      "relative": "spectral/control_stderr.failed-v1.txt",
+      "destination": "momentum_tangent_dabd_proof_spectral__control_stderr.failed-v1.txt",
+      "bytes": 467,
+      "sha256": "ed1b748a6d9946c6cdbb0ab5efef2596b85235a2bb62e81cb7cdd59f99c024ec"
+    },
+    {
+      "label": "proof",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-wall-filter-proof-70/spectral/control_stderr.txt",
+      "relative": "spectral/control_stderr.txt",
+      "destination": "momentum_tangent_dabd_proof_spectral__control_stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "proof",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-wall-filter-proof-70/spectral/control_stdout.passed-v2.txt",
+      "relative": "spectral/control_stdout.passed-v2.txt",
+      "destination": "momentum_tangent_dabd_proof_spectral__control_stdout.passed-v2.txt",
+      "bytes": 240,
+      "sha256": "9298805e34810f38515a93ef002dcbfb26ae4da57d30c297d39dc2ea3ea0d63f"
+    },
+    {
+      "label": "proof",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-wall-filter-proof-70/spectral/control_stdout.txt",
+      "relative": "spectral/control_stdout.txt",
+      "destination": "momentum_tangent_dabd_proof_spectral__control_stdout.txt",
+      "bytes": 240,
+      "sha256": "c73052f84b411357f357f4b11e9ceae9ba07c5be6adb463c1cca0f5e286d1aaf"
+    },
+    {
+      "label": "proof",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-wall-filter-proof-70/spectral/exact_controls.failed-v1.py",
+      "relative": "spectral/exact_controls.failed-v1.py",
+      "destination": "momentum_tangent_dabd_proof_spectral__exact_controls.failed-v1.py.txt",
+      "bytes": 5726,
+      "sha256": "59ae09982a54f14d57bbe7313450aacfe51b3561fd022ce4a869f92c16862edd"
+    },
+    {
+      "label": "proof",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-wall-filter-proof-70/spectral/exact_controls.passed-v2.py",
+      "relative": "spectral/exact_controls.passed-v2.py",
+      "destination": "momentum_tangent_dabd_proof_spectral__exact_controls.passed-v2.py.txt",
+      "bytes": 5849,
+      "sha256": "248fa1cbfa8eec3e9e0c9c91eaa93161145d1003ebb771d4742b38197dd13711"
+    },
+    {
+      "label": "proof",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-wall-filter-proof-70/spectral/exact_controls.py",
+      "relative": "spectral/exact_controls.py",
+      "destination": "momentum_tangent_dabd_proof_spectral__exact_controls.py.txt",
+      "bytes": 6115,
+      "sha256": "fd16f4f338f57322115986ff449c69e2728c0f58b006aad7295bea424879370c"
+    },
+    {
+      "label": "proof",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-wall-filter-proof-70/spectral/receipt.json",
+      "relative": "spectral/receipt.json",
+      "destination": "momentum_tangent_dabd_proof_spectral__receipt.json",
+      "bytes": 393,
+      "sha256": "f21d56756f1a9622322ff094a5bbd6e0a56d389d58214aeeff552d5e76de63a5"
+    },
+    {
+      "label": "proof",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-wall-filter-proof-70/spectral/receipt.passed-v2.json",
+      "relative": "spectral/receipt.passed-v2.json",
+      "destination": "momentum_tangent_dabd_proof_spectral__receipt.passed-v2.json",
+      "bytes": 392,
+      "sha256": "7b7a10f1fa64d69f2c42437e9ffbb8630edbb7324f2e036a1b1437b8ec80d59d"
+    },
+    {
+      "label": "proof",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-wall-filter-proof-70/spectral/SCOREBOARD.md",
+      "relative": "spectral/SCOREBOARD.md",
+      "destination": "momentum_tangent_dabd_proof_spectral__SCOREBOARD.md",
+      "bytes": 1076,
+      "sha256": "fbaf1c9a3695d63b28cb33d467044442fd8c918c2c685f8711c7180a76c8e6ba"
+    },
+    {
+      "label": "proof",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-wall-filter-proof-70/spectral/WORKFILE.md",
+      "relative": "spectral/WORKFILE.md",
+      "destination": "momentum_tangent_dabd_proof_spectral__WORKFILE.md",
+      "bytes": 18350,
+      "sha256": "fe8283810d2cb08d779526edb62aad16bf4dc2bb9b36dfe4b90e25a7c47cb1cc"
+    },
+    {
+      "label": "proof",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-wall-filter-proof-70/TARGET_SPEC.md",
+      "relative": "TARGET_SPEC.md",
+      "destination": "momentum_tangent_dabd_proof_TARGET_SPEC.md",
+      "bytes": 4202,
+      "sha256": "53b671e917d83bc0f26f1a260c47407ae1f99badb3bfc6df7d3c89613259e9b8"
+    },
+    {
+      "label": "proof",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-wall-filter-proof-70/variational/exact_controls.py",
+      "relative": "variational/exact_controls.py",
+      "destination": "momentum_tangent_dabd_proof_variational__exact_controls.py.txt",
+      "bytes": 6368,
+      "sha256": "d199f27226cc00e085dfa2a0f90bb9047edd718381f455218ead73bf8f9fe272"
+    },
+    {
+      "label": "proof",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-wall-filter-proof-70/variational/exact_controls_n4-pilot.json",
+      "relative": "variational/exact_controls_n4-pilot.json",
+      "destination": "momentum_tangent_dabd_proof_variational__exact_controls_n4-pilot.json",
+      "bytes": 3393,
+      "sha256": "7d2d531e3137dc0d17fab9d8f477730c677c1c08d457ea9d1da7d7c3a28639b5"
+    },
+    {
+      "label": "proof",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-wall-filter-proof-70/variational/exact_controls_n4-pilot.log",
+      "relative": "variational/exact_controls_n4-pilot.log",
+      "destination": "momentum_tangent_dabd_proof_variational__exact_controls_n4-pilot.log",
+      "bytes": 921,
+      "sha256": "58a88a5a8bd3e81bc06619812b4ddc97efd1cbfd1e836d135d658e9f559f7bba"
+    },
+    {
+      "label": "proof",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-wall-filter-proof-70/variational/exact_controls_n5-n8-sanity.json",
+      "relative": "variational/exact_controls_n5-n8-sanity.json",
+      "destination": "momentum_tangent_dabd_proof_variational__exact_controls_n5-n8-sanity.json",
+      "bytes": 2967,
+      "sha256": "bd1a3d6bd0425a77008b786b85de5b740e080cdb4b86225aca2248524c360cd5"
+    },
+    {
+      "label": "proof",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-wall-filter-proof-70/variational/exact_controls_n5-n8-sanity.log",
+      "relative": "variational/exact_controls_n5-n8-sanity.log",
+      "destination": "momentum_tangent_dabd_proof_variational__exact_controls_n5-n8-sanity.log",
+      "bytes": 992,
+      "sha256": "813ea1723375c413cb3a00b735d7478fc6840dbad90f263f619a2c3ca1ba26b7"
+    },
+    {
+      "label": "proof",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-wall-filter-proof-70/variational/PROOF.md",
+      "relative": "variational/PROOF.md",
+      "destination": "momentum_tangent_dabd_proof_variational__PROOF.md",
+      "bytes": 12011,
+      "sha256": "cb3dbb2252acadfd938d79d1b71e4870ec211b25b192bea0486b228591e84638"
+    },
+    {
+      "label": "proof",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-wall-filter-proof-70/variational/SCOREBOARD.md",
+      "relative": "variational/SCOREBOARD.md",
+      "destination": "momentum_tangent_dabd_proof_variational__SCOREBOARD.md",
+      "bytes": 623,
+      "sha256": "7233a202dc80e2a6c2abd4325e336e9fd3c1d0222caa9e0d354b6cf051180ab8"
+    },
+    {
+      "label": "proof",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-wall-filter-proof-70/variational/WORKFILE.md",
+      "relative": "variational/WORKFILE.md",
+      "destination": "momentum_tangent_dabd_proof_variational__WORKFILE.md",
+      "bytes": 8625,
+      "sha256": "45f4cfc1d14fb46bfbb9994c76d9a551fb938cb88f4e1962cd497be3eff556f6"
+    },
+    {
+      "label": "proof",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-wall-filter-proof-70/x0/control.log",
+      "relative": "x0/control.log",
+      "destination": "momentum_tangent_dabd_proof_x0__control.log",
+      "bytes": 382,
+      "sha256": "cd5ea559caa38857a3cc61d65ca874973c416f42c357ff3faf02a644acc1cd6d"
+    },
+    {
+      "label": "proof",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-wall-filter-proof-70/x0/control.py",
+      "relative": "x0/control.py",
+      "destination": "momentum_tangent_dabd_proof_x0__control.py.txt",
+      "bytes": 1349,
+      "sha256": "1f963650f8ae5e102ed6693928c688099374ef127b8ccf4f2077316ab100c840"
+    },
+    {
+      "label": "proof",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-wall-filter-proof-70/x0/control.resources.json",
+      "relative": "x0/control.resources.json",
+      "destination": "momentum_tangent_dabd_proof_x0__control.resources.json",
+      "bytes": 1337,
+      "sha256": "993c39daee4f7eff9835bfb3f361af3034249b625258902c4e9456d9aef3cb7e"
+    },
+    {
+      "label": "proof",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-wall-filter-proof-70/x0/hunt.log",
+      "relative": "x0/hunt.log",
+      "destination": "momentum_tangent_dabd_proof_x0__hunt.log",
+      "bytes": 1261,
+      "sha256": "a977aa3b68600772b6c8e7ab7ee58517cd5649458903b0c414a8859f6abf2429"
+    },
+    {
+      "label": "proof",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-wall-filter-proof-70/x0/hunt.py",
+      "relative": "x0/hunt.py",
+      "destination": "momentum_tangent_dabd_proof_x0__hunt.py.txt",
+      "bytes": 3560,
+      "sha256": "c62a99aa132382bf699f90010930ea82b4e22cda36dcbca53f723fc3c99bddcd"
+    },
+    {
+      "label": "proof",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-wall-filter-proof-70/x0/hunt.resources.json",
+      "relative": "x0/hunt.resources.json",
+      "destination": "momentum_tangent_dabd_proof_x0__hunt.resources.json",
+      "bytes": 5883,
+      "sha256": "966a405cd6f7eed4937dc3595da0321703047488c4efb594779f648b21d47667"
+    },
+    {
+      "label": "proof",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-wall-filter-proof-70/x0/hunt.results.json",
+      "relative": "x0/hunt.results.json",
+      "destination": "momentum_tangent_dabd_proof_x0__hunt.results.json",
+      "bytes": 947,
+      "sha256": "4b0a386ed3a7814f3c8f93a43999759434e13e459216ff88c42ea6ddf7f9a3d7"
+    },
+    {
+      "label": "proof",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-wall-filter-proof-70/x0/hunt_repair.log",
+      "relative": "x0/hunt_repair.log",
+      "destination": "momentum_tangent_dabd_proof_x0__hunt_repair.log",
+      "bytes": 1426,
+      "sha256": "77f233c7014a3aa2020c99710bae6bd075db7c9ad4864cc373761a0c5ad788d2"
+    },
+    {
+      "label": "proof",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-wall-filter-proof-70/x0/hunt_repair.py",
+      "relative": "x0/hunt_repair.py",
+      "destination": "momentum_tangent_dabd_proof_x0__hunt_repair.py.txt",
+      "bytes": 4328,
+      "sha256": "9991181fe97f1f80b078c97f68d32b21b5153135c4b01e9a1a23b86605c4ae78"
+    },
+    {
+      "label": "proof",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-wall-filter-proof-70/x0/hunt_repair.resources.json",
+      "relative": "x0/hunt_repair.resources.json",
+      "destination": "momentum_tangent_dabd_proof_x0__hunt_repair.resources.json",
+      "bytes": 12302,
+      "sha256": "b1f470e84435bc90a0a9e879c31302774b306969413b10e431a4cd5b6b8690a9"
+    },
+    {
+      "label": "proof",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-wall-filter-proof-70/x0/hunt_repair.results.json",
+      "relative": "x0/hunt_repair.results.json",
+      "destination": "momentum_tangent_dabd_proof_x0__hunt_repair.results.json",
+      "bytes": 1442,
+      "sha256": "a163c68812af7c16dcde0aa1fee9ad72ca6d5513cb547ad30bfc466db0dbf88d"
+    },
+    {
+      "label": "proof",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-wall-filter-proof-70/x0/run_bounded.py",
+      "relative": "x0/run_bounded.py",
+      "destination": "momentum_tangent_dabd_proof_x0__run_bounded.py.txt",
+      "bytes": 1469,
+      "sha256": "eeed01db37297efb92ae0116abe006f9764983b794eb6f3b6e7a1a43a23fd45c"
+    },
+    {
+      "label": "proof",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-wall-filter-proof-70/x0/SCOREBOARD.md",
+      "relative": "x0/SCOREBOARD.md",
+      "destination": "momentum_tangent_dabd_proof_x0__SCOREBOARD.md",
+      "bytes": 782,
+      "sha256": "1dba66ce9e47d094109e2f4db43a8bfa92193a6a3574be34b99096e07c9d7743"
+    },
+    {
+      "label": "proof",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-wall-filter-proof-70/x0/verdict.json",
+      "relative": "x0/verdict.json",
+      "destination": "momentum_tangent_dabd_proof_x0__verdict.json",
+      "bytes": 408,
+      "sha256": "c31bff61fdf05b2cd633af6e841066dacee6e94ff940b88f97be1202669dae6a"
+    },
+    {
+      "label": "proof",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-wall-filter-proof-70/x0/WORKFILE.md",
+      "relative": "x0/WORKFILE.md",
+      "destination": "momentum_tangent_dabd_proof_x0__WORKFILE.md",
+      "bytes": 6789,
+      "sha256": "22548af2c69696d3fb5e80291565e7352cf68e55c04de336e63a5b2f1b526cfa"
+    },
+    {
+      "label": "prototype",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-prototype-70/arrays.npz",
+      "relative": "arrays.npz",
+      "destination": "momentum_tangent_dabd_prototype_arrays.npz",
+      "bytes": 597614,
+      "sha256": "219a577a5866c1fd2e10328a05681e9aaf60ca319b0d8460466cd51db3710533"
+    },
+    {
+      "label": "prototype",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-prototype-70/complete-resources.json",
+      "relative": "complete-resources.json",
+      "destination": "momentum_tangent_dabd_prototype_complete-resources.json",
+      "bytes": 362,
+      "sha256": "967618061867394cac014ff1ffa2903908e8e2096c958da00b8f41a3e1c77e7c"
+    },
+    {
+      "label": "prototype",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-prototype-70/complete.log",
+      "relative": "complete.log",
+      "destination": "momentum_tangent_dabd_prototype_complete.log",
+      "bytes": 1372,
+      "sha256": "c5b535796d18f0f23119aefed5df84defed42adaecdf4b6e0b827f4d05357715"
+    },
+    {
+      "label": "prototype",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-prototype-70/declaration.json",
+      "relative": "declaration.json",
+      "destination": "momentum_tangent_dabd_prototype_declaration.json",
+      "bytes": 3194,
+      "sha256": "8f690a94dd37329023189baee16c8d6f48f3c2c7a2dae2f70b998888218ddced"
+    },
+    {
+      "label": "prototype",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-prototype-70/finite-plan.json",
+      "relative": "finite-plan.json",
+      "destination": "momentum_tangent_dabd_prototype_finite-plan.json",
+      "bytes": 557,
+      "sha256": "17470d265431b7f4da065b9ab7b89960182685c55302c996f8c8ee558d707f5c"
+    },
+    {
+      "label": "prototype",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-prototype-70/independent-data-audit/audit-declaration.json",
+      "relative": "independent-data-audit/audit-declaration.json",
+      "destination": "momentum_tangent_dabd_prototype_independent-data-audit__audit-declaration.json",
+      "bytes": 1805,
+      "sha256": "d86599bb4285ec193ea17705b94fc930c625215006310d232e8d6bcd689c5474"
+    },
+    {
+      "label": "prototype",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-prototype-70/independent-data-audit/audit-results.json",
+      "relative": "independent-data-audit/audit-results.json",
+      "destination": "momentum_tangent_dabd_prototype_independent-data-audit__audit-results.json",
+      "bytes": 13197,
+      "sha256": "d5e0324cfae85efc6eb17ba4cd083963939543894d963d940433c5d0eff548ea"
+    },
+    {
+      "label": "prototype",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-prototype-70/independent-data-audit/audit.log",
+      "relative": "independent-data-audit/audit.log",
+      "destination": "momentum_tangent_dabd_prototype_independent-data-audit__audit.log",
+      "bytes": 445,
+      "sha256": "944a991bea8e82167735a6b82f7a58b4d2f346fbbca6a6b98ba91f98327d013c"
+    },
+    {
+      "label": "prototype",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-prototype-70/independent-data-audit/audit.py",
+      "relative": "independent-data-audit/audit.py",
+      "destination": "momentum_tangent_dabd_prototype_independent-data-audit__audit.py.txt",
+      "bytes": 13102,
+      "sha256": "276b3b8bb7f4a8fc8d67238ae5cf6dd4e364e59ce9e4b73f429690ff09e53799"
+    },
+    {
+      "label": "prototype",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-prototype-70/independent-data-audit/FINAL_RULING.json",
+      "relative": "independent-data-audit/FINAL_RULING.json",
+      "destination": "momentum_tangent_dabd_prototype_independent-data-audit__FINAL_RULING.json",
+      "bytes": 1152,
+      "sha256": "325b932ed64569c909beae4622eaa63c5f79e0aa12b67d3cf35cf75cf2d9b73c"
+    },
+    {
+      "label": "prototype",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-prototype-70/independent-data-audit/WORKFILE.md",
+      "relative": "independent-data-audit/WORKFILE.md",
+      "destination": "momentum_tangent_dabd_prototype_independent-data-audit__WORKFILE.md",
+      "bytes": 6660,
+      "sha256": "4814456e2ba4a4ae8e7f6cdf5bec11af464489be53b380418adc210c0a14e0b3"
+    },
+    {
+      "label": "prototype",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-prototype-70/interface-read-order.jsonl",
+      "relative": "interface-read-order.jsonl",
+      "destination": "momentum_tangent_dabd_prototype_interface-read-order.jsonl",
+      "bytes": 1515,
+      "sha256": "ccdcda2ec51442c50502686f21fd1e5deed1d775762c46173473ab677c04e4de"
+    },
+    {
+      "label": "prototype",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-prototype-70/interface-review.md",
+      "relative": "interface-review.md",
+      "destination": "momentum_tangent_dabd_prototype_interface-review.md",
+      "bytes": 11779,
+      "sha256": "bafabb71d0db4e1f64752f651f17ad6c43874f944754d07b3d901f03e9fa67d0"
+    },
+    {
+      "label": "prototype",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-prototype-70/pre-execution-addendum01.json",
+      "relative": "pre-execution-addendum01.json",
+      "destination": "momentum_tangent_dabd_prototype_pre-execution-addendum01.json",
+      "bytes": 357,
+      "sha256": "34b139a703c55ba8667072699dac11a5347b5162a86e85009f11d95103b47d5d"
+    },
+    {
+      "label": "prototype",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-prototype-70/prototype.py",
+      "relative": "prototype.py",
+      "destination": "momentum_tangent_dabd_prototype_prototype.py.txt",
+      "bytes": 11693,
+      "sha256": "828d4dceccab0dcb5b8a0b2b130fcfb0aee12a98dc02c327839f6019f6f56ef8"
+    },
+    {
+      "label": "prototype",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-prototype-70/result.json",
+      "relative": "result.json",
+      "destination": "momentum_tangent_dabd_prototype_result.json",
+      "bytes": 39224,
+      "sha256": "e256e9bdfc1c771cae1d2207d5959dcc0c364e898f00db34dd95cce326494f12"
+    },
+    {
+      "label": "prototype",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-prototype-70/row-journal.jsonl",
+      "relative": "row-journal.jsonl",
+      "destination": "momentum_tangent_dabd_prototype_row-journal.jsonl",
+      "bytes": 1289,
+      "sha256": "13ea100078ca5d3998f553157d19af8dbd42d355582458ddbc90165023be6e10"
+    },
+    {
+      "label": "prototype",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-prototype-70/run.py",
+      "relative": "run.py",
+      "destination": "momentum_tangent_dabd_prototype_run.py.txt",
+      "bytes": 938,
+      "sha256": "698382204dbff55792656d61447841be1ab4d900b9bb3e0bd09cc289436a7dcc"
+    },
+    {
+      "label": "prototype",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-prototype-70/static-interface-seal.json",
+      "relative": "static-interface-seal.json",
+      "destination": "momentum_tangent_dabd_prototype_static-interface-seal.json",
+      "bytes": 1491,
+      "sha256": "8151ffca84b785ab588bdf7751d577081745acb319f956ee6f927d859187326c"
+    },
+    {
+      "label": "prototype",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-prototype-70/timing-pilot-resources.json",
+      "relative": "timing-pilot-resources.json",
+      "destination": "momentum_tangent_dabd_prototype_timing-pilot-resources.json",
+      "bytes": 363,
+      "sha256": "fd927fb4d904b669164715e77be4155fe07af12e3e156db616d0e8f46c093791"
+    },
+    {
+      "label": "prototype",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-prototype-70/timing-pilot.json",
+      "relative": "timing-pilot.json",
+      "destination": "momentum_tangent_dabd_prototype_timing-pilot.json",
+      "bytes": 37857,
+      "sha256": "78e009b24f4c1d279dfe3719e2d84fe4faabe0851d84d164c253c40354c3917b"
+    },
+    {
+      "label": "prototype",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-prototype-70/timing-pilot.log",
+      "relative": "timing-pilot.log",
+      "destination": "momentum_tangent_dabd_prototype_timing-pilot.log",
+      "bytes": 75,
+      "sha256": "d8bbba354e131606908c5eccfe5931bc16ec17f6dc036d316bebcbd0150ee957"
+    },
+    {
+      "label": "D1",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-wall-static-70/diagnostic-D1/complete/case01_ny8_phase0.5235987755982988.json",
+      "relative": "complete/case01_ny8_phase0.5235987755982988.json",
+      "destination": "momentum_tangent_dabd_D1_complete__case01_ny8_phase0.5235987755982988.json",
+      "bytes": 16885,
+      "sha256": "97d7effd3a986f4077d00ef9503d9a8e40fb6fe8c7d61ea0fb3d6e9364a35c5b"
+    },
+    {
+      "label": "D1",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-wall-static-70/diagnostic-D1/complete/case01_ny8_phase0.5235987755982988.npz",
+      "relative": "complete/case01_ny8_phase0.5235987755982988.npz",
+      "destination": "momentum_tangent_dabd_D1_complete__case01_ny8_phase0.5235987755982988.npz",
+      "bytes": 234114,
+      "sha256": "3e06d332ae73d8767cbcc699a098021d22a71c16994da2c657ca2f897b087c9c"
+    },
+    {
+      "label": "D1",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-wall-static-70/diagnostic-D1/complete/case02_ny8_phase1.047197551196598.json",
+      "relative": "complete/case02_ny8_phase1.047197551196598.json",
+      "destination": "momentum_tangent_dabd_D1_complete__case02_ny8_phase1.047197551196598.json",
+      "bytes": 17641,
+      "sha256": "510bde95c705510a16a5e396ac7e9d3ee9b9cfad4a146822b6b83ea1fac22105"
+    },
+    {
+      "label": "D1",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-wall-static-70/diagnostic-D1/complete/case02_ny8_phase1.047197551196598.npz",
+      "relative": "complete/case02_ny8_phase1.047197551196598.npz",
+      "destination": "momentum_tangent_dabd_D1_complete__case02_ny8_phase1.047197551196598.npz",
+      "bytes": 234114,
+      "sha256": "abc691dbf0e6ea5da79dc7ea906cfd2d7b7e60fcef2d38396e0133f7f3364756"
+    },
+    {
+      "label": "D1",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-wall-static-70/diagnostic-D1/complete/case03_ny16_phase0.5235987755982988.json",
+      "relative": "complete/case03_ny16_phase0.5235987755982988.json",
+      "destination": "momentum_tangent_dabd_D1_complete__case03_ny16_phase0.5235987755982988.json",
+      "bytes": 17166,
+      "sha256": "2d59f7d146a096a0a618e99c1ef0341409f98eeaf9391c17a268ee795209087e"
+    },
+    {
+      "label": "D1",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-wall-static-70/diagnostic-D1/complete/case03_ny16_phase0.5235987755982988.npz",
+      "relative": "complete/case03_ny16_phase0.5235987755982988.npz",
+      "destination": "momentum_tangent_dabd_D1_complete__case03_ny16_phase0.5235987755982988.npz",
+      "bytes": 455298,
+      "sha256": "af042ca83df06f442adc4ea7cbf7b4734988ad3f4c1e2bbcfe4f641cb2409522"
+    },
+    {
+      "label": "D1",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-wall-static-70/diagnostic-D1/complete/case04_ny16_phase1.047197551196598.json",
+      "relative": "complete/case04_ny16_phase1.047197551196598.json",
+      "destination": "momentum_tangent_dabd_D1_complete__case04_ny16_phase1.047197551196598.json",
+      "bytes": 17653,
+      "sha256": "ce1c7842c16cad19bf2f97bb3324ee56ddd8e3501cb6e8966b52d0b73d37848b"
+    },
+    {
+      "label": "D1",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-wall-static-70/diagnostic-D1/complete/case04_ny16_phase1.047197551196598.npz",
+      "relative": "complete/case04_ny16_phase1.047197551196598.npz",
+      "destination": "momentum_tangent_dabd_D1_complete__case04_ny16_phase1.047197551196598.npz",
+      "bytes": 455298,
+      "sha256": "f7cd7ebf985a5ad8b45edf9f5ba2e26d74078cf85ef4278514edd7c9980ca694"
+    },
+    {
+      "label": "D1",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-wall-static-70/diagnostic-D1/complete/controls_ny16.npz",
+      "relative": "complete/controls_ny16.npz",
+      "destination": "momentum_tangent_dabd_D1_complete__controls_ny16.npz",
+      "bytes": 4216,
+      "sha256": "d210b443d93893abc095c8f05e44f48690f50178b52968207a2874c0ae4828ab"
+    },
+    {
+      "label": "D1",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-wall-static-70/diagnostic-D1/complete/controls_ny8.npz",
+      "relative": "complete/controls_ny8.npz",
+      "destination": "momentum_tangent_dabd_D1_complete__controls_ny8.npz",
+      "bytes": 3512,
+      "sha256": "1110e858ebf5420f5b0a78c88f5e645bfa37bc430e87d9d58250d2df4cb4a20c"
+    },
+    {
+      "label": "D1",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-wall-static-70/diagnostic-D1/complete/effective-ny16.json",
+      "relative": "complete/effective-ny16.json",
+      "destination": "momentum_tangent_dabd_D1_complete__effective-ny16.json",
+      "bytes": 9572,
+      "sha256": "3ec942bea602aea88a7ad7f583e27265de245862964aec8f1de2dff00d0dd60a"
+    },
+    {
+      "label": "D1",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-wall-static-70/diagnostic-D1/complete/effective-ny8.json",
+      "relative": "complete/effective-ny8.json",
+      "destination": "momentum_tangent_dabd_D1_complete__effective-ny8.json",
+      "bytes": 9541,
+      "sha256": "f2ceec63b0f95a68a1a93840a97272a5be0c87ea20b90f92bec05427669250f1"
+    },
+    {
+      "label": "D1",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-wall-static-70/diagnostic-D1/complete/gates.jsonl",
+      "relative": "complete/gates.jsonl",
+      "destination": "momentum_tangent_dabd_D1_complete__gates.jsonl",
+      "bytes": 21036,
+      "sha256": "476ad2719d2a5ee0ce4847b410425e0fb1d5b544044bfee990f675b63ceb928b"
+    },
+    {
+      "label": "D1",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-wall-static-70/diagnostic-D1/complete/modules-after.json",
+      "relative": "complete/modules-after.json",
+      "destination": "momentum_tangent_dabd_D1_complete__modules-after.json",
+      "bytes": 9894,
+      "sha256": "41aabb9f157f5e867594d615dc16dbba838746b3ecb9e6b91061bdbb5f8bf47f"
+    },
+    {
+      "label": "D1",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-wall-static-70/diagnostic-D1/complete/modules-before.json",
+      "relative": "complete/modules-before.json",
+      "destination": "momentum_tangent_dabd_D1_complete__modules-before.json",
+      "bytes": 9894,
+      "sha256": "41aabb9f157f5e867594d615dc16dbba838746b3ecb9e6b91061bdbb5f8bf47f"
+    },
+    {
+      "label": "D1",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-wall-static-70/diagnostic-D1/complete/source-after.json",
+      "relative": "complete/source-after.json",
+      "destination": "momentum_tangent_dabd_D1_complete__source-after.json",
+      "bytes": 32018,
+      "sha256": "24f2aeafe37d960b5cd16c83434f087d692f7b7840bdcee9f7e4e1348290e034"
+    },
+    {
+      "label": "D1",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-wall-static-70/diagnostic-D1/complete/source-before.json",
+      "relative": "complete/source-before.json",
+      "destination": "momentum_tangent_dabd_D1_complete__source-before.json",
+      "bytes": 32018,
+      "sha256": "24f2aeafe37d960b5cd16c83434f087d692f7b7840bdcee9f7e4e1348290e034"
+    },
+    {
+      "label": "D1",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-wall-static-70/diagnostic-D1/complete/summary.json",
+      "relative": "complete/summary.json",
+      "destination": "momentum_tangent_dabd_D1_complete__summary.json",
+      "bytes": 1058,
+      "sha256": "6f3aebb2398d5b9c59101c43db390e92861afcba487ea3498b749c22f13dfa07"
+    },
+    {
+      "label": "D1",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-wall-static-70/diagnostic-D1/complete-resources.jsonl",
+      "relative": "complete-resources.jsonl",
+      "destination": "momentum_tangent_dabd_D1_complete-resources.jsonl",
+      "bytes": 3011,
+      "sha256": "1b9a9e451a42644e1dbc77571992a4879ae35e35457d59e4b02b9d9e3d33e437"
+    },
+    {
+      "label": "D1",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-wall-static-70/diagnostic-D1/complete.log",
+      "relative": "complete.log",
+      "destination": "momentum_tangent_dabd_D1_complete.log",
+      "bytes": 1495,
+      "sha256": "f0eafba2570e940c2f843f99469dd9361d2d077a7ddbc84d822686a3575f5584"
+    },
+    {
+      "label": "D1",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-wall-static-70/diagnostic-D1/DECLARATION.md",
+      "relative": "DECLARATION.md",
+      "destination": "momentum_tangent_dabd_D1_DECLARATION.md",
+      "bytes": 7042,
+      "sha256": "12206d7f5c78ff013325057f508fe6b672802a9ea99e93d97606820d94125ce7"
+    },
+    {
+      "label": "D1",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-wall-static-70/diagnostic-D1/execution-receipt.json",
+      "relative": "execution-receipt.json",
+      "destination": "momentum_tangent_dabd_D1_execution-receipt.json",
+      "bytes": 1312,
+      "sha256": "b3d6cf835daf41d96e7b53a130f0d0cce0695ec2ed798ac2083c285a96ecfd75"
+    },
+    {
+      "label": "D1",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-wall-static-70/diagnostic-D1/REPORT.md",
+      "relative": "REPORT.md",
+      "destination": "momentum_tangent_dabd_D1_REPORT.md",
+      "bytes": 7437,
+      "sha256": "d14bf34304213ba84192655701398fef214251eb3f7090262a5e9ac240776099"
+    },
+    {
+      "label": "D1",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-wall-static-70/diagnostic-D1/root-static-confirmation.json",
+      "relative": "root-static-confirmation.json",
+      "destination": "momentum_tangent_dabd_D1_root-static-confirmation.json",
+      "bytes": 807,
+      "sha256": "2ba650f736c5e12adb4a8263bb5d9c987ef2f1d669e4ccc6c903fd8d816ba33e"
+    },
+    {
+      "label": "D1",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-wall-static-70/diagnostic-D1/run_d1.py",
+      "relative": "run_d1.py",
+      "destination": "momentum_tangent_dabd_D1_run_d1.py.txt",
+      "bytes": 19055,
+      "sha256": "8a38ea09636e91c5abacf12466660723298bc94c6560a3549d95f16c467d939c"
+    },
+    {
+      "label": "D1",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-wall-static-70/diagnostic-D1/scoreboard.jsonl",
+      "relative": "scoreboard.jsonl",
+      "destination": "momentum_tangent_dabd_D1_scoreboard.jsonl",
+      "bytes": 1317,
+      "sha256": "bb0d1c0298a62cd232543d976fb0d07be7e4247e926e0cd752061c1250cec50e"
+    },
+    {
+      "label": "D1",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-wall-static-70/diagnostic-D1/stencil_oracle.py",
+      "relative": "stencil_oracle.py",
+      "destination": "momentum_tangent_dabd_D1_stencil_oracle.py.txt",
+      "bytes": 2141,
+      "sha256": "1c9db4d034b82991ea240b0d310d7ed5ed9646d1b80837b7c5750da129d4c828"
+    },
+    {
+      "label": "D1",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-wall-static-70/diagnostic-D1/supervise.py",
+      "relative": "supervise.py",
+      "destination": "momentum_tangent_dabd_D1_supervise.py.txt",
+      "bytes": 4469,
+      "sha256": "2db1ece082abad88ca0e60903950db22cbbf44f535bf90c5ada8dd2f84ee9028"
+    },
+    {
+      "label": "D1",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-wall-static-70/diagnostic-D1/timing/modules-after.json",
+      "relative": "timing/modules-after.json",
+      "destination": "momentum_tangent_dabd_D1_timing__modules-after.json",
+      "bytes": 9894,
+      "sha256": "41aabb9f157f5e867594d615dc16dbba838746b3ecb9e6b91061bdbb5f8bf47f"
+    },
+    {
+      "label": "D1",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-wall-static-70/diagnostic-D1/timing/modules-before.json",
+      "relative": "timing/modules-before.json",
+      "destination": "momentum_tangent_dabd_D1_timing__modules-before.json",
+      "bytes": 9894,
+      "sha256": "41aabb9f157f5e867594d615dc16dbba838746b3ecb9e6b91061bdbb5f8bf47f"
+    },
+    {
+      "label": "D1",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-wall-static-70/diagnostic-D1/timing/source-after.json",
+      "relative": "timing/source-after.json",
+      "destination": "momentum_tangent_dabd_D1_timing__source-after.json",
+      "bytes": 32018,
+      "sha256": "24f2aeafe37d960b5cd16c83434f087d692f7b7840bdcee9f7e4e1348290e034"
+    },
+    {
+      "label": "D1",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-wall-static-70/diagnostic-D1/timing/source-before.json",
+      "relative": "timing/source-before.json",
+      "destination": "momentum_tangent_dabd_D1_timing__source-before.json",
+      "bytes": 32018,
+      "sha256": "24f2aeafe37d960b5cd16c83434f087d692f7b7840bdcee9f7e4e1348290e034"
+    },
+    {
+      "label": "D1",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-wall-static-70/diagnostic-D1/timing/timing.json",
+      "relative": "timing/timing.json",
+      "destination": "momentum_tangent_dabd_D1_timing__timing.json",
+      "bytes": 267,
+      "sha256": "16314890c6ef32bbefee22481ffc7ffce5a7c2f8e2b9c91db866b3d37b702080"
+    },
+    {
+      "label": "D1",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-wall-static-70/diagnostic-D1/timing-decision.json",
+      "relative": "timing-decision.json",
+      "destination": "momentum_tangent_dabd_D1_timing-decision.json",
+      "bytes": 511,
+      "sha256": "bc9b658e565aa223d2dd3f9f601ede7ae09cd1402e636f85d77d21de5244e827"
+    },
+    {
+      "label": "D1",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-wall-static-70/diagnostic-D1/timing-resources.jsonl",
+      "relative": "timing-resources.jsonl",
+      "destination": "momentum_tangent_dabd_D1_timing-resources.jsonl",
+      "bytes": 2571,
+      "sha256": "beaf817737cc917e02f757bf62c6e942d14aed3229be9cd0775f98581b8e4423"
+    },
+    {
+      "label": "D1",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-wall-static-70/diagnostic-D1/timing.log",
+      "relative": "timing.log",
+      "destination": "momentum_tangent_dabd_D1_timing.log",
+      "bytes": 309,
+      "sha256": "6e5c8a7c3b911ea1e48fe809f6efacd127574d495ce7e437c5b22ef19851bce3"
+    },
+    {
+      "label": "D1",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-wall-static-70/diagnostic-D1/truth/truth.json",
+      "relative": "truth/truth.json",
+      "destination": "momentum_tangent_dabd_D1_truth__truth.json",
+      "bytes": 28994,
+      "sha256": "2bb976cf80d91e1740f00156fd7773eb71834a05364c85f5c4d2e14dd4efbffe"
+    },
+    {
+      "label": "D1",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-wall-static-70/diagnostic-D1/truth-resources.jsonl",
+      "relative": "truth-resources.jsonl",
+      "destination": "momentum_tangent_dabd_D1_truth-resources.jsonl",
+      "bytes": 75,
+      "sha256": "a369e2db0bee94bcab24804567578e02e5b11c74c9a42c884e8932eda39e36e3"
+    },
+    {
+      "label": "D1",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-wall-static-70/diagnostic-D1/truth.log",
+      "relative": "truth.log",
+      "destination": "momentum_tangent_dabd_D1_truth.log",
+      "bytes": 68,
+      "sha256": "15b1805d2bdff96927eb1f7c9cb0043a21604455e56c08f392c272e1b163bc00"
+    },
+    {
+      "label": "D1",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-wall-static-70/diagnostic-D1/truth_generator.py",
+      "relative": "truth_generator.py",
+      "destination": "momentum_tangent_dabd_D1_truth_generator.py.txt",
+      "bytes": 2811,
+      "sha256": "805e5115b1cc104cd15f4f2d89d97748aeb06c4991aba6fbe60d6ff99717edd6"
+    },
+    {
+      "label": "reference",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/eta-second-order-reference/reference_arrays.npz",
+      "relative": "reused_reference_arrays.npz",
+      "destination": "momentum_tangent_dabd_reference_reused_reference_arrays.npz",
+      "bytes": 17325,
+      "sha256": "9feb7111e614cf5e3a98624d7195128cc02f9be1084a9fdbf8deae2ab3844b02"
+    },
+    {
+      "label": "reference",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/eta-second-order-reference/result.json",
+      "relative": "reused_reference_result.json",
+      "destination": "momentum_tangent_dabd_reference_reused_reference_result.json",
+      "bytes": 32687,
+      "sha256": "0f1eaddb0bf78ecdbc43f29d594aa19635caa50a6c22bd3f162f89d83367f0d5"
+    },
+    {
+      "label": "reference",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/eta-second-order-reference/REFERENCE_SPEC-v2.md",
+      "relative": "reused_REFERENCE_SPEC_v2.md",
+      "destination": "momentum_tangent_dabd_reference_reused_REFERENCE_SPEC_v2.md",
+      "bytes": 5032,
+      "sha256": "6ad1d285b68eb01ffab15116f3fccdf6683b4148afe7885a0ff96da663b632bd"
+    },
+    {
+      "label": "baseline",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/material-point-gradient-v1/01-candidate-primary-main/zhenmode/output.npz",
+      "relative": "70_primary_output.npz",
+      "destination": "momentum_tangent_dabd_baseline_70_primary_output.npz",
+      "bytes": 526497,
+      "sha256": "55d8f8c4b62f486c7d2941ae309c864acd6f9414f2e44dfc9b51aa5c331a2449"
+    },
+    {
+      "label": "baseline",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/material-point-gradient-v1/01-candidate-primary-main/contract.json",
+      "relative": "70_primary_contract.json",
+      "destination": "momentum_tangent_dabd_baseline_70_primary_contract.json",
+      "bytes": 4687,
+      "sha256": "93f24d276bcd199503b3f9348e169ce69a5805164b42a8945803f5ca9ffad180"
+    },
+    {
+      "label": "baseline",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/../vertical-accuracy-round2-20261012/band-stage/01-candidate-primary-main/zhenmode/output.npz",
+      "relative": "original_v3_primary_output.npz",
+      "destination": "momentum_tangent_dabd_baseline_original_v3_primary_output.npz",
+      "bytes": 527088,
+      "sha256": "8ce7c681904bc4be00858b0f464ca0a48cd6a16d493b15765931f5cf461c8b15"
+    },
+    {
+      "label": "canonical",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/eta-canonical-readback-70-dab/complete-resources.json",
+      "relative": "complete-resources.json",
+      "destination": "momentum_tangent_dabd_canonical_complete-resources.json",
+      "bytes": 361,
+      "sha256": "2c223ce8e2da10020e4230cfe78f39185815b93db68dbce613c4c224a3cf3b36"
+    },
+    {
+      "label": "canonical",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/eta-canonical-readback-70-dab/complete.log",
+      "relative": "complete.log",
+      "destination": "momentum_tangent_dabd_canonical_complete.log",
+      "bytes": 875,
+      "sha256": "ba51b02a2570fae0c04a42c60c9610e6f4fcc12012552430bbb452d689df7559"
+    },
+    {
+      "label": "canonical",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/eta-canonical-readback-70-dab/declaration.json",
+      "relative": "declaration.json",
+      "destination": "momentum_tangent_dabd_canonical_declaration.json",
+      "bytes": 1890,
+      "sha256": "41cc2c7b90b944935afc5435b77100e25b38705c2bba7e2300e693c767577a17"
+    },
+    {
+      "label": "canonical",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/eta-canonical-readback-70-dab/measured-plan.json",
+      "relative": "measured-plan.json",
+      "destination": "momentum_tangent_dabd_canonical_measured-plan.json",
+      "bytes": 329,
+      "sha256": "01b98f99e0708a721bd8a3fdfd3f5ac577fcb896d87441dd8d660f3aebfb9b16"
+    },
+    {
+      "label": "canonical",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/eta-canonical-readback-70-dab/readback.py",
+      "relative": "readback.py",
+      "destination": "momentum_tangent_dabd_canonical_readback.py.txt",
+      "bytes": 4229,
+      "sha256": "cb2fa73390671d4eeb252bcc2e9d10cc02527f9da3e11d9e5160e6e1bd7ab17c"
+    },
+    {
+      "label": "canonical",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/eta-canonical-readback-70-dab/result.json",
+      "relative": "result.json",
+      "destination": "momentum_tangent_dabd_canonical_result.json",
+      "bytes": 1998,
+      "sha256": "874512e3daef34e3fb2951160069a420276130096a39344fe1dd706a8da019fb"
+    },
+    {
+      "label": "canonical",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/eta-canonical-readback-70-dab/review/audit-declaration.json",
+      "relative": "review/audit-declaration.json",
+      "destination": "momentum_tangent_dabd_canonical_review__audit-declaration.json",
+      "bytes": 2048,
+      "sha256": "e21c9d337992674340f3d3fdabf9ce04419201d9b355d28e8c973e8a9b2fca5a"
+    },
+    {
+      "label": "canonical",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/eta-canonical-readback-70-dab/review/FINAL_RULING.json",
+      "relative": "review/FINAL_RULING.json",
+      "destination": "momentum_tangent_dabd_canonical_review__FINAL_RULING.json",
+      "bytes": 1772,
+      "sha256": "33250ac0917c1bae13523e27056f41ee95c55f816c5d56e44ec9d5d0b4a04203"
+    },
+    {
+      "label": "canonical",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/eta-canonical-readback-70-dab/review/independent-results.json",
+      "relative": "review/independent-results.json",
+      "destination": "momentum_tangent_dabd_canonical_review__independent-results.json",
+      "bytes": 13308,
+      "sha256": "1f14ce4a7da9dfcea3b4a5c2787ce2f56667bb41fa14af9fcbdfc77229c94afa"
+    },
+    {
+      "label": "canonical",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/eta-canonical-readback-70-dab/review/independent-run.log",
+      "relative": "review/independent-run.log",
+      "destination": "momentum_tangent_dabd_canonical_review__independent-run.log",
+      "bytes": 901,
+      "sha256": "8b2eda301be7fc1e9a737049df3c873517a18bd7fd1e66199f77b1333252b073"
+    },
+    {
+      "label": "canonical",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/eta-canonical-readback-70-dab/review/independent_readback.py",
+      "relative": "review/independent_readback.py",
+      "destination": "momentum_tangent_dabd_canonical_review__independent_readback.py.txt",
+      "bytes": 14305,
+      "sha256": "00b6d30d01c5e94c74027bb21f0649d3b3e2198dd800a802e5053ed1720cb0c7"
+    },
+    {
+      "label": "canonical",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/eta-canonical-readback-70-dab/review/WORKFILE.md",
+      "relative": "review/WORKFILE.md",
+      "destination": "momentum_tangent_dabd_canonical_review__WORKFILE.md",
+      "bytes": 9904,
+      "sha256": "62f47d18db924fac5287c692333a287dee932d77bbf207e485954a853a30fe10"
+    },
+    {
+      "label": "canonical",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/eta-canonical-readback-70-dab/row-journal.jsonl",
+      "relative": "row-journal.jsonl",
+      "destination": "momentum_tangent_dabd_canonical_row-journal.jsonl",
+      "bytes": 787,
+      "sha256": "686f9030c738e1ffce575e56edbb586bc912a85e6fa2742ad02d1985969dc880"
+    },
+    {
+      "label": "canonical",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/eta-canonical-readback-70-dab/run.py",
+      "relative": "run.py",
+      "destination": "momentum_tangent_dabd_canonical_run.py.txt",
+      "bytes": 937,
+      "sha256": "dadc6ce7ac3aa4df54926aa9e2be066012bc6a73648ea61f6b88e24ceaed8bfc"
+    },
+    {
+      "label": "canonical",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/eta-canonical-readback-70-dab/timing-pilot-resources.json",
+      "relative": "timing-pilot-resources.json",
+      "destination": "momentum_tangent_dabd_canonical_timing-pilot-resources.json",
+      "bytes": 368,
+      "sha256": "ec7a960895cd8e5303c7058b13c98bf2f2b02cc6f0349fdad51b8611980c1c3c"
+    },
+    {
+      "label": "canonical",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/eta-canonical-readback-70-dab/timing-pilot.json",
+      "relative": "timing-pilot.json",
+      "destination": "momentum_tangent_dabd_canonical_timing-pilot.json",
+      "bytes": 986,
+      "sha256": "25ea9de7cd674191e2b2802da2ce6b379eb7ab28360199bdb40a21c03f0cfea9"
+    },
+    {
+      "label": "canonical",
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/eta-canonical-readback-70-dab/timing-pilot.log",
+      "relative": "timing-pilot.log",
+      "destination": "momentum_tangent_dabd_canonical_timing-pilot.log",
+      "bytes": 88,
+      "sha256": "406f8634ad22c0904f87d9a30139b066e11ccbb805314026ff4180b0bdb2db04"
+    }
+  ],
+  "entry_count": 294,
+  "total_bytes": 17142789,
+  "evidence_scope": "Full finiteFt stage+proof/D1/prototype+raw2native/new6MMS+savedreference/newreadonlycanonical; native rankingFAIL, no2..9 runs; distinct science/softwaregrades",
+  "native_ranking": "FAIL",
+  "globalSOTA": "OPEN"
+}

@@ -1,0 +1,10 @@
+{
+  "expected_source": "new functional commit after staticaudit+controls NOTdocsHEAD",
+  "workflow": "ci.yml",
+  "workflow_dispatch": {
+    "full_validation": true
+  },
+  "required": "actual exact new revision pytest/MMS terminal+raw log, jobs notSKIP; pendingneverPASS",
+  "parent70CI": "38306749152 coversonly70notnewcandidate",
+  "declared_at": "2026-10-12T22:48:07.920Z"
+}

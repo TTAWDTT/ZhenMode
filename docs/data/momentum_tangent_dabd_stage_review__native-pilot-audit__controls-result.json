@@ -1,0 +1,22 @@
+{
+  "utc": "2026-10-12T23:12:28.342363+00:00",
+  "verdict": "PASS",
+  "positive_serialized_RMS": 1.224744871391589,
+  "expected": 1.224744871391589,
+  "zero_RMS": 0.0,
+  "exact17_clean_twin": true,
+  "detectors": [
+    "array",
+    "file_byte",
+    "option_digest",
+    "metric",
+    "strict_direction_and_tie",
+    "time_shift",
+    "capacity",
+    "coordinate",
+    "source"
+  ],
+  "original_thresholds_unchanged": true,
+  "scope": "Reader/arithmetic/comparator controls; no solver or fullphysics qualification",
+  "elapsed_s": 0.002556103000003418
+}

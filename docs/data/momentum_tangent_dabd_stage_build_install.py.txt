@@ -1,0 +1,27 @@
+import json, subprocess, sys
+from pathlib import Path
+root=Path('/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1')
+work=Path('/mnt/d/CodexWorktrees/thermal-full-scan/ocean-solver')
+import hashlib
+source=json.loads((root/'build-input.json').read_text())
+revision=source['revision']
+assert source['windows_git_checkout_clean']
+for name, expected in source['files'].items():
+    assert hashlib.sha256((work/name).read_bytes()).hexdigest()==expected,name
+with (root/'wheel-build.log').open('x') as log:
+    subprocess.run([sys.executable,'-m','pip','wheel','--no-deps','--no-build-isolation','--wheel-dir',str(root/'wheel'),str(work)],stdout=log,stderr=subprocess.STDOUT,check=True)
+    wheel=next((root/'wheel').glob('zhenmode*.whl'))
+    subprocess.run([sys.executable,'-m','pip','install','--no-deps','--no-compile','--target',str(root/'installed'),str(wheel)],stdout=log,stderr=subprocess.STDOUT,check=True)
+sys.path.insert(0,str(root/'installed'))
+from zhenmode.benchmarks.internal_wave import matrix, selection
+from zhenmode.benchmarks.standing_wave import digest
+from zhenmode.provenance.sources import sha256_file, package_source_hashes
+import zhenmode
+assert Path(zhenmode.__file__).resolve().is_relative_to(root/'installed')
+assert len(matrix())==21
+identity=dict(revision=revision,wheel=wheel.name,wheel_sha256=sha256_file(wheel),selection_sha256=digest(selection()),package_source_sha256=package_source_hashes(zhenmode.__file__))
+actual={q.relative_to(root/'installed').with_suffix('').as_posix() for q in (root/'installed'/'zhenmode').rglob('*.py')}
+assert set(identity['package_source_sha256'])==actual, 'source registry does not cover the complete installed Python file set'
+identity['verified_complete_python_count']=len(actual)
+(root/'wheel-identity.json').write_text(json.dumps(identity,indent=2))
+print('isolated wheel installed:',revision,wheel.name)

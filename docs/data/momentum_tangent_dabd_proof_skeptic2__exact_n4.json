@@ -1,0 +1,599 @@
+{
+  "status": "PASS",
+  "n": 4,
+  "exact_domain": "SymPy exact expressions/rationals; no floats",
+  "python": "3.12.3 (main, Aug 31 2026, 10:18:26) [GCC 13.3.0]",
+  "executable": "/root/.local/share/bootloops-suite/bootloops/.venv/bin/python",
+  "sympy": "1.14.0",
+  "cpu_affinity": [
+    0
+  ],
+  "wall_seconds": 2.543681552,
+  "rss_samples": 170,
+  "sampled_peak_rss_kib": 74980,
+  "rlimit_as_bytes": 4294967296,
+  "script_sha256": "7d18975da0bebabc816ecd8c5f4e6cd3497a514b3939ef63d780c5f1dbeb6a04",
+  "checks": [
+    {
+      "name": "trivial rational known answer",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "T1",
+      "pass": true,
+      "detail": [
+        "-1/8",
+        "9/8",
+        "33/8",
+        "71/8"
+      ]
+    },
+    {
+      "name": "T2",
+      "pass": true,
+      "detail": [
+        "5/8",
+        "9/8",
+        "9/8",
+        "5/8"
+      ]
+    },
+    {
+      "name": "T1 TV does not rise",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "Ft e0 TV rise",
+      "pass": true,
+      "detail": {
+        "input": "1",
+        "output": "17/16"
+      }
+    },
+    {
+      "name": "Ft positivity failure",
+      "pass": true,
+      "detail": [
+        "15/16",
+        "1/8",
+        "-1/16",
+        "0"
+      ]
+    },
+    {
+      "name": "Fn positivity failure",
+      "pass": true,
+      "detail": [
+        "3/8",
+        "5/16",
+        "-1/16",
+        "0"
+      ]
+    },
+    {
+      "name": "Fn constant TV rise",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "Ft constants",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "Ft affine",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "Ft mean functional",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "R rank and kernel dimension",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "Fn Nyquist kill",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "O(n) transpose addition identity",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "Ft symmetric",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "Ft principal minor (0,)",
+      "pass": true,
+      "detail": "15/16"
+    },
+    {
+      "name": "Ft principal minor (1,)",
+      "pass": true,
+      "detail": "11/16"
+    },
+    {
+      "name": "Ft principal minor (2,)",
+      "pass": true,
+      "detail": "11/16"
+    },
+    {
+      "name": "Ft principal minor (3,)",
+      "pass": true,
+      "detail": "15/16"
+    },
+    {
+      "name": "Ft principal minor (0, 1)",
+      "pass": true,
+      "detail": "161/256"
+    },
+    {
+      "name": "Ft principal minor (0, 2)",
+      "pass": true,
+      "detail": "41/64"
+    },
+    {
+      "name": "Ft principal minor (0, 3)",
+      "pass": true,
+      "detail": "225/256"
+    },
+    {
+      "name": "Ft principal minor (1, 2)",
+      "pass": true,
+      "detail": "105/256"
+    },
+    {
+      "name": "Ft principal minor (1, 3)",
+      "pass": true,
+      "detail": "41/64"
+    },
+    {
+      "name": "Ft principal minor (2, 3)",
+      "pass": true,
+      "detail": "161/256"
+    },
+    {
+      "name": "Ft principal minor (0, 1, 2)",
+      "pass": true,
+      "detail": "47/128"
+    },
+    {
+      "name": "Ft principal minor (0, 1, 3)",
+      "pass": true,
+      "detail": "75/128"
+    },
+    {
+      "name": "Ft principal minor (0, 2, 3)",
+      "pass": true,
+      "detail": "75/128"
+    },
+    {
+      "name": "Ft principal minor (1, 2, 3)",
+      "pass": true,
+      "detail": "47/128"
+    },
+    {
+      "name": "Ft principal minor (0, 1, 2, 3)",
+      "pass": true,
+      "detail": "21/64"
+    },
+    {
+      "name": "I-Ft symmetric",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "I-Ft principal minor (0,)",
+      "pass": true,
+      "detail": "1/16"
+    },
+    {
+      "name": "I-Ft principal minor (1,)",
+      "pass": true,
+      "detail": "5/16"
+    },
+    {
+      "name": "I-Ft principal minor (2,)",
+      "pass": true,
+      "detail": "5/16"
+    },
+    {
+      "name": "I-Ft principal minor (3,)",
+      "pass": true,
+      "detail": "1/16"
+    },
+    {
+      "name": "I-Ft principal minor (0, 1)",
+      "pass": true,
+      "detail": "1/256"
+    },
+    {
+      "name": "I-Ft principal minor (0, 2)",
+      "pass": true,
+      "detail": "1/64"
+    },
+    {
+      "name": "I-Ft principal minor (0, 3)",
+      "pass": true,
+      "detail": "1/256"
+    },
+    {
+      "name": "I-Ft principal minor (1, 2)",
+      "pass": true,
+      "detail": "9/256"
+    },
+    {
+      "name": "I-Ft principal minor (1, 3)",
+      "pass": true,
+      "detail": "1/64"
+    },
+    {
+      "name": "I-Ft principal minor (2, 3)",
+      "pass": true,
+      "detail": "1/256"
+    },
+    {
+      "name": "I-Ft principal minor (0, 1, 2)",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "name": "I-Ft principal minor (0, 1, 3)",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "name": "I-Ft principal minor (0, 2, 3)",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "name": "I-Ft principal minor (1, 2, 3)",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "name": "I-Ft principal minor (0, 1, 2, 3)",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "name": "Fn symmetric",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "Fn principal minor (0,)",
+      "pass": true,
+      "detail": "3/8"
+    },
+    {
+      "name": "Fn principal minor (1,)",
+      "pass": true,
+      "detail": "5/8"
+    },
+    {
+      "name": "Fn principal minor (2,)",
+      "pass": true,
+      "detail": "5/8"
+    },
+    {
+      "name": "Fn principal minor (3,)",
+      "pass": true,
+      "detail": "3/8"
+    },
+    {
+      "name": "Fn principal minor (0, 1)",
+      "pass": true,
+      "detail": "35/256"
+    },
+    {
+      "name": "Fn principal minor (0, 2)",
+      "pass": true,
+      "detail": "59/256"
+    },
+    {
+      "name": "Fn principal minor (0, 3)",
+      "pass": true,
+      "detail": "9/64"
+    },
+    {
+      "name": "Fn principal minor (1, 2)",
+      "pass": true,
+      "detail": "21/64"
+    },
+    {
+      "name": "Fn principal minor (1, 3)",
+      "pass": true,
+      "detail": "59/256"
+    },
+    {
+      "name": "Fn principal minor (2, 3)",
+      "pass": true,
+      "detail": "35/256"
+    },
+    {
+      "name": "Fn principal minor (0, 1, 2)",
+      "pass": true,
+      "detail": "51/1024"
+    },
+    {
+      "name": "Fn principal minor (0, 1, 3)",
+      "pass": true,
+      "detail": "51/1024"
+    },
+    {
+      "name": "Fn principal minor (0, 2, 3)",
+      "pass": true,
+      "detail": "51/1024"
+    },
+    {
+      "name": "Fn principal minor (1, 2, 3)",
+      "pass": true,
+      "detail": "51/1024"
+    },
+    {
+      "name": "Fn principal minor (0, 1, 2, 3)",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "name": "I-Fn symmetric",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "I-Fn principal minor (0,)",
+      "pass": true,
+      "detail": "5/8"
+    },
+    {
+      "name": "I-Fn principal minor (1,)",
+      "pass": true,
+      "detail": "3/8"
+    },
+    {
+      "name": "I-Fn principal minor (2,)",
+      "pass": true,
+      "detail": "3/8"
+    },
+    {
+      "name": "I-Fn principal minor (3,)",
+      "pass": true,
+      "detail": "5/8"
+    },
+    {
+      "name": "I-Fn principal minor (0, 1)",
+      "pass": true,
+      "detail": "35/256"
+    },
+    {
+      "name": "I-Fn principal minor (0, 2)",
+      "pass": true,
+      "detail": "59/256"
+    },
+    {
+      "name": "I-Fn principal minor (0, 3)",
+      "pass": true,
+      "detail": "25/64"
+    },
+    {
+      "name": "I-Fn principal minor (1, 2)",
+      "pass": true,
+      "detail": "5/64"
+    },
+    {
+      "name": "I-Fn principal minor (1, 3)",
+      "pass": true,
+      "detail": "59/256"
+    },
+    {
+      "name": "I-Fn principal minor (2, 3)",
+      "pass": true,
+      "detail": "35/256"
+    },
+    {
+      "name": "I-Fn principal minor (0, 1, 2)",
+      "pass": true,
+      "detail": "21/1024"
+    },
+    {
+      "name": "I-Fn principal minor (0, 1, 3)",
+      "pass": true,
+      "detail": "85/1024"
+    },
+    {
+      "name": "I-Fn principal minor (0, 2, 3)",
+      "pass": true,
+      "detail": "85/1024"
+    },
+    {
+      "name": "I-Fn principal minor (1, 2, 3)",
+      "pass": true,
+      "detail": "21/1024"
+    },
+    {
+      "name": "I-Fn principal minor (0, 1, 2, 3)",
+      "pass": true,
+      "detail": "1/256"
+    },
+    {
+      "name": "L sine k=1",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "Fn symbol k=1",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "Bn symbol k=1",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "L sine k=2",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "Fn symbol k=2",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "Bn symbol k=2",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "L sine k=3",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "Fn symbol k=3",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "Bn symbol k=3",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "L sine k=4",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "Fn symbol k=4",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "Bn symbol k=4",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "complete n4 sine basis",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "Ft unequal-weight contraction trap",
+      "pass": true,
+      "detail": {
+        "before": "1",
+        "after": "145/128",
+        "residual": "17/128"
+      }
+    },
+    {
+      "name": "Fn unequal-weight contraction trap",
+      "pass": true,
+      "detail": {
+        "before": "1",
+        "after": "437/256",
+        "residual": "181/256"
+      }
+    },
+    {
+      "name": "Ft plant output",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "Ft plant norm",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "Ft plant quadratic",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "Ft 1/4 false plant CAUGHT",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "Fn plant output",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "Fn plant norm",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "Fn plant quadratic",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "Fn 1/4 false plant CAUGHT",
+      "pass": true,
+      "detail": null
+    }
+  ],
+  "plants": [
+    {
+      "failing_step": "coefficient 1/4 preserves contraction and Loewner nonnegativity",
+      "operator": "Ft",
+      "instance": [
+        "1",
+        "-1",
+        "1",
+        "-1"
+      ],
+      "output": [
+        "0",
+        "2",
+        "-2",
+        "0"
+      ],
+      "norm_before": "4",
+      "norm_after": "8",
+      "norm_residual": "4",
+      "quadratic": "-4",
+      "verdict": "CAUGHT"
+    },
+    {
+      "failing_step": "coefficient 1/4 preserves contraction and Loewner nonnegativity",
+      "operator": "Fn",
+      "instance": [
+        "1",
+        "-1",
+        "1",
+        "-1"
+      ],
+      "output": [
+        "-3",
+        "3",
+        "-3",
+        "3"
+      ],
+      "norm_before": "4",
+      "norm_after": "36",
+      "norm_residual": "32",
+      "quadratic": "-12",
+      "verdict": "CAUGHT"
+    }
+  ],
+  "error": null
+}

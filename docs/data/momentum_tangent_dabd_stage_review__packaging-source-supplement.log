@@ -1,0 +1,48 @@
+{
+  "source": "dabd48abd898c20e0471a5ab9fc18e9b61cfa96d",
+  "new_build_capture": {
+    "count": 144,
+    "scope": "src only, no README/pyproject/scripts capture"
+  },
+  "old70_build_capture": {
+    "count": 146,
+    "extra_non_src": [
+      "README.md",
+      "pyproject.toml"
+    ]
+  },
+  "rows": [
+    {
+      "path": "README.md",
+      "Git_SHA": "ec148ee3551de83c410a0b8089a385b57104940a0740b5423f48b5a5e2f31801",
+      "current_SHA": "ec148ee3551de83c410a0b8089a385b57104940a0740b5423f48b5a5e2f31801",
+      "old70_manifest_SHA": "ec148ee3551de83c410a0b8089a385b57104940a0740b5423f48b5a5e2f31801",
+      "Git_current_equal": true,
+      "old70_exact_bridge": true,
+      "meaning": "retrospective REUSED unchanged old70 packaging input"
+    },
+    {
+      "path": "pyproject.toml",
+      "Git_SHA": "dacb7acdaecbec932e0138f483b4936a2ce2d7064b6b7c6a298b3a41ffb9ba11",
+      "current_SHA": "dacb7acdaecbec932e0138f483b4936a2ce2d7064b6b7c6a298b3a41ffb9ba11",
+      "old70_manifest_SHA": "dacb7acdaecbec932e0138f483b4936a2ce2d7064b6b7c6a298b3a41ffb9ba11",
+      "Git_current_equal": true,
+      "old70_exact_bridge": true,
+      "meaning": "retrospective REUSED unchanged old70 packaging input"
+    },
+    {
+      "path": "scripts/build_distribution.py",
+      "Git_SHA": "43775dcd8f8119358837b0e509c8a1439b7ed6fb084bef101c2e1c4c4abe040f",
+      "current_SHA": "43775dcd8f8119358837b0e509c8a1439b7ed6fb084bef101c2e1c4c4abe040f",
+      "old70_manifest_SHA": null,
+      "Git_current_equal": true,
+      "old70_exact_bridge": null,
+      "meaning": "current read-only Git/bytes supplement only; no old manifest capture"
+    }
+  ],
+  "scripts_init_exists": false,
+  "build_time_execution_path": "NOT_CAPTURED_OR_ESTABLISHED_BY_THIS_RETROSPECTIVE_CHECK",
+  "no_rebuild": true,
+  "source133_144_PASS_unchanged": true,
+  "scope": "read-only retrospective source comparison, no numeric science or build"
+}

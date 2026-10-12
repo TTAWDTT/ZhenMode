@@ -1,0 +1,131 @@
+# One-shot hostile audit of pinned n4 filters; intentionally not a toolkit instrument.
+# Freshly authored from spec and pre-proof SKELETON. No author code reused.
+import os, signal, resource, time, threading, json, hashlib, sys
+from pathlib import Path
+start=time.monotonic(); cpu_start=time.process_time()
+out=Path(__file__).resolve().parent
+os.sched_setaffinity(0,{min(os.sched_getaffinity(0))})
+resource.setrlimit(resource.RLIMIT_AS,(4*1024**3,4*1024**3))
+resource.setrlimit(resource.RLIMIT_CPU,(180,180))
+signal.alarm(180)
+rss=[]; halt=threading.Event()
+def sample():
+    while not halt.is_set():
+        with open('/proc/self/status') as f:
+            for line in f:
+                if line.startswith('VmRSS:'): rss.append(int(line.split()[1])*1024)
+        halt.wait(.01)
+monitor=threading.Thread(target=sample,daemon=True); monitor.start()
+import sympy as s
+checks=[]; bugreports=[]
+def encode(v):
+    if isinstance(v,s.MatrixBase): return [[str(v[i,j]) for j in range(v.cols)] for i in range(v.rows)]
+    if isinstance(v,(list,tuple)): return [encode(t) for t in v]
+    if isinstance(v,dict): return {str(k):encode(t) for k,t in v.items()}
+    return str(v)
+def record(name,ok,values=None):
+    item={'name':name,'pass':bool(ok),'values':encode(values)}
+    checks.append(item)
+    (out/'controls.json').write_text(json.dumps(checks,indent=2)+'\n')
+    assert ok, item
+def residual(v):
+    if isinstance(v,s.MatrixBase): return v.applyfunc(lambda t:s.trigsimp(s.simplify(t)))
+    return s.trigsimp(s.expand_trig(s.simplify(v)))
+def equal(name,a,b):
+    r=residual(a-b); zero=s.zeros(*r.shape) if isinstance(r,s.MatrixBase) else 0
+    record(name,r==zero,{'actual':a,'expected':b,'residual':r})
+def psd_bad(A):
+    import itertools
+    if A!=A.T: return {'reason':'nonsymmetric'}
+    for k in range(1,A.rows+1):
+        for subset in itertools.combinations(range(A.rows),k):
+            val=s.factor(A.extract(subset,subset).det())
+            if val<0:return {'principal_indices':subset,'determinant':val}
+    return None
+def contract_bad(A):return psd_bad(s.eye(A.rows)-A.T*A)
+def tv(v):return sum(abs(v[j+1]-v[j]) for j in range(len(v)-1))
+def weighted(v,W):return (v.T*W*v)[0]
+
+# Known-answer arithmetic/null and deliberately mismatched comparator first.
+equal('known-rational',s.Rational(1,2)+s.Rational(1,3),s.Rational(5,6))
+record('numeric-comparator-mismatch-caught',s.Rational(1,2)!=s.Rational(1,3))
+n=4; I=s.eye(n)
+R=s.Matrix(n-2,n,lambda a,b: 1 if b in (a,a+2) else -2 if b==a+1 else 0)
+L=s.Matrix(n,n,lambda a,b: -3 if a==b and a in (0,n-1) else -2 if a==b else 1 if abs(a-b)==1 else 0)
+Ft=I-R.T*R/16; Fn=I-L*L/16; B=(I+L/4)**2
+one=s.ones(n,1); j=s.Matrix(range(n)); e=s.eye(n)[:,0]; alt=s.Matrix([1,-1,1,-1]); quad=s.Matrix([0,1,4,9])
+equal('matrix-null-Ft',Ft*s.zeros(n,1),s.zeros(n,1)); equal('matrix-null-Fn',Fn*s.zeros(n,1),s.zeros(n,1))
+for name,F in [('Ft',Ft),('Fn',Fn)]:
+    record(name+'-symmetry',F==F.T)
+    record(name+'-Loewner-lower',psd_bad(F) is None)
+    record(name+'-Loewner-upper',psd_bad(I-F) is None)
+    record(name+'-contraction-clean-twin',contract_bad(F) is None)
+equal('T1',Ft*quad,s.Matrix([s.Rational(-1,8),s.Rational(9,8),s.Rational(33,8),s.Rational(71,8)]))
+equal('T2',Fn*one,s.Matrix([s.Rational(5,8),s.Rational(9,8),s.Rational(9,8),s.Rational(5,8)]))
+equal('Ft-constant',Ft*one,one); equal('Ft-affine',Ft*j,j)
+equal('Ft-scaled-affine',Ft*((j+one/2)/n),(j+one/2)/n)
+equal('Ft-sum-row',one.T*Ft,one.T)
+record('Ft-fixed-space-exact-dimension',R.rank()==n-2 and (Ft-I).rank()==n-2)
+record('Fn-no-fixed-eigenvalue-one',L.rank()==n and (Fn-I).rank()==n)
+equal('Nyquist-L',L*alt,-4*alt); equal('Nyquist-Fn-kill',Fn*alt,s.zeros(n,1))
+x=s.Matrix(s.symbols('x0:4',real=True)); z=s.Matrix(s.symbols('z0:4',real=True))
+q=s.zeros(n,1)
+for a in range(n-2):
+    d=x[a]-2*x[a+1]+x[a+2]
+    for b,c in [(a,1),(a+1,-2),(a+2,1)]:q[b]+=c*d
+equal('Ft-scatter-free-vector',x-q/16,Ft*x)
+def apply_normal(v):
+    return s.Matrix([-3*v[0]+v[1]]+[v[a-1]-2*v[a]+v[a+1] for a in range(1,n-1)]+[v[-2]-3*v[-1]])
+equal('Fn-two-tridiagonal-free-vector',x-apply_normal(apply_normal(x))/16,Fn*x)
+equal('Gram-free-quadratic',(x.T*R.T*R*x)[0],(R*x).dot(R*x))
+equal('normal-Green-bilinear',-(x.T*L*z)[0],sum((x[a+1]-x[a])*(z[a+1]-z[a]) for a in range(n-1))+2*x[0]*z[0]+2*x[-1]*z[-1])
+equal('normal-upper-bilinear',(x.T*(4*I+L)*z)[0],sum((x[a+1]+x[a])*(z[a+1]+z[a]) for a in range(n-1)))
+a,b,c=s.symbols('a b c',real=True)
+equal('weighted-Cauchy-defect',4*(a*a+2*b*b+c*c)-(a-2*b+c)**2,2*(a+b)**2+(a-c)**2+2*(b+c)**2)
+rhs=12*(x[0]**2+x[-1]**2)+4*(x[1]**2+x[-2]**2)+sum(2*(x[a]+x[a+1])**2+(x[a]-x[a+2])**2+2*(x[a+1]+x[a+2])**2 for a in range(n-2))
+equal('aggregate-Cauchy-defect-n4',16*x.dot(x)-(R*x).dot(R*x),rhs)
+u,t=s.symbols('u theta',real=True); k=s.symbols('k',integer=True); zz=s.symbols('z',nonzero=True)
+equal('shift-Laurent-product',(1-2*zz+zz**2)*(1-2/zz+1/zz**2),(2-zz-1/zz)**2)
+equal('generic-sine-recurrence',s.sin(u-t)-2*s.sin(u)+s.sin(u+t),-4*s.sin(t/2)**2*s.sin(u))
+equal('left-odd-ghost',s.sin(-t/2),-s.sin(t/2))
+equal('right-odd-ghost',s.sin(k*s.pi+t/2),-s.sin(k*s.pi-t/2))
+equal('sine-norm-telescope',2*s.sin(t)*s.cos(u+t),s.sin(u+2*t)-s.sin(u))
+V=s.Matrix(n,n,lambda a,b:s.sin((b+1)*s.pi*(s.Rational(2*a+1,2))/n))
+D=s.diag(*[-4*s.sin((b+1)*s.pi/(2*n))**2 for b in range(n)])
+equal('n4-sine-all-rows',L*V,V*D)
+equal('n4-sine-Gram-Nyquist',V.T*V,s.diag(2,2,2,4))
+equal('n4-Fn-spectral-map',Fn*V,V*(I-D**2/16))
+equal('n4-B-spectral-map',B*V,V*(I+D/4)**2)
+equal('B-polynomial',B,I+L/2+L**2/16)
+record('B-Fn-Loewner-comparison',psd_bad(B) is None and psd_bad(Fn-B) is None)
+equal('normal-symbol-Fn',1-(-4*s.sin(t/2)**2)**2/16,1-s.sin(t/2)**4)
+equal('normal-symbol-B',(1-s.sin(t/2)**2)**2,s.cos(t/2)**4)
+equal('symbol-difference',1-s.sin(t/2)**4-s.cos(t/2)**4,2*s.sin(t/2)**2*(1-s.sin(t/2)**2))
+equal('Fn-symbol-series',s.series(s.sin(t/2)**4,t,0,6).removeO(),t**4/16)
+equal('B-symbol-series',s.series(1-s.cos(t/2)**4,t,0,6).removeO(),t*t/2-5*t**4/48)
+wrong_t=I-R.T*R/4; wrong_n=I-L**2/4
+for name,F,expected,norm in [('Ft-1/4-plant',wrong_t,s.Matrix([0,2,-2,0]),8),('Fn-1/4-plant',wrong_n,-3*alt,36)]:
+    equal(name+'-output',F*alt,expected); equal(name+'-squarednorm',(F*alt).dot(F*alt),s.Integer(norm))
+    bad1=psd_bad(F); bad2=contract_bad(F)
+    record(name+'-CAUGHT',bad1 is not None and bad2 is not None,{'PSD_failure':bad1,'contraction_failure':bad2})
+    bugreports.append({'failing_step':name,'exact_instance':[1,-1,1,-1],'lhs_squarednorm':str((F*alt).dot(F*alt)),'rhs_squarednorm':'4','residual':str((F*alt).dot(F*alt)-4),'verdict':'CAUGHT_FALSE_COPY'})
+equal('Ft-1/4-plant-negative-quadratic',(alt.T*wrong_t*alt)[0],s.Integer(-4))
+equal('Ft-e0',Ft*e,s.Matrix([s.Rational(15,16),s.Rational(1,8),s.Rational(-1,16),0]))
+equal('Fn-e0',Fn*e,s.Matrix([s.Rational(3,8),s.Rational(5,16),s.Rational(-1,16),0]))
+equal('T1-TV-equality-not-increase',tv(Ft*quad),tv(quad)); equal('T1-TV-value',tv(quad),s.Integer(9))
+W=s.diag(1,100,1,1)
+overclaims=[('Ft-pointwise-positivity',e,(Ft*e)[2],0),('Fn-pointwise-positivity',e,(Fn*e)[2],0),('Ft-TVD',e,tv(Ft*e),tv(e)),('Fn-TVD',one,tv(Fn*one),tv(one)),('Fn-constant-preservation',one,(Fn*one)[0],1),('Ft-arbitrary-weight-contraction',e,weighted(Ft*e,W),weighted(e,W)),('Fn-arbitrary-weight-contraction',e,weighted(Fn*e,W),weighted(e,W)),('Fn-maximum-principle',one,max(Fn*one),max(one))]
+for name,v,lhs,rhs in overclaims:
+    killed=lhs<rhs if 'positivity' in name else lhs!=rhs if 'preservation' in name else lhs>rhs
+    record(name+'-overclaim-CAUGHT',killed,{'instance':v,'lhs':lhs,'rhs':rhs,'residual':lhs-rhs})
+    bugreports.append({'failing_step':name,'exact_instance':encode(v),'lhs':str(lhs),'rhs':str(rhs),'residual':str(lhs-rhs),'verdict':'REFUTED_OVERCLAIM_OUTSIDE_TARGET'})
+equal('Ft-TVD-exact17/16',tv(Ft*e),s.Rational(17,16)); equal('Fn-TVD-exact1',tv(Fn*one),s.Integer(1))
+equal('Ft-weighted-exact',weighted(Ft*e,W),s.Rational(313,128)); equal('Fn-weighted-exact',weighted(Fn*e,W),s.Rational(2537,256))
+record('finite-control-denominator',len(checks)==68,{'checks_before_denominator':len(checks)})
+halt.set();monitor.join();signal.alarm(0)
+receipt={'status':'PASS','finite_sizes':[4],'exact_checks':len(checks),'sympy_version':s.__version__,'python_executable':sys.executable,'cpu_affinity':sorted(os.sched_getaffinity(0)),'wall_seconds':time.monotonic()-start,'cpu_seconds':time.process_time()-cpu_start,'sampled_peak_RSS_bytes':max(rss),'RSS_samples':len(rss),'RSS_interval_seconds':.01,'address_limit_bytes':resource.getrlimit(resource.RLIMIT_AS)[0],'CPU_limit_seconds':resource.getrlimit(resource.RLIMIT_CPU)[0],'script_sha256':hashlib.sha256(Path(__file__).read_bytes()).hexdigest()}
+(out/'bugreports.json').write_text(json.dumps(bugreports,indent=2)+'\n');(out/'receipt.json').write_text(json.dumps(receipt,indent=2)+'\n')
+print('FRESH-SKEPTIC1 CONTROLS PASS n=4 checks='+str(len(checks)))
+print('T1='+str(list(Ft*quad))+'; T2='+str(list(Fn*one)))
+print('PLANTS CAUGHT; Ft TV17/16>1; Fn TV1>0; T1 TV9=9')
+print('TIMING '+json.dumps(receipt,sort_keys=True))

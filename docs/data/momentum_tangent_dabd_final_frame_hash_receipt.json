@@ -1,0 +1,50 @@
+{
+  "utc": "2026-10-12T23:51:31.153355+00:00",
+  "verdict": "DOCS_ONLY_SCOPE_PASS_ZERO_RESIDUAL_FINDINGS",
+  "functional_source": "dabd48abd898c20e0471a5ab9fc18e9b61cfa96d",
+  "scientific_status": "Native strict promotion FAIL retained; 70 remains current fixedpanel best; native2..9 unexecuted; canonical fixedv2 reused diagnostic only",
+  "original_export_entries": 294,
+  "original_export_bytes": 17142789,
+  "original_published_files_including_manifest": 295,
+  "final_frame_records_not_in_original_manifest": true,
+  "nonauthor_review": true,
+  "reviewer_changed_public_text_or_source": false,
+  "new_native_science_or_CI_runs": 0,
+  "files": [
+    {
+      "path": "D:\\CodexWorktrees\\thermal-full-scan\\ocean-solver\\docs\\momentum_tangent_filter_dabd_results_zh.md",
+      "bytes": 9221,
+      "sha256": "7af9bdb4b926e68866f4a89076c9821b83a46c420abf816db9f937b75cf44855"
+    },
+    {
+      "path": "D:\\CodexWorktrees\\thermal-full-scan\\ocean-solver\\docs\\data\\momentum_tangent_dabd_export_manifest.json",
+      "bytes": 124885,
+      "sha256": "5180d96d1146bd1523700dd45e938f6e33ba49833a7035ff52f6cdfed311466d"
+    },
+    {
+      "path": "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\momentum-tangent-filter-v1\\review\\report-frame\\FINAL_REVIEW.md",
+      "bytes": 13771,
+      "sha256": "91a0f2e6fd23cec61cc56a0a0f5a201b3f4f3fd65fc7b8ce69a428e4c963b107"
+    },
+    {
+      "path": "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\momentum-tangent-filter-v1\\review\\report-frame\\EXPORT_RENDER_VERIFICATION_FINAL.json",
+      "bytes": 144821,
+      "sha256": "b85ecf48abe79938638cc5661ad76acb37df2151e8ae947fddc53a80590c8b63"
+    },
+    {
+      "path": "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\momentum-tangent-filter-v1\\review\\report-frame\\report.rendered.html",
+      "bytes": 13350,
+      "sha256": "25f56877d08be025f0972f4c6f57e0c9dd0b26a9a1cae7d5d90e3627a8569624"
+    },
+    {
+      "path": "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\momentum-tangent-filter-v1\\review\\report-frame\\report.rendered.txt",
+      "bytes": 8224,
+      "sha256": "80cabf8d3f514e5f15d64b1a5c17957f093fd41e3f4e6970045604c8e7238f7e"
+    },
+    {
+      "path": "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\momentum-tangent-filter-v1\\review\\report-frame\\verify_exports.py",
+      "bytes": 4604,
+      "sha256": "869b270bae8e26973210b52efe43517f308b759ef0b1230432527ac58e321476"
+    }
+  ]
+}

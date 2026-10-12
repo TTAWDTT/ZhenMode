@@ -1,0 +1,177 @@
+{
+  "conclusion": "success",
+  "databaseId": 38318954281,
+  "event": "workflow_dispatch",
+  "headSha": "dabd48abd898c20e0471a5ab9fc18e9b61cfa96d",
+  "jobs": [
+    {
+      "completedAt": "2026-10-12T23:17:36Z",
+      "conclusion": "success",
+      "databaseId": 115042191961,
+      "name": "test",
+      "startedAt": "2026-10-12T22:50:51Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completedAt": "2026-10-12T22:50:53Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "startedAt": "2026-10-12T22:50:52Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-12T22:50:54Z",
+          "conclusion": "success",
+          "name": "Run actions/checkout@v4",
+          "number": 2,
+          "startedAt": "2026-10-12T22:50:53Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-12T22:50:58Z",
+          "conclusion": "success",
+          "name": "Run actions/setup-python@v5",
+          "number": 3,
+          "startedAt": "2026-10-12T22:50:54Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-12T22:51:15Z",
+          "conclusion": "success",
+          "name": "Run pip install -e \".[dev]\"",
+          "number": 4,
+          "startedAt": "2026-10-12T22:50:58Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-12T22:51:16Z",
+          "conclusion": "success",
+          "name": "Run python scripts/make_synthetic_bathymetry.py",
+          "number": 5,
+          "startedAt": "2026-10-12T22:51:15Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-12T23:17:31Z",
+          "conclusion": "success",
+          "name": "Run python -m pytest tests/ -q",
+          "number": 6,
+          "startedAt": "2026-10-12T22:51:16Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-12T23:17:33Z",
+          "conclusion": "success",
+          "name": "Run python -m zhenmode mms",
+          "number": 7,
+          "startedAt": "2026-10-12T23:17:31Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-12T23:17:33Z",
+          "conclusion": "success",
+          "name": "Post Run actions/setup-python@v5",
+          "number": 13,
+          "startedAt": "2026-10-12T23:17:33Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-12T23:17:33Z",
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@v4",
+          "number": 14,
+          "startedAt": "2026-10-12T23:17:33Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-12T23:17:33Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 15,
+          "startedAt": "2026-10-12T23:17:33Z",
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/TTAWDTT/ZhenMode/actions/runs/38318954281/job/115042191961"
+    },
+    {
+      "completedAt": "2026-10-12T22:50:57Z",
+      "conclusion": "success",
+      "databaseId": 115042192065,
+      "name": "lint",
+      "startedAt": "2026-10-12T22:50:51Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completedAt": "2026-10-12T22:50:52Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "startedAt": "2026-10-12T22:50:52Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-12T22:50:53Z",
+          "conclusion": "success",
+          "name": "Run actions/checkout@v4",
+          "number": 2,
+          "startedAt": "2026-10-12T22:50:52Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-12T22:50:53Z",
+          "conclusion": "success",
+          "name": "Run actions/setup-python@v5",
+          "number": 3,
+          "startedAt": "2026-10-12T22:50:53Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-12T22:50:55Z",
+          "conclusion": "success",
+          "name": "Run pip install ruff",
+          "number": 4,
+          "startedAt": "2026-10-12T22:50:53Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-12T22:50:55Z",
+          "conclusion": "success",
+          "name": "Run ruff check .",
+          "number": 5,
+          "startedAt": "2026-10-12T22:50:55Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-12T22:50:55Z",
+          "conclusion": "success",
+          "name": "Post Run actions/setup-python@v5",
+          "number": 9,
+          "startedAt": "2026-10-12T22:50:55Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-12T22:50:55Z",
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@v4",
+          "number": 10,
+          "startedAt": "2026-10-12T22:50:55Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-12T22:50:55Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 11,
+          "startedAt": "2026-10-12T22:50:55Z",
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/TTAWDTT/ZhenMode/actions/runs/38318954281/job/115042192065"
+    }
+  ],
+  "status": "completed",
+  "url": "https://github.com/TTAWDTT/ZhenMode/actions/runs/38318954281",
+  "workflowName": "CI"
+}

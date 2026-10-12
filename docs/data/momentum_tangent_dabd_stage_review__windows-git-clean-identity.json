@@ -1,0 +1,9 @@
+{
+  "recorded_utc": "2026-10-12T23:04:12.6497527Z",
+  "host_git": "Windows Git actual managedworktree",
+  "worktree": "D:\\CodexWorktrees\\thermal-full-scan\\ocean-solver",
+  "HEAD": "dabd48abd898c20e0471a5ab9fc18e9b61cfa96d",
+  "status_porcelain": [],
+  "clean": true,
+  "scope": "fresh host-native worktree status only; archive byte identities still separately mandatory"
+}

@@ -1,0 +1,192 @@
+[
+  {
+    "name": "known-answer-rational",
+    "PASS": true,
+    "value": null
+  },
+  {
+    "name": "T1",
+    "PASS": true,
+    "value": "[-1/8, 9/8, 33/8, 71/8]"
+  },
+  {
+    "name": "T2",
+    "PASS": true,
+    "value": "[5/8, 9/8, 9/8, 5/8]"
+  },
+  {
+    "name": "comparator-mismatch-caught",
+    "PASS": true,
+    "value": null
+  },
+  {
+    "name": "clean-Ft-detector",
+    "PASS": true,
+    "value": null
+  },
+  {
+    "name": "clean-Fn-detector",
+    "PASS": true,
+    "value": null
+  },
+  {
+    "name": "tangential-plant-output",
+    "PASS": true,
+    "value": "[0, 2, -2, 0]"
+  },
+  {
+    "name": "tangential-plant-norm2",
+    "PASS": true,
+    "value": null
+  },
+  {
+    "name": "tangential-plant-quadratic",
+    "PASS": true,
+    "value": null
+  },
+  {
+    "name": "tangential-plant-CAUGHT",
+    "PASS": true,
+    "value": null
+  },
+  {
+    "name": "normal-plant-output",
+    "PASS": true,
+    "value": "[-3, 3, -3, 3]"
+  },
+  {
+    "name": "normal-plant-norm2",
+    "PASS": true,
+    "value": null
+  },
+  {
+    "name": "normal-plant-CAUGHT",
+    "PASS": true,
+    "value": null
+  },
+  {
+    "name": "zero-null",
+    "PASS": true,
+    "value": null
+  },
+  {
+    "name": "Ft-affine-and-sum",
+    "PASS": true,
+    "value": null
+  },
+  {
+    "name": "Ft-kernel-dimension",
+    "PASS": true,
+    "value": null
+  },
+  {
+    "name": "Ft-loop-is-matrix",
+    "PASS": true,
+    "value": null
+  },
+  {
+    "name": "Fn-loop-is-matrix",
+    "PASS": true,
+    "value": null
+  },
+  {
+    "name": "n4-sine-residual",
+    "PASS": true,
+    "value": null
+  },
+  {
+    "name": "n4-sine-orthogonal",
+    "PASS": true,
+    "value": null
+  },
+  {
+    "name": "n4-filter-spectral-map",
+    "PASS": true,
+    "value": null
+  },
+  {
+    "name": "n4-B-spectral-map",
+    "PASS": true,
+    "value": null
+  },
+  {
+    "name": "Nyquist-killed",
+    "PASS": true,
+    "value": null
+  },
+  {
+    "name": "general-sine-recurrence",
+    "PASS": true,
+    "value": null
+  },
+  {
+    "name": "left-odd-ghost",
+    "PASS": true,
+    "value": null
+  },
+  {
+    "name": "right-odd-ghost",
+    "PASS": true,
+    "value": null
+  },
+  {
+    "name": "convolution-Laurent-symbol",
+    "PASS": true,
+    "value": null
+  },
+  {
+    "name": "normal-F-symbol",
+    "PASS": true,
+    "value": null
+  },
+  {
+    "name": "B-symbol",
+    "PASS": true,
+    "value": null
+  },
+  {
+    "name": "low-wave-departures",
+    "PASS": true,
+    "value": "[theta**4/16 + O(theta**6), theta**2/2 + O(theta**4)]"
+  },
+  {
+    "name": "Ft-not-positivity",
+    "PASS": true,
+    "value": null
+  },
+  {
+    "name": "Ft-TVD-witness-output",
+    "PASS": true,
+    "value": "[15/16, 1/8, -1/16, 0]"
+  },
+  {
+    "name": "Ft-not-TVD",
+    "PASS": true,
+    "value": "[1, 17/16]"
+  },
+  {
+    "name": "Fn-not-positivity",
+    "PASS": true,
+    "value": "-1/16"
+  },
+  {
+    "name": "Fn-not-TVD",
+    "PASS": true,
+    "value": "[0, 1]"
+  },
+  {
+    "name": "quadratic-Gram-identity",
+    "PASS": true,
+    "value": null
+  },
+  {
+    "name": "B-difference-symbol",
+    "PASS": true,
+    "value": null
+  },
+  {
+    "name": "n4-normal-B-Loewner-comparison",
+    "PASS": true,
+    "value": null
+  }
+]

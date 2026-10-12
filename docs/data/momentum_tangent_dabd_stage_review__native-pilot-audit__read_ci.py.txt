@@ -1,0 +1,96 @@
+"""One-shot existing GitHub CI terminal/raw-log reader; no test execution.
+
+Usage: python read_ci.py controls
+       python read_ci.py actual TERMINAL.json RAW.log
+Requires actual job and step terminal states, one pytest summary, MMS and ruff
+log lines on the exact checkout. Parent70 CI and skipped jobs are rejected.
+"""
+import datetime, hashlib, json, re, sys, traceback
+from pathlib import Path
+
+HERE=Path(__file__).resolve().parent
+STAGE=HERE.parent.parent
+REV='dabd48abd898c20e0471a5ab9fc18e9b61cfa96d'
+RUN=38318954281
+
+def require(c,s):
+    if not c:raise AssertionError(s)
+def utc():return datetime.datetime.now(datetime.timezone.utc).isoformat()
+def sha(p):return hashlib.sha256(Path(p).read_bytes()).hexdigest()
+def read(p):return json.loads(Path(p).read_text(encoding='utf-8-sig'))
+def save(n,d):
+    with (HERE/n).open('x',encoding='utf-8') as f:json.dump(d,f,indent=2);f.write('\n')
+
+def parse(terminal,log):
+    require(terminal['databaseId']==RUN and terminal['headSha']==REV and terminal['event']=='workflow_dispatch','exact run/source/event')
+    require(terminal['status']=='completed' and terminal['conclusion']=='success','actual terminal success')
+    jobs={j['name']:j for j in terminal['jobs']}
+    require(set(jobs)=={'test','lint'},'actual expected two jobs')
+    wanted={'test':['Run python -m pytest tests/ -q','Run python -m zhenmode mms'],'lint':['Run ruff check .']}
+    for name,steps in wanted.items():
+        job=jobs[name]
+        require(job['status']=='completed' and job['conclusion']=='success','job not pending/skipped '+name)
+        actual={s['name']:s for s in job['steps']}
+        for step in steps:
+            require(step in actual and actual[step]['status']=='completed' and actual[step]['conclusion']=='success','actual executed step '+step)
+    lines=log.splitlines()
+    def selected(job,step):return [(i+1,line) for i,line in enumerate(lines) if line.startswith(job+'\t'+step+'\t')]
+    for job in ('test','lint'):
+        checkout=selected(job,'Run actions/checkout@v4')
+        require(any(re.search(r'\b'+REV+r'\b',line) for _,line in checkout),'actual full checkout SHA '+job)
+    tests=selected('test','Run python -m pytest tests/ -q')
+    counts=[]
+    for n,line in tests:
+        # Summary only; collection/progress/output-derived predictions never count.
+        tail=line.split('\t',2)[2]
+        match=re.search(r'(?<!\d)(\d+) passed(?:, (\d+) warnings)? in ([0-9.]+)s(?:\s|\(|$)',tail)
+        if match:
+            require(not re.search(r'\b\d+ (?:failed|errors?|skipped|xfailed|xpassed)\b',tail),'pytest unwanted terminal status')
+            counts.append(dict(line=n,text=line,passed=int(match.group(1)),warnings=int(match.group(2) or 0),duration_s=float(match.group(3))))
+    require(len(counts)==1 and counts[0]['passed']>0,'one actual pytest terminal summary')
+    mms=selected('test','Run python -m zhenmode mms');banners=[(n,line) for n,line in mms if line.rstrip().endswith('ALL PASS')]
+    require(len(banners)==1,'one actual MMS ALL PASS')
+    checks=[(n,line) for n,line in mms if '[PASS]' in line]
+    require(len(checks)>0 and all(n<banners[0][0] for n,_ in checks),'MMS individual checks before banner')
+    require(not any('[FAIL]' in line or 'Traceback' in line for _,line in mms),'no MMS failing checks')
+    lint=selected('lint','Run ruff check .');ruff=[(n,line) for n,line in lint if line.rstrip().endswith('All checks passed!')]
+    require(len(ruff)==1,'actual ruff result')
+    evidence=[]
+    for job in ('test','lint'):
+        evidence += [dict(line=n,text=line) for n,line in selected(job,'Run actions/checkout@v4') if re.search(r'\b'+REV+r'\b',line)]
+    evidence += [dict(line=counts[0]['line'],text=counts[0]['text'])]+[dict(line=n,text=line) for n,line in checks+banners+ruff]
+    return dict(pytest=counts[0],MMS=dict(summary='ALL PASS',individual_pass_count=len(checks),summary_line=banners[0][0]),ruff=dict(result='PASS',line=ruff[0][0]),evidence=evidence)
+
+def controls():
+    ts=lambda name:dict(name=name,status='completed',conclusion='success')
+    terminal=dict(databaseId=RUN,headSha=REV,event='workflow_dispatch',status='completed',conclusion='success',jobs=[dict(name='test',status='completed',conclusion='success',steps=[ts('Run python -m pytest tests/ -q'),ts('Run python -m zhenmode mms')]),dict(name='lint',status='completed',conclusion='success',steps=[ts('Run ruff check .')])])
+    log='\n'.join(['test\tRun actions/checkout@v4\t2026-10-12T00:00:00Z '+REV,'lint\tRun actions/checkout@v4\t2026-10-12T00:00:00Z '+REV,'test\tRun python -m pytest tests/ -q\t2026-10-12T00:00:00Z 7 passed, 3 warnings in 12.25s','test\tRun python -m zhenmode mms\t2026-10-12T00:00:00Z derivative = 0.01 [PASS]','test\tRun python -m zhenmode mms\t2026-10-12T00:00:00Z ALL PASS','lint\tRun ruff check .\t2026-10-12T00:00:00Z All checks passed!'])
+    parsed=parse(terminal,log);require(parsed['pytest']['passed']==7 and parsed['pytest']['warnings']==3 and parsed['pytest']['duration_s']==12.25,'positive known counts')
+    negatives={}
+    cases={'bad_source':(dict(terminal,headSha='0'*40),log),'pending_run':(dict(terminal,status='in_progress',conclusion=''),log),'missing_pytest_summary':(terminal,log.replace('7 passed, 3 warnings in 12.25s','7 collected')),'bad_MMS':(terminal,log.replace('ALL PASS','ALL FAIL')),'failed_pytest':(terminal,log.replace('7 passed,','1 failed, 7 passed,')),'wrong_checkout':(terminal,log.replace(REV,'0'*40)),'duplicate_summary':(terminal,log+'\n'+log.splitlines()[2])}
+    skipped=json.loads(json.dumps(terminal));skipped['jobs'][0]['steps'][1]['conclusion']='skipped';cases['skipped_MMS']=(skipped,log)
+    for name,(t,l) in cases.items():
+        try:parse(t,l)
+        except AssertionError as e:negatives[name]=str(e)
+        else:raise AssertionError('negative failed to fire '+name)
+    save('ci-parser-controls.json',dict(utc=utc(),verdict='PASS',known_counts=parsed['pytest'],negative_detectors=negatives,scope='Parser synthetic controls only, not CI/software PASS'))
+
+def actual(tp,lp):
+    require(read(HERE/'ci-parser-controls.json')['verdict']=='PASS','parser controls before actual')
+    terminal=read(tp);raw=Path(lp).read_bytes();log=raw.decode('utf-8-sig')
+    dispatch=read(STAGE/'ci-dispatch-receipt.json');declaration=read(STAGE/'full-ci-declaration.json')
+    require(dispatch['run_id']==RUN and dispatch['revision']==REV and dispatch['full_validation'] is True,'original dispatch fullvalidation/source')
+    require(declaration['workflow_dispatch']['full_validation'] is True,'original declared fullvalidation')
+    parsed=parse(terminal,log)
+    save('ci-readback-result.json',dict(schema='independent-actual-terminal-raw-log-readback-v1',utc=utc(),verdict='PASS_SOFTWARE_CI_ONLY',source_revision=REV,run_id=RUN,actual_terminal=terminal['status'],actual_conclusion=terminal['conclusion'],
+         full_validation='true original declaration/dispatch; actual complete tests/ and MMS commands/terminal summaries present',terminal_path=str(Path(tp)),terminal_sha256=sha(tp),log_path=str(Path(lp)),log_sha256=hashlib.sha256(raw).hexdigest(),
+         **parsed,limits=['Reading existing run only, no new execution or redispatch','Not a scientific oracle','Native strict latest score FAIL remains; no batch expansion'],parser_sha256=sha(__file__),declaration_sha256=sha(HERE/'CI_READBACK_DECLARATION.json')))
+
+if __name__=='__main__':
+    try:
+        if sys.argv[1]=='controls':controls()
+        elif sys.argv[1]=='actual':actual(sys.argv[2],sys.argv[3])
+        else:raise ValueError('mode')
+    except Exception as e:
+        save('ci-parser-failure-'+datetime.datetime.now(datetime.timezone.utc).strftime('%Y%m%dT%H%M%S%f')+'.json',dict(utc=utc(),error=repr(e),traceback=traceback.format_exc(),scope='Retained readback/parser failure, never software rerun'))
+        raise

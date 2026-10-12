@@ -1,0 +1,57 @@
+{
+  "pilot": false,
+  "controls": {
+    "cos2_RMS": 0.7071067811865472,
+    "zero": 0.0,
+    "wrong_sign_RMS": 1.4142135623730945
+  },
+  "input_sha256": {
+    "70": "55d8f8c4b62f486c7d2941ae309c864acd6f9414f2e44dfc9b51aa5c331a2449",
+    "dab": "ec616a7970b6fbf6e7c2720359c5149e657608054ba468d2ce8c05e64a3c9780"
+  },
+  "reference_npz_sha256": "9feb7111e614cf5e3a98624d7195128cc02f9be1084a9fdbf8deae2ab3844b02",
+  "reference_result_sha256": "0f1eaddb0bf78ecdbc43f29d594aa19635caa50a6c22bd3f162f89d83367f0d5",
+  "shared_reference": "REUSED frozen v2 n64, no new solve or fit; same firstlinearoracle; descriptive only",
+  "native_runs": 0,
+  "source_edits": false,
+  "ranking": "dab strictnative rankingFAIL unchanged, latestbest70",
+  "rows": [
+    {
+      "name": "70",
+      "eta": {
+        "original_RMS": 6.859718001251587e-10,
+        "fixed_reference_RMS": 7.051645033463736e-10,
+        "residual_RMS": 3.5078747374023586e-11,
+        "residual_fraction": 0.051137302390015606,
+        "units": "m"
+      },
+      "T": {
+        "original_RMS": 7.088858339175954e-09,
+        "fixed_reference_RMS": 6.799621461113437e-09,
+        "residual_RMS": 2.00454574553482e-09,
+        "residual_fraction": 0.28277412943306734,
+        "units": "C"
+      }
+    },
+    {
+      "name": "dab",
+      "eta": {
+        "original_RMS": 6.898970719130102e-10,
+        "fixed_reference_RMS": 7.051645033463736e-10,
+        "residual_RMS": 3.3022360452649534e-11,
+        "residual_fraction": 0.047865633580792113,
+        "units": "m"
+      },
+      "T": {
+        "original_RMS": 7.090249656218243e-09,
+        "fixed_reference_RMS": 6.799621461113437e-09,
+        "residual_RMS": 2.0094616138549377e-09,
+        "residual_fraction": 0.28341196872984764,
+        "units": "C"
+      }
+    }
+  ],
+  "elapsed_s": 0.12236094400000042,
+  "script_sha256": "cb2fa73390671d4eeb252bcc2e9d10cc02527f9da3e11d9e5160e6e1bd7ab17c",
+  "declaration_sha256": "41cc2c7b90b944935afc5435b77100e25b38705c2bba7e2300e693c767577a17"
+}

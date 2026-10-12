@@ -1,0 +1,67 @@
+{
+  "utc": "2026-10-12T23:14:16.934368+00:00",
+  "data_readback_verdict": "SCOPE_PASS_TWO_COMPLETED_ROWS_AFTER_ONE_METADATA_HARNESS_RECOVERY",
+  "scientific_promotion": "FAIL_RETAINED_STRICT_LATEST_COMPOSITE",
+  "source": "dabd48abd898c20e0471a5ab9fc18e9b61cfa96d",
+  "audited_denominator": 2,
+  "audited_indices": [
+    0,
+    1
+  ],
+  "unexecuted_indices": [
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9
+  ],
+  "allow_expansion": false,
+  "default17_exact_retrieved": true,
+  "original_screens_all2_pass": true,
+  "candidate_composite_recomputed": 0.005418658568218491,
+  "frozen70_composite_recomputed": 0.005387828306036266,
+  "candidate_composite_published": 0.005418658568218491,
+  "frozen70_composite_published": 0.0053878283060362665,
+  "relative_score_change": 0.005722205762883181,
+  "independent_harness_failure": {
+    "path": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/review/native-pilot-audit/failure-full-20261012T231252399612.json",
+    "sha256": "d8652570acf8866bc1c16c317e062d7ba41c3aa6f9bf578c3c28101f547c6a51",
+    "root_cause": "development provenance also records same selector, not a changed physical parameter or numeric gate"
+  },
+  "first_native_startup": {
+    "classification": "ENVIRONMENT_STARTUP_FAILURE_NOTSCIENTIFIC",
+    "source": "dabd48abd898c20e0471a5ab9fc18e9b61cfa96d",
+    "index0": "failed not completed, log preserved",
+    "index1_to9": "UNEXECUTED",
+    "worker_log": "00-previous-primary-main/zhenmode/run.log",
+    "message": "No module named zhenmode.execution.wave_zhenmode",
+    "elapsed_worker_s": 0.20079902900000945,
+    "no_native_arrays": true,
+    "cause": "root launcher omitted PYTHONPATH installed; sys.path inserted in driver is not inherited by worker subprocess",
+    "correction": "separate native-attempt02 same frozencontracts/source/resources/sciencegate, explicit PYTHONPATH immutable new installed; no overwrite/no thresholdchange",
+    "recorded_at": "2026-10-12T22:53:49.481Z"
+  },
+  "limits": [
+    "Source registries and wheel bytes do not capture historical worker loaded Python paths",
+    "dual_face_v1 omitted from actual_controls; inferred from captured frozen factory default and worker options call",
+    "Contacted linear development reference; no untouched holdout/fullphysics",
+    "Source133/144 chain is retrieved bridge",
+    "No fine/null/thermal/indices2..9 native executed",
+    "Candidate raw arrays were read in stopped audit and finite metadata recovery; no new solver run"
+  ],
+  "elapsed_resume_s": 0.4813931629999786,
+  "peak_RSS_bytes": 68198400,
+  "cpu_affinity": [
+    0
+  ],
+  "memory_cap_bytes": 4294967296,
+  "declaration_sha256": "0db31a9845a89d6a168873c1e80f9b3070ff9b572849596dc1515678ae9565e5",
+  "resume_declaration_sha256": "f46ed3f830d3dfe7f83c0ec185a41e64e76008e49017bb66db6cbdb17bb70332",
+  "original_script_sha256": "59be3d193f43004db51ee2e261633a5c28a4145bda32e4078591328fee546ca0",
+  "resume_script_sha256": "8fb45f726b56391a59840d21eada0ad921c8216c6562a08fb347d8a4965124cd",
+  "new_native_runs": 0,
+  "full_CI": "PENDING_NOT_GRADED_UNTIL_TERMINAL_RAW_LOG_READBACK"
+}

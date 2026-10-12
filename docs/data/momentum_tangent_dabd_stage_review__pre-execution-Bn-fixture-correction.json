@@ -1,0 +1,33 @@
+{
+  "recorded_utc": "2026-10-12T23:09:16.6611578Z",
+  "type": "pre-manufacture known fixture correction",
+  "failed_attempt": "new-momentum-timing-attempt02",
+  "failed_code_sha": "1c3004511a834afd4c3273c6e0dbd9c2d37dc08cc0220ef39c7c6d4143728ac7",
+  "new_code_sha": "a43a227362cf59599955cac3ba0a5f0411dcaf605bba9fc668709d5d984b13fc",
+  "old_wrong_expectation": "Fn constantT2 incorrectly used for original Bn",
+  "normal_choice": "unchanged original Bn, Fn remains unselected",
+  "Bn_formula": "B=I+L/2+L²/16",
+  "L_one": [
+    -2,
+    0,
+    0,
+    -2
+  ],
+  "L2_one": [
+    6,
+    -2,
+    -2,
+    6
+  ],
+  "correct_B_one": [
+    0.375,
+    0.875,
+    0.875,
+    0.375
+  ],
+  "source_refutation": false,
+  "new_profile_executed": false,
+  "fields_grids_gates_unchanged": true,
+  "declaration_sha_unchanged": "f4d63f7dffb8d3b4039d0e62e39da6ed7f448402da2fa4bc101bec7a57653b20",
+  "waiting_root_static_reseal": true
+}

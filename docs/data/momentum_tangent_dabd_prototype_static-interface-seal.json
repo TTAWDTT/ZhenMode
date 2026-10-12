@@ -1,0 +1,26 @@
+{
+  "date": "2026-10-13",
+  "reviewer": "filter_cross_verify",
+  "gate": "STATIC_PRE_NUMERIC_CONFIRMED",
+  "producer_scope": "frozen external DEVELOPMENT Ft-only tangent + unchanged original normal Bn; instantaneous owners only",
+  "scope_confirmed": true,
+  "declaration_control_coverage": "GAPS_CLOSED_IN_CODE_NOT_YET_EXECUTED",
+  "timing_pilot_permitted": true,
+  "finite_comparison": "only after actual pilot timing and measured plan, all declared controls must pass",
+  "numerical_controls_passed": "NOT_EXECUTED_AT_REVIEW",
+  "new_native_integration_permitted": false,
+  "production_edits_permitted": false,
+  "production_physics_qualification": false,
+  "artifact_sha256": {
+    "prototype.py": "828d4dceccab0dcb5b8a0b2b130fcfb0aee12a98dc02c327839f6019f6f56ef8",
+    "declaration.json": "8f690a94dd37329023189baee16c8d6f48f3c2c7a2dae2f70b998888218ddced",
+    "run.py": "698382204dbff55792656d61447841be1ab4d900b9bb3e0bd09cc289436a7dcc",
+    "pre-execution-addendum01.json": "34b139a703c55ba8667072699dac11a5347b5162a86e85009f11d95103b47d5d",
+    "interface-review.md": "bafabb71d0db4e1f64752f651f17ad6c43874f944754d07b3d901f03e9fa67d0"
+  },
+  "limitations": [
+    "h gate tests latitude constancy; frozen column construction also supplies longitude-independent fixed weights",
+    "eta construction is exactly zero; max-zero test is not a general all-entry zero validator",
+    "timing pilot skips finite weighted gates and must not claim them passed"
+  ]
+}

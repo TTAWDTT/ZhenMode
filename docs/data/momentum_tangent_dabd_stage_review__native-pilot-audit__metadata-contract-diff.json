@@ -1,0 +1,77 @@
+{
+  "scope": "Actual contract-only metadata read after retained harness failure; no real arrays reopened",
+  "differing_top_level_keys": [
+    "development",
+    "ocean_options"
+  ],
+  "diff": {
+    "development": {
+      "candidate": {
+        "base_contract_sha256": "404c81fa53fd4c238c282aa695f8c8951893324ad62b75064213cba6699ece49",
+        "hydrostatic_integral_scheme": "cubic_uniform_v1",
+        "material_point_gradient_scheme": "fourth_uniform_v1",
+        "momentum_tangent_filter_scheme": "gram_fourth_v1",
+        "problem": "internal-wave",
+        "tracer_flux_arithmetic": "integrated_reference_v1",
+        "vertical_tracer_scheme": "material_point_v4"
+      },
+      "frozen70": {
+        "base_contract_sha256": "404c81fa53fd4c238c282aa695f8c8951893324ad62b75064213cba6699ece49",
+        "hydrostatic_integral_scheme": "cubic_uniform_v1",
+        "material_point_gradient_scheme": "fourth_uniform_v1",
+        "problem": "internal-wave",
+        "tracer_flux_arithmetic": "integrated_reference_v1",
+        "vertical_tracer_scheme": "material_point_v4"
+      }
+    },
+    "ocean_options": {
+      "candidate": {
+        "column_geometry": "nodal_dual_v1",
+        "conservative_kv": true,
+        "density_rotation_scheme": "joint_shear",
+        "external_mode_scheme": "symmetric",
+        "fct_adv": false,
+        "hydrostatic_integral_scheme": "cubic_uniform_v1",
+        "hydrostatic_surface_scheme": "linear_density",
+        "localize_conv": true,
+        "material_point_gradient_scheme": "fourth_uniform_v1",
+        "meridional_boundary_scheme": "closed_faces",
+        "mode_split": false,
+        "momentum_tangent_filter_scheme": "gram_fourth_v1",
+        "monotone_adv": false,
+        "polar_cap_rows": 0,
+        "polar_cap_taper": 0,
+        "pressure_continuity_scheme": "centered_fourth",
+        "process_time_scheme": "legacy",
+        "project_adv_vel": false,
+        "tracer_flux_arithmetic": "integrated_reference_v1",
+        "tracer_transport_scheme": "centered_second",
+        "vertical_tracer_scheme": "material_point_v4"
+      },
+      "frozen70": {
+        "column_geometry": "nodal_dual_v1",
+        "conservative_kv": true,
+        "density_rotation_scheme": "joint_shear",
+        "external_mode_scheme": "symmetric",
+        "fct_adv": false,
+        "hydrostatic_integral_scheme": "cubic_uniform_v1",
+        "hydrostatic_surface_scheme": "linear_density",
+        "localize_conv": true,
+        "material_point_gradient_scheme": "fourth_uniform_v1",
+        "meridional_boundary_scheme": "closed_faces",
+        "mode_split": false,
+        "monotone_adv": false,
+        "polar_cap_rows": 0,
+        "polar_cap_taper": 0,
+        "pressure_continuity_scheme": "centered_fourth",
+        "process_time_scheme": "legacy",
+        "project_adv_vel": false,
+        "tracer_flux_arithmetic": "integrated_reference_v1",
+        "tracer_transport_scheme": "centered_second",
+        "vertical_tracer_scheme": "material_point_v4"
+      }
+    }
+  },
+  "candidate_contract_sha256": "01221a21843c3a9898b6756fa66b51b23241c12a31bfca614b7781e188b32fd5",
+  "frozen70_contract_sha256": "93f24d276bcd199503b3f9348e169ce69a5805164b42a8945803f5ca9ffad180"
+}

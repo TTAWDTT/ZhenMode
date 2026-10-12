@@ -1,0 +1,301 @@
+"""One-shot saved NPZ/contract audit for this fixed two-row developmental pilot.
+
+No zhenmode imports, solver integration, parameter search or CI dispatch.
+Toolkit gatekeeper/emitall do not implement these ocean-array metric definitions.
+Modes: controls -> cheap timing -> exactly one full two-row readback.
+The original solver thresholds and inherited70 arithmetic comparison budget are
+separate: data agreement can PASS while strict scientific promotion FAILS.
+"""
+import os
+os.environ.update(OMP_NUM_THREADS='1', OPENBLAS_NUM_THREADS='1', MKL_NUM_THREADS='1', PYTHONPATH='', CUDA_VISIBLE_DEVICES='')
+import datetime, hashlib, io, json, math, resource, signal, sys, time, traceback, zipfile
+from pathlib import Path
+import numpy as np
+
+HERE = Path(__file__).resolve().parent
+STAGE = HERE.parent.parent
+NATIVE = STAGE / 'native-attempt02'
+REV = 'dabd48abd898c20e0471a5ab9fc18e9b61cfa96d'
+PARENT = '70d408583aa99db63e49d958d89dcaccad273f0e'
+BASE = STAGE.parent / 'material-point-gradient-v1/01-candidate-primary-main'
+OLD = STAGE.parent.parent / 'vertical-accuracy-round2-20261012/band-stage/01-candidate-primary-main/zhenmode/output.npz'
+START = time.monotonic()
+os.sched_setaffinity(0, {min(os.sched_getaffinity(0))})
+resource.setrlimit(resource.RLIMIT_AS, (4294967296, 4294967296))
+signal.signal(signal.SIGALRM, lambda *_: (_ for _ in ()).throw(TimeoutError('180s audit limit')))
+signal.alarm(180)
+
+def utc(): return datetime.datetime.now(datetime.timezone.utc).isoformat()
+def sha(data): return hashlib.sha256(data).hexdigest()
+def file_sha(path): return sha(Path(path).read_bytes())
+def read(path): return json.loads(Path(path).read_text(encoding='utf-8-sig'))
+def canonical(data): return sha(json.dumps(data, sort_keys=True, separators=(',', ':'), allow_nan=False).encode())
+def save(name, data):
+    with (HERE / name).open('x', encoding='utf-8') as stream:
+        json.dump(data, stream, ensure_ascii=False, indent=2, allow_nan=False)
+        stream.write('\n')
+def require(condition, name):
+    if not condition: raise AssertionError(name)
+def identical(a, b): return a.shape == b.shape and a.dtype == b.dtype and np.array_equal(a, b)
+def arithmetic_equal(a, b, inventory=False): return abs(a-b) <= (2e-14 if inventory else 5e-15 + 5e-12*abs(b))
+def original_times(times, contract): return identical(times, np.arange(0., contract['duration_s'] + 1., contract['output_s']))
+def limits(c):
+    q = {k+'_error': c['thresholds']['error'] for k in ('eta', 'u', 'v')}
+    q.update({k: c['thresholds'][k] for k in ('T_error_C', 'S_error_psu', 'volume')})
+    q.update({k+'_inventory': c['thresholds']['tracer_inventory'] for k in ('T', 'S')})
+    return q
+def strict(candidate, parent): return candidate < parent
+def npz(path):
+    with zipfile.ZipFile(path) as z:
+        require(sum(x.file_size for x in z.infolist()) < 128*1024**2, 'bounded decoded NPZ')
+    with np.load(path, allow_pickle=False) as z:
+        arrays = {name: z[name] for name in z.files}
+    if 'metadata' in arrays: arrays['metadata'] = json.loads(str(arrays['metadata']))
+    return arrays
+def weighted_rms(error, weights, times, duration):
+    # Scalar compensated accumulation is separately expressed from the project
+    # scorer and the earlier70 dot-product audit: each sample mean-square first,
+    # then trapezoid contributions divided by the contract duration.
+    mean_squares = []
+    for j in range(len(times)):
+        w = np.broadcast_to(weights[j], error[j].shape).reshape(-1)
+        e = error[j].reshape(-1)
+        denominator = math.fsum(float(v) for v in w)
+        require(denominator > 0, 'positive spatial weight')
+        numerator = math.fsum(float(ww)*float(ee)*float(ee) for ww, ee in zip(w, e))
+        mean_squares.append(numerator / denominator)
+    value = math.fsum((mean_squares[j-1]+mean_squares[j]) * float(times[j]-times[j-1]) / 2. for j in range(1,len(times)))
+    return math.sqrt(value / duration)
+
+def controls():
+    times = np.array([0.,1.,2.]); errors = np.tile(times[:, None, None], (1,2,2)); weights = np.ones_like(errors)
+    stream = io.BytesIO(); np.savez_compressed(stream, error=errors, weight=weights, time=times); stream.seek(0)
+    with np.load(stream, allow_pickle=False) as z:
+        positive = weighted_rms(z['error'], z['weight'], z['time'], 2.)
+        null = weighted_rms(z['error']*0., z['weight'], z['time'], 2.)
+    require(arithmetic_equal(positive, math.sqrt(1.5)), 'known serialized positive RMS')
+    require(null == 0., 'serialized null RMS')
+    clean = {str(i): np.full((3,2), float(i)) for i in range(17)}
+    twin = {k:v.copy() for k,v in clean.items()}
+    require(all(identical(clean[k],twin[k]) for k in clean), 'known17 clean twin')
+    twin['2'][1,1] += 0.25
+    require(not identical(clean['2'],twin['2']), 'array corruption fires')
+    require(sha(b'clean') != sha(b'cleam'), 'byte corruption fires')
+    require(canonical({'scheme':'old'}) != canonical({'scheme':'new'}), 'option digest corruption fires')
+    require(not arithmetic_equal(positive+1e-6,positive), 'metric comparator corruption fires')
+    require(arithmetic_equal(positive,positive), 'metric comparator positive twin')
+    require(strict(1.,2.) and not strict(2.,1.) and not strict(1.,1.), 'strict direction and tie')
+    c = {'duration_s':2.,'output_s':1.}
+    require(original_times(times,c) and not original_times(times+.1,c), 'time shift corruption fires')
+    h = np.ones((3,2,2)); area = np.ones(2)*2.
+    volume = h*area[None,:,None]
+    require(np.allclose(volume,2.) and not np.allclose(volume+1.,2.), 'capacity corruption fires')
+    totals = np.sum(volume*7.,axis=(1,2))
+    require(float(np.max(np.abs(totals/totals[0]-1.))) == 0., 'constant inventory null')
+    require(not identical(np.arange(4.),np.arange(4.)+1.), 'coordinate corruption fires')
+    require(REV != PARENT, 'source mismatch example fires')
+    result = dict(utc=utc(),verdict='PASS',positive_serialized_RMS=positive,expected=math.sqrt(1.5),zero_RMS=null,exact17_clean_twin=True,
+                  detectors=['array','file_byte','option_digest','metric','strict_direction_and_tie','time_shift','capacity','coordinate','source'],
+                  original_thresholds_unchanged=True,scope='Reader/arithmetic/comparator controls; no solver or fullphysics qualification',elapsed_s=time.monotonic()-START)
+    save('controls-result.json',result)
+    return result
+
+def analytic_reference(c, a):
+    q = c['internal_wave']['q']; m = q/c['H_m']; k = math.pi/c['Ly_m']; amplitude = c['amplitude_m']; gamma = c['internal_wave']['dT_dz_C_m']
+    omega = math.sqrt(c['f']**2 + c['internal_wave']['N2_s_2']*(k/m)**2)
+    z = np.linspace(0., -c['H_m'], c['nz']); phase = omega*a['time']
+    ref = {'eta':amplitude*math.sin(q)*np.outer(np.cos(phase),np.cos(k*a['y_eta'])),
+           'S':np.full_like(a['S'],c['S_psu'])}
+    displacement = amplitude*np.cos(phase)[:,None,None]*np.cos(k*a['y_eta'])[None,:,None]*np.sin(m*(z+c['H_m']))[None,None,:]
+    ref['T'] = (c['T_C']+gamma*z)[None,None,:] - gamma*displacement
+    for field in ('u','v'):
+        mode = np.sin(k*a['y_'+field])[:,None]*np.cos(m*(z+c['H_m']))[None,:]
+        evolution = -c['f']*np.cos(phase) if field == 'u' else omega*np.sin(phase)
+        ref[field] = amplitude*(m/k)*evolution[:,None,None]*mode[None,:,:]
+    return ref, omega
+
+def independently_measure(c, a):
+    ref, omega = analytic_reference(c, a)
+    weights_TS = a['h']*a['area'][None,:,None]
+    weights_eta = np.broadcast_to(a['area'],a['eta'].shape)
+    absolute = {'eta':weighted_rms(a['eta']-ref['eta'],weights_eta,a['time'],c['duration_s'])}
+    for field in ('T','S'): absolute[field] = weighted_rms(a[field]-ref[field],weights_TS,a['time'],c['duration_s'])
+    for field in ('u','v'): absolute[field] = weighted_rms(a[field]-ref[field],a['volume_'+field],a['time'],c['duration_s'])
+    amplitude = c['amplitude_m'] or .01
+    eta_scale = abs(amplitude*math.sin(c['internal_wave']['q']))
+    velocity_scale = amplitude*omega*(c['internal_wave']['q']/c['H_m'])/(math.pi/c['Ly_m'])
+    metrics = {'eta_error':absolute['eta']/eta_scale,'u_error':absolute['u']/velocity_scale,'v_error':absolute['v']/velocity_scale,
+               'T_error_C':absolute['T'],'S_error_psu':absolute['S']}
+    # Independent compensated sum for total inventory at each saved snapshot.
+    stocks = {'volume':[math.fsum(float(v) for v in w.reshape(-1)) for w in weights_TS]}
+    for field in ('T','S'):
+        stocks[field+'_inventory'] = [math.fsum(float(x)*float(w) for x,w in zip(a[field][j].reshape(-1),weights_TS[j].reshape(-1))) for j in range(len(a['time']))]
+    for key, values in stocks.items():
+        require(values[0] != 0., 'nonzero initial '+key)
+        metrics[key] = max(abs(v/values[0]-1.) for v in values)
+    thresholds = limits(c)
+    failed = [k for k,v in metrics.items() if v>thresholds[k]]
+    ratios = {k:metrics[k]/thresholds[k] for k in ('eta_error','u_error','v_error','T_error_C','S_error_psu')}
+    initial = {k:float(np.max(np.abs(a[k][0]-ref[k][0]))) for k in ref}
+    require(max(initial.values())<5e-11, 'original initial analytic barrier')
+    return dict(metrics=metrics,original_limits=thresholds,failed_metrics=failed,normalized_error_ratios=ratios,composite=max(ratios.values()),
+                absolute_RMS_before_normalization=absolute,normalizers=dict(eta_m=eta_scale,velocity_m_s=velocity_scale),initial_field_maxima=initial,
+                units=dict(T_error_C='degC absolute capacity/time weighted RMS',S_error_psu='psu absolute capacity/time weighted RMS',eta_error='relative to original eta amplitude',u_error='relative to original velocity scale',v_error='relative to original velocity scale',inventory='relative drift'),
+                arithmetic='Compensated scalar sums; float64 original arrays. Different rounding from producer retained, not a digit certification.')
+
+def cheap_timing():
+    require(read(HERE/'controls-result.json')['verdict']=='PASS','controls before real data')
+    headers = []; elapsed = []
+    for folder in ('00-previous-primary-main','01-candidate-primary-main'):
+        for filename in ('initial.npz','native.npz','output.npz'):
+            path = NATIVE/folder/'zhenmode'/filename; begin=time.monotonic()
+            with zipfile.ZipFile(path) as z:
+                entries=[dict(name=x.filename,bytes=x.file_size,compressed_bytes=x.compress_size) for x in z.infolist()]
+            headers.append(dict(path=str(path),stored_bytes=path.stat().st_size,entries=entries))
+            elapsed.append(time.monotonic()-begin)
+    path=NATIVE/'00-previous-primary-main/zhenmode/output.npz';begin=time.monotonic()
+    with np.load(path,allow_pickle=False) as z:
+        times=z['time'];metadata=json.loads(str(z['metadata']));members=z.files
+    cheap_actual=time.monotonic()-begin
+    synthetic=np.broadcast_to(np.linspace(0.,1.,len(times))[:,None,None],(len(times),8*32,16)).copy();weight=np.ones_like(synthetic)
+    begin=time.monotonic();value=weighted_rms(synthetic,weight,times,float(times[-1]));normtime=time.monotonic()-begin
+    projected=normtime*15 + cheap_actual*10 + math.fsum(elapsed)*10
+    require(projected <180.,'measured estimate under cap')
+    save('cheap-timing-result.json',dict(utc=utc(),scope='Actual six NPZ directory/header scans plus one small actual time/metadata read; no science metric from real fields',npz_headers=headers,
+         actual_small_read_s=cheap_actual,actual_members=members,actual_snapshots=len(times),actual_steps=metadata['steps'],synthetic_RMS=value,synthetic_shape=list(synthetic.shape),synthetic_one_norm_s=normtime,
+         projected_full_readback_s=projected,projection_basis='15 independently accumulated five-variable norms for completed0/1 and frozen70 plus small-read/header overhead; constant coarse grid only. Actual duration measured by full audit.',cpu_affinity=list(os.sched_getaffinity(0)),memory_cap_bytes=4294967296,elapsed_s=time.monotonic()-START))
+    print('CHEAP_TIMING',projected,'seconds measured projection',flush=True)
+
+def bridge():
+    path=STAGE/'review/source-identity-result.json';r=read(path);wheel=read(STAGE/'wheel-identity.json');plan=read(NATIVE/'declared-plan.json')
+    require(r['verdict']=='PASS_SOURCE_IDENTITY_133_AND_REUSED_OWNER_AST' and r['revision']==REV,'source receipt PASS/revision')
+    require(r['package_python_files']==133 and r['build_files']==144,'receipt objects/counts')
+    registry=r['package_source_sha256'];require(len(registry)==133,'complete registry size')
+    require(registry==wheel['package_source_sha256']==plan['package_source_sha256'],'bridged receipt/wheel/plan registry')
+    require(wheel['revision']==plan['source_revision']==REV,'frozen identity revisions')
+    require(file_sha(STAGE/'wheel'/wheel['wheel'])==wheel['wheel_sha256']==r['wheel_SHA'],'actual wheel digest bridged receipt')
+    require(file_sha(NATIVE/'protocol-before-runs.md')==plan['protocol_sha256'],'native protocol digest')
+    save('source-bridge-result.json',dict(utc=utc(),source=REV,verdict='RETRIEVED_SOURCE_IDENTITY_BRIDGE_NOT_NEW_SOURCE_CERTIFICATION',receipt=str(path),receipt_sha256=file_sha(path),
+         package_python_files=133,build_files=144,registry=registry,wheel_sha256=wheel['wheel_sha256'],unchanged_owner_bridge=r['reused_bridge'],
+         native_worker_historical_loaded_paths='Not certified by registry/wheel identity; missing historical path capture remains a limitation'))
+    return registry,plan
+
+def metadata_and_arrays(index, row, plan, registry):
+    folder=NATIVE/row['directory'];c=read(folder/'contract.json');conf=read(folder/'configuration.json');run=read(folder/'run.json');n=read(folder/'zhenmode/native-run.json');score=read(folder/'zhenmode/score.json');res=read(folder/'zhenmode/resources.json')
+    a=npz(folder/'zhenmode/output.npz');raw=npz(folder/'zhenmode/native.npz');meta=a['metadata']
+    require(row['status']==run['status']=='completed' and res['returncode']==0,'completed saved row '+str(index))
+    require(c==plan['rows'][index]['contract']==conf['contract'],'predeclared contracts exact')
+    require(canonical(c)==plan['rows'][index]['sha256']==score['contract_sha256']==meta['contract_sha256'],'contract SHA chain')
+    require(score==row['report']==run['models']['zhenmode'],'score/journal/run same record')
+    require(c['ocean_options']==n['actual_controls']==meta['recorded_numerics']['resolved_options'],'actual option equality')
+    require(n['source_files_sha256']==registry==run['package_source_sha256'],'source133 registry bridge')
+    require(n['source_sha']==score['source_sha']==meta['source_sha']==conf['source_revision']==REV,'source revision chain')
+    require(file_sha(folder/'zhenmode/output.npz')==score['output_sha256'],'output byte hash')
+    require(file_sha(folder/'zhenmode/initial.npz')==n['input_sha256']==meta['input_sha256'],'input byte hash')
+    require(meta['config_sha256']==canonical(dict(contract=c,controls=n['actual_controls'],physics=n['physics_zero'],runtime=n['runtime'])),'configuration byte digest')
+    require(meta['executable_sha256']==n['runtime']['actual_executable_sha256']==score['executable_sha256'],'historical executable digest chain')
+    require(all(value==0. for value in n['physics_zero'].values()),'original explicitly zero coefficients')
+    require(c['full_dynamics'] is True,'full nonlinear contract retained')
+    for key,value in a.items():
+        if key!='metadata':require(value.dtype==np.float64 and np.isfinite(value).all(),'numeric finite float64 '+key)
+    require(original_times(a['time'],c) and identical(a['time'],raw['time']),'complete saved time axis')
+    require(meta['steps']==round(c['duration_s']/c['dt']) and meta['dt_s']==c['dt'],'accepted step count/dt metadata')
+    exact={key:identical(a[key],raw[key].reshape(a[key].shape)) for key in ('T','S','eta','u','v')}
+    require(all(exact.values()),'raw/published field exact interchange')
+    reconstructed=np.broadcast_to(raw['dz_node'],raw['T'].shape).copy();reconstructed[...,0]+=raw['eta']
+    require(identical(reconstructed.reshape(a['h'].shape),a['h']),'true dynamic h = actual dz_node + top eta')
+    require(float(np.max(np.abs(np.sum(a['h'],axis=-1)-c['H_m']-a['eta'])))<=1e-10 and np.all(a['h']>0.),'positive physical layer capacity')
+    require(np.max(np.abs(raw['dz_node']-np.asarray(c['initial_h_m'])))<1e-10,'original node capacity convention')
+    for key in ('u','v'):require(np.allclose(a['volume_'+key],a['h']*a['area'][None,:,None],rtol=5e-14,atol=1e-10),'dynamic diagnostic volume '+key)
+    dx=c['Lx_m']/c['nx'];dy=c['Ly_m']/c['ny'];xx,yy=np.meshgrid((np.arange(c['nx'])+.5)*dx,(np.arange(c['ny'])+.5)*dy,indexing='ij')
+    for key in ('eta','u','v'):
+        require(np.allclose(a['x_'+key],xx.reshape(-1),rtol=0.,atol=1e-9) and np.allclose(a['y_'+key],yy.reshape(-1),rtol=0.,atol=1e-9),'physical node coordinates '+key)
+    require(np.allclose(a['area'],dx*dy,rtol=1e-13,atol=0.),'physical horizontal area')
+    rr=res['resources'];require(rr['stop_reason'] is None and rr['cpu_affinity']==1 and rr['elapsed_wall_seconds']<=600. and rr['peak_host_rss_bytes']<=4294967296,'original native sampled resource barriers')
+    require(meta['total_wall_s']==rr['elapsed_wall_seconds'] and meta['aggregate_peak_bytes']==rr['peak_host_rss_bytes'],'native resource metadata exact')
+    # Source bytes allow a factory-default inference, not retrospective capture.
+    factory=(STAGE/'installed/zhenmode/model/solver/factory.py').read_text()
+    worker=(STAGE/'installed/zhenmode/execution/worker.py').read_text()
+    require("momentum_vertical_velocity_scheme='dual_face_v1'" in factory,'factory default dualface')
+    result=dict(index=index,utc=utc(),directory=str(folder),completed=True,source=REV,raw_interchange_exact=exact,true_dynamic_h_exact=True,original_node_capacities=True,
+                snapshots=len(a['time']),steps=meta['steps'],source133_registry_matches_bridged_receipt=True,input_sha256=meta['input_sha256'],output_sha256=score['output_sha256'],native_sha256=file_sha(folder/'zhenmode/native.npz'),
+                contract_sha256=canonical(c),config_sha256=meta['config_sha256'],actual_controls=n['actual_controls'],native_runtime=n['runtime'],physics_zero=n['physics_zero'],native_resources=rr,
+                provenance_limits=['Source registries and wheel bytes do not capture historical worker loaded Python paths','dual_face_v1 omitted from actual_controls; inferred from captured frozen factory default and worker options call'],
+                loaded_python_paths_recorded=any('loaded' in str(k).lower() and ('path' in str(k).lower() or 'module' in str(k).lower()) for k in n),
+                momentum_default_inference=dict(factory_sha256=sha(factory.encode()),worker_sha256=sha(worker.encode()),options_present='ocean_options' in worker),
+                scope='Saved native data, contracts and independently restated scoring arithmetic only')
+    return result,c,a,raw,score
+
+def full_audit():
+    require(read(HERE/'controls-result.json')['verdict']=='PASS','preserved controls')
+    require(read(HERE/'cheap-timing-result.json')['projected_full_readback_s']<180.,'measured full readback admission')
+    require(not(HERE/'audited-row-ledger.jsonl').exists(),'no repeat of completed readback index')
+    registry,plan=bridge()
+    journal=[json.loads(line) for line in (NATIVE/'row-journal.jsonl').read_text().splitlines()]
+    require(len(journal)==2 and {r['index'] for r in journal}=={0,1},'exact denominator2')
+    initial_failure=read(STAGE/'native-attempt01-launch-failure.json')
+    require(initial_failure['no_native_arrays'] is True and not list((STAGE/'00-previous-primary-main').rglob('*.npz')),'failed startup has no arrays')
+    expected_folders={r['directory'] for r in journal}
+    actual_folders={p.name for p in NATIVE.iterdir() if p.is_dir() and p.name[:2].isdigit()}
+    require(actual_folders==expected_folders,'no undeclared or expanded native indices')
+    results=[]; default_raw=None
+    for index in (0,1):
+        begin=time.monotonic();row=next(r for r in journal if r['index']==index)
+        result,c,a,raw,score=metadata_and_arrays(index,row,plan,registry)
+        measured=independently_measure(c,a)
+        agreement={key:arithmetic_equal(value,score['metrics'][key],key in ('volume','T_inventory','S_inventory')) for key,value in measured['metrics'].items()}
+        require(all(agreement.values()),'independent score arithmetic '+repr(agreement))
+        require(measured['failed_metrics']==score['failed_metrics'] and (not measured['failed_metrics'])==score['engineering_screen_pass'],'original screens same')
+        require(arithmetic_equal(measured['composite'],score['composite']),'composite readback budget')
+        result.update(independent_arithmetic=measured,published_metrics=score['metrics'],published_composite=score['composite'],metric_agreement=agreement,original_screen_pass=not measured['failed_metrics'])
+        if index==0:
+            previous=npz(OLD);names=[key for key in a if key!='metadata'];replay={key:identical(a[key],previous[key]) for key in names}
+            require(len(names)==17 and set(names)==set(previous)-{'metadata'} and all(replay.values()),'olddefault17 exact replay')
+            result.update(default17_exact=replay,default_reference_path=str(OLD),default_reference_sha256=file_sha(OLD));default_raw=raw['dz_node'].copy()
+        else:
+            before=npz(BASE/'zhenmode/output.npz');bc=read(BASE/'contract.json');bs=read(BASE/'zhenmode/score.json')
+            require(before['metadata']['source_sha']==bs['source_sha']==PARENT,'frozen70 baseline source')
+            require(file_sha(BASE/'zhenmode/output.npz')==bs['output_sha256'],'frozen70 unchanged raw output')
+            require(bc['thresholds']==c['thresholds'],'original thresholds unchanged relative70')
+            expected_options=dict(bc['ocean_options']);expected_options['momentum_tangent_filter_scheme']='gram_fourth_v1'
+            require(c['ocean_options']==expected_options,'candidate only tangent option added vs70')
+            bc_noopt=dict(bc);bc_noopt.pop('ocean_options');c_noopt=dict(c);c_noopt.pop('ocean_options')
+            require(c_noopt==bc_noopt,'same full physical contract except candidate tangent option')
+            prior=independently_measure(bc,before)
+            require(all(arithmetic_equal(v,bs['metrics'][key],key in ('volume','T_inventory','S_inventory')) for key,v in prior['metrics'].items()),'independently recomputed frozen70 metrics')
+            strict_pass=strict(measured['composite'],prior['composite'])
+            temperature_pass=measured['metrics']['T_error_C']<=8.530755561576719e-7
+            require(temperature_pass,'original temperature repair gate')
+            require(identical(raw['dz_node'],default_raw),'candidate/default node capacity exact')
+            decision=read(NATIVE/'pilot-decision.json');comparison=read(STAGE/'primary-vs-frozen70.json')
+            require(decision['checks']['score_improved_vs_frozen70']==strict_pass==comparison['strict_latest_score_PASS'],'strict recorded FAIL consistent')
+            require(decision['allow_expansion']==comparison['allow_expansion']==False,'failed strict gate blocks remaining batch')
+            result.update(frozen70_baseline=dict(path=str(BASE),source=PARENT,output_sha256=bs['output_sha256'],published_composite=bs['composite'],independent_arithmetic=prior),
+                          strict_latest_composite_pass=strict_pass,strict_scientific_verdict='PASS' if strict_pass else 'FAIL',relative_score_change=measured['composite']/prior['composite']-1.,
+                          temperature_repair_pass=temperature_pass,allow_expansion=False,unexecuted_indices=list(range(2,10)),
+                          published_raw_values_retained='Independent last-bit differences do not overwrite original saved metrics')
+        result['elapsed_row_audit_s']=time.monotonic()-begin
+        save('row-%02d-result.json'%index,result)
+        with (HERE/'audited-row-ledger.jsonl').open('a') as f:f.write(json.dumps(dict(index=index,utc=utc(),file='row-%02d-result.json'%index,result_sha256=file_sha(HERE/('row-%02d-result.json'%index))))+'\n')
+        results.append(result);print('AUDITED_ROW',index,flush=True)
+    summary=dict(utc=utc(),data_readback_verdict='SCOPE_PASS_TWO_COMPLETED_ROWS',scientific_promotion='FAIL_RETAINED_STRICT_LATEST_COMPOSITE',source=REV,
+                 audited_denominator=2,audited_indices=[0,1],unexecuted_indices=list(range(2,10)),allow_expansion=False,default17_exact=True,original_screens_all2_pass=True,
+                 candidate_composite_recomputed=results[1]['independent_arithmetic']['composite'],frozen70_composite_recomputed=results[1]['frozen70_baseline']['independent_arithmetic']['composite'],
+                 candidate_composite_published=results[1]['published_composite'],frozen70_composite_published=results[1]['frozen70_baseline']['published_composite'],relative_score_change=results[1]['relative_score_change'],
+                 failed_first_startup=initial_failure,limits=results[1]['provenance_limits']+['Contacted linear development reference; no independent fullphysics or heldout oracle','Source identity is bridged from another reviewer, not rerun here','No null/thermal/fine or other indices executed'],
+                 elapsed_s=time.monotonic()-START,peak_RSS_bytes=resource.getrusage(resource.RUSAGE_SELF).ru_maxrss*1024,cpu_affinity=list(os.sched_getaffinity(0)),memory_cap_bytes=4294967296,
+                 declaration_sha256=file_sha(HERE/'audit-declaration.json'),script_sha256=file_sha(__file__),new_native_runs=0,full_CI='PENDING_NOT_GRADED_UNTIL_TERMINAL_RAW_LOG_READBACK')
+    require(not any(name=='zhenmode' or name.startswith('zhenmode.') for name in sys.modules),'no project imports')
+    save('audit-summary.json',summary);print(json.dumps(summary,ensure_ascii=False),flush=True)
+
+if __name__=='__main__':
+    mode=sys.argv[1]
+    try:
+        if mode=='controls':controls()
+        elif mode=='cheap':cheap_timing()
+        elif mode=='full':full_audit()
+        else:raise ValueError('unsupported mode')
+    except Exception as error:
+        filename='failure-'+mode+'-'+datetime.datetime.now(datetime.timezone.utc).strftime('%Y%m%dT%H%M%S%f')+'.json'
+        save(filename,dict(utc=utc(),mode=mode,classification='AUDIT_HARNESS_OR_DATA_FAILURE_NOT_RELABELED',error=repr(error),traceback=traceback.format_exc(),elapsed_s=time.monotonic()-START,new_native_runs=0))
+        raise

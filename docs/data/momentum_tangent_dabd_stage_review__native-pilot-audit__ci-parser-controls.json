@@ -1,0 +1,22 @@
+{
+  "utc": "2026-10-12T23:20:00.031818+00:00",
+  "verdict": "PASS",
+  "known_counts": {
+    "line": 3,
+    "text": "test\tRun python -m pytest tests/ -q\t2026-10-12T00:00:00Z 7 passed, 3 warnings in 12.25s",
+    "passed": 7,
+    "warnings": 3,
+    "duration_s": 12.25
+  },
+  "negative_detectors": {
+    "bad_source": "exact run/source/event",
+    "pending_run": "actual terminal success",
+    "missing_pytest_summary": "one actual pytest terminal summary",
+    "bad_MMS": "one actual MMS ALL PASS",
+    "failed_pytest": "pytest unwanted terminal status",
+    "wrong_checkout": "actual full checkout SHA test",
+    "duplicate_summary": "one actual pytest terminal summary",
+    "skipped_MMS": "actual executed step Run python -m zhenmode mms"
+  },
+  "scope": "Parser synthetic controls only, not CI/software PASS"
+}

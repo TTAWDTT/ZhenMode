@@ -1,0 +1,10 @@
+FAIL_RETAINED
+checks=1 source133/build144
+Traceback (most recent call last):
+  File "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/review/source_identity.py", line 26, in <module>
+    require('git_worktree_clean',subprocess.check_output(GIT+['status','--porcelain'],cwd=WORK,text=True).strip()=='')
+  File "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/review/source_identity.py", line 17, in require
+    if not condition:raise AssertionError(name)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: git_worktree_clean
+

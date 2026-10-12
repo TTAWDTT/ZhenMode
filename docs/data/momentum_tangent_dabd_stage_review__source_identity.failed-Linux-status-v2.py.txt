@@ -1,0 +1,70 @@
+# One-shot postfreeze source identity/AST bridge. Standard library only; no model run.
+import ast,copy,hashlib,io,json,subprocess,tarfile,traceback,zipfile,time
+from pathlib import Path
+HERE=Path(__file__).resolve().parent;STAGE=HERE.parent
+WORK=Path('/mnt/d/CodexWorktrees/thermal-full-scan/ocean-solver')
+OLD=STAGE.parent/'material-point-gradient-v1/installed'
+REV='dabd48abd898c20e0471a5ab9fc18e9b61cfa96d'
+# Windows-managed worktrees retain a Windows absolute gitdir in their .git file.
+# Resolve it locally for WSL read-only Git; never edit the .git file or checkout.
+git_pointer=(WORK/'.git').read_text().strip().split('gitdir: ',1)[1]
+if len(git_pointer)>2 and git_pointer[1]==':':git_pointer='/mnt/'+git_pointer[0].lower()+git_pointer[2:].replace('\\','/').replace('\\','/')
+GIT=['git','--git-dir='+git_pointer,'--work-tree='+str(WORK)]
+checks=[];report={'checks':checks,'scope':'source identity plus explicitly REUSED unchanged-owner bridge; no numerical science replay'}
+def load(p):return json.loads(Path(p).read_text(encoding='utf-8-sig'))
+def sha(b):return hashlib.sha256(b).hexdigest()
+def require(name,condition):
+ if not condition:raise AssertionError(name)
+ checks.append(name)
+def func(path,name):
+ tree=ast.parse(Path(path).read_text(encoding='utf-8-sig'))
+ return next(x for x in tree.body if isinstance(x,(ast.FunctionDef,ast.AsyncFunctionDef)) and x.name==name)
+def adump(node):return ast.dump(node,include_attributes=False)
+started=time.monotonic()
+try:
+ require('exact_git_HEAD',subprocess.check_output(GIT+['rev-parse','HEAD'],cwd=WORK,text=True).strip()==REV)
+ require('git_worktree_clean',subprocess.check_output(GIT+['status','--porcelain'],cwd=WORK,text=True).strip()=='')
+ build=load(STAGE/'build-input.json');wheelid=load(STAGE/'wheel-identity.json');frozen=load(STAGE/'static-review/source-snapshot.json')
+ require('build_wheel_revision',build['revision']==wheelid['revision']==REV and build['windows_git_checkout_clean'])
+ archive=subprocess.check_output(GIT+['archive','--format=tar',REV,'src/zhenmode'],cwd=WORK)
+ with tarfile.open(fileobj=io.BytesIO(archive)) as tar:
+  gitfiles={m.name:tar.extractfile(m).read() for m in tar.getmembers() if m.isfile()}
+ require('all_build144_git_paths',len(build['files'])==144 and set(build['files'])==set(gitfiles))
+ for path,digest in build['files'].items():
+  require('Git_build_current_'+path,sha(gitfiles[path])==digest==sha((WORK/path).read_bytes()))
+ wheel=STAGE/'wheel'/wheelid['wheel'];require('wheel_archive_SHA',sha(wheel.read_bytes())==wheelid['wheel_sha256'])
+ with zipfile.ZipFile(wheel) as zipped:
+  names={p for p in zipped.namelist() if p.startswith('zhenmode/') and p.endswith('.py')}
+  manifest=wheelid['package_source_sha256'];expected={module+'.py' for module in manifest}
+  require('complete_wheel133_python',len(manifest)==133 and names==expected and wheelid['verified_complete_python_count']==133)
+  actual={p.relative_to(STAGE/'installed').as_posix() for p in (STAGE/'installed/zhenmode').rglob('*.py')}
+  require('complete_installed133_python',actual==expected)
+  for module,digest in manifest.items():
+   suffix=module+'.py';require('Git_build_wheel_installed_'+module,sha(gitfiles['src/'+suffix])==build['files']['src/'+suffix]==sha(zipped.read(suffix))==sha((STAGE/'installed'/suffix).read_bytes())==digest)
+ for path,digest in frozen['reviewed_file_sha256'].items():require('precommit_review_byte_bridge_'+path,sha((WORK/path).read_bytes())==digest)
+ # Old70 explicit reuse only for load-bearing unchanged owner ASTs.
+ groups={'model/solver/dynamics/transport.py':['_advection_scalar','_vertical_transport_iface','_compute_vertical_velocity'],
+         'model/solver/numerics/horizontal.py':['_dealias_h_fd','_mirror_latitude'],
+         'model/solver/dynamics/pressure.py':['_compute_pressure_gradient','_compute_hydrostatic_pressure'],
+         'model/solver/physics/isopycnal.py':['_isopycnal_closure']}
+ bridge=[]
+ for tail,functions in groups.items():
+  for name in functions:
+   oldnode=func(OLD/'zhenmode'/tail,name);newnode=func(STAGE/'installed/zhenmode'/tail,name)
+   require('REUSED_AST_'+name,adump(oldnode)==adump(newnode));bridge.append({'owner':name,'module':tail,'AST_SHA':sha(adump(newnode).encode()),'grade':'REUSED_70_EXACT_UNCHANGED_AST_NOT_NEW_NUMERICAL_PASS'})
+ oldadv=func(OLD/'zhenmode/model/solver/dynamics/transport.py','_advection_flux_form')
+ newadv=copy.deepcopy(func(STAGE/'installed/zhenmode/model/solver/dynamics/transport.py','_advection_flux_form'))
+ normalized=[];count=0
+ for node in newadv.body:
+  if isinstance(node,ast.If) and any(isinstance(x,ast.Name) and x.id=='_filter_tangent_gram_fd' for x in ast.walk(node)):
+   require('default_branch_one_oldhelper_statement',len(node.orelse)==1 and '_dealias_h_fd' in adump(node.orelse[0]));normalized.extend(node.orelse);count+=1
+  else:normalized.append(node)
+ newadv.body=normalized
+ require('REUSED_default_normalized_advection_AST',count==1 and adump(newadv)==adump(oldadv))
+ report.update(verdict='PASS_SOURCE_IDENTITY_133_AND_REUSED_OWNER_AST',revision=REV,build_files=144,package_python_files=133,wheel_SHA=wheelid['wheel_sha256'],reused_bridge=bridge,default_advection_bridge='exact AST after replacing only optional-selector If by its original default else statement',package_source_sha256=manifest,old_controls_reused='70 source-math declaration scalar constant/gauge/mass/stock; exact AST bridge, no old data run',native_ranking='root native strictscore FAIL is independent and not superseded')
+except Exception as e:report.update(verdict='FAIL_RETAINED',error=repr(e),traceback=traceback.format_exc())
+report['elapsed_s']=time.monotonic()-started;report['script_SHA']=sha(Path(__file__).read_bytes())
+with (HERE/'source-identity-result.json').open('x') as f:json.dump(report,f,indent=2)
+print(report['verdict']);print('checks='+str(len(checks))+' source133/build144')
+if report['verdict'].startswith('FAIL'):print(report['traceback']);raise SystemExit(1)
+

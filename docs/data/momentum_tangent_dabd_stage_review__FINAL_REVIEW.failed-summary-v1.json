@@ -1,0 +1,70 @@
+{
+  "source": "dabd48abd898c20e0471a5ab9fc18e9b61cfa96d",
+  "grade": "PASS_NEW_FINITE_MOMENTUM_QUALIFICATION_ONLY",
+  "source_identity": "PASS301_144capturedsrc_133completewheelGitbuildinstalled",
+  "source_build144_coverage": "src only",
+  "extra_readme_pyproject": "RETROSPECTIVE_REUSED70_EXACT_UNCHANGED_NOT_NEW_BUILD_CAPTURE",
+  "scalar_gauge_mass_stock_old70": "REUSED_BY_EXACT_UNCHANGED_AST_NO_OLD_NUMERIC_RERUN",
+  "new_mms": "PASS6_FIXED_CASES",
+  "checks": 135,
+  "grids": [
+    "(12,14,9)",
+    "(24,28,9)",
+    "(48,56,9)"
+  ],
+  "amplitudes": [
+    30.0,
+    -30.0
+  ],
+  "original_gates": {
+    "each_refinement_min": 1.25,
+    "actual_uz_vz": "exactzero",
+    "normal_bits": true,
+    "fixed_norm_mean_eps": 512,
+    "strict_each_grid_sign_uRMS": true,
+    "normal_numerical_max": 2E-12,
+    "finest_each_L1": 0.05,
+    "full_owner_vs_advection": 1E-17,
+    "constant_owner_max": 1E-17
+  },
+  "summary": [],
+  "resource": {
+    "cap_memory_mib": 4096,
+    "stop_reason": null,
+    "cap_wall": 180,
+    "cpu": 1,
+    "peak_sampled_RSS": 789868544,
+    "wall_seconds": 13.232378361999992,
+    "returncode": 0
+  },
+  "native_steps_by_reviewer": 0,
+  "root_native_70_strict_score": "FAIL:.005418658568218491>.0053878283060362665",
+  "native_remaining_2_to_9_and_fine": "NO_EXPANSION",
+  "native_physics_or_globalSOTA": "NOT_GRANTED",
+  "actual_w": "originalupperdualface values saved; continuum horizontal divergence0 but discrete w nonzero; uz/vz0 removes vertical advection, does not fix w",
+  "retained_failures": [
+    "sourceidentityattempt01 Windowsgitdir FAILchecks0",
+    "sourceidentityattempt02 LinuxdocsEOL status FAILchecks1, Windowsclean independently saved",
+    "timingstartup missingjax FAIL beforecontrols",
+    "timingattempt02 wrongFnconstant expected for Bn FAIL beforefactory/newmanufacture",
+    "initialdeclarationeditor A/a JSON failure retained",
+    "initialweakerowner2e-12 declaration retained superseded beforeexecution"
+  ],
+  "positive_control_fixture_correction": "Bn1=[3/8,7/8,7/8,3/8]; Fn unselected and prior rootstaticseal mistake retained",
+  "artifact_sha256": {
+    "new-momentum-declaration.json": "f4d63f7dffb8d3b4039d0e62e39da6ed7f448402da2fa4bc101bec7a57653b20",
+    "root-pre-numeric-seal02.json": "454afdfcc832d68446951b349bc640531a3a9f2d41083314a72d635e391792a9",
+    "source_identity.py": "478569970822162e6e89b4dcd4480ea0e84ee9e9f00bc55bd635f28875ab8974",
+    "source-identity-result.json": "185a47bef3aebf6693757a397d89806afb3aea57d9df514222ee340cb98bc237",
+    "windows-git-clean-identity.json": "2ac8ee1777ac7c8b3114e6e830d45be25c072d4c0f0141b6f37e7ec3ea8a0b57",
+    "packaging-source-supplement.json": "89f03f01568092520d2c664d484d47b07a68012c5a8656c74e3ba3573387bb28",
+    "jax-runtime-identity.json": "5eb5f70d8614383bc080504f25a7d1a8a690ac7da80a1b865e86032931d00217",
+    "new_momentum_mms.py": "6dc6e6eab64da4f40274f944aa66a045ff010fcfa8910a873639315af673a1df",
+    "new-momentum-finite-plan.json": "ff2574681bc324545c54cb9f67461958f767ce038090513febbfa9f88c9f74ce",
+    "new-momentum-result.json": "bee3c6972926c98f28d6c670f8b889db83f3bcd6084dc8811f3d6080ccd82ac7",
+    "new-momentum-rows.jsonl": "e03585f9db12f7bb4d3b790cbed9f389d14da357c27ba8facbe5611aa015fab8",
+    "new-momentum-arrays.npz": "073ca1d545104728c6d243b4e56b329e3e6786928a64b6d4dc120767921a90ef",
+    "new-momentum-complete-resources.json": "124af4d4110b937d9bf1b43cecd81ca67c63dc72f651c56ea3e9b4a24b421acf",
+    "new-momentum-complete.log": "ffbe2643b8fdf4064aa4a9a908ca805eb7c28997f15f8e0e02f7f86dc1f260bd"
+  }
+}

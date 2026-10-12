@@ -1,0 +1,14 @@
+{
+  "returncode": 1,
+  "resources": {
+    "cpu_affinity": 1,
+    "memory_mib": 4096,
+    "wall_seconds": 180,
+    "peak_host_rss_bytes": 643072,
+    "stop_reason": null,
+    "termination_grace_seconds": 0,
+    "elapsed_wall_seconds": 0.20131049099998677,
+    "host_memory_enforcement": "aggregate process-group /proc RSS sampled at 0.2 s; not a hard cgroup cap"
+  },
+  "explicit_child_PYTHONPATH": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/installed"
+}

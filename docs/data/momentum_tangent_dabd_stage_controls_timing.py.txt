@@ -1,0 +1,9 @@
+import os,sys,json
+from pathlib import Path
+sys.path.insert(0,'/mnt/d/CodexWorktrees/thermal-full-scan/ocean-solver/src')
+from zhenmode.execution.resources import run_process_group
+root=Path('/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1')
+with (root/'controls-timing.log').open('x') as log:
+ result,receipt=run_process_group([sys.executable,'-m','pytest','tests/fd/test_momentum_tangent_filter.py::test_dense_matrix_fixed_norm_mean_and_affine[4]','-q'],cwd='/mnt/d/CodexWorktrees/thermal-full-scan/ocean-solver',env=dict(os.environ,JAX_PLATFORMS='cpu',PYTHONPATH='/mnt/d/CodexWorktrees/thermal-full-scan/ocean-solver/src'),stdout=log,resources=dict(cpu=1,memory_mib=4096,wall_seconds=180))
+(root/'controls-timing-resources.json').write_text(json.dumps(dict(returncode=result.returncode,resources=receipt),indent=2))
+print((root/'controls-timing.log').read_text());sys.exit(result.returncode)

@@ -1,0 +1,26 @@
+import json,sys
+from pathlib import Path
+import numpy as np
+r=Path(__file__).resolve().parent
+rows=[json.loads(s) for s in (r/'row-journal.jsonl').read_text().splitlines()]
+assert {v['index'] for v in rows}=={0,1},'pilot only before expansion'
+a,b=[next(x for x in rows if x['index']==i) for i in (0,1)]
+checks={'replay_exact':a['status']=='completed' and a.get('previous_replay_arrays_equal') is True,'original_screen':b['status']=='completed' and b['report']['engineering_screen_pass'],'score_improved':b['report']['composite']<a['report']['composite'],'T_not_worse':b['report']['metrics']['T_error_C']<=a['report']['metrics']['T_error_C']}
+checks['score_improved_vs_frozen70']=b['report']['composite']<0.0053878283060362665
+raw=[]
+for v in (a,b):
+ with np.load(r/v['directory']/'zhenmode/native.npz',allow_pickle=False) as x:raw.append({k:x[k].copy() for k in ('dz_node','time','T','eta')})
+checks['static_capacity_exact']=np.array_equal(raw[0]['dz_node'],raw[1]['dz_node'])
+for i,v in enumerate((a,b)):
+ with np.load(r/v['directory']/'zhenmode/output.npz',allow_pickle=False) as x:
+  h=np.broadcast_to(raw[i]['dz_node'],raw[i]['T'].shape).copy();h[...,0]+=raw[i]['eta']
+  checks['dynamic_h_original_formula_'+str(i)]=np.array_equal(h.reshape(x['h'].shape),x['h'])
+allow=all(checks.values())
+result={'checks':checks,'allow_expansion':allow,'baseline':a['report'],'candidate':b['report'],'old_arithmetic_dynamic_h_gate':'FAIL/OPEN; new physical hypothesis does not relabel it','scope':'development fixed panel; no SOTA qualification','pilot_wall_s':[v['elapsed_s'] for v in (a,b)]}
+with (r/'pilot-decision.json').open('x') as out:json.dump(result,out,indent=2)
+if allow:
+ projection=8*max(v['elapsed_s'] for v in(a,b))
+ plan={'measured_same_hardware_primary_wall_s':result['pilot_wall_s'],'remaining_rows':8,'projection_s':projection,'scaling':'same native integration stage; startup included conservatively, new grids must remain under each row600s','threshold_s':7200,'allow':projection<=7200}
+ with (r/'measured-compute-plan.json').open('x') as out:json.dump(plan,out,indent=2)
+ allow=allow and plan['allow']
+print(json.dumps(result,indent=2));sys.exit(0 if allow else 1)

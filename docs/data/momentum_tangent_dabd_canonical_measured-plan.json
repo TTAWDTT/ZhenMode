@@ -1,0 +1,12 @@
+{
+  "pilot_wall_s": 0.6026776369999993,
+  "pilot_reader_s": 0.08901958399999899,
+  "projection_s": 18.08032910999998,
+  "wall_s": 180,
+  "finite_rows": [
+    "70",
+    "dab"
+  ],
+  "reason": "two tiny archiveRMS/vectorpredictions, conservative30x measuredI/O+runtime; no newrefsolve/native",
+  "oracle_compared_in_pilot": false
+}

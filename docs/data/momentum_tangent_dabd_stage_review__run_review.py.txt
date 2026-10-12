@@ -1,0 +1,13 @@
+# Bounded isolated child launcher; explicit installed PYTHONPATH for every child.
+import argparse,json,os,sys
+from pathlib import Path
+HERE=Path(__file__).resolve().parent;INST=HERE.parent/'installed';sys.path.insert(0,str(INST))
+from zhenmode.execution.resources import run_process_group
+p=argparse.ArgumentParser();p.add_argument('mode',choices=['identity','pilot','complete']);p.add_argument('tag');a=p.parse_args()
+command=[sys.executable,str(HERE/('source_identity.py' if a.mode=='identity' else 'new_momentum_mms.py'))]
+if a.mode=='pilot':command+=['--pilot']
+with (HERE/(a.tag+'.log')).open('x') as out:
+ completed,receipt=run_process_group(command,cwd=str(HERE),env=dict(os.environ,PYTHONPATH=str(INST),JAX_PLATFORMS='cpu',CUDA_VISIBLE_DEVICES='',OMP_NUM_THREADS='1',OPENBLAS_NUM_THREADS='1',MKL_NUM_THREADS='1'),stdout=out,resources={'cpu':1,'wall_seconds':180,'memory_mib':4096})
+with (HERE/(a.tag+'-resources.json')).open('x') as f:json.dump({'returncode':completed.returncode,'resources':receipt,'explicit_child_PYTHONPATH':str(INST)},f,indent=2)
+print((HERE/(a.tag+'.log')).read_text());print(json.dumps({'returncode':completed.returncode,'resources':receipt}))
+raise SystemExit(completed.returncode)

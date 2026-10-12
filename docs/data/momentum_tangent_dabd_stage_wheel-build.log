@@ -1,0 +1,12 @@
+Processing ./.
+  Preparing metadata (pyproject.toml): started
+  Preparing metadata (pyproject.toml): finished with status 'done'
+Building wheels for collected packages: zhenmode
+  Building wheel for zhenmode (pyproject.toml): started
+  Building wheel for zhenmode (pyproject.toml): finished with status 'done'
+  Created wheel for zhenmode: filename=zhenmode-0.1.0-py3-none-any.whl size=415782 sha256=3cabb4b324ff012611c440df1065fc2e230c0366dd0f9431c4a8c59e27a4523b
+  Stored in directory: /tmp/pip-ephem-wheel-cache-l5uf8_t3/wheels/03/d8/8d/77298003ca7aae9455e419628a5d794efcc9aa1f57a58208c4
+Successfully built zhenmode
+Processing /mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/wheel/zhenmode-0.1.0-py3-none-any.whl
+Installing collected packages: zhenmode
+Successfully installed zhenmode-0.1.0

@@ -1,0 +1,15 @@
+# FINAL_REVIEW — fresh hostile skeptic pass1
+
+Verdict: CLEAN / NO-FIRE for the pinned Ft=I-R^TR/16 and Fn=I-Lodd²/16 targets, all integer n>=4, real vectors, fixed equal positive quadrature weights. This is exactly one fresh clean skeptic pass and is not VERIFIED-CLOSED.
+
+Independence: full prove-protocol and TARGET_SPEC were read first; independent SKELETON was created before any author proof access. Supporting proofs were read one at a time, each review written before the next. No author code, root static proof, consumer implementation or another running proof agent was read. Reading times and SHA256 are preserved in WORKFILE/SKELETON. Fresh script constructed matrices from index conditions and checked exact rational controls without author-code reuse.
+
+Coverage: all-n tangential norm bound, exact affine kernel/mean, immutable scatter equivalence, normal Green forms and endpoint coefficients, sine recurrence and both odd ghosts, distinct complete real basis with exceptional Nyquist normalization, filter/B symbols and Loewner comparison, symbolic low-wave orders, and every scope exclusion reviewed. There is no universal tangent odd/Neumann import. Symbolic order is not PDE accuracy. Neither normal constant preservation nor positivity/TVD/dynamic-volume/native stability is asserted.
+
+Executed evidence: exact_audit.py completed69/69 under sourced BootLoops SymPy1.14.0 on CPU[0], CPU/wall180s/address4GiB; actual wall1.786877921s, CPU1.495117976s, sampled RSS peak78,430,208bytes across136 samples. stdout.txt has verbatim four-line summary; stderr.txt empty; controls.json contains every exact value/residual; receipt.json holds environment and script hash. No scan or optional/licensed backend was used.
+
+Hostile catches: Ft1/4 alternating output[0,2,-2,0], norm²8>4 and quadratic-4; Fn1/4 alternating=-3x, norm²36>4. Clean twins pass the same principal-minor PSD/contraction detectors. The nursery refutes positivity for both (negative -1/16 entry), Ft TVD via e0 TV17/16>1, Fn TVD via constant TV1>0, normal constant preservation, normal maximum principle via9/8>1, and arbitrary positive weighted contraction with W=diag(1,100,1,1):313/128>1 and2537/256>1. These are outside-target overclaim refutations, not pinned-target fires, and imply no instability of a specified eta system.
+
+Retained spectral failure: T1 TV9 equals input9 and cannot support a TV-increase claim. Its failed-v1 script, JSON and stderr exist on disk; the current spectral narrative correctly records the error and uses exact e0 instead. Author failed-v1 and author v2/v3 contribute zero qualifying fresh skeptic passes.
+
+Pending: a second consecutive CLEAN pass in a new context, nonauthor spec-only reconstruction reproducing all registered values, and complete actual consuming-interface ruling. Consumer software/source/physical controls remain separate prerequisites before any native phase. Author proofs stay CLOSED-UNVERIFIED; this working protocol grade is not formal or refereed proof certification.

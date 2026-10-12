@@ -1,0 +1,5 @@
+PASS_READONLY_CONTRACT_REFERENCE_AND_INDEPENDENT_ARITHMETIC
+checks=64
+{"elapsed_s": 0.3196737329999999, "CPU_affinity": [0], "sampled_RSS_peak_bytes": 57200640, "RSS_samples": 27, "CPU_wall_caps_s": 180, "address_cap_bytes": 4294967296}
+70 {"eta_firstlinear_RMS_m": "6.859718001251586496e-10", "eta_canonical_residual_RMS_m": "3.5078747374024580614e-11", "T_firstlinear_RMS_C": "7.088858339175953879e-09", "T_canonical_residual_RMS_C": "2.0045457455348197732e-09", "eta_prediction_RMS_m": "7.0516450334637359216e-10", "T_prediction_RMS_C": "6.7996214611134375368e-09"}
+dab {"eta_firstlinear_RMS_m": "6.89897071913010249e-10", "eta_canonical_residual_RMS_m": "3.3022360452650570132e-11", "T_firstlinear_RMS_C": "7.090249656218242561e-09", "T_canonical_residual_RMS_C": "2.0094616138549378204e-09", "eta_prediction_RMS_m": "7.0516450334637359216e-10", "T_prediction_RMS_C": "6.7996214611134375368e-09"}

@@ -1,0 +1,19 @@
+{
+  "row_contracts_exact": true,
+  "all10contract_hashes": [
+    "a2cbe4672341c72e3484fe2f6c91e09a10192398d5348dd48b9e8ad955ae2d48",
+    "cd3bce0f97bcc4d2a229fcb452c5b85518b7bc3a445bec0d18bb49681e561961",
+    "c167fb3afb86a2a9acd6c7dd83e36b57eaf6461c72920fca8b7449f4685a354f",
+    "93e596f3a4d206caa5773d4803bfeaaa91749c013976679b3c03277eb6706d1b",
+    "e143d98d91367d04ff07529b2d995037d5e82d5a4ce58ac93958dd844f7f1d98",
+    "7f06477d9191ad3fb5d3d13c2b9c7bdb57c5db6af71108376a708caed40ccc73",
+    "b2eb2a603e89157297c1a68149f8edb1a08294d94172220f7f7ab9c11012c5d6",
+    "96dabde7f2bb063586053d692cde4db7e2708435f63fcf6436b71dffa6e0d21f",
+    "ec1853788b9705ca5ec49e737f61a0906b56b67ea280716a4760e0c141b43afd",
+    "cf9f512fd436f09bd05a587756beb34e18143677f115de691132c7a1054c1244"
+  ],
+  "source133_exact": true,
+  "source": "dabd48abd898c20e0471a5ab9fc18e9b61cfa96d",
+  "onlystartupenvironment_corrected": true,
+  "old_failedworker_before_import": true
+}

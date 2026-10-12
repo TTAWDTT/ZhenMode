@@ -1,0 +1,142 @@
+{
+  "zhenmode": {
+    "file": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/material-point-gradient-v1/installed/zhenmode/__init__.py",
+    "sha256": "37d5510890297eb78a6974bdb3959c3b224f5e2c381939113af51d7a58e71188"
+  },
+  "zhenmode.model": {
+    "file": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/material-point-gradient-v1/installed/zhenmode/model/__init__.py",
+    "sha256": "239c1f8fd5b5a454930824715e99ecde75470b7c89274fbef5f7a1fba4619538"
+  },
+  "zhenmode.model.solver": {
+    "file": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/material-point-gradient-v1/installed/zhenmode/model/solver/__init__.py",
+    "sha256": "229c94a88ab915568cdb3e04a06896ba1d78a817d0054ead4145186272b82d7e"
+  },
+  "zhenmode.model.inputs": {
+    "file": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/material-point-gradient-v1/installed/zhenmode/model/inputs/__init__.py",
+    "sha256": "150aa43ee0dcf4c3217308ca7254bc7d196a7f2c70e5e9a0e5ace3e76cb940af"
+  },
+  "zhenmode.model.inputs.quality": {
+    "file": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/material-point-gradient-v1/installed/zhenmode/model/inputs/quality.py",
+    "sha256": "3b5b05c518d2e927acb4dd0049c7f679ea36b5cfcb2f3f508120389da0e771a2"
+  },
+  "zhenmode.provenance": {
+    "file": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/material-point-gradient-v1/installed/zhenmode/provenance/__init__.py",
+    "sha256": "daf5d6bfcecc2b278842a3426572a906a824b2a1f520668da6bb8992e35bd64e"
+  },
+  "zhenmode.provenance.sources": {
+    "file": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/material-point-gradient-v1/installed/zhenmode/provenance/sources.py",
+    "sha256": "b422a776558810077f543b8a3b3b99f9584ffafa0b292515a93ac1a96bb99bcc"
+  },
+  "zhenmode.model.inputs.sources": {
+    "file": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/material-point-gradient-v1/installed/zhenmode/model/inputs/sources.py",
+    "sha256": "846b83f00b10a680b09b424878857e70cd54e99ca8a20aa73367da34f599e687"
+  },
+  "zhenmode.model.config": {
+    "file": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/material-point-gradient-v1/installed/zhenmode/model/config.py",
+    "sha256": "890d6b7666877a53d655f070030a5810e687f7f6201325d20b34003dcf7b39ea"
+  },
+  "zhenmode.model.solver.dynamics": {
+    "file": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/material-point-gradient-v1/installed/zhenmode/model/solver/dynamics/__init__.py",
+    "sha256": "92253b086944c0a62935772ba54bdbc89297fe9567822d267fd15b2cf2bb5611"
+  },
+  "zhenmode.model.solver.numerics": {
+    "file": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/material-point-gradient-v1/installed/zhenmode/model/solver/numerics/__init__.py",
+    "sha256": "929b966423d7801ab47df95b5b84043f63b7cfe905184555eff61e4bdfb426b1"
+  },
+  "zhenmode.model.solver.numerics.backend": {
+    "file": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/material-point-gradient-v1/installed/zhenmode/model/solver/numerics/backend.py",
+    "sha256": "416c3ecf3ec992f66402af2e2b81db5c66f421686691592a01b6865036485197"
+  },
+  "zhenmode.model.solver.numerics.column": {
+    "file": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/material-point-gradient-v1/installed/zhenmode/model/solver/numerics/column.py",
+    "sha256": "ae9013fb0628e6cbdc8d2027bd899d7815e0864e76a649ed88e5dcb0968d405a"
+  },
+  "zhenmode.model.solver.numerics.contacts": {
+    "file": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/material-point-gradient-v1/installed/zhenmode/model/solver/numerics/contacts.py",
+    "sha256": "e91b99345dd7c9688045021e8a895d9b7193606879cb0b0927de6b3b76062e32"
+  },
+  "zhenmode.model.solver.numerics.channel": {
+    "file": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/material-point-gradient-v1/installed/zhenmode/model/solver/numerics/channel.py",
+    "sha256": "226d3158ac5c84f1825b42ec0afaffe96efd3d8d798878be87799b4a3899b243"
+  },
+  "zhenmode.model.solver.numerics.horizontal": {
+    "file": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/material-point-gradient-v1/installed/zhenmode/model/solver/numerics/horizontal.py",
+    "sha256": "3121b8ed84202b26b5aeba573538b621f9dbcee33e15a1bc7df4dc57d41db7e4"
+  },
+  "zhenmode.model.solver.numerics.vertical": {
+    "file": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/material-point-gradient-v1/installed/zhenmode/model/solver/numerics/vertical.py",
+    "sha256": "6d5693b4a6dde1842be9e216e4674a42d53794b048189701620c02242e348dab"
+  },
+  "zhenmode.model.solver.physics": {
+    "file": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/material-point-gradient-v1/installed/zhenmode/model/solver/physics/__init__.py",
+    "sha256": "a5ebfc7e1dfa65dc7dc52f47cd345a3e0afadf8d5236eb226ba1c22162e5e1ee"
+  },
+  "zhenmode.model.solver.physics.eos": {
+    "file": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/material-point-gradient-v1/installed/zhenmode/model/solver/physics/eos.py",
+    "sha256": "50a2529714bef3967143ab28eccfc530cc92fe66d1125de70c4ba7147005a07a"
+  },
+  "zhenmode.model.solver.dynamics.pressure": {
+    "file": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/material-point-gradient-v1/installed/zhenmode/model/solver/dynamics/pressure.py",
+    "sha256": "53b065815da2905df325bb5deab1ecd11babb7eba54076235243158bad38d824"
+  },
+  "zhenmode.model.solver.dynamics.transport": {
+    "file": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/material-point-gradient-v1/installed/zhenmode/model/solver/dynamics/transport.py",
+    "sha256": "d033239ea9139f05fc186d75605516f3c4d9e138f516dd9d34fa95095ebb3501"
+  },
+  "zhenmode.model.solver.dynamics.projection": {
+    "file": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/material-point-gradient-v1/installed/zhenmode/model/solver/dynamics/projection.py",
+    "sha256": "64313d7abca6fe4c4ea0f181f469272eb7d6c6c862c19375b2d1dfbedebfb968"
+  },
+  "zhenmode.model.solver.physics.isopycnal": {
+    "file": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/material-point-gradient-v1/installed/zhenmode/model/solver/physics/isopycnal.py",
+    "sha256": "8165becfd9a23844761362e36c20161260506e3cd3244a203ae44bde75de7298"
+  },
+  "zhenmode.model.solver.state": {
+    "file": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/material-point-gradient-v1/installed/zhenmode/model/solver/state.py",
+    "sha256": "5b56be6af8df33327c1f0daab76728b1c081209ee1589e0b8df2f8ef5f2212d5"
+  },
+  "zhenmode.model.solver.physics.surface": {
+    "file": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/material-point-gradient-v1/installed/zhenmode/model/solver/physics/surface.py",
+    "sha256": "0eade693636cd017d5772e2c0cee83c1a5050c49ad3a2936591356ef4cb163b8"
+  },
+  "zhenmode.model.solver.physics.vertical": {
+    "file": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/material-point-gradient-v1/installed/zhenmode/model/solver/physics/vertical.py",
+    "sha256": "e2305eed74d2c2caed01d70e4a734af4c5a7c06b14647d8bb0f3e118b5db8a3e"
+  },
+  "zhenmode.model.solver.timestepping": {
+    "file": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/material-point-gradient-v1/installed/zhenmode/model/solver/timestepping/__init__.py",
+    "sha256": "913ed45d926d13a9a89517aacd0095980dd2ff7c15e44bd1c0d850b94c09f6a6"
+  },
+  "zhenmode.model.solver.timestepping.subcycles": {
+    "file": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/material-point-gradient-v1/installed/zhenmode/model/solver/timestepping/subcycles.py",
+    "sha256": "fada7101b16464e2e21ec0bac4bfff7d399cf4e9073a4af7035528203f74598b"
+  },
+  "zhenmode.model.solver.dynamics.tendencies": {
+    "file": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/material-point-gradient-v1/installed/zhenmode/model/solver/dynamics/tendencies.py",
+    "sha256": "698a8d680089259d7f15a91166d8d89e2ac6d31800af3ca416883757c5f8ec89"
+  },
+  "zhenmode.model.solver.geometry": {
+    "file": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/material-point-gradient-v1/installed/zhenmode/model/solver/geometry/__init__.py",
+    "sha256": "b4e9370dd4ce8e3ed7d1dad3c2b35beec912a7d9b43f7f407c3c90e960b2079a"
+  },
+  "zhenmode.model.solver.geometry.grid": {
+    "file": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/material-point-gradient-v1/installed/zhenmode/model/solver/geometry/grid.py",
+    "sha256": "54c5ebd94d6431e6301363e1e0ba6228212b311563a5edd3fde6c0760d9bebf3"
+  },
+  "zhenmode.model.solver.geometry.fd_metrics": {
+    "file": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/material-point-gradient-v1/installed/zhenmode/model/solver/geometry/fd_metrics.py",
+    "sha256": "26a9c836450d9b0d0c5d932f0c910799c7036a68a6266f5c36138574ae79b478"
+  },
+  "zhenmode.model.solver.dynamics.barotropic": {
+    "file": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/material-point-gradient-v1/installed/zhenmode/model/solver/dynamics/barotropic.py",
+    "sha256": "c4137232f53baaf4eec9ecac4406368f148a6ee1763f91f48957ca0ba9c0b0a6"
+  },
+  "zhenmode.model.solver.timestepping.step": {
+    "file": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/material-point-gradient-v1/installed/zhenmode/model/solver/timestepping/step.py",
+    "sha256": "d888979831d99467af6b4b39ed1008a13d8b616b52a93daa38be322b1964c4ae"
+  },
+  "zhenmode.model.solver.factory": {
+    "file": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/material-point-gradient-v1/installed/zhenmode/model/solver/factory.py",
+    "sha256": "257343e3130fda018da8b77c45ae882cbe3197453378a24166e7a2a57e864ccd"
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "schema": "finite-saved-row1-metadata-harness-recovery-v1",
+  "scope": "Resume saved candidate index1 only after unexpected extra metadata equality assertion; never recheck completed index0, never rerun native or expand indices2..9",
+  "failure": "Original audit requires whole contract except ocean_options equal to frozen70; actual predeclared development provenance also records the same momentum_tangent_filter_scheme=gram_fourth_v1",
+  "diagnosis": "Opened both contract.json records field by field; only ocean_options and development differ, each only by the new selector. All physical numbers, grid, thresholds and reference remain exactly equal.",
+  "change": "Require exact candidate development dict equals baseline development plus declared selector, then compare all other contract fields unchanged. Original metric agreement/solver thresholds/strict latest score criterion unchanged.",
+  "record_policy": "Keep original script, failed-full receipt and row0 receipt/ledger. No overwrite. Candidate arrays/arithmetic were read before the metadata harness assertion and are contacted; resumed readback is not fresh scientific evidence.",
+  "source_identity": "Read existing same-source bridge receipt; do not repeat independent Git/wheel certification",
+  "positive_negative_controls": "Existing controls remain unchanged and passed; additional exact clean developer-tag comparator and wrong selector twin must respectively pass and fail before resuming real arrays",
+  "resources": {"cpu_affinity_count": 1, "wall_cap_s": 180, "memory_cap_bytes": 4294967296},
+  "scientific_promotion": "Expected strict FAIL stays FAIL; no baseline substitution or retry of completed solver index"
+}

@@ -1,0 +1,15 @@
+{
+  "provenance": "Ny8 timing-only first case plus warm helper repeat; 4cases+20warm control allowance",
+  "measured": {
+    "total_s": 5.822487657000011,
+    "identity_and_import_s": 1.8317450839999765,
+    "initialization_s": 1.8572708799999873,
+    "first_case_s": 2.0903951349999943,
+    "warm_case_s": 0.0430765580000525,
+    "continuous_oracle_read": false,
+    "comparison_performed": false
+  },
+  "projected_complete_s": 6.856325049001271,
+  "remaining_budget_s": 172.68819504300006,
+  "launch": true
+}

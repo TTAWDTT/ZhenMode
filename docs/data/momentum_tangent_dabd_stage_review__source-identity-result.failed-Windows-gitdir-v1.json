@@ -1,0 +1,9 @@
+{
+  "checks": [],
+  "scope": "source identity plus explicitly REUSED unchanged-owner bridge; no numerical science replay",
+  "verdict": "FAIL_RETAINED",
+  "error": "CalledProcessError(128, ['git', 'rev-parse', 'HEAD'])",
+  "traceback": "Traceback (most recent call last):\n  File \"/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/review/source_identity.py\", line 20, in <module>\n    require('exact_git_HEAD',subprocess.check_output(['git','rev-parse','HEAD'],cwd=WORK,text=True).strip()==REV)\n                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/lib/python3.12/subprocess.py\", line 466, in check_output\n    return run(*popenargs, stdout=PIPE, timeout=timeout, check=True,\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/lib/python3.12/subprocess.py\", line 571, in run\n    raise CalledProcessError(retcode, process.args,\nsubprocess.CalledProcessError: Command '['git', 'rev-parse', 'HEAD']' returned non-zero exit status 128.\n",
+  "elapsed_s": 0.014601170000000163,
+  "script_SHA": "d9472d06171ceb6cdf71b8d8f806ffbb2845d5a25cd16773ab6aee1da80add6f"
+}

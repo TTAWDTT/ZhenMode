@@ -1,0 +1,25 @@
+# One-shot resource fence for these pinned runs; stdlib only.
+import os, sys, subprocess, resource, time, json, signal
+from pathlib import Path
+script=sys.argv[1]; prefix=sys.argv[2]
+cpu=min(os.sched_getaffinity(0)); start=time.monotonic(); samples=[]
+def fence():
+    os.setsid(); os.sched_setaffinity(0,{cpu})
+    resource.setrlimit(resource.RLIMIT_AS,(4*1024**3,4*1024**3))
+    resource.setrlimit(resource.RLIMIT_CPU,(180,180))
+with open(prefix+'.log','w') as log:
+    p=subprocess.Popen([sys.executable,script],stdout=log,stderr=subprocess.STDOUT,preexec_fn=fence)
+    while p.poll() is None:
+        try:
+            txt=Path('/proc/'+str(p.pid)+'/status').read_text()
+            rss=int(next(t.split()[1] for t in txt.splitlines() if t.startswith('VmRSS:')))
+            samples.append({'elapsed_s':time.monotonic()-start,'rss_kib':rss})
+        except (FileNotFoundError,StopIteration): pass
+        if time.monotonic()-start>180:
+            os.killpg(p.pid,signal.SIGKILL); break
+        time.sleep(.05)
+    rc=p.wait()
+report={'script':script,'exit_code':rc,'elapsed_seconds':time.monotonic()-start,'cpu_affinity':[cpu],'wall_limit_seconds':180,'address_space_limit_bytes':4*1024**3,'rss_sample_interval_seconds':.05,'rss_peak_sampled_kib':max([q['rss_kib'] for q in samples],default=0),'samples':samples}
+Path(prefix+'.resources.json').write_text(json.dumps(report,indent=2))
+print(json.dumps({k:v for k,v in report.items() if k!='samples'}))
+sys.exit(rc)

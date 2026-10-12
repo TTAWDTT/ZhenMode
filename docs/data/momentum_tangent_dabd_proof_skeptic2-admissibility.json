@@ -1,0 +1,14 @@
+{
+  "mathematical_pass_admissible": true,
+  "basis": "Sourced exactPython subprocess completed status0 within timeout/resources,101checks+2plants saved; sealed proof exhaustiveaudit is mathematicalCLEAN and no proof revision/FIRE. One CR occurs exclusively final shell exit afterchild0 captured.",
+  "child_exit": 0,
+  "exact_status": "PASS",
+  "exact_checks": 101,
+  "outer_launcher_grade": "FAIL preserved; not accepted as clean execution or any native/CI success",
+  "exception_scope": "two consecutive CLEAN mathematical skeptic reviews only; wrapperissue is independent postcompute orchestration deviation anddoesnotlicense executableconsumer/native. Original files unchanged; no exactrerun.",
+  "CR_byte_position": 431,
+  "shell_sha256": "1375a47632536f09272e672c10af708a97b69542bfc07dfd065629fe431d8f61",
+  "raw_receipt": "skeptic2/exact_n4.json",
+  "resources": "oneCPU180s/4GiB as originalactualreceipt",
+  "root_reasoned_ruling": true
+}

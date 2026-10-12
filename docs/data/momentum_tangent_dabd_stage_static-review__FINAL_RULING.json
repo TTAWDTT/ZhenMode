@@ -1,0 +1,30 @@
+{
+  "recorded_utc": "2026-10-12T22:50:18.1624767Z",
+  "ruling": "CONFIRMED_ACTUAL_UNCOMMITTED_PATCH_SCOPE",
+  "worktree": "D:\\CodexWorktrees\\thermal-full-scan\\ocean-solver",
+  "HEAD_base": "1765dc45f0fd9be3ba232d09079a1f382a8017a7",
+  "candidate_SHA": null,
+  "state": "UNCOMMITTED",
+  "actionable_findings": [],
+  "reviewed_file_sha256": {
+    "src/zhenmode/benchmarks/internal_wave.py": "7a3cb5a04c031fb78ae427c58099071210b46408e6d25e105879c3bbcd26d7ba",
+    "src/zhenmode/model/solver/dynamics/transport.py": "63825f504d99b28f6387ec356e990fe6659d1a035a2832e68bdac80d64dee951",
+    "src/zhenmode/model/solver/factory.py": "3ef33786a6c768b38dfb034fc2109cc5e7f3271f01ccc109aa5a7ac8ffa17717",
+    "src/zhenmode/model/solver/numerics/horizontal.py": "430c3ed7b2222734c93b7e33d7003fe64b147e36a75c6b6d5584b5663a2e251b",
+    "src/zhenmode/model/solver/state.py": "851e96e868aed41a2f5882e9f1683f0f79056cd73ff35b281ba51cc0a8346d62",
+    "tests/fd/test_momentum_tangent_filter.py": "0e8742fa0cfa6fbc1cf560b4a651d0e0844661cd9783dff22abeeec4a4871034",
+    "docs/material_point_transport_v4_zh.md": "997ffc8a8f89d584e93a2d03e943fb35ac2aad0923ee011578b618f3d1b93e8b"
+  },
+  "workfile_sha256": "2a9b096420dc06e86c5aea08e565af3ca43974f261c103bf4219971aac8e4923",
+  "source_snapshot_sha256": "6ae7cec5f6d543b230bab464f471f2cb1bce3e15112fba0087f475e6bd34a7f3",
+  "source_count": 133,
+  "changed_package_python_count": 5,
+  "reviewer_tests_run": 0,
+  "reviewer_native_runs": 0,
+  "reviewer_source_edits": 0,
+  "software_gate": "ROOT_REPORTED_LOCAL191_AND_RUFF_PASS_NOT_REVIEWER_RUN_FULLCI",
+  "native_gate": "NOT_GRANTED",
+  "physics_gate": "NOT_GRANTED",
+  "restart_metadata_default": "FINGERPRINT_CHANGES_DOCUMENTED_NO_MIGRATION_CLAIM",
+  "retained_reviewer_path_error": "source-snapshot.failed-path-v1.json count0 rejected; corrected manifest count133"
+}

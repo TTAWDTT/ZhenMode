@@ -1,0 +1,314 @@
+{
+  "checks": [
+    "constant_RMS1",
+    "zero_RMS0",
+    "cos2_RMS_1sqrt2",
+    "reverse_prediction_CAUGHT",
+    "clean_comparator_RMS0",
+    "wrong_time_order_CAUGHT",
+    "dynamic_spatial_weight_positive",
+    "contracts_equal_except_declared_filter",
+    "new_contract_explicit_selector",
+    "canonical_fixed_parameter_H",
+    "canonical_fixed_parameter_g",
+    "canonical_fixed_parameter_f",
+    "canonical_fixed_parameter_N2",
+    "canonical_fixed_parameter_gamma",
+    "canonical_fixed_parameter_A",
+    "canonical_fixed_parameter_q",
+    "canonical_fixed_parameter_k",
+    "canonical_fixed_parameter_m",
+    "canonical_fixed_parameter_omega",
+    "canonical_fixed_parameter_K",
+    "canonical_fixed_parameter_nu",
+    "EOS_thermal_alpha",
+    "reference_v2_identity_and_grade",
+    "canonical_E_theta64_shapes",
+    "canonical_initial_secondorder_zero",
+    "canonical_fields_finite",
+    "70_primary_dimensions",
+    "70_time_exact_canonical",
+    "70_node_coordinates_exact",
+    "70_positive_constant_sampling_area",
+    "70_dynamic_h_positive_finite",
+    "70_native_units",
+    "70_native_physical_metadata",
+    "dab_primary_dimensions",
+    "dab_time_exact_canonical",
+    "dab_node_coordinates_exact",
+    "dab_positive_constant_sampling_area",
+    "dab_dynamic_h_positive_finite",
+    "dab_native_units",
+    "dab_native_physical_metadata",
+    "original_reader_complete_exit0",
+    "author_exact_two_rows",
+    "author_reference_hashes",
+    "author_reader_script_and_declaration_SHA",
+    "author_journal_exact_rows",
+    "author_input_hash_70",
+    "70_author_eta_unit",
+    "70_author_eta_original_RMS_within_fixed_precision_envelope",
+    "70_author_eta_fixed_reference_RMS_within_fixed_precision_envelope",
+    "70_author_eta_residual_RMS_within_fixed_precision_envelope",
+    "70_author_T_unit",
+    "70_author_T_original_RMS_within_fixed_precision_envelope",
+    "70_author_T_fixed_reference_RMS_within_fixed_precision_envelope",
+    "70_author_T_residual_RMS_within_fixed_precision_envelope",
+    "author_input_hash_dab",
+    "dab_author_eta_unit",
+    "dab_author_eta_original_RMS_within_fixed_precision_envelope",
+    "dab_author_eta_fixed_reference_RMS_within_fixed_precision_envelope",
+    "dab_author_eta_residual_RMS_within_fixed_precision_envelope",
+    "dab_author_T_unit",
+    "dab_author_T_original_RMS_within_fixed_precision_envelope",
+    "dab_author_T_fixed_reference_RMS_within_fixed_precision_envelope",
+    "dab_author_T_residual_RMS_within_fixed_precision_envelope",
+    "original_inputs_unchanged"
+  ],
+  "rows": [
+    {
+      "label": "70",
+      "metrics": {
+        "float64": {
+          "eta_firstlinear_RMS_m": "6.859718001251586e-10",
+          "eta_canonical_residual_RMS_m": "3.507874737402458e-11",
+          "T_firstlinear_RMS_C": "7.088858339175954e-09",
+          "T_canonical_residual_RMS_C": "2.0045457455348195e-09",
+          "eta_prediction_RMS_m": "7.051645033463736e-10",
+          "T_prediction_RMS_C": "6.799621461113438e-09"
+        },
+        "longdouble": {
+          "eta_firstlinear_RMS_m": "6.859718001251586496e-10",
+          "eta_canonical_residual_RMS_m": "3.5078747374024580614e-11",
+          "T_firstlinear_RMS_C": "7.088858339175953879e-09",
+          "T_canonical_residual_RMS_C": "2.0045457455348197732e-09",
+          "eta_prediction_RMS_m": "7.0516450334637359216e-10",
+          "T_prediction_RMS_C": "6.7996214611134375368e-09"
+        }
+      },
+      "native_source": "70d408583aa99db63e49d958d89dcaccad273f0e",
+      "sampling": "physical fixedH nodes, eta area, T actual dynamic h*area",
+      "time_integration": "normalize spatial weights at every snapshot; diagonal trapezoid endpoint weights; normalize by elapsed60000s",
+      "h_max_change_from_initial_m": 2.5433082333492507e-06,
+      "global_volume_relative_change_max": 2.220446049250313e-16,
+      "source_data_dtypes": {
+        "time": "float64",
+        "eta": "float64",
+        "T": "float64",
+        "h": "float64",
+        "E64": "float64",
+        "theta64": "float64"
+      },
+      "precision_ceiling": "float64 archived native/reference; longdouble accumulation does not create new source digits",
+      "analytic_background_T_minmax_C": [
+        13.0,
+        15.0
+      ],
+      "roundoff_envelope_abs": {
+        "eta_RMS_m": 1.8071294867903658e-20,
+        "T_RMS_C": 2.1316282108945596e-13
+      },
+      "author_arithmetic_comparison": [
+        {
+          "quantity": "eta_original_RMS",
+          "own": 6.859718001251586e-10,
+          "author": 6.859718001251587e-10,
+          "difference": 1.0339757656912846e-25,
+          "fixed_float64_field_scale_envelope": 1.8071294867903658e-20
+        },
+        {
+          "quantity": "eta_fixed_reference_RMS",
+          "own": 7.051645033463736e-10,
+          "author": 7.051645033463736e-10,
+          "difference": 0.0,
+          "fixed_float64_field_scale_envelope": 1.8071294867903658e-20
+        },
+        {
+          "quantity": "eta_residual_RMS",
+          "own": 3.507874737402458e-11,
+          "author": 3.5078747374023586e-11,
+          "difference": 9.952016744778614e-25,
+          "fixed_float64_field_scale_envelope": 1.8071294867903658e-20
+        },
+        {
+          "quantity": "T_original_RMS",
+          "own": 7.088858339175954e-09,
+          "author": 7.088858339175954e-09,
+          "difference": 0.0,
+          "fixed_float64_field_scale_envelope": 2.1316282108945596e-13
+        },
+        {
+          "quantity": "T_fixed_reference_RMS",
+          "own": 6.799621461113438e-09,
+          "author": 6.799621461113437e-09,
+          "difference": 8.271806125530277e-25,
+          "fixed_float64_field_scale_envelope": 2.1316282108945596e-13
+        },
+        {
+          "quantity": "T_residual_RMS",
+          "own": 2.00454574553482e-09,
+          "author": 2.00454574553482e-09,
+          "difference": 0.0,
+          "fixed_float64_field_scale_envelope": 2.1316282108945596e-13
+        }
+      ]
+    },
+    {
+      "label": "dab",
+      "metrics": {
+        "float64": {
+          "eta_firstlinear_RMS_m": "6.898970719130102e-10",
+          "eta_canonical_residual_RMS_m": "3.3022360452650574e-11",
+          "T_firstlinear_RMS_C": "7.090249656218243e-09",
+          "T_canonical_residual_RMS_C": "2.0094616138549377e-09",
+          "eta_prediction_RMS_m": "7.051645033463736e-10",
+          "T_prediction_RMS_C": "6.799621461113438e-09"
+        },
+        "longdouble": {
+          "eta_firstlinear_RMS_m": "6.89897071913010249e-10",
+          "eta_canonical_residual_RMS_m": "3.3022360452650570132e-11",
+          "T_firstlinear_RMS_C": "7.090249656218242561e-09",
+          "T_canonical_residual_RMS_C": "2.0094616138549378204e-09",
+          "eta_prediction_RMS_m": "7.0516450334637359216e-10",
+          "T_prediction_RMS_C": "6.7996214611134375368e-09"
+        }
+      },
+      "native_source": "dabd48abd898c20e0471a5ab9fc18e9b61cfa96d",
+      "sampling": "physical fixedH nodes, eta area, T actual dynamic h*area",
+      "time_integration": "normalize spatial weights at every snapshot; diagonal trapezoid endpoint weights; normalize by elapsed60000s",
+      "h_max_change_from_initial_m": 2.5433083137293977e-06,
+      "global_volume_relative_change_max": 2.220446049250313e-16,
+      "source_data_dtypes": {
+        "time": "float64",
+        "eta": "float64",
+        "T": "float64",
+        "h": "float64",
+        "E64": "float64",
+        "theta64": "float64"
+      },
+      "precision_ceiling": "float64 archived native/reference; longdouble accumulation does not create new source digits",
+      "analytic_background_T_minmax_C": [
+        13.0,
+        15.0
+      ],
+      "roundoff_envelope_abs": {
+        "eta_RMS_m": 1.8071294867903658e-20,
+        "T_RMS_C": 2.1316282108945596e-13
+      },
+      "author_arithmetic_comparison": [
+        {
+          "quantity": "eta_original_RMS",
+          "own": 6.898970719130102e-10,
+          "author": 6.898970719130102e-10,
+          "difference": 0.0,
+          "fixed_float64_field_scale_envelope": 1.8071294867903658e-20
+        },
+        {
+          "quantity": "eta_fixed_reference_RMS",
+          "own": 7.051645033463736e-10,
+          "author": 7.051645033463736e-10,
+          "difference": 0.0,
+          "fixed_float64_field_scale_envelope": 1.8071294867903658e-20
+        },
+        {
+          "quantity": "eta_residual_RMS",
+          "own": 3.302236045265057e-11,
+          "author": 3.3022360452649534e-11,
+          "difference": 1.0339757656912846e-24,
+          "fixed_float64_field_scale_envelope": 1.8071294867903658e-20
+        },
+        {
+          "quantity": "T_original_RMS",
+          "own": 7.090249656218243e-09,
+          "author": 7.090249656218243e-09,
+          "difference": 0.0,
+          "fixed_float64_field_scale_envelope": 2.1316282108945596e-13
+        },
+        {
+          "quantity": "T_fixed_reference_RMS",
+          "own": 6.799621461113438e-09,
+          "author": 6.799621461113437e-09,
+          "difference": 8.271806125530277e-25,
+          "fixed_float64_field_scale_envelope": 2.1316282108945596e-13
+        },
+        {
+          "quantity": "T_residual_RMS",
+          "own": 2.0094616138549377e-09,
+          "author": 2.0094616138549377e-09,
+          "difference": 0.0,
+          "fixed_float64_field_scale_envelope": 2.1316282108945596e-13
+        }
+      ]
+    }
+  ],
+  "scope": "read-only canonical-reference arithmetic/interface audit, not source/native/ref solve or score change",
+  "author_result_scope_only": null,
+  "author_result_keys": [
+    "pilot",
+    "controls",
+    "input_sha256",
+    "reference_npz_sha256",
+    "reference_result_sha256",
+    "shared_reference",
+    "native_runs",
+    "source_edits",
+    "ranking",
+    "rows",
+    "elapsed_s",
+    "script_sha256",
+    "declaration_sha256"
+  ],
+  "direction": {
+    "eta_canonical": {
+      "70": 3.507874737402458e-11,
+      "dab": 3.302236045265057e-11,
+      "ratio_dab_over_70": 0.9413779831004814
+    },
+    "T_canonical": {
+      "70": 2.00454574553482e-09,
+      "dab": 2.0094616138549377e-09,
+      "ratio_dab_over_70": 1.0024523602572144
+    },
+    "eta_firstlinear": {
+      "70": 6.859718001251586e-10,
+      "dab": 6.898970719130102e-10,
+      "ratio_dab_over_70": 1.0057222057628832
+    },
+    "T_firstlinear": {
+      "70": 7.088858339175954e-09,
+      "dab": 7.090249656218243e-09,
+      "ratio_dab_over_70": 1.0001962681401884
+    }
+  },
+  "input_SHA256": {
+    "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/material-point-gradient-v1/01-candidate-primary-main/contract.json": "93f24d276bcd199503b3f9348e169ce69a5805164b42a8945803f5ca9ffad180",
+    "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/native-attempt02/01-candidate-primary-main/contract.json": "01221a21843c3a9898b6756fa66b51b23241c12a31bfca614b7781e188b32fd5",
+    "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/material-point-gradient-v1/01-candidate-primary-main/zhenmode/output.npz": "55d8f8c4b62f486c7d2941ae309c864acd6f9414f2e44dfc9b51aa5c331a2449",
+    "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/native-attempt02/01-candidate-primary-main/zhenmode/output.npz": "ec616a7970b6fbf6e7c2720359c5149e657608054ba468d2ce8c05e64a3c9780",
+    "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/eta-second-order-reference/reference_arrays.npz": "9feb7111e614cf5e3a98624d7195128cc02f9be1084a9fdbf8deae2ab3844b02",
+    "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/eta-second-order-reference/result.json": "0f1eaddb0bf78ecdbc43f29d594aa19635caa50a6c22bd3f162f89d83367f0d5",
+    "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/eta-second-order-reference/REFERENCE_SPEC-v2.md": "6ad1d285b68eb01ffab15116f3fccdf6683b4148afe7885a0ff96da663b632bd",
+    "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/eta-canonical-readback-70-dab/declaration.json": "41cc2c7b90b944935afc5435b77100e25b38705c2bba7e2300e693c767577a17",
+    "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/eta-canonical-readback-70-dab/result.json": "874512e3daef34e3fb2951160069a420276130096a39344fe1dd706a8da019fb",
+    "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/eta-canonical-readback-70-dab/complete-resources.json": "2c223ce8e2da10020e4230cfe78f39185815b93db68dbce613c4c224a3cf3b36"
+  },
+  "reference_lineage": "REUSED fixed v2 n64 canonical model, original accepted numerical/independent expm evidence; shared physics/linearcontinuity/fixedH, not new oracle or wholephysical truth",
+  "root_ranking": "firstlinear native dab strict70 score FAIL remains; eta residual decline under another reference is not score PASS/promote/exclusive cause",
+  "verdict": "PASS_READONLY_CONTRACT_REFERENCE_AND_INDEPENDENT_ARITHMETIC",
+  "timing": {
+    "elapsed_s": 0.3196737329999999,
+    "CPU_affinity": [
+      0
+    ],
+    "sampled_RSS_peak_bytes": 57200640,
+    "RSS_samples": 27,
+    "CPU_wall_caps_s": 180,
+    "address_cap_bytes": 4294967296
+  },
+  "environment": {
+    "python": "3.12.3 (main, Aug 31 2026, 10:18:26) [GCC 13.3.0]",
+    "numpy": "2.5.3",
+    "longdouble_fraction_bits": 63,
+    "script_SHA": "00b6d30d01c5e94c74027bb21f0649d3b3e2198dd800a802e5053ed1720cb0c7"
+  }
+}

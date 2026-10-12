@@ -1,0 +1,20 @@
+{
+  "grade": "AUTHOR-CONTROLS-PASS",
+  "n_values": [
+    4
+  ],
+  "checks": 35,
+  "denominator": 35,
+  "sympy": "1.14.0",
+  "wall_seconds": 1.333564836999983,
+  "cpu_seconds": 1.153172185,
+  "affinity": [
+    0
+  ],
+  "cpu_limit_seconds": 180,
+  "wall_limit_seconds": 180,
+  "as_limit_bytes": 4294967296,
+  "sampled_peak_rss_bytes": 72052736,
+  "rss_samples": 57,
+  "maxrss_bytes": 71823360
+}

@@ -1,0 +1,136 @@
+# One-shot spec-only cross-verification, intentionally task-local. No author code reused.
+import os, time, json, resource, threading, itertools, hashlib
+from pathlib import Path
+start = time.perf_counter()
+os.sched_setaffinity(0, {min(os.sched_getaffinity(0))})
+resource.setrlimit(resource.RLIMIT_AS, (4*1024**3, 4*1024**3))
+outdir = Path(__file__).resolve().parent
+rss_samples=[]
+stopped=threading.Event()
+def sample():
+    while not stopped.is_set():
+        with open('/proc/self/status') as f:
+            for line in f:
+                if line.startswith('VmRSS:'):
+                    rss_samples.append(int(line.split()[1])*1024)
+                    break
+        stopped.wait(0.01)
+threading.Thread(target=sample,daemon=True).start()
+import sympy as s
+results={}
+checks=[]
+def record(name, value):
+    results[name]=value
+
+def exact(name, a, b):
+    residual=a-b
+    if isinstance(residual,s.MatrixBase):
+        assert all(s.simplify(z)==0 for z in residual), (name,residual)
+    else:
+        assert s.simplify(residual)==0,(name,residual)
+    checks.append(name)
+
+exact('known_answer',s.Rational(1,2)+s.Rational(1,3),s.Rational(5,6))
+try:
+    exact('deliberate_comparator_mismatch',s.Rational(1,2),s.Rational(2,3))
+    raise RuntimeError('Comparator failed to catch mismatch')
+except AssertionError as e:
+    record('mismatch_caught',str(e))
+
+n=4
+R=s.zeros(n-2,n)
+for j in range(n-2):
+    R[j,j]=1;R[j,j+1]=-2;R[j,j+2]=1
+L=s.zeros(n,n)
+for j in range(n):
+    L[j,j]=-3 if j in [0,n-1] else -2
+    if j+1<n:L[j,j+1]=1;L[j+1,j]=1
+Ft=s.eye(n)-R.T*R/16
+Fn=s.eye(n)-L*L/16
+B=(s.eye(n)+L/4)**2
+record('R',str(R)); record('L',str(L)); record('Ft',str(Ft)); record('Fn',str(Fn));record('B',str(B))
+
+def transpose_accumulation(v):
+    u=[s.Integer(0)]*n
+    for j,z in enumerate(v):
+        u[j]+=z;u[j+1]-=2*z;u[j+2]+=z
+    return s.Matrix(u)
+def stencil_t(x):
+    z=[x[j]-2*x[j+1]+x[j+2] for j in range(n-2)]
+    return x-transpose_accumulation(z)/16
+
+def stencil_l(x):
+    return s.Matrix([(-3 if j in [0,n-1] else -2)*x[j]+(x[j-1] if j>0 else 0)+(x[j+1] if j<n-1 else 0) for j in range(n)])
+for j in range(n):
+    e=s.eye(n)[:,j]
+    exact('tangent_stencil_basis_'+str(j),stencil_t(e),Ft*e)
+    exact('normal_stencil_basis_'+str(j),e-stencil_l(stencil_l(e))/16,Fn*e)
+for name,F in [('Ft',Ft),('Fn',Fn)]:
+    exact(name+'_symmetry',F,F.T)
+    counts=[]
+    for Q in [F,s.eye(n)-F,F-F*F]:
+        count=0
+        for size in range(1,n+1):
+            for J in itertools.combinations(range(n),size):
+                det=Q.extract(J,J).det()
+                assert det>=0,(name,J,det)
+                count+=1
+        counts.append(count)
+    record(name+'_PSD_minors_F_IminusF_FminusF2',counts)
+    exact(name+'_zero',F*s.zeros(n,1),s.zeros(n,1))
+
+T1=Ft*s.Matrix([0,1,4,9]);T2=Fn*s.ones(n,1)
+exact('T1',T1,s.Matrix([s.Rational(-1,8),s.Rational(9,8),s.Rational(33,8),s.Rational(71,8)]))
+exact('T2',T2,s.Matrix([s.Rational(5,8),s.Rational(9,8),s.Rational(9,8),s.Rational(5,8)]))
+record('T1',list(map(str,T1)));record('T2',list(map(str,T2)))
+for name,x in [('constant',s.ones(n,1)),('affine',s.Matrix([s.Rational(2*j+1,8) for j in range(n)]))]:
+    exact('Ft_'+name,Ft*x,x)
+exact('Ft_mean_row',s.ones(n,1).T*Ft,s.ones(n,1).T)
+exact('R_rank',R.rank(),2)
+record('Ft_eigenvalues',{str(k):v for k,v in Ft.eigenvals().items()})
+q=s.Matrix([1,-1,1,-1])
+exact('Fn_Nyquist',Fn*q,s.zeros(n,1))
+for k in range(1,n+1):
+    theta=s.pi*k/n
+    x=s.Matrix([s.sin(theta*s.Rational(2*j+1,2)) for j in range(n)])
+    lam=-4*s.sin(theta/2)**2
+    exact('sine_L_'+str(k),L*x,lam*x)
+    exact('sine_Fn_'+str(k),Fn*x,(1-s.sin(theta/2)**4)*x)
+    exact('sine_B_'+str(k),B*x,s.cos(theta/2)**4*x)
+exact('B_comparison_matrix',Fn-B,-L/2-L*L/8)
+record('Fn_eigenvalues',{str(k):v for k,v in Fn.eigenvals().items()})
+
+wrong_t=s.eye(n)-R.T*R/4
+wrong_n=s.eye(n)-L*L/4
+wt=wrong_t*q;wn=wrong_n*q
+exact('wrong_t_fixture',wt,s.Matrix([0,2,-2,0]))
+exact('wrong_n_fixture',wn,-3*q)
+assert (wt.T*wt)[0]>(q.T*q)[0] and (q.T*wrong_t*q)[0]<0
+assert (wn.T*wn)[0]>(q.T*q)[0]
+record('false_t_plant',{'output':list(map(str,wt)),'input_norm2':str((q.T*q)[0]),'output_norm2':str((wt.T*wt)[0]),'quadratic_form':str((q.T*wrong_t*q)[0]),'caught':True})
+record('false_n_plant',{'output':list(map(str,wn)),'input_norm2':str((q.T*q)[0]),'output_norm2':str((wn.T*wn)[0]),'caught':True})
+
+P=s.eye(4)-q*q.T/4
+exact('longitude_projection_idempotent',P*P,P)
+exact('longitude_projection_symmetric',P,P.T)
+x=s.Matrix([s.Rational(j-7,j+1) for j in range(16)])
+for name,F in [('Ft',Ft),('Fn',Fn)]:
+    M=s.kronecker_product(F,s.eye(4));N=s.kronecker_product(s.eye(4),P)
+    C=s.kronecker_product(F,P)
+    exact(name+'_tensor_commute',M*N,N*M)
+    exact(name+'_tensor_composition',M*N,C)
+    energy_before=(x.T*x)[0];energy_after=(x.T*C.T*C*x)[0]
+    assert energy_after<=energy_before
+    # Exact algebraic split proves which positive factors carry contraction.
+    exact(name+'_energy_split',s.eye(16)-C.T*C,s.kronecker_product(s.eye(4)-F*F,P)+s.kronecker_product(s.eye(4),s.eye(4)-P))
+    record(name+'_composition_energy',{'before':str(energy_before),'after':str(energy_after),'uniform_weight':'arbitrary fixed w > 0'})
+record('checks',checks)
+stopped.set()
+record('timing',{'elapsed_seconds':time.perf_counter()-start,'rss_samples':len(rss_samples),'sampled_peak_RSS_bytes':max(rss_samples),'ru_maxrss_bytes':resource.getrusage(resource.RUSAGE_SELF).ru_maxrss*1024,'cpu_affinity':sorted(os.sched_getaffinity(0)),'wall_cap_seconds':180,'address_space_cap_bytes':4*1024**3})
+record('environment',{'sympy':s.__version__,'python':os.sys.version,'script_sha256':hashlib.sha256(Path(__file__).read_bytes()).hexdigest()})
+record('verdict','PASS: independent exact n=4 fixtures, boundary stencil, planted catches, and composition controls')
+(outdir/'exact-results.json').write_text(json.dumps(results,indent=2)+'\n')
+print(results['verdict'])
+print('T1='+str(results['T1'])+'; T2='+str(results['T2']))
+print('wrong_t norm2=8>4, quadratic=-4; wrong_n norm2=36>4: CAUGHT')
+print(json.dumps(results['timing']))

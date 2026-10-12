@@ -1,0 +1,5 @@
+PASS_FINITE_STANDALONE_DATA_ARITHMETIC_AND_SOURCE_IDENTITY
+checks=147
+{"wall_seconds": 1.1113484959999997, "sampled_RSS_peak_bytes": 37253120, "RSS_samples": 105, "affinity": [0], "address_space_cap": 4294967296, "CPU_cap_s": 180, "wall_cap_s": 180}
+Ny12 own analytic-u old/new=3.4410870179749070933e-11/1.0510264130749765245e-11; normal_bits=True
+Ny24 own analytic-u old/new=9.364309953801200501e-12/3.5259669519843404483e-12; normal_bits=True

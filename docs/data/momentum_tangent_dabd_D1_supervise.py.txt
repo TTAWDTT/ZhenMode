@@ -1,0 +1,68 @@
+"""Single attempt, single CPU, bounded sequential D1 subprocess supervisor."""
+import hashlib,json,os,pathlib,signal,subprocess,sys,time
+
+ROOT=pathlib.Path(__file__).resolve().parent
+NATIVE='/root/.venvs/zhenmode-managed-bench-20261005/bin/python'
+SUITE=sys.executable
+
+
+def rss_tree(pid):
+    parents={};memory={}
+    for proc in pathlib.Path('/proc').iterdir():
+        if not proc.name.isdigit():continue
+        try:
+            status=(proc/'status').read_text();values={line.split(':',1)[0]:line.split(':',1)[1].strip() for line in status.splitlines() if ':' in line}
+            parents[int(proc.name)]=int(values['PPid']);memory[int(proc.name)]=int(values.get('VmRSS','0 kB').split()[0])*1024
+        except (OSError,KeyError,ValueError):pass
+    descendants={pid}
+    while True:
+        new=descendants|{p for p,parent in parents.items() if parent in descendants}
+        if new==descendants:break
+        descendants=new
+    return sum(memory.get(p,0) for p in descendants),sorted(descendants)
+
+
+def stage(name,command,start):
+    log=ROOT/(name+'.log');resources=ROOT/(name+'-resources.jsonl')
+    with log.open('x') as stdout,resources.open('x') as samples:
+        proc=subprocess.Popen(command,cwd=ROOT,stdout=stdout,stderr=subprocess.STDOUT,start_new_session=True)
+        peak=0;reason=None
+        while proc.poll() is None:
+            memory,pids=rss_tree(proc.pid);peak=max(peak,memory)
+            elapsed=time.monotonic()-start
+            samples.write(json.dumps(dict(elapsed_s=elapsed,rss_bytes=memory,pids=pids))+'\n');samples.flush()
+            if elapsed>180:reason='aggregate wall cap180s'
+            if memory>4*1024**3:reason='sampled RSS cap4GiB'
+            if name=='timing' and elapsed-stage_start>60 and 'first_helper' not in log.read_text():reason='no first helper within60s'
+            if reason:
+                os.killpg(proc.pid,signal.SIGKILL);break
+            time.sleep(.2)
+        rc=proc.wait()
+    row=dict(stage=name,returncode=rc,peak_rss_bytes=peak,elapsed_total_s=time.monotonic()-start,stop_reason=reason,command=command)
+    with (ROOT/'scoreboard.jsonl').open('a') as f:f.write(json.dumps(row)+'\n')
+    print(json.dumps(row),flush=True)
+    if rc or reason:raise RuntimeError('stage stopped: '+name)
+    return row
+
+
+if __name__=='__main__':
+    if (ROOT/'execution-receipt.json').exists():raise RuntimeError('append-only attempt already exists')
+    confirmation=json.loads((ROOT/'root-static-confirmation.json').read_text())
+    assert confirmation['confirmed'] is True
+    assert all(hashlib.sha256((ROOT/name).read_bytes()).hexdigest()==expected for name,expected in confirmation['final_hashes'].items())
+    cpu=min(os.sched_getaffinity(0));os.sched_setaffinity(0,{cpu})
+    scripts=['DECLARATION.md','stencil_oracle.py','truth_generator.py','run_d1.py','supervise.py','launch.sh']
+    receipt=dict(created_utc=time.strftime('%Y-%m-%dT%H:%M:%SZ',time.gmtime()),cpu_affinity=[cpu],suite_python=SUITE,native_python=NATIVE,
+        declaration_status='root static confirmation received; final hashes verified',root_confirmation_sha256=hashlib.sha256((ROOT/'root-static-confirmation.json').read_bytes()).hexdigest(),hashes={name:hashlib.sha256((ROOT/name).read_bytes()).hexdigest() for name in scripts},
+        env={k:os.environ.get(k) for k in ['JAX_PLATFORMS','OMP_NUM_THREADS','OPENBLAS_NUM_THREADS','MKL_NUM_THREADS','XLA_FLAGS','PYTHONPATH']})
+    (ROOT/'execution-receipt.json').write_text(json.dumps(receipt,indent=2)+'\n')
+    start=time.monotonic();stage_start=time.monotonic();stage('truth',[SUITE,str(ROOT/'truth_generator.py'),str(ROOT/'truth')],start)
+    stage_start=time.monotonic();stage('timing',[NATIVE,str(ROOT/'run_d1.py'),'timing',str(ROOT/'timing')],start)
+    measured=json.loads((ROOT/'timing'/'timing.json').read_text())
+    projected=measured['total_s']+24*measured['warm_case_s']
+    remaining=180-(time.monotonic()-start)
+    decision=dict(provenance='Ny8 timing-only first case plus warm helper repeat; 4cases+20warm control allowance',
+        measured=measured,projected_complete_s=projected,remaining_budget_s=remaining,launch=projected<remaining)
+    (ROOT/'timing-decision.json').write_text(json.dumps(decision,indent=2)+'\n');print(json.dumps(decision),flush=True)
+    if not decision['launch']:raise RuntimeError('timing projection refuses complete')
+    stage_start=time.monotonic();stage('complete',[NATIVE,str(ROOT/'run_d1.py'),'complete',str(ROOT/'complete')],start)

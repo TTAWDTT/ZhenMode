@@ -1,0 +1,14 @@
+{
+  "phase": "production-design-before-edits",
+  "parent_source": "70d408583aa99db63e49d958d89dcaccad273f0e",
+  "design": "explicit momentum_tangent_filter_scheme default binomial_v1 / optional gram_fourth_v1; conditional only adv_u final filter; original adv_v normalBn, GM, scalar, pressure, vertical velocity and mass owners unchanged",
+  "evidence": "readonlyD1 plus exact fixeduniform Ft algebra and external prototype; external raw audit stillpending at design time",
+  "interface_guards": "float64 material_point_v4/fourth_uniform_v1 integrated nodal-capacity cubic_uniform_v1 fullywet physical uniform nodes inherited; closed_faces centered_fourth symmetric unsplit legacyprocess; no project_adv_vel; dual_face_v1 momentum only; Ny>=4; cos_lat exactly1 and dx_2d spatially uniform; dy validated by grid; no dynamic-norm stability claim",
+  "meaning": "Ft preserves tangent constant/affine/mean and contracts fixeduniform sampled tendency norm. Not TVD/positivity or wholemodel energy/time/stability proof; no guaranteed Nyquist kill in Y.",
+  "controlled_scope": "new helper with same original Nx FFT mask then local R=second_difference and adjointscatter/16; original _dealias_h_fd is untouched. Flagappend default field; benchmark contract serializes nondefault only; default frozen contract digest mustsame. Addedfield changes checkpoint metadata fingerprint possible.",
+  "controls_before_candidate": "n4 matrix,T1,e0 nonpositive/TV,wrongcoefplant,Nxcut andlowmode; constantsaffines exact; several n>=4 fixed norm/mean with declared roundoff; new owner/direct external equivalence on contacted field only; old normal/GM/scalar/Fz bitexact default and selector; strict default oldcontract digest+tamper; unsupported flag/dtype/mask/metrics/scheme/processguard rejection; affected software regression",
+  "native_future": "only after production code audit/controls/freeze/build/new fulltrue CI/source/math/new independent momentummanufactured declaration. Olddefault+primary pilot strict score <70best .0053878283060362665 and originalscience screens; if FAIL no remaining expansion, no fit or alternatecoefficient. Fine5pilot measured then remaining predecl finitebatch if gatespass.",
+  "thresholds": "Existing science gates unchanged; no relaxation or reruncompleted oldrows",
+  "status": "DESIGN ONLY no source edit; external raw audit required beforeconsumer authorization",
+  "created_at": "2026-10-12T22:37:25.904Z"
+}

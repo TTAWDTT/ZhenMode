@@ -1,0 +1,52 @@
+{
+  "source_context": "70d408583aa99db63e49d958d89dcaccad273f0e",
+  "algebra_proof": "../momentum-wall-filter-proof-70/FINAL_VERDICT.json",
+  "scope": "Standalone external Ft application and frozen helper/instantmomentum AST-copy consumer; DEVELOPMENT only, no installed/production edits or fullnative steps/ranking",
+  "design_fixed_before_measurement": "Ft generic tangent +unchangedoriginal normalBn; select by exactconstant/affine/mean preservation and limiting scope ofnew boundary contract, not scores; no comparison or selection of alternative Fn design",
+  "filter": "periodic sourceNx FFT projector then O(Ny) Ft=I-RtransposeR/16; R=local firstdifference differences; adjoint scatter immutableinput. Native normal=True calls exact originalhelper. GM/scalar/Fz/pressure remainoriginal functions.",
+  "geometry": {
+    "Nx": 8,
+    "Ny": [
+      12,
+      24
+    ],
+    "Nz": 17,
+    "H": 90,
+    "Lx": 11000,
+    "Ly": 15000,
+    "dt": 11.25
+  },
+  "physics": {
+    "f": 0,
+    "eta": 0,
+    "T": 15,
+    "S": 35,
+    "all_diffusion_drag_wind_heat": 0,
+    "momentum": "dual_face_v1",
+    "tracer": "material_point_v4/fourth_uniform_v1/integrated_reference_v1"
+  },
+  "fields": "Y=pi*y/Ly,D=d/H; u=.025+.003cosY+.002sinY+.004D+.001D²; Psi=.14sinY D(1-D); v=.14/H sinY(1-2D); w_up=.14pi/Ly cosY D(1-D). X constant.",
+  "analytic": "u_y=pi/Ly(-.003sinY+.002cosY);u_z=-(.004+.002D)/H; v_y=.14pi/(H Ly)cosY(1-2D);v_z=.28/H²sinY. Ru=-v*u_y-w_up*u_z,Rv=-v*v_y-w_up*v_z.",
+  "controls_before_comparison": [
+    "n4 directmatrix/Bn/T1 +constantaffine exactbinary/null; floatnorm512epsrelative; tangent sum512epssumabs; nonpositivity witness retained noTVD",
+    "coefficient1/4 planted alternating normincrease CAUGHT; Nx lowmode preserved/highcut mode rejected",
+    "sourcehelper cloned onlydealias false branch; originalglobals same, normaloutput numerical<=2e-12m/s² plusbitwise difference report; instantaneous scalar/Fz/pressurecode unchanged",
+    "actualmomentum-entry atzerootherforces equals its advection<=2e-12m/s²; trueconstanttangent owner strict0"
+  ],
+  "gates": {
+    "standalone_matrix_maxabs": "128eps*sumabs terms; null exact",
+    "norm2_allowance": "512eps*inputnorm² null exact",
+    "tangent_sum": "512eps*sumabs input null exact",
+    "analytic_w_u_RMS": "strictlyless than legacy forboth meshes, elseno production proposal; allold/newvalues saved; no tuning",
+    "actual_native_w_error": "descriptive only legacydualfacewpositionerror remains; no sourcefield stability or globalgrade"
+  },
+  "lineage": "newselectedfields beforeoutputs; productionhelper/sharedPDE/JAX/mathdifferent routes; notindependentholdout. Finite instantaneousstandaloneproducer data aftermeasurement permanentlycontacted.",
+  "timing": "Ny12 two actualsamehelper-callset timingonly nooraclecomparison/display, controls syntheticbeforecomparison; actualprojection then onefixed12/24 complete. Neverreruncompletedindices/oldmodeldata.",
+  "resources": {
+    "cpu": 1,
+    "wall_s": 180,
+    "memory_mib": 4096,
+    "GPU": false
+  },
+  "production_interface": "GAP newcodepeer review+actualmatrix/physicalinstantcontrols needed; thisdoesnotlicense nativephase/changedscore or fullCI claim"
+}

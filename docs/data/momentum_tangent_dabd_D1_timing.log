@@ -1,0 +1,2 @@
+{"stage": "first_helper", "elapsed_s": 5.779411098999958}
+{"total_s": 5.822487657000011, "identity_and_import_s": 1.8317450839999765, "initialization_s": 1.8572708799999873, "first_case_s": 2.0903951349999943, "warm_case_s": 0.0430765580000525, "continuous_oracle_read": false, "comparison_performed": false}

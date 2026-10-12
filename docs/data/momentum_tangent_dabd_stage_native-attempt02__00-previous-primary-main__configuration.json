@@ -1,0 +1,170 @@
+{
+  "contract": {
+    "H_m": 100.0,
+    "Lx_m": 20000.0,
+    "Ly_m": 20000.0,
+    "S_psu": 35.0,
+    "T_C": 15.0,
+    "amplitude_m": 0.01,
+    "benchmark": "internal-wave",
+    "boundary": {
+      "bottom": "flat",
+      "x": "periodic",
+      "y": "closed"
+    },
+    "budget": {
+      "aggregate_peak_bytes": 4294967296,
+      "coarse_wall_seconds": 600,
+      "cpu": 1,
+      "ranks": 1
+    },
+    "case": "primary",
+    "control": "main",
+    "development": {
+      "base_contract_sha256": "404c81fa53fd4c238c282aa695f8c8951893324ad62b75064213cba6699ece49",
+      "problem": "internal-wave",
+      "vertical_tracer_scheme": "muscl_band_v3"
+    },
+    "dt": 12.5,
+    "duration_s": 60000.0,
+    "eos": {
+      "drho_dS": 0.779,
+      "drho_dT": -0.205,
+      "drho_dp": 0.0,
+      "name": "linear"
+    },
+    "explicitly_zero": [
+      "wind",
+      "heat_salt_sources",
+      "restoring",
+      "bottom_drag",
+      "explicit_viscosity",
+      "explicit_diffusion",
+      "convection_enhancement",
+      "GM_Redi",
+      "ice",
+      "sponge",
+      "polar_filter"
+    ],
+    "f": 0.0001,
+    "frozen_model": "zhenmode",
+    "full_dynamics": true,
+    "gravity": 9.81,
+    "initial_h_m": [
+      3.3333333333333335,
+      6.666666666666667,
+      6.666666666666667,
+      6.666666666666667,
+      6.666666666666667,
+      6.666666666666667,
+      6.666666666666667,
+      6.666666666666667,
+      6.666666666666667,
+      6.666666666666667,
+      6.666666666666667,
+      6.666666666666667,
+      6.666666666666667,
+      6.666666666666667,
+      6.666666666666667,
+      3.3333333333333335
+    ],
+    "internal_wave": {
+      "N2_s_2": 3.924e-05,
+      "dT_dz_C_m": 0.02,
+      "q": 3.1417199723837514
+    },
+    "mom_time_options": {
+      "BEBT": 0.1,
+      "DT": 12.5,
+      "DTBT": 12.5,
+      "DT_FORCING": 12.5,
+      "DT_THERM": 12.5,
+      "SPLIT": true,
+      "SPLIT_RK2B": true,
+      "TRACER_ADVECTION_SCHEME": "PPM:H3"
+    },
+    "native_sampling": {
+      "MOM6": {
+        "eta": "cell_mean",
+        "layout": "cgrid",
+        "u": "node"
+      },
+      "Oceananigans": {
+        "eta": "cell_mean",
+        "layout": "cgrid",
+        "u": "node"
+      },
+      "ocean-solver": {
+        "eta": "node",
+        "layout": "collocated",
+        "u": "node"
+      }
+    },
+    "nx": 8,
+    "ny": 32,
+    "nz": 16,
+    "ocean_options": {
+      "column_geometry": "nodal_dual_v1",
+      "conservative_kv": true,
+      "density_rotation_scheme": "joint_shear",
+      "external_mode_scheme": "symmetric",
+      "fct_adv": false,
+      "hydrostatic_surface_scheme": "linear_density",
+      "localize_conv": true,
+      "meridional_boundary_scheme": "closed_faces",
+      "mode_split": false,
+      "monotone_adv": false,
+      "polar_cap_rows": 0,
+      "polar_cap_taper": 0,
+      "pressure_continuity_scheme": "centered_fourth",
+      "process_time_scheme": "legacy",
+      "project_adv_vel": false,
+      "tracer_transport_scheme": "centered_second",
+      "vertical_tracer_scheme": "muscl_band_v3"
+    },
+    "oceananigans_options": {
+      "closure": "nothing",
+      "coriolis": "FPlane",
+      "free_surface": "SplitExplicitFreeSurface",
+      "haline_contraction": 0.00076,
+      "momentum_advection": "VectorInvariant",
+      "requested_substeps": 8,
+      "source_commit": "1e8587b17171b0bba5bc6728118c3dbbd3c8acf6",
+      "thermal_expansion": 0.00019999999999999998,
+      "thermodynamic_variables": "T/S anomalies about 15 C/35 psu; physical constant-scalar witnesses",
+      "timestepper": "SplitRungeKutta3",
+      "tracer_advection": "WENO5",
+      "version": "0.113.5",
+      "vertical_coordinate": "ZStarCoordinate"
+    },
+    "output_s": 1500.0,
+    "qualification": "engineering_screen_only",
+    "reference": {
+      "branch": "pi < q < 3*pi/2; q*tan(q)=1/2500",
+      "kind": "linear_rotating_hydrostatic_free_surface_first_internal_mode",
+      "pressure_units": "p_prime/rho0 in m2/s2",
+      "provenance": "derived hydrostatic rotating normal mode; linear reference, full nonlinear native trajectories",
+      "upstream": "https://ocw.mit.edu/ans7870/textbooks/Wunsch/Edited/Chapter10.pdf"
+    },
+    "rho0": 1025.0,
+    "schema": "vertical-tracer-development-v1",
+    "selected_contract_sha256": "a50f15bcee92206bdc0d99063ab372bd3a757424f6edbeec103ac79fcd5398e5",
+    "selected_index": 9,
+    "selection_commit": "09ba0b59728fc7445eb58b8c8c6b3ca69384a672",
+    "selection_sha256": "479ed6b1140dd3f33cb0057ecad0a275b83b34dad54ba3314c2dc97b4ad543dc",
+    "thresholds": {
+      "S_error_psu": 1e-10,
+      "T_error_C": 2e-05,
+      "error": 0.1,
+      "null_absolute": 5e-11,
+      "tracer_inventory": 1e-08,
+      "volume": 1e-10
+    }
+  },
+  "julia": "julia",
+  "mom_executable": null,
+  "mom_source": null,
+  "oceananigans_cache": null,
+  "source_revision": "dabd48abd898c20e0471a5ab9fc18e9b61cfa96d",
+  "source_revision_provider": "reported revision; runtime package bytes recorded separately"
+}
