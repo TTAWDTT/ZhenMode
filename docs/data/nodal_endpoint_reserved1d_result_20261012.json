@@ -1,0 +1,85 @@
+{
+  "verdict": "OPEN",
+  "scope": "1D time-dependent horizontally compensated cross-section control, not native ocean physics",
+  "declaration_sha256": "587a49010ef27ef688cce507db3e4aa840015405355c3633f808690a58ea9c4c",
+  "source_sha256": "c9ea8a479529ec7bd096adaa720f8a82900eb228cdde629e3968d346bf065992",
+  "initial_continuous_range": 0.8183897753342304,
+  "cases": [
+    {
+      "nodes": 21,
+      "normalized_weighted_L1": 0.005659379417471991,
+      "endpoint_drift": 0.0004052897593815885,
+      "budget": {
+        "stock_initial": 10.343727957785045,
+        "stock_final": 10.328844046682956,
+        "horizontal_plus_boundary_input": -0.014883911102087692,
+        "inventory_balance_residual": -7.729836329394349e-16,
+        "budget_limit": 1.0343727957785046e-11,
+        "maximum_step_budget_residual": 3.923094902143662e-16,
+        "constant_rhs_max": 0.0,
+        "reversed_mass_constant_defect": 1.5691819145568988
+      },
+      "constant_rhs_max_abs": 1.1102230246251565e-16,
+      "constant_final_drift_abs": 0.0,
+      "sign_negative_defect": 1.5691819145568988
+    },
+    {
+      "nodes": 41,
+      "normalized_weighted_L1": 0.0015206602121881512,
+      "endpoint_drift": 4.2531806428769414e-05,
+      "budget": {
+        "stock_initial": 10.343674264274414,
+        "stock_final": 10.328924032436426,
+        "horizontal_plus_boundary_input": -0.014750231837988268,
+        "inventory_balance_residual": 5.749735878927444e-16,
+        "budget_limit": 1.0343674264274413e-11,
+        "maximum_step_budget_residual": 2.820365075077052e-16,
+        "constant_rhs_max": 0.0,
+        "reversed_mass_constant_defect": 1.5703926303627442
+      },
+      "constant_rhs_max_abs": 1.1102230246251565e-16,
+      "constant_final_drift_abs": 0.0,
+      "sign_negative_defect": 1.5703926303627442
+    },
+    {
+      "nodes": 81,
+      "normalized_weighted_L1": 0.0004159800126857167,
+      "endpoint_drift": 1.407330422331654e-05,
+      "budget": {
+        "stock_initial": 10.343660840372419,
+        "stock_final": 10.328928687408204,
+        "horizontal_plus_boundary_input": -0.014732152964213093,
+        "inventory_balance_residual": -1.3755815063409838e-16,
+        "budget_limit": 1.0343660840372419e-11,
+        "maximum_step_budget_residual": 1.5793935153181294e-16,
+        "constant_rhs_max": 0.0,
+        "reversed_mass_constant_defect": 1.5706953968502826
+      },
+      "constant_rhs_max_abs": 0.0,
+      "constant_final_drift_abs": 0.0,
+      "sign_negative_defect": 1.5706953968502826
+    }
+  ],
+  "refinement_ratios": [
+    3.721659429313559,
+    3.655608841324422
+  ],
+  "elapsed_s": 9.299868831,
+  "isolated_identity_before": {
+    "commit": "4095464479fca8c73be98cac93d9f859eb7e3bc6",
+    "installed": "/mnt/d/Github/ocean-solver/outputs/vertical-accuracy-round2-20261012/band-stage/installed",
+    "modules": 132,
+    "identity_sha256": "9be4c5f677637a6ffb219998434b19314f878e028cf09730ffa11829f9c6bf8a",
+    "wheel_sha256": "e7567a9ebabb10cb73542b69a0cf7879f8a0de098ee7b7b02ee01597e175742c"
+  },
+  "isolated_identity_after": {
+    "commit": "4095464479fca8c73be98cac93d9f859eb7e3bc6",
+    "installed": "/mnt/d/Github/ocean-solver/outputs/vertical-accuracy-round2-20261012/band-stage/installed",
+    "modules": 132,
+    "identity_sha256": "9be4c5f677637a6ffb219998434b19314f878e028cf09730ffa11829f9c6bf8a",
+    "wheel_sha256": "e7567a9ebabb10cb73542b69a0cf7879f8a0de098ee7b7b02ee01597e175742c"
+  },
+  "parameters_or_gates_adjusted_after_result": false,
+  "native_integration": false,
+  "shared_assumptions": "Different from old logistic/sin4 and from streamline2D data; independent analytic trajectory, shares passive-advection PDE, nodal sampling, prescribed horizontal compensation, JAX/NumPy and production pure flux helpers. No full native ocean physics/time-scheme certification. Never use observed results to tune this frozen candidate; report OPEN on any original gate failure."
+}

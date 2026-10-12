@@ -1,0 +1,19 @@
+{
+  "status": "Pre-evaluation declaration for frozen4095464; no later specification or gate adjustment",
+  "source_commit": "4095464479fca8c73be98cac93d9f859eb7e3bc6",
+  "equation": "q_t+a(d)q_d=0 on d in[0,1]; a(d)=0.25*sin(pi*d), explicitly a(0)=a(1)=0",
+  "initial": "q0(d)=10+0.2*exp(d)+0.3*cos(2*pi*d)",
+  "independent_exact": "q(d,t)=q0(2/pi*atan(exp(-0.25*pi*t)*tan(pi*d/2))); endpoint backward foot explicitly0/1",
+  "normalization": "Initial continuous global range A=q0(1)-q0(dmin), dmin unique q0'=0 in[.25,.5], q0'=.2*exp(d)-.6*pi*sin(2*pi*d); binary64 independent bisection80 iterations. Endpoint1 global max follows exp(d)<=exp(1), cos<=1.",
+  "grids": [21,41,81],
+  "nodes_and_flux": "uniform physical nodes d=0..1; midpoint mass-face speed, explicit zero top/bottom; half endpoint nodal_dual capacities; horizontal mass divergence Hm=-diff(F)/h; horizontal tracer divergence Hq=q*Hm",
+  "time": {"final":0.5,"dt":0.002,"heun_steps":250},
+  "method": "production limited face candidates + conservative band pure helper only, Heun with Hq rebuilt from each stage; no native ocean-model integrator",
+  "gates": {"finest_normalized_volume_weighted_L1_max":0.05,"each_refinement_ratio_min":1.25,"constant_rhs_abs_max":1e-17,"constant_final_drift_abs_max":1e-17,"horizontal_plus_boundary_budget_residual_max":"1e-12*max(1,abs(cumulative horizontal/boundary inputs),abs(stock_initial))","reversed_mass_Fz_constant_defect_min":1e-12},
+  "constant_control": "Nonzero q=1; same operator and time loop. RHS and final drift both retained against original1e-17 gate.",
+  "negative_control": "Reverse vertical mass flux while retaining original horizontal mass compensation; constant q=1 must show defect>1e-12",
+  "inventory": "The closed physical top/bottom do not imply closed-column tracer stock: Hq represents horizontal inputs/outputs; stock_final-stock_initial must equal integrated -sum(Hq*h) plus unchanged boundary flux. No closed-column heat-inventory constancy claim.",
+  "resource_limits": {"cpu":1,"wall_seconds":180,"memory_mib":4096,"host_memory_semantics":"sampled aggregate process-group RSS, not hard cgroup cap"},
+  "timing_pilot": "Grid21 five Heun steps timing only, no reference comparison and no numerical result displays; after timing one effective complete fixed250-step three-grid check",
+  "lineage": "Different from old logistic/sin4 and from streamline2D data; independent analytic trajectory, shares passive-advection PDE, nodal sampling, prescribed horizontal compensation, JAX/NumPy and production pure flux helpers. No full native ocean physics/time-scheme certification. Never use observed results to tune this frozen candidate; report OPEN on any original gate failure."
+}

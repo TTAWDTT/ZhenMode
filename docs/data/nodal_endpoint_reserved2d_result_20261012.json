@@ -1,0 +1,74 @@
+{
+  "scope": "v3 newly declared untouched nonlinear streamline dye spatial scalar/continuity numerical verification only; no native ocean integration or full coupled TVD certification",
+  "declaration_sha256": "815f8fee86241fba5ebb99b0e75fa02f852e526df8bb17958105a433ddf6cf87",
+  "code_commit": "4095464479fca8c73be98cac93d9f859eb7e3bc6",
+  "jax_backend": "cpu",
+  "checks": [
+    {
+      "grid": [
+        8,
+        20,
+        21
+      ],
+      "normalized_weighted_L1": 0.003100829005327701,
+      "constant_rhs_max_abs": 8.470329472543003e-21,
+      "inventory_balance_residual": 4.5350469256646986e-14,
+      "inventory_limit": 2.3800368842614888e-12,
+      "surface_Fz_max_abs": 4.870439446712227e-21,
+      "reversed_Fz_constant_defect": 7.829612001870886e-06
+    },
+    {
+      "grid": [
+        8,
+        40,
+        41
+      ],
+      "normalized_weighted_L1": 0.0007900606708324778,
+      "constant_rhs_max_abs": 1.7575933655526732e-20,
+      "inventory_balance_residual": 2.1846050359333735e-14,
+      "inventory_limit": 1e-12,
+      "surface_Fz_max_abs": 9.740878893424454e-21,
+      "reversed_Fz_constant_defect": 7.847916552177387e-06
+    },
+    {
+      "grid": [
+        8,
+        80,
+        81
+      ],
+      "normalized_weighted_L1": 0.00019690122658648398,
+      "constant_rhs_max_abs": 3.536362554786704e-20,
+      "inventory_balance_residual": -1.3321549265225997e-14,
+      "inventory_limit": 1e-12,
+      "surface_Fz_max_abs": 1.0310392745167213e-20,
+      "reversed_Fz_constant_defect": 7.852467081896485e-06
+    }
+  ],
+  "refinement_ratios": [
+    3.9247985880127327,
+    4.012472062917613
+  ],
+  "verdict": "PASS",
+  "parameters_adjusted_after_result": false,
+  "production_python_modules_checked_before_after": 132,
+  "isolated_identity_before": {
+    "commit": "4095464479fca8c73be98cac93d9f859eb7e3bc6",
+    "installed": "/mnt/d/Github/ocean-solver/outputs/vertical-accuracy-round2-20261012/band-stage/installed",
+    "modules": 132,
+    "identity_sha256": "9be4c5f677637a6ffb219998434b19314f878e028cf09730ffa11829f9c6bf8a",
+    "wheel_sha256": "e7567a9ebabb10cb73542b69a0cf7879f8a0de098ee7b7b02ee01597e175742c"
+  },
+  "isolated_identity_after": {
+    "commit": "4095464479fca8c73be98cac93d9f859eb7e3bc6",
+    "installed": "/mnt/d/Github/ocean-solver/outputs/vertical-accuracy-round2-20261012/band-stage/installed",
+    "modules": 132,
+    "identity_sha256": "9be4c5f677637a6ffb219998434b19314f878e028cf09730ffa11829f9c6bf8a",
+    "wheel_sha256": "e7567a9ebabb10cb73542b69a0cf7879f8a0de098ee7b7b02ee01597e175742c"
+  },
+  "prior_integrity_refused_preserved": true,
+  "normalized_rhs_scale_per_s": 1.1844885416186629e-07,
+  "shared_assumptions": "New tracer function and meshes were not evaluated in previous diagnosis or method development. Same known continuous PDE, node sampling and production continuity operator shared. Previously reserved 051 data now contacted evidence and is not untouched for v3. This new data provides narrow spatial evidence only; not full independent physical certification.",
+  "single_declared_evaluation": true,
+  "raw_native_pilot_read": false,
+  "pressure_integral": "trapezoidal: fixed declaration spatial scalar check does not exercise pressure quadrature"
+}

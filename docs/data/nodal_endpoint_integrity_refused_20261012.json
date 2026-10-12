@@ -1,0 +1,16 @@
+{
+  "verdict": "REFUSED: source changed during reserved check; no acceptance result",
+  "expected_commit": "afb68092910ae8e8fde614b9bf5c2ded7fd13c84",
+  "source_freeze_record": "code-freeze-afb6809.json",
+  "script": "reserved_2d_check.py",
+  "first_check": "All 132 production Python bytes matched before calculation, after Python imports",
+  "last_check": "One source file changed: src/zhenmode/model/solver/numerics/vertical.py (uncommitted increment-space equivalent rewrite)",
+  "last_exception": "AssertionError: Frozen source changed during reserved check",
+  "computation_stage": "Three prescribed CPU pure spatial evaluations finished in the process, but the required post-run identity check aborted before any result JSON or numerical output. Process exited and local numerical values are not recoverable from this record.",
+  "numeric_data_seen_by_reviewer_or_parent": false,
+  "native_output_or_native_integration": false,
+  "claimed_acceptance": false,
+  "repeated_evaluation": false,
+  "lineage": "The increment-space rewrite was made in response to development temperature-shift residuals, not reserved spatial data; no reserved numeric value was published or used to tune it",
+  "instruction_followed_after_failure": "Do not rerun this same frozen-afb reserved computation; retain this failed recording/integrity attempt and report the limitation. No frozen PASS may be inferred from missing results."
+}

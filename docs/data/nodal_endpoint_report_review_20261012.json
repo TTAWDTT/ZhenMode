@@ -1,0 +1,22 @@
+{
+  "verdict": "Numeric alignment and stated limits PASS",
+  "report_sha256": "d2dca38fd7d6e888e62f73e3218ee8448702f7349868c4b1a106395ae5d11dbc",
+  "numeric_upper_9_displays_checked": 38,
+  "json_csv_native_journal_rows_checked": 32,
+  "same_case_winners": [
+    "mom6",
+    "mom6",
+    "zhenmode_v3",
+    "zhenmode_v3",
+    "zhenmode_v3",
+    "zhenmode_v3"
+  ],
+  "primary_still_MOM": true,
+  "v3_u_v_increased_disclosed": true,
+  "cubic_unselected_and_limited": true,
+  "thermal_trajectory_shared_disclosed": true,
+  "one_dimensional_OPEN_preserved": true,
+  "409_CI_pending_and_overall_OPEN": true,
+  "scope": "two-pass prose/data review; no native data recomputation or new integration",
+  "not_claiming_current_CI_success": true
+}
