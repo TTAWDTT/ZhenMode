@@ -115,6 +115,34 @@ def _fill_ghost_bottom(u, p):
     return jnp.where(kk >= kbot, u_bot, u)
 
 
+def integrated_reference_scalar_rate(tracer, mass_flux, horizontal_shift_numerator,
+                                     horizontal_mass_numerator, p, minimum=None):
+    """Flux-form RHS with a global concentration reference and one division.
+
+    Horizontal inputs are capacity-integrated numerators, before division by h.
+    Retain the reference times the complete mass residual: this also detects an
+    inconsistent/reversed continuity flux rather than clipping constant fields.
+    The supported physical bed has zero mass and scalar boundary flux.
+    """
+    reference = tracer.reshape(-1)[0]
+    shifted = tracer-reference
+    left, right = shifted[..., :-1], shifted[..., 1:]
+    if getattr(p, 'vertical_tracer_scheme', 'donor_cell') in ('muscl_nodal_v1', 'muscl_endpoint_v2', 'muscl_band_v3'):
+        left, right = _vertical_tracer_face_values(shifted, p)
+    interior = mass_flux[..., 1:-1]*jnp.where(mass_flux[..., 1:-1] > 0., left, right)
+    surface = mass_flux[..., :1]*shifted[..., :1]
+    flux = jnp.concatenate((surface, interior, jnp.zeros_like(surface)), axis=-1)
+    mass_residual = horizontal_mass_numerator+(mass_flux[..., 1:]-mass_flux[..., :-1])
+    horizontal_effective = horizontal_shift_numerator+reference*mass_residual
+    if getattr(p, 'vertical_tracer_scheme', 'donor_cell') in ('muscl_endpoint_v2', 'muscl_band_v3'):
+        shifted_minimum = None if minimum is None else minimum-reference
+        flux = _conservative_endpoint_flux(shifted, mass_flux, flux,
+                                           horizontal_effective/p.dz_node, p, minimum=shifted_minimum)
+    numerator = horizontal_effective+(flux[..., 1:]-flux[..., :-1])
+    rate = -numerator/p.dz_node*p.wet_mask_z
+    return rate, (mass_flux[..., 0]*tracer[..., 0])
+
+
 def _d_dz(u, p):
     """Vertical first derivative, non-uniform grid."""
     du_interior = (u[..., 2:] - u[..., :-2]) / p.dz_denom_interior

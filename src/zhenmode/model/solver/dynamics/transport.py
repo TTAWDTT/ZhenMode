@@ -20,6 +20,7 @@ from zhenmode.model.solver.numerics.vertical import (
     _d_dz,
     _fill_ghost_bottom,
     _vertical_tracer_face_values,
+    integrated_reference_scalar_rate,
 )
 
 
@@ -286,6 +287,16 @@ def _advection_scalar(T, u, v, Fz_in, p, return_boundary=False, face_transport=N
     overshoot at a sharp front.
     """
     wm = p.wet_mask_z
+    if getattr(p, 'tracer_flux_arithmetic', 'legacy') == 'integrated_reference_v1':
+        if face_transport is None:
+            face_transport = _layer_face_transports(u, v, p)
+        reference = T.reshape(-1)[0]
+        fx, fy = _horizontal_tracer_fluxes(T-reference, u, v, p, face_transport)
+        shifted_numerator = _face_transport_divergence(fx*p.dz_node, fy*p.dz_node, p)
+        mass_numerator = _face_transport_divergence(*face_transport, p)
+        rate, boundary = integrated_reference_scalar_rate(T, Fz_in, shifted_numerator,
+                                                         mass_numerator, p, minimum=minimum)
+        return (rate, boundary) if return_boundary else rate
     if face_transport is None and getattr(p, 'column_mean_weights', None) is not None:
         face_transport = _layer_face_transports(u, v, p)
     partial = getattr(p, 'column_geometry', 'legacy') == 'fixed_partial_v1'

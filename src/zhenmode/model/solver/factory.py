@@ -58,7 +58,8 @@ def make_solver_global(grid, physics, dt, forcing=None,
                        density_rotation_scheme='split_sources',
                        vertical_tracer_scheme='donor_cell',
                        hydrostatic_integral_scheme='trapezoidal',
-                       column_mean_scheme='nodal_capacity'):
+                       column_mean_scheme='nodal_capacity',
+                       tracer_flux_arithmetic='legacy'):
     """Create a JIT-compiled global FD ocean solver.
 
     Key properties:
@@ -161,6 +162,18 @@ def make_solver_global(grid, physics, dt, forcing=None,
         if active_drag != 0:
             raise ValueError('symmetric external candidate requires separate bottom-drag qualification')
     validate_grid(grid)
+    if tracer_flux_arithmetic not in ('legacy', 'integrated_reference_v1'):
+        raise ValueError('unknown tracer_flux_arithmetic')
+    if tracer_flux_arithmetic == 'integrated_reference_v1':
+        spacing = np.abs(np.diff(np.asarray(grid.z)))
+        if (column_geometry != 'nodal_dual_v1' or external_mode_scheme != 'symmetric'
+                or meridional_boundary_scheme != 'closed_faces' or mode_split
+                or grid.nz < 6 or np.asarray(grid.z)[0] != 0.
+                or not np.allclose(spacing, spacing[0], rtol=1e-12, atol=0.)
+                or not np.allclose(np.asarray(grid.depth), -np.asarray(grid.z)[-1], rtol=1e-12, atol=0.)
+                or not np.all(np.asarray(grid.wet_mask) == 1.)
+                or (grid.wet_mask_3d is not None and not np.all(np.asarray(grid.wet_mask_3d) == 1.))):
+            raise ValueError('integrated_reference_v1 requires a fully wet uniform physical-endpoint unsplit closed nodal channel with at least six nodes')
     if hydrostatic_integral_scheme not in ('trapezoidal', 'cubic_uniform_v1'):
         raise ValueError('unknown hydrostatic_integral_scheme')
     if column_mean_scheme not in ('nodal_capacity', 'cubic_consistent_v1'):
@@ -610,6 +623,7 @@ def make_solver_global(grid, physics, dt, forcing=None,
         hydrostatic_integral_scheme=hydrostatic_integral_scheme,
         column_mean_weights=(jnp.asarray(cubic_uniform_mean_weights(grid.nz))[None, None]
                              if column_mean_scheme == 'cubic_consistent_v1' else None),
+        tracer_flux_arithmetic=tracer_flux_arithmetic,
     )
 
     if projection_preconditioner == 'jacobi':
