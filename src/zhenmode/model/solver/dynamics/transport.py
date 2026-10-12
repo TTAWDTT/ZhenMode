@@ -24,6 +24,11 @@ from zhenmode.model.solver.numerics.vertical import (
 )
 
 
+def _requires_actual_mass_faces(params):
+    return (getattr(params, 'column_mean_weights', None) is not None
+            or getattr(params, 'tracer_flux_arithmetic', 'legacy') == 'integrated_reference_v1')
+
+
 def _column_divergence(u, v, p):
     """Column-integrated horizontal divergence (nx, ny).
 
@@ -31,7 +36,7 @@ def _column_divergence(u, v, p):
     advection budget uses, so a zero here is exactly the discretely
     divergence-free condition the tracer flux operator needs. (D13)
     """
-    if getattr(p, 'column_mean_weights', None) is not None:
+    if _requires_actual_mass_faces(p):
         faces = _layer_face_transports(u, v, p)
         integrand = _face_transport_divergence(*faces, p)
         # Use the vertical inverse's summation order for its surface transport.
@@ -100,7 +105,7 @@ def _vertical_transport_iface(u, v, p, face_transport=None):
     no CFL limit removes. Fz[..., 0] is the column-integrated horizontal divergence,
     the rigid-lid leak the barotropic subcycle absorbs via Fz_top = Fz[0]*T[0]. (D7)
     """
-    if face_transport is None and getattr(p, 'column_mean_weights', None) is not None:
+    if face_transport is None and _requires_actual_mass_faces(p):
         face_transport = _layer_face_transports(u, v, p)
     if face_transport is not None:
         integrand = _face_transport_divergence(*face_transport, p)

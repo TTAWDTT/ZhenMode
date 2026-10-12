@@ -7,6 +7,13 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
+from tests.support.uniform_tracer_channel import column_case
+from zhenmode.model.solver.dynamics.transport import (
+    _advection_scalar,
+    _face_transport_divergence,
+    _layer_face_transports,
+    _vertical_transport_iface,
+)
 from zhenmode.model.solver.numerics.vertical import integrated_reference_scalar_rate
 
 
@@ -61,3 +68,18 @@ def test_shifted_salt_floor_is_the_same_absolute_zero():
     shifted = tracer-tracer.reshape(-1)[0]
     rate, _ = integrated_reference_scalar_rate(tracer, flow, shifted*mass, mass, p, minimum=0.)
     assert np.min(np.asarray(tracer+p.dt*rate)) >= -1e-14
+
+
+def test_actual_solver_owner_assembles_mass_before_capacity_division():
+    _, (_, _, _, p, _) = column_case(column_mean_scheme='nodal_capacity',
+                                    hydrostatic_integral_scheme='trapezoidal',
+                                    tracer_flux_arithmetic='integrated_reference_v1')
+    rng = np.random.default_rng(12122028)
+    u, v = [jnp.asarray(rng.normal(size=(8, 8, 16))*.001) for _ in range(2)]
+    faces = _layer_face_transports(u, v, p)
+    mass = _face_transport_divergence(*faces, p)
+    F = _vertical_transport_iface(u, v, p)
+    expected = jnp.cumsum(mass[..., ::-1], axis=-1)[..., ::-1]
+    np.testing.assert_array_equal(F[..., :-1], expected)
+    constant = jnp.full_like(u, 35.)
+    np.testing.assert_allclose(_advection_scalar(constant, u, v, F, p), 0., rtol=0, atol=1e-17)

@@ -1,13 +1,10 @@
 """Polynomial moments, actual faces, source ownership and unchanged capacities."""
 
-from dataclasses import replace
-
 import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from tests.support.grid import all_wet_grid
-from zhenmode.model.config import PhysicsConfig
+from tests.support.uniform_tracer_channel import column_case
 from zhenmode.model.solver.dynamics.pressure import _compute_bt_rho_pgf, _density_pressure_gradient
 from zhenmode.model.solver.dynamics.transport import (
     _advection_scalar,
@@ -17,7 +14,6 @@ from zhenmode.model.solver.dynamics.transport import (
     _layer_face_transports,
     _vertical_transport_iface,
 )
-from zhenmode.model.solver.factory import make_solver_global
 from zhenmode.model.solver.numerics.column import column_mean, cubic_uniform_mean_weights
 from zhenmode.model.solver.timestepping.step import _rotate_baroclinic_shear
 
@@ -33,25 +29,6 @@ def test_point_quadrature_matches_independent_polynomial_primitive(nodes, degree
         trap = np.ones(nodes)/(nodes-1)
         trap[[0, -1]] /= 2
         assert abs(trap @ x**degree-1/3) > 1e-5
-
-
-def column_case(**changes):
-    n = 8
-    grid = all_wet_grid(nx=n, ny=n, nz=16)
-    z = np.linspace(0., -100., 16)
-    grid = replace(grid, z=z, dz=-np.diff(z), depth=np.full((n, n), 100.),
-                   dx_2d=np.full((n, n), 2000.), dy=2000., cos_lat=np.ones(n),
-                   f=np.full((n, n), 1e-4))
-    physics = PhysicsConfig(**dict.fromkeys((
-        'nu_h', 'nu_v', 'nu_bi', 'kappa_h', 'kappa_v', 'kappa_bi',
-        'kappa_conv', 'kappa_gm', 'kappa_redi', 'r_bot', 'cd'), 0.))
-    options = dict(return_params=True, column_geometry='nodal_dual_v1',
-                   conservative_kv=True, localize_conv=True, polar_cap_rows=0, polar_cap_taper=0,
-                   external_mode_scheme='symmetric', meridional_boundary_scheme='closed_faces',
-                   pressure_continuity_scheme='centered_fourth', density_rotation_scheme='joint_shear',
-                   hydrostatic_surface_scheme='linear_density', hydrostatic_integral_scheme='cubic_uniform_v1',
-                   column_mean_scheme='cubic_consistent_v1', vertical_tracer_scheme='muscl_band_v3') | changes
-    return grid, make_solver_global(grid, physics, 12.5, **options)
 
 
 def test_actual_faces_constant_scalar_and_inventory_share_the_same_transport():

@@ -12,6 +12,7 @@ from zhenmode.model.solver.dynamics.transport import (
     _advection_scalar,
     _compute_vertical_velocity,
     _layer_face_transports,
+    _requires_actual_mass_faces,
     _vertical_transport_iface,
 )
 from zhenmode.model.solver.numerics.backend import jax, jnp
@@ -101,7 +102,7 @@ def _compute_tracer_tendency(state, p, budget=None, face_transport=None, return_
     inside their explicit bounds at dt=3600 and stay evaluated ONCE. (D16)
     """
     measure_terms = budget is not None or return_terms
-    if face_transport is None and getattr(p, 'column_mean_weights', None) is not None:
+    if face_transport is None and _requires_actual_mass_faces(p):
         face_transport = _layer_face_transports(state.u, state.v, p)
     Fz = _vertical_transport_iface(state.u, state.v, p, face_transport=face_transport)
     if budget is not None and p.column_geometry in {'nodal_dual_v1', 'fixed_partial_v1'}:
