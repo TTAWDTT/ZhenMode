@@ -1,0 +1,124 @@
+{
+  "verdict": "PASS",
+  "scope": "New time-dependent horizontally compensated 1D realization of the frozen v4 primitive/projection/global-blend core; no actual 2D horizontal face owner or native ocean qualification",
+  "declaration_sha256": "6ec643d8e435fb78f0e3d2595c0babc77d6c62fbb6361970597f5aaad5b9af01",
+  "evaluator_sha256": "9929895cb3973c9694a476efe890a88e945c5a1d232c1374e6d1389bc4f24167",
+  "initial_continuous_range": 0.39187441355326763,
+  "math_controls": {
+    "primitive_independent_lagrange_max_difference": 2.015054789694659e-14,
+    "constant_controls": [
+      {
+        "C": 1.0,
+        "consistent_rhs_max": 0.0,
+        "bad_mass_formula_difference": 0.0,
+        "zeroed_bad_mass_rejected": true
+      },
+      {
+        "C": 35.0,
+        "consistent_rhs_max": 0.0,
+        "bad_mass_formula_difference": 0.0,
+        "zeroed_bad_mass_rejected": true
+      },
+      {
+        "C": -7.0,
+        "consistent_rhs_max": 0.0,
+        "bad_mass_formula_difference": 0.0,
+        "zeroed_bad_mass_rejected": true
+      }
+    ],
+    "inventory_residual": -2.0816681711721685e-17,
+    "mathematical_alpha": 1.0,
+    "mathematical_feasible": true,
+    "zero_barrier_exact": true
+  },
+  "cases": [
+    {
+      "nodes": 33,
+      "normalized_weighted_L1": 0.0003590446399179887,
+      "endpoint_drift": 0.0,
+      "budget": {
+        "stock_initial": 9.379888223417979,
+        "stock_final": 9.356859275185869,
+        "horizontal_plus_boundary_input": -0.02302894823210802,
+        "inventory_balance_residual": -4.712247573483014e-16,
+        "budget_limit": 9.379888223417978e-12,
+        "maximum_step_budget_residual": 2.317531906873417e-16,
+        "constant_rhs_max": 0.0,
+        "reversed_mass_constant_defect": 1.5701655784773765,
+        "minimum_euler_value": 9.23,
+        "all_euler_intervals_feasible": true,
+        "minimum_alpha": 0.0
+      },
+      "constant_rhs_max_abs": 0.0,
+      "constant_final_drift_abs": 0.0,
+      "sign_negative_defect": 1.5701655784773765,
+      "constant_all_euler_feasible": true
+    },
+    {
+      "nodes": 65,
+      "normalized_weighted_L1": 0.0001742118115846713,
+      "endpoint_drift": 0.0,
+      "budget": {
+        "stock_initial": 9.379854318596525,
+        "stock_final": 9.356739772383255,
+        "horizontal_plus_boundary_input": -0.023114546213267157,
+        "inventory_balance_residual": -1.2856672649240453e-15,
+        "budget_limit": 9.379854318596525e-12,
+        "maximum_step_budget_residual": 2.1467488227088196e-16,
+        "constant_rhs_max": 0.0,
+        "reversed_mass_constant_defect": 1.5706386254663889,
+        "minimum_euler_value": 9.23,
+        "all_euler_intervals_feasible": true,
+        "minimum_alpha": 0.0
+      },
+      "constant_rhs_max_abs": 0.0,
+      "constant_final_drift_abs": 0.0,
+      "sign_negative_defect": 1.5706386254663889,
+      "constant_all_euler_feasible": true
+    },
+    {
+      "nodes": 129,
+      "normalized_weighted_L1": 9.136787365659079e-05,
+      "endpoint_drift": 0.0,
+      "budget": {
+        "stock_initial": 9.37984584235756,
+        "stock_final": 9.356695313456461,
+        "horizontal_plus_boundary_input": -0.023150528901097804,
+        "inventory_balance_residual": -2.417804725960565e-16,
+        "budget_limit": 9.37984584235756e-12,
+        "maximum_step_budget_residual": 1.3434291282799456e-16,
+        "constant_rhs_max": 0.0,
+        "reversed_mass_constant_defect": 1.5707569005721609,
+        "minimum_euler_value": 9.23,
+        "all_euler_intervals_feasible": true,
+        "minimum_alpha": 0.0
+      },
+      "constant_rhs_max_abs": 0.0,
+      "constant_final_drift_abs": 0.0,
+      "sign_negative_defect": 1.5707569005721609,
+      "constant_all_euler_feasible": true
+    }
+  ],
+  "refinement_ratios": [
+    2.060966111608822,
+    1.9067075177808366
+  ],
+  "elapsed_s": 23.34091337199999,
+  "isolated_identity_before": {
+    "commit": "45407573fe205fae475a2d4bf68c2e653a420ed2",
+    "modules": 133,
+    "path": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/material-point-v4/installed",
+    "manifest_sha256": "cdfed0005d9d1578cb6080734acbeb539f3b0a0abd178955a4ae3f3fa815dfa1",
+    "wheel_sha256": "8d392a35964156418ba1004c1f468129f7794ce464c9b4f701aecc057bf616ff"
+  },
+  "isolated_identity_after": {
+    "commit": "45407573fe205fae475a2d4bf68c2e653a420ed2",
+    "modules": 133,
+    "path": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/material-point-v4/installed",
+    "manifest_sha256": "cdfed0005d9d1578cb6080734acbeb539f3b0a0abd178955a4ae3f3fa815dfa1",
+    "wheel_sha256": "8d392a35964156418ba1004c1f468129f7794ce464c9b4f701aecc057bf616ff"
+  },
+  "gates_or_algorithm_adjusted_after_result": false,
+  "native_integration": false,
+  "shared_lineage": "Original21/41/81 and previous25/49/97 controls and allwave/phase/prototype data are development/contacted. The chosen33/65/129 tracer/time data were unused by production development before this declaration. Exact characteristic oracle shares only passive PDE and floatingpoint elementary evaluation; its float64 evaluation has no rigorous interval certificate and supports engineering L1 gates rather than a many-digit identity. Candidate shares frozen production primitive,gradient,baselineflux,projection,limiter,JAX and geometry, so it cannot certify independent correctness of those implementations or actual full2D/native physics. This result burns these new data for later candidates. No fit, gate drift, native run or automatic pass on failure."
+}

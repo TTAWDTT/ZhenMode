@@ -2,7 +2,11 @@
 
 from zhenmode.model.solver.numerics.backend import jnp
 from zhenmode.model.solver.numerics.channel import channel_face_velocities, channel_tracer_fluxes
-from zhenmode.model.solver.numerics.column import column_mean, point_mass_integral
+from zhenmode.model.solver.numerics.column import (
+    column_mean,
+    cubic_point_integral,
+    point_mass_integral,
+)
 from zhenmode.model.solver.numerics.contacts import (
     contact_divergence,
     contact_material_derivative,
@@ -281,7 +285,6 @@ def _material_point_scalar_rate(T, Fz, mass_faces, shifted_faces, p, minimum=Non
     reference = T.reshape(-1)[0]
     shifted = T-reference
     h = p.dz_node
-    primitive = p.tracer_point_primitive
     mass_numerator = _face_transport_divergence(*mass_faces, p)
     shifted_numerator = _face_transport_divergence(*shifted_faces, p)
     baseline_params = p._replace(vertical_tracer_scheme='muscl_band_v3')
@@ -300,7 +303,7 @@ def _material_point_scalar_rate(T, Fz, mass_faces, shifted_faces, p, minimum=Non
     horizontal_anti = _face_transport_divergence(*anti_faces, p)
     mass_residual = mass_numerator+(Fz[..., 1:]-Fz[..., :-1])
     vertical_divergence = -(Fz[..., 1:]-Fz[..., :-1])/h
-    point_w = jnp.einsum('kl,...l->...k', primitive, vertical_divergence)
+    point_w = cubic_point_integral(vertical_divergence, p)
     point_w = point_w.at[..., 0].set(Fz[..., 0]).at[..., -1].set(0.)
     desired = (-(shifted_numerator-shifted*mass_numerator)/h
                -point_w*physical_tracer_gradient(shifted, p)-T*mass_residual/h)

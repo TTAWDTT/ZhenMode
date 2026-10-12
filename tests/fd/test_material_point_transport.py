@@ -9,6 +9,7 @@ import pytest
 
 from tests.support.grid import all_wet_grid
 from tests.support.uniform_tracer_channel import column_case
+from zhenmode.benchmarks.internal_wave import development_contract
 from zhenmode.model.config import PhysicsConfig
 from zhenmode.model.solver.dynamics.transport import (
     _advection_scalar,
@@ -18,7 +19,11 @@ from zhenmode.model.solver.dynamics.transport import (
     _vertical_transport_iface,
 )
 from zhenmode.model.solver.factory import make_solver_global
-from zhenmode.model.solver.numerics.column import cubic_reverse_primitive, point_mass_integral
+from zhenmode.model.solver.numerics.column import (
+    cubic_point_integral,
+    cubic_reverse_primitive,
+    point_mass_integral,
+)
 from zhenmode.model.solver.numerics.vertical import joint_scalar_blend, point_vertical_antiflux
 
 
@@ -56,6 +61,20 @@ def test_factory_uses_actual_capacity_and_predivision_surface_mass():
     np.testing.assert_array_equal(p.tracer_point_primitive[1:], ideal[1:])
     # This input genuinely distinguishes the actual capacity from ideal spacing.
     assert not np.array_equal(ideal[0], original)
+
+
+@pytest.mark.parametrize('n', (16,32,64))
+def test_linear_work_primitive_against_independent_polynomial_integrals(n):
+    d = np.linspace(0.,100.,n)
+    h = np.diff(np.r_[0., .5*(d[:-1]+d[1:]), d[-1]])
+    p = SimpleNamespace(dz_iface=jnp.asarray(np.diff(d))[None,None,:],
+                        dz_node=jnp.asarray(h)[None,None,:])
+    apply = jax.jit(lambda velocity: cubic_point_integral(velocity,p))
+    for degree in range(4):
+        value = apply(jnp.asarray(d**degree)[None,None,:])
+        exact = (100.**(degree+1)-d**(degree+1))/(degree+1)
+        np.testing.assert_allclose(np.asarray(value)[0,0,1:],exact[1:],rtol=0.,
+                                   atol=1e-14*max(1.,np.max(abs(exact))))
 
 
 def fields(grid):
@@ -171,3 +190,32 @@ def test_affine_quarter_mode_rhs_and_joint_blend():
 def test_factory_rejects_unqualified_mean_and_arithmetic():
     with pytest.raises(ValueError, match='material_point_v4'):
         column_case(vertical_tracer_scheme='material_point_v4')
+
+
+def test_known_compiled_gauge_field_preserves_column_correction():
+    """Regression for a bed roundoff switching the entire baseline column."""
+    c = development_contract(scheme='material_point_v4', integral='cubic_uniform_v1',
+                             arithmetic='integrated_reference_v1')
+    nx, ny, n = c['nx'], c['ny'], c['nz']
+    grid = all_wet_grid(nx=nx, ny=ny, nz=n)
+    d = np.linspace(0., c['H_m'], n)
+    grid = replace(grid, z=-d, dz=np.diff(d), depth=np.full((nx,ny),c['H_m']),
+                   dx_2d=np.full((nx,ny),c['Lx_m']/nx), dy=c['Ly_m']/ny,
+                   cos_lat=np.ones(ny), f=np.full((nx,ny),c['f']))
+    physics = PhysicsConfig(**dict.fromkeys(('nu_h','nu_v','nu_bi','kappa_h','kappa_v','kappa_bi',
+                                            'kappa_conv','kappa_gm','kappa_redi','r_bot','cd'),0.))
+    _, _, _, p, _ = make_solver_global(grid, physics, c['dt'], return_params=True,
+                                       **c['ocean_options'])
+    x = 2*np.pi*np.arange(nx)[:,None,None]/nx
+    y = np.pi*(np.arange(ny)[None,:,None]+.5)/ny
+    depth = d[None,None,:]
+    u = jnp.asarray(np.broadcast_to(.002*np.sin(x)*(1+depth/100),(nx,ny,n)))
+    v = jnp.asarray(np.broadcast_to(.0015*np.sin(y)*(1+depth**2/10000),(nx,ny,n)))
+    T = jnp.asarray(14+.2*np.cos(x)+.01*depth+.005*np.cos(y)*np.sin(np.pi*depth/100))
+    F = _vertical_transport_iface(u,v,p)
+    for scheme in ('muscl_band_v3','material_point_v4'):
+        local = p._replace(vertical_tracer_scheme=scheme)
+        compiled = jax.jit(lambda q,f: _advection_scalar(q,u,v,f,local))
+        first = compiled(T,F)
+        second = compiled(T+273.15,F)
+        np.testing.assert_allclose(first,second,rtol=0.,atol=1e-13)

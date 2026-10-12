@@ -1,0 +1,32 @@
+{
+  "source_commit": "45407573fe205fae475a2d4bf68c2e653a420ed2",
+  "status": "Declared by independent reviewer before any evaluation of these new tracer/mesh/time data",
+  "scope": "New time-dependent horizontally compensated 1D realization of the frozen v4 primitive/projection/global-blend core; no actual 2D horizontal face owner or native ocean qualification",
+  "equation": "q_t+a(d)q_d=0 on d in [0,1], a=.25sin(pi*d); physical F0=FN=0",
+  "initial": "q0(d)=9+.23exp(.8d)+.11d^3; derivative .184exp(.8d)+.33d^2 is strictly positive",
+  "exact": "q(d,t)=q0(2/pi*atan(exp(-.25*pi*t)*tan(pi*d/2))); endpoint foot values exactly0/1",
+  "normalization": "Independent continuous range q0(1)-q0(0)=.23*(exp(.8)-1)+.11; no fitted extrema or sampled normalization",
+  "grids": [33,65,129],
+  "dt": 0.002,
+  "final_time": 0.4,
+  "heun_steps": 200,
+  "geometry": "Uniform physical nodes with midpoint F and unchanged half-endpoint capacities h; full absolute q advanced with both RHS stages",
+  "core_realization": "Nm=-diff(F); s=q-q[0]; baseN=s*Nm; w=I@(-diff(F)/h), topF0/bed0; coltarget=s0*F0+sum(h*g*w), deltaN=abs(Nm)/sumabsNm*(coltarget-sum(baseN)); baseline integrated_reference_scalar_rate using band-v3; desired=-w*g-q*(Nm+diff(F))/h; production point_vertical_antiflux and joint_scalar_blend; final rate=baseline+alpha*delta; physical horizontal numerator=q*Nm+alpha*deltaN",
+  "gates": {
+    "constant_rhs_abs_max": 1e-17,
+    "constant_final_drift_abs_max": 1e-17,
+    "finest_normalized_weighted_L1_max": 0.05,
+    "each_refinement_ratio_min": 1.25,
+    "stock_budget_scaled_abs_max": 1e-12,
+    "bad_mass_constant_defect_min": 1e-12,
+    "euler_floor_min": -1e-14,
+    "all_euler_intervals_feasible": true
+  },
+  "controls": "C=1 nonzero through full200Heunsteps at allthreegrids; sameRHS sign-negative by reversedF retainingNm; everystage Eulerstate>=declaredsaltfloor and feasible; fullphysicalstock budget with correctedhorizontal flux; comparator deliberately rejects zero candidate against nonzero badmass exactresidual",
+  "budget": "Stock need not be constant: stockchange=integral[-sum(q*Nm+alpha*deltaN)+F0*q0]dt. Use longdouble accumulation for Heun flux quadrature, same physical boundary and actual final state",
+  "math_controls": "Before temporal certification: independent NumPy polynomial-Lagrange interval integration at9nodes vs production primitive abs2e-12; original surface h exact; 9node fullwet compatible and reversedmass constants1/35/-7 RHS with constant1e-17 and badmassformula2e-12; deliberately zeroed badmass rejected; nonconstant physicalstock/boundary residual1e-12scale and isolated zero-F barrier anti flux exact",
+  "pilot": "Grid33 fiveHeunsteps timingonly without analyticreference evaluation or display. One complete fixed3grid execution after measured bounded plan; no candidate or threshold changes after result",
+  "resources": {"cpu":1,"wall_seconds":180,"memory_mib":4096,"memory_policy":"sampled aggregate process-group RSS rather than hard cgroup cap; JAX cpu only"},
+  "lineage": "Original21/41/81 and previous25/49/97 controls and allwave/phase/prototype data are development/contacted. The chosen33/65/129 tracer/time data were unused by production development before this declaration. Exact characteristic oracle shares only passive PDE and floatingpoint elementary evaluation; its float64 evaluation has no rigorous interval certificate and supports engineering L1 gates rather than a many-digit identity. Candidate shares frozen production primitive,gradient,baselineflux,projection,limiter,JAX and geometry, so it cannot certify independent correctness of those implementations or actual full2D/native physics. This result burns these new data for later candidates. No fit, gate drift, native run or automatic pass on failure.",
+  "tool_stewardship": "Read BootLoops tools index and full Gatekeeper GUIDE: its AMFlow/per-master value-fit formats do not represent this finite-volume scalar PDE or budget. Reuse frozen production operator helpers and existing bounded resource wrapper; this evaluator is a one-shot project-specific characteristic/core realization, not a new toolkit engine. Suite installation selftests confer no scientific evidence here."
+}

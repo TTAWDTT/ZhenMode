@@ -15,3 +15,9 @@ I使用四点三次区间积分的逆柱原函数，内部点和床面具有三�
 Implementation refinement before native: failed affine control retained in controls-attempt03.log and affine-debug01. Endpoint recomputation created a roundoff-only outward ~1e-23 increment, zeroing global alpha. v4 now structurally preserves accepted baseline endpoint rates by antiF1=-Danti0 and antiF_N-1=Dantilast, when adjacentmassfaces connected. Interior point target unchanged; stagnant barrier priority unchanged. All original controls and thresholds unchanged.
 
 实际容量修补：独立454源码审查发现ideal uniform primitive顶行与factory真实np.linspace中点容量相差11ULP/50ULP（最大约1.11e-14m）。454原科学结果/1715完整pytest与MMS/独立10native与新1D均保留，不改源码身份。新的修补只将factoryprimitive顶行覆为实际dz_node，同时horizontal point integral顶项直接使用sum(actual mass faces)，避免mass/h再乘h的舍入；内部primitive与point/projection/blend算法不变。新局部exactcapacity/actualmass controls、完整新CI、独立新包identity以及同10合同的新源码numericalequivalence另记录，不使用旧dynamic-h extra exact门槛假装PASS。
+
+增量修补：47新独立非恒定温标控制失败2.80971e-8>原1e-13，尽管同源码1716pytest/MMS全部通过。诊断定位未改的band基准逐柱限幅在摄氏/开尔文由1变0，触发点为床面近零修正；外层全域alpha均1、插值repin不改善。新integrated_reference路径传入真实upwind面浓度，端点及邻层修正使用质量通量乘局部浓度差，避免相等乘积相减的舍入；基准Euler倾向也从完整积分分子装配，保留显式reference mass residual。旧legacy路径/API默认不改变。初137控制含已接触失败输入的两个模块回归通过，不将它再叫保留盲检数据。
+
+计算改写：47细网格实际积分147.4586秒，454为9.5262秒，原pilot时间投影已撤销。新点原函数应用相同四点局部积分权重并反向累积，工作量随节点线性增长；实际顶行容量和predivision质量和/物理Fz0仍保留，内部与床面多项式门槛1e-14不变。140受影响控制通过；未来新本机pilot再决定时长，不先声称速度改善。新功能提交与完整CI/隔离native/source审查另绑定，47温标FAIL及0..7完成/8准备中断/9未执行始终保留。
+
+新增量/前缀计算方案的独立静态审查接受上述代数范围；真实rawflux=F*upwind时增量恒等式成立，generic调用不使用这个假设。这个阶段改变了核心源码，旧1D未改源码的桥不再成立；必须用新源身份独立核对/新的未使用1D与实际2D数据验证。原输出或旧CI都不能替代新功能的完整CI。

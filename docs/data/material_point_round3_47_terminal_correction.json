@@ -1,0 +1,33 @@
+{
+  "reviewer": "Lady /root/continuation_review",
+  "actual_journal_sha256": "d09d9cc517a36d76c47b7a53f7711a0b22ec80dc6a8e5ea6a6c8b75c555b25f1",
+  "completed_indices": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+  ],
+  "completed_scientific_screen_flags": [
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true
+  ],
+  "interrupted_prepare_index": 8,
+  "interrupted_prepare_elapsed_s": 3.780161620999934,
+  "unexecuted_indices": [
+    9
+  ],
+  "prior_root_stop_race_narrative": "Superseded: index7 had already completed, not interrupted",
+  "independent_ten_row_audit_claim": false,
+  "original_gauge_gate": "OPEN retained",
+  "recorded_utc": "2026-10-12T16:09:18.2215431Z"
+}

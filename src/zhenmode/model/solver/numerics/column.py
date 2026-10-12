@@ -36,7 +36,22 @@ def cubic_reverse_primitive(nodes, spacing):
     return primitive
 
 
+def cubic_point_integral(velocity, params):
+    """Apply the same four-node primitive in linear work, without a dense dot."""
+    step = params.dz_iface[..., :1]
+    first = step*(9*velocity[..., :1]+19*velocity[..., 1:2]
+                  -5*velocity[..., 2:3]+velocity[..., 3:4])/24
+    middle = step*(-velocity[..., :-3]+13*velocity[..., 1:-2]
+                   +13*velocity[..., 2:-1]-velocity[..., 3:])/24
+    last = step*(velocity[..., -4:-3]-5*velocity[..., -3:-2]
+                 +19*velocity[..., -2:-1]+9*velocity[..., -1:])/24
+    intervals = jnp.concatenate((first, middle, last), axis=-1)
+    interior = jnp.cumsum(intervals[..., ::-1], axis=-1)[..., ::-1]
+    result = jnp.concatenate((interior, jnp.zeros_like(interior[..., :1])), axis=-1)
+    return result.at[..., 0].set(jnp.sum(velocity*params.dz_node, axis=-1))
+
+
 def point_mass_integral(mass, params):
     """Point inverse with the actual, pre-division surface mass operand."""
-    result = jnp.einsum('kl,...l->...k', params.tracer_point_primitive, mass/params.dz_node)
+    result = cubic_point_integral(mass/params.dz_node, params)
     return result.at[..., 0].set(jnp.sum(mass, axis=-1))

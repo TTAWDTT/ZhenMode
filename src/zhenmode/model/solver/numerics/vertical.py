@@ -25,7 +25,8 @@ def _vertical_tracer_face_values(tracer, p):
     return jnp.clip(above, lo, hi), jnp.clip(below, lo, hi)
 
 
-def _conservative_endpoint_flux(tracer, mass_flux, flux, horizontal_div, p, minimum=None):
+def _conservative_endpoint_flux(tracer, mass_flux, flux, horizontal_div, p, minimum=None,
+                                face_states=None, horizontal_numerator=None):
     """Convexly limited nodal endpoint consistency correction.
 
     End nodes are physical points. Impose their horizontal material transport
@@ -47,6 +48,15 @@ def _conservative_endpoint_flux(tracer, mass_flux, flux, horizontal_div, p, mini
     first = mass_flux[..., 1] * tracer[..., 0] - widths[..., 0] * surface_increment / step
     last = mass_flux[..., -2] * tracer[..., -1]
     offset_first, offset_last = first - flux[..., 1], last - flux[..., -2]
+    if face_states is not None:
+        # The physical endpoint and its donor state can coincide exactly.
+        # Form their concentration difference before multiplication, avoiding a
+        # roundoff-only outward correction that can zero the whole column blend.
+        above, below = face_states
+        upwind = jnp.where(mass_flux[..., 1:-1] > 0., above, below)
+        offset_first = (mass_flux[..., 1]*(tracer[..., 0]-upwind[..., 0])
+                        -widths[..., 0]*surface_increment/step)
+        offset_last = mass_flux[..., -2]*(tracer[..., -1]-upwind[..., -1])
     # A stagnant mass face is also a material barrier for this correction.
     # Minimum-norm redistribution is solved separately on each connected span.
     faces = mass_flux[..., 1:-1]
@@ -70,8 +80,16 @@ def _conservative_endpoint_flux(tracer, mass_flux, flux, horizontal_div, p, mini
         penultimate = (last - tracer[..., -2]*(mass_flux[..., -2]-mass_flux[..., -3])
                        - .5*widths[..., -2]*(mass_flux[..., -3]+mass_flux[..., -2])*gradient[..., -1])
         pinned = pinned | ((indices == 1) & top_connected[..., None]) | ((indices == count-2) & bottom_connected[..., None])
-        values = values.at[..., 1].set(jnp.where(top_connected, second-flux[..., 2], 0.))
-        values = values.at[..., -2].set(jnp.where(bottom_connected, penultimate-flux[..., -3], 0.))
+        second_offset, penultimate_offset = second-flux[..., 2], penultimate-flux[..., -3]
+        if face_states is not None:
+            second_offset = (offset_first + mass_flux[..., 1]*(upwind[..., 0]-tracer[..., 1])
+                             +mass_flux[..., 2]*(tracer[..., 1]-upwind[..., 1])
+                             +.5*widths[..., 1]*(mass_flux[..., 1]+mass_flux[..., 2])*gradient[..., 0])
+            penultimate_offset = (offset_last + mass_flux[..., -2]*(upwind[..., -1]-tracer[..., -2])
+                                  +mass_flux[..., -3]*(tracer[..., -2]-upwind[..., -2])
+                                  -.5*widths[..., -2]*(mass_flux[..., -3]+mass_flux[..., -2])*gradient[..., -1])
+        values = values.at[..., 1].set(jnp.where(top_connected, second_offset, 0.))
+        values = values.at[..., -2].set(jnp.where(bottom_connected, penultimate_offset, 0.))
     left = jax.lax.associative_scan(jnp.maximum, jnp.where(pinned, indices, 0), axis=faces.ndim - 1)
     right = jax.lax.associative_scan(jnp.minimum, jnp.where(pinned, indices, count - 1), axis=faces.ndim - 1, reverse=True)
     position = jnp.cumsum(widths, axis=-1)[..., :-1]
@@ -84,6 +102,8 @@ def _conservative_endpoint_flux(tracer, mass_flux, flux, horizontal_div, p, mini
     correction = jnp.concatenate((zero, offset, zero), axis=-1)
     delta = -(correction[..., 1:] - correction[..., :-1]) / widths
     original = -(horizontal_div + (flux[..., 1:] - flux[..., :-1]) / widths)
+    if horizontal_numerator is not None:
+        original = -(horizontal_numerator+(flux[..., 1:]-flux[..., :-1]))/widths
     low_increment = step * original
     # Work with increments rather than subtracting two near-equal absolute
     # temperatures; changing Celsius to Kelvin should not cancel small rates.
@@ -204,7 +224,8 @@ def integrated_reference_scalar_rate(tracer, mass_flux, horizontal_shift_numerat
     if getattr(p, 'vertical_tracer_scheme', 'donor_cell') in ('muscl_endpoint_v2', 'muscl_band_v3'):
         shifted_minimum = None if minimum is None else minimum-reference
         flux = _conservative_endpoint_flux(shifted, mass_flux, flux,
-                                           horizontal_effective/p.dz_node, p, minimum=shifted_minimum)
+                                           horizontal_effective/p.dz_node, p, minimum=shifted_minimum,
+                                           face_states=(left, right), horizontal_numerator=horizontal_effective)
     numerator = horizontal_effective+(flux[..., 1:]-flux[..., :-1])
     rate = -numerator/p.dz_node*p.wet_mask_z
     return rate, (mass_flux[..., 0]*tracer[..., 0])

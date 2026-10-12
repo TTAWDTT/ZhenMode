@@ -1,0 +1,44 @@
+{
+  "scope": "known-input telemetry only, originaldeclaredgaugegateOPENretained",
+  "original_compiled_max_gauge_difference": 2.8097102655739095e-08,
+  "maximum_location": [
+    4,
+    31,
+    0
+  ],
+  "original_gate": 1e-13,
+  "nominal_original_rate": 1.2441157634604088e-06,
+  "shifted_original_rate": 1.2160186608046697e-06,
+  "core_alpha": [
+    1.0,
+    1.0
+  ],
+  "core_feasible": [
+    true,
+    true
+  ],
+  "core_rate_difference": 2.8097102655739095e-08,
+  "low_rate_difference": 2.900557899489268e-08,
+  "delta_rate_difference": 2.8002111042950798e-08,
+  "diagnostic_core_matches_original": [
+    1.7120653446377546e-19,
+    3.2827291266432444e-18
+  ],
+  "declaration_sha256": "4136247989b4c5fa09c7880af3d69a363346c8b45028b4c6751a49dfeb6d3885",
+  "identity_before": {
+    "commit": "47e28804a618a8eb16d918db44f36ad72866dd1f",
+    "modules": 133,
+    "path": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/material-point-v4-capacityfix/installed",
+    "manifest_sha256": "05c379ec224c0d80a6a16579e0d03f0a2f37d3d2054deca31a2371f2747273ba",
+    "wheel_sha256": "c64df90f965036c956c932a33b48a9cb663875760f7788d68226e2a6f8e9bbf2"
+  },
+  "identity_after": {
+    "commit": "47e28804a618a8eb16d918db44f36ad72866dd1f",
+    "modules": 133,
+    "path": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/material-point-v4-capacityfix/installed",
+    "manifest_sha256": "05c379ec224c0d80a6a16579e0d03f0a2f37d3d2054deca31a2371f2747273ba",
+    "wheel_sha256": "c64df90f965036c956c932a33b48a9cb663875760f7788d68226e2a6f8e9bbf2"
+  },
+  "new_reserved_data": false,
+  "native_integration": false
+}
