@@ -23,3 +23,14 @@ Implementation refinement before native: failed affine control retained in contr
 新增量/前缀计算方案的独立静态审查接受上述代数范围；真实rawflux=F*upwind时增量恒等式成立，generic调用不使用这个假设。这个阶段改变了核心源码，旧1D未改源码的桥不再成立；必须用新源身份独立核对/新的未使用1D与实际2D数据验证。原输出或旧CI都不能替代新功能的完整CI。
 
 区间余量修补：362源的1720pytest/MMS、十条原生和新1D通过，但未接触的实际二维RHS三档全部可行性false/alpha0，原声明allEulerintervalsfeasible门槛OPEN。误差/refinement通过来自fallback基准，不能当active-v4证书。仅对已经接触的失败24x23做定位，原基准全部满足原bounds且T_Euler>11.77，原求解alpha区间lo2.386e-14>hi−1.109e-14；数学等价的余量表达式结构性包含原先明确允许的零修正，得到lo0/hi−0，feasibletrue/alpha0，不添加epsilon或改变真实包络。新jointScalarBlend按LM=min(currentmin−q−low,allowance−low,0)、UM=max(currentmax−q−low,allowance−low,0)解相同约束，绝对floor交集、positive-lower-alpha与空区间拒绝仍保留。141本地控制和已接触场开发回归通过，独立实数代数审查接受；原3622DOPEN和所有旧失败保留，须新源码/真正CI/新的未用active非affine二维profile验证。
+
+
+## 动量点速度候选（尚未冻结验收）
+
+新增显式momentum_vertical_velocity_scheme，默认dual_face_v1保留旧−Fz上侧控制体面取样；point_primitive_v1用同一O(N)三次原函数得到物理节点的向上z速度，表面−Fz0/床面0。示踪量与连续性仍使用原Fz face owner。该选项独立于vertical_tracer_scheme，不自动改变旧v4对照；目前限定float64、原容量、fullywet uniform physicalendpoint≥6、integrated_reference、closed fourth-order unsplit legacy且无projectAdv通道。新选项在development合同非默认时显式序列化，旧默认合同digest保持。
+
+依据是制造流场只读诊断16/32/64：原face取样误差约随节点加密减半，节点原函数速度误差约1.00356e-11m/s且物理床面严格0；同momentum owner/dealias仍有水平滤波误差约1.53849e-11m/s²。这证明局部位置一致性问题，不证明旧主eta误差成因、三维能量或完整时间资格。生产3c8有限已验收记录与旧所有失败均独立保留；本候选必须新sourcefreeze/软件CI/独立控源数据与nativepilot后另评。
+
+新增参数字段改变参数fingerprint；旧默认数值回放检查不等于旧checkpoint参数元数据兼容。显式point选项也改变factory同owner的w诊断，原Fz/tracer闭合未变。
+
+严格zero控制第一次对名义u=.01均匀流要求w逐位0而失败，日志保留。独立诊断确认实际Nm最大3.20731e-21 m/s、Fz/旧w/新w最大3.33992e-20m/s，所以该输入不满足实际离散散度为0的前提。没有改物理代码或阈值；真zero操作数u=v=0保持原逐位0检查，另加非零均匀流实际表面残差−Fz0与床面0的精确归属控制。名义连续场常量流不承诺离散w逐位零，完整质量残差不剪除。

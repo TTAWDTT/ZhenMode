@@ -141,19 +141,24 @@ def _reference_depth_divergence(ubt, vbt, p):
     return _column_divergence(ubt[..., None], vbt[..., None], p)
 
 def _compute_vertical_velocity(state, p):
-    """Diagnose w from horizontal continuity. w=0 at bottom. Masked on land.
+    """Upward physical-z velocity supplied to momentum and diagnostics.
 
-    w = -Fz, the exact interface transports of _vertical_transport_iface sign-flipped
-    to the w>0 = DOWNWARD convention. A trapezoid node-w built from div_avg + cumsum
-    could not invert the advection's discrete face-flux divergence pointwise, leaving
-    a T-proportional source (an exponential pump); the exact inverse closes
-    div_x + div_y + div_z to machine precision for a uniform tracer. No dealiasing:
-    dealiasing w would re-open the non-closure the exact inverse just fixed.
-    (D6, D7)
+    The default retains the historical upper dual-face sample -Fz[..., :-1].
+    This is an exact face-divergence inverse, but its last sample is above the
+    physical bed. The optional point primitive instead evaluates the same
+    horizontal divergence at physical nodes, with actual top -Fz0 and bed 0.
+    Scalar transport continues to use the unchanged Fz face-flux owner.
+    Neither option establishes whole-model energy or time accuracy.
     """
     Fz = _vertical_transport_iface(state.u, state.v, p)
-    w = -Fz[..., :-1] * p.wet_mask_z
-    return w
+    if getattr(p, 'momentum_vertical_velocity_scheme', 'dual_face_v1') == 'point_primitive_v1':
+        divergence = -jnp.diff(Fz, axis=-1) / p.dz_node
+        w = -cubic_point_integral(divergence, p)
+        w = w.at[..., 0].set(-Fz[..., 0]).at[..., -1].set(0.)
+    else:
+        w = -Fz[..., :-1]
+    return w * p.wet_mask_z
+
 
 def _advection_flux_form(u, v, w, p):
     """3D advective-form momentum advection (FD, land-masked, dealiased).

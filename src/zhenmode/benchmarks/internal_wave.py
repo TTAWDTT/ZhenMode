@@ -69,14 +69,14 @@ def validate_contract(c):
     if c.get("schema") == DEVELOPMENT_SCHEMA:
         if not isinstance(c.get("development"), dict):
             raise ValueError("development declaration must be an object")
-        expected = development_contract(c.get("case"), c.get("control"), c["development"].get("vertical_tracer_scheme"), c["development"].get("problem"), c["development"].get("hydrostatic_integral_scheme", "trapezoidal"), c["development"].get("column_mean_scheme", "nodal_capacity"), c["development"].get("tracer_flux_arithmetic", "legacy"))
+        expected = development_contract(c.get("case"), c.get("control"), c["development"].get("vertical_tracer_scheme"), c["development"].get("problem"), c["development"].get("hydrostatic_integral_scheme", "trapezoidal"), c["development"].get("column_mean_scheme", "nodal_capacity"), c["development"].get("tracer_flux_arithmetic", "legacy"), c["development"].get("momentum_vertical_velocity_scheme", "dual_face_v1"))
     else:
         expected = contract(c.get("frozen_model"), c.get("case"), c.get("control"))
     if digest(c) != digest(expected):
         raise ValueError("internal-wave contract differs from frozen definition")
 
 
-def development_contract(profile="primary", control="main", scheme="muscl_nodal_v1", problem="internal-wave", integral="trapezoidal", mean="nodal_capacity", arithmetic="legacy"):
+def development_contract(profile="primary", control="main", scheme="muscl_nodal_v1", problem="internal-wave", integral="trapezoidal", mean="nodal_capacity", arithmetic="legacy", momentum="dual_face_v1"):
     """New development experiment, never a replacement for the frozen holdout."""
     if scheme not in ("donor_cell", "muscl_nodal_v1", "muscl_endpoint_v2", "muscl_band_v3", "material_point_v4"):
         raise ValueError("unknown vertical development scheme")
@@ -86,6 +86,8 @@ def development_contract(profile="primary", control="main", scheme="muscl_nodal_
         raise ValueError("unknown column development mean")
     if arithmetic not in ("legacy", "integrated_reference_v1"):
         raise ValueError("unknown tracer development arithmetic")
+    if momentum not in ("dual_face_v1", "point_primitive_v1"):
+        raise ValueError("unknown momentum vertical-velocity scheme")
     if problem == "internal-wave":
         c = contract("zhenmode", profile, control)
     elif problem == "thermal-wind" and profile == "coarse" and control == "main":
@@ -109,6 +111,9 @@ def development_contract(profile="primary", control="main", scheme="muscl_nodal_
     if arithmetic != "legacy":
         c["ocean_options"]["tracer_flux_arithmetic"] = arithmetic
         c["development"]["tracer_flux_arithmetic"] = arithmetic
+    if momentum != "dual_face_v1":
+        c["ocean_options"]["momentum_vertical_velocity_scheme"] = momentum
+        c["development"]["momentum_vertical_velocity_scheme"] = momentum
     return c
 
 

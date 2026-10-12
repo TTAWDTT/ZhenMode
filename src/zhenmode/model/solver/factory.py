@@ -62,7 +62,8 @@ def make_solver_global(grid, physics, dt, forcing=None,
                        vertical_tracer_scheme='donor_cell',
                        hydrostatic_integral_scheme='trapezoidal',
                        column_mean_scheme='nodal_capacity',
-                       tracer_flux_arithmetic='legacy'):
+                       tracer_flux_arithmetic='legacy',
+                       momentum_vertical_velocity_scheme='dual_face_v1'):
     """Create a JIT-compiled global FD ocean solver.
 
     Key properties:
@@ -219,6 +220,15 @@ def make_solver_global(grid, physics, dt, forcing=None,
                 or tracer_transport_scheme != 'centered_second'
                 or monotone_adv or fct_adv or project_adv_vel):
             raise ValueError('material_point_v4 requires integrated arithmetic and the un-limited closed fourth-order nodal-capacity channel')
+    if momentum_vertical_velocity_scheme not in ('dual_face_v1', 'point_primitive_v1'):
+        raise ValueError('unknown momentum_vertical_velocity_scheme')
+    if momentum_vertical_velocity_scheme == 'point_primitive_v1':
+        if (tracer_flux_arithmetic != 'integrated_reference_v1'
+                or column_mean_scheme != 'nodal_capacity'
+                or pressure_continuity_scheme != 'centered_fourth'
+                or mode_split or process_time_scheme != 'legacy'
+                or project_adv_vel or dtype != 'float64'):
+            raise ValueError('point_primitive_v1 momentum requires the float64 unsplit integrated fourth-order nodal-capacity channel')
     if density_rotation_scheme not in ('split_sources', 'joint_shear'):
         raise ValueError('unknown density_rotation_scheme')
     if density_rotation_scheme == 'joint_shear':
@@ -634,6 +644,7 @@ def make_solver_global(grid, physics, dt, forcing=None,
         column_mean_weights=(jnp.asarray(cubic_uniform_mean_weights(grid.nz))[None, None]
                              if column_mean_scheme == 'cubic_consistent_v1' else None),
         tracer_flux_arithmetic=tracer_flux_arithmetic,
+        momentum_vertical_velocity_scheme=momentum_vertical_velocity_scheme,
         tracer_point_primitive=(jnp.asarray(cubic_reverse_primitive(grid.nz, abs(float(grid.z[1]-grid.z[0]))))
                                 if vertical_tracer_scheme == 'material_point_v4' else None),
     )
