@@ -1,6 +1,6 @@
 """Nonuniform vertical stencils and no-flux interface balances."""
 
-from zhenmode.model.solver.numerics.backend import jnp
+from zhenmode.model.solver.numerics.backend import jax, jnp
 
 
 def _vertical_tracer_face_values(tracer, p):
@@ -23,6 +23,61 @@ def _vertical_tracer_face_values(tracer, p):
     below = tracer[..., 1:] - .5 * p.dz_iface * slopes[..., 1:]
     lo, hi = jnp.minimum(tracer[..., :-1], tracer[..., 1:]), jnp.maximum(tracer[..., :-1], tracer[..., 1:])
     return jnp.clip(above, lo, hi), jnp.clip(below, lo, hi)
+
+
+def _conservative_endpoint_flux(tracer, mass_flux, flux, horizontal_div, p, minimum=None):
+    """Convexly limited nodal endpoint consistency correction.
+
+    End nodes are physical points. Impose their horizontal material transport
+    plus the top vertical point derivative, and distribute the required flux
+    correction with minimum interior volume-weighted tendency norm. A single
+    column blend keeps the Euler state within the column/uncorrected envelope.
+    This conserves boundary inventory exactly; it is not a global TVD proof.
+    """
+    widths = jnp.broadcast_to(p.dz_node, tracer.shape)
+    step = p.dt / p.adv_nsub
+    gradient_top = (tracer[..., 1] - tracer[..., 0]) / p.dz_iface[..., 0]
+    # Surface inflow can supply values outside the resident column range.
+    # Use the same one-step characteristic prediction as the endpoint target;
+    # an explicitly bounded scalar can limit its extrapolated inflow. Temperature
+    # has no arbitrary zero-Celsius bound, preserving additive unit invariance.
+    predicted_top = tracer[..., 0] - step * mass_flux[..., 0] * gradient_top
+    if minimum is not None:
+        predicted_top = jnp.maximum(predicted_top, minimum)
+    first = mass_flux[..., 1] * tracer[..., 0] + widths[..., 0] * (tracer[..., 0] - predicted_top) / step
+    last = mass_flux[..., -2] * tracer[..., -1]
+    offset_first, offset_last = first - flux[..., 1], last - flux[..., -2]
+    # A stagnant mass face is also a material barrier for this correction.
+    # Minimum-norm redistribution is solved separately on each connected span.
+    faces = mass_flux[..., 1:-1]
+    count = faces.shape[-1]
+    indices = jnp.broadcast_to(jnp.arange(count), faces.shape)
+    pinned = (faces == 0.) | (indices == 0) | (indices == count - 1)
+    left = jax.lax.associative_scan(jnp.maximum, jnp.where(pinned, indices, 0), axis=faces.ndim - 1)
+    right = jax.lax.associative_scan(jnp.minimum, jnp.where(pinned, indices, count - 1), axis=faces.ndim - 1, reverse=True)
+    values = jnp.zeros_like(faces)
+    values = values.at[..., 0].set(jnp.where(faces[..., 0] != 0., offset_first, 0.))
+    values = values.at[..., -1].set(jnp.where(faces[..., -1] != 0., offset_last, 0.))
+    position = jnp.cumsum(widths, axis=-1)[..., :-1]
+    lo, hi = jnp.take_along_axis(position, left, axis=-1), jnp.take_along_axis(position, right, axis=-1)
+    fraction = (position - lo) / jnp.where(hi > lo, hi - lo, 1.)
+    val_lo = jnp.take_along_axis(values, left, axis=-1)
+    val_hi = jnp.take_along_axis(values, right, axis=-1)
+    offset = val_lo + fraction * (val_hi - val_lo)
+    zero = jnp.zeros_like(offset[..., :1])
+    correction = jnp.concatenate((zero, offset, zero), axis=-1)
+    delta = -(correction[..., 1:] - correction[..., :-1]) / widths
+    original = -(horizontal_div + (flux[..., 1:] - flux[..., :-1]) / widths)
+    low = tracer + step * original
+    surface_allowance = jnp.where(mass_flux[..., 0] > 0., predicted_top, tracer[..., 0])[..., None]
+    lower = jnp.minimum(jnp.minimum(jnp.min(tracer, axis=-1, keepdims=True), surface_allowance), low)
+    upper = jnp.maximum(jnp.maximum(jnp.max(tracer, axis=-1, keepdims=True), surface_allowance), low)
+    increment = step * delta
+    positive = (upper - low) / jnp.where(increment > 0., increment, 1.)
+    negative = (low - lower) / jnp.where(increment < 0., -increment, 1.)
+    ratios = jnp.where(increment > 0., positive, jnp.where(increment < 0., negative, 1.))
+    blend = jnp.clip(jnp.min(ratios, axis=-1, keepdims=True), 0., 1.)
+    return flux + blend * correction
 
 
 def _fill_ghost_bottom(u, p):

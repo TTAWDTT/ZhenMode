@@ -116,11 +116,11 @@ def _compute_tracer_tendency(state, p, budget=None, face_transport=None, return_
             tT, tS = carry
             if measure_terms:
                 aT, top_T = _advection_scalar(tT, state.u, state.v, Fz, p, return_boundary=True, face_transport=face_transport)
-                aS, top_S = _advection_scalar(tS, state.u, state.v, Fz, p, return_boundary=True, face_transport=face_transport)
+                aS, top_S = _advection_scalar(tS, state.u, state.v, Fz, p, return_boundary=True, face_transport=face_transport, minimum=0.)
                 terms = (aT, aS, top_T, top_S)
             else:
                 aT = _advection_scalar(tT, state.u, state.v, Fz, p, face_transport=face_transport)
-                aS = _advection_scalar(tS, state.u, state.v, Fz, p, face_transport=face_transport)
+                aS = _advection_scalar(tS, state.u, state.v, Fz, p, face_transport=face_transport, minimum=0.)
                 terms = (aT, aS)
             return (tT + aT * dts, tS + aS * dts), terms
 
@@ -131,10 +131,10 @@ def _compute_tracer_tendency(state, p, budget=None, face_transport=None, return_
     else:
         if measure_terms:
             adv_T, top_T = _advection_scalar(state.T, state.u, state.v, Fz, p, return_boundary=True, face_transport=face_transport)
-            adv_S, top_S = _advection_scalar(state.S, state.u, state.v, Fz, p, return_boundary=True, face_transport=face_transport)
+            adv_S, top_S = _advection_scalar(state.S, state.u, state.v, Fz, p, return_boundary=True, face_transport=face_transport, minimum=0.)
         else:
             adv_T = _advection_scalar(state.T, state.u, state.v, Fz, p, face_transport=face_transport)
-            adv_S = _advection_scalar(state.S, state.u, state.v, Fz, p, face_transport=face_transport)
+            adv_S = _advection_scalar(state.S, state.u, state.v, Fz, p, face_transport=face_transport, minimum=0.)
 
     diff_h_T = _horizontal_tracer_diffusion(state.T, p)
     diff_h_S = _horizontal_tracer_diffusion(state.S, p)

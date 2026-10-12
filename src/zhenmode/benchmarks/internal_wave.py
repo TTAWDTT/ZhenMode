@@ -78,7 +78,7 @@ def validate_contract(c):
 
 def development_contract(profile="primary", control="main", scheme="muscl_nodal_v1", problem="internal-wave"):
     """New development experiment, never a replacement for the frozen holdout."""
-    if scheme not in ("donor_cell", "muscl_nodal_v1"):
+    if scheme not in ("donor_cell", "muscl_nodal_v1", "muscl_endpoint_v2"):
         raise ValueError("unknown vertical development scheme")
     if problem == "internal-wave":
         c = contract("zhenmode", profile, control)

@@ -15,6 +15,7 @@ from zhenmode.model.solver.numerics.horizontal import (
     _gradient_face_gated_3d,
 )
 from zhenmode.model.solver.numerics.vertical import (
+    _conservative_endpoint_flux,
     _d_dz,
     _fill_ghost_bottom,
     _vertical_tracer_face_values,
@@ -247,7 +248,7 @@ def _legacy_horizontal_tracer_fluxes(T,u,v,p,face_transport):
     return Fx,Fy
 
 
-def _advection_scalar(T, u, v, Fz_in, p, return_boundary=False, face_transport=None):
+def _advection_scalar(T, u, v, Fz_in, p, return_boundary=False, face_transport=None, minimum=None):
     """3D FLUX-FORM scalar advection (FD, land-masked, NOT dealiased).
 
     Flux form (-div(uT)) rather than advective form: the two differ by +T*div(u), a
@@ -309,7 +310,7 @@ def _advection_scalar(T, u, v, Fz_in, p, return_boundary=False, face_transport=N
     T_shallow = T[..., :-1]                           # node k-1 (above iface k)
     # Optional limited donor reconstruction removes the first-order face bias
     # of a resolved vertical gradient, retaining the actual mass transports.
-    if getattr(p, 'vertical_tracer_scheme', 'donor_cell') == 'muscl_nodal_v1':
+    if getattr(p, 'vertical_tracer_scheme', 'donor_cell') in ('muscl_nodal_v1', 'muscl_endpoint_v2'):
         T_shallow, T_deep = _vertical_tracer_face_values(T, p)
     wet_iface = wm[..., :-1] * wm[..., 1:]
     # Internal interfaces are Fz_in[..., 1:-1] (indices 1..nz-1, count nz-1):
@@ -327,6 +328,10 @@ def _advection_scalar(T, u, v, Fz_in, p, return_boundary=False, face_transport=N
     Fz_top = Fz_in[:, :, :1] * T[..., :1]
     up = jnp.concatenate([Fz_top, Fz_int], axis=-1)
     dn = jnp.concatenate([Fz_int, jnp.zeros_like(Fz_int[..., :1])], axis=-1)
+    if getattr(p, 'vertical_tracer_scheme', 'donor_cell') == 'muscl_endpoint_v2':
+        raw_flux = jnp.concatenate((Fz_top, Fz_int, jnp.zeros_like(Fz_top)), axis=-1)
+        corrected = _conservative_endpoint_flux(T, Fz_in, raw_flux, horizontal_div, p, minimum=minimum)
+        up, dn = corrected[..., :-1], corrected[..., 1:]
     div_z = (dn-up)/p.dz_node
     adv_T = -(horizontal_div+div_z)
     tendency = adv_T * p.wet_mask_z
