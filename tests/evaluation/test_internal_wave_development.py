@@ -13,10 +13,11 @@ from zhenmode.benchmarks.standing_wave import digest
 from zhenmode.evaluation.internal_wave import score
 
 
-@pytest.mark.parametrize('scheme', ('donor_cell', 'muscl_nodal_v1'))
-def test_new_protocol_is_bound_to_original_physics_and_independent_truth(scheme):
+@pytest.mark.parametrize('scheme', ('donor_cell', 'muscl_nodal_v1', 'muscl_endpoint_v2'))
+@pytest.mark.parametrize('integral', ('trapezoidal', 'cubic_uniform_v1'))
+def test_new_protocol_is_bound_to_original_physics_and_independent_truth(scheme, integral):
     original = contract('zhenmode')
-    candidate = development_contract(scheme=scheme)
+    candidate = development_contract(scheme=scheme, integral=integral)
     assert candidate['development']['base_contract_sha256'] == digest(original)
     assert 'vertical_tracer_scheme' not in contract('zhenmode')['ocean_options']
     validate_contract(candidate)

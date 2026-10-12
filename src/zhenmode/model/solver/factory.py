@@ -55,7 +55,8 @@ def make_solver_global(grid, physics, dt, forcing=None,
                        tracer_transport_scheme='centered_second',
                        hydrostatic_surface_scheme='reference_plane',
                        density_rotation_scheme='split_sources',
-                       vertical_tracer_scheme='donor_cell'):
+                       vertical_tracer_scheme='donor_cell',
+                       hydrostatic_integral_scheme='trapezoidal'):
     """Create a JIT-compiled global FD ocean solver.
 
     Key properties:
@@ -158,6 +159,17 @@ def make_solver_global(grid, physics, dt, forcing=None,
         if active_drag != 0:
             raise ValueError('symmetric external candidate requires separate bottom-drag qualification')
     validate_grid(grid)
+    if hydrostatic_integral_scheme not in ('trapezoidal', 'cubic_uniform_v1'):
+        raise ValueError('unknown hydrostatic_integral_scheme')
+    if hydrostatic_integral_scheme == 'cubic_uniform_v1':
+        gaps = np.abs(np.diff(np.asarray(grid.z)))
+        if (column_geometry != 'nodal_dual_v1' or physics.thermodynamics != 'linear'
+                or grid.nz < 4 or np.asarray(grid.z)[0] != 0.
+                or not np.allclose(gaps, gaps[0], rtol=1e-12, atol=0.)
+                or not np.allclose(np.asarray(grid.depth), -np.asarray(grid.z)[-1], rtol=1e-12, atol=0.)
+                or not np.all(np.asarray(grid.wet_mask) == 1.)
+                or (grid.wet_mask_3d is not None and not np.all(np.asarray(grid.wet_mask_3d) == 1.))):
+            raise ValueError('cubic_uniform_v1 requires a fully wet uniform linear-EOS nodal column with physical endpoints')
     if vertical_tracer_scheme not in ('donor_cell', 'muscl_nodal_v1', 'muscl_endpoint_v2'):
         raise ValueError('unknown vertical_tracer_scheme')
     if vertical_tracer_scheme in ('muscl_nodal_v1', 'muscl_endpoint_v2') and column_geometry != 'nodal_dual_v1':
@@ -584,6 +596,7 @@ def make_solver_global(grid, physics, dt, forcing=None,
         hydrostatic_surface_scheme=hydrostatic_surface_scheme,
         density_rotation_scheme=density_rotation_scheme,
         vertical_tracer_scheme=vertical_tracer_scheme,
+        hydrostatic_integral_scheme=hydrostatic_integral_scheme,
     )
 
     if projection_preconditioner == 'jacobi':
