@@ -53,11 +53,27 @@ def _conservative_endpoint_flux(tracer, mass_flux, flux, horizontal_div, p, mini
     count = faces.shape[-1]
     indices = jnp.broadcast_to(jnp.arange(count), faces.shape)
     pinned = (faces == 0.) | (indices == 0) | (indices == count - 1)
-    left = jax.lax.associative_scan(jnp.maximum, jnp.where(pinned, indices, 0), axis=faces.ndim - 1)
-    right = jax.lax.associative_scan(jnp.minimum, jnp.where(pinned, indices, count - 1), axis=faces.ndim - 1, reverse=True)
     values = jnp.zeros_like(faces)
     values = values.at[..., 0].set(jnp.where(faces[..., 0] != 0., offset_first, 0.))
     values = values.at[..., -1].set(jnp.where(faces[..., -1] != 0., offset_last, 0.))
+    if getattr(p, 'vertical_tracer_scheme', 'muscl_endpoint_v2') == 'muscl_band_v3':
+        # The adjacent physical node needs a material derivative too. Its
+        # incoming/outgoing target follows from continuity and the same limited
+        # physical secant, not from copying a boundary value into another layer.
+        secant = (tracer[..., 1:] - tracer[..., :-1]) / p.dz_iface
+        a, b = secant[..., :-1], secant[..., 1:]
+        gradient = jnp.where(a*b > 0., jnp.sign(a)*jnp.minimum(jnp.abs(a), jnp.abs(b)), 0.)
+        top_connected = (faces[..., 0] != 0.) & (faces[..., 1] != 0.)
+        bottom_connected = (faces[..., -1] != 0.) & (faces[..., -2] != 0.)
+        second = (first + tracer[..., 1]*(mass_flux[..., 2]-mass_flux[..., 1])
+                  + .5*widths[..., 1]*(mass_flux[..., 1]+mass_flux[..., 2])*gradient[..., 0])
+        penultimate = (last - tracer[..., -2]*(mass_flux[..., -2]-mass_flux[..., -3])
+                       - .5*widths[..., -2]*(mass_flux[..., -3]+mass_flux[..., -2])*gradient[..., -1])
+        pinned = pinned | ((indices == 1) & top_connected[..., None]) | ((indices == count-2) & bottom_connected[..., None])
+        values = values.at[..., 1].set(jnp.where(top_connected, second-flux[..., 2], 0.))
+        values = values.at[..., -2].set(jnp.where(bottom_connected, penultimate-flux[..., -3], 0.))
+    left = jax.lax.associative_scan(jnp.maximum, jnp.where(pinned, indices, 0), axis=faces.ndim - 1)
+    right = jax.lax.associative_scan(jnp.minimum, jnp.where(pinned, indices, count - 1), axis=faces.ndim - 1, reverse=True)
     position = jnp.cumsum(widths, axis=-1)[..., :-1]
     lo, hi = jnp.take_along_axis(position, left, axis=-1), jnp.take_along_axis(position, right, axis=-1)
     fraction = (position - lo) / jnp.where(hi > lo, hi - lo, 1.)

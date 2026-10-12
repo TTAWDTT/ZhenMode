@@ -80,12 +80,14 @@ def test_constant_tracer_stays_constant_with_surface_mass_transport():
     np.testing.assert_allclose(-horizontal - (new[..., 1:] - new[..., :-1]) / p.dz_node, 0, atol=1e-14)
 
 
-def test_column_blend_conserves_and_cannot_worsen_uncorrected_euler_envelope():
+@pytest.mark.parametrize('scheme', ('muscl_endpoint_v2', 'muscl_band_v3'))
+def test_column_blend_conserves_and_cannot_worsen_uncorrected_euler_envelope(scheme):
     rng = np.random.default_rng(131026)
     for _ in range(12):
         values = rng.uniform(0, 2, 9)
         mass = np.r_[0., rng.uniform(-.5, .5, 8), 0.]
         q, F, flux, horizontal, p = column(values, mass, dt=.2)
+        p.vertical_tracer_scheme = scheme
         new = _conservative_endpoint_flux(q, F, flux, horizontal, p)
         low = q - p.dt * (horizontal + (flux[..., 1:] - flux[..., :-1]) / p.dz_node)
         updated = q - p.dt * (horizontal + (new[..., 1:] - new[..., :-1]) / p.dz_node)
@@ -93,3 +95,43 @@ def test_column_blend_conserves_and_cannot_worsen_uncorrected_euler_envelope():
         assert np.all(np.asarray(updated) >= np.asarray(lower) - 1e-14)
         assert np.all(np.asarray(updated) <= np.asarray(upper) + 1e-14)
         np.testing.assert_allclose(jnp.sum((updated - low) * p.dz_node), 0, atol=1e-14)
+
+
+@pytest.mark.parametrize('sign', (-1., 1.))
+@pytest.mark.parametrize('dt', (.01, 1e-6))
+def test_band_adjacent_nodes_match_affine_material_derivative(sign, dt):
+    n = 8
+    mass = np.r_[0., sign*np.sin(np.pi*(np.arange(n-1)+.5)/(n-1)), 0.]
+    q, F, flux, horizontal, p = column(15-.02*np.arange(n), mass, dt=dt)
+    p.vertical_tracer_scheme = 'muscl_band_v3'
+    new = _conservative_endpoint_flux(q, F, flux, horizontal, p)
+    rate = -horizontal-(new[..., 1:]-new[..., :-1])/p.dz_node
+    expected = .02*.5*(mass[:-1]+mass[1:])
+    np.testing.assert_allclose(np.asarray(rate)[..., [1, -2]], expected[[1, -2]][None, None], atol=2e-14)
+    np.testing.assert_allclose(np.asarray(rate)[..., [0, -1]], 0., atol=2e-14)
+    np.testing.assert_allclose(jnp.sum((new[..., 1:]-new[..., :-1])-(flux[..., 1:]-flux[..., :-1])), 0., atol=2e-14)
+
+
+def test_band_keeps_material_barrier_and_temperature_zero_point():
+    values = np.array([5., 4., 3., 2., 1., 0., -1., -2.])
+    mass = [0., -.1, -.08, 0., 0., 0., 0., 0., 0.]
+    rates = []
+    for shift in (0., 273.15):
+        q, F, flux, horizontal, p = column(values+shift, mass)
+        p.vertical_tracer_scheme = 'muscl_band_v3'
+        new = _conservative_endpoint_flux(q, F, flux, horizontal, p)
+        np.testing.assert_array_equal(np.asarray(new)[..., 3:], np.asarray(flux)[..., 3:])
+        rates.append(-horizontal-(new[..., 1:]-new[..., :-1])/p.dz_node)
+    np.testing.assert_allclose(*rates, rtol=0., atol=1e-12)
+
+
+def test_band_constant_and_nonnegative_zero_surface_controls():
+    mass = [.1, .09, .06, .04, .02, .01, .005, .001, 0.]
+    for values in ([35.]*8, list(np.arange(8.))):
+        q, F, flux, horizontal, p = column(values, mass)
+        p.vertical_tracer_scheme = 'muscl_band_v3'
+        new = _conservative_endpoint_flux(q, F, flux, horizontal, p, minimum=0.)
+        rate = -horizontal-(new[..., 1:]-new[..., :-1])/p.dz_node
+        if values[0] == 35.:
+            np.testing.assert_allclose(rate, 0., atol=2e-14)
+        assert np.min(np.asarray(q+p.dt*rate)) >= -1e-14

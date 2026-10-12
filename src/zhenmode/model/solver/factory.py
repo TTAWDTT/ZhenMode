@@ -170,21 +170,22 @@ def make_solver_global(grid, physics, dt, forcing=None,
                 or not np.all(np.asarray(grid.wet_mask) == 1.)
                 or (grid.wet_mask_3d is not None and not np.all(np.asarray(grid.wet_mask_3d) == 1.))):
             raise ValueError('cubic_uniform_v1 requires a fully wet uniform linear-EOS nodal column with physical endpoints')
-    if vertical_tracer_scheme not in ('donor_cell', 'muscl_nodal_v1', 'muscl_endpoint_v2'):
+    if vertical_tracer_scheme not in ('donor_cell', 'muscl_nodal_v1', 'muscl_endpoint_v2', 'muscl_band_v3'):
         raise ValueError('unknown vertical_tracer_scheme')
-    if vertical_tracer_scheme in ('muscl_nodal_v1', 'muscl_endpoint_v2') and column_geometry != 'nodal_dual_v1':
+    if vertical_tracer_scheme in ('muscl_nodal_v1', 'muscl_endpoint_v2', 'muscl_band_v3') and column_geometry != 'nodal_dual_v1':
         raise ValueError('muscl_nodal_v1 requires nodal_dual_v1 physical midpoint faces')
-    if vertical_tracer_scheme in ('muscl_nodal_v1', 'muscl_endpoint_v2'):
+    if vertical_tracer_scheme in ('muscl_nodal_v1', 'muscl_endpoint_v2', 'muscl_band_v3'):
         spacing = np.abs(np.diff(np.asarray(grid.z)))
         if not np.allclose(spacing, spacing[0], rtol=1e-12, atol=0.):
             raise ValueError('muscl_nodal_v1 currently requires uniformly spaced vertical nodes; nonuniform CFL qualification is unresolved')
-    if vertical_tracer_scheme == 'muscl_endpoint_v2':
-        if (process_time_scheme != 'legacy' or mode_split or grid.nz < 4
+    if vertical_tracer_scheme in ('muscl_endpoint_v2', 'muscl_band_v3'):
+        minimum_nodes = 6 if vertical_tracer_scheme == 'muscl_band_v3' else 4
+        if (process_time_scheme != 'legacy' or mode_split or grid.nz < minimum_nodes
                 or np.asarray(grid.z)[0] != 0.
                 or not np.allclose(np.asarray(grid.depth), -np.asarray(grid.z)[-1], rtol=1e-12, atol=0.)
                 or not np.all(np.asarray(grid.wet_mask) == 1)
                 or (grid.wet_mask_3d is not None and not np.all(np.asarray(grid.wet_mask_3d) == 1))):
-            raise ValueError('muscl_endpoint_v2 requires fully wet unsplit legacy columns with physical surface/bottom nodes and at least four nodes')
+            raise ValueError(f'{vertical_tracer_scheme} requires fully wet unsplit legacy columns with physical surface/bottom nodes and at least {minimum_nodes} nodes')
     if density_rotation_scheme not in ('split_sources', 'joint_shear'):
         raise ValueError('unknown density_rotation_scheme')
     if density_rotation_scheme == 'joint_shear':

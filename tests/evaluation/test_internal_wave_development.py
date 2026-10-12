@@ -13,7 +13,7 @@ from zhenmode.benchmarks.standing_wave import digest
 from zhenmode.evaluation.internal_wave import score
 
 
-@pytest.mark.parametrize('scheme', ('donor_cell', 'muscl_nodal_v1', 'muscl_endpoint_v2'))
+@pytest.mark.parametrize('scheme', ('donor_cell', 'muscl_nodal_v1', 'muscl_endpoint_v2', 'muscl_band_v3'))
 @pytest.mark.parametrize('integral', ('trapezoidal', 'cubic_uniform_v1'))
 def test_new_protocol_is_bound_to_original_physics_and_independent_truth(scheme, integral):
     original = contract('zhenmode')
