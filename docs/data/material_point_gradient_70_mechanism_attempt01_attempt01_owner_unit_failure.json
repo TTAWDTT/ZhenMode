@@ -1,0 +1,9 @@
+{
+  "status": "FAIL diagnostic-ownerunits; not scientific qualification",
+  "identified_by": "independent scalar_parity_review",
+  "omitted": "p.dz_node multiplier on horizontal concentrationvolume fluxes",
+  "production_edited": false,
+  "original_result_retained": true,
+  "prevented_promotion": true,
+  "next": "attempt02-owner-units sameprofiles/controls, newtiming/oncefinite"
+}

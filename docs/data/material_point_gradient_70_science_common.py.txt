@@ -1,0 +1,35 @@
+"""Shared geometry/snapshot plumbing for this review only, no truth/scorer."""
+import jax,jax.numpy as jnp,numpy as np
+from identity import BEFORE,ROOT,verify
+from zhenmode.model.config import PhysicsConfig
+from zhenmode.model.solver.factory import make_solver_global
+from zhenmode.model.solver.geometry.grid import GlobalOceanGrid
+from zhenmode.model.solver.dynamics.transport import (
+    _layer_face_transports,_face_transport_divergence,_vertical_transport_iface,
+    _horizontal_tracer_fluxes,_advection_scalar,_material_point_scalar_rate,
+)
+jax.config.update('jax_enable_x64',True)
+ZERO=('nu_h','nu_v','nu_bi','kappa_h','kappa_v','kappa_bi','kappa_conv','kappa_gm','kappa_redi','r_bot','cd')
+OPTIONS=dict(column_geometry='nodal_dual_v1',conservative_kv=True,localize_conv=True,polar_cap_rows=0,polar_cap_taper=0,external_mode_scheme='symmetric',meridional_boundary_scheme='closed_faces',pressure_continuity_scheme='centered_fourth',tracer_transport_scheme='centered_second',density_rotation_scheme='joint_shear',hydrostatic_surface_scheme='linear_density',hydrostatic_integral_scheme='cubic_uniform_v1',column_mean_scheme='nodal_capacity',vertical_tracer_scheme='material_point_v4',tracer_flux_arithmetic='integrated_reference_v1',material_point_gradient_scheme='fourth_uniform_v1',momentum_vertical_velocity_scheme='dual_face_v1',dtype='float64')
+def geometry(ny,nz,H=100.,Lx=20000.,Ly=20000.,dt=12.5):
+    nx=8;dx=Lx/nx;dy=Ly/ny;d=np.linspace(0.,H,nz);y=(np.arange(ny)+.5)*dy
+    grid=GlobalOceanGrid(lon=(np.arange(nx)+.5)*dx,lat=y,dx_2d=np.full((nx,ny),dx),dy=dy,cos_lat=np.ones(ny),f=np.full((nx,ny),1e-4),z=-d,dz=np.diff(d),nz=nz,depth=np.full((nx,ny),H),wet_mask=np.ones((nx,ny)),ocean_mask=np.ones((nx,ny),bool),land_mask=np.zeros((nx,ny)),wet_mask_3d=np.ones((nx,ny,nz)),nx=nx,ny=ny)
+    _,_,_,p,_=make_solver_global(grid,PhysicsConfig(**dict.fromkeys(ZERO,0.)),dt,return_params=True,**OPTIONS)
+    assert p.material_point_gradient_scheme=='fourth_uniform_v1' and p.momentum_vertical_velocity_scheme=='dual_face_v1'
+    return grid,d,y,p
+def snapshot(u,v,p,with_low=False):
+    def evaluate(q,reverse):
+        mass=_layer_face_transports(u,v,p)
+        normal=_vertical_transport_iface(u,v,p,face_transport=mass)
+        F=jnp.where(reverse,-normal,normal)
+        rate,boundary=_advection_scalar(q,u,v,F,p,return_boundary=True,face_transport=mass,minimum=0.)
+        fx,fy=_horizontal_tracer_fluxes(q-q.reshape(-1)[0],u,v,p,mass)
+        core,_,di=_material_point_scalar_rate(q,F,mass,(fx*p.dz_node,fy*p.dz_node),p,minimum=0.,return_diagnostics=True)
+        Nm=_face_transport_divergence(*mass,p)
+        base=(rate,boundary,core,di['blend'],di['feasible'],di['anti_vertical'],F,mass[0],mass[1],di['anti_horizontal'][0],di['anti_horizontal'][1],Nm)
+        if with_low:
+            old=p._replace(material_point_gradient_scheme='minmod_v1')
+            _,_,old_di=_material_point_scalar_rate(q,F,mass,(fx*p.dz_node,fy*p.dz_node),old,minimum=0.,return_diagnostics=True)
+            return base+(di['low_rate'],old_di['low_rate'])
+        return base
+    return jax.jit(evaluate)

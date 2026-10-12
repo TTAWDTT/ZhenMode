@@ -1,0 +1,9 @@
+{
+  "original_declaration_preserved": true,
+  "original_evidence": "scalar-point-gradient-parity-3c8/result.json is REJECTED owner-unit attempt01; no scientific promotion",
+  "active_evidence": "scalar-point-gradient-parity-3c8/attempt02-owner-units/result.json",
+  "independent_review": "scalar-point-gradient-parity-3c8/attempt02-owner-units/review/VERDICT.json",
+  "source_no_parameterfit": true,
+  "profiles_and_thresholds_unchanged": true,
+  "reason": "correct production horizontal layer-integrated shiftedfaces fx*h/fy*h"
+}

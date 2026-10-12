@@ -1,0 +1,78 @@
+{
+  "records": [
+    {
+      "reference": "source/math",
+      "source": "70d408583aa99db63e49d958d89dcaccad273f0e",
+      "birth_declaration": "source-math-declaration.json",
+      "declaration_sha256": "32d57277b72fc413106412a8a73ce6e3a3cc60adbde04308c616f7cad49900be",
+      "declaration_file_mtime_UTC": "2026-10-12T20:53:49.410206+00:00",
+      "generator": "check_source_math.py",
+      "generator_sha256": "3330cf204f045de0963faf8f347794b233ba35bae3f512f48b85316c0c1bd5fa",
+      "inputs": "Exact fixed profile/constants/geometries in declaration",
+      "precision": "Analytic formula evaluated float64, longdouble stock/error summation",
+      "accuracy_basis": "Exact analytic derivative/integral/characteristic formula, positive and negative controls; no claimed precision digits beyond recorded floating computation",
+      "contacts": [
+        {
+          "event": "Declared after frozen70d4085 before first profile numerical output, no rootpilot score used for selection"
+        },
+        {
+          "event": "Finite qualification/control comparison completed; data permanently contacted",
+          "result": "source-math-result.json",
+          "result_sha256": "53dc3e07077317c79527c6e80413dcaf3c3854d321adfa55e7b4be71f1cea50e"
+        }
+      ],
+      "shared_lineage": "Independent selected nonaffine fields and analytic derivative/integral/dyadic truth, shared production factory/geometry/JAX and scalar owner; regression controls not fullphysics certificate. Prior helper route read only afterfreeze; no old scores/rawarrays read or fit.",
+      "may_certify_future_changes": false
+    },
+    {
+      "reference": "fresh1D",
+      "source": "70d408583aa99db63e49d958d89dcaccad273f0e",
+      "birth_declaration": "new-1d-declaration.json",
+      "declaration_sha256": "431deb37b34ec7c094b552e2e60e8152ff4eb64db6ff6fc0f25d93ec8cfe3b32",
+      "declaration_file_mtime_UTC": "2026-10-12T20:53:49.411207+00:00",
+      "generator": "check_new_1d.py",
+      "generator_sha256": "be28701f36f65272cbea4409cb2c1f8b6aa163905dc314b8515eeabaa4f6eabc",
+      "inputs": "Exact fixed profile/constants/geometries in declaration",
+      "precision": "Analytic formula evaluated float64, longdouble stock/error summation",
+      "accuracy_basis": "Exact analytic derivative/integral/characteristic formula, positive and negative controls; no claimed precision digits beyond recorded floating computation",
+      "contacts": [
+        {
+          "event": "Declared after frozen70d4085 before first profile numerical output, no rootpilot score used for selection"
+        },
+        {
+          "event": "Finite qualification/control comparison completed; data permanently contacted",
+          "result": "new-1d-result.json",
+          "result_sha256": "7735baeee8965570a56990aef9963c0cd392059bb7d7fdececc41dbcf6f269e2"
+        }
+      ],
+      "shared_lineage": "Independent closed-form characteristic/profile; shares geometry/PDE/JAX and production cubic primitive, fourth gradient, integrated baseline/projection/blend. Emulated local horizontal Nm compensation expressly not2D owner; source/math and subsequent actualACTIVE2D are separate.",
+      "may_certify_future_changes": false
+    },
+    {
+      "reference": "actualACTIVE2D",
+      "source": "70d408583aa99db63e49d958d89dcaccad273f0e",
+      "birth_declaration": "new-2d-declaration.json",
+      "declaration_sha256": "d3ad835f67b729c55662785a9b012eb95654c23713bad712f1d97ec60b2c1358",
+      "declaration_file_mtime_UTC": "2026-10-12T20:53:49.411207+00:00",
+      "generator": "check_new_2d.py",
+      "generator_sha256": "1f1e909d9607d9a797c14994104b694415cf4f121f46de4257897ebc5705ec8f",
+      "inputs": "Exact fixed profile/constants/geometries in declaration",
+      "precision": "Analytic formula evaluated float64, longdouble stock/error summation",
+      "accuracy_basis": "Exact analytic derivative/integral/characteristic formula, positive and negative controls; no claimed precision digits beyond recorded floating computation",
+      "contacts": [
+        {
+          "event": "Declared after frozen70d4085 before first profile numerical output, no rootpilot score used for selection"
+        },
+        {
+          "event": "Finite qualification/control comparison completed; data permanently contacted",
+          "result": "new-2d-result.json",
+          "result_sha256": "67d792a796644261be23a2380717f0822f5e65fd5e7dd25981083a5c0bf1438b"
+        }
+      ],
+      "shared_lineage": "Separate reviewer manufactured algebra and arithmetic, actual frozen production advection/continuityfaces/core diagnostics/JAX shared; finite RHS, single precision, no independent fullphysics certificate. Active claim requires alpha>.5 everymesh and feasibletrue, no threshold/parameter adjustment on failure.",
+      "may_certify_future_changes": false
+    }
+  ],
+  "scientific_closure": "OPEN",
+  "old_failures_untouched": true
+}

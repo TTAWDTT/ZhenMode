@@ -1,0 +1,47 @@
+{
+  "utc": "2026-10-12T21:16:28.105813+00:00",
+  "verdict": "ALL10 SCOPE-PASS WITH PROVENANCE LIMITATIONS",
+  "newly_audited_indices": [
+    5,
+    2,
+    3,
+    4,
+    6,
+    7,
+    8,
+    9
+  ],
+  "all_audited_indices": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9
+  ],
+  "preserved_pilot_result_sha256": {
+    "0": "cf96e385f61937146eb37f9b8badc1f4e697a528356767f81ec898d3b06b9e4a",
+    "1": "a7f433ea92c8c1a5561de0b96fdce196e0100d5d13c2e1d3986a3db28b9c2857"
+  },
+  "journal_sha256": "a811a3033ed68e063064bb051bee4e7a9cc202e2008835600b568488bd115b88",
+  "source": "70d408583aa99db63e49d958d89dcaccad273f0e",
+  "original_screen_pass_count": 8,
+  "original_screen_new_denominator": 8,
+  "limits": [
+    "Native historical loaded Python paths absent",
+    "Momentum dual_face default inferred from exact frozen factory and worker call",
+    "Contacted development references, no new heldout/global/fullphysics qualification",
+    "Prior FAIL/OPEN evidence unchanged",
+    "FullCI independently reviewed by root; this audit does not infer CI test counts"
+  ],
+  "elapsed_s": 1.9485950069999998,
+  "peak_rss_bytes": 137203712,
+  "cpu_affinity": [
+    0
+  ],
+  "memory_cap_bytes": 4294967296
+}

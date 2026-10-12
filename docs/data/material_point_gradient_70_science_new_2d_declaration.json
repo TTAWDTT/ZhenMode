@@ -1,0 +1,18 @@
+{
+  "source":"70d408583aa99db63e49d958d89dcaccad273f0e",
+  "scope":"Fresh actual ACTIVE2D horizontal-owner instantaneous scalar RHS, no time integration/pressure/native qualification",
+  "meshes":[{"Ny":30,"Nz":31},{"Ny":60,"Nz":61},{"Ny":120,"Nz":121}],
+  "geometry":{"Nx":8,"Lx":11000,"Ly":17000,"H":90,"dt":11.25,"fullywet":true,"meridional_faces":"closed"},
+  "candidate":{"material_point_gradient_scheme":"fourth_uniform_v1","momentum_vertical_velocity_scheme":"dual_face_v1"},
+  "streamfunction":"Psi=.13sin(piY) f(D); f(D)=D(1-D)(1+.3D(1-D)); v=.13/H sin(piY) fprime(D); u=0; downwardw=-.13pi/Ly cos(piY) f(D)",
+  "tracer":"q=9+.052cos(piY)+(1+.037cos(piY))g(D), g(D)=D+.14D^2+.012D^4",
+  "analytic_derivatives":"fprime=1-2D+.6D(1-D)(1-2D); q_y=-pi/Ly sin(piY)[.052+.037g(D)]; q_d=(1+.037cos(piY))(1+.28D+.048D^3)/H; R=-v*q_y-w_down*q_d",
+  "purpose":"Monotone nonaffine q, q_d>=.963/H; q_y<0 inside. vtop>0 and vbed<0 move endpoint extrema inward; polynomial quartic streamfunction nonaffine, zero w physicalends. New constants/meshes fixed analytically before errors/alpha observed.",
+  "normalization":"sum(actualh*abs(actualRHS-Ranalytic))/sum(actualh*abs(Ranalytic)); rate/rate, not tracer range",
+  "gates":{"finest_L1":0.05,"each_refinement_min":1.25,"constant_rhs_max":1e-17,"badmass_min_exclusive":1e-12,"badmass_formula_max":2e-12,"Euler_stock_scale":1e-12,"minimum_Euler":-1e-14,"all_feasible":true,"active_alpha_min_exclusive":0.5,"zero_mass_pins_and_closedface":"exact","actual_vs_diagnostic_max":2e-12},
+  "plants":"Before new measureddata: independently handderived product differentiation/sign/units; comparator analytictruth againstitself gives0/PASS and signflipped analytictruth relative2/FAIL; actualconstant positive/reversedmass negative. Polynomial f/fprime consistent exact differentiation coefficients; Euler stock actualh; save raw RHS/truth/alpha/feasible/antiflux",
+  "timing":"Only after source/math+fresh1D PASS; coarse four timing-only calls with no oraclecomparison/numericaldisplay; fixedthreegrid complete once after measured projection1CPU180s4096MiB. No profile selection from pilot output.",
+  "resources":{"cpu":1,"wall_seconds":180,"memory_mib":4096,"GPU":false},
+  "lineage":"Separate reviewer manufactured algebra and arithmetic, actual frozen production advection/continuityfaces/core diagnostics/JAX shared; finite RHS, single precision, no independent fullphysics certificate. Active claim requires alpha>.5 everymesh and feasibletrue, no threshold/parameter adjustment on failure.",
+  "contact":"Fresh aftersourcefreeze; old24x23/48x45/96x89 and26x27/52x53/104x105 excluded; oldscores/rawoutputs and rootnewpilot score not read for selection. Any gateFAIL stops future native expansion; all values become contacted atfinite evaluation."
+}

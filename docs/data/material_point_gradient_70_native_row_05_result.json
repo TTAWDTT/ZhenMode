@@ -1,0 +1,90 @@
+{
+  "index": 5,
+  "utc": "2026-10-12T21:16:26.327680+00:00",
+  "directory": "05-candidate-vertical-main",
+  "identity_and_contract_pass": true,
+  "raw_output_fields_identical": true,
+  "static_capacities": {
+    "dz_node": {
+      "shape": [
+        1,
+        1,
+        32
+      ],
+      "min": 1.6129032258064515,
+      "max": 3.225806451612911
+    }
+  },
+  "dynamic_h_original_formula_exact": true,
+  "diagnostic_volumes_match_h_area": true,
+  "complete_snapshots": 41,
+  "steps": 4800,
+  "metrics": {
+    "metrics": {
+      "eta_error": 0.0005413726308726622,
+      "u_error": 3.182240968344689e-05,
+      "v_error": 1.6316588223838945e-06,
+      "T_error_C": 6.837669991371231e-09,
+      "S_error_psu": 0.0,
+      "volume": 2.220446049250313e-16,
+      "T_inventory": 2.220446049250313e-16,
+      "S_inventory": 2.220446049250313e-16
+    },
+    "limits": {
+      "eta_error": 0.1,
+      "u_error": 0.1,
+      "v_error": 0.1,
+      "T_error_C": 2e-05,
+      "S_error_psu": 1e-10,
+      "volume": 1e-10,
+      "T_inventory": 1e-08,
+      "S_inventory": 1e-08
+    },
+    "failed_metrics": [],
+    "normalized_error_ratios": {
+      "eta_error": 0.005413726308726621,
+      "u_error": 0.00031822409683446886,
+      "v_error": 1.6316588223838945e-05,
+      "T_error_C": 0.0003418834995685615,
+      "S_error_psu": 0.0
+    },
+    "composite": 0.005413726308726621,
+    "null_absolute_errors": {},
+    "initial_errors": {
+      "T": 1.7763568394002505e-15,
+      "S": 0.0,
+      "eta": 4.435699786533957e-18,
+      "u": 8.131516293641283e-20,
+      "v": 0.0
+    }
+  },
+  "metric_agreement": {
+    "eta_error": true,
+    "u_error": true,
+    "v_error": true,
+    "T_error_C": true,
+    "S_error_psu": true,
+    "volume": true,
+    "T_inventory": true,
+    "S_inventory": true
+  },
+  "native_resources": {
+    "cpu_affinity": 1,
+    "elapsed_wall_seconds": 31.139230268000006,
+    "gpu_allocator_fraction": 0.4,
+    "gpu_memory_enforcement": "JAX allocator fraction; not a whole-device memory limit",
+    "host_memory_enforcement": "aggregate process-group /proc RSS sampled at 0.2 s; not a hard cgroup cap",
+    "memory_mib": 4096,
+    "peak_host_rss_bytes": 1642962944,
+    "stop_reason": null,
+    "termination_grace_seconds": 0,
+    "wall_seconds": 600
+  },
+  "input_sha256": "2458f6b817d6e494f1f9e21e807b4c37d7835f9fcf2aeec2f9385c1c1b7237ae",
+  "output_sha256": "0b7fbf981452692d964ce3282fd74ace7bf56d3edd04bbed4f3e7d0710dd51fb",
+  "native_sha256": "0899b6f0dc438233d4242828b149d7f8e65833775287f1487b6ed88d8ac4bf01",
+  "loaded_python_paths_recorded": false,
+  "momentum_scheme_evidence": "source default dual_face_v1; omitted from actual_controls",
+  "qualifies": "saved-row data integrity and arithmetic only",
+  "elapsed_audit_s": 0.17545041699999997
+}

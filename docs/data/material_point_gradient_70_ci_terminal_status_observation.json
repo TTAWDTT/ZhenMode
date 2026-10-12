@@ -1,0 +1,15 @@
+{
+  "source_revision": "70d408583aa99db63e49d958d89dcaccad273f0e",
+  "id": 38306749152,
+  "status": "completed",
+  "conclusion": "success",
+  "jobs": {
+    "lint": "success",
+    "test": "success"
+  },
+  "seen_by": "gh run view JSON actualsameHEAD",
+  "raw_log_attempt01": "networktimeout198.18.0.24 beforedownload; retained tooloutput; notsoftwareFAIL",
+  "actual_pytest_count": null,
+  "MMS_log_checked": false,
+  "full_validation": true
+}

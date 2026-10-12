@@ -1,0 +1,87 @@
+"""Append-only remaining rows; never reruns the pilot audit or solver."""
+import audit_saved as q
+import math, json, resource, time
+import numpy as np
+
+def thermal_reference(c,a):
+    alpha=-c['eos']['drho_dT']/c['rho0'];beta=c['eos']['drho_dS']/c['rho0'];o=c['thermal_wind'];gamma=o['dT_dz_C_m']
+    z=-np.linspace(0,c['H_m'],c['nz'])
+    def front(y):
+        angle=(np.asarray(y)-c['Ly_m']/2)*math.pi/(2*o['front_width_m'])
+        delta=o['delta_T_C']*np.sin(np.clip(angle,-math.pi/2,math.pi/2))
+        grad=np.where(np.abs(angle)<math.pi/2,o['delta_T_C']*math.pi/(2*o['front_width_m'])*np.cos(angle),0.)
+        return delta,grad
+    delta,slope=front(a['y_eta']);b=1-alpha*delta
+    # Stable small root of the stated SSH quadratic, independently of Newton/quadrature.
+    surface=2*alpha*delta*c['H_m']/(b+np.sqrt(b*b-2*alpha*alpha*gamma*delta*c['H_m']))
+    uv=-c['gravity']*alpha*slope[:,None]*(z+c['H_m'])[None,:]/c['f']
+    advected_x=a['x_eta'][None,:,None]-a['time'][:,None,None]*uv[None,:,:]
+    spice=o['spice_T_C']*np.cos(2*math.pi/c['Lx_m']*advected_x)
+    refs={'eta':np.broadcast_to(surface,a['eta'].shape),'T':c['T_C']+gamma*z[None,None,:]+delta[None,:,None]+spice,'S':c['S_psu']+alpha/beta*spice}
+    _,uslope=front(a['y_u'])
+    refs['u']=np.broadcast_to(-c['gravity']*alpha/c['f']*uslope[None,:,None]*(z+c['H_m'])[None,None,:],a['u'].shape)
+    refs['v']=np.zeros_like(a['v'])
+    scale=c['gravity']*alpha*o['delta_T_C']*math.pi*c['H_m']/(2*o['front_width_m']*abs(c['f']))
+    return refs,scale
+
+def thermal_readback(c,a):
+    refs,scale=thermal_reference(c,a);vol=a['h']*a['area'][None,:,None];t=a['time'];dur=t[-1]-t[0]
+    metrics={'eta_error':q.rms(a['eta']-refs['eta'],np.broadcast_to(a['area'],a['eta'].shape),t,dur)/c['amplitude_m']}
+    for v in ('u','v'):metrics[v+'_error']=q.rms(a[v]-refs[v],a['volume_'+v],t,dur)/scale
+    for v in ('T','S'):metrics[v+'_error_'+('C' if v=='T' else 'psu')]=q.rms(a[v]-refs[v],vol,t,dur)
+    totals=vol.sum(axis=(1,2));metrics['volume']=float(np.max(np.abs(totals/totals[0]-1)))
+    for v in ('T','S'):
+        inv=(vol*a[v]).sum(axis=(1,2));metrics[v+'_inventory']=float(np.max(np.abs(inv/inv[0]-1)))
+    limits={v+'_error':c['thresholds']['error'] for v in ('eta','u','v')}
+    limits.update({v:c['thresholds'][v] for v in ('T_error_C','S_error_psu','volume')});limits.update({v+'_inventory':c['thresholds']['tracer_inventory'] for v in ('T','S')})
+    initial={v:float(np.max(np.abs(a[v][0]-refs[v][0]))) for v in refs};q.require(max(initial.values())<5e-11,'thermal initial analytic fields')
+    ratios={v:metrics[v]/limits[v] for v in ('eta_error','u_error','v_error','T_error_C','S_error_psu')}
+    return dict(metrics=metrics,limits=limits,failed_metrics=[k for k in metrics if metrics[k]>limits[k]],normalized_error_ratios=ratios,composite=max(ratios.values()),composite_scope='descriptive recomputation only; thermal production score does not publish a composite',null_absolute_errors={},initial_errors=initial)
+
+q.thermal_readback=thermal_readback
+
+def thermal_controls():
+    c=dict(H_m=100.,Lx_m=100000.,Ly_m=100000.,f=1e-4,gravity=9.81,rho0=1025.,nz=3,T_C=15.,S_psu=35.,eos=dict(drho_dT=-.205,drho_dS=.779),thermal_wind=dict(dT_dz_C_m=.02,delta_T_C=.5,front_width_m=25000.,spice_T_C=.1))
+    t=np.array([0.,100.,200.]);y=np.array([10000.,50000.,90000.]);shape=(3,3,3)
+    a=dict(time=t,x_eta=np.array([0.,25000.,50000.]),y_eta=y,y_u=y,T=np.zeros(shape),S=np.zeros(shape),u=np.zeros(shape),v=np.zeros(shape),eta=np.zeros((3,3)))
+    refs,scale=thermal_reference(c,a);alpha=.205/1025.;beta=.779/1025.;delta=np.array([-.5,0.,.5]);eta=refs['eta'][0]
+    resid=eta-alpha*.02*eta*eta/2-alpha*delta*(eta+100.)
+    q.require(np.max(np.abs(resid))<1e-14,'independently planted SSH quadratic')
+    q.require(eta[1]==0. and refs['u'][0,0,0]==0. and refs['u'][0,2,0]==0.,'plateau/midfront roots')
+    q.require(np.max(np.abs(refs['u']-refs['u'][:1]))==0. and np.max(np.abs(refs['v']))==0.,'steady shear/null v')
+    base=15.-.02*np.array([0.,50.,100.])[None,None,:]+delta[None,:,None]
+    neutral=alpha*(refs['T']-base)-beta*(refs['S']-35.)
+    q.require(np.max(np.abs(neutral))<1e-17,'density-neutral spice')
+    perturbed=refs['eta'].copy();perturbed[:,0]+=.001
+    q.require(not np.allclose(perturbed,refs['eta'],rtol=0,atol=5e-11),'SSH negative control')
+    q.require(q.rms(refs['T']-refs['T'],np.ones(shape),t,200.)==0.,'reference zero RMS')
+    q.save('append-thermal-controls.json',dict(utc=q.utc(),quadratic_residual_max=float(np.max(np.abs(resid))),neutral_density_residual_max=float(np.max(np.abs(neutral))),steady_shear_and_null_pass=True,ssh_perturbation_detected=True,pass_all=True,scope='thermal independent evaluator algebra/null checks; no physical solver invocation'))
+
+thermal_controls()
+declaration=q.read(q.HERE/'append-declaration.json');indices=declaration['indices']
+existing=[json.loads(s) for s in (q.HERE/'audited-row-ledger.jsonl').read_text().splitlines()]
+done={r['index'] for r in existing};q.require(done=={0,1},'append initial ledger differs; never repeat finished indices')
+pilot_hashes={str(i):q.filehash(q.HERE/('row-%02d-result.json'%i)) for i in done}
+registry=q.read(q.HERE/'identity-result.json')['module_hashes'];plan=q.read(q.STAGE/'declared-plan.json')
+journal=[json.loads(s) for s in (q.STAGE/'row-journal.jsonl').read_text().splitlines()]
+q.require({r['index'] for r in journal}==set(range(10)) and len(journal)==10,'exact all10 journal')
+results=[]
+for index in indices:
+    q.require(index not in done,'attempted repeat index')
+    result=q.audit(index,journal,registry,plan);results.append(result);done.add(index)
+    folder=q.STAGE/result['directory'];a=q.npz(folder/'zhenmode/output.npz')
+    # Descriptive before/after source comparison, no new equivalence threshold or PASS promotion.
+    oldpath=q.STAGE.parent/'material-point-v4-marginfix'/result['directory']/'zhenmode/output.npz'
+    before=q.npz(oldpath);bc=q.read(oldpath.parent.parent/'contract.json');prior=q.metric_readback(bc,before)
+    diff={}
+    for field in ('T','S','eta','u','v'):
+        delta=a[field]-before[field];diff[field]=dict(max_abs=float(np.max(np.abs(delta))),raw_rms=float(np.sqrt(np.mean(delta*delta))),initial_max_abs=float(np.max(np.abs(delta[0]))),final_max_abs=float(np.max(np.abs(delta[-1]))),changed_elements=int(np.count_nonzero(delta)),total_elements=int(delta.size))
+    descriptive=dict(index=index,utc=q.utc(),current_source=q.REV,old_source=before['metadata']['source_sha'],old_output_sha256=q.filehash(oldpath),old_contract_sha256=q.digest(bc),trajectory_difference=diff,old_metrics=prior,current_metrics=result['metrics'],scope='Descriptive source change only; no new equivalencegate')
+    if index==9:
+        stored=q.read(folder/'zhenmode/score.json')['metrics']['T_inventory'];fresh=result['metrics']['metrics']['T_inventory']
+        descriptive['thermal_T_inventory_arithmetic']=dict(published=stored,independently_recomputed=fresh,absolute_delta=fresh-stored,original_limit=bc['thresholds']['tracer_inventory'],published_pass=stored<=bc['thresholds']['tracer_inventory'],independent_pass=fresh<=bc['thresholds']['tracer_inventory'],explanation='Direct original dynamic-h/area NumPy inventory; equality at printed digits is not a separate qualification gate')
+    q.save('row-%02d-source-difference.json'%index,descriptive)
+q.require(done==set(range(10)),'all10 audit denominator')
+q.require(all(q.filehash(q.HERE/('row-%02d-result.json'%i))==h for i,h in ((int(i),h) for i,h in pilot_hashes.items())),'pilot records changed')
+q.save('append-audit-summary.json',dict(utc=q.utc(),verdict='ALL10 SCOPE-PASS WITH PROVENANCE LIMITATIONS',newly_audited_indices=indices,all_audited_indices=sorted(done),preserved_pilot_result_sha256=pilot_hashes,journal_sha256=q.filehash(q.STAGE/'row-journal.jsonl'),source=q.REV,original_screen_pass_count=sum(not r['metrics']['failed_metrics'] for r in results),original_screen_new_denominator=len(results),limits=['Native historical loaded Python paths absent','Momentum dual_face default inferred from exact frozen factory and worker call','Contacted development references, no new heldout/global/fullphysics qualification','Prior FAIL/OPEN evidence unchanged','FullCI independently reviewed by root; this audit does not infer CI test counts'],elapsed_s=time.monotonic()-q.start,peak_rss_bytes=resource.getrusage(resource.RUSAGE_SELF).ru_maxrss*1024,cpu_affinity=list(q.os.sched_getaffinity(0)),memory_cap_bytes=4294967296))
+print('ALL10 SCOPE-PASS; appended8 only; no native rerun',flush=True)

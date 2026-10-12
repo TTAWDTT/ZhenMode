@@ -1,0 +1,29 @@
+{
+  "schema": "independent-saved-native-audit-v1",
+  "declared_utc": "2026-10-12T20:55:29Z",
+  "scope": "Saved rows 0 and 1 only; append separately for future rows without rechecking completed indices. No model integration, fitting, source edits, commit or PR.",
+  "source_revision": "70d408583aa99db63e49d958d89dcaccad273f0e",
+  "lineage": {
+    "producer": "Frozen installed native solver and project scorer at source revision above",
+    "checker": "New standalone standard-library/NumPy script; no zhenmode imports or project scoring calls",
+    "shared_layers": ["Saved native arrays", "Frozen contract", "The same declared linear analytic reference and metric definition", "NumPy double precision"],
+    "contamination": "Candidate and reported pilot metrics already exist and have been inspected; this is an independent implementation of a post-production raw audit, not an untouched qualification oracle. No fit or threshold change is authorized.",
+    "claim_limit": "Identity/data integrity and independent arithmetic readback only; no new held-out physical accuracy certification, arbitrary-precision identity closure, global SOTA or full physics qualification"
+  },
+  "controls": {
+    "positive": "Independently constructed constant and linear-in-time arrays pass exact inventory and known trapezoidal RMS checks, also after NPZ serialization",
+    "negative": "Nonzero perturbation must fail exact comparison; changed contract digest and file byte must fail hash checks; incorrect capacity field must fail geometric capacity check",
+    "null": "Zero errors have exact zero RMS; identical trajectories have exact zero difference",
+    "metric_agreement": "abs(actual-stored) <= 5e-15 + 5e-12*abs(stored), except inventory roundoff uses abs difference <= 2e-14; tolerance fixed before the first raw-array audit; original thresholds remain unchanged",
+    "initial_field_agreement": "max absolute error < 5e-11, original threshold",
+    "capacity_agreement": "rtol 5e-14, atol 1e-10 cubic metres"
+  },
+  "timing": {
+    "projection": "unknown; bounded single raw-array audit measures its own elapsed time",
+    "wall_cap_seconds": 180,
+    "cpu_affinity_count": 1,
+    "memory_cap_bytes": 4294967296,
+    "progress_unit": "Completed audited index written to append-only row ledger",
+    "route": "Read saved compact arrays and metadata; no toolkit algebra or integration backend is needed"
+  }
+}

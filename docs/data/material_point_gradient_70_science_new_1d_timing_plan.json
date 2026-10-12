@@ -1,0 +1,11 @@
+{
+  "pilot_nodes":37,"pilot_heun_steps":5,
+  "pilot_total_elapsed_s":4.023555644,
+  "pilot_first_step_s":1.559929462,
+  "pilot_steady_steps_s":[0.000235727,0.000193155,0.000218103,0.00023193],
+  "steady_mean_s":0.000219729,
+  "finite_progress_unit":"Six completed evolutions: constant+newprofile80Heunsteps at each37/73/145; journal one row per geometry with raw arrays; no PDE/native timestep",
+  "conservative_projection_s":56,
+  "projection_provenance":"2*(1+73/37+145/37)*4.02356 for measured setup/JIT/reverse-control overhead conservatively node-scaled, plus missing75steps at steady mean and same scaling; startup recorded separately, compile scaling uncertain",
+  "launch":"Fixed finite set once, oneCPU180s4096MiB sampled groupRSS; no profile/tolerance adjustment based on timing or output"
+}

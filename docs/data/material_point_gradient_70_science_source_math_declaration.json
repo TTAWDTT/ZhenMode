@@ -1,0 +1,15 @@
+{
+  "source":"70d408583aa99db63e49d958d89dcaccad273f0e",
+  "scope":"Independent source/math controls after full identity guard; actual factory primary/fine geometries, no state timestep/native",
+  "geometry":[{"Nx":8,"Ny":32,"Nz":16},{"Nx":8,"Ny":128,"Nz":64}],
+  "constants":{"H":100,"Lx":20000,"Ly":20000,"dt":12.5},
+  "candidate":{"material_point_gradient_scheme":"fourth_uniform_v1","momentum_vertical_velocity_scheme":"dual_face_v1"},
+  "field":"u=.0017sin(2piX)(1+.35D+.09D^2); v=.0023sin(piY)(1-.27D+.11D^3); q=13+.16cos(2piX)+.023cos(piY)+(D+.12D^2+.025D^4)(1+.014cos(2piX)cos(piY))",
+  "gates":{"constant_max":1e-17,"badmass_min_exclusive":1e-12,"badmass_formula_max":2e-12,"gauge_max":1e-13,"polynomial_relative_max":1e-14,"gradient_polynomial_absolute_max":1e-14,"stock_relative_max":1e-12,"capacity_and_masssum":"exact","baseline_selector_low_rate":"bitwise equal","projection_stagnant_pins":"exact","interval_controls":"exact dyadic alpha/boolean"},
+  "plants":"Independent analytic degree0..3 column integrals, degree0..4 physical-depth derivatives, constants1/35/-7, wrong derivative sign caught; reverse Fz catches retained full mass residual; C/K gauge13+273.15; zero/stagnant projection budget; dyadic interval cases",
+  "interval_cases":["q[1,2,3], low0 delta0 => alpha1 true","q[1,2,3],low[-2,0,0],delta[2,0,0],floor0 => alpha1 true","same low delta0 => alpha0 false","same low delta[-1,0,0] => alpha0 false","q[1,2,3],low0 delta[4,0,0] => alpha.5 true","q[1,2,3],low0 delta[0,0,-4] => alpha.5 true"],
+  "timing":"Coarse geometry/polynomial-only pilot with no scalar/reference-data comparison, retain/reuse its source/math polynomial receipt; finite coarse scalar + fine geometry/scalar + exact interval/projection controls once after measured plan",
+  "resources":{"cpu":1,"wall_seconds":180,"memory_mib":4096,"GPU":false},
+  "lineage":"Independent selected nonaffine fields and analytic derivative/integral/dyadic truth, shared production factory/geometry/JAX and scalar owner; regression controls not fullphysics certificate. Prior helper route read only afterfreeze; no old scores/rawarrays read or fit.",
+  "contact":"New field constants fixed before observation; all resulting data contacted after full evaluation; originalconstant/gauge gates unchanged."
+}

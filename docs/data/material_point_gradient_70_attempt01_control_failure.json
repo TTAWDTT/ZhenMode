@@ -1,0 +1,13 @@
+{
+  "passed": 168,
+  "failed": 2,
+  "duration_s": 96.7,
+  "failures": [
+    "new parity test uses numpy.broadcast_to on JAX tracer; harness compile error beforeoracle",
+    "test imports other testfile blocked source_layout; move identicalfixture into tests/support"
+  ],
+  "production_or_threshold_changes": false,
+  "archive": "failed-test-gradient-attempt01.py.txt",
+  "correction": "JAXbroadcast/trig insidejit andshared support fixture, same numericalprofiles/gates",
+  "next": "attempt02 newgradient/materialpoint/infrastructure affectedonly; previouslypassed other controls not rerun"
+}

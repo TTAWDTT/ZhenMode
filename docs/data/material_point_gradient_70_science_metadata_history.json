@@ -1,0 +1,6 @@
+{
+  "archive_shell_attempt01":"PowerShell passed --output=(variable) as separate arguments; git reported not a valid object name for output path. No scientific calculation or source modification occurred. Correct single --output=absolute-path argument created the frozen archive before the successful identity guard.",
+  "early_hash_snapshot":"review-file-hashes.json was generated inside finish_review.py before its supervisor closed saved-readback.log/wrote saved-readback-resources.json. It is an early snapshot, not the final complete-review identity.",
+  "final_hash_snapshot":"review-file-hashes-final.json is generated after all evaluator/supervisor outputs and this report complete; the earlier snapshot is preserved.",
+  "scientific_runs":"All newly declared scientific finite runs completed once with exit0; timing-only pilots separate; no numerical rerun, profile fit, or gate drift. Historical earlier source/harness/unit failures remain untouched."
+}

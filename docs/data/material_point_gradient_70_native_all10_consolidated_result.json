@@ -1,0 +1,186 @@
+{
+  "recorded_utc": "2026-10-12T21:18:39.4201491Z",
+  "schema": "all10-readback-consolidation-v1",
+  "verdict": "ALL10 SCOPE-PASS WITH PROVENANCE LIMITATIONS",
+  "audited_denominator": 10,
+  "passed_count": 10,
+  "rows": [
+    {
+      "index": 0,
+      "directory": "00-previous-primary-main",
+      "source": "70d408583aa99db63e49d958d89dcaccad273f0e",
+      "original_screen_pass": true,
+      "metrics": {
+        "eta_error": 0.005240393934376464,
+        "u_error": 0.0004422366211386121,
+        "v_error": 0.0002725527726521349,
+        "T_error_C": 8.530755561576719E-07,
+        "S_error_psu": 0.0,
+        "volume": 2.220446049250313E-16,
+        "T_inventory": 4.440892098500626E-16,
+        "S_inventory": 2.220446049250313E-16
+      },
+      "result_sha256": "cf96e385f61937146eb37f9b8badc1f4e697a528356767f81ec898d3b06b9e4a"
+    },
+    {
+      "index": 1,
+      "directory": "01-candidate-primary-main",
+      "source": "70d408583aa99db63e49d958d89dcaccad273f0e",
+      "original_screen_pass": true,
+      "metrics": {
+        "eta_error": 0.0005387828306036288,
+        "u_error": 3.192140293356053E-05,
+        "v_error": 4.082506786198244E-06,
+        "T_error_C": 7.088858339175953E-09,
+        "S_error_psu": 0.0,
+        "volume": 2.220446049250313E-16,
+        "T_inventory": 2.220446049250313E-16,
+        "S_inventory": 2.220446049250313E-16
+      },
+      "result_sha256": "a7f433ea92c8c1a5561de0b96fdce196e0100d5d13c2e1d3986a3db28b9c2857"
+    },
+    {
+      "index": 2,
+      "directory": "02-candidate-primary-half",
+      "source": "70d408583aa99db63e49d958d89dcaccad273f0e",
+      "original_screen_pass": true,
+      "metrics": {
+        "eta_error": 0.00027004846904145265,
+        "u_error": 1.6117986188096E-05,
+        "v_error": 3.0111654609926076E-06,
+        "T_error_C": 1.908573432363888E-09,
+        "S_error_psu": 0.0,
+        "volume": 2.220446049250313E-16,
+        "T_inventory": 4.440892098500626E-16,
+        "S_inventory": 2.220446049250313E-16
+      },
+      "result_sha256": "67f29ebc64689da4f15184ebf124195e49040dda0084adeeca4a2d5e6799d20c"
+    },
+    {
+      "index": 3,
+      "directory": "03-candidate-horizontal-main",
+      "source": "70d408583aa99db63e49d958d89dcaccad273f0e",
+      "original_screen_pass": true,
+      "metrics": {
+        "eta_error": 0.0005106513974973418,
+        "u_error": 3.135275688182004E-05,
+        "v_error": 8.502511981806308E-06,
+        "T_error_C": 9.381114645517458E-09,
+        "S_error_psu": 0.0,
+        "volume": 2.220446049250313E-16,
+        "T_inventory": 2.220446049250313E-16,
+        "S_inventory": 2.220446049250313E-16
+      },
+      "result_sha256": "39bd84ea56ef2029b6194159f11aea2c7016f6f21a952e39d73d57b8f7894643"
+    },
+    {
+      "index": 4,
+      "directory": "04-candidate-horizontal-half",
+      "source": "70d408583aa99db63e49d958d89dcaccad273f0e",
+      "original_screen_pass": true,
+      "metrics": {
+        "eta_error": 0.0002593748763813507,
+        "u_error": 1.7346179638524734E-05,
+        "v_error": 8.086031525324774E-06,
+        "T_error_C": 3.61989299764458E-09,
+        "S_error_psu": 0.0,
+        "volume": 2.220446049250313E-16,
+        "T_inventory": 2.220446049250313E-16,
+        "S_inventory": 2.220446049250313E-16
+      },
+      "result_sha256": "5c4b3d98e1e8d07f7b61ff0e2a8dea8189c5a1110ff8db99c29de193b680f1d7"
+    },
+    {
+      "index": 5,
+      "directory": "05-candidate-vertical-main",
+      "source": "70d408583aa99db63e49d958d89dcaccad273f0e",
+      "original_screen_pass": true,
+      "metrics": {
+        "eta_error": 0.0005413726308726622,
+        "u_error": 3.182240968344689E-05,
+        "v_error": 1.6316588223838945E-06,
+        "T_error_C": 6.837669991371231E-09,
+        "S_error_psu": 0.0,
+        "volume": 2.220446049250313E-16,
+        "T_inventory": 2.220446049250313E-16,
+        "S_inventory": 2.220446049250313E-16
+      },
+      "result_sha256": "04d4f76365fa011a9660a23de999081f40e8a055c539f55af5ebb064e848a3d2"
+    },
+    {
+      "index": 6,
+      "directory": "06-candidate-vertical-half",
+      "source": "70d408583aa99db63e49d958d89dcaccad273f0e",
+      "original_screen_pass": true,
+      "metrics": {
+        "eta_error": 0.0002707069092747658,
+        "u_error": 1.5918813909122305E-05,
+        "v_error": 9.310703084466989E-07,
+        "T_error_C": 1.7202503736858847E-09,
+        "S_error_psu": 0.0,
+        "volume": 2.220446049250313E-16,
+        "T_inventory": 2.220446049250313E-16,
+        "S_inventory": 2.220446049250313E-16
+      },
+      "result_sha256": "31645b18283391f9b0934e64e50e8f251b3f4dcee88e18f3be27e5d20ac3568b"
+    },
+    {
+      "index": 7,
+      "directory": "07-candidate-null",
+      "source": "70d408583aa99db63e49d958d89dcaccad273f0e",
+      "original_screen_pass": true,
+      "metrics": {
+        "eta_error": 0.0,
+        "u_error": 0.0,
+        "v_error": 0.0,
+        "T_error_C": 0.0,
+        "S_error_psu": 0.0,
+        "volume": 0.0,
+        "T_inventory": 0.0,
+        "S_inventory": 0.0
+      },
+      "result_sha256": "934011ed19bc92888b44c37508a2126d1364cc3c5c957df06f221a612b53f7f9"
+    },
+    {
+      "index": 8,
+      "directory": "08-default-null",
+      "source": "70d408583aa99db63e49d958d89dcaccad273f0e",
+      "original_screen_pass": true,
+      "metrics": {
+        "eta_error": 0.0,
+        "u_error": 0.0,
+        "v_error": 0.0,
+        "T_error_C": 0.0,
+        "S_error_psu": 0.0,
+        "volume": 0.0,
+        "T_inventory": 0.0,
+        "S_inventory": 0.0
+      },
+      "result_sha256": "467bd2691cdcd5ede9acd2af27401a0dce8a52e5dc2379e09175d8a701a608f8"
+    },
+    {
+      "index": 9,
+      "directory": "09-candidate-thermal",
+      "source": "70d408583aa99db63e49d958d89dcaccad273f0e",
+      "original_screen_pass": true,
+      "metrics": {
+        "eta_error": 0.0006673286760035832,
+        "u_error": 0.00030763334436475045,
+        "v_error": 0.00019702172924214738,
+        "T_error_C": 3.2750856066568785E-05,
+        "S_error_psu": 6.80128585725626E-06,
+        "volume": 2.220446049250313E-16,
+        "T_inventory": 3.1254998589247407E-12,
+        "S_inventory": 2.220446049250313E-16
+      },
+      "result_sha256": "4d76374979d3052f7172880a9d6ae742fcfc8336bd4a47931b9aedba9424b760"
+    }
+  ],
+  "raw_reads": "No new raw reads during consolidation; only persisted independent audit results",
+  "limitations": [
+    "Historical loaded Python paths absent",
+    "momentum dual_face default inferred from frozen source",
+    "Contacted development data; no pristine heldout/global/fullphysics qualification"
+  ],
+  "report": "audit-all10-report.md"
+}

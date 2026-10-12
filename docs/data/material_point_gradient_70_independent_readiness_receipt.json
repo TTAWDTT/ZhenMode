@@ -1,0 +1,24 @@
+{
+  "reviewer": "Lady /root/scalar_parity_review",
+  "date": "2026-10-13",
+  "status": "READY-TO-FREEZE-BUILD",
+  "scope": "Previously accepted static opt-in material-point desired/moment gradient implementation; repaired affected local test harness",
+  "five_production_source_hashes_unchanged": true,
+  "harness": "JIT amplitude broadcasts/trig now jnp; same profiles/gates; support fixture body408 chars exactly matches original; no test-owner imports",
+  "control_collection": {"original":157,"new":13,"total":170},
+  "runs": [
+    {"attempt":1,"passed":168,"failed":2,"status":"FAIL preserved","wall_test_s":96.7},
+    {"attempt":2,"passed":48,"failed":0,"status":"affected-subset PASS","wall_test_s":38.14,"supervisor_exit":0}
+  ],
+  "coverage": "Union each170 at least one PASS, not a single170-PASS run; unchanged production source; fullCI pending",
+  "documentation": "Scope accurate; no false native improvement; attempt01 units rejected/attempt02 finite mechanism and fine even worsening retained",
+  "scientific_native_rank_grade": "OPEN",
+  "momentum_candidate": "dual_face_v1",
+  "best_prior_configuration_source": "3c8e86bef2ee1fbfd50cca4343d6fc61694d9edc",
+  "source_id": "UNCOMMITTED; root must notify frozen new identity before new independent control selection",
+  "new_independent_profiles_selected": false,
+  "new_data_evaluated": false,
+  "reviewer_numeric_tests_rerun": false,
+  "test_hash_label_erratum": "Firstreview b6ce table attempt01 label was asynchronous read/hash label error; b6ce is repaired currenttest. Preserved failedarchive actualhash8862a5273beda4b8d8a91ce3b3457639a7b6f89c45a7ae77cf267ffda59e4244",
+  "review": "independent-static-review.md appended readiness section"
+}

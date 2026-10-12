@@ -1,0 +1,58 @@
+"""Post hoc saved-array arithmetic/provenance only; no JAX or solver imports."""
+import datetime,hashlib,json,math,time
+from pathlib import Path
+import numpy as np
+ROOT=Path(__file__).resolve().parent;start=time.monotonic()
+read=lambda p:json.loads(Path(p).read_text())
+sha=lambda p:hashlib.sha256(Path(p).read_bytes()).hexdigest()
+def write(name,value):
+    with (ROOT/name).open('x') as stream:json.dump(value,stream,indent=2)
+source=read(ROOT/'source-math-result.json');one=read(ROOT/'new-1d-result.json');two=read(ROOT/'new-2d-result.json');identity=read(ROOT/'source-identity-result.json')
+assert all(result['verdict']=='PASS' for result in (source,one,two,identity))
+assert all(np.isclose(0.,0.,rtol=1e-12,atol=1e-16) for _ in (0,)) and not np.isclose(.1,0.,rtol=1e-12,atol=1e-16)
+records=[]
+for case in one['cases']:
+    n=case['nodes'];raw=np.load(ROOT/f'new-1d-raw-n{n}.npz',allow_pickle=False)
+    d,h,q,truth=raw['depth'],raw['h'],raw['final'],raw['truth']
+    assert all(np.all(np.isfinite(a)) for a in (d,h,q,truth))
+    assert np.array_equal(np.diff(np.r_[0.,.5*(d[:-1]+d[1:]),1.]),h)
+    r=math.exp(-2*.21*math.pi*.24);c=np.cos(math.pi*d)
+    transformed=((1-r)+(1+r)*c)/((1+r)+(1-r)*c)
+    # Exact endpoint geometry avoids acos conditioning at +/-1.
+    foot=np.empty_like(d);foot[[0,-1]]=[0.,1.];foot[1:-1]=np.arccos(transformed[1:-1])/math.pi
+    alternative=6+.11*np.exp(.62*foot)+.08*foot**2+.017*foot**4
+    reference_defect=float(np.max(abs(truth-alternative)));assert reference_defect<=5e-14
+    measured=float(np.sum(abs(q-truth)*h)/np.sum(h)/one['initial_continuous_range'])
+    assert np.isclose(measured,case['normalized_weighted_L1'],rtol=1e-12,atol=1e-16)
+    assert np.array_equal(raw['constant_initial'],raw['constant_final'])
+    records.append(dict(kind='1D',nodes=n,normalized_weighted_L1=measured,alternative_truth_max_C=reference_defect))
+for case in two['rows']:
+    ny,nz=case['Ny'],case['Nz'];raw=np.load(ROOT/f'new-2d-raw-{ny}x{nz}.npz',allow_pickle=False)
+    h=raw['h'];D=np.arange(nz)[None,None,:]/(nz-1);Y=(np.arange(ny)[None,:,None]+.5)/ny
+    v=.13/90*np.sin(np.pi*Y)*(1-1.4*D-1.8*D**2+1.2*D**3)
+    f=D*(1-D)*(1+.3*D*(1-D));w=-.13*np.pi/17000*np.cos(np.pi*Y)*f
+    qy=-np.pi/17000*np.sin(np.pi*Y)*(.052+.037*(D+.14*D**2+.012*D**4))
+    qd=(1+.037*np.cos(np.pi*Y))*(1+.28*D+.048*D**3)/90
+    alternative=np.broadcast_to(-v*qy-w*qd,raw['truth'].shape)
+    reference_defect=float(np.max(abs(raw['truth']-alternative)));assert reference_defect<=5e-22
+    num=np.sum(abs(raw['rate']-raw['truth']).astype(np.longdouble)*h.astype(np.longdouble))
+    den=np.sum(abs(raw['truth']).astype(np.longdouble)*h.astype(np.longdouble));measured=float(num/den)
+    assert np.isclose(measured,case['relative_weighted_rate_L1'],rtol=1e-12,atol=1e-16)
+    assert float(raw['alpha'])==case['alpha']==1 and bool(raw['feasible'])==case['feasible']==True
+    assert np.array_equal(raw['rate'],raw['core_rate'])
+    assert np.all(raw['anti_vertical'][raw['Fz']==0.]==0.)
+    assert np.all(raw['anti_x'][raw['mass_x']==0.]==0.) and np.all(raw['anti_y'][raw['mass_y']==0.]==0.)
+    expected=-(raw['mass_numerator']-np.diff(raw['Fz'],axis=-1))/h
+    assert np.max(abs(expected-raw['badmass_rate']))<=2e-12
+    records.append(dict(kind='ACTIVE2D',Ny=ny,Nz=nz,relative_weighted_rate_L1=measured,alternative_truth_max_C_s=reference_defect,alpha=float(raw['alpha']),feasible=bool(raw['feasible'])))
+write('saved-readback.json',dict(verdict='PASS',scope='Post hoc saved arithmetic/reference/hash consistency only',rows=records,elapsed_s=time.monotonic()-start))
+contacts=[]
+for label,decl,script,result in (('source/math','source-math-declaration.json','check_source_math.py','source-math-result.json'),('fresh1D','new-1d-declaration.json','check_new_1d.py','new-1d-result.json'),('actualACTIVE2D','new-2d-declaration.json','check_new_2d.py','new-2d-result.json')):
+    spec=read(ROOT/decl)
+    contacts.append(dict(reference=label,source=spec['source'],birth_declaration=decl,declaration_sha256=sha(ROOT/decl),declaration_file_mtime_UTC=datetime.datetime.fromtimestamp((ROOT/decl).stat().st_mtime,datetime.timezone.utc).isoformat(),generator=script,generator_sha256=sha(ROOT/script),inputs='Exact fixed profile/constants/geometries in declaration',precision='Analytic formula evaluated float64, longdouble stock/error summation',accuracy_basis='Exact analytic derivative/integral/characteristic formula, positive and negative controls; no claimed precision digits beyond recorded floating computation',contacts=[dict(event='Declared after frozen70d4085 before first profile numerical output, no rootpilot score used for selection'),dict(event='Finite qualification/control comparison completed; data permanently contacted',result=result,result_sha256=sha(ROOT/result))],shared_lineage=spec['lineage'],may_certify_future_changes=False))
+write('reference-contact-ledger.json',dict(records=contacts,scientific_closure='OPEN',old_failures_untouched=True))
+summary=dict(source='70d408583aa99db63e49d958d89dcaccad273f0e',source_identity='PASS146Git/archive/buildand133wheel/installedactualPython',source_math='PASS unchangedoriginalcriteria',fresh_1D='PASS statedfinitecharacteristiccorecriteria; minimumalpha0, noactiveclaim',fresh_ACTIVE2D='PASS all3meshesalpha1 feasibletrue andoriginalcriteria',scope='Declared finite developmental source/math/1D/ACTIVE2D checks only',scientific_fullphysics_grade='OPEN',fullCI='Separate root check; not graded by this review',native='No native run or new ranking evaluated by this reviewer',new_momentum='dual_face_v1',gradient='fourth_uniform_v1',no_profile_parameter_gate_change=True,no_solver_diagnostic_rerun=True,reference_contact_ledger='reference-contact-ledger.json',raw_readback='saved-readback.json',old_harness_FAIL_and_attempt01_units_FAIL_preserved=True)
+write('FINAL_VERDICT.json',summary)
+files={p.name:sha(p) for p in ROOT.iterdir() if p.is_file() and p.name not in ('review-file-hashes.json',)}
+write('review-file-hashes.json',files)
+print(json.dumps(dict(verdict='PASS savedconsistency',rows=records,finite_source_math_1D_ACTIVE2D='PASS',scientific_fullphysics='OPEN',elapsed_s=time.monotonic()-start)))

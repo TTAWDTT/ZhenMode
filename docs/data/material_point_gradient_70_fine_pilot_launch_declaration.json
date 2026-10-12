@@ -1,0 +1,44 @@
+{
+  "source_revision": "70d408583aa99db63e49d958d89dcaccad273f0e",
+  "pilot_check_explicit_exit": 0,
+  "all_pilot_gates": {
+    "replay_exact": true,
+    "original_screen": true,
+    "score_improved": true,
+    "T_not_worse": true,
+    "score_improved_vs_frozen3c8": true,
+    "static_capacity_exact": true,
+    "dynamic_h_original_formula_0": true,
+    "dynamic_h_original_formula_1": true
+  },
+  "independent_source_math": "PASS review/source-math-result.json",
+  "fresh1D": "PASS review/new-1d-result.json; coreminAlpha0 noted",
+  "fresh_actual_ACTIVE2D": "PASS review/new-2d-result.json eachalpha1 feasibletrue",
+  "launch_indices": [
+    5
+  ],
+  "already_completed": [
+    0,
+    1
+  ],
+  "remaining_after_success": [
+    2,
+    3,
+    4,
+    6,
+    7,
+    8,
+    9
+  ],
+  "primary_measured_wall_s": [
+    31.510592743999993,
+    33.76176885200002
+  ],
+  "full_CI": "38306749152 actualinprogress noPASS",
+  "cap_per_native": {
+    "cpu": 1,
+    "wall_s": 600,
+    "memory_mib": 4096
+  },
+  "no_completed_index_rerun": true
+}

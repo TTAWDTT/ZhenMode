@@ -1,0 +1,11 @@
+{
+  "measured_same_hardware_primary_wall_s": [
+    31.510592743999993,
+    33.76176885200002
+  ],
+  "remaining_rows": 8,
+  "projection_s": 270.09415081600014,
+  "scaling": "same native integration stage; startup included conservatively, new grids must remain under each row600s",
+  "threshold_s": 7200,
+  "allow": true
+}

@@ -1,0 +1,8 @@
+{
+  "scope":"Additional coarse actual-owner timing-only pilot before full scalar controls; first completed polynomial pilot retained/reused",
+  "reason":"Polynomial pilot measured2.489s but did not measure new actual scalar JIT cost. Do not extrapolate its rate to a different scalar kernel without measuring.",
+  "fixed_input":"Exact already-declared source-math coarse32x16 field, same candidate options; four snapshot calls with no truth/gauge/constant comparison, no numerical values displayed or written",
+  "gate_and_profile_changes":false,
+  "resources":{"cpu":1,"wall_seconds":180,"memory_mib":4096,"GPU":false},
+  "timing":"Compile+first call separated from subsequent3 calls; record actual cost, then plan two fixed geometry scalar cases with conservative volume scaling; no wider batch or data selection"
+}

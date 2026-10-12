@@ -1,0 +1,32 @@
+{
+  "source_revision": "70d408583aa99db63e49d958d89dcaccad273f0e",
+  "pilot_decision": "allgatesTRUE/exitzero",
+  "independent_newscience": "allsource/math/new1D/newACTIVE2DPASS",
+  "primary_wall_s": [
+    31.510592743999993,
+    33.76176885200002
+  ],
+  "fine_wall_s": 37.08547325699999,
+  "remaining_indices": [
+    2,
+    3,
+    4,
+    6,
+    7,
+    8,
+    9
+  ],
+  "completed_indices": [
+    0,
+    1,
+    5
+  ],
+  "conservative_wall_s": 259.5983127989999,
+  "finite_max_total_s": 7200,
+  "each_native_s": 600,
+  "memory_mib": 4096,
+  "cpu": 1,
+  "exclude_completed": true,
+  "full_CI_pending": true,
+  "projection_not_overallETA": true
+}

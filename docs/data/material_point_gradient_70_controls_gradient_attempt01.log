@@ -1,0 +1,78 @@
+............F........................................................... [ 42%]
+........................................................................ [ 84%]
+..............F...........                                               [100%]
+=================================== FAILURES ===================================
+__________ test_unlimited_target_preserves_bilinear_amplitude_parity ___________
+
+    def test_unlimited_target_preserves_bilinear_amplitude_parity():
+        grid, (_, _, _, p, _) = case()
+        d = -grid.z[None, None, :]
+        Y = np.pi*(np.arange(grid.ny)[None, :, None]+.5)/grid.ny
+        shape = (grid.nx, grid.ny, grid.nz)
+        bg = jnp.asarray(np.broadcast_to(15.-.02*d, shape))
+    
+        @jax.jit
+        def target(amplitude, wave):
+            u = jnp.zeros(shape)
+            v = jnp.asarray(np.broadcast_to(amplitude*.0002*np.sin(Y)*np.cos(np.pi*d/100), shape))
+            q = bg+jnp.asarray(np.broadcast_to(wave*amplitude*.02*np.cos(Y)*np.sin(np.pi*d/100), shape))
+            mass = _layer_face_transports(u, v, p)
+            F = _vertical_transport_iface(u, v, p, face_transport=mass)
+            fx, fy = _horizontal_tracer_fluxes(q-q.reshape(-1)[0], u, v, p, mass)
+            _, _, di = _material_point_scalar_rate(q, F, mass, (fx*p.dz_node, fy*p.dz_node),
+                                                   p, return_diagnostics=True)
+            return di['desired']
+    
+>       odd = (target(.01, 1.)-target(-.01, 1.)-target(.01, 0.)+target(-.01, 0.))/2
+               ^^^^^^^^^^^^^^^
+
+tests/fd/test_material_point_gradient.py:115: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/fd/test_material_point_gradient.py:106: in target
+    v = jnp.asarray(np.broadcast_to(amplitude*.0002*np.sin(Y)*np.cos(np.pi*d/100), shape))
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venvs/zhenmode-managed-bench-20261005/lib/python3.12/site-packages/numpy/lib/_stride_tricks_impl.py:517: in broadcast_to
+    return _broadcast_to(array, shape, subok=subok, readonly=True)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+array = JitTracer(float64[1,8,16]), shape = (8, 8, 16), subok = False
+readonly = True
+
+    def _broadcast_to(array, shape, subok, readonly):
+        shape = tuple(shape) if np.iterable(shape) else (shape,)
+>       array = np.array(array, copy=None, subok=subok)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       jax.errors.TracerArrayConversionError: The numpy.ndarray conversion method __array__() was called on traced array with shape float64[1,8,16]
+E       The error occurred while tracing the function target at /mnt/d/CodexWorktrees/thermal-full-scan/ocean-solver/tests/fd/test_material_point_gradient.py:103 for jit. This concrete value was not available in Python because it depends on the value of the argument amplitude.
+E       See https://docs.jax.dev/en/latest/errors.html#jax.errors.TracerArrayConversionError
+E       --------------------
+E       For simplicity, JAX has removed its internal frames from the traceback of the following exception. Set JAX_TRACEBACK_FILTERING=off to include these.
+
+/root/.venvs/zhenmode-managed-bench-20261005/lib/python3.12/site-packages/numpy/lib/_stride_tricks_impl.py:449: TracerArrayConversionError
+_________ test_tests_use_support_instead_of_importing_other_test_files _________
+
+    def test_tests_use_support_instead_of_importing_other_test_files():
+        def is_test_owner(module):
+            return any(part.startswith("test_") for part in module.replace("\\", "/").replace("/", ".").split("."))
+    
+        for directory in ("tests", "scripts", "src"):
+            for path in (repository() / directory).rglob("*.py"):
+                for node in ast.walk(ast.parse(path.read_text(encoding="utf-8"))):
+                    if isinstance(node, ast.ImportFrom):
+>                       assert not is_test_owner(node.module or ""), path
+E                       AssertionError: PosixPath('/mnt/d/CodexWorktrees/thermal-full-scan/ocean-solver/tests/fd/test_material_point_gradient.py')
+E                       assert not True
+E                        +  where True = <function test_tests_use_support_instead_of_importing_other_test_files.<locals>.is_test_owner at 0x7da2aebd6ca0>(('tests.fd.test_material_point_transport'))
+E                        +    where 'tests.fd.test_material_point_transport' = <ast.ImportFrom object at 0x7da2c12c2cd0>.module
+
+tests/infrastructure/test_source_layout.py:67: AssertionError
+=============================== warnings summary ===============================
+tests/infrastructure/test_source_layout.py::test_checkout_data_roots_stay_at_the_repository
+  <frozen importlib._bootstrap>:488: RuntimeWarning: numpy.ndarray size changed, may indicate binary incompatibility. Expected 16 from C header, got 96 from PyObject
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/fd/test_material_point_gradient.py::test_unlimited_target_preserves_bilinear_amplitude_parity
+FAILED tests/infrastructure/test_source_layout.py::test_tests_use_support_instead_of_importing_other_test_files
+2 failed, 168 passed, 1 warning in 96.70s (0:01:36)

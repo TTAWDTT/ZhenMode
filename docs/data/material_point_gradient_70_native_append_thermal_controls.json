@@ -1,0 +1,9 @@
+{
+  "utc": "2026-10-12T21:16:26.160969+00:00",
+  "quadratic_residual_max": 1.734723475976807e-18,
+  "neutral_density_residual_max": 1.7052990072270708e-18,
+  "steady_shear_and_null_pass": true,
+  "ssh_perturbation_detected": true,
+  "pass_all": true,
+  "scope": "thermal independent evaluator algebra/null checks; no physical solver invocation"
+}

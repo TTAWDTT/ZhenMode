@@ -1,0 +1,105 @@
+{
+  "checks": {
+    "replay_exact": true,
+    "original_screen": true,
+    "score_improved": true,
+    "T_not_worse": true,
+    "score_improved_vs_frozen3c8": true,
+    "static_capacity_exact": true,
+    "dynamic_h_original_formula_0": true,
+    "dynamic_h_original_formula_1": true
+  },
+  "allow_expansion": true,
+  "baseline": {
+    "schema": "vertical-tracer-development-v1",
+    "contract_sha256": "a2cbe4672341c72e3484fe2f6c91e09a10192398d5348dd48b9e8ad955ae2d48",
+    "model": "ocean-solver",
+    "metrics": {
+      "eta_error": 0.005240393934376391,
+      "u_error": 0.000442236621138699,
+      "v_error": 0.00027255277265222396,
+      "T_error_C": 8.530755561576719e-07,
+      "S_error_psu": 0.0,
+      "volume": 2.220446049250313e-16,
+      "T_inventory": 4.440892098500626e-16,
+      "S_inventory": 2.220446049250313e-16
+    },
+    "failed_metrics": [],
+    "engineering_screen_pass": true,
+    "normalized_error_ratios": {
+      "eta_error": 0.0524039393437639,
+      "u_error": 0.00442236621138699,
+      "v_error": 0.0027255277265222392,
+      "T_error_C": 0.04265377780788359,
+      "S_error_psu": 0.0
+    },
+    "composite": 0.0524039393437639,
+    "null_absolute_errors": {},
+    "industrial_qualified": false,
+    "performance_comparison": false,
+    "source_sha": "70d408583aa99db63e49d958d89dcaccad273f0e",
+    "executable_sha256": "e50d468e8b0adfb05733f5b87b3cff34829c4a8c1aea50c865aa8bdfe4bb150f",
+    "reference": {
+      "kind": "linear_rotating_hydrostatic_free_surface_first_internal_mode",
+      "pressure_units": "p_prime/rho0 in m2/s2",
+      "branch": "pi < q < 3*pi/2; q*tan(q)=1/2500",
+      "provenance": "derived hydrostatic rotating normal mode; linear reference, full nonlinear native trajectories",
+      "upstream": "https://ocw.mit.edu/ans7870/textbooks/Wunsch/Edited/Chapter10.pdf"
+    },
+    "units": {
+      "T_error_C": "degC",
+      "S_error_psu": "absolute psu",
+      "other": "relative"
+    },
+    "output_sha256": "c8c5e1209e4e001fae24bd289e5a0b3716b903a4e7d373b43529c2566e286b8d"
+  },
+  "candidate": {
+    "schema": "vertical-tracer-development-v1",
+    "contract_sha256": "b6fa93015619fc3759e45365338f58531aa81da892c287bda1ce9818a2d0267b",
+    "model": "ocean-solver",
+    "metrics": {
+      "eta_error": 0.0005387828306036267,
+      "u_error": 3.1921402933548914e-05,
+      "v_error": 4.082506786096297e-06,
+      "T_error_C": 7.088858339175954e-09,
+      "S_error_psu": 0.0,
+      "volume": 2.220446049250313e-16,
+      "T_inventory": 2.220446049250313e-16,
+      "S_inventory": 2.220446049250313e-16
+    },
+    "failed_metrics": [],
+    "engineering_screen_pass": true,
+    "normalized_error_ratios": {
+      "eta_error": 0.0053878283060362665,
+      "u_error": 0.0003192140293354891,
+      "v_error": 4.0825067860962966e-05,
+      "T_error_C": 0.0003544429169587977,
+      "S_error_psu": 0.0
+    },
+    "composite": 0.0053878283060362665,
+    "null_absolute_errors": {},
+    "industrial_qualified": false,
+    "performance_comparison": false,
+    "source_sha": "70d408583aa99db63e49d958d89dcaccad273f0e",
+    "executable_sha256": "e50d468e8b0adfb05733f5b87b3cff34829c4a8c1aea50c865aa8bdfe4bb150f",
+    "reference": {
+      "kind": "linear_rotating_hydrostatic_free_surface_first_internal_mode",
+      "pressure_units": "p_prime/rho0 in m2/s2",
+      "branch": "pi < q < 3*pi/2; q*tan(q)=1/2500",
+      "provenance": "derived hydrostatic rotating normal mode; linear reference, full nonlinear native trajectories",
+      "upstream": "https://ocw.mit.edu/ans7870/textbooks/Wunsch/Edited/Chapter10.pdf"
+    },
+    "units": {
+      "T_error_C": "degC",
+      "S_error_psu": "absolute psu",
+      "other": "relative"
+    },
+    "output_sha256": "55d8f8c4b62f486c7d2941ae309c864acd6f9414f2e44dfc9b51aa5c331a2449"
+  },
+  "old_arithmetic_dynamic_h_gate": "FAIL/OPEN; new physical hypothesis does not relabel it",
+  "scope": "development fixed panel; no SOTA qualification",
+  "pilot_wall_s": [
+    31.510592743999993,
+    33.76176885200002
+  ]
+}
