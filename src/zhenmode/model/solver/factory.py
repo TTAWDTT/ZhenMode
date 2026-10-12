@@ -10,6 +10,7 @@ from zhenmode.model.solver.dynamics.transport import _compute_vertical_velocity
 from zhenmode.model.solver.geometry.fd_metrics import make_fd_params
 from zhenmode.model.solver.geometry.grid import validate_grid
 from zhenmode.model.solver.numerics.backend import jax, jnp, np
+from zhenmode.model.solver.numerics.column import cubic_uniform_mean_weights
 from zhenmode.model.solver.numerics.horizontal import nu_nsub_for_2d_cfl
 from zhenmode.model.solver.physics.eos import _density_anomaly
 from zhenmode.model.solver.state import FDPhysParams, JaxStateG
@@ -56,7 +57,8 @@ def make_solver_global(grid, physics, dt, forcing=None,
                        hydrostatic_surface_scheme='reference_plane',
                        density_rotation_scheme='split_sources',
                        vertical_tracer_scheme='donor_cell',
-                       hydrostatic_integral_scheme='trapezoidal'):
+                       hydrostatic_integral_scheme='trapezoidal',
+                       column_mean_scheme='nodal_capacity'):
     """Create a JIT-compiled global FD ocean solver.
 
     Key properties:
@@ -161,6 +163,14 @@ def make_solver_global(grid, physics, dt, forcing=None,
     validate_grid(grid)
     if hydrostatic_integral_scheme not in ('trapezoidal', 'cubic_uniform_v1'):
         raise ValueError('unknown hydrostatic_integral_scheme')
+    if column_mean_scheme not in ('nodal_capacity', 'cubic_consistent_v1'):
+        raise ValueError('unknown column_mean_scheme')
+    if column_mean_scheme == 'cubic_consistent_v1':
+        if (hydrostatic_integral_scheme != 'cubic_uniform_v1' or grid.nz < 6
+                or external_mode_scheme != 'symmetric' or meridional_boundary_scheme != 'closed_faces'
+                or density_rotation_scheme != 'joint_shear' or mode_split
+                or pressure_continuity_scheme != 'centered_fourth' or project_adv_vel):
+            raise ValueError('cubic_consistent_v1 requires the unsplit cubic-pressure joint-shear closed channel with at least six nodes')
     if hydrostatic_integral_scheme == 'cubic_uniform_v1':
         gaps = np.abs(np.diff(np.asarray(grid.z)))
         if (column_geometry != 'nodal_dual_v1' or physics.thermodynamics != 'linear'
@@ -598,6 +608,8 @@ def make_solver_global(grid, physics, dt, forcing=None,
         density_rotation_scheme=density_rotation_scheme,
         vertical_tracer_scheme=vertical_tracer_scheme,
         hydrostatic_integral_scheme=hydrostatic_integral_scheme,
+        column_mean_weights=(jnp.asarray(cubic_uniform_mean_weights(grid.nz))[None, None]
+                             if column_mean_scheme == 'cubic_consistent_v1' else None),
     )
 
     if projection_preconditioner == 'jacobi':

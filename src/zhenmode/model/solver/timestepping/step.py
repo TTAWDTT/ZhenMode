@@ -21,6 +21,7 @@ from zhenmode.model.solver.dynamics.transport import (
     _reference_depth_divergence,
 )
 from zhenmode.model.solver.numerics.backend import jax, jnp
+from zhenmode.model.solver.numerics.column import column_mean
 from zhenmode.model.solver.numerics.horizontal import (
     _apply_polar_cap,
     _biharmonic_h,
@@ -164,8 +165,8 @@ def _linear_half_step(state, p, dt_half, budget=None, *, momentum_diffusion=None
         shear_force = None
         if getattr(p, 'density_rotation_scheme', 'split_sources') == 'joint_shear':
             force_x, force_y = _density_pressure_gradient(state, p)
-            mean_x = jnp.sum(force_x * p.dz_norm, axis=-1)
-            mean_y = jnp.sum(force_y * p.dz_norm, axis=-1)
+            mean_x = column_mean(force_x, p)
+            mean_y = column_mean(force_y, p)
             shear_force = (force_x - mean_x[..., None], force_y - mean_y[..., None])
         u, v = _rotate_baroclinic_shear(u, v, p, dt_half, forcing=shear_force)
     else:

@@ -2,6 +2,7 @@
 
 from zhenmode.model.solver.numerics.backend import jnp
 from zhenmode.model.solver.numerics.channel import channel_face_velocities, channel_tracer_fluxes
+from zhenmode.model.solver.numerics.column import column_mean
 from zhenmode.model.solver.numerics.contacts import (
     contact_divergence,
     contact_material_derivative,
@@ -29,6 +30,11 @@ def _column_divergence(u, v, p):
     advection budget uses, so a zero here is exactly the discretely
     divergence-free condition the tracer flux operator needs. (D13)
     """
+    if getattr(p, 'column_mean_weights', None) is not None:
+        faces = _layer_face_transports(u, v, p)
+        integrand = _face_transport_divergence(*faces, p)
+        # Use the vertical inverse's summation order for its surface transport.
+        return jnp.cumsum(integrand[..., ::-1], axis=-1)[..., -1] * p.wet_mask
     return jnp.sum(_divergence_h(u, v, p) * p.dz_node, axis=-1) * p.wet_mask
 
 def _layer_face_transports(velocity_x, velocity_y, params):
@@ -37,6 +43,11 @@ def _layer_face_transports(velocity_x, velocity_y, params):
         return contact_transports(velocity_x,velocity_y,params)
     if getattr(params, 'pressure_continuity_scheme', 'centered_second') == 'centered_fourth':
         fx, fy = channel_face_velocities(velocity_x, velocity_y)
+        if getattr(params, 'column_mean_weights', None) is not None:
+            layers = (fx * params.dz_node, fy * params.dz_node)
+            return tuple(layer + params.dz_norm *
+                         (column_mean(face, params)*params.H_sw-jnp.sum(layer, axis=-1))[..., None]
+                         for face, layer in zip((fx, fy), layers, strict=True))
         return fx * params.dz_node, fy * params.dz_node
     thickness_x = _face_thickness(params, 0)
     thickness_y = _face_thickness(params, 1)
@@ -88,6 +99,8 @@ def _vertical_transport_iface(u, v, p, face_transport=None):
     no CFL limit removes. Fz[..., 0] is the column-integrated horizontal divergence,
     the rigid-lid leak the barotropic subcycle absorbs via Fz_top = Fz[0]*T[0]. (D7)
     """
+    if face_transport is None and getattr(p, 'column_mean_weights', None) is not None:
+        face_transport = _layer_face_transports(u, v, p)
     if face_transport is not None:
         integrand = _face_transport_divergence(*face_transport, p)
         accumulated = jnp.cumsum(integrand[..., ::-1], axis=-1)[..., ::-1]
@@ -103,7 +116,7 @@ def _vertical_transport_iface(u, v, p, face_transport=None):
 def _barotropic_velocity(u, v, p):
     """Depth-averaged (barotropic) horizontal velocity."""
     if p.column_geometry in {'nodal_dual_v1', 'fixed_partial_v1'}:
-        return jnp.sum(u * p.dz_norm, axis=-1), jnp.sum(v * p.dz_norm, axis=-1)
+        return column_mean(u, p), column_mean(v, p)
     u_avg = 0.5 * (u[..., :-1] + u[..., 1:])
     v_avg = 0.5 * (v[..., :-1] + v[..., 1:])
     ubt = jnp.sum(u_avg * p.dz_norm, axis=-1)
@@ -273,6 +286,8 @@ def _advection_scalar(T, u, v, Fz_in, p, return_boundary=False, face_transport=N
     overshoot at a sharp front.
     """
     wm = p.wet_mask_z
+    if face_transport is None and getattr(p, 'column_mean_weights', None) is not None:
+        face_transport = _layer_face_transports(u, v, p)
     partial = getattr(p, 'column_geometry', 'legacy') == 'fixed_partial_v1'
     if partial and face_transport is None:
         face_transport = _layer_face_transports(u, v, p)

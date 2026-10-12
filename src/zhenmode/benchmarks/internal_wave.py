@@ -69,19 +69,21 @@ def validate_contract(c):
     if c.get("schema") == DEVELOPMENT_SCHEMA:
         if not isinstance(c.get("development"), dict):
             raise ValueError("development declaration must be an object")
-        expected = development_contract(c.get("case"), c.get("control"), c["development"].get("vertical_tracer_scheme"), c["development"].get("problem"), c["development"].get("hydrostatic_integral_scheme", "trapezoidal"))
+        expected = development_contract(c.get("case"), c.get("control"), c["development"].get("vertical_tracer_scheme"), c["development"].get("problem"), c["development"].get("hydrostatic_integral_scheme", "trapezoidal"), c["development"].get("column_mean_scheme", "nodal_capacity"))
     else:
         expected = contract(c.get("frozen_model"), c.get("case"), c.get("control"))
     if digest(c) != digest(expected):
         raise ValueError("internal-wave contract differs from frozen definition")
 
 
-def development_contract(profile="primary", control="main", scheme="muscl_nodal_v1", problem="internal-wave", integral="trapezoidal"):
+def development_contract(profile="primary", control="main", scheme="muscl_nodal_v1", problem="internal-wave", integral="trapezoidal", mean="nodal_capacity"):
     """New development experiment, never a replacement for the frozen holdout."""
     if scheme not in ("donor_cell", "muscl_nodal_v1", "muscl_endpoint_v2", "muscl_band_v3"):
         raise ValueError("unknown vertical development scheme")
     if integral not in ("trapezoidal", "cubic_uniform_v1"):
         raise ValueError("unknown pressure development integral")
+    if mean not in ("nodal_capacity", "cubic_consistent_v1"):
+        raise ValueError("unknown column development mean")
     if problem == "internal-wave":
         c = contract("zhenmode", profile, control)
     elif problem == "thermal-wind" and profile == "coarse" and control == "main":
@@ -99,6 +101,9 @@ def development_contract(profile="primary", control="main", scheme="muscl_nodal_
     if integral != "trapezoidal":
         c["ocean_options"]["hydrostatic_integral_scheme"] = integral
         c["development"]["hydrostatic_integral_scheme"] = integral
+    if mean != "nodal_capacity":
+        c["ocean_options"]["column_mean_scheme"] = mean
+        c["development"]["column_mean_scheme"] = mean
     return c
 
 

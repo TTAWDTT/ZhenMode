@@ -101,6 +101,8 @@ def _compute_tracer_tendency(state, p, budget=None, face_transport=None, return_
     inside their explicit bounds at dt=3600 and stay evaluated ONCE. (D16)
     """
     measure_terms = budget is not None or return_terms
+    if face_transport is None and getattr(p, 'column_mean_weights', None) is not None:
+        face_transport = _layer_face_transports(state.u, state.v, p)
     Fz = _vertical_transport_iface(state.u, state.v, p, face_transport=face_transport)
     if budget is not None and p.column_geometry in {'nodal_dual_v1', 'fixed_partial_v1'}:
         budget.tracer_transport(face_transport if face_transport is not None

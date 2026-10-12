@@ -2,6 +2,7 @@
 
 from zhenmode.model.config import G_EARTH, RHO_0
 from zhenmode.model.solver.numerics.backend import jnp
+from zhenmode.model.solver.numerics.column import column_mean
 from zhenmode.model.solver.numerics.contacts import (
     OFFSETS,
     gradient_from_differences,
@@ -162,11 +163,10 @@ def _compute_bt_rho_pgf(state, p):
             if p.surface_pressure_pa is not None:
                 pressure = pressure + p.surface_pressure_pa[..., None]
             gx, gy = _gradient_conservative_3d(pressure, p)
-            return (-jnp.sum(gx * p.dz_norm, axis=-1) / RHO_0,
-                    -jnp.sum(gy * p.dz_norm, axis=-1) / RHO_0)
+            return (-column_mean(gx, p) / RHO_0,
+                    -column_mean(gy, p) / RHO_0)
         acceleration_x, acceleration_y = _compute_pressure_gradient(state._replace(eta=jnp.zeros_like(state.eta)), p)
-        return (jnp.sum(acceleration_x * p.dz_norm, axis=-1),
-                jnp.sum(acceleration_y * p.dz_norm, axis=-1))
+        return (column_mean(acceleration_x, p), column_mean(acceleration_y, p))
     p_bc = _baroclinic_pressure(state, p)
     if p.surface_pressure_pa is not None:
         p_bc = p_bc + p.surface_pressure_pa[..., None]

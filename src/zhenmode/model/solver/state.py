@@ -176,9 +176,10 @@ FDPhysParams = namedtuple('FDPhysParams', [
     'density_rotation_scheme',  # separate sources or forced shear rotation
     'vertical_tracer_scheme',  # donor cell or limited physical-node reconstruction
     'hydrostatic_integral_scheme',  # cumulative pressure quadrature, independent of tracer capacities
+    'column_mean_weights',  # optional uniform-column point quadrature, not tracer capacities
 ])
 
-FDPhysParams.__new__.__defaults__ = (None, False, False, False, False, False, False, False, None, None, None, -1.8, 0.0, False, 1.0, 150, None, 'none', None, 'default', 2, 'legacy', False, 'legacy', 'linear', None, None, None, None, None, 'forward_backward', 'clamped_nodes', 'centered_second', 'centered_second', 'reference_plane', 'split_sources', 'donor_cell', 'trapezoidal')
+FDPhysParams.__new__.__defaults__ = (None, False, False, False, False, False, False, False, None, None, None, -1.8, 0.0, False, 1.0, 150, None, 'none', None, 'default', 2, 'legacy', False, 'legacy', 'linear', None, None, None, None, None, 'forward_backward', 'clamped_nodes', 'centered_second', 'centered_second', 'reference_plane', 'split_sources', 'donor_cell', 'trapezoidal', None)
 
 def _state_identity(state):
     # Incoming invalid states still need a failure report; do not pass them
