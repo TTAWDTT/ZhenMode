@@ -1,0 +1,78 @@
+# One-shot independent saved-array and source-identity readback.
+# No project loader/oracle/metric imports; canonical fields rebuilt directly.
+from pathlib import Path
+import json, hashlib, re
+import numpy as np
+HERE=Path(__file__).resolve().parent;STAGE=HERE.parents[2];REF=STAGE/'eta-second-order-reference'
+result=json.loads((REF/'result.json').read_text());source_dir=STAGE/'material-point-v4-marginfix/installed/zhenmode'
+records={};inputs=[]
+def checksum(path):return hashlib.sha256(path.read_bytes()).hexdigest()
+def read_npz(path):
+    inputs.append({'path':str(path),'sha256':checksum(path)})
+    with np.load(path,allow_pickle=False) as data:return {key:data[key].copy() for key in data.files}
+def integrated_rms(field,weights,times):
+    # Explicit per-time weighted spatial sum, then trapezoidal time quadrature.
+    space=np.array([np.average(np.ravel(values*values),weights=np.ravel(weight)) for values,weight in zip(field,np.broadcast_to(weights,field.shape))])
+    return float(np.sqrt(np.trapezoid(space,times)/(times[-1]-times[0])))
+def time_rms(field,times):
+    squared=field*field
+    if squared.ndim>1:squared=np.mean(squared,axis=tuple(range(1,squared.ndim)))
+    return float(np.sqrt(np.trapezoid(squared,times)/(times[-1]-times[0])))
+cpath=STAGE/'material-point-v4-marginfix/01-candidate-primary-main/contract.json';c=json.loads(cpath.read_text());inputs.append({'path':str(cpath),'sha256':checksum(cpath)})
+H=c['H_m'];gg=c['gravity'];gam=c['internal_wave']['dT_dz_C_m'];NN=c['internal_wave']['N2_s_2'];A=c['amplitude_m'];q=c['internal_wave']['q'];k=np.pi/c['Ly_m'];m=q/H;omega=np.sqrt(c['f']**2+NN*(k/m)**2);K=2*k;alpha=NN/(gg*gam)
+saved=read_npz(REF/'reference_arrays.npz');times=saved['time'];z=-np.linspace(0,H,c['nz'])
+own=read_npz(HERE/'independent_arrays.npz');assert np.array_equal(own['z'],z)
+weighted_eta=time_rms(own['E_16']-saved['E_16'],times)/time_rms(saved['E_16'],times)
+weighted_theta=time_rms(own['theta2_16']-saved['theta2_16'],times)/time_rms(saved['theta2_16'],times)
+assert weighted_eta<=1e-7 and weighted_theta<=1e-7
+records['independent_n16_time_weighted_comparison']={'eta_relative_RMS':weighted_eta,'theta_mode2_relative_RMS':weighted_theta,'threshold':1e-7,'weighting':'trapezoidal saved time; theta averaged across physical z observation nodes'}
+eta_conv=time_rms(saved['E_32']-saved['E_64'],times)/time_rms(saved['E_64'],times)
+theta_conv=time_rms(saved['theta2_32']-saved['theta2_64'],times)/time_rms(saved['theta2_64'],times)
+surface=time_rms(gg*alpha*saved['theta2_64'][:,0]+NN*saved['E_64'],times)/(NN*time_rms(saved['E_64'],times))
+assert eta_conv<=1e-7 and theta_conv<=1e-7 and surface<=1e-7
+records['saved_grid_gate_readback']={'eta32_64':eta_conv,'theta32_64':theta_conv,'finest_Bsurface_plus_N2E':surface,'pressure_velocity_high_states':'not saved: numeric replay of these n64 checks unavailable; implementation source audited instead'}
+theta20=-gam*A**2*m/4*np.sin(2*m*(z+H))[None,:]*np.sin(omega*times)[:,None]**2
+rows=[]
+for label,relative_path in [('3c8','material-point-v4-marginfix'),('ece','momentum-point-v1')]:
+    rowpath=STAGE/relative_path/'01-candidate-primary-main'
+    ccpath=rowpath/'contract.json';cc=json.loads(ccpath.read_text());inputs.append({'path':str(ccpath),'sha256':checksum(ccpath)})
+    for key in ['H_m','Ly_m','gravity','f','amplitude_m','T_C','S_psu','internal_wave']:assert cc[key]==c[key]
+    data=read_npz(rowpath/'zhenmode/output.npz');metadata=json.loads(data['metadata'].item());assert metadata['model']=='ocean-solver'
+    assert np.array_equal(data['time'],times);assert data['T'].shape==(41,256,16)
+    first_eta=A*np.sin(q)*np.cos(k*data['y_eta'])[None,:]*np.cos(omega*times)[:,None]
+    first_theta=gam*A*np.sin(m*(z+H))[None,None,:]*np.cos(k*data['y_eta'])[None,:,None]*np.cos(omega*times)[:,None,None]
+    first_T=c['T_C']+gam*z[None,None,:]-first_theta
+    native_eta_error=data['eta']-first_eta;native_T_error=data['T']-first_T
+    mode2_y=np.cos(K*data['y_eta'])
+    predicted_eta=saved['E_64'][:,None]*mode2_y[None,:]
+    predicted_T=theta20[:,None,:]+saved['theta2_64'][:,None,:]*mode2_y[None,:,None]
+    volume=data['h']*data['area'][None,:,None]
+    er=integrated_rms(native_eta_error,data['area'][None,:],times);em=integrated_rms(predicted_eta,data['area'][None,:],times);eres=integrated_rms(native_eta_error-predicted_eta,data['area'][None,:],times)
+    tr=integrated_rms(native_T_error,volume,times);tm=integrated_rms(predicted_T,volume,times);tres=integrated_rms(native_T_error-predicted_T,volume,times)
+    measured={'eta_original_RMS_m':er,'eta_model_RMS_m':em,'eta_residual_RMS_m':eres,'eta_residual_fraction':eres/er,'T_original_RMS_C':tr,'T_model_RMS_C':tm,'T_residual_RMS_C':tres,'T_residual_fraction':tres/tr}
+    expected=next(row for row in result['comparisons'] if row['name']==label)
+    diffs={key:abs(value-expected[key])/abs(expected[key]) for key,value in measured.items()}
+    assert max(diffs.values())<=1e-7
+    assert checksum(rowpath/'zhenmode/output.npz')==expected['output_sha256']
+    rows.append({'name':label,'measured':measured,'saved_scalar_relative_differences':diffs,'max_relative_difference':max(diffs.values()),'output_sha256':expected['output_sha256']})
+records['rawdata_descriptive_metric_readback']=rows
+
+actual={}
+for path in sorted(source_dir.rglob('*.py')):
+    key='zhenmode/'+path.relative_to(source_dir).with_suffix('').as_posix();actual[key]=checksum(path)
+wheel_path=STAGE/'material-point-v4-marginfix/wheel-identity.json';wheel=json.loads(wheel_path.read_text())['package_source_sha256'];inputs.append({'path':str(wheel_path),'sha256':checksum(wheel_path)})
+assert actual==wheel==result['source_before']==result['source_after']
+records['source_identity']={'actual_installed_py_count':len(actual),'saved_source_before_count':len(result['source_before']),'saved_source_after_count':len(result['source_after']),'wheel_declared_count':len(wheel),'all_dictionary_bytes_equal':True,'note':'source_after is written using before dictionary after an actual package_source_hashes equality assertion; final installed bytes independently match both records'}
+ci=[]
+for label,logname,terminal_rel,expected_count in [('ece','ci-ece-full-attempt02.log','momentum-point-v1/full-ci-terminal.json',1737),('3c8','ci-3c8-full.log','material-point-v4-marginfix/full-ci-terminal.json',1721)]:
+    logpath=STAGE/logname;lines=logpath.read_text().splitlines();term=json.loads((STAGE/terminal_rel).read_text());found=[]
+    for no,line in enumerate(lines,1):
+        match=re.search(r'(\d+) passed, (\d+) warnings in ([0-9.]+)s',line)
+        if match:found.append({'line':no,'verbatim':line,'passed':int(match.group(1)),'warnings':int(match.group(2)),'elapsed_s':float(match.group(3))})
+    assert len(found)==1 and found[0]['passed']==expected_count==term['pytest_passed'];assert term['source_revision'] in '\n'.join(lines)
+    ci.append({'label':label,'path':str(logpath),'sha256':checksum(logpath),'terminal_path':str(STAGE/terminal_rel),'source_revision':term['source_revision'],'run_id':term['run_id'],'terminal_conclusion':term['conclusion'],'raw_log_claim':found[0]})
+records['actual_ci_readback']=ci
+records['inputs']=inputs
+records['scope']='CONFIRMED finite saved-array computation and source identity; no native integration, parameterfit, new score, exclusive causal attribution or arbitrary-precision certificate'
+(HERE/'raw_readback_result.json').write_text(json.dumps(records,indent=2))
+print(json.dumps({'status':'CONFIRMED_FINITE_READBACK','eta32_64':eta_conv,'theta32_64':theta_conv,'surface':surface,'max_metric_relative_difference':max(x['max_relative_difference'] for x in rows),'actual_source_count':len(actual),'ci_counts':{'ece':1737,'3c8':1721}}))

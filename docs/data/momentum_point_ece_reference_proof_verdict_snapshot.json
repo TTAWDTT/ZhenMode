@@ -1,0 +1,41 @@
+{
+  "algebra_grade": "VERIFIED-CLOSED",
+  "grading_scope": "BootLoops workflow grade for pinned algebraic TargetsI/II; not formal/refereed proof or nativeenergy certificate",
+  "canonical_consumer_permitted": true,
+  "canonical_consumer_spec": "../eta-second-order-reference/REFERENCE_SPEC-v2.md",
+  "consumerC1C2C3": "nonauthor crossverify CONFIRMED; highestbasisprojection leakage retained/numericalgate pending",
+  "X0": "NO-FIRE exact32sites/plantCAUGHT beforeproving",
+  "primary": "CLOSED-UNVERIFIED directsymbolic+completeentrycases",
+  "diversity": [
+    "arm-flux conservativeflux/continuousadjoint",
+    "arm-fourier Laurent/Rodrigues/entrywise"
+  ],
+  "consecutive_clean_fresh_skeptics": [
+    "skeptic2 exact262sites noFIRE",
+    "skeptic3 exact135sites noFIRE finalvalidrun"
+  ],
+  "nonauthor_crossverify": "spec-only freshcode80PASS/3plants/sourceinterfaceaudit",
+  "retained_deviations": [
+    "S1 readprimaryprose before skeleton; not used forfullycompliant pair",
+    "S3 earlier harnesssimplification interruption excluded fromclean-pass counts",
+    "arm-fourier incidentalorthogonality phrase flagged nonloadbearing/readorder deviation",
+    "crossverify superseded resourcechecks/sourceinspectionwrongHEAD correctedviafrozenblobs, allretained"
+  ],
+  "physical_attribution": "OPEN",
+  "numerical_reference": "coarseplanted/timingcontrolsPASS only, no fullpredictionyet",
+  "source_or_scientific_gates_changed": false,
+  "utc": "2026-10-12T19:49:55.059Z",
+  "artifact_sha256": {
+    "TARGET_SPEC.md": "451e73bf3a06d9d3664636516e38733ca78ef7a80c50fb816461021e99c89c75",
+    "primary/WORKFILE.md": "78e702ef3541f276e30dded853d3b732101f43a2acc1ef312ca253804c6928c2",
+    "primary/result.json": "116b7a959190026fb001e9001a9ef92cf5e8ec071db00ee787d4d6d6a953dc5d",
+    "x0/WORKFILE.md": "dd7a0ce295b78cb05355469c9966994c2499eef8ed6d926ec4192a6def27f08f",
+    "x0/results.jsonl": "9a6d123868ddf23ad4834100bbfcb6900cd9620e20c60f46bea34af3fe15300a",
+    "arm-flux/workfile.md": "b9636ec7add25cb5b5ffce4651f9aa3e0d841fec994321f706244ed4b2e1cc01",
+    "arm-fourier/WORKFILE.md": "221ba7950a1c420661cfd22dec1f49b470cb74155a93b75541d244996e65f7a4",
+    "skeptic2/WORKFILE.md": "4e47b8b37ad485148ad16f8df40e7b7cfe81eee7dbbb98ec0795a1216215b69f",
+    "skeptic2/result.json": "6fe66e1a0d0e780c002488da1cd85a395965f2fcad8c302f50bdff9a2a59c081",
+    "skeptic3/VERDICT.json": "a69ab99aacaee033736957de3da3abf011dda4a67f936409d87038f3b6424812",
+    "cross-verify/interface_ruling.md": "d3fd5fa982dbdcf455996d82cf324cdc95cc94fd45d4ade06854583b2448e0ac"
+  }
+}

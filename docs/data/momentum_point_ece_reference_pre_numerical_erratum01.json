@@ -1,0 +1,13 @@
+{
+  "old_spec": "REFERENCE_SPEC.md",
+  "new_spec": "REFERENCE_SPEC-v2.md",
+  "old_sha256": "3db421a0ce91c593ffa40d5a126846759ac6d55fd16725f970efb9fc976f0442",
+  "new_sha256": "6ad1d285b68eb01ffab15116f3fccdf6683b4148afe7885a0ff96da663b632bd",
+  "changes": [
+    "typo Emeanseta2cos2 nottheta2cos2",
+    "addedprojectedtoppressure/bedandtopw convergencecontrols beforeanynumericprediction"
+  ],
+  "physical_parameters_changed": false,
+  "oldgates_relaxed": false,
+  "numerical_prediction_executed": false
+}

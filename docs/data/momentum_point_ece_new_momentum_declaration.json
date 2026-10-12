@@ -1,0 +1,16 @@
+{
+ "source":"ece37c7b7ad383314e4dcfd982641d9ca541e1c3",
+ "scope":"NEW independently differentiated actual production point-momentum owner instantaneous RHS; no native trajectory, energy, pressure or fulltime qualification",
+ "meshes":[{"ny":36,"nz":19},{"ny":72,"nz":37},{"ny":144,"nz":73}],
+ "geometry":{"nx":8,"Ly":23000,"Lx":11000,"H":90,"f":0,"dt":8,"fullywet":true},
+ "fields":"Psi=0.13 sin(piY)(D-D^3), Y=y/Ly,D=d/H; u=0.017+0.0021D+0.0004D^3 m/s; v=0.13/H sin(piY)(1-3D^2) m/s; w_up=0.13pi/Ly cos(piY)(D-D^3) m/s; eta0,T14,S35",
+ "analytic_derivatives":"u_z=-(0.0021+0.0012D^2)/H; u_x=u_y=0; v_y=0.13pi/(H Ly)cos(piY)(1-3D^2); v_z=0.78/H^2 sin(piY)D; R_u=-w_up*u_z; R_v=-(v*v_y+w_up*v_z)",
+ "physical_sources":"f0, constant T/S,eta0, noforcing,mixing,drag; actual _compute_momentum_tendency invoked and its net nonadvection source checked rather than substituted by copied advection",
+ "fixed_gates":{"finest_each_component_normalizedL1":0.05,"each_refinement_min":1.25,"constant_u_rate_max":1e-17,"each_reversed_w_negative_defect_exclusive":1e-12,"full_owner_vs_advection_max":1e-17,"top_minusF0_bed_default":"exact","active_branch":"resolved point_primitive_v1 AND nonzero point-minusdual samples eachmesh","capacity_and_closedfaces":"exact","all_sources":"declared0 and recorded"},
+ "normalization":"sum(actualh*abs(Rproduction-Ranalytic))/sum(actualh*abs(Ranalytic)), independently for u/v, dimensionless rate/rate. Both norms must be positive. Production horizontalfilter retained; compare to continuous unfiltered truth and state shared filter/truncation limitation.",
+ "controls":"Actual full momentum RHS JIT, default velocity expression and physicalendpoints; uniformu=0.023 with samev has exact zero u tendency up to original1e-17; JIT wrongsignw supplied to same actual advection routine must fail independent u/v oracle with maxabsdefect>1e-12; comparator must rejectzero candidate normalizedL1=1 under fixed.05 gate.",
+ "data_selection":"Profile proposed analytically before freeze and never numerically evaluated; formal source-bound declaration afterfreeze. No error/branch/reference observations used to choose profile coefficients, geometries or tolerances. Distinct from old3c8 linearu/linearv diagnostic and prior scalar controls. Inputs become contacted after fullcomparison.",
+ "timing":"After source/math PASS, coarsest four-call timing-onlypilot with noanalyticreference evaluation/display; measured currentprojection then fixed3meshes once,1CPU180s4096MiB sampledRSS/noGPU",
+ "lineage":"Separate reviewer manually differentiated continuous streamfunction/u and oracle, actual production momentum/continuity/pressure paths. Shared PDE, geometry, JAX/compiler/horizontalfilter weaken independence; polynomial diagnostics may share discrete face coefficients separately. No old certificate is newblind proof.",
+ "model_or_threshold_adjustment_after_results":false
+}

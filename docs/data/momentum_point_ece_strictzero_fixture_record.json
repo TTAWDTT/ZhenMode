@@ -1,0 +1,11 @@
+{
+  "original_failure": "controls-momentum-polynomial-attempt01.log/resources:1FAIL7PASS originalexact0 assertion retained",
+  "diagnostic": "constant-velocity-diagnostic/result.json+arrays.npz",
+  "failedinput_actual_discrete_divergence_zero": false,
+  "Nm_maxabs": 3.2073109600282284e-21,
+  "Fz_and_oldw_and_neww_maxabs": 3.339920932414013e-20,
+  "zero_operand_input_actual_discrete_divergence_zero": true,
+  "correction": "Originaldeclaredzero-divergence exact0 meansactualdiscretezero; correctedfixture usesu=v=0. Addnonzero uniformflow endpoint-residual exact ownership witness. Originalnonzeroflowexpectedliteral0FAIL remains historical, notrelabeled.",
+  "thresholds_or_physical_module_changed": false,
+  "clip_actual_residual": false
+}

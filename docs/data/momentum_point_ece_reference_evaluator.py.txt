@@ -1,0 +1,107 @@
+"""Predeclared canonical fixed-H second-order diagnostic, never scoring/native."""
+import os
+for name in ('OPENBLAS_NUM_THREADS','OMP_NUM_THREADS','MKL_NUM_THREADS'):os.environ[name]='1'
+import argparse,hashlib,json,math,sys,time
+from pathlib import Path
+ROOT=Path(__file__).resolve().parent;STAGE=ROOT.parent
+INST=STAGE/'material-point-v4-marginfix/installed';sys.path.insert(0,str(INST))
+import numpy as np
+import zhenmode
+from zhenmode.evaluation.native_channel import load
+from zhenmode.evaluation.internal_wave import reference
+from zhenmode.provenance.sources import package_source_hashes
+P=argparse.ArgumentParser();P.add_argument('--pilot',action='store_true');args=P.parse_args()
+before=package_source_hashes(zhenmode.__file__);expected=json.loads((INST.parent/'wheel-identity.json').read_text())['package_source_sha256'];assert before==expected and len(before)==133
+start=time.monotonic()
+def solve(S,F0,Fc,Fs,nu,t,wrongphase=False):
+ lam,V=np.linalg.eigh(1j*S);rate=(1j if wrongphase else -1j)*lam[:,None];tt=np.asarray(t)[None,:]
+ def J(b):
+  den=b-rate;num=np.expm1(den*tt);ratio=np.empty_like(num)
+  np.divide(num,den,out=ratio,where=np.broadcast_to(den!=0,num.shape))
+  ratio[np.broadcast_to(den==0,num.shape)]=np.broadcast_to(tt,num.shape)[np.broadcast_to(den==0,num.shape)]
+  return np.exp(rate*tt)*ratio
+ h0=V.conj().T@F0;hc=V.conj().T@Fc;hs=V.conj().T@Fs
+ modes=h0[:,None]*J(0)+(hc-1j*hs)[:,None]/2*J(1j*nu)+(hc+1j*hs)[:,None]/2*J(-1j*nu)
+ X=(V@modes).T;real=np.linalg.norm(X.real);imag=float(np.linalg.norm(X.imag)/max(real,1e-300))
+ assert imag<=1e-12
+ return X.real,imag
+# Known independent forcedoscillator/resonance/zero controls precedephysics.
+tp=np.linspace(0.,1.,9);S=np.array([[0.,-2.],[2.,0.]])
+zero=np.zeros(2);real,_=solve(S,np.array([1.,0.]),zero,zero,2.,tp)
+truth=np.c_[np.sin(2*tp)/2,(1-np.cos(2*tp))/2]
+maxdef=float(np.max(abs(real-truth)));assert maxdef<=1e-12
+resonant,_=solve(S,zero,zero,np.array([1.,0.]),2.,tp)
+rtruth=np.c_[tp*np.sin(2*tp)/2,np.sin(2*tp)/4-tp*np.cos(2*tp)/2]
+resdef=float(np.max(abs(resonant-rtruth)));assert resdef<=1e-12
+null_checks=[]
+for F0,Fc,Fs,nu,truth0 in ((1.,0.,0.,2.,tp),(0.,1.,0.,2.,np.sin(2*tp)/2),(0.,0.,1.,2.,(1-np.cos(2*tp))/2),(1.,1.,1.,0.,2*tp)):
+ a,_=solve(np.zeros((1,1)),np.array([F0]),np.array([Fc]),np.array([Fs]),nu,tp)
+ defect=float(np.max(abs(a[:,0]-truth0)));assert defect<=1e-12;null_checks.append(defect)
+wrong,_=solve(S,np.array([1.,0.]),zero,zero,2.,tp,wrongphase=True);negative=float(np.max(abs(wrong-truth)));assert negative>1e-3
+controls=dict(oscillator_maxabs=maxdef,resonance_maxabs=resdef,null_maxabs=null_checks,wrongphase_negative_defect=negative,thresholds_changed=False)
+contractpath=STAGE/'material-point-v4-marginfix/01-candidate-primary-main/contract.json';c=json.loads(contractpath.read_text())
+H,g,f,N2,gamma,A,q=c['H_m'],9.81,c['f'],c['internal_wave']['N2_s_2'],c['internal_wave']['dT_dz_C_m'],c['amplitude_m'],c['internal_wave']['q']
+k=np.pi/c['Ly_m'];m=q/H;o=np.sqrt(f*f+N2*(k/m)**2);K=2*k;nu=2*o;alpha=N2/(g*gamma)
+assert c['T_C']==15. and c['S_psu']==35. and abs(alpha-.0002)<1e-15
+params=dict(H=H,g=g,f=f,N2=N2,gamma=gamma,A=A,q=q,k=k,m=m,omega=o,K=K,nu=nu,alpha=alpha,canonical_surface_correction=True)
+def build(n):
+ tick=time.monotonic();qt=np.zeros((n,n));qt[0,0]=qt[1,0]=H/2
+ for col in range(1,n):
+  qt[col-1,col]=-H/(2*(2*col+1))
+  if col+1<n:qt[col+1,col]=H/(2*(2*col+1))
+ e=np.zeros(n);e[0]=1.;qb=H*np.outer(e,e)-qt;mass=1/(2*np.arange(n)+1)
+ op=np.zeros((3*n+1,3*n+1));op[:n,n:2*n]=f*np.eye(n);op[n:2*n,:n]=-f*np.eye(n)
+ op[n:2*n,2*n:3*n]=-K*qt;op[n:2*n,-1]=K*g*e
+ op[2*n:3*n,n:2*n]=N2*K*qb;op[-1,n:2*n]=-K*H*e
+ W=np.r_[mass,mass,mass/N2,g/H];sqrt=np.sqrt(W);S=sqrt[:,None]*op/sqrt[None,:]
+ defect=float(np.linalg.norm(S+S.T)/np.linalg.norm(S));assert defect<=1e-12
+ lam,V=np.linalg.eigh(1j*S)
+ y0=np.arange(1,3*n+2,dtype=float)/(3*n+1);coeff=V.conj().T@y0
+ energy=[]
+ for time0 in (0.,6000.,30000.,60000.):
+  y=V@(np.exp(-1j*lam*time0)*coeff);energy.append(float(np.vdot(y,y).real))
+ drift=max(abs(np.array(energy)/energy[0]-1));assert drift<=1e-12
+ return dict(n=n,qt=qt,qb=qb,W=W,sqrt=sqrt,S=S,skew_defect=defect,unforced_energy_drift=float(drift),kernel_s=time.monotonic()-tick)
+coarse=build(16)
+if args.pilot:
+ result=dict(pilot=True,controls=controls,coarse_kernel_s=coarse['kernel_s'],coarse_skew=coarse['skew_defect'],coarse_unforced_energy_drift=coarse['unforced_energy_drift'],elapsed_s=time.monotonic()-start,real_prediction_compared=False,parameters=params)
+else:
+ proofpath=STAGE/'eta-second-order-proof/FINAL_VERDICT.json';proof=json.loads(proofpath.read_text());assert proof['algebra_grade']=='VERIFIED-CLOSED' and proof['canonical_consumer_permitted'] is True
+ a=load(STAGE/'material-point-v4-marginfix/01-candidate-primary-main/zhenmode/output.npz');times=a['time'];z=-np.linspace(0.,H,c['nz']);D=-z/H
+ refs=[];arrays={};nchecks=[]
+ for n in (16,32,64):
+  model=coarse if n==16 else build(n);sqrt=model['sqrt'];Su=A*A*f*o*m*m/(4*k);Sv=A*A*o*o*m*m/(4*k);Q=K*N2*A*A*np.sin(q)**2/8
+  F0=np.zeros(3*n+1);Fc=F0.copy();Fs=F0.copy();F0[n]=-Sv+Q;Fc[n]=Sv+Q;Fs[0]=Su
+  Y,imag=solve(model['S'],sqrt*F0,sqrt*Fc,sqrt*Fs,nu,times);X=Y/sqrt[None,:];E=X[:,-1];B=X[:,2*n:3*n];Vco=X[:,n:2*n]
+  L=np.polynomial.legendre.legvander(2*D-1,n-1);theta2=B@L.T/(g*alpha)
+  def trms(values):return math.sqrt(float(np.sum((values[1:]**2+values[:-1]**2)*np.diff(times)/2)/(times[-1]-times[0])))
+  signed_top=(-1.)**np.arange(n);ones=np.ones(n)
+  Bsurface=B@signed_top;top_pressure=(B@model['qt'].T)@signed_top
+  wbed=-K*((Vco@model['qb'].T)@ones);wtop=-K*((Vco@model['qb'].T)@signed_top);Edot=-K*H*Vco[:,0]
+  bscale=N2*trms(E);vscale=K*H*trms(Vco[:,0])
+  check=dict(n=n,skew_relative=model['skew_defect'],unforced_energy_drift=model['unforced_energy_drift'],imaginary_relative=imag,temperature_surface_relative=trms(Bsurface+N2*E)/bscale,pressure_surface_relative=trms(top_pressure)/(g*trms(E)),wbed_relative=trms(wbed)/vscale,wtop_minus_Edot_relative=trms(wtop-Edot)/vscale)
+  refs.append(dict(n=n,E=E,theta2=theta2));nchecks.append(check);arrays['E_'+str(n)]=E;arrays['theta2_'+str(n)]=theta2
+ # Convergence on outputobservations; noadaptiveposthocchange.
+ low,high=refs[1],refs[2];eta_conv=trms(low['E']-high['E'])/trms(high['E'])
+ tnorm=lambda x:math.sqrt(float(np.sum((np.mean(x[1:]**2,axis=1)+np.mean(x[:-1]**2,axis=1))*np.diff(times)/2)/(times[-1]-times[0])))
+ theta_conv=tnorm(low['theta2']-high['theta2'])/tnorm(high['theta2'])
+ fine=nchecks[-1];gates=dict(eta_convergence=eta_conv<=1e-7,theta_convergence=theta_conv<=1e-7,boundary_all=all(fine[key]<=1e-7 for key in ('temperature_surface_relative','pressure_surface_relative','wbed_relative','wtop_minus_Edot_relative')))
+ np.savez_compressed(ROOT/'reference_arrays.npz',**arrays,time=times)
+ result=dict(pilot=False,controls=controls,parameters=params,nchecks=nchecks,eta_convergence_relative=eta_conv,theta_convergence_relative=theta_conv,gates=gates,reference_numerics_pass=all(gates.values()),proof_sha256=hashlib.sha256(proofpath.read_bytes()).hexdigest(),comparisons=[])
+ if all(gates.values()):
+  theta20=-gamma*A*A*m/4*np.sin(o*times)[:,None]**2*np.sin(2*m*(z+H))[None,:]
+  for label,path in (('3c8',STAGE/'material-point-v4-marginfix/01-candidate-primary-main/zhenmode/output.npz'),('ece',STAGE/'momentum-point-v1/01-candidate-primary-main/zhenmode/output.npz')):
+   aa=load(path);assert np.array_equal(aa['time'],times);rr=reference(c,aa);cy=np.cos(K*aa['y_eta'])
+   eta_pred=high['E'][:,None]*cy[None,:];T_pred=theta20[:,None,:]+high['theta2'][:,None,:]*cy[None,:,None]
+   def rms(field,weights):
+    axes=tuple(range(1,field.ndim));v=np.sum(field*field*weights,axis=axes)/np.sum(weights,axis=axes)
+    return math.sqrt(float(np.sum((v[1:]+v[:-1])*np.diff(times)/2)/c['duration_s']))
+   etaerr=aa['eta']-rr['eta'];Terr=aa['T']-rr['T'];area=np.broadcast_to(aa['area'],etaerr.shape);vol=aa['h']*aa['area'][None,:,None]
+   row=dict(name=label,eta_original_RMS_m=rms(etaerr,area),eta_model_RMS_m=rms(eta_pred,area),eta_residual_RMS_m=rms(etaerr-eta_pred,area),eta_residual_fraction=rms(etaerr-eta_pred,area)/rms(etaerr,area),T_original_RMS_C=rms(Terr,vol),T_model_RMS_C=rms(T_pred,vol),T_residual_RMS_C=rms(Terr-T_pred,vol),T_residual_fraction=rms(Terr-T_pred,vol)/rms(Terr,vol),output_sha256=hashlib.sha256(path.read_bytes()).hexdigest(),scope='Descriptivecanonicalreference only; sharedphysics/linearoracle/contacteddata; no newscore or uniqueattribution.')
+   result['comparisons'].append(row);print(json.dumps(row),flush=True)
+ result['elapsed_s']=time.monotonic()-start
+assert before==package_source_hashes(zhenmode.__file__)
+result.update(source_before=before,source_after=before,spec_sha256=hashlib.sha256((ROOT/'REFERENCE_SPEC-v2.md').read_bytes()).hexdigest(),script_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),numpy_version=np.__version__,contract_sha256=hashlib.sha256(contractpath.read_bytes()).hexdigest(),native_runs=0,source_edits=False)
+with (ROOT/('timing-pilot.json' if args.pilot else 'result.json')).open('x') as out:json.dump(result,out,indent=2)
+print(json.dumps({key:result.get(key) for key in ('pilot','controls','coarse_kernel_s','elapsed_s','gates','eta_convergence_relative','theta_convergence_relative','nchecks')}),flush=True)
+if not args.pilot and not result['reference_numerics_pass']:raise SystemExit(1)

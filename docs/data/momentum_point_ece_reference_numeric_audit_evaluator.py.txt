@@ -1,0 +1,99 @@
+# One-shot independent numerical consumer auditor; written from shared spec.
+# No root/project implementation imports; no eigendecomposition/convolution reuse.
+import os, sys, time, json, hashlib
+from pathlib import Path
+import numpy as np
+import scipy
+from scipy.linalg import expm
+from numpy.polynomial.legendre import Legendre, legvander
+
+HERE=Path(__file__).resolve().parent
+BASE=HERE.parents[2]/'eta-second-order-reference'
+CONTRACT=Path('/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/material-point-v4-marginfix/01-candidate-primary-main/contract.json')
+begin=time.monotonic(); records=[]
+def emit(name,**data):
+    records.append({'name':name,**data})
+    (HERE/('pilot_result.json' if '--pilot' in sys.argv else 'numeric_result.json')).write_text(json.dumps({'records':records,'scipy':scipy.__version__,'numpy':np.__version__,'elapsed_s':time.monotonic()-begin},indent=2))
+    print(name+': '+str(data.get('status','PASS')),flush=True)
+def relative(a,b):
+    den=np.linalg.norm(b.ravel())
+    return float(np.linalg.norm((a-b).ravel())/den) if den else float(np.linalg.norm((a-b).ravel()))
+def augment(operator,h0,hc,hs,nu):
+    d=operator.shape[0]; aug=np.zeros((d+3,d+3))
+    aug[:d,:d]=operator
+    aug[:d,d]=h0;aug[:d,d+1]=hc;aug[:d,d+2]=hs
+    aug[d+1,d+2]=-nu;aug[d+2,d+1]=nu
+    initial=np.zeros(d+3);initial[d:d+3]=[1,1,0]
+    return aug,initial
+def solve(operator,h0,hc,hs,nu,times):
+    aug,initial=augment(operator,h0,hc,hs,nu)
+    return np.stack([(expm(aug*float(t))@initial)[:len(h0)] for t in times])
+
+# Known-answer and negative controls run before any root prediction comparison.
+control_times=np.array([0,.25,1.0])
+rotation=np.array([[0.,-2.],[2.,0.]])
+const=solve(rotation,np.array([1.,0.]),np.zeros(2),np.zeros(2),2,control_times)
+truth=np.stack([np.sin(2*control_times)/2,(1-np.cos(2*control_times))/2],axis=1)
+error=float(np.max(np.abs(const-truth)));assert error<=1e-12
+emit('constant_control',status='PASS',max_abs=error)
+resonance=solve(rotation,np.zeros(2),np.zeros(2),np.array([1.,0.]),2,control_times)
+truthr=np.stack([control_times*np.sin(2*control_times)/2,np.sin(2*control_times)/4-control_times*np.cos(2*control_times)/2],axis=1)
+error=float(np.max(np.abs(resonance-truthr)));assert error<=1e-12
+emit('resonance_control',status='PASS',max_abs=error)
+for name,h0,hc,hs,nu,truth1 in [('constant',1,0,0,2,control_times),('cos',0,1,0,2,np.sin(2*control_times)/2),('sin',0,0,1,2,(1-np.cos(2*control_times))/2),('nu0_cos',0,1,0,0,control_times),('nu0_sin',0,0,1,0,np.zeros_like(control_times))]:
+    answer=solve(np.zeros((1,1)),np.array([h0]),np.array([hc]),np.array([hs]),nu,control_times)[:,0]
+    error=float(np.max(np.abs(answer-truth1)));assert error<=1e-12
+    emit('zero_a_'+name,status='PASS',max_abs=error)
+wrong=solve(-rotation,np.array([1.,0.]),np.zeros(2),np.zeros(2),2,control_times)
+defect=float(np.max(np.abs(wrong-truth)));assert defect>1e-3
+emit('wrong_rotation',status='CAUGHT',max_abs=defect)
+plant=relative(np.array([1.,2.]),np.array([1.01,2.02]));assert plant>1e-7
+emit('relative_comparator_plant',status='CAUGHT',relative_error=plant,threshold=1e-7)
+
+c=json.loads(CONTRACT.read_text());HH=c['H_m'];gg=c['gravity'];ff=c['f'];gam=c['internal_wave']['dT_dz_C_m'];NN=c['internal_wave']['N2_s_2'];amplitude=c['amplitude_m'];q=c['internal_wave']['q']
+k=np.pi/c['Ly_m'];m=q/HH;omega=np.sqrt(ff*ff+NN*(k/m)**2);K=2*k;nu=2*omega;alpha=NN/(gg*gam)
+n=16;dimension=3*n+1
+# Independent integration of basis polynomials: project by truncating orthogonal
+# Legendre coefficients, including discarded degree-n coefficient explicitly.
+Qt=np.zeros((n,n));discarded=[]
+for ell in range(n):
+    integral=(HH/2)*Legendre.basis(ell).integ(lbnd=-1)
+    Qt[:min(n,len(integral.coef)),ell]=integral.coef[:n]
+    discarded.append(integral.coef[n:].tolist())
+e0=np.zeros(n);e0[0]=1.;Qb=HH*np.outer(e0,e0)-Qt
+M=1/(2*np.arange(n)+1)
+operator=np.zeros((dimension,dimension));eye=np.eye(n)
+operator[:n,n:2*n]=ff*eye;operator[n:2*n,:n]=-ff*eye
+operator[n:2*n,2*n:3*n]=-K*Qt
+operator[n,3*n]=K*gg
+operator[2*n:3*n,n:2*n]=NN*K*Qb
+operator[3*n,n]=-K*HH
+weights=np.concatenate([M,M,M/NN,[gg/HH]]);D=np.sqrt(weights)
+balanced=D[:,None]*operator/D[None,:]
+skew=float(np.linalg.norm(balanced+balanced.T)/np.linalg.norm(balanced));assert skew<=1e-12
+Cu=amplitude**2*ff*omega*m*m/(4*k);Cv=amplitude**2*omega**2*m*m/(4*k);Q=K*NN*amplitude**2*np.sin(q)**2/8
+h0=np.zeros(dimension);hc=np.zeros(dimension);hs=np.zeros(dimension)
+h0[n]=-Cv+Q;hc[n]=Cv+Q;hs[0]=Cu
+aug,initial=augment(balanced,D*h0,D*hc,D*hs,nu)
+with np.load(BASE/'reference_arrays.npz') as saved:times=saved['time'].copy()
+assert times.shape==(41,);assert times[0]==0
+emit('assembly',status='PASS',n=n,dimension_augmented=aug.shape[0],skew_relative=skew,forcing_coefficients={'Cu':float(Cu),'Cv':float(Cv),'Q':float(Q)},last_column_discarded=discarded[-1],initial_second_order_max_abs=float(np.max(np.abs(initial[:dimension]))),time_count=len(times),max_time=float(times[-1]))
+stamp=time.monotonic();trial=expm(aug*float(times[-1]));pilot_duration=time.monotonic()-stamp
+emit('one_exponential_timing',status='PASS',elapsed_s=pilot_duration)
+if '--pilot' in sys.argv:
+    emit('pilot_complete',status='PASS',main_prediction_comparison=False,projected_main_expm_seconds=pilot_duration*len(times))
+    sys.exit(0)
+assert (HERE/'timing_plan.json').exists(),'full run requires measured timing plan'
+stamp=time.monotonic()
+solution=np.stack([(expm(aug*float(t))@initial)[:dimension]/D for t in times])
+z=-np.linspace(0,HH,c['nz']);basis=legvander(-2*z/HH-1,n-1)
+E=solution[:,-1];theta=(solution[:,2*n:3*n]@basis.T)/(gg*alpha)
+np.savez_compressed(HERE/'independent_arrays.npz',time=times,z=z,E_16=E,theta2_16=theta,state16=solution)
+emit('independent_evaluation',status='PASS',elapsed_s=time.monotonic()-stamp)
+with np.load(BASE/'reference_arrays.npz') as saved:
+    eta_difference=relative(E,saved['E_16']);theta_difference=relative(theta,saved['theta2_16'])
+    eta_max=float(np.max(np.abs(E-saved['E_16'])));theta_max=float(np.max(np.abs(theta-saved['theta2_16'])))
+    planted=relative(-E,saved['E_16']);assert planted>1e-7
+emit('root_n16_comparison',status='PASS' if eta_difference<=1e-7 and theta_difference<=1e-7 else 'FAIL',eta_relative_RMS=eta_difference,theta_relative_RMS=theta_difference,eta_max_abs_m=eta_max,theta_max_abs_C=theta_max,threshold=1e-7,opposite_eta_plant_relative=planted)
+assert eta_difference<=1e-7 and theta_difference<=1e-7
+emit('overall',status='CONFIRMED_FINITE_NUMERIC',not_new_proof_closure=True,physical_attribution='OPEN',precision='binary64; no arbitrary-precision digit certificate')

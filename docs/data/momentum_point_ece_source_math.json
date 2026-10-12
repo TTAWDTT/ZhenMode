@@ -1,0 +1,232 @@
+{
+  "verdict": "PASS",
+  "scope": "source/newtop/polynomial andknownregression math only",
+  "rows": [
+    {
+      "contract_index": 1,
+      "nodes": 16,
+      "data_status": "DEVELOPMENT known47case",
+      "primitive_actual_capacity_bit_equal": true,
+      "point_mass_directsum_bit_equal": [
+        true,
+        true
+      ],
+      "polynomial_controls": [
+        {
+          "degree": 0,
+          "interior_bed_relative_difference": 1.4210854715202004e-16
+        },
+        {
+          "degree": 1,
+          "interior_bed_relative_difference": 3.637978807091713e-16
+        },
+        {
+          "degree": 2,
+          "interior_bed_relative_difference": 3.055902197957039e-16
+        },
+        {
+          "degree": 3,
+          "interior_bed_relative_difference": 4.470348358154296e-16
+        }
+      ],
+      "momentum_controls": {
+        "resolved": "point_primitive_v1",
+        "default_expression_exact": true,
+        "physical_top_exact": true,
+        "physical_bed_exact": true,
+        "zero_operand_velocity_exact": true
+      },
+      "elapsed_s": 6.107944447000001,
+      "constants": [
+        {
+          "C": 1.0,
+          "constant_max": 3.938703204732496e-21,
+          "badmass_defect": 3.4249952284521596e-06,
+          "badmass_formula_difference": 8.470329472543003e-22
+        },
+        {
+          "C": 35.0,
+          "constant_max": 1.3785461216563738e-19,
+          "badmass_defect": 0.0001198748329958256,
+          "badmass_formula_difference": 2.710505431213761e-20
+        },
+        {
+          "C": -7.0,
+          "constant_max": 2.7570922433127474e-20,
+          "badmass_defect": 2.3974966599165117e-05,
+          "badmass_formula_difference": 6.776263578034403e-21
+        }
+      ],
+      "v4_gauge_difference": 3.2722470939209724e-18,
+      "band_gauge_difference": 3.2722470939209724e-18,
+      "stock_residual": -1.8312852319637973e-18,
+      "stock_limit": 1e-12,
+      "pilot_properties_reused": true
+    },
+    {
+      "contract_index": 5,
+      "nodes": 32,
+      "data_status": "DEVELOPMENT known47case",
+      "primitive_actual_capacity_bit_equal": true,
+      "point_mass_directsum_bit_equal": [
+        true,
+        true
+      ],
+      "polynomial_controls": [
+        {
+          "degree": 0,
+          "interior_bed_relative_difference": 1.4210854715202004e-16
+        },
+        {
+          "degree": 1,
+          "interior_bed_relative_difference": 2.7284841053187845e-16
+        },
+        {
+          "degree": 2,
+          "interior_bed_relative_difference": 3.4924596548080445e-16
+        },
+        {
+          "degree": 3,
+          "interior_bed_relative_difference": 3.725290298461914e-16
+        }
+      ],
+      "momentum_controls": {
+        "resolved": "point_primitive_v1",
+        "default_expression_exact": true,
+        "physical_top_exact": true,
+        "physical_bed_exact": true,
+        "zero_operand_velocity_exact": true
+      },
+      "constants": [
+        {
+          "C": 1.0,
+          "constant_max": 1.1159659080075408e-20,
+          "badmass_defect": 3.42499522845216e-06,
+          "badmass_formula_difference": 1.2705494208814505e-21
+        },
+        {
+          "C": 35.0,
+          "constant_max": 3.9058806780263924e-19,
+          "badmass_defect": 0.0001198748329958256,
+          "badmass_formula_difference": 4.0657581468206416e-20
+        },
+        {
+          "C": -7.0,
+          "constant_max": 7.811761356052784e-20,
+          "badmass_defect": 2.397496659916512e-05,
+          "badmass_formula_difference": 6.776263578034403e-21
+        }
+      ],
+      "v4_gauge_difference": 3.661935189217154e-18,
+      "band_gauge_difference": 3.661935189217154e-18,
+      "stock_residual": 1.4418618344636328e-18,
+      "stock_limit": 1e-12,
+      "elapsed_s": 6.975215200000001
+    }
+  ],
+  "interval_controls": [
+    {
+      "name": "zero",
+      "alpha": 1.0,
+      "feasible": true,
+      "expected_alpha": 1.0,
+      "expected_feasible": true,
+      "passed": true
+    },
+    {
+      "name": "positive_lower",
+      "alpha": 1.0,
+      "feasible": true,
+      "expected_alpha": 1.0,
+      "expected_feasible": true,
+      "passed": true
+    },
+    {
+      "name": "empty_zero",
+      "alpha": 0.0,
+      "feasible": false,
+      "expected_alpha": 0.0,
+      "expected_feasible": false,
+      "passed": true
+    },
+    {
+      "name": "empty_nonzero",
+      "alpha": 0.0,
+      "feasible": false,
+      "expected_alpha": 0.0,
+      "expected_feasible": false,
+      "passed": true
+    },
+    {
+      "name": "positive_cap",
+      "alpha": 0.5,
+      "feasible": true,
+      "expected_alpha": 0.5,
+      "expected_feasible": true,
+      "passed": true
+    },
+    {
+      "name": "negative_cap",
+      "alpha": 0.5,
+      "feasible": true,
+      "expected_alpha": 0.5,
+      "expected_feasible": true,
+      "passed": true
+    }
+  ],
+  "source": {
+    "Git_full133_equal": true,
+    "source_commit": "ece37c7b7ad383314e4dcfd982641d9ca541e1c3",
+    "scalar_core_bridge": [
+      {
+        "path": "zhenmode/model/solver/numerics/column.py",
+        "old_sha256": "ae9013fb0628e6cbdc8d2027bd899d7815e0864e76a649ed88e5dcb0968d405a",
+        "new_sha256": "ae9013fb0628e6cbdc8d2027bd899d7815e0864e76a649ed88e5dcb0968d405a",
+        "every_function_AST_equal_except_momentum_velocity": true
+      },
+      {
+        "path": "zhenmode/model/solver/numerics/vertical.py",
+        "old_sha256": "aa092051799e3adbe399a0356039bda028a6c8fc99c55516adb284efc428e490",
+        "new_sha256": "aa092051799e3adbe399a0356039bda028a6c8fc99c55516adb284efc428e490",
+        "every_function_AST_equal_except_momentum_velocity": true
+      },
+      {
+        "path": "zhenmode/model/solver/dynamics/transport.py",
+        "old_sha256": "6ecffdaddac71f86ae266bc586533d0bace0e3bad656f7204248caf5feff1d95",
+        "new_sha256": "5c362de60cd710bb4ee55c6946bc8ca2862825fa89270e976e42db1e6cb4acc5",
+        "every_function_AST_equal_except_momentum_velocity": true
+      }
+    ],
+    "prior_scalar_records": {
+      "new-1d-result.json": {
+        "sha256": "4e853cc5f47a144ef83ed6d4c8be75bcf2e3dc91b6bef8c257c291d20ea3d533",
+        "verdict": "PASS",
+        "classification": "REUSED contacted data, unchanged scalar-owner AST only"
+      },
+      "new-2d-result.json": {
+        "sha256": "bec4a046b42668cc8e241341317e4001ca06ff336e8112b98372cdf3b2ef5bd4",
+        "verdict": "PASS",
+        "classification": "REUSED contacted data, unchanged scalar-owner AST only"
+      }
+    }
+  },
+  "declaration_sha256": "fa7342ed28d56c1b22f6928906da9efd8647fa7a3018770e586c299f7379ea00",
+  "evaluator_sha256": "9be20f55cbd61fa54b918bc2bc1233997ab2d7c24bc410e8778b19df17cc8c18",
+  "identity_before": {
+    "commit": "ece37c7b7ad383314e4dcfd982641d9ca541e1c3",
+    "modules": 133,
+    "path": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-point-v1/installed",
+    "manifest_sha256": "a89cfb5f8f159a91108160549e1786eb35a33775563d1a5599a3c88498481d20",
+    "wheel_sha256": "c2a2c360502e8220d248acad108f6e9da5575c11c1bfcfcc5c5f1acd107fa04a"
+  },
+  "identity_after": {
+    "commit": "ece37c7b7ad383314e4dcfd982641d9ca541e1c3",
+    "modules": 133,
+    "path": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-point-v1/installed",
+    "manifest_sha256": "a89cfb5f8f159a91108160549e1786eb35a33775563d1a5599a3c88498481d20",
+    "wheel_sha256": "c2a2c360502e8220d248acad108f6e9da5575c11c1bfcfcc5c5f1acd107fa04a"
+  },
+  "elapsed_s": 14.602549034000006,
+  "original47gauge": "OPEN retained",
+  "native_integration": false
+}

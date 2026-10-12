@@ -1,0 +1,75 @@
+{
+  "source_revision": "ece37c7b7ad383314e4dcfd982641d9ca541e1c3",
+  "scope": "primarypilot development metrics only no expandednative",
+  "previous_best": "3c8e86bef2ee1fbfd50cca4343d6fc61694d9edc",
+  "metrics": {
+    "eta_error": {
+      "previous": 0.0005388509039568577,
+      "candidate": 0.0005416191620723861,
+      "difference": 0.0000027682581155284063,
+      "relative_change": 0.005137335940611276
+    },
+    "u_error": {
+      "previous": 0.00003198853242502769,
+      "candidate": 0.00003187644386925723,
+      "difference": -1.1208855577045888e-7,
+      "relative_change": -0.003504023075555751
+    },
+    "v_error": {
+      "previous": 0.000004440723369690159,
+      "candidate": 0.000003095817074544062,
+      "difference": -0.0000013449062951460972,
+      "relative_change": -0.302857481356677
+    },
+    "T_error_C": {
+      "previous": 7.334242326890638e-9,
+      "candidate": 7.242707124017776e-9,
+      "difference": -9.153520287286196e-11,
+      "relative_change": -0.012480526112050083
+    },
+    "S_error_psu": {
+      "previous": 0,
+      "candidate": 0,
+      "difference": 0,
+      "relative_change": null
+    },
+    "volume": {
+      "previous": 2.220446049250313e-16,
+      "candidate": 2.220446049250313e-16,
+      "difference": 0,
+      "relative_change": 0
+    },
+    "T_inventory": {
+      "previous": 2.220446049250313e-16,
+      "candidate": 2.220446049250313e-16,
+      "difference": 0,
+      "relative_change": 0
+    },
+    "S_inventory": {
+      "previous": 2.220446049250313e-16,
+      "candidate": 2.220446049250313e-16,
+      "difference": 0,
+      "relative_change": 0
+    }
+  },
+  "composite_previous": 0.005388509039568577,
+  "composite_candidate": 0.005416191620723861,
+  "composite_relative_change": 0.005137335940611276,
+  "original_screens": true,
+  "improvement_gate": "FAIL candidate score notlower thanlatestfrozen3c8",
+  "completed_indices": [
+    0,
+    1
+  ],
+  "unexecuted_indices": [
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9
+  ],
+  "action": "no expansion; retainnewoptionalmethod evidence, do not promote asbest"
+}

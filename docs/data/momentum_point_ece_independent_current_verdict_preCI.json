@@ -1,0 +1,12 @@
+{
+ "source":"ece37c7b7ad383314e4dcfd982641d9ca541e1c3",
+ "overall_stage_verdict":"FAIL/OPEN; predeclared native strict-ranking gate failed, no promotion or expansion",
+ "components":{"source_math":"PASS full133identity/actualcapacities/polynomial/defaultendpoints/knownDEVgauge/constants/badmass/stock/intervals","new_actual_momentum_RHS":"PASS fresh independently differentiated actualfullowner3meshes; instantaneousonly","old_scalar1D_active2D":"REUSED unchanged AST/bytes only, not newblind wholemodel certificate","native_saved_pilots":"0/1 consistent/originalscreensPASS; rankingFAIL confirmed,2..9unexecuted"},
+ "ranking":{"strict_ceiling":0.005388509039568577,"actual":0.00541619162072386,"pass":false,"Trepair_ceiling":8.530755561576719e-7,"actual_T":7.242707124017776e-9,"Tpass":true},
+ "software":{"local":"157 controls/Ruff parentrecord","first_dispatch38292930386":"lintPASS/testSKIP notfullCI","true_full_dispatch38293318389":"PENDING; no fullcount claimed"},
+ "wheel_sha256":"c2a2c360502e8220d248acad108f6e9da5575c11c1bfcfcc5c5f1acd107fa04a",
+ "resolved_new_option":"EXPERIMENTAL point_primitive_v1 onlywhenexplicit; default remains dual_face_v1",
+ "prior_failures":"All47gauge/362inactive2D/arithdynamich/originalnominaluniformliteralzero receipts preserved; no relabeling",
+ "scope_limit":"No energy/pressure/fulltime/generalRK2/TVD/fullphysics/industrial/globalSOTA claim. Freshmomentum data nowcontacted.",
+ "reviewer_product_edits":false,"reviewer_native_runs":0,"result_driven_parameter_or_threshold_changes":false
+}

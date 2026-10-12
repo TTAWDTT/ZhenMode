@@ -1,0 +1,30 @@
+{
+  "scope": "DEVELOPMENT saved eta errors discrete spatial cosine modes; no native/no newholdout/newscore/sourceedit",
+  "sources": [
+    "material-point-v4-marginfix 3c8 primary main/half/horizontal main/half/verticalmain/half",
+    "momentum-point-v1 ece primarymain only"
+  ],
+  "hypothesis": "Quadratic products of mode1 fields generate spatial mode0/mode2. Dominantmode2 and approximately4 A-to-halfA ratio compatiblewithquadratic response, but numerical nonlinearoperator error can have same signature; not causalproof physical vsnumerical.",
+  "weights": "eta original area perrow (uniform), trapezoidaltime weights; perx DCT nycomplete atcellcenters, retainxvariation; eta RMS m notnewscore",
+  "metrics": [
+    "allmodal RMS/energy fractions n0,n1,n2,n>=3",
+    "Parseval relative defect",
+    "coefficienttime series raw withoutputsampletimesteps; no temporalFFTfrequencyinference",
+    "oldpair mode2 RMS main/half ratio and fieldcombination4Ehalf−Emain",
+    "ECE versus3c8 primarymodeRMS differences descriptive"
+  ],
+  "plantedcontrols": {
+    "basis": "completecos(n*pi*(j+.5)/Ny)",
+    "signal": "known coefficient t inmode1 and2t inmode2 forsyntheticNx2Ny32Nt5",
+    "coefficient_maxabs": 1e-12,
+    "parseval_relative": 1e-12,
+    "negative": "deliberatelywrong ybasis phaseshift mustfailcoefficientgate; defect>1e-3"
+  },
+  "resources": {
+    "cpu": 1,
+    "wall_s": 180,
+    "memory_mib": 4096
+  },
+  "timing": "plantedcontrols plus timing-only coarsedatafile read/projection withoutreferenceerrors compared/displayed; actualfinite7storedrows onceaftermeasuredplan. No rerun native indexes.",
+  "independence": "NumPy independent decomposition but old sameanalyticlinearreference andsaveddevelopmentdata; this doesnotestablishholdout/fullPDEaccuracy"
+}

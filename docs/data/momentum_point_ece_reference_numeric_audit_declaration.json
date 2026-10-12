@@ -1,0 +1,15 @@
+{
+ "role":"post-implementation fresh numerical consumer auditor, author of no consumer code",
+ "method":"own real balanced canonical Galerkin operator, append constant/cos/sin generator states, scipy.linalg.expm; no spectral decomposition/convolution formula and no root code reuse",
+ "n":16,
+ "points":"all 41 saved time coordinates; physical frozen primary z=-linspace(0,H,16)",
+ "main_gates":{"eta_relative_RMS":1e-7,"theta_mode2_relative_RMS":1e-7},
+ "controls":{"constant_rotation_max_abs":1e-12,"resonance_rotation_max_abs":1e-12,"zero_a_max_abs":1e-12,"wrong_rotation_min_defect":1e-3,"relative_comparator_1percent_plant_must_reject":true},
+ "pilot":"controls plus one n=16 augmented 52x52 matrix exponential at the final saved time; no root prediction comparison or native residual readback",
+ "parameters":"exclusively actual frozen3c8 primary contract, existing canonical specification and verified C2 derivation",
+ "prediction_selection":"none; n16 fixed and threshold fixed before computing",
+ "rawdata_readback":"after numerical gate, recompute saved descriptive weighted RMS/fractions from actual saved arrays and audit actual source-before/after dictionary counts",
+ "scope":"finite binary64 reference-computation consistency audit; no new proof closure, no native replay, no fit, no physics/source edits, no unique causal/global SOTA attribution",
+ "resources":{"affinity_cpus":1,"wall_seconds":180,"aggregate_sampled_rss_bytes":4294967296,"blas_threads":1},
+ "contact_record":"parent summary and result.json scalars seen before checker implementation; no tuning is performed and tolerance inherited from preregistered reference spec"
+}
