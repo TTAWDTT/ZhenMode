@@ -1,0 +1,11 @@
+{
+  "source": "3c8e86bef2ee1fbfd50cca4343d6fc61694d9edc",
+  "scope": "Independent source identity and mathematical invariant controls; known 47 gauge case is DEVELOPMENT regression, not new reference data",
+  "resources": {"cpu":1,"wall_seconds":180,"memory_mib":4096,"GPU":false},
+  "route": "Full133 Git archive, build input, wheel, installed registry and loaded-path equality; actual factory primary/fine geometry; independent analytic degree0..3 integrals, constants and reversed-continuity defect; compiled production joint margins on algebraically known intervals",
+  "gates": {"constant_max":1e-17,"badmass_min_exclusive":1e-12,"badmass_formula_max":2e-12,"gauge_max":1e-13,"polynomial_relative_max":1e-14,"stock_relative_max":1e-12,"capacity_and_masssum":"exact","interval_controls":"exact dyadic expected alpha and boolean"},
+  "interval_cases": ["feasible baseline zero correction alpha1 true", "negative floor: q1 low-2 delta2 floor0 gives alpha1 true with loweralpha0.5", "empty floor envelope: q1 low-2 delta0 floor0 gives alpha0 false", "empty floor envelope nonzero delta-1 gives alpha0 false", "positive delta envelope cap: q[1,2,3] low0 delta[4,0,0] gives alpha0.5 true", "negative delta cap q[1,2,3] delta[0,0,-4] gives alpha0.5 true"],
+  "timing": "Pilot primary geometry/polynomial only; reuse its completed result, then fixed primary scalar + fine geometry/scalar and interval controls. Record projection before full launch.",
+  "lineage": "Separate reviewer, closed-form polynomial and interval truth; shares PDE conventions, factory geometry, JAX/compiler. No integrations or claim of full physics.",
+  "tool_consultation": "BootLoops tools index and full gatekeeper guide consulted; gatekeeper AMFlow/master-value formats do not express PDE operators. Extend preserved one-shot project evaluators and resource wrapper, not the toolkit."
+}

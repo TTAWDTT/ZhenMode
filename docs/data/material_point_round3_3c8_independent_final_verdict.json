@@ -1,0 +1,16 @@
+{
+  "source":"3c8e86bef2ee1fbfd50cca4343d6fc61694d9edc",
+  "declared_finite_stage":"PASS",
+  "evidence":{"source_math":"source-math-result.json PASS","new1D":"new-1d-result.json PASS, core emulation only, minimumalpha0","new2D":"new-2d-result.json PASS, actual-owner instantaneous RHS, alpha1 eachmesh","native10":"native-readback-result.json allconsistent/alloriginalscreensPASS","software":"software-ci-readback.json 1721PASS/MMSALLPASS/RuffPASS"},
+  "source_and_wheel":{"modules":133,"wheel_sha256":"46c5c8b0da9bb41b95943ab3b66579fd2da545e129e494d8bfedd8b67aaf61d2","before_after_identity_equal":true},
+  "fresh_contacted_references":"reference-contact-ledger.json; all new profile/grid data contacted after evaluation, not reusable as unseen data for later repairs",
+  "prior_failures":{"arithmetic_v2_static_equals_dynamich":"FAIL/OPEN preserved","47_gauge":"FAIL/OPEN preserved; regressionPASSonlyundernewidentity","362_new2D_infeasible_inactive":"OPEN preserved; no relabeling"},
+  "raw_native_execution_order":[0,1,5,2,3,4,6,7,8,9],
+  "trajectory_difference_to362":"All ten rows, all five archived T/S/eta/u/v fields maxabs0 in original units; descriptive, no equivalencegate",
+  "lineage_limit":"Separate reviewer and independent analytic characteristic/derivatives, but PDE/geometry/JAX shared; core1D emulates horizontal compensation; actual2D only instantaneous; thermal oracle shares analytic representation",
+  "overall_scientific_qualification":"OPEN beyond declared finite stage",
+  "unqualified_claims":["general fourthorder","full2D time-convergence","pressure/energy/TVD/general positivity","fullphysicalocean","industrial performance","globalSOTA"],
+  "model_edits_by_reviewer":false,
+  "native_integrations_by_reviewer":false,
+  "post_result_parameter_or_threshold_adjustments":false
+}

@@ -1,0 +1,686 @@
+{
+  "source_revision": "3c8e86bef2ee1fbfd50cca4343d6fc61694d9edc",
+  "all10_completed": true,
+  "all_original_screens_pass": true,
+  "source_math": "PASS",
+  "new1D": "PASS; core-only minα0",
+  "new2D": "PASS; instantaneous actualowner positive control allalpha1",
+  "fullCI": "38286199660 SUCCESS1721PASS/MMSALLPASS",
+  "independent_native_audit": "PASS consistency; no integrations repeated",
+  "rows": [
+    {
+      "index": 0,
+      "name": "previous-primary-main",
+      "status": "completed",
+      "started_utc": "2026-10-12T18:03:49.973135+00:00",
+      "directory": "00-previous-primary-main",
+      "report": {
+        "schema": "vertical-tracer-development-v1",
+        "contract_sha256": "a2cbe4672341c72e3484fe2f6c91e09a10192398d5348dd48b9e8ad955ae2d48",
+        "model": "ocean-solver",
+        "metrics": {
+          "eta_error": 0.005240393934376391,
+          "u_error": 0.000442236621138699,
+          "v_error": 0.00027255277265222396,
+          "T_error_C": 8.530755561576719e-7,
+          "S_error_psu": 0,
+          "volume": 2.220446049250313e-16,
+          "T_inventory": 4.440892098500626e-16,
+          "S_inventory": 2.220446049250313e-16
+        },
+        "failed_metrics": [],
+        "engineering_screen_pass": true,
+        "normalized_error_ratios": {
+          "eta_error": 0.0524039393437639,
+          "u_error": 0.00442236621138699,
+          "v_error": 0.0027255277265222392,
+          "T_error_C": 0.04265377780788359,
+          "S_error_psu": 0
+        },
+        "composite": 0.0524039393437639,
+        "null_absolute_errors": {},
+        "industrial_qualified": false,
+        "performance_comparison": false,
+        "source_sha": "3c8e86bef2ee1fbfd50cca4343d6fc61694d9edc",
+        "executable_sha256": "e50d468e8b0adfb05733f5b87b3cff34829c4a8c1aea50c865aa8bdfe4bb150f",
+        "reference": {
+          "kind": "linear_rotating_hydrostatic_free_surface_first_internal_mode",
+          "pressure_units": "p_prime/rho0 in m2/s2",
+          "branch": "pi < q < 3*pi/2; q*tan(q)=1/2500",
+          "provenance": "derived hydrostatic rotating normal mode; linear reference, full nonlinear native trajectories",
+          "upstream": "https://ocw.mit.edu/ans7870/textbooks/Wunsch/Edited/Chapter10.pdf"
+        },
+        "units": {
+          "T_error_C": "degC",
+          "S_error_psu": "absolute psu",
+          "other": "relative"
+        },
+        "output_sha256": "0de0d552c08eef922d8bee7105cacafbde9aca00266a23cd95eba3b2fead8f20"
+      },
+      "resources": {
+        "resources": {
+          "cpu_affinity": 1,
+          "elapsed_wall_seconds": 24.094409548,
+          "gpu_allocator_fraction": 0.4,
+          "gpu_memory_enforcement": "JAX allocator fraction; not a whole-device memory limit",
+          "host_memory_enforcement": "aggregate process-group /proc RSS sampled at 0.2 s; not a hard cgroup cap",
+          "memory_mib": 4096,
+          "peak_host_rss_bytes": 1884831744,
+          "stop_reason": null,
+          "termination_grace_seconds": 0,
+          "wall_seconds": 600
+        },
+        "returncode": 0
+      },
+      "previous_replay_arrays_equal": true,
+      "finished_utc": "2026-10-12T18:04:20.366321+00:00",
+      "elapsed_s": 30.393147293
+    },
+    {
+      "index": 1,
+      "name": "candidate-primary-main",
+      "status": "completed",
+      "started_utc": "2026-10-12T18:04:20.401745+00:00",
+      "directory": "01-candidate-primary-main",
+      "report": {
+        "schema": "vertical-tracer-development-v1",
+        "contract_sha256": "6be0816e669dd5b2110f3565ceeabd7dd880469392831aca207eaa3458e5e890",
+        "model": "ocean-solver",
+        "metrics": {
+          "eta_error": 0.0005388509039568577,
+          "u_error": 0.00003198853242502769,
+          "v_error": 0.000004440723369690159,
+          "T_error_C": 7.334242326890638e-9,
+          "S_error_psu": 0,
+          "volume": 2.220446049250313e-16,
+          "T_inventory": 2.220446049250313e-16,
+          "S_inventory": 2.220446049250313e-16
+        },
+        "failed_metrics": [],
+        "engineering_screen_pass": true,
+        "normalized_error_ratios": {
+          "eta_error": 0.005388509039568577,
+          "u_error": 0.00031988532425027686,
+          "v_error": 0.00004440723369690159,
+          "T_error_C": 0.0003667121163445319,
+          "S_error_psu": 0
+        },
+        "composite": 0.005388509039568577,
+        "null_absolute_errors": {},
+        "industrial_qualified": false,
+        "performance_comparison": false,
+        "source_sha": "3c8e86bef2ee1fbfd50cca4343d6fc61694d9edc",
+        "executable_sha256": "e50d468e8b0adfb05733f5b87b3cff34829c4a8c1aea50c865aa8bdfe4bb150f",
+        "reference": {
+          "kind": "linear_rotating_hydrostatic_free_surface_first_internal_mode",
+          "pressure_units": "p_prime/rho0 in m2/s2",
+          "branch": "pi < q < 3*pi/2; q*tan(q)=1/2500",
+          "provenance": "derived hydrostatic rotating normal mode; linear reference, full nonlinear native trajectories",
+          "upstream": "https://ocw.mit.edu/ans7870/textbooks/Wunsch/Edited/Chapter10.pdf"
+        },
+        "units": {
+          "T_error_C": "degC",
+          "S_error_psu": "absolute psu",
+          "other": "relative"
+        },
+        "output_sha256": "1fef45cf2409721d07fef49f74549a9739bb6b9ccbec4aa0408b11b100f93fab"
+      },
+      "resources": {
+        "resources": {
+          "cpu_affinity": 1,
+          "elapsed_wall_seconds": 27.108467966,
+          "gpu_allocator_fraction": 0.4,
+          "gpu_memory_enforcement": "JAX allocator fraction; not a whole-device memory limit",
+          "host_memory_enforcement": "aggregate process-group /proc RSS sampled at 0.2 s; not a hard cgroup cap",
+          "memory_mib": 4096,
+          "peak_host_rss_bytes": 1146933248,
+          "stop_reason": null,
+          "termination_grace_seconds": 0,
+          "wall_seconds": 600
+        },
+        "returncode": 0
+      },
+      "finished_utc": "2026-10-12T18:04:53.522524+00:00",
+      "elapsed_s": 33.120768199
+    },
+    {
+      "index": 5,
+      "name": "candidate-vertical-main",
+      "status": "completed",
+      "started_utc": "2026-10-12T18:10:35.398732+00:00",
+      "directory": "05-candidate-vertical-main",
+      "report": {
+        "schema": "vertical-tracer-development-v1",
+        "contract_sha256": "821a122a0d332ed1cefe557aeef88b65d83250e3b504c418c5ff4ed5fd7942c7",
+        "model": "ocean-solver",
+        "metrics": {
+          "eta_error": 0.0005413792384326902,
+          "u_error": 0.00003183315586596402,
+          "v_error": 0.000001770605420011317,
+          "T_error_C": 6.876582386760814e-9,
+          "S_error_psu": 0,
+          "volume": 2.220446049250313e-16,
+          "T_inventory": 2.220446049250313e-16,
+          "S_inventory": 2.220446049250313e-16
+        },
+        "failed_metrics": [],
+        "engineering_screen_pass": true,
+        "normalized_error_ratios": {
+          "eta_error": 0.005413792384326902,
+          "u_error": 0.0003183315586596402,
+          "v_error": 0.000017706054200113167,
+          "T_error_C": 0.0003438291193380407,
+          "S_error_psu": 0
+        },
+        "composite": 0.005413792384326902,
+        "null_absolute_errors": {},
+        "industrial_qualified": false,
+        "performance_comparison": false,
+        "source_sha": "3c8e86bef2ee1fbfd50cca4343d6fc61694d9edc",
+        "executable_sha256": "e50d468e8b0adfb05733f5b87b3cff34829c4a8c1aea50c865aa8bdfe4bb150f",
+        "reference": {
+          "kind": "linear_rotating_hydrostatic_free_surface_first_internal_mode",
+          "pressure_units": "p_prime/rho0 in m2/s2",
+          "branch": "pi < q < 3*pi/2; q*tan(q)=1/2500",
+          "provenance": "derived hydrostatic rotating normal mode; linear reference, full nonlinear native trajectories",
+          "upstream": "https://ocw.mit.edu/ans7870/textbooks/Wunsch/Edited/Chapter10.pdf"
+        },
+        "units": {
+          "T_error_C": "degC",
+          "S_error_psu": "absolute psu",
+          "other": "relative"
+        },
+        "output_sha256": "456e3c2b14498e233acda9d0da43f61be4efe8fddcd143c0b66d72465975a9db"
+      },
+      "resources": {
+        "resources": {
+          "cpu_affinity": 1,
+          "elapsed_wall_seconds": 28.528169486999985,
+          "gpu_allocator_fraction": 0.4,
+          "gpu_memory_enforcement": "JAX allocator fraction; not a whole-device memory limit",
+          "host_memory_enforcement": "aggregate process-group /proc RSS sampled at 0.2 s; not a hard cgroup cap",
+          "memory_mib": 4096,
+          "peak_host_rss_bytes": 1184104448,
+          "stop_reason": null,
+          "termination_grace_seconds": 0,
+          "wall_seconds": 600
+        },
+        "returncode": 0
+      },
+      "finished_utc": "2026-10-12T18:11:10.067266+00:00",
+      "elapsed_s": 34.668503894
+    },
+    {
+      "index": 2,
+      "name": "candidate-primary-half",
+      "status": "completed",
+      "started_utc": "2026-10-12T18:11:42.936172+00:00",
+      "directory": "02-candidate-primary-half",
+      "report": {
+        "schema": "vertical-tracer-development-v1",
+        "contract_sha256": "8c8c1e669a090a22769f42c08046878fff44b0641c479525a2a351d0f194c765",
+        "model": "ocean-solver",
+        "metrics": {
+          "eta_error": 0.00027012892996825487,
+          "u_error": 0.00001617092343964529,
+          "v_error": 0.000003205790898792322,
+          "T_error_C": 2.0082283632389278e-9,
+          "S_error_psu": 0,
+          "volume": 2.220446049250313e-16,
+          "T_inventory": 2.220446049250313e-16,
+          "S_inventory": 2.220446049250313e-16
+        },
+        "failed_metrics": [],
+        "engineering_screen_pass": true,
+        "normalized_error_ratios": {
+          "eta_error": 0.0027012892996825487,
+          "u_error": 0.00016170923439645288,
+          "v_error": 0.000032057908987923216,
+          "T_error_C": 0.00020082283632389276,
+          "S_error_psu": 0
+        },
+        "composite": 0.0027012892996825487,
+        "null_absolute_errors": {},
+        "industrial_qualified": false,
+        "performance_comparison": false,
+        "source_sha": "3c8e86bef2ee1fbfd50cca4343d6fc61694d9edc",
+        "executable_sha256": "e50d468e8b0adfb05733f5b87b3cff34829c4a8c1aea50c865aa8bdfe4bb150f",
+        "reference": {
+          "kind": "linear_rotating_hydrostatic_free_surface_first_internal_mode",
+          "pressure_units": "p_prime/rho0 in m2/s2",
+          "branch": "pi < q < 3*pi/2; q*tan(q)=1/2500",
+          "provenance": "derived hydrostatic rotating normal mode; linear reference, full nonlinear native trajectories",
+          "upstream": "https://ocw.mit.edu/ans7870/textbooks/Wunsch/Edited/Chapter10.pdf"
+        },
+        "units": {
+          "T_error_C": "degC",
+          "S_error_psu": "absolute psu",
+          "other": "relative"
+        },
+        "output_sha256": "6be2e82ee88792cf6a09b1f91b265ae456011a7f502667e97c58cd37d387dcef"
+      },
+      "resources": {
+        "resources": {
+          "cpu_affinity": 1,
+          "elapsed_wall_seconds": 43.67080962599999,
+          "gpu_allocator_fraction": 0.4,
+          "gpu_memory_enforcement": "JAX allocator fraction; not a whole-device memory limit",
+          "host_memory_enforcement": "aggregate process-group /proc RSS sampled at 0.2 s; not a hard cgroup cap",
+          "memory_mib": 4096,
+          "peak_host_rss_bytes": 2186297344,
+          "stop_reason": null,
+          "termination_grace_seconds": 0,
+          "wall_seconds": 600
+        },
+        "returncode": 0
+      },
+      "finished_utc": "2026-10-12T18:12:31.411471+00:00",
+      "elapsed_s": 48.47527066699996
+    },
+    {
+      "index": 3,
+      "name": "candidate-horizontal-main",
+      "status": "completed",
+      "started_utc": "2026-10-12T18:12:31.444869+00:00",
+      "directory": "03-candidate-horizontal-main",
+      "report": {
+        "schema": "vertical-tracer-development-v1",
+        "contract_sha256": "db62de8a9ca7aeaf7d6906904175d817d4da375fa719e8fd18fef8979b56db5d",
+        "model": "ocean-solver",
+        "metrics": {
+          "eta_error": 0.0005109790701355733,
+          "u_error": 0.00003151948986146075,
+          "v_error": 0.000008900475780248457,
+          "T_error_C": 9.934168704976505e-9,
+          "S_error_psu": 0,
+          "volume": 2.220446049250313e-16,
+          "T_inventory": 2.220446049250313e-16,
+          "S_inventory": 2.220446049250313e-16
+        },
+        "failed_metrics": [],
+        "engineering_screen_pass": true,
+        "normalized_error_ratios": {
+          "eta_error": 0.0051097907013557325,
+          "u_error": 0.00031519489861460745,
+          "v_error": 0.00008900475780248457,
+          "T_error_C": 0.0004967084352488252,
+          "S_error_psu": 0
+        },
+        "composite": 0.0051097907013557325,
+        "null_absolute_errors": {},
+        "industrial_qualified": false,
+        "performance_comparison": false,
+        "source_sha": "3c8e86bef2ee1fbfd50cca4343d6fc61694d9edc",
+        "executable_sha256": "e50d468e8b0adfb05733f5b87b3cff34829c4a8c1aea50c865aa8bdfe4bb150f",
+        "reference": {
+          "kind": "linear_rotating_hydrostatic_free_surface_first_internal_mode",
+          "pressure_units": "p_prime/rho0 in m2/s2",
+          "branch": "pi < q < 3*pi/2; q*tan(q)=1/2500",
+          "provenance": "derived hydrostatic rotating normal mode; linear reference, full nonlinear native trajectories",
+          "upstream": "https://ocw.mit.edu/ans7870/textbooks/Wunsch/Edited/Chapter10.pdf"
+        },
+        "units": {
+          "T_error_C": "degC",
+          "S_error_psu": "absolute psu",
+          "other": "relative"
+        },
+        "output_sha256": "6c76260e315f1447a46919667854644a784b4ad55b414b2755af41fa0fe55233"
+      },
+      "resources": {
+        "resources": {
+          "cpu_affinity": 1,
+          "elapsed_wall_seconds": 27.10757123000002,
+          "gpu_allocator_fraction": 0.4,
+          "gpu_memory_enforcement": "JAX allocator fraction; not a whole-device memory limit",
+          "host_memory_enforcement": "aggregate process-group /proc RSS sampled at 0.2 s; not a hard cgroup cap",
+          "memory_mib": 4096,
+          "peak_host_rss_bytes": 2137538560,
+          "stop_reason": null,
+          "termination_grace_seconds": 0,
+          "wall_seconds": 600
+        },
+        "returncode": 0
+      },
+      "finished_utc": "2026-10-12T18:13:04.476751+00:00",
+      "elapsed_s": 33.03189306600001
+    },
+    {
+      "index": 4,
+      "name": "candidate-horizontal-half",
+      "status": "completed",
+      "started_utc": "2026-10-12T18:13:04.512023+00:00",
+      "directory": "04-candidate-horizontal-half",
+      "report": {
+        "schema": "vertical-tracer-development-v1",
+        "contract_sha256": "d41d8f00d3efbb57915348412b8798419a45f286776c6c7850615921a7d80d4c",
+        "model": "ocean-solver",
+        "metrics": {
+          "eta_error": 0.0002597085100116228,
+          "u_error": 0.000017483916094305756,
+          "v_error": 0.000008278815666380425,
+          "T_error_C": 3.792994443530159e-9,
+          "S_error_psu": 0,
+          "volume": 2.220446049250313e-16,
+          "T_inventory": 2.220446049250313e-16,
+          "S_inventory": 2.220446049250313e-16
+        },
+        "failed_metrics": [],
+        "engineering_screen_pass": true,
+        "normalized_error_ratios": {
+          "eta_error": 0.002597085100116228,
+          "u_error": 0.00017483916094305756,
+          "v_error": 0.00008278815666380425,
+          "T_error_C": 0.0003792994443530159,
+          "S_error_psu": 0
+        },
+        "composite": 0.002597085100116228,
+        "null_absolute_errors": {},
+        "industrial_qualified": false,
+        "performance_comparison": false,
+        "source_sha": "3c8e86bef2ee1fbfd50cca4343d6fc61694d9edc",
+        "executable_sha256": "e50d468e8b0adfb05733f5b87b3cff34829c4a8c1aea50c865aa8bdfe4bb150f",
+        "reference": {
+          "kind": "linear_rotating_hydrostatic_free_surface_first_internal_mode",
+          "pressure_units": "p_prime/rho0 in m2/s2",
+          "branch": "pi < q < 3*pi/2; q*tan(q)=1/2500",
+          "provenance": "derived hydrostatic rotating normal mode; linear reference, full nonlinear native trajectories",
+          "upstream": "https://ocw.mit.edu/ans7870/textbooks/Wunsch/Edited/Chapter10.pdf"
+        },
+        "units": {
+          "T_error_C": "degC",
+          "S_error_psu": "absolute psu",
+          "other": "relative"
+        },
+        "output_sha256": "2818db87be047bb6c2496b554b20376efd80052eac4f630d82a918e07a36d434"
+      },
+      "resources": {
+        "resources": {
+          "cpu_affinity": 1,
+          "elapsed_wall_seconds": 27.50887557599998,
+          "gpu_allocator_fraction": 0.4,
+          "gpu_memory_enforcement": "JAX allocator fraction; not a whole-device memory limit",
+          "host_memory_enforcement": "aggregate process-group /proc RSS sampled at 0.2 s; not a hard cgroup cap",
+          "memory_mib": 4096,
+          "peak_host_rss_bytes": 1166614528,
+          "stop_reason": null,
+          "termination_grace_seconds": 0,
+          "wall_seconds": 600
+        },
+        "returncode": 0
+      },
+      "finished_utc": "2026-10-12T18:13:38.153619+00:00",
+      "elapsed_s": 33.641566031000025
+    },
+    {
+      "index": 6,
+      "name": "candidate-vertical-half",
+      "status": "completed",
+      "started_utc": "2026-10-12T18:13:38.190363+00:00",
+      "directory": "06-candidate-vertical-half",
+      "report": {
+        "schema": "vertical-tracer-development-v1",
+        "contract_sha256": "452b0a8a2e55cfed22eabbd99933820be9265417843242d23b7cd75e8b34ff34",
+        "model": "ocean-solver",
+        "metrics": {
+          "eta_error": 0.00027071644764075704,
+          "u_error": 0.00001592647680619955,
+          "v_error": 0.0000010155698878175786,
+          "T_error_C": 1.7358417448741845e-9,
+          "S_error_psu": 0,
+          "volume": 2.220446049250313e-16,
+          "T_inventory": 2.220446049250313e-16,
+          "S_inventory": 2.220446049250313e-16
+        },
+        "failed_metrics": [],
+        "engineering_screen_pass": true,
+        "normalized_error_ratios": {
+          "eta_error": 0.0027071644764075703,
+          "u_error": 0.00015926476806199549,
+          "v_error": 0.000010155698878175785,
+          "T_error_C": 0.00017358417448741842,
+          "S_error_psu": 0
+        },
+        "composite": 0.0027071644764075703,
+        "null_absolute_errors": {},
+        "industrial_qualified": false,
+        "performance_comparison": false,
+        "source_sha": "3c8e86bef2ee1fbfd50cca4343d6fc61694d9edc",
+        "executable_sha256": "e50d468e8b0adfb05733f5b87b3cff34829c4a8c1aea50c865aa8bdfe4bb150f",
+        "reference": {
+          "kind": "linear_rotating_hydrostatic_free_surface_first_internal_mode",
+          "pressure_units": "p_prime/rho0 in m2/s2",
+          "branch": "pi < q < 3*pi/2; q*tan(q)=1/2500",
+          "provenance": "derived hydrostatic rotating normal mode; linear reference, full nonlinear native trajectories",
+          "upstream": "https://ocw.mit.edu/ans7870/textbooks/Wunsch/Edited/Chapter10.pdf"
+        },
+        "units": {
+          "T_error_C": "degC",
+          "S_error_psu": "absolute psu",
+          "other": "relative"
+        },
+        "output_sha256": "a6eb1e249786a1067688c02bf2782cacf34201caddb77ab1ae3ad1c39527fdda"
+      },
+      "resources": {
+        "resources": {
+          "cpu_affinity": 1,
+          "elapsed_wall_seconds": 27.925867125000025,
+          "gpu_allocator_fraction": 0.4,
+          "gpu_memory_enforcement": "JAX allocator fraction; not a whole-device memory limit",
+          "host_memory_enforcement": "aggregate process-group /proc RSS sampled at 0.2 s; not a hard cgroup cap",
+          "memory_mib": 4096,
+          "peak_host_rss_bytes": 1187569664,
+          "stop_reason": null,
+          "termination_grace_seconds": 0,
+          "wall_seconds": 600
+        },
+        "returncode": 0
+      },
+      "finished_utc": "2026-10-12T18:14:12.303815+00:00",
+      "elapsed_s": 34.113430307000044
+    },
+    {
+      "index": 7,
+      "name": "candidate-null",
+      "status": "completed",
+      "started_utc": "2026-10-12T18:14:12.339073+00:00",
+      "directory": "07-candidate-null",
+      "report": {
+        "schema": "vertical-tracer-development-v1",
+        "contract_sha256": "dce855b9bc295e61693edc29c3974c29e8827f93aa30cb8e8d8b60abd31bd327",
+        "model": "ocean-solver",
+        "metrics": {
+          "eta_error": 0,
+          "u_error": 0,
+          "v_error": 0,
+          "T_error_C": 0,
+          "S_error_psu": 0,
+          "volume": 0,
+          "T_inventory": 0,
+          "S_inventory": 0
+        },
+        "failed_metrics": [],
+        "engineering_screen_pass": true,
+        "normalized_error_ratios": {
+          "eta_error": 0,
+          "u_error": 0,
+          "v_error": 0,
+          "T_error_C": 0,
+          "S_error_psu": 0
+        },
+        "composite": 0,
+        "null_absolute_errors": {
+          "eta": 0,
+          "u": 0,
+          "v": 0,
+          "T": 0,
+          "S": 0,
+          "h": 0
+        },
+        "industrial_qualified": false,
+        "performance_comparison": false,
+        "source_sha": "3c8e86bef2ee1fbfd50cca4343d6fc61694d9edc",
+        "executable_sha256": "e50d468e8b0adfb05733f5b87b3cff34829c4a8c1aea50c865aa8bdfe4bb150f",
+        "reference": {
+          "kind": "linear_rotating_hydrostatic_free_surface_first_internal_mode",
+          "pressure_units": "p_prime/rho0 in m2/s2",
+          "branch": "pi < q < 3*pi/2; q*tan(q)=1/2500",
+          "provenance": "derived hydrostatic rotating normal mode; linear reference, full nonlinear native trajectories",
+          "upstream": "https://ocw.mit.edu/ans7870/textbooks/Wunsch/Edited/Chapter10.pdf"
+        },
+        "units": {
+          "T_error_C": "degC",
+          "S_error_psu": "absolute psu",
+          "other": "relative"
+        },
+        "output_sha256": "efa615916d6e485ebfe5ae18c2e4b36950b4147ec4354e27d46f2c5ade802f5c"
+      },
+      "resources": {
+        "resources": {
+          "cpu_affinity": 1,
+          "elapsed_wall_seconds": 19.07303385800003,
+          "gpu_allocator_fraction": 0.4,
+          "gpu_memory_enforcement": "JAX allocator fraction; not a whole-device memory limit",
+          "host_memory_enforcement": "aggregate process-group /proc RSS sampled at 0.2 s; not a hard cgroup cap",
+          "memory_mib": 4096,
+          "peak_host_rss_bytes": 1141452800,
+          "stop_reason": null,
+          "termination_grace_seconds": 0,
+          "wall_seconds": 600
+        },
+        "returncode": 0
+      },
+      "finished_utc": "2026-10-12T18:14:37.662777+00:00",
+      "elapsed_s": 25.32369552900002
+    },
+    {
+      "index": 8,
+      "name": "default-null",
+      "status": "completed",
+      "started_utc": "2026-10-12T18:14:37.698366+00:00",
+      "directory": "08-default-null",
+      "report": {
+        "schema": "frozen-internal-wave-v1",
+        "contract_sha256": "ec1853788b9705ca5ec49e737f61a0906b56b67ea280716a4760e0c141b43afd",
+        "model": "ocean-solver",
+        "metrics": {
+          "eta_error": 0,
+          "u_error": 0,
+          "v_error": 0,
+          "T_error_C": 0,
+          "S_error_psu": 0,
+          "volume": 0,
+          "T_inventory": 0,
+          "S_inventory": 0
+        },
+        "failed_metrics": [],
+        "engineering_screen_pass": true,
+        "normalized_error_ratios": {
+          "eta_error": 0,
+          "u_error": 0,
+          "v_error": 0,
+          "T_error_C": 0,
+          "S_error_psu": 0
+        },
+        "composite": 0,
+        "null_absolute_errors": {
+          "eta": 0,
+          "u": 0,
+          "v": 0,
+          "T": 0,
+          "S": 0,
+          "h": 0
+        },
+        "industrial_qualified": false,
+        "performance_comparison": false,
+        "source_sha": "3c8e86bef2ee1fbfd50cca4343d6fc61694d9edc",
+        "executable_sha256": "e50d468e8b0adfb05733f5b87b3cff34829c4a8c1aea50c865aa8bdfe4bb150f",
+        "reference": {
+          "kind": "linear_rotating_hydrostatic_free_surface_first_internal_mode",
+          "pressure_units": "p_prime/rho0 in m2/s2",
+          "branch": "pi < q < 3*pi/2; q*tan(q)=1/2500",
+          "provenance": "derived hydrostatic rotating normal mode; linear reference, full nonlinear native trajectories",
+          "upstream": "https://ocw.mit.edu/ans7870/textbooks/Wunsch/Edited/Chapter10.pdf"
+        },
+        "units": {
+          "T_error_C": "degC",
+          "S_error_psu": "absolute psu",
+          "other": "relative"
+        },
+        "output_sha256": "d1af25f255a41d50278735201edf21a8e056fbb5fa4b7c705ae65b2af0652cd1"
+      },
+      "resources": {
+        "resources": {
+          "cpu_affinity": 1,
+          "elapsed_wall_seconds": 11.048186294000004,
+          "gpu_allocator_fraction": 0.4,
+          "gpu_memory_enforcement": "JAX allocator fraction; not a whole-device memory limit",
+          "host_memory_enforcement": "aggregate process-group /proc RSS sampled at 0.2 s; not a hard cgroup cap",
+          "memory_mib": 4096,
+          "peak_host_rss_bytes": 984150016,
+          "stop_reason": null,
+          "termination_grace_seconds": 0,
+          "wall_seconds": 600
+        },
+        "returncode": 0
+      },
+      "finished_utc": "2026-10-12T18:14:54.620279+00:00",
+      "elapsed_s": 16.921900625999967
+    },
+    {
+      "index": 9,
+      "name": "candidate-thermal",
+      "status": "completed",
+      "started_utc": "2026-10-12T18:14:54.654811+00:00",
+      "directory": "09-candidate-thermal",
+      "report": {
+        "schema": "vertical-tracer-development-v1",
+        "contract_sha256": "afd06d4736fc5180007bfbb977d00d145c33800f5f0f8851cc2fdaec70bd4f3e",
+        "model": "ocean-solver",
+        "metrics": {
+          "eta_error": 0.0006673296621597007,
+          "u_error": 0.0003076370207986616,
+          "v_error": 0.0001970456658241268,
+          "T_error_C": 0.00003279198835499751,
+          "S_error_psu": 0.000006815990080079416,
+          "volume": 1.1102230246251565e-16,
+          "T_inventory": 3.1252778143198157e-12,
+          "S_inventory": 2.220446049250313e-16
+        },
+        "failed_metrics": [],
+        "engineering_screen_pass": true,
+        "industrial_qualified": false,
+        "performance_comparison": false,
+        "source_sha": "3c8e86bef2ee1fbfd50cca4343d6fc61694d9edc",
+        "executable_sha256": "e50d468e8b0adfb05733f5b87b3cff34829c4a8c1aea50c865aa8bdfe4bb150f",
+        "reference": {
+          "kind": "steady_thermal_wind_with_density_neutral_advected_spice",
+          "provenance": "MOM6 baroclinic-zone sinusoidal front/linear stratification, rotated into closed y; add bottom-pressure-balanced SSH/velocity and density-neutral T/S wave",
+          "upstream": "https://github.com/NOAA-GFDL/MOM6/blob/f49a00096df607b48354603e2398e14e189fd62e/src/user/baroclinic_zone_initialization.F90"
+        },
+        "units": {
+          "T_error_C": "degC",
+          "S_error_psu": "psu",
+          "other": "relative"
+        },
+        "output_sha256": "43b939aa3c1e4e3148ffcf47813ae45bd1dd9f0cbe08812d1a36861369496d47"
+      },
+      "resources": {
+        "resources": {
+          "cpu_affinity": 1,
+          "elapsed_wall_seconds": 46.175610903999996,
+          "gpu_allocator_fraction": 0.4,
+          "gpu_memory_enforcement": "JAX allocator fraction; not a whole-device memory limit",
+          "host_memory_enforcement": "aggregate process-group /proc RSS sampled at 0.2 s; not a hard cgroup cap",
+          "memory_mib": 4096,
+          "peak_host_rss_bytes": 2267553792,
+          "stop_reason": null,
+          "termination_grace_seconds": 0,
+          "wall_seconds": 600
+        },
+        "returncode": 0
+      },
+      "finished_utc": "2026-10-12T18:15:47.872563+00:00",
+      "elapsed_s": 53.21773235799998
+    }
+  ]
+}

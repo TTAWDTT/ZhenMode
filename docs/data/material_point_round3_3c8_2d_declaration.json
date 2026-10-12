@@ -1,0 +1,15 @@
+{
+  "source":"3c8e86bef2ee1fbfd50cca4343d6fc61694d9edc",
+  "scope":"NEW actual 2D horizontal-owner instantaneous material RHS positive control, intended to exercise active point correction; no time evolution, pressure or full-ocean qualification",
+  "meshes":[{"Ny":26,"Nz":27},{"Ny":52,"Nz":53},{"Ny":104,"Nz":105}],
+  "geometry":{"Nx":8,"Lx":9000,"Ly":18000,"H":120,"dt":12.5,"fullywet":true,"meridional_faces":"closed"},
+  "streamfunction":"Psi=0.16 sin(piY) D(1-D), Y=y/Ly,D=d/H; v=0.16/H sin(piY)(1-2D); u=0; w=-0.16pi/Ly cos(piY)D(1-D)",
+  "tracer":"q=8+0.07cos(piY)+(1+0.05cos(piY))(D+0.1D^2+0.03D^3)",
+  "derivatives":"q_y=-pi/Ly sin(piY)[0.07+0.05(D+0.1D^2+0.03D^3)]; q_d=(1+0.05cos(piY))(1+0.2D+0.09D^2)/H; R=-v*q_y-w*q_d",
+  "purpose":"Analytic q_d >=0.95/H >0 and q_y<0 inside the channel. Top v>0 moves column minimum upward; bed v<0 moves maximum downward. Nonaffine q varies in Y and d. Polynomial Psi gives nonaffine w and zero physical top/bed. Coefficients and meshes selected from this structural condition after freeze, before numerical errors or alpha are observed.",
+  "normalization":"sum(actual_h*abs(Rproduction-Ranalytic))/sum(actual_h*abs(Ranalytic)); dimensionless rate/rate, not initial tracer range",
+  "gates":{"finest_L1":0.05,"each_refinement_min":1.25,"constant_rhs_max":1e-17,"badmass_min_exclusive":1e-12,"badmass_formula_max":2e-12,"Euler_stock_scale":1e-12,"minimum_Euler":-1e-14,"all_feasible":true,"active_alpha_min_exclusive":0.5,"zero_mass_pins_and_closedface":"exact","actual_vs_diagnostic_max":2e-12},
+  "lineage":"Separate reviewer analytic derivatives, no production scorer; actual production advection/continuityfaces/diagnostics all JIT. Shares PDE, actual factory geometry and JAX/compiler; RHS-only scope and single precision weaken independence. Active claim requires measured alpha>0.5 on every mesh; failure remains OPEN with no adjustment.",
+  "timing":"Only after source/math and NEW1D pass; coarsest four timing-only calls without oracle comparison/display; fixed three-grid complete once after projection; CPU1/180s/4096MiB sampled RSS/noGPU.",
+  "contact":"New profiles/meshes/streamfunction distinct from burned 362 data. Never used to select parameters; become permanently contacted at full comparison. All 47 and 362 failures retained."
+}

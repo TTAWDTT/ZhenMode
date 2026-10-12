@@ -1,0 +1,12 @@
+{
+  "source_revision": "3c8e86bef2ee1fbfd50cca4343d6fc61694d9edc",
+  "run_id": 38286199660,
+  "status": "completed",
+  "conclusion": "success",
+  "pytest_passed": 1721,
+  "warnings": 6710,
+  "pytest_s": 1081.12,
+  "MMS": "ALL PASS",
+  "ruff": "PASS",
+  "raw_log": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/ci-3c8-full.log"
+}

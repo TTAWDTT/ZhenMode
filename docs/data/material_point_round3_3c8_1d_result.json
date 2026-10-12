@@ -1,0 +1,98 @@
+{
+  "verdict": "PASS",
+  "scope": "NEW independent analytic characteristic data for current point-column core with local horizontal compensation; does not certify actual 2D horizontal owner",
+  "declaration_sha256": "2924ba2c3d05ad04d55344173577d1fed203ac545b8d973c163e900fad583287",
+  "evaluator_sha256": "a5839bae6544ae344af4e8c917c65d093aba5dbd17a9f7fa70b5b703d0b2b176",
+  "initial_continuous_range": 0.2022961933882304,
+  "source_math_result_sha256": "c06320bf4b3d270e27e112f00ee726f7e0d9f869b9b45eacccbe0c388fddf3ce",
+  "cases": [
+    {
+      "nodes": 35,
+      "normalized_weighted_L1": 0.00016252108240707788,
+      "endpoint_drift": 0.0,
+      "budget": {
+        "stock_initial": 5.257761799884694,
+        "stock_final": 5.250068590353391,
+        "horizontal_plus_boundary_input": -0.007693209531303572,
+        "inventory_balance_residual": 3.3241808014995017e-17,
+        "budget_limit": 5.257761799884694e-12,
+        "maximum_step_budget_residual": 1.1118589231789904e-16,
+        "constant_rhs_max": 0.0,
+        "reversed_mass_constant_defect": 1.5702375939551514,
+        "minimum_euler_value": 5.18,
+        "all_euler_intervals_feasible": true,
+        "minimum_alpha": 0.0
+      },
+      "constant_rhs_max_abs": 0.0,
+      "constant_final_drift_abs": 0.0,
+      "sign_negative_defect": 1.5702375939551514,
+      "constant_all_euler_feasible": true
+    },
+    {
+      "nodes": 69,
+      "normalized_weighted_L1": 0.00011784627704624248,
+      "endpoint_drift": 0.0,
+      "budget": {
+        "stock_initial": 5.25774660562004,
+        "stock_final": 5.250040535302123,
+        "horizontal_plus_boundary_input": -0.007706070317918088,
+        "inventory_balance_residual": -7.042909549830056e-17,
+        "budget_limit": 5.25774660562004e-12,
+        "maximum_step_budget_residual": 1.0540971657022085e-16,
+        "constant_rhs_max": 0.0,
+        "reversed_mass_constant_defect": 1.5706566324040745,
+        "minimum_euler_value": 5.18,
+        "all_euler_intervals_feasible": true,
+        "minimum_alpha": 0.0
+      },
+      "constant_rhs_max_abs": 0.0,
+      "constant_final_drift_abs": 0.0,
+      "sign_negative_defect": 1.5706566324040745,
+      "constant_all_euler_feasible": true
+    },
+    {
+      "nodes": 137,
+      "normalized_weighted_L1": 7.167341327591368e-05,
+      "endpoint_drift": 0.0,
+      "budget": {
+        "stock_initial": 5.257742807052175,
+        "stock_final": 5.250026190699033,
+        "horizontal_plus_boundary_input": -0.007716616353140952,
+        "inventory_balance_residual": -5.832651934134167e-16,
+        "budget_limit": 5.257742807052175e-12,
+        "maximum_step_budget_residual": 6.102597099259376e-17,
+        "constant_rhs_max": 0.0,
+        "reversed_mass_constant_defect": 1.5707614024983552,
+        "minimum_euler_value": 5.18,
+        "all_euler_intervals_feasible": true,
+        "minimum_alpha": 0.0
+      },
+      "constant_rhs_max_abs": 0.0,
+      "constant_final_drift_abs": 0.0,
+      "sign_negative_defect": 1.5707614024983552,
+      "constant_all_euler_feasible": true
+    }
+  ],
+  "refinement_ratios": [
+    1.3790939050480582,
+    1.6442118724356258
+  ],
+  "elapsed_s": 19.467289787999988,
+  "isolated_identity_before": {
+    "commit": "3c8e86bef2ee1fbfd50cca4343d6fc61694d9edc",
+    "modules": 133,
+    "path": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/material-point-v4-marginfix/installed",
+    "manifest_sha256": "2ac0a15f4900935e92e939c1f2d263a7519edf845f5584f18114bb3618d2439b",
+    "wheel_sha256": "46c5c8b0da9bb41b95943ab3b66579fd2da545e129e494d8bfedd8b67aaf61d2"
+  },
+  "isolated_identity_after": {
+    "commit": "3c8e86bef2ee1fbfd50cca4343d6fc61694d9edc",
+    "modules": 133,
+    "path": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/material-point-v4-marginfix/installed",
+    "manifest_sha256": "2ac0a15f4900935e92e939c1f2d263a7519edf845f5584f18114bb3618d2439b",
+    "wheel_sha256": "46c5c8b0da9bb41b95943ab3b66579fd2da545e129e494d8bfedd8b67aaf61d2"
+  },
+  "gates_or_algorithm_adjusted_after_result": false,
+  "native_integration": false,
+  "shared_lineage": "Independent closed-form characteristic and tracer profile; shares PDE/geometry/JAX and production cubic_point_integral, stable integrated baseline, projection and joint blend. Local Nm-distributed horizontal compensation is core emulation, not actual 2D owner. No old dense/legacy substitutes."
+}
