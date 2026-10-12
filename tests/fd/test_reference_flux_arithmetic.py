@@ -14,7 +14,11 @@ from zhenmode.model.solver.dynamics.transport import (
     _layer_face_transports,
     _vertical_transport_iface,
 )
-from zhenmode.model.solver.numerics.vertical import integrated_reference_scalar_rate
+from zhenmode.model.solver.numerics.vertical import (
+    _conservative_endpoint_flux,
+    _vertical_tracer_face_values,
+    integrated_reference_scalar_rate,
+)
 
 
 def setup(nodes):
@@ -83,3 +87,27 @@ def test_actual_solver_owner_assembles_mass_before_capacity_division():
     np.testing.assert_array_equal(F[..., :-1], expected)
     constant = jnp.full_like(u, 35.)
     np.testing.assert_allclose(_advection_scalar(constant, u, v, F, p), 0., rtol=0, atol=1e-17)
+    reversed_rate = _advection_scalar(constant, u, v, -F, p)
+    expected_bad = -35*(mass+(-F[..., 1:]+F[..., :-1]))/p.dz_node
+    np.testing.assert_allclose(reversed_rate, expected_bad, rtol=0, atol=2e-17)
+    assert np.max(abs(np.asarray(reversed_rate))) > 1e-12
+
+
+def test_nonzero_global_reference_activates_absolute_zero_salt_floor():
+    tracer = jnp.asarray([[[2., 1., 0., 0., 0., 0.], [0., 1., 2., 3., 4., 5.]]])
+    flow = jnp.broadcast_to(jnp.asarray([.1, .09, .07, .05, .03, .01, 0.]), (1, 2, 7))
+    h = jnp.asarray([.5, 1., 1., 1., 1., .5])[None, None]
+    mass = -(flow[..., 1:]-flow[..., :-1])
+    p = SimpleNamespace(dz_node=h, dz_iface=jnp.ones((1, 2, 5)), wet_mask_z=jnp.ones_like(tracer),
+                        dt=.01, adv_nsub=1, vertical_tracer_scheme='muscl_band_v3')
+    shifted = tracer-tracer.reshape(-1)[0]
+    rate, _ = integrated_reference_scalar_rate(tracer, flow, shifted*mass, mass, p, minimum=0.)
+    unbounded, _ = integrated_reference_scalar_rate(tracer, flow, shifted*mass, mass, p)
+    assert float((tracer+p.dt*rate)[0, 1, 0]) >= -1e-14
+    assert float((tracer+p.dt*unbounded)[0, 1, 0]) < -1e-6
+    a, b = _vertical_tracer_face_values(tracer, p)
+    inside = flow[..., 1:-1]*jnp.where(flow[..., 1:-1] > 0., a, b)
+    flux = jnp.concatenate((flow[..., :1]*tracer[..., :1], inside, jnp.zeros_like(flow[..., :1])), axis=-1)
+    old = _conservative_endpoint_flux(tracer, flow, flux, tracer*mass/h, p, minimum=0.)
+    np.testing.assert_allclose(rate, -(tracer*mass+(old[..., 1:]-old[..., :-1]))/h,
+                               rtol=0, atol=2e-13)
