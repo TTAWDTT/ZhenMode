@@ -115,6 +115,73 @@ def _fill_ghost_bottom(u, p):
     return jnp.where(kk >= kbot, u_bot, u)
 
 
+def physical_tracer_gradient(tracer, p):
+    """Minmod physical-depth slopes with one-sided endpoint secants."""
+    secant = (tracer[..., 1:]-tracer[..., :-1])/p.dz_iface
+    a, b = secant[..., :-1], secant[..., 1:]
+    middle = jnp.where(a*b > 0., jnp.sign(a)*jnp.minimum(jnp.abs(a), jnp.abs(b)), 0.)
+    return jnp.concatenate((secant[..., :1], middle, secant[..., -1:]), axis=-1)
+
+
+def point_vertical_antiflux(delta_rate, horizontal_anti, mass_flux, p):
+    """Capacity-minimum residual on each connected vertical material span.
+
+    Physical boundary and stagnant mass faces are pinned to zero anti-flux.
+    Connected endpoint nodes retain their accepted baseline rate. Other nodes may retain a
+    compatibility residual; a whole-column identity does not close each span.
+    """
+    h = jnp.broadcast_to(p.dz_node, delta_rate.shape)
+    zero = jnp.zeros_like(delta_rate[..., :1])
+    raw = jnp.concatenate((zero, -jnp.cumsum(h*delta_rate+horizontal_anti, axis=-1)), axis=-1)
+    indices = jnp.broadcast_to(jnp.arange(raw.shape[-1]), raw.shape)
+    n = delta_rate.shape[-1]
+    pinned = (mass_flux == 0.) | (indices == 0) | (indices == n)
+    values = jnp.zeros_like(raw)
+    # These anti-fluxes cancel the new horizontal correction structurally at
+    # physical endpoints. Recomputing an already accepted endpoint target can
+    # create a roundoff-only outward increment and suppress the whole blend.
+    first = jnp.where(mass_flux[..., 1] != 0., -horizontal_anti[..., 0], 0.)
+    last = jnp.where(mass_flux[..., -2] != 0., horizontal_anti[..., -1], 0.)
+    values = values.at[..., 1].set(first).at[..., -2].set(last)
+    pinned = pinned | (indices == 1) | (indices == n-1)
+    offset = values-raw
+    left = jax.lax.associative_scan(jnp.maximum, jnp.where(pinned, indices, 0), axis=raw.ndim-1)
+    right = jax.lax.associative_scan(jnp.minimum, jnp.where(pinned, indices, n), axis=raw.ndim-1, reverse=True)
+    position = jnp.concatenate((zero, jnp.cumsum(h, axis=-1)), axis=-1)
+    lo, hi = jnp.take_along_axis(position, left, -1), jnp.take_along_axis(position, right, -1)
+    fraction = (position-lo)/jnp.where(hi > lo, hi-lo, 1.)
+    offset_lo, offset_hi = jnp.take_along_axis(offset, left, -1), jnp.take_along_axis(offset, right, -1)
+    corrected = raw+offset_lo+fraction*(offset_hi-offset_lo)
+    return jnp.where(pinned, values, corrected)
+
+
+def joint_scalar_blend(tracer, low_rate, delta_rate, mass_flux, p, minimum=None):
+    """One shared-face coefficient for the whole scalar domain.
+
+    Bounds describe the Euler correction relative to the existing baseline.
+    If the baseline violates an absolute floor and no alpha can repair it,
+    return the baseline and a false feasibility flag; do not claim positivity.
+    """
+    step = p.dt/p.adv_nsub
+    low, delta = step*low_rate, step*delta_rate
+    surface = -step*mass_flux[..., 0]*physical_tracer_gradient(tracer, p)[..., 0]
+    if minimum is not None:
+        surface = jnp.maximum(surface, minimum-tracer[..., 0])
+    allowance = tracer[..., :1]-tracer+jnp.where(mass_flux[..., :1] > 0., surface[..., None], 0.)
+    lower = jnp.minimum(jnp.minimum(jnp.min(tracer, -1, keepdims=True)-tracer, allowance), low)
+    upper = jnp.maximum(jnp.maximum(jnp.max(tracer, -1, keepdims=True)-tracer, allowance), low)
+    if minimum is not None:
+        lower = jnp.maximum(lower, minimum-tracer)
+    denominator = jnp.where(delta != 0., delta, 1.)
+    one, two = (lower-low)/denominator, (upper-low)/denominator
+    lower_alpha = jnp.where(delta != 0., jnp.minimum(one, two), 0.)
+    upper_alpha = jnp.where(delta != 0., jnp.maximum(one, two), 1.)
+    lo, hi = jnp.maximum(0., jnp.max(lower_alpha)), jnp.minimum(1., jnp.min(upper_alpha))
+    feasible = ((lo <= hi) & jnp.all(lower <= upper)
+                & jnp.all(jnp.where(delta == 0., (low >= lower) & (low <= upper), True)))
+    return jnp.where(feasible, jnp.clip(hi, 0., 1.), 0.), feasible
+
+
 def integrated_reference_scalar_rate(tracer, mass_flux, horizontal_shift_numerator,
                                      horizontal_mass_numerator, p, minimum=None):
     """Flux-form RHS with a global concentration reference and one division.

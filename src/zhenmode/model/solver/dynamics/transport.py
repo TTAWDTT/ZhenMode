@@ -21,6 +21,9 @@ from zhenmode.model.solver.numerics.vertical import (
     _fill_ghost_bottom,
     _vertical_tracer_face_values,
     integrated_reference_scalar_rate,
+    joint_scalar_blend,
+    physical_tracer_gradient,
+    point_vertical_antiflux,
 )
 
 
@@ -267,6 +270,51 @@ def _legacy_horizontal_tracer_fluxes(T,u,v,p,face_transport):
     return Fx,Fy
 
 
+def _material_point_scalar_rate(T, Fz, mass_faces, shifted_faces, p, minimum=None,
+                                return_diagnostics=False):
+    """Joint conservative product-moment and point-velocity correction.
+
+    The affine, horizontally constant column product identity motivates the
+    target. General fields and disconnected spans retain projection residuals.
+    Both horizontal and vertical anti-fluxes use one domain-wide Euler blend.
+    """
+    reference = T.reshape(-1)[0]
+    shifted = T-reference
+    h = p.dz_node
+    primitive = p.tracer_point_primitive
+    mass_numerator = _face_transport_divergence(*mass_faces, p)
+    shifted_numerator = _face_transport_divergence(*shifted_faces, p)
+    baseline_params = p._replace(vertical_tracer_scheme='muscl_band_v3')
+    low_rate, boundary = integrated_reference_scalar_rate(T, Fz, shifted_numerator,
+                                                         mass_numerator, baseline_params, minimum)
+    anti_faces = []
+    for axis, mass, base in zip((0, 1), mass_faces, shifted_faces, strict=True):
+        face_q = .5*(shifted+jnp.roll(shifted, -1, axis=axis))
+        gradient = physical_tracer_gradient(face_q, p)
+        point_integral = jnp.einsum('kl,...l->...k', primitive, mass/h)
+        moment = face_q[..., 0]*jnp.sum(mass, -1)+jnp.sum(h*gradient*point_integral, -1)
+        magnitude = jnp.sum(jnp.abs(mass), -1, keepdims=True)
+        anti_faces.append(jnp.abs(mass)/jnp.where(magnitude > 0., magnitude, 1.)
+                          *(moment-jnp.sum(base, -1))[..., None])
+    anti_faces[1] = anti_faces[1].at[:, -1].set(0.)
+    horizontal_anti = _face_transport_divergence(*anti_faces, p)
+    mass_residual = mass_numerator+(Fz[..., 1:]-Fz[..., :-1])
+    vertical_divergence = -(Fz[..., 1:]-Fz[..., :-1])/h
+    point_w = jnp.einsum('kl,...l->...k', primitive, vertical_divergence)
+    point_w = point_w.at[..., 0].set(Fz[..., 0]).at[..., -1].set(0.)
+    desired = (-(shifted_numerator-shifted*mass_numerator)/h
+               -point_w*physical_tracer_gradient(shifted, p)-T*mass_residual/h)
+    anti_vertical = point_vertical_antiflux(desired-low_rate, horizontal_anti, Fz, p)
+    delta = -(horizontal_anti+(anti_vertical[..., 1:]-anti_vertical[..., :-1]))/h
+    blend, feasible = joint_scalar_blend(T, low_rate, delta, Fz, p, minimum)
+    rate = low_rate+blend*delta
+    if return_diagnostics:
+        return rate, boundary, dict(blend=blend, feasible=feasible,
+                                   anti_horizontal=tuple(anti_faces), anti_vertical=anti_vertical,
+                                   desired=desired, low_rate=low_rate, delta=delta)
+    return rate, boundary
+
+
 def _advection_scalar(T, u, v, Fz_in, p, return_boundary=False, face_transport=None, minimum=None):
     """3D FLUX-FORM scalar advection (FD, land-masked, NOT dealiased).
 
@@ -299,6 +347,10 @@ def _advection_scalar(T, u, v, Fz_in, p, return_boundary=False, face_transport=N
         fx, fy = _horizontal_tracer_fluxes(T-reference, u, v, p, face_transport)
         shifted_numerator = _face_transport_divergence(fx*p.dz_node, fy*p.dz_node, p)
         mass_numerator = _face_transport_divergence(*face_transport, p)
+        if getattr(p, 'vertical_tracer_scheme', 'donor_cell') == 'material_point_v4':
+            rate, boundary = _material_point_scalar_rate(T, Fz_in, face_transport,
+                                                         (fx*p.dz_node, fy*p.dz_node), p, minimum)
+            return (rate, boundary) if return_boundary else rate
         rate, boundary = integrated_reference_scalar_rate(T, Fz_in, shifted_numerator,
                                                          mass_numerator, p, minimum=minimum)
         return (rate, boundary) if return_boundary else rate

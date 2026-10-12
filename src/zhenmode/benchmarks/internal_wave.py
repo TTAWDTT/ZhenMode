@@ -78,7 +78,7 @@ def validate_contract(c):
 
 def development_contract(profile="primary", control="main", scheme="muscl_nodal_v1", problem="internal-wave", integral="trapezoidal", mean="nodal_capacity", arithmetic="legacy"):
     """New development experiment, never a replacement for the frozen holdout."""
-    if scheme not in ("donor_cell", "muscl_nodal_v1", "muscl_endpoint_v2", "muscl_band_v3"):
+    if scheme not in ("donor_cell", "muscl_nodal_v1", "muscl_endpoint_v2", "muscl_band_v3", "material_point_v4"):
         raise ValueError("unknown vertical development scheme")
     if integral not in ("trapezoidal", "cubic_uniform_v1"):
         raise ValueError("unknown pressure development integral")

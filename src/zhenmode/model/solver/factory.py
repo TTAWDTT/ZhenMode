@@ -10,7 +10,10 @@ from zhenmode.model.solver.dynamics.transport import _compute_vertical_velocity
 from zhenmode.model.solver.geometry.fd_metrics import make_fd_params
 from zhenmode.model.solver.geometry.grid import validate_grid
 from zhenmode.model.solver.numerics.backend import jax, jnp, np
-from zhenmode.model.solver.numerics.column import cubic_uniform_mean_weights
+from zhenmode.model.solver.numerics.column import (
+    cubic_reverse_primitive,
+    cubic_uniform_mean_weights,
+)
 from zhenmode.model.solver.numerics.horizontal import nu_nsub_for_2d_cfl
 from zhenmode.model.solver.physics.eos import _density_anomaly
 from zhenmode.model.solver.state import FDPhysParams, JaxStateG
@@ -193,7 +196,7 @@ def make_solver_global(grid, physics, dt, forcing=None,
                 or not np.all(np.asarray(grid.wet_mask) == 1.)
                 or (grid.wet_mask_3d is not None and not np.all(np.asarray(grid.wet_mask_3d) == 1.))):
             raise ValueError('cubic_uniform_v1 requires a fully wet uniform linear-EOS nodal column with physical endpoints')
-    if vertical_tracer_scheme not in ('donor_cell', 'muscl_nodal_v1', 'muscl_endpoint_v2', 'muscl_band_v3'):
+    if vertical_tracer_scheme not in ('donor_cell', 'muscl_nodal_v1', 'muscl_endpoint_v2', 'muscl_band_v3', 'material_point_v4'):
         raise ValueError('unknown vertical_tracer_scheme')
     if vertical_tracer_scheme in ('muscl_nodal_v1', 'muscl_endpoint_v2', 'muscl_band_v3') and column_geometry != 'nodal_dual_v1':
         raise ValueError('muscl_nodal_v1 requires nodal_dual_v1 physical midpoint faces')
@@ -202,13 +205,20 @@ def make_solver_global(grid, physics, dt, forcing=None,
         if not np.allclose(spacing, spacing[0], rtol=1e-12, atol=0.):
             raise ValueError('muscl_nodal_v1 currently requires uniformly spaced vertical nodes; nonuniform CFL qualification is unresolved')
     if vertical_tracer_scheme in ('muscl_endpoint_v2', 'muscl_band_v3'):
-        minimum_nodes = 6 if vertical_tracer_scheme == 'muscl_band_v3' else 4
+        minimum_nodes = 6 if vertical_tracer_scheme in ('muscl_band_v3', 'material_point_v4') else 4
         if (process_time_scheme != 'legacy' or mode_split or grid.nz < minimum_nodes
                 or np.asarray(grid.z)[0] != 0.
                 or not np.allclose(np.asarray(grid.depth), -np.asarray(grid.z)[-1], rtol=1e-12, atol=0.)
                 or not np.all(np.asarray(grid.wet_mask) == 1)
                 or (grid.wet_mask_3d is not None and not np.all(np.asarray(grid.wet_mask_3d) == 1))):
             raise ValueError(f'{vertical_tracer_scheme} requires fully wet unsplit legacy columns with physical surface/bottom nodes and at least {minimum_nodes} nodes')
+    if vertical_tracer_scheme == 'material_point_v4':
+        if (tracer_flux_arithmetic != 'integrated_reference_v1'
+                or column_mean_scheme != 'nodal_capacity'
+                or pressure_continuity_scheme != 'centered_fourth'
+                or tracer_transport_scheme != 'centered_second'
+                or monotone_adv or fct_adv or project_adv_vel):
+            raise ValueError('material_point_v4 requires integrated arithmetic and the un-limited closed fourth-order nodal-capacity channel')
     if density_rotation_scheme not in ('split_sources', 'joint_shear'):
         raise ValueError('unknown density_rotation_scheme')
     if density_rotation_scheme == 'joint_shear':
@@ -624,6 +634,8 @@ def make_solver_global(grid, physics, dt, forcing=None,
         column_mean_weights=(jnp.asarray(cubic_uniform_mean_weights(grid.nz))[None, None]
                              if column_mean_scheme == 'cubic_consistent_v1' else None),
         tracer_flux_arithmetic=tracer_flux_arithmetic,
+        tracer_point_primitive=(jnp.asarray(cubic_reverse_primitive(grid.nz, abs(float(grid.z[1]-grid.z[0]))))
+                                if vertical_tracer_scheme == 'material_point_v4' else None),
     )
 
     if projection_preconditioner == 'jacobi':
