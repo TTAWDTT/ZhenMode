@@ -140,6 +140,20 @@ def development_contract(profile="primary", control="main", scheme="muscl_nodal_
     if horizontal != "centered_second":
         c["ocean_options"]["tracer_transport_scheme"] = horizontal
         c["development"]["tracer_transport_scheme"] = horizontal
+    # Validate the resolved selectors, including settings inherited from the
+    # frozen physical row, without changing any accepted contract's identity.
+    options = c["ocean_options"]
+    if mean == "cubic_consistent_v1" and integral != "cubic_uniform_v1":
+        raise ValueError("cubic_consistent_v1 requires cubic_uniform_v1 pressure")
+    if scheme == "material_point_v4" and (
+        arithmetic != "integrated_reference_v1" or mean != "nodal_capacity"
+        or options["tracer_transport_scheme"] not in ("centered_second", "paired_product_fourth")
+    ):
+        raise ValueError("material_point_v4 requires integrated arithmetic, nodal capacity and a compatible horizontal scheme")
+    if momentum == "point_primitive_v1" and (
+        arithmetic != "integrated_reference_v1" or mean != "nodal_capacity"
+    ):
+        raise ValueError("point_primitive_v1 requires integrated arithmetic and nodal capacity")
     return c
 
 
