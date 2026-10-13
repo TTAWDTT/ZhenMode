@@ -1,0 +1,10 @@
+{
+  "status": "FAILED_REVIEW_METADATA_TEXT_READER_DEFAULT_ENCODING",
+  "script": "check-zh-final-records01.py",
+  "error": "UnicodeDecodeError: Windows default gbk could not decode existing UTF-8 pre-restore review JSON",
+  "disposition": "Specify encoding=utf-8 for the saved review JSON. Author report, scientific inputs, barriers and packet remain unchanged. No final verdict was issued by this failed reader call.",
+  "npz_decoded": 0,
+  "physics_metrics_computed": 0,
+  "model_calls": 0,
+  "archive_restore_calls": 0
+}

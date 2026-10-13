@@ -1,0 +1,38 @@
+{
+  "status": "AUTHORIZED_ONE_BYTE_RESTORE_ROOT_DELEGATION",
+  "authorization_scope": "Root direct task authorizes one independent supervised byte-only restore, no retry; no science execution",
+  "source_revision": "be647d70fc7394f3014dca8bc776e207d4f02ae3",
+  "created_utc": "2026-10-13T12:00:41.8702114Z",
+  "manifest": "packet01/neutral_shear_paired_be647_attempt02_manifest.json",
+  "output": "independent-restored01",
+  "joined_archive": "independent-restored01-joined.zip",
+  "files": 841,
+  "parts": 33,
+  "archive_bytes": 673508371,
+  "original_bytes": 673309247,
+  "archive_sha256": "79747029cdf37d73f79f0263f6faa5b38a9e586fa7c866140656e4f7cbcab8ab",
+  "resources": {
+    "cpu": 1,
+    "wall_seconds": 180,
+    "memory_mib": 4096,
+    "sample_seconds": 0.2
+  },
+  "bound_file_sha256": {
+    "independent_restore01.py": "073d97bbb93c084bf5a657d1bb2a5b02ce6d004daabf3a2b57297645fbad5cc7",
+    "independent_restore_supervisor01.py": "8fea0d09abb2a7590cd14013c9ec8ec222a795d7b713857861d1747c6724ad14",
+    "EXPORT_SPEC01.md": "2e1d1b7d438bbec02de5c32b627faaf25b00869703a0f3c5d22f0bafc7aeead3",
+    "pack_original01.py": "6122c29af2004d62ba95ade12cde3dd43d0d74e9f1016cfb26ef9465da314809",
+    "restore_original01.py.txt": "37c6dac738db527495f389708dc906de5a3d47a71d653fe5b82c87f384e9b4ac",
+    "selection01.json": "57c8517de678ae4921490af23fa76464f0165a574a83127d601b38065181b603",
+    "packet01/selection01.json": "57c8517de678ae4921490af23fa76464f0165a574a83127d601b38065181b603",
+    "packet01/restore_original01.py.txt": "37c6dac738db527495f389708dc906de5a3d47a71d653fe5b82c87f384e9b4ac",
+    "packet01/neutral_shear_paired_be647_attempt02_manifest.json": "476ddf2848d6a6ab341d6b7f40223f287a3ad19f3a1ba4533c9fe96bcca48796"
+  },
+  "allowed_io": "Read original selected files and packet bytes; write only excluded publication-preparation fresh restore, joined archive, supervision and review records",
+  "numpy_or_model_or_oracle_imports_allowed": false,
+  "array_decoding_allowed": false,
+  "new_metric_calculation_allowed": false,
+  "prior_select_or_pack_reexecution_allowed": false,
+  "originals_changed": false,
+  "no_retry_on_failure": true
+}

@@ -1,0 +1,19 @@
+{
+  "source_revision": "be647d70fc7394f3014dca8bc776e207d4f02ae3",
+  "selection_sha256": "6af6737ad8eca03cd588dbd5551a0635525449cdd58eea1cf7a1d555764a842a",
+  "manifest_sha256": "c217495711be5216ea139219bc42088dd3f05285d851955f691625dd9a375848",
+  "declared_plan_sha256": "e8fa4dcd323f464777e441f7aa6b14fdf2b8a4e2150dc883065f66254688a165",
+  "definitions_sha256": "f09f42e9970d48dfd33649f2f7dd58bd9871c707ab92d6ddb3e170b6b891a703",
+  "producer_bundle_sha256": "67ecb7e0b1a77cc8ea0480b4c11c8b9a311dc2f403fd678a4ddab0aaa6866188",
+  "observer_bundle_sha256": "e6a53b6c126e9b5cea0011376e86a14b722a04bce286fb36fde3951f5d879dda",
+  "status": "PASS_STRICT_SAVED_RECEIPT_COMPARISON",
+  "old_verdict_path": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/independent-neutral-shear-native/00-main/science-verdict01.json",
+  "old_verdict_sha256": "147163432215ed57ab88037b1974f09c65dbf859a2f2d43ec3cb436c737da837",
+  "new_verdict_path": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/neutral-shear-paired-be647-attempt02/00-main/science-verdict01.json",
+  "new_verdict_sha256": "abec6f2aa16308cd012e1a64686241ae824670fe0bef5cad2a1db3d7d15027bb",
+  "old_T_RMS_decimal": "0.00037185579607669175",
+  "new_T_RMS_decimal": "0.00004407068051203133",
+  "rule": "finite new T_RMS < exact saved old T_RMS; no rounding/slack/ratio substitution",
+  "old_arrays_opened": false,
+  "old_metric_recomputed": false
+}

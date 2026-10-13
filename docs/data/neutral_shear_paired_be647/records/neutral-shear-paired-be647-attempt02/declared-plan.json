@@ -1,0 +1,138 @@
+{
+  "schema": "neutral-shear-development-native-v1",
+  "source": "be647d70fc7394f3014dca8bc776e207d4f02ae3",
+  "scope": "attempt02 successor after constant-control dtype adapter failure; be647 paired source qualification on the same five contacted development profiles; fixed physical-z points/static native capacity with reported upper-cap discrepancy; analytic momentum acceleration zero; no new holdout, full-fourth-order, generic moving-surface or ranking claim",
+  "host_docs_HEAD": "6b46a83b9764de7f3bc3146aaebc9ad89ab07e39",
+  "geometry": {
+    "H_m": 80,
+    "Lx_m": 24000,
+    "Ly_m": 32000,
+    "eta_constant_m": 0.025,
+    "f_s_1": 0.00013,
+    "fullywet": true,
+    "dt_s": 12.5,
+    "output_s": 1500,
+    "duration_s": 60000
+  },
+  "physics": {
+    "rho0": 1025,
+    "g": 9.81,
+    "alpha_T": 0.0002,
+    "beta_S": 0.00076,
+    "Tref_C": 15,
+    "Sref_psu": 35,
+    "Gamma_C_m": 0.012,
+    "N2_s_2": 2.3544000000000004E-05,
+    "Bmean_m_s2": 0,
+    "Bamp_m_s2": 0.0002943,
+    "spice_amplitude_C": 0.08,
+    "x_mode": 1,
+    "y_mode": 1,
+    "initial_phase_rad": 0,
+    "all_sources_mixing_drag_ice_polar": 0
+  },
+  "fields": "b0=Bamp*cos(pi*y/Ly); b=b0+N2*z; Phi=g*eta+b0*(z-eta)+N2*(z²-eta²)/2; u=(Bamp*pi/(Ly*f))*sin(pi*y/Ly)*(z-eta),v=w0; Q=Acos(2pi/Lx*(x-u(y,z)*t)); T=Tref+b/(g*alpha)+Q, S=Sref+alpha/beta*Q",
+  "native_options": {
+    "column_geometry": "nodal_dual_v1",
+    "external_mode_scheme": "symmetric",
+    "meridional_boundary_scheme": "closed_faces",
+    "pressure_continuity_scheme": "centered_fourth",
+    "hydrostatic_surface_scheme": "linear_density",
+    "density_rotation_scheme": "joint_shear",
+    "vertical_tracer_scheme": "material_point_v4",
+    "hydrostatic_integral_scheme": "cubic_uniform_v1",
+    "column_mean_scheme": "nodal_capacity",
+    "tracer_flux_arithmetic": "integrated_reference_v1",
+    "material_point_gradient_scheme": "fourth_uniform_v1",
+    "momentum_vertical_velocity_scheme": "dual_face_v1",
+    "polar_cap_rows": 0,
+    "polar_cap_taper": 0,
+    "conservative_kv": true,
+    "localize_conv": true,
+    "mode_split": false,
+    "process_time_scheme": "legacy",
+    "project_adv_vel": false,
+    "monotone_adv": false,
+    "fct_adv": false,
+    "freeze_adv_vel": false,
+    "dtype": "float64",
+    "tracer_transport_scheme": "paired_product_fourth"
+  },
+  "meshes": [
+    {
+      "index": 0,
+      "Nx": 8,
+      "Ny": 12,
+      "Nz": 17,
+      "case": "main"
+    },
+    {
+      "index": 1,
+      "Nx": 16,
+      "Ny": 24,
+      "Nz": 33,
+      "case": "main"
+    },
+    {
+      "index": 2,
+      "Nx": 32,
+      "Ny": 48,
+      "Nz": 65,
+      "case": "main"
+    },
+    {
+      "index": 3,
+      "Nx": 8,
+      "Ny": 12,
+      "Nz": 17,
+      "case": "zero-spice",
+      "override": {
+        "spice_amplitude_C": 0
+      }
+    },
+    {
+      "index": 4,
+      "Nx": 8,
+      "Ny": 12,
+      "Nz": 17,
+      "case": "zero-shear-null",
+      "override": {
+        "Bamp_m_s2": 0
+      }
+    }
+  ],
+  "gate": {
+    "relative_error": 0.1,
+    "T_absolute_RMS_C": 0.008,
+    "S_absolute_RMS_psu": 0.002105263157894737,
+    "volume_relative": 1E-10,
+    "T_S_inventory_relative": 1E-08,
+    "zero_shear_null_eachfield_absolute": 5E-11,
+    "constant_source_core_RHS": 1E-17,
+    "strict_initial_maxabs": 5E-11,
+    "initial_rho_roundoff": "512eps*max(rho0,referenceabsolute_rho)",
+    "initial_pressure_Phi_relative": "128eps*sumabs analyticpressureterms + absolute5e-11Pa originalinitialprecision; source diagnostic is anomalyPhi*rho0 not total hydrostatic−rho0gz",
+    "norm_scales": "u/v: continuous max|Bamp|*(pi/Ly)*(H+eta)/|f| from locked main; eta: |Bamp|*H/g from main. T/S absoluteRMS compared to locked amplitude-derived originalerror0.1 gates. Zero-spice remains nonzero flow, not zero-null.",
+    "finest_normalized_T_S_L1": 0.05,
+    "each_refinement_min": 1.25,
+    "temperature_floor_C": -1.8,
+    "salinity_floor_psu": 0,
+    "all_native_h_positive": true,
+    "finite_fields": true
+  },
+  "unresolved_pre_execution": "independent analytic/source/initialization/code gate and real fastoperator-CFL required before timed initializer; no arrays or trutherrors observed atlock",
+  "observer": "best70 fixedphysicalz points only; actualh/area RMS and original discrete drift inventory, distinguish physicaltoptransport/stock discrepancy. Future MOM/OA deferred requires x+zmeans+yindependentquad and baseline builderlineage.",
+  "controls": "zero-spice geo balance distinctzero-shear null; continuous hydrostatic/EOS/geobalance/advection identities; wrongEOSsign/gdivrho/geosign/pi-sinc/pointvsmean/mismatchedinitialize caught; pureanalytic closed verticalcos integral limit without invokingmodelgradient; originalCFL/stockbars unchanged",
+  "timing": "first static/source/initializer controls then cheap sameactual steppercallset timing nooraclemetric; onecoarse mainfullpilot aftermeasured plan. Evaluate predeclgates then second-size main index1 measuredpilot before index2/3/4 remainingfinite. Neverreruncompleted index; failurekeep/noexpand/nofieldfit.",
+  "resources": {
+    "native_cpu": 1,
+    "native_wall_s": 600,
+    "memory_mib": 4096,
+    "sampledRSS_not_cgroup": true,
+    "GPU": 0,
+    "allocator_fraction": 0.4,
+    "static_cpu": 1,
+    "static_wall_s": 180
+  },
+  "declaration_before_measurement": "2026-10-13T10:01:26.7522604Z"
+}

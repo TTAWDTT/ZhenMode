@@ -1,0 +1,2359 @@
+{
+  "status": "PASS_RECORD_BINDING_REVIEW",
+  "scope": "Coarse case0 terminal records and identities only; no numerical audit repeated",
+  "reviewer": "Lady / arithmetic_static_fresh",
+  "created_utc": "2026-10-13T10:56:53.7461678Z",
+  "npz_decoded": 0,
+  "model_calls": 0,
+  "core_audit_calls": 0,
+  "metrics_recomputed": 0,
+  "permission_created": false,
+  "context": {
+    "selection_sha256": "6af6737ad8eca03cd588dbd5551a0635525449cdd58eea1cf7a1d555764a842a",
+    "observer_bundle_sha256": "e6a53b6c126e9b5cea0011376e86a14b722a04bce286fb36fde3951f5d879dda",
+    "definitions_sha256": "f09f42e9970d48dfd33649f2f7dd58bd9871c707ab92d6ddb3e170b6b891a703",
+    "declared_plan_sha256": "e8fa4dcd323f464777e441f7aa6b14fdf2b8a4e2150dc883065f66254688a165",
+    "manifest_sha256": "c217495711be5216ea139219bc42088dd3f05285d851955f691625dd9a375848",
+    "source_revision": "be647d70fc7394f3014dca8bc776e207d4f02ae3",
+    "producer_bundle_sha256": "67ecb7e0b1a77cc8ea0480b4c11c8b9a311dc2f403fd678a4ddab0aaa6866188"
+  },
+  "resources": {
+    "initialize": {
+      "cpu_affinity": 1,
+      "memory_mib": 4096,
+      "wall_seconds": 600,
+      "peak_host_rss_bytes": 1003831296,
+      "stop_reason": null,
+      "termination_grace_seconds": 0,
+      "elapsed_wall_seconds": 16.241666230000007,
+      "host_memory_enforcement": "aggregate process-group /proc RSS sampled at 0.2 s; not a hard cgroup cap"
+    },
+    "timing": {
+      "cpu_affinity": 1,
+      "memory_mib": 4096,
+      "wall_seconds": 600,
+      "peak_host_rss_bytes": 1244246016,
+      "stop_reason": null,
+      "termination_grace_seconds": 0,
+      "elapsed_wall_seconds": 28.470822485,
+      "host_memory_enforcement": "aggregate process-group /proc RSS sampled at 0.2 s; not a hard cgroup cap"
+    },
+    "run": {
+      "cpu_affinity": 1,
+      "memory_mib": 4096,
+      "wall_seconds": 600,
+      "peak_host_rss_bytes": 1244717056,
+      "stop_reason": null,
+      "termination_grace_seconds": 0,
+      "elapsed_wall_seconds": 33.683090842,
+      "host_memory_enforcement": "aggregate process-group /proc RSS sampled at 0.2 s; not a hard cgroup cap"
+    },
+    "initial": {
+      "cpu_affinity": 1,
+      "memory_mib": 4096,
+      "wall_seconds": 180,
+      "peak_host_rss_bytes": 34525184,
+      "stop_reason": null,
+      "termination_grace_seconds": 0,
+      "elapsed_wall_seconds": 1.2048087579999995,
+      "host_memory_enforcement": "aggregate process-group /proc RSS sampled at 0.2 s; not a hard cgroup cap"
+    },
+    "adapter": {
+      "cpu_affinity": 1,
+      "memory_mib": 4096,
+      "wall_seconds": 180,
+      "peak_host_rss_bytes": 40923136,
+      "stop_reason": null,
+      "termination_grace_seconds": 0,
+      "elapsed_wall_seconds": 1.805594947,
+      "host_memory_enforcement": "aggregate process-group /proc RSS sampled at 0.2 s; not a hard cgroup cap"
+    },
+    "science": {
+      "cpu_affinity": 1,
+      "memory_mib": 4096,
+      "wall_seconds": 180,
+      "peak_host_rss_bytes": 40710144,
+      "stop_reason": null,
+      "termination_grace_seconds": 0,
+      "elapsed_wall_seconds": 1.4038625919999994,
+      "host_memory_enforcement": "aggregate process-group /proc RSS sampled at 0.2 s; not a hard cgroup cap"
+    }
+  },
+  "retrieved_metrics": {
+    "T_RMS": 4.407068051203133E-05,
+    "S_RMS": 1.159755332239367E-05,
+    "u_RMS": 6.267190974384345E-07,
+    "v_RMS": 3.993686689417414E-07,
+    "eta_RMS": 1.610920517871372E-07,
+    "rho_RMS": 3.208585535915747E-08,
+    "u_normalized_RMS": 3.523712294848898E-05,
+    "v_normalized_RMS": 2.245440253343636E-05,
+    "eta_normalized_RMS": 6.712168824464052E-05,
+    "rho_normalized_RMS": 1.043442450704308E-06,
+    "T_normalized_L1": 0.0005232532100036479,
+    "S_normalized_L1": 0.0005232674350391263
+  },
+  "retrieved_strict_comparison": {
+    "source_revision": "be647d70fc7394f3014dca8bc776e207d4f02ae3",
+    "selection_sha256": "6af6737ad8eca03cd588dbd5551a0635525449cdd58eea1cf7a1d555764a842a",
+    "manifest_sha256": "c217495711be5216ea139219bc42088dd3f05285d851955f691625dd9a375848",
+    "declared_plan_sha256": "e8fa4dcd323f464777e441f7aa6b14fdf2b8a4e2150dc883065f66254688a165",
+    "definitions_sha256": "f09f42e9970d48dfd33649f2f7dd58bd9871c707ab92d6ddb3e170b6b891a703",
+    "producer_bundle_sha256": "67ecb7e0b1a77cc8ea0480b4c11c8b9a311dc2f403fd678a4ddab0aaa6866188",
+    "observer_bundle_sha256": "e6a53b6c126e9b5cea0011376e86a14b722a04bce286fb36fde3951f5d879dda",
+    "status": "PASS_STRICT_SAVED_RECEIPT_COMPARISON",
+    "old_verdict_path": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/independent-neutral-shear-native/00-main/science-verdict01.json",
+    "old_verdict_sha256": "147163432215ed57ab88037b1974f09c65dbf859a2f2d43ec3cb436c737da837",
+    "new_verdict_path": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/neutral-shear-paired-be647-attempt02/00-main/science-verdict01.json",
+    "new_verdict_sha256": "abec6f2aa16308cd012e1a64686241ae824670fe0bef5cad2a1db3d7d15027bb",
+    "old_T_RMS_decimal": "0.00037185579607669175",
+    "new_T_RMS_decimal": "0.00004407068051203133",
+    "rule": "finite new T_RMS < exact saved old T_RMS; no rounding/slack/ratio substitution",
+    "old_arrays_opened": false,
+    "old_metric_recomputed": false
+  },
+  "retrieved_bridge": {
+    "metadata_bridge_peak_rss_bytes": 20897792,
+    "metadata_bridge_elapsed_s": 2.007637579,
+    "receipt_kind": "REUSED_FROM_PRIOR_ANALYTIC_CHECK",
+    "reused_check_count": 176,
+    "status": "PASS_BOUND_OBSERVER_RESULT",
+    "new_observer_calls": 0,
+    "original_failed_initialization_reclassified": false
+  },
+  "initializer_four_sha256": {
+    "initialize_receipt_sha256": "19a873f81df53045d6d31921955adcbdeedf045b85f668d52c186e762aef3339",
+    "params_sha256": "d1be7aeee80535115fbb84cbc96eebe99f803367367689bf3e674fc748cd892d",
+    "constant_source_sha256": "ea9eb6da79d3f2e829b3a3a9993dc5c125542f68c0d0d6083784133833d8e251",
+    "initial_sha256": "9a938f19d866272669c012f45b53faea096e9a0c871246a9e3256c2a2f2a51bb"
+  },
+  "actual_loaded_source_paths": [
+    {
+      "module": "zhenmode",
+      "actual_path": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/horizontal-paired-product-v1/installed/zhenmode/__init__.py",
+      "sha256": "37d5510890297eb78a6974bdb3959c3b224f5e2c381939113af51d7a58e71188"
+    },
+    {
+      "module": "zhenmode.model",
+      "actual_path": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/horizontal-paired-product-v1/installed/zhenmode/model/__init__.py",
+      "sha256": "239c1f8fd5b5a454930824715e99ecde75470b7c89274fbef5f7a1fba4619538"
+    },
+    {
+      "module": "zhenmode.model.inputs",
+      "actual_path": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/horizontal-paired-product-v1/installed/zhenmode/model/inputs/__init__.py",
+      "sha256": "150aa43ee0dcf4c3217308ca7254bc7d196a7f2c70e5e9a0e5ace3e76cb940af"
+    },
+    {
+      "module": "zhenmode.model.inputs.quality",
+      "actual_path": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/horizontal-paired-product-v1/installed/zhenmode/model/inputs/quality.py",
+      "sha256": "3b5b05c518d2e927acb4dd0049c7f679ea36b5cfcb2f3f508120389da0e771a2"
+    },
+    {
+      "module": "zhenmode.provenance",
+      "actual_path": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/horizontal-paired-product-v1/installed/zhenmode/provenance/__init__.py",
+      "sha256": "daf5d6bfcecc2b278842a3426572a906a824b2a1f520668da6bb8992e35bd64e"
+    },
+    {
+      "module": "zhenmode.provenance.sources",
+      "actual_path": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/horizontal-paired-product-v1/installed/zhenmode/provenance/sources.py",
+      "sha256": "b422a776558810077f543b8a3b3b99f9584ffafa0b292515a93ac1a96bb99bcc"
+    },
+    {
+      "module": "zhenmode.model.inputs.sources",
+      "actual_path": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/horizontal-paired-product-v1/installed/zhenmode/model/inputs/sources.py",
+      "sha256": "846b83f00b10a680b09b424878857e70cd54e99ca8a20aa73367da34f599e687"
+    },
+    {
+      "module": "zhenmode.model.config",
+      "actual_path": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/horizontal-paired-product-v1/installed/zhenmode/model/config.py",
+      "sha256": "890d6b7666877a53d655f070030a5810e687f7f6201325d20b34003dcf7b39ea"
+    },
+    {
+      "module": "zhenmode.model.solver",
+      "actual_path": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/horizontal-paired-product-v1/installed/zhenmode/model/solver/__init__.py",
+      "sha256": "229c94a88ab915568cdb3e04a06896ba1d78a817d0054ead4145186272b82d7e"
+    },
+    {
+      "module": "zhenmode.model.solver.geometry",
+      "actual_path": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/horizontal-paired-product-v1/installed/zhenmode/model/solver/geometry/__init__.py",
+      "sha256": "b4e9370dd4ce8e3ed7d1dad3c2b35beec912a7d9b43f7f407c3c90e960b2079a"
+    },
+    {
+      "module": "zhenmode.model.solver.geometry.grid",
+      "actual_path": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/horizontal-paired-product-v1/installed/zhenmode/model/solver/geometry/grid.py",
+      "sha256": "54c5ebd94d6431e6301363e1e0ba6228212b311563a5edd3fde6c0760d9bebf3"
+    },
+    {
+      "module": "zhenmode.model.solver.dynamics",
+      "actual_path": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/horizontal-paired-product-v1/installed/zhenmode/model/solver/dynamics/__init__.py",
+      "sha256": "92253b086944c0a62935772ba54bdbc89297fe9567822d267fd15b2cf2bb5611"
+    },
+    {
+      "module": "zhenmode.model.solver.numerics",
+      "actual_path": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/horizontal-paired-product-v1/installed/zhenmode/model/solver/numerics/__init__.py",
+      "sha256": "929b966423d7801ab47df95b5b84043f63b7cfe905184555eff61e4bdfb426b1"
+    },
+    {
+      "module": "zhenmode.model.solver.numerics.backend",
+      "actual_path": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/horizontal-paired-product-v1/installed/zhenmode/model/solver/numerics/backend.py",
+      "sha256": "416c3ecf3ec992f66402af2e2b81db5c66f421686691592a01b6865036485197"
+    },
+    {
+      "module": "zhenmode.model.solver.numerics.column",
+      "actual_path": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/horizontal-paired-product-v1/installed/zhenmode/model/solver/numerics/column.py",
+      "sha256": "ae9013fb0628e6cbdc8d2027bd899d7815e0864e76a649ed88e5dcb0968d405a"
+    },
+    {
+      "module": "zhenmode.model.solver.numerics.contacts",
+      "actual_path": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/horizontal-paired-product-v1/installed/zhenmode/model/solver/numerics/contacts.py",
+      "sha256": "e91b99345dd7c9688045021e8a895d9b7193606879cb0b0927de6b3b76062e32"
+    },
+    {
+      "module": "zhenmode.model.solver.numerics.vertical",
+      "actual_path": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/horizontal-paired-product-v1/installed/zhenmode/model/solver/numerics/vertical.py",
+      "sha256": "6d5693b4a6dde1842be9e216e4674a42d53794b048189701620c02242e348dab"
+    },
+    {
+      "module": "zhenmode.model.solver.numerics.channel",
+      "actual_path": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/horizontal-paired-product-v1/installed/zhenmode/model/solver/numerics/channel.py",
+      "sha256": "ab46eadafa84c0a0756b76f0451e0c636e36bcca5d76101cc6f6e62cc9151038"
+    },
+    {
+      "module": "zhenmode.model.solver.numerics.horizontal",
+      "actual_path": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/horizontal-paired-product-v1/installed/zhenmode/model/solver/numerics/horizontal.py",
+      "sha256": "430c3ed7b2222734c93b7e33d7003fe64b147e36a75c6b6d5584b5663a2e251b"
+    },
+    {
+      "module": "zhenmode.model.solver.physics",
+      "actual_path": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/horizontal-paired-product-v1/installed/zhenmode/model/solver/physics/__init__.py",
+      "sha256": "a5ebfc7e1dfa65dc7dc52f47cd345a3e0afadf8d5236eb226ba1c22162e5e1ee"
+    },
+    {
+      "module": "zhenmode.model.solver.physics.eos",
+      "actual_path": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/horizontal-paired-product-v1/installed/zhenmode/model/solver/physics/eos.py",
+      "sha256": "50a2529714bef3967143ab28eccfc530cc92fe66d1125de70c4ba7147005a07a"
+    },
+    {
+      "module": "zhenmode.model.solver.dynamics.pressure",
+      "actual_path": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/horizontal-paired-product-v1/installed/zhenmode/model/solver/dynamics/pressure.py",
+      "sha256": "53b065815da2905df325bb5deab1ecd11babb7eba54076235243158bad38d824"
+    },
+    {
+      "module": "zhenmode.model.solver.dynamics.transport",
+      "actual_path": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/horizontal-paired-product-v1/installed/zhenmode/model/solver/dynamics/transport.py",
+      "sha256": "23a93aac12a769afbe948cd812d1d7b68f4563a79b61b4f39034ae6e2e4f276a"
+    },
+    {
+      "module": "zhenmode.model.solver.dynamics.projection",
+      "actual_path": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/horizontal-paired-product-v1/installed/zhenmode/model/solver/dynamics/projection.py",
+      "sha256": "64313d7abca6fe4c4ea0f181f469272eb7d6c6c862c19375b2d1dfbedebfb968"
+    },
+    {
+      "module": "zhenmode.model.solver.physics.isopycnal",
+      "actual_path": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/horizontal-paired-product-v1/installed/zhenmode/model/solver/physics/isopycnal.py",
+      "sha256": "8165becfd9a23844761362e36c20161260506e3cd3244a203ae44bde75de7298"
+    },
+    {
+      "module": "zhenmode.model.solver.state",
+      "actual_path": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/horizontal-paired-product-v1/installed/zhenmode/model/solver/state.py",
+      "sha256": "851e96e868aed41a2f5882e9f1683f0f79056cd73ff35b281ba51cc0a8346d62"
+    },
+    {
+      "module": "zhenmode.model.solver.physics.surface",
+      "actual_path": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/horizontal-paired-product-v1/installed/zhenmode/model/solver/physics/surface.py",
+      "sha256": "0eade693636cd017d5772e2c0cee83c1a5050c49ad3a2936591356ef4cb163b8"
+    },
+    {
+      "module": "zhenmode.model.solver.physics.vertical",
+      "actual_path": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/horizontal-paired-product-v1/installed/zhenmode/model/solver/physics/vertical.py",
+      "sha256": "e2305eed74d2c2caed01d70e4a734af4c5a7c06b14647d8bb0f3e118b5db8a3e"
+    },
+    {
+      "module": "zhenmode.model.solver.timestepping",
+      "actual_path": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/horizontal-paired-product-v1/installed/zhenmode/model/solver/timestepping/__init__.py",
+      "sha256": "913ed45d926d13a9a89517aacd0095980dd2ff7c15e44bd1c0d850b94c09f6a6"
+    },
+    {
+      "module": "zhenmode.model.solver.timestepping.subcycles",
+      "actual_path": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/horizontal-paired-product-v1/installed/zhenmode/model/solver/timestepping/subcycles.py",
+      "sha256": "fada7101b16464e2e21ec0bac4bfff7d399cf4e9073a4af7035528203f74598b"
+    },
+    {
+      "module": "zhenmode.model.solver.dynamics.tendencies",
+      "actual_path": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/horizontal-paired-product-v1/installed/zhenmode/model/solver/dynamics/tendencies.py",
+      "sha256": "698a8d680089259d7f15a91166d8d89e2ac6d31800af3ca416883757c5f8ec89"
+    },
+    {
+      "module": "zhenmode.model.solver.geometry.fd_metrics",
+      "actual_path": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/horizontal-paired-product-v1/installed/zhenmode/model/solver/geometry/fd_metrics.py",
+      "sha256": "26a9c836450d9b0d0c5d932f0c910799c7036a68a6266f5c36138574ae79b478"
+    },
+    {
+      "module": "zhenmode.model.solver.dynamics.barotropic",
+      "actual_path": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/horizontal-paired-product-v1/installed/zhenmode/model/solver/dynamics/barotropic.py",
+      "sha256": "c4137232f53baaf4eec9ecac4406368f148a6ee1763f91f48957ca0ba9c0b0a6"
+    },
+    {
+      "module": "zhenmode.model.solver.timestepping.step",
+      "actual_path": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/horizontal-paired-product-v1/installed/zhenmode/model/solver/timestepping/step.py",
+      "sha256": "d888979831d99467af6b4b39ed1008a13d8b616b52a93daa38be322b1964c4ae"
+    },
+    {
+      "module": "zhenmode.model.solver.factory",
+      "actual_path": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/horizontal-paired-product-v1/installed/zhenmode/model/solver/factory.py",
+      "sha256": "8123849af4ce529487be47687ad541f38946c9a32b692dc31e0bf6befaf4697b"
+    }
+  ],
+  "captured_complete_source_count": 133,
+  "loaded_path_count": 35,
+  "retrieved_science_observations": 220,
+  "case1_scope": "Initialization/timing reported complete by root; full-run/science review excluded from this coarse0 receipt and left pending in report draft.",
+  "limitations": [
+    "Record and byte identity review, not a second numerical/science audit",
+    "u/v/eta/rho RMS are slightly higher than saved old receipt; no all-errors-nonincreasing claim",
+    "Only coarse0 qualified here; other cases/refinement/stage summary not completed by this review",
+    "Contacted DEVELOPMENT; staticH/eta-cap and zero analytic momentum acceleration limits remain"
+  ],
+  "checks": [
+    {
+      "name": "producer_bundle/ADAPTER_SPEC-before-code.md",
+      "pass": true
+    },
+    {
+      "name": "producer_bundle/SELECTION-before-code02.json",
+      "pass": true
+    },
+    {
+      "name": "producer_bundle/declared-plan.json",
+      "pass": true
+    },
+    {
+      "name": "producer_bundle/pre-execution-definitions01.json",
+      "pass": true
+    },
+    {
+      "name": "producer_bundle/producer.py",
+      "pass": true
+    },
+    {
+      "name": "producer_bundle/run_producer.py",
+      "pass": true
+    },
+    {
+      "name": "producer_bundle/run_env.sh",
+      "pass": true
+    },
+    {
+      "name": "producer_bundle/stage_preflight.py",
+      "pass": true
+    },
+    {
+      "name": "producer_bundle/ROOT_GATE_PRODUCER_TEMPLATE01.json",
+      "pass": true
+    },
+    {
+      "name": "producer_bundle/PREPARATION01.md",
+      "pass": true
+    },
+    {
+      "name": "producer_bundle/PLAN_LINEAGE01.json",
+      "pass": true
+    },
+    {
+      "name": "producer_bundle/FULL_ADAPTER_DIFF01.patch",
+      "pass": true
+    },
+    {
+      "name": "producer_bundle/review/oracle.py",
+      "pass": true
+    },
+    {
+      "name": "producer_bundle/review/analytic_source_controls.py",
+      "pass": true
+    },
+    {
+      "name": "producer_bundle/review/audit_initial.py",
+      "pass": true
+    },
+    {
+      "name": "producer_bundle/review/audit_arrays.py",
+      "pass": true
+    },
+    {
+      "name": "producer_bundle/review/prepare_audit_input.py",
+      "pass": true
+    },
+    {
+      "name": "producer_bundle/review/audit_summary.py",
+      "pass": true
+    },
+    {
+      "name": "producer_bundle/lineage/attempt01-PREPARED_BUNDLE01.json",
+      "pass": true
+    },
+    {
+      "name": "producer_bundle/lineage/attempt01-PREPARATION01.md",
+      "pass": true
+    },
+    {
+      "name": "producer_bundle/lineage/attempt01-PLAN_LINEAGE01.json",
+      "pass": true
+    },
+    {
+      "name": "producer_bundle/lineage/attempt01-declared-plan.json",
+      "pass": true
+    },
+    {
+      "name": "observer_bundle/review/observer_bindings.py",
+      "pass": true
+    },
+    {
+      "name": "observer_bundle/review/run_observer_once.py",
+      "pass": true
+    },
+    {
+      "name": "observer_bundle/review/run_observer_env.sh",
+      "pass": true
+    },
+    {
+      "name": "observer_bundle/review/run_analytic_bridge.py",
+      "pass": true
+    },
+    {
+      "name": "observer_bundle/review/run_analytic_bridge_env.sh",
+      "pass": true
+    },
+    {
+      "name": "observer_bundle/review/ANALYTIC_REUSE_SPEC01.json",
+      "pass": true
+    },
+    {
+      "name": "observer_bundle/review/ROOT_GATE_ANALYTIC_REUSE_TEMPLATE01.json",
+      "pass": true
+    },
+    {
+      "name": "observer_bundle/review/ROOT_GATE_OBSERVER_TEMPLATE01.json",
+      "pass": true
+    },
+    {
+      "name": "observer_bundle/review/OBSERVER_PREPARATION01.md",
+      "pass": true
+    },
+    {
+      "name": "observer_bundle/review/oracle.py",
+      "pass": true
+    },
+    {
+      "name": "observer_bundle/review/analytic_source_controls.py",
+      "pass": true
+    },
+    {
+      "name": "observer_bundle/review/audit_initial.py",
+      "pass": true
+    },
+    {
+      "name": "observer_bundle/review/audit_arrays.py",
+      "pass": true
+    },
+    {
+      "name": "observer_bundle/review/prepare_audit_input.py",
+      "pass": true
+    },
+    {
+      "name": "observer_bundle/review/audit_summary.py",
+      "pass": true
+    },
+    {
+      "name": "observer_bundle/pre-execution-definitions01.json",
+      "pass": true
+    },
+    {
+      "name": "observer_bundle/declared-plan.json",
+      "pass": true
+    },
+    {
+      "name": "observer_bundle/SELECTION-before-code02.json",
+      "pass": true
+    },
+    {
+      "name": "observer_bundle/ADAPTER_SPEC-before-code.md",
+      "pass": true
+    },
+    {
+      "name": "bridge honest reuse",
+      "pass": true
+    },
+    {
+      "name": "bridge origin/review/analytic01-verdict.json",
+      "pass": true
+    },
+    {
+      "name": "bridge origin/review/analytic01-binding.json",
+      "pass": true
+    },
+    {
+      "name": "bridge origin/review/analytic01-launch.json",
+      "pass": true
+    },
+    {
+      "name": "bridge origin/review/analytic01-resources.json",
+      "pass": true
+    },
+    {
+      "name": "bridge origin/review/ROOT_GATE_OBSERVER_analytic_00.json",
+      "pass": true
+    },
+    {
+      "name": "bridge origin/review/analytic00-start01.json",
+      "pass": true
+    },
+    {
+      "name": "bridge origin/review/analytic01-journal.jsonl",
+      "pass": true
+    },
+    {
+      "name": "bridge origin/review/analytic01.log",
+      "pass": true
+    },
+    {
+      "name": "bridge origin/PREPARED_BUNDLE01.json",
+      "pass": true
+    },
+    {
+      "name": "bridge origin/review/OBSERVER_BUNDLE01.json",
+      "pass": true
+    },
+    {
+      "name": "bridge origin/producer.py",
+      "pass": true
+    },
+    {
+      "name": "bridge origin/INITIALIZE_FAILURE_DISPOSITION01.json",
+      "pass": true
+    },
+    {
+      "name": "bridge origin/initialize00-attempt01.log",
+      "pass": true
+    },
+    {
+      "name": "bridge origin/00-main/initialize-receipt.json",
+      "pass": true
+    },
+    {
+      "name": "bridge origin/declared-plan.json",
+      "pass": true
+    },
+    {
+      "name": "bridge origin/pre-execution-definitions01.json",
+      "pass": true
+    },
+    {
+      "name": "bridge origin/SELECTION-before-code02.json",
+      "pass": true
+    },
+    {
+      "name": "bridge origin/review/oracle.py",
+      "pass": true
+    },
+    {
+      "name": "bridge origin/review/analytic_source_controls.py",
+      "pass": true
+    },
+    {
+      "name": "bridge origin/review/audit_initial.py",
+      "pass": true
+    },
+    {
+      "name": "bridge origin/review/audit_arrays.py",
+      "pass": true
+    },
+    {
+      "name": "bridge origin/review/prepare_audit_input.py",
+      "pass": true
+    },
+    {
+      "name": "bridge origin/review/audit_summary.py",
+      "pass": true
+    },
+    {
+      "name": "bridge current inputs/SELECTION-before-code02.json",
+      "pass": true
+    },
+    {
+      "name": "bridge current inputs/declared-plan.json",
+      "pass": true
+    },
+    {
+      "name": "bridge current inputs/pre-execution-definitions01.json",
+      "pass": true
+    },
+    {
+      "name": "bridge current inputs/producer.py",
+      "pass": true
+    },
+    {
+      "name": "bridge current inputs/review/ANALYTIC_REUSE_SPEC01.json",
+      "pass": true
+    },
+    {
+      "name": "bridge current inputs/review/analytic_source_controls.py",
+      "pass": true
+    },
+    {
+      "name": "bridge current inputs/review/audit_arrays.py",
+      "pass": true
+    },
+    {
+      "name": "bridge current inputs/review/audit_initial.py",
+      "pass": true
+    },
+    {
+      "name": "bridge current inputs/review/audit_summary.py",
+      "pass": true
+    },
+    {
+      "name": "bridge current inputs/review/oracle.py",
+      "pass": true
+    },
+    {
+      "name": "bridge current inputs/review/prepare_audit_input.py",
+      "pass": true
+    },
+    {
+      "name": "bridge authorized gate",
+      "pass": true
+    },
+    {
+      "name": "bridge context/selection_sha256",
+      "pass": true
+    },
+    {
+      "name": "bridge context/observer_bundle_sha256",
+      "pass": true
+    },
+    {
+      "name": "bridge context/definitions_sha256",
+      "pass": true
+    },
+    {
+      "name": "bridge context/declared_plan_sha256",
+      "pass": true
+    },
+    {
+      "name": "bridge context/manifest_sha256",
+      "pass": true
+    },
+    {
+      "name": "bridge context/source_revision",
+      "pass": true
+    },
+    {
+      "name": "bridge context/producer_bundle_sha256",
+      "pass": true
+    },
+    {
+      "name": "initialize permission",
+      "pass": true
+    },
+    {
+      "name": "initialize gate SHA",
+      "pass": true
+    },
+    {
+      "name": "initialize successful resource",
+      "pass": true
+    },
+    {
+      "name": "initialize resource chain",
+      "pass": true
+    },
+    {
+      "name": "initialize source bundle",
+      "pass": true
+    },
+    {
+      "name": "initialize prerequisites/review/analytic01-binding.json",
+      "pass": true
+    },
+    {
+      "name": "initialize prerequisites/ROOT_BRIDGE_STATIC_REVIEW01.json",
+      "pass": true
+    },
+    {
+      "name": "initialize prerequisites/review/ATTEMPT02_STATIC_REVIEW01.json",
+      "pass": true
+    },
+    {
+      "name": "timing permission",
+      "pass": true
+    },
+    {
+      "name": "timing gate SHA",
+      "pass": true
+    },
+    {
+      "name": "timing successful resource",
+      "pass": true
+    },
+    {
+      "name": "timing resource chain",
+      "pass": true
+    },
+    {
+      "name": "timing source bundle",
+      "pass": true
+    },
+    {
+      "name": "timing prerequisites/00-main/initializer-verdict.json",
+      "pass": true
+    },
+    {
+      "name": "timing prerequisites/00-main/initial-binding01.json",
+      "pass": true
+    },
+    {
+      "name": "timing prerequisites/00-main/initial-readback.npz",
+      "pass": true
+    },
+    {
+      "name": "timing prerequisites/00-main/actual-params.json",
+      "pass": true
+    },
+    {
+      "name": "timing prerequisites/00-main/initialize-receipt.json",
+      "pass": true
+    },
+    {
+      "name": "timing prerequisites/00-main/constant-source-readback.npz",
+      "pass": true
+    },
+    {
+      "name": "run permission",
+      "pass": true
+    },
+    {
+      "name": "run gate SHA",
+      "pass": true
+    },
+    {
+      "name": "run successful resource",
+      "pass": true
+    },
+    {
+      "name": "run resource chain",
+      "pass": true
+    },
+    {
+      "name": "run source bundle",
+      "pass": true
+    },
+    {
+      "name": "run prerequisites/00-main/initializer-verdict.json",
+      "pass": true
+    },
+    {
+      "name": "run prerequisites/00-main/initial-binding01.json",
+      "pass": true
+    },
+    {
+      "name": "run prerequisites/00-main/initial-readback.npz",
+      "pass": true
+    },
+    {
+      "name": "run prerequisites/00-main/actual-params.json",
+      "pass": true
+    },
+    {
+      "name": "run prerequisites/00-main/initialize-receipt.json",
+      "pass": true
+    },
+    {
+      "name": "run prerequisites/00-main/constant-source-readback.npz",
+      "pass": true
+    },
+    {
+      "name": "run prerequisites/native-allow-case00.json",
+      "pass": true
+    },
+    {
+      "name": "run prerequisites/coarse0-measured-plan01.json",
+      "pass": true
+    },
+    {
+      "name": "run prerequisites/00-main/timing-receipt.json",
+      "pass": true
+    },
+    {
+      "name": "run prerequisites/ROOT_GATE_PRODUCER_timing_00.json",
+      "pass": true
+    },
+    {
+      "name": "run prerequisites/timing00-attempt01-launch.json",
+      "pass": true
+    },
+    {
+      "name": "run prerequisites/timing00-attempt01-resources.json",
+      "pass": true
+    },
+    {
+      "name": "initial bound PASS",
+      "pass": true
+    },
+    {
+      "name": "initial context/selection_sha256",
+      "pass": true
+    },
+    {
+      "name": "initial context/observer_bundle_sha256",
+      "pass": true
+    },
+    {
+      "name": "initial context/definitions_sha256",
+      "pass": true
+    },
+    {
+      "name": "initial context/declared_plan_sha256",
+      "pass": true
+    },
+    {
+      "name": "initial context/manifest_sha256",
+      "pass": true
+    },
+    {
+      "name": "initial context/source_revision",
+      "pass": true
+    },
+    {
+      "name": "initial context/producer_bundle_sha256",
+      "pass": true
+    },
+    {
+      "name": "initial observer gate",
+      "pass": true
+    },
+    {
+      "name": "initial input bytes/00-main/actual-params.json",
+      "pass": true
+    },
+    {
+      "name": "initial input bytes/00-main/constant-source-readback.npz",
+      "pass": true
+    },
+    {
+      "name": "initial input bytes/00-main/initial-readback.npz",
+      "pass": true
+    },
+    {
+      "name": "initial input bytes/00-main/initialize-receipt.json",
+      "pass": true
+    },
+    {
+      "name": "initial input bytes/00-main/initialize-start.json",
+      "pass": true
+    },
+    {
+      "name": "initial input bytes/00-main/initialize-worker-start.json",
+      "pass": true
+    },
+    {
+      "name": "initial input bytes/ROOT_GATE_PRODUCER_initialize_00.json",
+      "pass": true
+    },
+    {
+      "name": "initial input bytes/initialize00-attempt01-launch.json",
+      "pass": true
+    },
+    {
+      "name": "initial input bytes/initialize00-attempt01-resources.json",
+      "pass": true
+    },
+    {
+      "name": "initial input bytes/review/analytic01-binding.json",
+      "pass": true
+    },
+    {
+      "name": "initial output bytes/00-main/initializer-verdict.json",
+      "pass": true
+    },
+    {
+      "name": "initial output bytes/review/initial00-attempt01-launch.json",
+      "pass": true
+    },
+    {
+      "name": "initial output bytes/review/initial00-attempt01-resources.json",
+      "pass": true
+    },
+    {
+      "name": "initial output bytes/review/initial00-attempt01.log",
+      "pass": true
+    },
+    {
+      "name": "initial output bytes/review/initial00-journal01.jsonl",
+      "pass": true
+    },
+    {
+      "name": "initial gate inputs/00-main/actual-params.json",
+      "pass": true
+    },
+    {
+      "name": "initial gate inputs/00-main/constant-source-readback.npz",
+      "pass": true
+    },
+    {
+      "name": "initial gate inputs/00-main/initial-readback.npz",
+      "pass": true
+    },
+    {
+      "name": "initial gate inputs/00-main/initialize-receipt.json",
+      "pass": true
+    },
+    {
+      "name": "initial gate inputs/00-main/initialize-start.json",
+      "pass": true
+    },
+    {
+      "name": "initial gate inputs/00-main/initialize-worker-start.json",
+      "pass": true
+    },
+    {
+      "name": "initial gate inputs/ROOT_GATE_PRODUCER_initialize_00.json",
+      "pass": true
+    },
+    {
+      "name": "initial gate inputs/initialize00-attempt01-launch.json",
+      "pass": true
+    },
+    {
+      "name": "initial gate inputs/initialize00-attempt01-resources.json",
+      "pass": true
+    },
+    {
+      "name": "initial gate inputs/review/analytic01-binding.json",
+      "pass": true
+    },
+    {
+      "name": "initial verdict bytes",
+      "pass": true
+    },
+    {
+      "name": "initial observer successful resource",
+      "pass": true
+    },
+    {
+      "name": "adapter bound PASS",
+      "pass": true
+    },
+    {
+      "name": "adapter context/selection_sha256",
+      "pass": true
+    },
+    {
+      "name": "adapter context/observer_bundle_sha256",
+      "pass": true
+    },
+    {
+      "name": "adapter context/definitions_sha256",
+      "pass": true
+    },
+    {
+      "name": "adapter context/declared_plan_sha256",
+      "pass": true
+    },
+    {
+      "name": "adapter context/manifest_sha256",
+      "pass": true
+    },
+    {
+      "name": "adapter context/source_revision",
+      "pass": true
+    },
+    {
+      "name": "adapter context/producer_bundle_sha256",
+      "pass": true
+    },
+    {
+      "name": "adapter observer gate",
+      "pass": true
+    },
+    {
+      "name": "adapter input bytes/00-main/actual-params.json",
+      "pass": true
+    },
+    {
+      "name": "adapter input bytes/00-main/constant-source-readback.npz",
+      "pass": true
+    },
+    {
+      "name": "adapter input bytes/00-main/initial-binding01.json",
+      "pass": true
+    },
+    {
+      "name": "adapter input bytes/00-main/initial-readback.npz",
+      "pass": true
+    },
+    {
+      "name": "adapter input bytes/00-main/initialize-receipt.json",
+      "pass": true
+    },
+    {
+      "name": "adapter input bytes/00-main/initializer-verdict.json",
+      "pass": true
+    },
+    {
+      "name": "adapter input bytes/00-main/native.npz",
+      "pass": true
+    },
+    {
+      "name": "adapter input bytes/00-main/params-run.json",
+      "pass": true
+    },
+    {
+      "name": "adapter input bytes/00-main/run-receipt.json",
+      "pass": true
+    },
+    {
+      "name": "adapter input bytes/00-main/run-start.json",
+      "pass": true
+    },
+    {
+      "name": "adapter input bytes/00-main/run-worker-start.json",
+      "pass": true
+    },
+    {
+      "name": "adapter input bytes/ROOT_GATE_PRODUCER_run_00.json",
+      "pass": true
+    },
+    {
+      "name": "adapter input bytes/native00-attempt01-launch.json",
+      "pass": true
+    },
+    {
+      "name": "adapter input bytes/native00-attempt01-resources.json",
+      "pass": true
+    },
+    {
+      "name": "adapter output bytes/00-main/audit-input01/adapter-receipt.json",
+      "pass": true
+    },
+    {
+      "name": "adapter output bytes/00-main/audit-input01/audit-initial-diagnostics.npz",
+      "pass": true
+    },
+    {
+      "name": "adapter output bytes/00-main/audit-input01/audit-metadata.json",
+      "pass": true
+    },
+    {
+      "name": "adapter output bytes/00-main/audit-input01/audit-native.npz",
+      "pass": true
+    },
+    {
+      "name": "adapter output bytes/review/adapter00-attempt01-launch.json",
+      "pass": true
+    },
+    {
+      "name": "adapter output bytes/review/adapter00-attempt01-resources.json",
+      "pass": true
+    },
+    {
+      "name": "adapter output bytes/review/adapter00-attempt01.log",
+      "pass": true
+    },
+    {
+      "name": "adapter gate inputs/00-main/actual-params.json",
+      "pass": true
+    },
+    {
+      "name": "adapter gate inputs/00-main/constant-source-readback.npz",
+      "pass": true
+    },
+    {
+      "name": "adapter gate inputs/00-main/initial-binding01.json",
+      "pass": true
+    },
+    {
+      "name": "adapter gate inputs/00-main/initial-readback.npz",
+      "pass": true
+    },
+    {
+      "name": "adapter gate inputs/00-main/initialize-receipt.json",
+      "pass": true
+    },
+    {
+      "name": "adapter gate inputs/00-main/initializer-verdict.json",
+      "pass": true
+    },
+    {
+      "name": "adapter gate inputs/00-main/native.npz",
+      "pass": true
+    },
+    {
+      "name": "adapter gate inputs/00-main/params-run.json",
+      "pass": true
+    },
+    {
+      "name": "adapter gate inputs/00-main/run-receipt.json",
+      "pass": true
+    },
+    {
+      "name": "adapter gate inputs/00-main/run-start.json",
+      "pass": true
+    },
+    {
+      "name": "adapter gate inputs/00-main/run-worker-start.json",
+      "pass": true
+    },
+    {
+      "name": "adapter gate inputs/ROOT_GATE_PRODUCER_run_00.json",
+      "pass": true
+    },
+    {
+      "name": "adapter gate inputs/native00-attempt01-launch.json",
+      "pass": true
+    },
+    {
+      "name": "adapter gate inputs/native00-attempt01-resources.json",
+      "pass": true
+    },
+    {
+      "name": "adapter verdict bytes",
+      "pass": true
+    },
+    {
+      "name": "adapter observer successful resource",
+      "pass": true
+    },
+    {
+      "name": "science bound PASS",
+      "pass": true
+    },
+    {
+      "name": "science context/selection_sha256",
+      "pass": true
+    },
+    {
+      "name": "science context/observer_bundle_sha256",
+      "pass": true
+    },
+    {
+      "name": "science context/definitions_sha256",
+      "pass": true
+    },
+    {
+      "name": "science context/declared_plan_sha256",
+      "pass": true
+    },
+    {
+      "name": "science context/manifest_sha256",
+      "pass": true
+    },
+    {
+      "name": "science context/source_revision",
+      "pass": true
+    },
+    {
+      "name": "science context/producer_bundle_sha256",
+      "pass": true
+    },
+    {
+      "name": "science observer gate",
+      "pass": true
+    },
+    {
+      "name": "science input bytes/00-main/actual-params.json",
+      "pass": true
+    },
+    {
+      "name": "science input bytes/00-main/adapter-binding01.json",
+      "pass": true
+    },
+    {
+      "name": "science input bytes/00-main/audit-input01/adapter-receipt.json",
+      "pass": true
+    },
+    {
+      "name": "science input bytes/00-main/audit-input01/audit-initial-diagnostics.npz",
+      "pass": true
+    },
+    {
+      "name": "science input bytes/00-main/audit-input01/audit-metadata.json",
+      "pass": true
+    },
+    {
+      "name": "science input bytes/00-main/audit-input01/audit-native.npz",
+      "pass": true
+    },
+    {
+      "name": "science input bytes/00-main/constant-source-readback.npz",
+      "pass": true
+    },
+    {
+      "name": "science input bytes/00-main/initial-binding01.json",
+      "pass": true
+    },
+    {
+      "name": "science input bytes/00-main/initial-readback.npz",
+      "pass": true
+    },
+    {
+      "name": "science input bytes/00-main/initialize-receipt.json",
+      "pass": true
+    },
+    {
+      "name": "science input bytes/00-main/initializer-verdict.json",
+      "pass": true
+    },
+    {
+      "name": "science input bytes/00-main/native.npz",
+      "pass": true
+    },
+    {
+      "name": "science input bytes/00-main/params-run.json",
+      "pass": true
+    },
+    {
+      "name": "science input bytes/00-main/run-receipt.json",
+      "pass": true
+    },
+    {
+      "name": "science input bytes/00-main/run-start.json",
+      "pass": true
+    },
+    {
+      "name": "science input bytes/00-main/run-worker-start.json",
+      "pass": true
+    },
+    {
+      "name": "science input bytes/ROOT_GATE_PRODUCER_run_00.json",
+      "pass": true
+    },
+    {
+      "name": "science input bytes/native00-attempt01-launch.json",
+      "pass": true
+    },
+    {
+      "name": "science input bytes/native00-attempt01-resources.json",
+      "pass": true
+    },
+    {
+      "name": "science output bytes/00-main/science-verdict01.json",
+      "pass": true
+    },
+    {
+      "name": "science output bytes/review/science00-attempt01-launch.json",
+      "pass": true
+    },
+    {
+      "name": "science output bytes/review/science00-attempt01-resources.json",
+      "pass": true
+    },
+    {
+      "name": "science output bytes/review/science00-attempt01.log",
+      "pass": true
+    },
+    {
+      "name": "science output bytes/review/science00-journal01.jsonl",
+      "pass": true
+    },
+    {
+      "name": "science output bytes/review/strict-coarse-comparison01.json",
+      "pass": true
+    },
+    {
+      "name": "science gate inputs/00-main/actual-params.json",
+      "pass": true
+    },
+    {
+      "name": "science gate inputs/00-main/constant-source-readback.npz",
+      "pass": true
+    },
+    {
+      "name": "science gate inputs/00-main/initial-binding01.json",
+      "pass": true
+    },
+    {
+      "name": "science gate inputs/00-main/initial-readback.npz",
+      "pass": true
+    },
+    {
+      "name": "science gate inputs/00-main/initialize-receipt.json",
+      "pass": true
+    },
+    {
+      "name": "science gate inputs/00-main/initializer-verdict.json",
+      "pass": true
+    },
+    {
+      "name": "science gate inputs/00-main/native.npz",
+      "pass": true
+    },
+    {
+      "name": "science gate inputs/00-main/params-run.json",
+      "pass": true
+    },
+    {
+      "name": "science gate inputs/00-main/run-receipt.json",
+      "pass": true
+    },
+    {
+      "name": "science gate inputs/00-main/run-start.json",
+      "pass": true
+    },
+    {
+      "name": "science gate inputs/00-main/run-worker-start.json",
+      "pass": true
+    },
+    {
+      "name": "science gate inputs/ROOT_GATE_PRODUCER_run_00.json",
+      "pass": true
+    },
+    {
+      "name": "science gate inputs/native00-attempt01-launch.json",
+      "pass": true
+    },
+    {
+      "name": "science gate inputs/native00-attempt01-resources.json",
+      "pass": true
+    },
+    {
+      "name": "science gate inputs/00-main/audit-input01/audit-native.npz",
+      "pass": true
+    },
+    {
+      "name": "science gate inputs/00-main/audit-input01/audit-initial-diagnostics.npz",
+      "pass": true
+    },
+    {
+      "name": "science gate inputs/00-main/audit-input01/audit-metadata.json",
+      "pass": true
+    },
+    {
+      "name": "science gate inputs/00-main/audit-input01/adapter-receipt.json",
+      "pass": true
+    },
+    {
+      "name": "science gate inputs/00-main/adapter-binding01.json",
+      "pass": true
+    },
+    {
+      "name": "science verdict bytes",
+      "pass": true
+    },
+    {
+      "name": "science observer successful resource",
+      "pass": true
+    },
+    {
+      "name": "initial four/initialize_receipt_sha256",
+      "pass": true
+    },
+    {
+      "name": "initial four/params_sha256",
+      "pass": true
+    },
+    {
+      "name": "initial four/constant_source_sha256",
+      "pass": true
+    },
+    {
+      "name": "initial four/initial_sha256",
+      "pass": true
+    },
+    {
+      "name": "initializer PASS",
+      "pass": true
+    },
+    {
+      "name": "full run finite declared completion",
+      "pass": true
+    },
+    {
+      "name": "terminal receipt identical",
+      "pass": true
+    },
+    {
+      "name": "complete source before/after counts",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/benchmarks/internal_wave",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/evaluation/internal_wave",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/execution/internal_wave",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/__init__",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/__main__",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/baselines/__init__",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/baselines/oceananigans/__init__",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/baselines/oceananigans/adapter",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/baselines/cli",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/baselines/mom6/__init__",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/baselines/mom6/adapter",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/baselines/mom6/coupled_sources",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/baselines/mom6/forcing",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/baselines/mom6/omip2",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/baselines/mom6/omip2_time",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/baselines/mom6/tripolar",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/baselines/mom6/standing_wave",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/benchmarks/__init__",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/benchmarks/standing_wave",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/benchmarks/configuration_scan",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/execution/configuration_scan",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/evaluation/standing_wave",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/evaluation/wave_study",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/evaluation/native_channel",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/evaluation/channel_dynamics",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/benchmarks/channel_dynamics",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/execution/channel_dynamics",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/baselines/mom6/channel_initial",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/baselines/oceananigans/channel_initial",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/cli",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/coupling/__init__",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/preparation/__init__",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/evaluation/__init__",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/evaluation/cli",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/evaluation/external",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/evaluation/gate",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/evaluation/ice",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/evaluation/manifest",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/evaluation/metrics",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/evaluation/pipeline",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/evaluation/protocols",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/evaluation/table",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/execution/__init__",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/execution/benchmark",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/execution/standing_wave",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/execution/native_channel",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/execution/wave_zhenmode",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/preparation/woa",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/preparation/native_initial",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/preparation/coast",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/preparation/bottom",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/preparation/fd",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/execution/wind_run",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/coupling/sis2",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/coupling/geometry",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/preparation/acquisition",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/preparation/forcing",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/preparation/wind_sample",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/benchmarks/forced_channel",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/evaluation/forced_channel",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/execution/forced_channel",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/execution/cli",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/execution/options",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/execution/profiling",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/execution/resolve",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/execution/resources",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/execution/runs",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/execution/schema",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/execution/worker",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/model/__init__",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/model/config",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/model/diagnostics/__init__",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/model/diagnostics/budgets",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/model/diagnostics/mixed_layer",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/model/diagnostics/surface_budget",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/model/diagnostics/snapshot",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/model/inputs/__init__",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/model/inputs/bathymetry",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/model/inputs/coastline",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/model/inputs/forcing/__init__",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/model/inputs/forcing/bundle",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/model/inputs/forcing/idealized",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/model/inputs/forcing/jra55",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/model/inputs/forcing/online",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/model/inputs/forcing/reanalysis",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/model/inputs/forcing/seasonal",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/model/inputs/initial_conditions",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/model/inputs/prepare",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/model/inputs/quality",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/model/inputs/sources",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/model/io/__init__",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/model/io/output",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/model/io/records",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/model/io/restart",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/model/runtime/__init__",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/model/runtime/cli",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/model/runtime/monitor",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/model/runtime/reporting",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/model/runtime/run",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/model/runtime/run_loop",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/model/solver/__init__",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/model/solver/dynamics/__init__",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/model/solver/dynamics/barotropic",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/model/solver/dynamics/pressure",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/model/solver/dynamics/projection",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/model/solver/dynamics/tendencies",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/model/solver/dynamics/transport",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/model/solver/factory",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/model/solver/geometry/__init__",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/model/solver/geometry/fd_metrics",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/model/solver/geometry/grid",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/model/solver/numerics/__init__",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/model/solver/numerics/backend",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/model/solver/numerics/channel",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/model/solver/numerics/column",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/model/solver/numerics/contacts",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/model/solver/numerics/horizontal",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/model/solver/numerics/vertical",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/model/solver/physics/__init__",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/model/solver/physics/air_sea",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/model/solver/physics/eos",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/model/solver/physics/isopycnal",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/model/solver/physics/surface",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/model/solver/physics/sis2",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/model/solver/physics/teos10",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/model/solver/physics/vertical",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/model/solver/state",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/model/solver/timestepping/__init__",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/model/solver/timestepping/step",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/model/solver/timestepping/subcycles",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/model/verification",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/provenance/__init__",
+      "pass": true
+    },
+    {
+      "name": "captured source/zhenmode/provenance/sources",
+      "pass": true
+    },
+    {
+      "name": "loaded selected path/zhenmode",
+      "pass": true
+    },
+    {
+      "name": "loaded selected bytes/zhenmode",
+      "pass": true
+    },
+    {
+      "name": "loaded selected path/zhenmode.model",
+      "pass": true
+    },
+    {
+      "name": "loaded selected bytes/zhenmode.model",
+      "pass": true
+    },
+    {
+      "name": "loaded selected path/zhenmode.model.inputs",
+      "pass": true
+    },
+    {
+      "name": "loaded selected bytes/zhenmode.model.inputs",
+      "pass": true
+    },
+    {
+      "name": "loaded selected path/zhenmode.model.inputs.quality",
+      "pass": true
+    },
+    {
+      "name": "loaded selected bytes/zhenmode.model.inputs.quality",
+      "pass": true
+    },
+    {
+      "name": "loaded selected path/zhenmode.provenance",
+      "pass": true
+    },
+    {
+      "name": "loaded selected bytes/zhenmode.provenance",
+      "pass": true
+    },
+    {
+      "name": "loaded selected path/zhenmode.provenance.sources",
+      "pass": true
+    },
+    {
+      "name": "loaded selected bytes/zhenmode.provenance.sources",
+      "pass": true
+    },
+    {
+      "name": "loaded selected path/zhenmode.model.inputs.sources",
+      "pass": true
+    },
+    {
+      "name": "loaded selected bytes/zhenmode.model.inputs.sources",
+      "pass": true
+    },
+    {
+      "name": "loaded selected path/zhenmode.model.config",
+      "pass": true
+    },
+    {
+      "name": "loaded selected bytes/zhenmode.model.config",
+      "pass": true
+    },
+    {
+      "name": "loaded selected path/zhenmode.model.solver",
+      "pass": true
+    },
+    {
+      "name": "loaded selected bytes/zhenmode.model.solver",
+      "pass": true
+    },
+    {
+      "name": "loaded selected path/zhenmode.model.solver.geometry",
+      "pass": true
+    },
+    {
+      "name": "loaded selected bytes/zhenmode.model.solver.geometry",
+      "pass": true
+    },
+    {
+      "name": "loaded selected path/zhenmode.model.solver.geometry.grid",
+      "pass": true
+    },
+    {
+      "name": "loaded selected bytes/zhenmode.model.solver.geometry.grid",
+      "pass": true
+    },
+    {
+      "name": "loaded selected path/zhenmode.model.solver.dynamics",
+      "pass": true
+    },
+    {
+      "name": "loaded selected bytes/zhenmode.model.solver.dynamics",
+      "pass": true
+    },
+    {
+      "name": "loaded selected path/zhenmode.model.solver.numerics",
+      "pass": true
+    },
+    {
+      "name": "loaded selected bytes/zhenmode.model.solver.numerics",
+      "pass": true
+    },
+    {
+      "name": "loaded selected path/zhenmode.model.solver.numerics.backend",
+      "pass": true
+    },
+    {
+      "name": "loaded selected bytes/zhenmode.model.solver.numerics.backend",
+      "pass": true
+    },
+    {
+      "name": "loaded selected path/zhenmode.model.solver.numerics.column",
+      "pass": true
+    },
+    {
+      "name": "loaded selected bytes/zhenmode.model.solver.numerics.column",
+      "pass": true
+    },
+    {
+      "name": "loaded selected path/zhenmode.model.solver.numerics.contacts",
+      "pass": true
+    },
+    {
+      "name": "loaded selected bytes/zhenmode.model.solver.numerics.contacts",
+      "pass": true
+    },
+    {
+      "name": "loaded selected path/zhenmode.model.solver.numerics.vertical",
+      "pass": true
+    },
+    {
+      "name": "loaded selected bytes/zhenmode.model.solver.numerics.vertical",
+      "pass": true
+    },
+    {
+      "name": "loaded selected path/zhenmode.model.solver.numerics.channel",
+      "pass": true
+    },
+    {
+      "name": "loaded selected bytes/zhenmode.model.solver.numerics.channel",
+      "pass": true
+    },
+    {
+      "name": "loaded selected path/zhenmode.model.solver.numerics.horizontal",
+      "pass": true
+    },
+    {
+      "name": "loaded selected bytes/zhenmode.model.solver.numerics.horizontal",
+      "pass": true
+    },
+    {
+      "name": "loaded selected path/zhenmode.model.solver.physics",
+      "pass": true
+    },
+    {
+      "name": "loaded selected bytes/zhenmode.model.solver.physics",
+      "pass": true
+    },
+    {
+      "name": "loaded selected path/zhenmode.model.solver.physics.eos",
+      "pass": true
+    },
+    {
+      "name": "loaded selected bytes/zhenmode.model.solver.physics.eos",
+      "pass": true
+    },
+    {
+      "name": "loaded selected path/zhenmode.model.solver.dynamics.pressure",
+      "pass": true
+    },
+    {
+      "name": "loaded selected bytes/zhenmode.model.solver.dynamics.pressure",
+      "pass": true
+    },
+    {
+      "name": "loaded selected path/zhenmode.model.solver.dynamics.transport",
+      "pass": true
+    },
+    {
+      "name": "loaded selected bytes/zhenmode.model.solver.dynamics.transport",
+      "pass": true
+    },
+    {
+      "name": "loaded selected path/zhenmode.model.solver.dynamics.projection",
+      "pass": true
+    },
+    {
+      "name": "loaded selected bytes/zhenmode.model.solver.dynamics.projection",
+      "pass": true
+    },
+    {
+      "name": "loaded selected path/zhenmode.model.solver.physics.isopycnal",
+      "pass": true
+    },
+    {
+      "name": "loaded selected bytes/zhenmode.model.solver.physics.isopycnal",
+      "pass": true
+    },
+    {
+      "name": "loaded selected path/zhenmode.model.solver.state",
+      "pass": true
+    },
+    {
+      "name": "loaded selected bytes/zhenmode.model.solver.state",
+      "pass": true
+    },
+    {
+      "name": "loaded selected path/zhenmode.model.solver.physics.surface",
+      "pass": true
+    },
+    {
+      "name": "loaded selected bytes/zhenmode.model.solver.physics.surface",
+      "pass": true
+    },
+    {
+      "name": "loaded selected path/zhenmode.model.solver.physics.vertical",
+      "pass": true
+    },
+    {
+      "name": "loaded selected bytes/zhenmode.model.solver.physics.vertical",
+      "pass": true
+    },
+    {
+      "name": "loaded selected path/zhenmode.model.solver.timestepping",
+      "pass": true
+    },
+    {
+      "name": "loaded selected bytes/zhenmode.model.solver.timestepping",
+      "pass": true
+    },
+    {
+      "name": "loaded selected path/zhenmode.model.solver.timestepping.subcycles",
+      "pass": true
+    },
+    {
+      "name": "loaded selected bytes/zhenmode.model.solver.timestepping.subcycles",
+      "pass": true
+    },
+    {
+      "name": "loaded selected path/zhenmode.model.solver.dynamics.tendencies",
+      "pass": true
+    },
+    {
+      "name": "loaded selected bytes/zhenmode.model.solver.dynamics.tendencies",
+      "pass": true
+    },
+    {
+      "name": "loaded selected path/zhenmode.model.solver.geometry.fd_metrics",
+      "pass": true
+    },
+    {
+      "name": "loaded selected bytes/zhenmode.model.solver.geometry.fd_metrics",
+      "pass": true
+    },
+    {
+      "name": "loaded selected path/zhenmode.model.solver.dynamics.barotropic",
+      "pass": true
+    },
+    {
+      "name": "loaded selected bytes/zhenmode.model.solver.dynamics.barotropic",
+      "pass": true
+    },
+    {
+      "name": "loaded selected path/zhenmode.model.solver.timestepping.step",
+      "pass": true
+    },
+    {
+      "name": "loaded selected bytes/zhenmode.model.solver.timestepping.step",
+      "pass": true
+    },
+    {
+      "name": "loaded selected path/zhenmode.model.solver.factory",
+      "pass": true
+    },
+    {
+      "name": "loaded selected bytes/zhenmode.model.solver.factory",
+      "pass": true
+    },
+    {
+      "name": "35 actual loaded paths",
+      "pass": true
+    },
+    {
+      "name": "actual runtime selectors",
+      "pass": true
+    },
+    {
+      "name": "science PASS current raw/meta chain",
+      "pass": true
+    },
+    {
+      "name": "strict original receipt identity",
+      "pass": true
+    },
+    {
+      "name": "science journal no failed assertions",
+      "pass": true
+    }
+  ],
+  "file_sha256": {
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\ADAPTER_SPEC-before-code.md": "17cef703c2d162fa69df981ed32a3800f24e961aee122c7536c879cb51281216",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\SELECTION-before-code02.json": "6af6737ad8eca03cd588dbd5551a0635525449cdd58eea1cf7a1d555764a842a",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\declared-plan.json": "e8fa4dcd323f464777e441f7aa6b14fdf2b8a4e2150dc883065f66254688a165",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\pre-execution-definitions01.json": "f09f42e9970d48dfd33649f2f7dd58bd9871c707ab92d6ddb3e170b6b891a703",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\producer.py": "d27de7af3fad40547fb53ed8fb0133da0458f9af10c4a1945ff3f56880ea9dc2",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\run_producer.py": "fce4484b269b028b969c7723a93f3d4bcd098c4d54ed862ddbc9ffa0dfd9242b",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\run_env.sh": "e19925d957282565f9aaa34444825c2c0da69076598d38be743b83bbe79e5a8c",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\stage_preflight.py": "a75b3945a25c85b9d11946c9ed476d23a473eec32ca84a33add124c3035586d3",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\ROOT_GATE_PRODUCER_TEMPLATE01.json": "3fae9ad23b86bdac0157078ef2943af33ea31a4e2527de31f267cc6e96d2d2bb",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\PREPARATION01.md": "73abd7f05188dc2d09b05d3aa0e248a435e56458d5b0ee55ffe685eae14faabd",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\PLAN_LINEAGE01.json": "f659ecb26665db9ac46af1bf321f2c9310f2b7fdc2dd31c2ac94c61766adb9de",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\FULL_ADAPTER_DIFF01.patch": "68b8a3b5726004d0bd422ae52e164c66d4923acbadd6b5aac7e70dab65352b33",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\review\\oracle.py": "891a9147dfb6c88dea5aab2ad9e388d49dd374c872a679cdc6f58e026cdb1756",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\review\\analytic_source_controls.py": "c40089e909b322237c028ee6518bc78f5b9848628720cdc1a1e83c74f5f4d2f5",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\review\\audit_initial.py": "e7e4a5954609c786f4f1380f90029ce1ac9e1086e4bf7edf05c1c54ea2bd3021",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\review\\audit_arrays.py": "22b02cb552a3de71a3e80d50f51597aa0759d21e5f25aba8769e556132aa90fa",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\review\\prepare_audit_input.py": "383793e30858783dfe9bc4dbcf24aed33cb6393adfbf714a6b85729ff93d3cf6",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\review\\audit_summary.py": "3675a5f846ba8f09e2d9f47eee013ad1af5b58987af9f434a343d5ed262cb640",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\lineage\\attempt01-PREPARED_BUNDLE01.json": "b0c291a45e1376d704ba9338fae479f254d13b0dbc6c2b161a90c9948d6184f3",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\lineage\\attempt01-PREPARATION01.md": "88019e5553946b8871b886f92ac99f88d0c07124f8ff394ad6e1a3aa119b34f5",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\lineage\\attempt01-PLAN_LINEAGE01.json": "92758864239289b6031028d61986407a7308e8b697672e5a4a498181db6478e8",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\lineage\\attempt01-declared-plan.json": "e6fc66894eac6c165f1b39fa5a210237dcbd0b780f9ac72010b5b6eabf242b11",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\review\\observer_bindings.py": "f89ff7529d2f9798c1817c17ecc419ff39f053ba59b424a037055b54a48bd89d",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\review\\run_observer_once.py": "f07bea5f1bd76bbd27714295bc222b1e0e753305413defd1f60fb9f042214a51",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\review\\run_observer_env.sh": "275872a0717fe346098d741f054882341823c5f249a6ced8a2896124f6dc7335",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\review\\run_analytic_bridge.py": "48b89dc29887d0e121fe4ca477c55e594a3f3d28c1ac2d277b861cb0bdcffc89",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\review\\run_analytic_bridge_env.sh": "a2020a73c2a221c342bc3725df224986979dcb30743722abc886e3e8eb148f21",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\review\\ANALYTIC_REUSE_SPEC01.json": "fadf336dffd3f870fcae0a54956080d2980715f51c81251d7e1855c9b8275679",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\review\\ROOT_GATE_ANALYTIC_REUSE_TEMPLATE01.json": "feb361bdd7bea455763fee593ecc4b4fe74efea8e44048892fbe7eb47c4b9a65",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\review\\ROOT_GATE_OBSERVER_TEMPLATE01.json": "356333a2a535d5fe16dee63f0d86caa5d6b243860f293a454db8d34226d6f5dd",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\review\\OBSERVER_PREPARATION01.md": "51c8184762184ee22ee1e42e3337f2784b7896ebc1a3846ffe0aeb835f763a6d",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\horizontal-paired-product-v1\\wheel-identity.json": "c217495711be5216ea139219bc42088dd3f05285d851955f691625dd9a375848",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\PREPARED_BUNDLE01.json": "67ecb7e0b1a77cc8ea0480b4c11c8b9a311dc2f403fd678a4ddab0aaa6866188",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\review\\OBSERVER_BUNDLE01.json": "e6a53b6c126e9b5cea0011376e86a14b722a04bce286fb36fde3951f5d879dda",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647\\review\\analytic01-verdict.json": "cc80ec648fabcc1d65fb64b48b1bb97e232f848c652f3c1d30acf580d685dd15",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647\\review\\analytic01-binding.json": "69b819bd74565443438a8b21d1bd0cdcc38368aa669f9de76f16904d59adaed3",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647\\review\\analytic01-launch.json": "d3a906e71e247974ca54da021b6721f2102c5c8ccfa5cd43779486aca1549d6b",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647\\review\\analytic01-resources.json": "e02e502fa3f74c2f64b7da5cbe34d64f0a2e79eaa4bfff0d6890a3ec92c81ba3",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647\\review\\ROOT_GATE_OBSERVER_analytic_00.json": "937650866bae2f6db65a92f4a7dffcbf75c9dff1617f8baa3b1e29b1c15ee23d",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647\\review\\analytic00-start01.json": "318ac5a35d52339c96012178e16f7786e83de751b877eb2bda2770bcda43fc45",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647\\review\\analytic01-journal.jsonl": "9f235aa6ad2437a9ae53e676a43d2487c8543a26f3a6f76d8cf7e2cc15866a87",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647\\review\\analytic01.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647\\PREPARED_BUNDLE01.json": "b0c291a45e1376d704ba9338fae479f254d13b0dbc6c2b161a90c9948d6184f3",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647\\review\\OBSERVER_BUNDLE01.json": "e25ee72a063d80b31487ae432123168151b0a0cbdb15069a929996bd5670ae56",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647\\producer.py": "92f1a05825784cfb585d407503b74f9af5af6443198cdb640f68af57b096efad",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647\\INITIALIZE_FAILURE_DISPOSITION01.json": "87b289e623995e7c77aae0ca36b713ce283e03bead04c14c05acaa879fbd18da",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647\\initialize00-attempt01.log": "1805fd6c3b966247b6dc736d2a08cdf8d3aa88a2d5d16d698d71a597ae484e67",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647\\00-main\\initialize-receipt.json": "8c28073368ad9a7657150184bd2f410b344dce45ba65cb81ba683559e895b54c",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647\\declared-plan.json": "e6fc66894eac6c165f1b39fa5a210237dcbd0b780f9ac72010b5b6eabf242b11",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647\\pre-execution-definitions01.json": "f09f42e9970d48dfd33649f2f7dd58bd9871c707ab92d6ddb3e170b6b891a703",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647\\SELECTION-before-code02.json": "6af6737ad8eca03cd588dbd5551a0635525449cdd58eea1cf7a1d555764a842a",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647\\review\\oracle.py": "891a9147dfb6c88dea5aab2ad9e388d49dd374c872a679cdc6f58e026cdb1756",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647\\review\\analytic_source_controls.py": "c40089e909b322237c028ee6518bc78f5b9848628720cdc1a1e83c74f5f4d2f5",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647\\review\\audit_initial.py": "e7e4a5954609c786f4f1380f90029ce1ac9e1086e4bf7edf05c1c54ea2bd3021",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647\\review\\audit_arrays.py": "22b02cb552a3de71a3e80d50f51597aa0759d21e5f25aba8769e556132aa90fa",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647\\review\\prepare_audit_input.py": "383793e30858783dfe9bc4dbcf24aed33cb6393adfbf714a6b85729ff93d3cf6",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647\\review\\audit_summary.py": "3675a5f846ba8f09e2d9f47eee013ad1af5b58987af9f434a343d5ed262cb640",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\review\\ROOT_GATE_ANALYTIC_REUSE01.json": "698a3176cf66fd24ad673aa03f19c4778e3e62d790140cffa58630885cf56399",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\ROOT_GATE_PRODUCER_initialize_00.json": "059de928881138a1467594d564aa941eb112dd266e6a05c6dd5b7ad9ab1bacce",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\initialize00-attempt01-launch.json": "de7025ead0de3efce6831d4240c0b56478136327d1ad0820c493aa7ec946b4b2",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\00-main\\initialize-start.json": "2a0c9fe55bcc0b1365d2b5070a6466816c30e5c6ff09b4bbed0cb8d4c3d085c3",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\00-main\\initialize-worker-start.json": "1bbea385687ce7278232a836d2f18625483393985b6a2608a993c2c6b6ba7515",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\review\\analytic01-binding.json": "bb64108e4ecab249abed7acabc5ae793dae4dfa6022f352e99dc0bee25ad0a07",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\ROOT_BRIDGE_STATIC_REVIEW01.json": "439d77b75c71a4d760c647329507434309c732a3692ac4fb1df46fd75312a65d",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\review\\ATTEMPT02_STATIC_REVIEW01.json": "1e423a49266c6c2a9dc38d8eda84beedcdf7e9029267cf98969629c7aab8ffca",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\ROOT_GATE_PRODUCER_timing_00.json": "e5f3df1f1b0dc934a0190e89f9b3a598e44f842d4dd85cc60227e1fc26397f25",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\timing00-attempt01-launch.json": "b9354dd43bf8884384019370be2f480e458bb2b11e210cf2da18768d15dfd95f",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\00-main\\timing-start.json": "7aeec34901e4ba7224a9a3000d1c7f27f7fbea97e0b9b4e3a317c7cae129950b",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\00-main\\timing-worker-start.json": "377214c4c973b731632356417c0c2465dfdaba139a8e0be58df2926da5879577",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\00-main\\initializer-verdict.json": "d642f1ae792e27c0efb15f9f9cbd3d2a77e3521c97f3570276912c8b621473e3",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\00-main\\initial-binding01.json": "b6472e94c8df83f7199f21d06f75207a571909c4b387e1714d811873dcc381b8",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\00-main\\initial-readback.npz": "9a938f19d866272669c012f45b53faea096e9a0c871246a9e3256c2a2f2a51bb",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\00-main\\actual-params.json": "d1be7aeee80535115fbb84cbc96eebe99f803367367689bf3e674fc748cd892d",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\00-main\\initialize-receipt.json": "19a873f81df53045d6d31921955adcbdeedf045b85f668d52c186e762aef3339",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\00-main\\constant-source-readback.npz": "ea9eb6da79d3f2e829b3a3a9993dc5c125542f68c0d0d6083784133833d8e251",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\ROOT_GATE_PRODUCER_run_00.json": "c4bba18ec69655544f4125699e122f7e7f2c9a4da5c9a0cf7493de86fa1e341b",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\native00-attempt01-launch.json": "a9f6d59f41834a1ef80776112fe9a28b5d449c8460c2767a6e374061d350ba7b",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\00-main\\run-start.json": "ea60678b5362b9d35a9fc43eab420838f1381fc7c58cc2f7a8ea3b7b9faf4691",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\00-main\\run-worker-start.json": "909f79fe46d4154b2c90ee7d55fcbef9d588ad6927095649a5d6aec447a062f3",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\native-allow-case00.json": "89c3c95c477109ef617e6329173d5e67755202263ad9eff2eea71579e551f28f",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\coarse0-measured-plan01.json": "4f27b99f6878be53d75b1b45db0d5d2d0aeee3eaf64c1a65e4735ba6ed7271f3",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\00-main\\timing-receipt.json": "ce9628029bbec7dfe2502db0966890fabd9ad73263f79c4b4520cab2a51a93ab",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\timing00-attempt01-resources.json": "f58e78a92e6100d3903923ad11376655edcaa9096bed68ecf5b0d2aad552f8bb",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\review\\ROOT_GATE_OBSERVER_initial_00.json": "fc46771ed07f90ea815e3f20a7b3b5a8e758d677ea7cd564b0f6bf8ecd6cf252",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\initialize00-attempt01-resources.json": "166d9417ea2f9e3907e6782238d65c83b81939b154530070559b9ac1427c5863",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\review\\initial00-attempt01-launch.json": "5bb1f0670e741bf65e00206c9aa1a4f2c1eb32849dc4a676ad24ac4cde7f9e52",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\review\\initial00-attempt01-resources.json": "b4e792867b6cfc74135415d83954dca8eda10057b70abfba1e1c57eb5e7168d3",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\review\\initial00-attempt01.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\review\\initial00-journal01.jsonl": "87332c86a764a52e62411ca0eb126e677f8baaf207772200339790fd7678782e",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\review\\ROOT_GATE_OBSERVER_adapter_00.json": "918993e42724f988112e0843fe0d640e490238e8478a6af73f2043a21a950c23",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\00-main\\native.npz": "c4cc4550fbdbdd936c95fa7fa169120d023e5e906ce8db8d78bee5a8e8440277",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\00-main\\params-run.json": "d1be7aeee80535115fbb84cbc96eebe99f803367367689bf3e674fc748cd892d",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\00-main\\run-receipt.json": "e6d68eb7bc113812ff89201d3a19dc78e3bbc355ea2210c1c319d3a2711e53aa",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\native00-attempt01-resources.json": "50b06a2ca1114396853c41f58e9a4c324c8eab5433c7d6c85452ddea718fd89c",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\00-main\\audit-input01\\adapter-receipt.json": "239de5fe1f81ec3f2ee4ab1bd0d583a221b9e85271cca4747967be8536b3bc5b",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\00-main\\audit-input01\\audit-initial-diagnostics.npz": "1163ca22ced4b53a5a0e28d913513647b2408f3ddd41a95bc6fe85d00272acd8",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\00-main\\audit-input01\\audit-metadata.json": "a03a0b7f9e775bd4efc18e9e8c480e3818775d4c6fc8ce2ab16fc664e6cfc955",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\00-main\\audit-input01\\audit-native.npz": "e08d167f5e6d5713b0e52d49c8ad46ea66794f6a5b641a1f5187747715bbbd18",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\review\\adapter00-attempt01-launch.json": "bac5b315d29e3c54e84395bb3f7020c01dd60a11bcd342ab152d27ce6db2b6dc",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\review\\adapter00-attempt01-resources.json": "f03fa5daffe1b8d4ea38ccc41d5cb03483f9a71633dee2c45e66858d8dd88704",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\review\\adapter00-attempt01.log": "3c2a54959f7ae16dca316889817c0d6f2e275e19c8a9c91d1a798d1c8e4f676d",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\review\\ROOT_GATE_OBSERVER_science_00.json": "7679a8686591b79d4fea5b6a9240e785139fc3ab750c40a05ff7cfa9a0235f48",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\00-main\\adapter-binding01.json": "69a4571d1a4e6f8e3ba133967346a780665acb2bf377bfe30beb073fe185f938",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\00-main\\science-verdict01.json": "abec6f2aa16308cd012e1a64686241ae824670fe0bef5cad2a1db3d7d15027bb",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\review\\science00-attempt01-launch.json": "31455937e3a2759ade36995ce047dad6c1efa5f9120f99195d8fa23e49ac8fbd",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\review\\science00-attempt01-resources.json": "53d2ccf34779ca20aedd79caec2f865aeaec3e67ec88b3c577eebb402a714a0b",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\review\\science00-attempt01.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\review\\science00-journal01.jsonl": "5cb3da0871f47952e52b660438b2e9ca6ca1fa68bc2cfa5065d8769c6103b907",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\review\\strict-coarse-comparison01.json": "6fe28229f57788384eaa1ec2571aeefbb9661c2b586ab42e3529580a5ef693de",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\00-main\\terminal.json": "e6d68eb7bc113812ff89201d3a19dc78e3bbc355ea2210c1c319d3a2711e53aa",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\horizontal-paired-product-v1\\installed\\zhenmode\\__init__.py": "37d5510890297eb78a6974bdb3959c3b224f5e2c381939113af51d7a58e71188",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\horizontal-paired-product-v1\\installed\\zhenmode\\model\\__init__.py": "239c1f8fd5b5a454930824715e99ecde75470b7c89274fbef5f7a1fba4619538",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\horizontal-paired-product-v1\\installed\\zhenmode\\model\\inputs\\__init__.py": "150aa43ee0dcf4c3217308ca7254bc7d196a7f2c70e5e9a0e5ace3e76cb940af",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\horizontal-paired-product-v1\\installed\\zhenmode\\model\\inputs\\quality.py": "3b5b05c518d2e927acb4dd0049c7f679ea36b5cfcb2f3f508120389da0e771a2",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\horizontal-paired-product-v1\\installed\\zhenmode\\provenance\\__init__.py": "daf5d6bfcecc2b278842a3426572a906a824b2a1f520668da6bb8992e35bd64e",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\horizontal-paired-product-v1\\installed\\zhenmode\\provenance\\sources.py": "b422a776558810077f543b8a3b3b99f9584ffafa0b292515a93ac1a96bb99bcc",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\horizontal-paired-product-v1\\installed\\zhenmode\\model\\inputs\\sources.py": "846b83f00b10a680b09b424878857e70cd54e99ca8a20aa73367da34f599e687",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\horizontal-paired-product-v1\\installed\\zhenmode\\model\\config.py": "890d6b7666877a53d655f070030a5810e687f7f6201325d20b34003dcf7b39ea",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\horizontal-paired-product-v1\\installed\\zhenmode\\model\\solver\\__init__.py": "229c94a88ab915568cdb3e04a06896ba1d78a817d0054ead4145186272b82d7e",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\horizontal-paired-product-v1\\installed\\zhenmode\\model\\solver\\geometry\\__init__.py": "b4e9370dd4ce8e3ed7d1dad3c2b35beec912a7d9b43f7f407c3c90e960b2079a",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\horizontal-paired-product-v1\\installed\\zhenmode\\model\\solver\\geometry\\grid.py": "54c5ebd94d6431e6301363e1e0ba6228212b311563a5edd3fde6c0760d9bebf3",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\horizontal-paired-product-v1\\installed\\zhenmode\\model\\solver\\dynamics\\__init__.py": "92253b086944c0a62935772ba54bdbc89297fe9567822d267fd15b2cf2bb5611",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\horizontal-paired-product-v1\\installed\\zhenmode\\model\\solver\\numerics\\__init__.py": "929b966423d7801ab47df95b5b84043f63b7cfe905184555eff61e4bdfb426b1",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\horizontal-paired-product-v1\\installed\\zhenmode\\model\\solver\\numerics\\backend.py": "416c3ecf3ec992f66402af2e2b81db5c66f421686691592a01b6865036485197",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\horizontal-paired-product-v1\\installed\\zhenmode\\model\\solver\\numerics\\column.py": "ae9013fb0628e6cbdc8d2027bd899d7815e0864e76a649ed88e5dcb0968d405a",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\horizontal-paired-product-v1\\installed\\zhenmode\\model\\solver\\numerics\\contacts.py": "e91b99345dd7c9688045021e8a895d9b7193606879cb0b0927de6b3b76062e32",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\horizontal-paired-product-v1\\installed\\zhenmode\\model\\solver\\numerics\\vertical.py": "6d5693b4a6dde1842be9e216e4674a42d53794b048189701620c02242e348dab",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\horizontal-paired-product-v1\\installed\\zhenmode\\model\\solver\\numerics\\channel.py": "ab46eadafa84c0a0756b76f0451e0c636e36bcca5d76101cc6f6e62cc9151038",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\horizontal-paired-product-v1\\installed\\zhenmode\\model\\solver\\numerics\\horizontal.py": "430c3ed7b2222734c93b7e33d7003fe64b147e36a75c6b6d5584b5663a2e251b",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\horizontal-paired-product-v1\\installed\\zhenmode\\model\\solver\\physics\\__init__.py": "a5ebfc7e1dfa65dc7dc52f47cd345a3e0afadf8d5236eb226ba1c22162e5e1ee",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\horizontal-paired-product-v1\\installed\\zhenmode\\model\\solver\\physics\\eos.py": "50a2529714bef3967143ab28eccfc530cc92fe66d1125de70c4ba7147005a07a",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\horizontal-paired-product-v1\\installed\\zhenmode\\model\\solver\\dynamics\\pressure.py": "53b065815da2905df325bb5deab1ecd11babb7eba54076235243158bad38d824",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\horizontal-paired-product-v1\\installed\\zhenmode\\model\\solver\\dynamics\\transport.py": "23a93aac12a769afbe948cd812d1d7b68f4563a79b61b4f39034ae6e2e4f276a",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\horizontal-paired-product-v1\\installed\\zhenmode\\model\\solver\\dynamics\\projection.py": "64313d7abca6fe4c4ea0f181f469272eb7d6c6c862c19375b2d1dfbedebfb968",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\horizontal-paired-product-v1\\installed\\zhenmode\\model\\solver\\physics\\isopycnal.py": "8165becfd9a23844761362e36c20161260506e3cd3244a203ae44bde75de7298",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\horizontal-paired-product-v1\\installed\\zhenmode\\model\\solver\\state.py": "851e96e868aed41a2f5882e9f1683f0f79056cd73ff35b281ba51cc0a8346d62",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\horizontal-paired-product-v1\\installed\\zhenmode\\model\\solver\\physics\\surface.py": "0eade693636cd017d5772e2c0cee83c1a5050c49ad3a2936591356ef4cb163b8",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\horizontal-paired-product-v1\\installed\\zhenmode\\model\\solver\\physics\\vertical.py": "e2305eed74d2c2caed01d70e4a734af4c5a7c06b14647d8bb0f3e118b5db8a3e",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\horizontal-paired-product-v1\\installed\\zhenmode\\model\\solver\\timestepping\\__init__.py": "913ed45d926d13a9a89517aacd0095980dd2ff7c15e44bd1c0d850b94c09f6a6",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\horizontal-paired-product-v1\\installed\\zhenmode\\model\\solver\\timestepping\\subcycles.py": "fada7101b16464e2e21ec0bac4bfff7d399cf4e9073a4af7035528203f74598b",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\horizontal-paired-product-v1\\installed\\zhenmode\\model\\solver\\dynamics\\tendencies.py": "698a8d680089259d7f15a91166d8d89e2ac6d31800af3ca416883757c5f8ec89",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\horizontal-paired-product-v1\\installed\\zhenmode\\model\\solver\\geometry\\fd_metrics.py": "26a9c836450d9b0d0c5d932f0c910799c7036a68a6266f5c36138574ae79b478",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\horizontal-paired-product-v1\\installed\\zhenmode\\model\\solver\\dynamics\\barotropic.py": "c4137232f53baaf4eec9ecac4406368f148a6ee1763f91f48957ca0ba9c0b0a6",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\horizontal-paired-product-v1\\installed\\zhenmode\\model\\solver\\timestepping\\step.py": "d888979831d99467af6b4b39ed1008a13d8b616b52a93daa38be322b1964c4ae",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\horizontal-paired-product-v1\\installed\\zhenmode\\model\\solver\\factory.py": "8123849af4ce529487be47687ad541f38946c9a32b692dc31e0bf6befaf4697b",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\independent-neutral-shear-native\\00-main\\science-verdict01.json": "147163432215ed57ab88037b1974f09c65dbf859a2f2d43ec3cb436c737da837"
+  }
+}

@@ -1,0 +1,573 @@
+{
+  "status": "PASS_STAGED_GIT_ORIGINAL_BYTES",
+  "files": 94,
+  "report_sha256": "7d0f3ee390ec7fc87d0272c62de4231fc5067524d7326cc3012b0b062089b3a9",
+  "created_at": "2026-10-13T12:13:10.871Z",
+  "files_detail": [
+    {
+      "path": "docs/data/neutral_shear_paired_be647/neutral_shear_paired_be647_attempt02_archive.part001",
+      "bytes": 20971520,
+      "sha256": "daaa248a3a2742352f3d6fb474862786baf18120c473d7228eb2485bc37134e2",
+      "original_source": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/neutral-shear-paired-be647-attempt02/publication-preparation/packet01/neutral_shear_paired_be647_attempt02_archive.part001"
+    },
+    {
+      "path": "docs/data/neutral_shear_paired_be647/neutral_shear_paired_be647_attempt02_archive.part002",
+      "bytes": 20971520,
+      "sha256": "2e8d37b584bd8386cf9dc81fffdbb819bd5f27a35dc23ea62ccd8e9f7e25ced5",
+      "original_source": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/neutral-shear-paired-be647-attempt02/publication-preparation/packet01/neutral_shear_paired_be647_attempt02_archive.part002"
+    },
+    {
+      "path": "docs/data/neutral_shear_paired_be647/neutral_shear_paired_be647_attempt02_archive.part003",
+      "bytes": 20971520,
+      "sha256": "4d7069f5e26d105fb6e3983c858ab8413e30d32c920b3295b7fe07e34d96526d",
+      "original_source": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/neutral-shear-paired-be647-attempt02/publication-preparation/packet01/neutral_shear_paired_be647_attempt02_archive.part003"
+    },
+    {
+      "path": "docs/data/neutral_shear_paired_be647/neutral_shear_paired_be647_attempt02_archive.part004",
+      "bytes": 20971520,
+      "sha256": "67a3ef9d9f5b7ba3e59bb3ce3515af19e15ab0d449ac40d3eb422b885c44d880",
+      "original_source": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/neutral-shear-paired-be647-attempt02/publication-preparation/packet01/neutral_shear_paired_be647_attempt02_archive.part004"
+    },
+    {
+      "path": "docs/data/neutral_shear_paired_be647/neutral_shear_paired_be647_attempt02_archive.part005",
+      "bytes": 20971520,
+      "sha256": "4e6dab1722961f253249387cc100281fe8b353dee6a80bfe656b6758e703f40a",
+      "original_source": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/neutral-shear-paired-be647-attempt02/publication-preparation/packet01/neutral_shear_paired_be647_attempt02_archive.part005"
+    },
+    {
+      "path": "docs/data/neutral_shear_paired_be647/neutral_shear_paired_be647_attempt02_archive.part006",
+      "bytes": 20971520,
+      "sha256": "c79658e14f7826803918a561e083f666f270892f35bf5f35211c3d0f415874ab",
+      "original_source": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/neutral-shear-paired-be647-attempt02/publication-preparation/packet01/neutral_shear_paired_be647_attempt02_archive.part006"
+    },
+    {
+      "path": "docs/data/neutral_shear_paired_be647/neutral_shear_paired_be647_attempt02_archive.part007",
+      "bytes": 20971520,
+      "sha256": "3b5d8a400b7bcda6d0694d9bdf712ca577228a1ca7cce37f8bc27099565d7554",
+      "original_source": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/neutral-shear-paired-be647-attempt02/publication-preparation/packet01/neutral_shear_paired_be647_attempt02_archive.part007"
+    },
+    {
+      "path": "docs/data/neutral_shear_paired_be647/neutral_shear_paired_be647_attempt02_archive.part008",
+      "bytes": 20971520,
+      "sha256": "640281f48c621f7a00b89e969b087b542ca2eb6a6bebd6558403ad42315f5e98",
+      "original_source": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/neutral-shear-paired-be647-attempt02/publication-preparation/packet01/neutral_shear_paired_be647_attempt02_archive.part008"
+    },
+    {
+      "path": "docs/data/neutral_shear_paired_be647/neutral_shear_paired_be647_attempt02_archive.part009",
+      "bytes": 20971520,
+      "sha256": "3ccc24f52ed3471e650d483d5a138a19fbf5c5770b285d649ad61aa914165270",
+      "original_source": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/neutral-shear-paired-be647-attempt02/publication-preparation/packet01/neutral_shear_paired_be647_attempt02_archive.part009"
+    },
+    {
+      "path": "docs/data/neutral_shear_paired_be647/neutral_shear_paired_be647_attempt02_archive.part010",
+      "bytes": 20971520,
+      "sha256": "e3184f1392833a937f2ecc1be1f3143c42c93a900daff83c49ce56059d90a5a6",
+      "original_source": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/neutral-shear-paired-be647-attempt02/publication-preparation/packet01/neutral_shear_paired_be647_attempt02_archive.part010"
+    },
+    {
+      "path": "docs/data/neutral_shear_paired_be647/neutral_shear_paired_be647_attempt02_archive.part011",
+      "bytes": 20971520,
+      "sha256": "ab1e5745a04fa6f6685b6dbccbf6910f98652777a00ef18ef0330e675ec40677",
+      "original_source": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/neutral-shear-paired-be647-attempt02/publication-preparation/packet01/neutral_shear_paired_be647_attempt02_archive.part011"
+    },
+    {
+      "path": "docs/data/neutral_shear_paired_be647/neutral_shear_paired_be647_attempt02_archive.part012",
+      "bytes": 20971520,
+      "sha256": "a4961cea3f307f2c52a710ed2e81b5ff6bead81c50de64040dcf74f4901edbbe",
+      "original_source": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/neutral-shear-paired-be647-attempt02/publication-preparation/packet01/neutral_shear_paired_be647_attempt02_archive.part012"
+    },
+    {
+      "path": "docs/data/neutral_shear_paired_be647/neutral_shear_paired_be647_attempt02_archive.part013",
+      "bytes": 20971520,
+      "sha256": "dba10c8fa6cff7d3d8b57e77823d56f4108b5d2cc81c11abd10f6907c3151184",
+      "original_source": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/neutral-shear-paired-be647-attempt02/publication-preparation/packet01/neutral_shear_paired_be647_attempt02_archive.part013"
+    },
+    {
+      "path": "docs/data/neutral_shear_paired_be647/neutral_shear_paired_be647_attempt02_archive.part014",
+      "bytes": 20971520,
+      "sha256": "914ddb1f95e3d9b1ab2e855102711abaa4bec07f130d319d836b1a435506b317",
+      "original_source": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/neutral-shear-paired-be647-attempt02/publication-preparation/packet01/neutral_shear_paired_be647_attempt02_archive.part014"
+    },
+    {
+      "path": "docs/data/neutral_shear_paired_be647/neutral_shear_paired_be647_attempt02_archive.part015",
+      "bytes": 20971520,
+      "sha256": "66dfb7da5ea6da934f21a2161167bf8734cdf9b16e0eb21df86cbda82a8c9c0e",
+      "original_source": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/neutral-shear-paired-be647-attempt02/publication-preparation/packet01/neutral_shear_paired_be647_attempt02_archive.part015"
+    },
+    {
+      "path": "docs/data/neutral_shear_paired_be647/neutral_shear_paired_be647_attempt02_archive.part016",
+      "bytes": 20971520,
+      "sha256": "5d7cda85c56b351cde5a305ed1773a48c7a98c915b992c6c326c2e180a9927f9",
+      "original_source": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/neutral-shear-paired-be647-attempt02/publication-preparation/packet01/neutral_shear_paired_be647_attempt02_archive.part016"
+    },
+    {
+      "path": "docs/data/neutral_shear_paired_be647/neutral_shear_paired_be647_attempt02_archive.part017",
+      "bytes": 20971520,
+      "sha256": "8833fd1d4db32e1e6af4d673d30805964fb595dc9f4c2a96636e02fba1f880fa",
+      "original_source": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/neutral-shear-paired-be647-attempt02/publication-preparation/packet01/neutral_shear_paired_be647_attempt02_archive.part017"
+    },
+    {
+      "path": "docs/data/neutral_shear_paired_be647/neutral_shear_paired_be647_attempt02_archive.part018",
+      "bytes": 20971520,
+      "sha256": "5f9f2323fd3da06c78c2cf3ede9561958acc205d7a12c4b20b444f3f8b368ece",
+      "original_source": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/neutral-shear-paired-be647-attempt02/publication-preparation/packet01/neutral_shear_paired_be647_attempt02_archive.part018"
+    },
+    {
+      "path": "docs/data/neutral_shear_paired_be647/neutral_shear_paired_be647_attempt02_archive.part019",
+      "bytes": 20971520,
+      "sha256": "afcca6ca11d9c805c9c6e7848c49867d3a45a76983b6d884318becc34419359d",
+      "original_source": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/neutral-shear-paired-be647-attempt02/publication-preparation/packet01/neutral_shear_paired_be647_attempt02_archive.part019"
+    },
+    {
+      "path": "docs/data/neutral_shear_paired_be647/neutral_shear_paired_be647_attempt02_archive.part020",
+      "bytes": 20971520,
+      "sha256": "cb3df06eabcb7b14b0873895edd5d46958d53ebb89d29db4cc1428e1b3120441",
+      "original_source": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/neutral-shear-paired-be647-attempt02/publication-preparation/packet01/neutral_shear_paired_be647_attempt02_archive.part020"
+    },
+    {
+      "path": "docs/data/neutral_shear_paired_be647/neutral_shear_paired_be647_attempt02_archive.part021",
+      "bytes": 20971520,
+      "sha256": "dd9b812b18fb4e38ae739d53ae7f79faff22a88985d73e3a7c50becd64e953f8",
+      "original_source": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/neutral-shear-paired-be647-attempt02/publication-preparation/packet01/neutral_shear_paired_be647_attempt02_archive.part021"
+    },
+    {
+      "path": "docs/data/neutral_shear_paired_be647/neutral_shear_paired_be647_attempt02_archive.part022",
+      "bytes": 20971520,
+      "sha256": "2d5f20b0fbfcb21d90aba1b3383eb38ed3502761acb0559c5612a685d2a95050",
+      "original_source": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/neutral-shear-paired-be647-attempt02/publication-preparation/packet01/neutral_shear_paired_be647_attempt02_archive.part022"
+    },
+    {
+      "path": "docs/data/neutral_shear_paired_be647/neutral_shear_paired_be647_attempt02_archive.part023",
+      "bytes": 20971520,
+      "sha256": "e88170e6e248314b357b41597fef162ac746696a27448d86b1261bcb93ab96fb",
+      "original_source": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/neutral-shear-paired-be647-attempt02/publication-preparation/packet01/neutral_shear_paired_be647_attempt02_archive.part023"
+    },
+    {
+      "path": "docs/data/neutral_shear_paired_be647/neutral_shear_paired_be647_attempt02_archive.part024",
+      "bytes": 20971520,
+      "sha256": "47871ef12cf951672798cdb8d27e9615c4c76d87866d9d8b5804d4aae9b92b72",
+      "original_source": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/neutral-shear-paired-be647-attempt02/publication-preparation/packet01/neutral_shear_paired_be647_attempt02_archive.part024"
+    },
+    {
+      "path": "docs/data/neutral_shear_paired_be647/neutral_shear_paired_be647_attempt02_archive.part025",
+      "bytes": 20971520,
+      "sha256": "fda0615ba1c9e2fe1e8b0d5dae751c6b41da5f0a7d445ff601a80b42e3b13a4f",
+      "original_source": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/neutral-shear-paired-be647-attempt02/publication-preparation/packet01/neutral_shear_paired_be647_attempt02_archive.part025"
+    },
+    {
+      "path": "docs/data/neutral_shear_paired_be647/neutral_shear_paired_be647_attempt02_archive.part026",
+      "bytes": 20971520,
+      "sha256": "ac3e5ad7972fef3a676aa25fe75f5a146096dcb20041ca4142ad942154afa67f",
+      "original_source": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/neutral-shear-paired-be647-attempt02/publication-preparation/packet01/neutral_shear_paired_be647_attempt02_archive.part026"
+    },
+    {
+      "path": "docs/data/neutral_shear_paired_be647/neutral_shear_paired_be647_attempt02_archive.part027",
+      "bytes": 20971520,
+      "sha256": "2c2cf6f9c284c19d6332d2923fc7f95cc2177c2c4331b2009ed63c31f154ca8a",
+      "original_source": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/neutral-shear-paired-be647-attempt02/publication-preparation/packet01/neutral_shear_paired_be647_attempt02_archive.part027"
+    },
+    {
+      "path": "docs/data/neutral_shear_paired_be647/neutral_shear_paired_be647_attempt02_archive.part028",
+      "bytes": 20971520,
+      "sha256": "feacb5722ee34b49486f10de81aba8f381630cd0d682291ca50a1d51c76c70aa",
+      "original_source": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/neutral-shear-paired-be647-attempt02/publication-preparation/packet01/neutral_shear_paired_be647_attempt02_archive.part028"
+    },
+    {
+      "path": "docs/data/neutral_shear_paired_be647/neutral_shear_paired_be647_attempt02_archive.part029",
+      "bytes": 20971520,
+      "sha256": "62a865acb4c62ba2de277ffad578546953483b34e2889f32a82e8f8add94f50f",
+      "original_source": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/neutral-shear-paired-be647-attempt02/publication-preparation/packet01/neutral_shear_paired_be647_attempt02_archive.part029"
+    },
+    {
+      "path": "docs/data/neutral_shear_paired_be647/neutral_shear_paired_be647_attempt02_archive.part030",
+      "bytes": 20971520,
+      "sha256": "c7bae49c448c1f62438388a0c83b183420b39f9cdf137557a09bb9481b8082e3",
+      "original_source": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/neutral-shear-paired-be647-attempt02/publication-preparation/packet01/neutral_shear_paired_be647_attempt02_archive.part030"
+    },
+    {
+      "path": "docs/data/neutral_shear_paired_be647/neutral_shear_paired_be647_attempt02_archive.part031",
+      "bytes": 20971520,
+      "sha256": "acfaa9fdbd8507f5d02ad5fbdff1625ff4beb836b116ca27913f5d2ac19d27a7",
+      "original_source": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/neutral-shear-paired-be647-attempt02/publication-preparation/packet01/neutral_shear_paired_be647_attempt02_archive.part031"
+    },
+    {
+      "path": "docs/data/neutral_shear_paired_be647/neutral_shear_paired_be647_attempt02_archive.part032",
+      "bytes": 20971520,
+      "sha256": "50db77cafac3572cc31b32a4c7a2d51a08be24610fd8df9d92a04b6af9c0d7b4",
+      "original_source": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/neutral-shear-paired-be647-attempt02/publication-preparation/packet01/neutral_shear_paired_be647_attempt02_archive.part032"
+    },
+    {
+      "path": "docs/data/neutral_shear_paired_be647/neutral_shear_paired_be647_attempt02_archive.part033",
+      "bytes": 2419731,
+      "sha256": "09ed19fb91419ed1812c7f1b4931822cdf3bba1d37e8d0320bade47f2f6ea93f",
+      "original_source": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/neutral-shear-paired-be647-attempt02/publication-preparation/packet01/neutral_shear_paired_be647_attempt02_archive.part033"
+    },
+    {
+      "path": "docs/data/neutral_shear_paired_be647/neutral_shear_paired_be647_attempt02_manifest.json",
+      "bytes": 344361,
+      "sha256": "476ddf2848d6a6ab341d6b7f40223f287a3ad19f3a1ba4533c9fe96bcca48796",
+      "original_source": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/neutral-shear-paired-be647-attempt02/publication-preparation/packet01/neutral_shear_paired_be647_attempt02_manifest.json"
+    },
+    {
+      "path": "docs/data/neutral_shear_paired_be647/records/independent-neutral-shear-native/00-main/science-verdict01.json",
+      "bytes": 988,
+      "sha256": "147163432215ed57ab88037b1974f09c65dbf859a2f2d43ec3cb436c737da837",
+      "original_source": "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\independent-neutral-shear-native\\00-main\\science-verdict01.json"
+    },
+    {
+      "path": "docs/data/neutral_shear_paired_be647/records/independent-neutral-shear-native/01-main/science-verdict01.json",
+      "bytes": 987,
+      "sha256": "17949d807a332500e848e2040bb38bc906954a78cb32878f4966e8bb58ebe89d",
+      "original_source": "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\independent-neutral-shear-native\\01-main\\science-verdict01.json"
+    },
+    {
+      "path": "docs/data/neutral_shear_paired_be647/records/independent-neutral-shear-native/02-main/science-verdict01.json",
+      "bytes": 991,
+      "sha256": "1c5e1a10d2b2ee18f49e8a170fd1ca6b68448211fa7ee70300e750399fd30cbe",
+      "original_source": "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\independent-neutral-shear-native\\02-main\\science-verdict01.json"
+    },
+    {
+      "path": "docs/data/neutral_shear_paired_be647/records/neutral-shear-paired-be647-attempt02/00-main/science-verdict01.json",
+      "bytes": 981,
+      "sha256": "abec6f2aa16308cd012e1a64686241ae824670fe0bef5cad2a1db3d7d15027bb",
+      "original_source": "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\00-main\\science-verdict01.json"
+    },
+    {
+      "path": "docs/data/neutral_shear_paired_be647/records/neutral-shear-paired-be647-attempt02/01-main/science-verdict01.json",
+      "bytes": 986,
+      "sha256": "bb4d6ffcf6347a42486e798b9960702827c10fcc752edf1c5223adeef7b782d8",
+      "original_source": "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\01-main\\science-verdict01.json"
+    },
+    {
+      "path": "docs/data/neutral_shear_paired_be647/records/neutral-shear-paired-be647-attempt02/02-main/science-verdict01.json",
+      "bytes": 986,
+      "sha256": "e28264427788a7bcfb5515e882cbe2941e36c29b27c3be7573b4b9bdf6deacdb",
+      "original_source": "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\02-main\\science-verdict01.json"
+    },
+    {
+      "path": "docs/data/neutral_shear_paired_be647/records/neutral-shear-paired-be647-attempt02/03-zero-spice/science-verdict01.json",
+      "bytes": 878,
+      "sha256": "114128da2d532a004c8739709c47156b6b2963006293ab64a65be6c82695ec4a",
+      "original_source": "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\03-zero-spice\\science-verdict01.json"
+    },
+    {
+      "path": "docs/data/neutral_shear_paired_be647/records/neutral-shear-paired-be647-attempt02/04-zero-shear-null/science-verdict01.json",
+      "bytes": 830,
+      "sha256": "08d6255d777b1808fd14b85180fb1c61c1807b45bdca2383e65a927d75fa9835",
+      "original_source": "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\04-zero-shear-null\\science-verdict01.json"
+    },
+    {
+      "path": "docs/data/neutral_shear_paired_be647/records/neutral-shear-paired-be647-attempt02/case2-measured-plan01.json",
+      "bytes": 1935,
+      "sha256": "a2f44f1e02b791df01a74413358b6885c7fc83352dbc41bdbeb6573e51194f48",
+      "original_source": "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\case2-measured-plan01.json"
+    },
+    {
+      "path": "docs/data/neutral_shear_paired_be647/records/neutral-shear-paired-be647-attempt02/declared-plan.json",
+      "bytes": 5461,
+      "sha256": "e8fa4dcd323f464777e441f7aa6b14fdf2b8a4e2150dc883065f66254688a165",
+      "original_source": "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\declared-plan.json"
+    },
+    {
+      "path": "docs/data/neutral_shear_paired_be647/records/neutral-shear-paired-be647-attempt02/review/CASE1_TERMINAL_REVIEW01.json",
+      "bytes": 174052,
+      "sha256": "427847be63658c62306b7f0662c95c32da7c2859a3c7833ccb878b8844af494e",
+      "original_source": "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\review\\CASE1_TERMINAL_REVIEW01.json"
+    },
+    {
+      "path": "docs/data/neutral_shear_paired_be647/records/neutral-shear-paired-be647-attempt02/review/CASE2_TERMINAL_REVIEW01.json",
+      "bytes": 171629,
+      "sha256": "39d48111fba8ce36b247e9ae66aab6fa477aeb61a0539eff340b6dad07182756",
+      "original_source": "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\review\\CASE2_TERMINAL_REVIEW01.json"
+    },
+    {
+      "path": "docs/data/neutral_shear_paired_be647/records/neutral-shear-paired-be647-attempt02/review/CONTROLS_SUMMARY_TERMINAL_REVIEW01.json",
+      "bytes": 353545,
+      "sha256": "b1c48c51ca81b8865120b444062918d75b6fc64893fd6a2e08fc3f601006eac5",
+      "original_source": "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\review\\CONTROLS_SUMMARY_TERMINAL_REVIEW01.json"
+    },
+    {
+      "path": "docs/data/neutral_shear_paired_be647/records/neutral-shear-paired-be647-attempt02/review/PILOT_TERMINAL_REVIEW01.json",
+      "bytes": 96551,
+      "sha256": "c0d5951bc49358540c1ac956f7cca66bf9570badaedcb76e2896eb1554a5af86",
+      "original_source": "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\review\\PILOT_TERMINAL_REVIEW01.json"
+    },
+    {
+      "path": "docs/data/neutral_shear_paired_be647/records/neutral-shear-paired-be647-attempt02/review/analytic01-binding.json",
+      "bytes": 6707,
+      "sha256": "bb64108e4ecab249abed7acabc5ae793dae4dfa6022f352e99dc0bee25ad0a07",
+      "original_source": "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\review\\analytic01-binding.json"
+    },
+    {
+      "path": "docs/data/neutral_shear_paired_be647/records/neutral-shear-paired-be647-attempt02/review/stage-verdict01.json",
+      "bytes": 3267,
+      "sha256": "5c575ce220b427c631e75c412b184e91c5c63d1785c844836e49677db6a5b767",
+      "original_source": "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\review\\stage-verdict01.json"
+    },
+    {
+      "path": "docs/data/neutral_shear_paired_be647/records/neutral-shear-paired-be647-attempt02/review/strict-coarse-comparison01.json",
+      "bytes": 1427,
+      "sha256": "6fe28229f57788384eaa1ec2571aeefbb9661c2b586ab42e3529580a5ef693de",
+      "original_source": "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\review\\strict-coarse-comparison01.json"
+    },
+    {
+      "path": "docs/data/neutral_shear_paired_be647/records/neutral-shear-paired-be647-attempt02/review/three-grid-verdict01.json",
+      "bytes": 740,
+      "sha256": "d0154595eb0ed9217bc913e001d2c58fa3a23622910f299d6546e6437649536a",
+      "original_source": "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\review\\three-grid-verdict01.json"
+    },
+    {
+      "path": "docs/data/neutral_shear_paired_be647/restore_original01.py.txt",
+      "bytes": 5256,
+      "sha256": "37c6dac738db527495f389708dc906de5a3d47a71d653fe5b82c87f384e9b4ac",
+      "original_source": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/neutral-shear-paired-be647-attempt02/publication-preparation/packet01/restore_original01.py.txt"
+    },
+    {
+      "path": "docs/data/neutral_shear_paired_be647/selection01.json",
+      "bytes": 337595,
+      "sha256": "57c8517de678ae4921490af23fa76464f0165a574a83127d601b38065181b603",
+      "original_source": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/neutral-shear-paired-be647-attempt02/publication-preparation/packet01/selection01.json"
+    },
+    {
+      "path": "docs/data/neutral_shear_paired_be647/sidecars/INDEPENDENT_RESTORE_DECLARATION01.json",
+      "bytes": 2192,
+      "sha256": "f4baded42e20e2659297599a24456e1973a87f2a00477b0c390bc099db2dc79a",
+      "original_source": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/neutral-shear-paired-be647-attempt02/publication-preparation/INDEPENDENT_RESTORE_DECLARATION01.json"
+    },
+    {
+      "path": "docs/data/neutral_shear_paired_be647/sidecars/INDEPENDENT_RESTORE_REVIEW01.json",
+      "bytes": 2361,
+      "sha256": "c67f91869e3fd5cac2fc047b7aa4da857c6563610b12fc3c11d7a4a62c5e2205",
+      "original_source": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/neutral-shear-paired-be647-attempt02/publication-preparation/INDEPENDENT_RESTORE_REVIEW01.json"
+    },
+    {
+      "path": "docs/data/neutral_shear_paired_be647/sidecars/INDEPENDENT_RESTORE_REVIEW01.md",
+      "bytes": 3081,
+      "sha256": "12fe9a4721f086ad00e2b140514222d3b7a012e7ea67b32c138f1c2f80959f6e",
+      "original_source": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/neutral-shear-paired-be647-attempt02/publication-preparation/INDEPENDENT_RESTORE_REVIEW01.md"
+    },
+    {
+      "path": "docs/data/neutral_shear_paired_be647/sidecars/INDEPENDENT_RESTORE_VERDICT01.json",
+      "bytes": 1562897,
+      "sha256": "10a09a0a64849524de545b42c8646264cbf6e95685c3853b2d3dee90404d1ffb",
+      "original_source": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/neutral-shear-paired-be647-attempt02/publication-preparation/INDEPENDENT_RESTORE_VERDICT01.json"
+    },
+    {
+      "path": "docs/data/neutral_shear_paired_be647/sidecars/README.md",
+      "bytes": 466,
+      "sha256": "1595d1c754175b05d4bd85f50e02cca638590d162e1152fe28b9e5bad3db4494",
+      "original_source": "Root-authored approved report or sidecar README"
+    },
+    {
+      "path": "docs/data/neutral_shear_paired_be647/sidecars/export-gate01.json",
+      "bytes": 5606,
+      "sha256": "90859dababf587da7e67ec4076a356318da7ef2d545efe77d5490d6f4c00e9a3",
+      "original_source": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/neutral-shear-paired-be647-attempt02/publication-preparation/ROOT_EXPORT_GATE01.json"
+    },
+    {
+      "path": "docs/data/neutral_shear_paired_be647/sidecars/export-spec01.md",
+      "bytes": 10846,
+      "sha256": "2e1d1b7d438bbec02de5c32b627faaf25b00869703a0f3c5d22f0bafc7aeead3",
+      "original_source": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/neutral-shear-paired-be647-attempt02/publication-preparation/EXPORT_SPEC01.md"
+    },
+    {
+      "path": "docs/data/neutral_shear_paired_be647/sidecars/failed-report-render01.html",
+      "bytes": 42927,
+      "sha256": "04361d72b0d78964a85b63c55ef5b0a81ce5d83b50d7a6cd9e4ab2c969b082be",
+      "original_source": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/neutral-shear-paired-be647-attempt02/publication-preparation/report-render01.html"
+    },
+    {
+      "path": "docs/data/neutral_shear_paired_be647/sidecars/independent-restore01-launch.json",
+      "bytes": 1016,
+      "sha256": "a41b6809de4bcaea0b0eb9d9cb94a0db4185a2de4b88449f97f20a1319665050",
+      "original_source": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/neutral-shear-paired-be647-attempt02/publication-preparation/independent-restore01-launch.json"
+    },
+    {
+      "path": "docs/data/neutral_shear_paired_be647/sidecars/independent-restore01-resources.json",
+      "bytes": 824,
+      "sha256": "de6598c327c7c0a16842c2539c70c2dcad2ddf8a15916a4c8c95c23d0baf8cc8",
+      "original_source": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/neutral-shear-paired-be647-attempt02/publication-preparation/independent-restore01-resources.json"
+    },
+    {
+      "path": "docs/data/neutral_shear_paired_be647/sidecars/independent-restore01.log",
+      "bytes": 174,
+      "sha256": "d281d45994b502ebd663d42ae14dccbd031706f5778b33c74d0a944a20bd0a7d",
+      "original_source": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/neutral-shear-paired-be647-attempt02/publication-preparation/independent-restore01.log"
+    },
+    {
+      "path": "docs/data/neutral_shear_paired_be647/sidecars/independent_restore01.py",
+      "bytes": 15939,
+      "sha256": "073d97bbb93c084bf5a657d1bb2a5b02ce6d004daabf3a2b57297645fbad5cc7",
+      "original_source": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/neutral-shear-paired-be647-attempt02/publication-preparation/independent_restore01.py"
+    },
+    {
+      "path": "docs/data/neutral_shear_paired_be647/sidecars/independent_restore_supervisor01.py",
+      "bytes": 4338,
+      "sha256": "8fea0d09abb2a7590cd14013c9ec8ec222a795d7b713857861d1747c6724ad14",
+      "original_source": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/neutral-shear-paired-be647-attempt02/publication-preparation/independent_restore_supervisor01.py"
+    },
+    {
+      "path": "docs/data/neutral_shear_paired_be647/sidecars/pack-terminal01.json",
+      "bytes": 805,
+      "sha256": "50fc701e33d97261201d32968de2bf9d0bac8d62daf9ef415e1e4093fb9819a1",
+      "original_source": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/neutral-shear-paired-be647-attempt02/publication-preparation/pack-terminal01.json"
+    },
+    {
+      "path": "docs/data/neutral_shear_paired_be647/sidecars/pack_original01.py.txt",
+      "bytes": 15061,
+      "sha256": "6122c29af2004d62ba95ade12cde3dd43d0d74e9f1016cfb26ef9465da314809",
+      "original_source": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/neutral-shear-paired-be647-attempt02/publication-preparation/pack_original01.py"
+    },
+    {
+      "path": "docs/data/neutral_shear_paired_be647/sidecars/report-frame/FRAME_CHECK_ADAPTER_FAILURE01.json",
+      "bytes": 524,
+      "sha256": "f5ab4b982838eaeda95fcef1a14547a80158cb30a3485503ae84a8943abcb87f",
+      "original_source": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/neutral-shear-paired-be647-attempt02/review/report-frame/FRAME_CHECK_ADAPTER_FAILURE01.json"
+    },
+    {
+      "path": "docs/data/neutral_shear_paired_be647/sidecars/report-frame/FRAME_REVIEW_DRAFT03_01.json",
+      "bytes": 2672,
+      "sha256": "5d079043c6301f16689534492a441d539a1546dd0f386dc0aa6a9add26fa6c88",
+      "original_source": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/neutral-shear-paired-be647-attempt02/review/report-frame/FRAME_REVIEW_DRAFT03_01.json"
+    },
+    {
+      "path": "docs/data/neutral_shear_paired_be647/sidecars/report-frame/FRAME_REVIEW_ZH_FINAL01.json",
+      "bytes": 9630,
+      "sha256": "89a8a144749f40daf69fd35d1aba6ba6a71fb7002ded7b0267d3bdaa01bbdb9d",
+      "original_source": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/neutral-shear-paired-be647-attempt02/review/report-frame/FRAME_REVIEW_ZH_FINAL01.json"
+    },
+    {
+      "path": "docs/data/neutral_shear_paired_be647/sidecars/report-frame/ZH_PRE_RESTORE_NUMBER_LINK_RENDER01.json",
+      "bytes": 60625,
+      "sha256": "8830245c3e7a0913282b6ad9bbf1fa18d3b6f4691d88601dbc1e40c50c1ef757",
+      "original_source": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/neutral-shear-paired-be647-attempt02/review/report-frame/ZH_PRE_RESTORE_NUMBER_LINK_RENDER01.json"
+    },
+    {
+      "path": "docs/data/neutral_shear_paired_be647/sidecars/report-frame/check-draft03-records01.ps1",
+      "bytes": 4015,
+      "sha256": "b7de869831bc7bb44e7f932858b5248e067a53e4975f3d9b2a0db4c748c123f5",
+      "original_source": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/neutral-shear-paired-be647-attempt02/review/report-frame/check-draft03-records01.ps1"
+    },
+    {
+      "path": "docs/data/neutral_shear_paired_be647/sidecars/report-frame/check-zh-final-records01.py",
+      "bytes": 6451,
+      "sha256": "b93e81022b8389bc8f5cd8c3184cafcd17ea5e961226e09ba091f308aaa794c9",
+      "original_source": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/neutral-shear-paired-be647-attempt02/review/report-frame/check-zh-final-records01.py"
+    },
+    {
+      "path": "docs/data/neutral_shear_paired_be647/sidecars/report-frame/check-zh-pre-restore01.py",
+      "bytes": 9624,
+      "sha256": "728dc9bde3a13db613aea8fe9cf01f7088dfb9cea54cbb14f2b664bca6586e99",
+      "original_source": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/neutral-shear-paired-be647-attempt02/review/report-frame/check-zh-pre-restore01.py"
+    },
+    {
+      "path": "docs/data/neutral_shear_paired_be647/sidecars/report-frame/draft03-number-check01.json",
+      "bytes": 14418,
+      "sha256": "06d759f9a7ebd118550c9b5b5a461f436465f06ba1751fa694cbd2bb45f6719c",
+      "original_source": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/neutral-shear-paired-be647-attempt02/review/report-frame/draft03-number-check01.json"
+    },
+    {
+      "path": "docs/data/neutral_shear_paired_be647/sidecars/report-frame/referee_sim_results-draft03_01.md",
+      "bytes": 15080,
+      "sha256": "e5fa0e2393fc4fba824dee80ae1ad6b47466206f3228ce96858844592ce3c4fb",
+      "original_source": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/neutral-shear-paired-be647-attempt02/review/report-frame/referee_sim_results-draft03_01.md"
+    },
+    {
+      "path": "docs/data/neutral_shear_paired_be647/sidecars/report-frame/referee_sim_zh_final01.md",
+      "bytes": 10900,
+      "sha256": "2fce0f8e04eb8fbf4875b88330bb2aca5df1f0b538588a5ac34f8052b039cbf6",
+      "original_source": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/neutral-shear-paired-be647-attempt02/review/report-frame/referee_sim_zh_final01.md"
+    },
+    {
+      "path": "docs/data/neutral_shear_paired_be647/sidecars/report-frame/referee_sim_zh_pre_restore01.md",
+      "bytes": 11856,
+      "sha256": "9f0d82f928f3519105819c17ce06dd0b0936b77b01385978acaea0dd5d1abacb",
+      "original_source": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/neutral-shear-paired-be647-attempt02/review/report-frame/referee_sim_zh_pre_restore01.md"
+    },
+    {
+      "path": "docs/data/neutral_shear_paired_be647/sidecars/report-frame/results-draft03-render01.html",
+      "bytes": 57267,
+      "sha256": "b0f79af75f6ea4833ba5e7da57baa52a8830ef9b22b20c6c8a54e2d4b96a6e17",
+      "original_source": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/neutral-shear-paired-be647-attempt02/review/report-frame/results-draft03-render01.html"
+    },
+    {
+      "path": "docs/data/neutral_shear_paired_be647/sidecars/report-frame/results-draft03-rendered-text01.txt",
+      "bytes": 42103,
+      "sha256": "b91728e785ccfc31913650f4b5c4fc1ca3524748c31ceaccd1d1c34274d3f14b",
+      "original_source": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/neutral-shear-paired-be647-attempt02/review/report-frame/results-draft03-rendered-text01.txt"
+    },
+    {
+      "path": "docs/data/neutral_shear_paired_be647/sidecars/report-frame/zh-candidate-pre-restore01.md",
+      "bytes": 25129,
+      "sha256": "006d7eaace99beea221973851347466f2f9f0de9b5e50d2af1229bb7e2f1b8f4",
+      "original_source": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/neutral-shear-paired-be647-attempt02/review/report-frame/zh-candidate-pre-restore01.md"
+    },
+    {
+      "path": "docs/data/neutral_shear_paired_be647/sidecars/report-frame/zh-candidate-pre-restore02.md",
+      "bytes": 25655,
+      "sha256": "7d0f3ee390ec7fc87d0272c62de4231fc5067524d7326cc3012b0b062089b3a9",
+      "original_source": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/neutral-shear-paired-be647-attempt02/review/report-frame/zh-candidate-pre-restore02.md"
+    },
+    {
+      "path": "docs/data/neutral_shear_paired_be647/sidecars/report-frame/zh-final-rendered-text04.txt",
+      "bytes": 24739,
+      "sha256": "e439c6cc291ef8cfd828ec0b883158ed71e77ebd469a940669d1e0e22763e5c7",
+      "original_source": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/neutral-shear-paired-be647-attempt02/review/report-frame/zh-final-rendered-text04.txt"
+    },
+    {
+      "path": "docs/data/neutral_shear_paired_be647/sidecars/report-frame/zh-pre-restore-render04.html",
+      "bytes": 48522,
+      "sha256": "1a8ca635567fdb59122d214e02f82e393aa351b8dc0619c52db489745e08ba0f",
+      "original_source": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/neutral-shear-paired-be647-attempt02/review/report-frame/zh-pre-restore-render04.html"
+    },
+    {
+      "path": "docs/data/neutral_shear_paired_be647/sidecars/report-frame/zh-pre-restore-rendered-text04.txt",
+      "bytes": 24739,
+      "sha256": "e439c6cc291ef8cfd828ec0b883158ed71e77ebd469a940669d1e0e22763e5c7",
+      "original_source": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/neutral-shear-paired-be647-attempt02/review/report-frame/zh-pre-restore-rendered-text04.txt"
+    },
+    {
+      "path": "docs/data/neutral_shear_paired_be647/sidecars/report-frame/zh-rendered-text03.txt",
+      "bytes": 22298,
+      "sha256": "7c93eb30139864fe6e79ef224ef8ddab6f673c5cdb240455ae113879702f3e59",
+      "original_source": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/neutral-shear-paired-be647-attempt02/review/report-frame/zh-rendered-text03.txt"
+    },
+    {
+      "path": "docs/data/neutral_shear_paired_be647/sidecars/report-render02.html",
+      "bytes": 47671,
+      "sha256": "bfd88653c3250dbdb6b591cf6177daae9c4a1f868bc556d7aec8044b08f35327",
+      "original_source": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/neutral-shear-paired-be647-attempt02/publication-preparation/report-render02.html"
+    },
+    {
+      "path": "docs/data/neutral_shear_paired_be647/sidecars/report-render04.html",
+      "bytes": 48522,
+      "sha256": "1a8ca635567fdb59122d214e02f82e393aa351b8dc0619c52db489745e08ba0f",
+      "original_source": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/neutral-shear-paired-be647-attempt02/publication-preparation/report-render04.html"
+    },
+    {
+      "path": "docs/data/neutral_shear_paired_be647/sidecars/results-draft03.md",
+      "bytes": 41594,
+      "sha256": "ad31d12bcd682764a6f6fd3463cdb1b95c34a31462e76efc89a6c618a53e34e2",
+      "original_source": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/neutral-shear-paired-be647-attempt02/results-draft03.md"
+    },
+    {
+      "path": "docs/data/neutral_shear_paired_be647/sidecars/results-draft04.md",
+      "bytes": 23873,
+      "sha256": "3164dc608020cab383ad7d1cf59f705885d813c2567a8aa004e579cd378de1f6",
+      "original_source": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/neutral-shear-paired-be647-attempt02/results-draft04.md"
+    },
+    {
+      "path": "docs/data/neutral_shear_paired_be647/sidecars/select-terminal01.json",
+      "bytes": 614,
+      "sha256": "430d49f55f184e84df9264aaec6ee75732955fd4c9886011bdffa4703c569f82",
+      "original_source": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/neutral-shear-paired-be647-attempt02/publication-preparation/select-terminal01.json"
+    },
+    {
+      "path": "docs/neutral_shear_paired_be647_results_zh.md",
+      "bytes": 25655,
+      "sha256": "7d0f3ee390ec7fc87d0272c62de4231fc5067524d7326cc3012b0b062089b3a9",
+      "original_source": "Root-authored approved report or sidecar README"
+    }
+  ],
+  "scope": "Report/data raw SHA equals approved original and actual Git index blob bytes; gitattributes normal text normalization excluded."
+}

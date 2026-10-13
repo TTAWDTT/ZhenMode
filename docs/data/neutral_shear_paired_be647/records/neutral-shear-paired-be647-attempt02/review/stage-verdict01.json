@@ -1,0 +1,49 @@
+{
+  "source_revision": "be647d70fc7394f3014dca8bc776e207d4f02ae3",
+  "selection_sha256": "6af6737ad8eca03cd588dbd5551a0635525449cdd58eea1cf7a1d555764a842a",
+  "manifest_sha256": "c217495711be5216ea139219bc42088dd3f05285d851955f691625dd9a375848",
+  "declared_plan_sha256": "e8fa4dcd323f464777e441f7aa6b14fdf2b8a4e2150dc883065f66254688a165",
+  "definitions_sha256": "f09f42e9970d48dfd33649f2f7dd58bd9871c707ab92d6ddb3e170b6b891a703",
+  "producer_bundle_sha256": "67ecb7e0b1a77cc8ea0480b4c11c8b9a311dc2f403fd678a4ddab0aaa6866188",
+  "observer_bundle_sha256": "e6a53b6c126e9b5cea0011376e86a14b722a04bce286fb36fde3951f5d879dda",
+  "status": "PASS_BOUND_OBSERVER_RESULT",
+  "mode": "summary",
+  "case_index": 0,
+  "tag": "summary01-attempt01",
+  "gate_sha256": "ae19a8ee1adcdc4298ea4013fade0975a68f25a33f216b970b86cb5973031f86",
+  "start_sha256": "ee370167aeafd74323de21b7e2d91213f5e979756f5781388663f805a585b573",
+  "input_sha256": {
+    "00-main/science-binding01.json": "91cb0a102a780e2f42c154663cacd3e52d93c3b6d4c983794bc62d833a278c47",
+    "00-main/science-verdict01.json": "abec6f2aa16308cd012e1a64686241ae824670fe0bef5cad2a1db3d7d15027bb",
+    "01-main/science-binding01.json": "969e7f11cab5b737725053bdf4052fe8e5269b390a28f61e337842b38a70b879",
+    "01-main/science-verdict01.json": "bb4d6ffcf6347a42486e798b9960702827c10fcc752edf1c5223adeef7b782d8",
+    "02-main/science-binding01.json": "a80454cef67d3ae91be1fbb02cee66e6e1b454c882595c9d7e615b1b0c219145",
+    "02-main/science-verdict01.json": "e28264427788a7bcfb5515e882cbe2941e36c29b27c3be7573b4b9bdf6deacdb",
+    "03-zero-spice/science-binding01.json": "8672a8954cc788006ec530572f5d297d682683635e256ffa35232c7a9cf426a1",
+    "03-zero-spice/science-verdict01.json": "114128da2d532a004c8739709c47156b6b2963006293ab64a65be6c82695ec4a",
+    "04-zero-shear-null/science-binding01.json": "1fc8b133d5735cec319995ac297cb44e4841f1d2fa537ee16097527dabe6795d",
+    "04-zero-shear-null/science-verdict01.json": "08d6255d777b1808fd14b85180fb1c61c1807b45bdca2383e65a927d75fa9835",
+    "review/strict-coarse-comparison01.json": "6fe28229f57788384eaa1ec2571aeefbb9661c2b586ab42e3529580a5ef693de"
+  },
+  "verdict_path": "review/three-grid-verdict01.json",
+  "scope": "contacted DEVELOPMENT profiles; static H / eta-cap limitation; no complete fourth-order, holdout, accelerating nonlinear-momentum, or full-column claim",
+  "child_returncode": 0,
+  "resource_receipt_sha256": "c62f6f606af6206788c211451329adf87e7441519486be1b2e0d60073c045df4",
+  "qualified_case_indices": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "stage_status": "PASS_FIXED_CONTACTED_DEVELOPMENT_CASES",
+  "verdict_sha256": "d0154595eb0ed9217bc913e001d2c58fa3a23622910f299d6546e6437649536a",
+  "original_input_bytes_unchanged": true,
+  "output_sha256": {
+    "review/summary01-attempt01-launch.json": "3c07ae5bb32b16665d298361533ceebde92c71323278f20b392ac619bbc44cb4",
+    "review/summary01-attempt01-resources.json": "c62f6f606af6206788c211451329adf87e7441519486be1b2e0d60073c045df4",
+    "review/summary01-attempt01.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "review/three-grid-verdict01.json": "d0154595eb0ed9217bc913e001d2c58fa3a23622910f299d6546e6437649536a"
+  },
+  "finished_utc": "2026-10-13T11:39:26.671712+00:00"
+}

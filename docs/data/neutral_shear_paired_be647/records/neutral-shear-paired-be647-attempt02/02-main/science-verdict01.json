@@ -1,0 +1,24 @@
+{
+  "status": "PASS",
+  "case_index": 2,
+  "case": "main",
+  "metrics": {
+    "T_RMS": 1.8639626226425045e-07,
+    "S_RMS": 4.851795175610486e-08,
+    "u_RMS": 2.959939457146428e-09,
+    "v_RMS": 3.04283398177509e-09,
+    "eta_RMS": 6.730816123352594e-10,
+    "rho_RMS": 5.8147541560952455e-09,
+    "u_normalized_RMS": 1.6642184831745652e-07,
+    "v_normalized_RMS": 1.7108257202610921e-07,
+    "eta_normalized_RMS": 2.804506718063581e-07,
+    "rho_normalized_RMS": 1.8909769613317872e-07,
+    "T_normalized_L1": 2.241470620123557e-06,
+    "S_normalized_L1": 2.1978454536730308e-06
+  },
+  "raw_sha256": "e88a61d90c0c1173e58e79c7080f0e101402f1821c5eb41d2fae5915b81b8eeb",
+  "metadata_sha256": "1a99c1868cb6c7c8a5923601509a3ac9b4f29ae62c2c0d5126e379a9046c619b",
+  "scope": "point tracer and steady balance supplement; fixed-H diagnostic inventories; no fullwatercolumn or ranking qualification",
+  "python": "/root/.venvs/zhenmode-managed-bench-20261005/bin/python",
+  "numpy": "2.5.3"
+}

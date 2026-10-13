@@ -1,0 +1,65 @@
+{
+  "status": "DRAFT03_REVIEW_COMPLETE_FOUR_MEDIUM_FINDINGS_FINAL_CHINESE_REVIEW_REQUIRED",
+  "reviewer": "Lady / neutral_paired_report_frame",
+  "fresh_context": true,
+  "report_sha256": "ad31d12bcd682764a6f6fd3463cdb1b95c34a31462e76efc89a6c618a53e34e2",
+  "findings": [
+    {
+      "kind": "headline physical and contacted-development scope prominence",
+      "id": "F1",
+      "severity": "MEDIUM"
+    },
+    {
+      "kind": "headline units and RMS/L1 exact definitions",
+      "id": "F2",
+      "severity": "MEDIUM"
+    },
+    {
+      "kind": "historical baseline identity near comparison table",
+      "id": "F3",
+      "severity": "MEDIUM"
+    },
+    {
+      "kind": "producer-relative independence and own-wrapper limit prominence",
+      "id": "F4",
+      "severity": "MEDIUM"
+    }
+  ],
+  "literal_comparison_metric_checks": 48,
+  "literal_comparison_metric_mismatches": 0,
+  "audience_groups": 6,
+  "two_axis_objection_rows": 12,
+  "author_report_modified": false,
+  "npz_decoded": 0,
+  "physics_metrics_computed": 0,
+  "model_calls": 0,
+  "oracle_calls": 0,
+  "observer_calls": 0,
+  "source_ci_repeated": false,
+  "controls_3_4_assessed": false,
+  "final_stage_summary_assessed": false,
+  "all_five_pass_claimed": false,
+  "final_chinese_cold_review_pending": true,
+  "assets": [
+    {
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/neutral-shear-paired-be647-attempt02/review/report-frame/referee_sim_results-draft03_01.md",
+      "sha256": "e5fa0e2393fc4fba824dee80ae1ad6b47466206f3228ce96858844592ce3c4fb"
+    },
+    {
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/neutral-shear-paired-be647-attempt02/review/report-frame/results-draft03-render01.html",
+      "sha256": "b0f79af75f6ea4833ba5e7da57baa52a8830ef9b22b20c6c8a54e2d4b96a6e17"
+    },
+    {
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/neutral-shear-paired-be647-attempt02/review/report-frame/results-draft03-rendered-text01.txt",
+      "sha256": "b91728e785ccfc31913650f4b5c4fc1ca3524748c31ceaccd1d1c34274d3f14b"
+    },
+    {
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/neutral-shear-paired-be647-attempt02/review/report-frame/draft03-number-check01.json",
+      "sha256": "06d759f9a7ebd118550c9b5b5a461f436465f06ba1751fa694cbd2bb45f6719c"
+    },
+    {
+      "path": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/neutral-shear-paired-be647-attempt02/review/report-frame/check-draft03-records01.ps1",
+      "sha256": "b7de869831bc7bb44e7f932858b5248e067a53e4975f3d9b2a0db4c748c123f5"
+    }
+  ]
+}
