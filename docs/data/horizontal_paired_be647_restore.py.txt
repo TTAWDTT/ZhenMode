@@ -1,0 +1,25 @@
+import argparse,hashlib,io,json,zipfile
+from pathlib import Path
+p=argparse.ArgumentParser(description='Restore original bytes only; no model or scoring calls')
+p.add_argument('--output',type=Path,required=True);p.add_argument('--manifest',type=Path,default=Path(__file__).with_name('horizontal_paired_be647_manifest.json'));a=p.parse_args()
+if a.output.exists():raise FileExistsError('output must not exist')
+m=json.loads(a.manifest.read_text(encoding='utf8'));data=bytearray()
+for part in m['parts']:
+    b=(a.manifest.parent/part['name']).read_bytes()
+    if len(b)!=part['bytes'] or hashlib.sha256(b).hexdigest()!=part['sha256']:raise ValueError('part SHA '+part['name'])
+    data.extend(b)
+if len(data)!=m['archive_bytes'] or hashlib.sha256(data).hexdigest()!=m['archive_sha256']:raise ValueError('whole archive SHA')
+items={x['member']:x for x in m['files']}
+if len(items)!=len(m['files']):raise ValueError('duplicate manifest member')
+with zipfile.ZipFile(io.BytesIO(data)) as z:
+    if len(z.namelist())!=len(items) or set(z.namelist())!=set(items):raise ValueError('exact archive inventory')
+    for name,item in items.items():
+        rel=Path(name)
+        if rel.is_absolute() or '..' in rel.parts or rel.drive:raise ValueError('unsafe member')
+        b=z.read(name)
+        if len(b)!=item['bytes'] or hashlib.sha256(b).hexdigest()!=item['sha256']:raise ValueError('original member SHA '+name)
+    a.output.mkdir(parents=True)
+    for name,item in items.items():
+        target=a.output/Path(name);target.parent.mkdir(parents=True,exist_ok=True);target.write_bytes(z.read(name))
+receipt=dict(status='RESTORED_ALL_SELECTED_ORIGINAL_BYTES',files=len(items),parts=len(m['parts']),archive_sha256=m['archive_sha256'],model_calls=0)
+(a.output/'RESTORE_RECEIPT.json').write_text(json.dumps(receipt,indent=2)+'\n',encoding='utf8');print(json.dumps(receipt))

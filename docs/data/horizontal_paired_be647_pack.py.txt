@@ -1,0 +1,34 @@
+import argparse,hashlib,json,os,time,zipfile
+from pathlib import Path
+p=argparse.ArgumentParser();p.add_argument('--selection',required=True);p.add_argument('--out',required=True);a=p.parse_args()
+def host(s):
+    if s.startswith('D:/'): return Path('/mnt/d')/s[3:]
+    return Path(s)
+def sha(b): return hashlib.sha256(b).hexdigest()
+os.sched_setaffinity(0,{min(os.sched_getaffinity(0))}); start=time.monotonic()
+sel=host(a.selection); selection=json.loads(sel.read_text());out=host(a.out)
+if out.exists(): raise FileExistsError('packet output must be fresh')
+out.mkdir(parents=True)
+items=selection['files'];names=[x['member'] for x in items]
+if len(names)!=len(set(names)): raise ValueError('duplicate members')
+for name in names:
+    if name.startswith('/') or '..' in Path(name).parts: raise ValueError('unsafe member')
+zpath=out/'horizontal_paired_be647_archive.zip'
+with zipfile.ZipFile(zpath,'x',compression=zipfile.ZIP_STORED,allowZip64=True) as z:
+    for item in items:
+        b=host(item['path']).read_bytes()
+        if len(b)!=item['bytes'] or sha(b)!=item['sha256']: raise ValueError('selection changed '+item['path'])
+        info=zipfile.ZipInfo(item['member'],date_time=(2026,10,13,0,0,0));info.compress_type=zipfile.ZIP_STORED
+        z.writestr(info,b)
+parts=[];whole=hashlib.sha256();total=0
+with zpath.open('rb') as f:
+    i=0
+    while True:
+        b=f.read(20*1024*1024)
+        if not b:break
+        i+=1;name=f'horizontal_paired_be647_archive.part{i:03d}';(out/name).write_bytes(b)
+        whole.update(b);total+=len(b);parts.append(dict(name=name,bytes=len(b),sha256=sha(b)))
+manifest=dict(schema='paired-be647-original-byte-packet-v1',source_revision=selection['source_revision'],selection_sha256=sha(sel.read_bytes()),files=items,excluded_roots=selection['excluded_roots'],scope=selection['scope'],parts=parts,archive_bytes=total,archive_sha256=whole.hexdigest(),compression='ZIP_STORED',original_files_count=len(items),original_bytes=sum(x['bytes'] for x in items))
+(out/'horizontal_paired_be647_manifest.json').write_text(json.dumps(manifest,ensure_ascii=False,indent=2)+'\n',encoding='utf8')
+(out/'pack-terminal01.json').write_text(json.dumps(dict(status='PACKED_ORIGINAL_BYTES_ONLY',wall_s=time.monotonic()-start,source_calls=0,files=len(items),parts=len(parts),archive_sha256=whole.hexdigest()),indent=2)+'\n')
+print(json.dumps(dict(files=len(items),parts=len(parts),archive_bytes=total,archive_sha256=whole.hexdigest(),wall_s=time.monotonic()-start)))

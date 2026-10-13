@@ -1,0 +1,187 @@
+"""One authorized original-byte restore; stdlib only, no numerical file decoding."""
+import hashlib
+import json
+import os
+from pathlib import Path, PurePosixPath
+import resource
+import signal
+import subprocess
+import sys
+import time
+
+ROOT = Path(__file__).resolve().parent
+PACKET = ROOT / "packet01"
+OUTPUT = ROOT / "independent-restored01"
+EXPECTED = {
+    "selection01.json": "d615dd1aeaf0e7a08aeaae446ed9e71c481602a3c6faeb913ffa82646f9c7d9f",
+    "pack_original01.py": "db0aa5aa22ae99983d3a114cb4e36e7b58146b0c1121c37bdfa5276cdfc29b3e",
+    "packet01/horizontal_paired_be647_manifest.json": "79e6389f46d0c76efce928087d7f00a9a8c4b7ffd19ed0fef649b1633a76bf34",
+    "packet01/horizontal_paired_be647_restore.py.txt": "8638a8f90c4e49ad1ced8c7f18ac323c7cdf39a2a469c86a300023e47c3a519c",
+}
+WHOLE = "f0dfa89e9c79d7e164ad9c6e04312cd6256545275f3d766db45352b257f05170"
+
+
+def require(test, message):
+    if not test:
+        raise ValueError(message)
+
+
+def sha(path):
+    result = hashlib.sha256()
+    with Path(path).open("rb") as stream:
+        for chunk in iter(lambda: stream.read(1024*1024), b""):
+            result.update(chunk)
+    return result.hexdigest()
+
+
+def read(path):
+    return json.loads(Path(path).read_text(encoding="utf-8-sig"))
+
+
+def write_new(path, value):
+    with Path(path).open("x", encoding="utf-8") as stream:
+        json.dump(value, stream, indent=2, allow_nan=False)
+        stream.write("\n")
+
+
+def host(value):
+    require(value.startswith("D:/Github/ocean-solver/outputs/"), "unexpected source root")
+    return Path("/mnt/d") / value[3:]
+
+
+def member_path(name):
+    require(isinstance(name, str) and "\\" not in name and ":" not in name, "unsafe member syntax")
+    path = PurePosixPath(name)
+    require(not path.is_absolute() and all(p not in ("", ".", "..") for p in name.split("/")), "unsafe member path")
+    require(path.parts[0] in {"horizontal-paired-product-v1", "next-order-diagnostic", "reused-inputs"}, "unexpected member root")
+    target = OUTPUT / name
+    require(target.resolve().is_relative_to(OUTPUT.resolve()), "restore path escapes fresh output")
+    return target
+
+
+def rss(pid):
+    try:
+        return next(int(line.split()[1])*1024 for line in Path(f"/proc/{pid}/status").read_text().splitlines()
+                    if line.startswith("VmRSS:"))
+    except (OSError, StopIteration):
+        return 0
+
+
+def main():
+    def timed_out(signum, frame):
+        raise TimeoutError("external wall guard")
+    signal.signal(signal.SIGTERM, timed_out)
+    os.sched_setaffinity(0, {min(os.sched_getaffinity(0))})
+    resource.setrlimit(resource.RLIMIT_AS, (4*1024**3, 4*1024**3))
+    start = time.monotonic()
+    result = dict(status="FAIL_PRESERVED_NO_PACKET_CLAIM", restore_invocations=0,
+                  numerical_decoding=False, model_calls=0, scientific_recalculation=False)
+    rows, peak, exit_code = [], rss(os.getpid()), 1
+    try:
+        require(not OUTPUT.exists(), "restore destination already exists; no automatic retry")
+        for relative, expected in EXPECTED.items():
+            require(sha(ROOT / relative) == expected, "bound input changed: " + relative)
+        selection = read(ROOT / "selection01.json")
+        manifest = read(PACKET / "horizontal_paired_be647_manifest.json")
+        require(selection["files"] == manifest["files"] and manifest["selection_sha256"] == EXPECTED["selection01.json"], "selection/manifest differ")
+        items = manifest["files"]
+        require(len(items) == selection["files_count"] == manifest["original_files_count"] == 831, "exact selected count")
+        names = {item["member"] for item in items}
+        require(len(names) == len(items) and len({name.casefold() for name in names}) == len(items), "duplicate/case collision")
+        require(manifest["archive_sha256"] == WHOLE and manifest["compression"] == "ZIP_STORED", "archive declaration")
+        require(len(manifest["parts"]) == 6, "six fixed parts")
+        for part in manifest["parts"]:
+            require(Path(part["name"]).name == part["name"], "unsafe part name")
+        for item in items:
+            member_path(item["member"])
+            source = host(item["path"])
+            require(source.is_file() and source.stat().st_size == item["bytes"] and sha(source) == item["sha256"],
+                    "original source byte mismatch: " + item["member"])
+        installed_names = {name for name in names if name.startswith("horizontal-paired-product-v1/installed/zhenmode/") and name.endswith(".py")}
+        ready = read(ROOT.parent / "SOURCE_READY-qualified02.json")
+        expected_installed = {"horizontal-paired-product-v1/installed/" + key + ".py" for key in ready["package_source_sha256"]}
+        require(installed_names == expected_installed and len(installed_names) == 133, "complete installed Python set")
+        required = {"horizontal-paired-product-v1/review/source-git.tar", "horizontal-paired-product-v1/build-input.json",
+                    "horizontal-paired-product-v1/wheel/zhenmode-0.1.0-py3-none-any.whl",
+                    "horizontal-paired-product-v1/ci-run-logs.zip", "horizontal-paired-product-v1/ci-terminal-metadata.json"}
+        plan = read(ROOT.parent / "execution-plan-record01.json")
+        for row in plan["rows"]:
+            prefix = f"horizontal-paired-product-v1/native/{row['index']:02d}-{row['name']}/zhenmode/"
+            required.update(prefix + name for name in ("initial.npz", "native.npz", "output.npz", "native-run.json", "score.json", "resources.json"))
+        for snapshot in ("initial00", "initial01", "initial02", "terminal00", "terminal01", "terminal02"):
+            required.update(f"next-order-diagnostic/runs/{snapshot}/capture/{name}.npz" for name in ("T-owner", "S-owner", "shared"))
+        require(required <= names, "required installed/source/wheel/native/CI/snapshot file omitted")
+        # Every named failure record currently in the two selected roots must be represented.
+        original_roots = {"horizontal-paired-product-v1": ROOT.parent,
+                          "next-order-diagnostic": ROOT.parents[1] / "independent-neutral-shear-native/next-order-diagnostic"}
+        failure_files = []
+        for prefix, root in original_roots.items():
+            require(root.is_dir(), "selected original root missing")
+            for path in root.rglob("*"):
+                if not path.is_file() or any(part in {"__pycache__", "publication-preparation", "next-evidence-concept"} for part in path.parts):
+                    continue
+                if "failure" in path.name.lower():
+                    name = prefix + "/" + path.relative_to(root).as_posix()
+                    require(name in names, "named original failure record omitted: " + name)
+                    failure_files.append(name)
+        require("horizontal-paired-product-v1/review/source-audit-attempt01/source-identity-result.json" in names,
+                "failed original source audit omitted")
+        write_new(ROOT / "independent-restore-preflight01.json", dict(status="STATIC_AND_ORIGINAL_BYTES_CHECKED",
+                  input_sha256=EXPECTED, target=str(OUTPUT), selected_files=831, installed_python_files=133,
+                  required_members=sorted(required), named_failure_records=sorted(failure_files),
+                  safe_fixed_manifest_paths=True, source_hashes_checked=True, restore_invocations=0))
+        with (ROOT / "independent-restore01.log").open("x", encoding="utf-8") as log:
+            command = [sys.executable, str(PACKET / "horizontal_paired_be647_restore.py.txt"), "--output", str(OUTPUT),
+                       "--manifest", str(PACKET / "horizontal_paired_be647_manifest.json")]
+            child = subprocess.Popen(command, stdout=log, stderr=subprocess.STDOUT, start_new_session=True)
+            result["restore_invocations"] = 1
+            reason = None
+            try:
+                while child.poll() is None:
+                    peak = max(peak, rss(os.getpid()) + rss(child.pid))
+                    if time.monotonic()-start > 180 or peak > 4*1024**3:
+                        reason = "wall_or_aggregate_rss_limit"
+                        os.killpg(child.pid, signal.SIGKILL)
+                        break
+                    time.sleep(0.1)
+            finally:
+                if child.poll() is None:
+                    os.killpg(child.pid, signal.SIGKILL)
+                child.wait()
+            result.update(restore_exit_code=child.returncode, stop_reason=reason)
+            require(child.returncode == 0 and reason is None, "restore did not finish successfully")
+        actual = {path.relative_to(OUTPUT).as_posix() for path in OUTPUT.rglob("*") if path.is_file()}
+        require(actual == names | {"RESTORE_RECEIPT.json"}, "restored exact inventory differs")
+        for item in items:
+            target = member_path(item["member"])
+            actual_sha = sha(target)
+            require(target.stat().st_size == item["bytes"] and actual_sha == item["sha256"], "restored byte mismatch: " + item["member"])
+            require(sha(host(item["path"])) == item["sha256"], "original source changed during restore")
+            rows.append(dict(member=item["member"], bytes=item["bytes"], expected_sha256=item["sha256"],
+                             restored_sha256=actual_sha, original_before_and_after_match=True))
+        write_new(ROOT / "independent-original-restored-file-sha01.json", rows)
+        for relative, expected in EXPECTED.items():
+            require(sha(ROOT / relative) == expected, "packet metadata/script changed during restore")
+        result.update(status="PASS_SELECTED_ORIGINAL_BYTE_RESTORE", files=831, installed_python_files=133,
+                      native_rows=10, native_npz_files=30, nextorder_snapshot_groups=6,
+                      input_sha256=EXPECTED, archive_sha256=WHOLE,
+                      file_sha_receipt_sha256=sha(ROOT / "independent-original-restored-file-sha01.json"),
+                      restore_receipt_sha256=sha(OUTPUT / "RESTORE_RECEIPT.json"),
+                      preflight_sha256=sha(ROOT / "independent-restore-preflight01.json"),
+                      scope="Selected snapshot only. Final report/frame metadata after snapshot are outside; caches, packaging, subsequent concept excluded.")
+        exit_code = 0
+    except BaseException as error:
+        result["error"] = type(error).__name__ + ": " + str(error)
+    finally:
+        result.update(explicit_exit_code=exit_code, wall_seconds=time.monotonic()-start,
+                      sampled_parent_child_peak_rss_bytes=peak, cpu_affinity=sorted(os.sched_getaffinity(0)),
+                      limits=dict(cpu=1, wall_seconds=180, aggregate_sampled_rss_bytes=4*1024**3),
+                      memory_scope="Parent+single restore child RSS sampled0.1s; each also RLIMIT_AS4GiB. No grandchildren in reviewed restore script.",
+                      auditor_sha256=sha(__file__))
+        write_new(ROOT / "independent-restore-result01.json", result)
+        print(json.dumps(result, allow_nan=False), flush=True)
+    return exit_code
+
+
+if __name__ == "__main__":
+    sys.exit(main())
