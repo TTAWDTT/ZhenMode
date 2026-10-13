@@ -105,7 +105,7 @@ def validate(c, a, definition_validator):
         "wrong schema/contract hash",
     )
     require(m["model"] in c["native_sampling"], "unsupported model")
-    if c.get("schema") == "frozen-internal-wave-v1":
+    if c.get("schema") in ("frozen-internal-wave-v1", "vertical-tracer-development-v1"):
         from zhenmode.benchmarks.internal_wave import MODEL_NAMES
 
         require(m["model"] == MODEL_NAMES[c["frozen_model"]], "output model differs from frozen selection")

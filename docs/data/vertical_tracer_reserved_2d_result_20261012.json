@@ -1,0 +1,54 @@
+{
+  "scope": "reserved spatial scalar/continuity numerical verification only; no native ocean integration or full coupled TVD certification",
+  "declaration_sha256": "9267713e84d5eb255b722208a4c33e1fd06ec389fe4dff3fd19c49da754ad48c",
+  "code_commit": "2e08feb8a78b63c827decb862ff135089bf1d65a",
+  "jax_backend": "cpu",
+  "checks": [
+    {
+      "grid": [
+        8,
+        16,
+        17
+      ],
+      "normalized_weighted_L1": 0.007152863660102781,
+      "constant_rhs_max_abs": 1.1858461261560205e-20,
+      "inventory_balance_residual": -8.287572013304992e-14,
+      "inventory_limit": 4.494276785341659e-12,
+      "surface_Fz_max_abs": 1.5670109524204556e-20,
+      "reversed_Fz_constant_defect": 1.8757865012733802e-05
+    },
+    {
+      "grid": [
+        8,
+        32,
+        33
+      ],
+      "normalized_weighted_L1": 0.001885814476120235,
+      "constant_rhs_max_abs": 2.202285662861181e-20,
+      "inventory_balance_residual": 2.852949479645859e-14,
+      "inventory_limit": 1.184892180842523e-12,
+      "surface_Fz_max_abs": 1.2705494208814505e-20,
+      "reversed_Fz_constant_defect": 1.8826792574457798e-05
+    },
+    {
+      "grid": [
+        8,
+        64,
+        65
+      ],
+      "normalized_weighted_L1": 0.0004761870635215043,
+      "constant_rhs_max_abs": 6.225692162319107e-20,
+      "inventory_balance_residual": 3.315386481924634e-16,
+      "inventory_limit": 1e-12,
+      "surface_Fz_max_abs": 2.293606402487035e-20,
+      "reversed_Fz_constant_defect": 1.8843875141816134e-05
+    }
+  ],
+  "refinement_ratios": [
+    3.7929837482309856,
+    3.9602387813189153
+  ],
+  "verdict": "PASS",
+  "parameters_adjusted_after_result": false,
+  "shared_assumptions": "prescribed continuum transport equation and native sampling; production Fz participates in operator assembly, so this is not all-layer-disjoint certification"
+}

@@ -54,10 +54,14 @@ def make_solver_global(grid, physics, dt, forcing=None,
                        pressure_continuity_scheme='centered_second',
                        tracer_transport_scheme='centered_second',
                        hydrostatic_surface_scheme='reference_plane',
-                       density_rotation_scheme='split_sources'):
+                       density_rotation_scheme='split_sources',
+                       vertical_tracer_scheme='donor_cell'):
     """Create a JIT-compiled global FD ocean solver.
 
     Key properties:
+      - vertical_tracer_scheme='muscl_nodal_v1' is an opt-in limited
+        physical-node face reconstruction for nodal_dual_v1 columns;
+        the default donor_cell path is retained for exact legacy replay.
       - Pure finite-difference operators; no wavenumber / decay factors. Forcing is
         physical-space 2D (tau_x, tau_y, Q_heat); no pre-FFT.
       - Free surface is forward-backward (Sielecki) + polar-cap filter, so dt must
@@ -154,6 +158,14 @@ def make_solver_global(grid, physics, dt, forcing=None,
         if active_drag != 0:
             raise ValueError('symmetric external candidate requires separate bottom-drag qualification')
     validate_grid(grid)
+    if vertical_tracer_scheme not in ('donor_cell', 'muscl_nodal_v1'):
+        raise ValueError('unknown vertical_tracer_scheme')
+    if vertical_tracer_scheme == 'muscl_nodal_v1' and column_geometry != 'nodal_dual_v1':
+        raise ValueError('muscl_nodal_v1 requires nodal_dual_v1 physical midpoint faces')
+    if vertical_tracer_scheme == 'muscl_nodal_v1':
+        spacing = np.abs(np.diff(np.asarray(grid.z)))
+        if not np.allclose(spacing, spacing[0], rtol=1e-12, atol=0.):
+            raise ValueError('muscl_nodal_v1 currently requires uniformly spaced vertical nodes; nonuniform CFL qualification is unresolved')
     if density_rotation_scheme not in ('split_sources', 'joint_shear'):
         raise ValueError('unknown density_rotation_scheme')
     if density_rotation_scheme == 'joint_shear':
@@ -564,6 +576,7 @@ def make_solver_global(grid, physics, dt, forcing=None,
         tracer_transport_scheme=tracer_transport_scheme,
         hydrostatic_surface_scheme=hydrostatic_surface_scheme,
         density_rotation_scheme=density_rotation_scheme,
+        vertical_tracer_scheme=vertical_tracer_scheme,
     )
 
     if projection_preconditioner == 'jacobi':

@@ -14,7 +14,11 @@ from zhenmode.model.solver.numerics.horizontal import (
     _face_thickness,
     _gradient_face_gated_3d,
 )
-from zhenmode.model.solver.numerics.vertical import _d_dz, _fill_ghost_bottom
+from zhenmode.model.solver.numerics.vertical import (
+    _d_dz,
+    _fill_ghost_bottom,
+    _vertical_tracer_face_values,
+)
 
 
 def _column_divergence(u, v, p):
@@ -303,6 +307,10 @@ def _advection_scalar(T, u, v, Fz_in, p, return_boundary=False, face_transport=N
     # _fill_ghost_bottom(T) for the seafloor no-flux BC. (D16)
     T_deep = _fill_ghost_bottom(T, p)[..., 1:]        # node k (below iface k)
     T_shallow = T[..., :-1]                           # node k-1 (above iface k)
+    # Optional limited donor reconstruction removes the first-order face bias
+    # of a resolved vertical gradient, retaining the actual mass transports.
+    if getattr(p, 'vertical_tracer_scheme', 'donor_cell') == 'muscl_nodal_v1':
+        T_shallow, T_deep = _vertical_tracer_face_values(T, p)
     wet_iface = wm[..., :-1] * wm[..., 1:]
     # Internal interfaces are Fz_in[..., 1:-1] (indices 1..nz-1, count nz-1):
     # index 0 is the surface (rigid-lid leak, handled below) and index nz is

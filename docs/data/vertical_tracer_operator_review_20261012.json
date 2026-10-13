@@ -1,0 +1,130 @@
+{
+  "scope": "CPU-only face and single manufactured transport-step check, not native ocean integration",
+  "declaration_sha256": "8b7c524b4ebcd2c62024d7509277a24f248bc40c6311f7d2118f0afbb586fe28",
+  "source_sha256": "e9301461150dab392a11784059783e4cef46ec13892e83ddc57907c5b97e7972",
+  "jax_backend": "cpu",
+  "exact_continuum_inventories": [
+    37.49999999999976,
+    37.49999999999976,
+    37.499999999999766
+  ],
+  "cases": [
+    {
+      "nodes": 33,
+      "dt_s": 62.56109481915933,
+      "global_capacity_CFL": 0.1,
+      "face_bounds": true,
+      "results": {
+        "donor": {
+          "weighted_L1_spatial_error": 5.72898808476042e-06,
+          "euler_minimum": 0.0,
+          "heun_minimum": 0.0,
+          "euler_endpoint": 0.0,
+          "heun_endpoint": 0.0,
+          "inventory_tendency": -4.845789464458147e-20,
+          "positive_step_qualified": true
+        },
+        "candidate": {
+          "weighted_L1_spatial_error": 1.1736674997883095e-06,
+          "euler_minimum": 0.0,
+          "heun_minimum": 0.0,
+          "euler_endpoint": 0.0,
+          "heun_endpoint": 0.0,
+          "inventory_tendency": 7.910907224273391e-20,
+          "positive_step_qualified": true
+        }
+      }
+    },
+    {
+      "nodes": 65,
+      "dt_s": 31.257631257631257,
+      "global_capacity_CFL": 0.1,
+      "face_bounds": true,
+      "results": {
+        "donor": {
+          "weighted_L1_spatial_error": 2.8660227222372224e-06,
+          "euler_minimum": 0.0,
+          "heun_minimum": 0.0,
+          "euler_endpoint": 0.0,
+          "heun_endpoint": 0.0,
+          "inventory_tendency": -3.693775025355545e-21,
+          "positive_step_qualified": true
+        },
+        "candidate": {
+          "weighted_L1_spatial_error": 3.1616195661788104e-07,
+          "euler_minimum": 0.0,
+          "heun_minimum": 0.0,
+          "euler_endpoint": 0.0,
+          "heun_endpoint": 0.0,
+          "inventory_tendency": 5.2310281552394055e-20,
+          "positive_step_qualified": true
+        }
+      }
+    },
+    {
+      "nodes": 129,
+      "dt_s": 15.625953732527618,
+      "global_capacity_CFL": 0.1,
+      "face_bounds": true,
+      "results": {
+        "donor": {
+          "weighted_L1_spatial_error": 1.4342319515559915e-06,
+          "euler_minimum": 0.0,
+          "heun_minimum": 0.0,
+          "euler_endpoint": 0.0,
+          "heun_endpoint": 0.0,
+          "inventory_tendency": 0.0,
+          "positive_step_qualified": true
+        },
+        "candidate": {
+          "weighted_L1_spatial_error": 8.13173505135229e-08,
+          "euler_minimum": 0.0,
+          "heun_minimum": 0.0,
+          "euler_endpoint": 0.0,
+          "heun_endpoint": 0.0,
+          "inventory_tendency": -4.336808689942018e-19,
+          "positive_step_qualified": true
+        }
+      }
+    }
+  ],
+  "nonuniform_counterexample": {
+    "donor": {
+      "euler": [
+        0.0,
+        0.0,
+        0.504950495049505,
+        101.5
+      ],
+      "heun": [
+        0.0,
+        0.0,
+        0.62748750122537,
+        101.37623762376238
+      ],
+      "euler_minimum": 0.0,
+      "heun_minimum": 0.0
+    },
+    "candidate": {
+      "euler": [
+        0.0,
+        0.0,
+        -24.24752475247525,
+        126.5
+      ],
+      "heun": [
+        0.0,
+        0.0,
+        -5.6218998137437515,
+        107.68811881188118
+      ],
+      "euler_minimum": -24.24752475247525,
+      "heun_minimum": -5.6218998137437515
+    }
+  },
+  "uniform_positive_step_qualified": true,
+  "affine_internal_node_midpoints_checked": true,
+  "endpoint_candidates_are_donor": true,
+  "dry_sentinel_independence_checked": true,
+  "limitations": "numerical density transport with prescribed velocity; no complete coupled-model TVD/positivity certification"
+}

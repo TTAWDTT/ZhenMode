@@ -8,6 +8,8 @@ from zhenmode.benchmarks.standing_wave import contract as wave_contract
 from zhenmode.benchmarks.standing_wave import digest
 from zhenmode.provenance.sources import load_json
 
+DEVELOPMENT_SCHEMA = "vertical-tracer-development-v1"
+
 SCHEMA = "frozen-internal-wave-v1"
 SELECTION_SHA256 = "479ed6b1140dd3f33cb0057ecad0a275b83b34dad54ba3314c2dc97b4ad543dc"
 # Arb sign-certified decimal bracket, rounded to binary64; q tan(q)=1/2500 on (pi,3pi/2).
@@ -62,11 +64,37 @@ def contract(model, profile="primary", control="main"):
 
 
 def validate_contract(c):
-    if not isinstance(c, dict) or c.get("schema") != SCHEMA:
+    if not isinstance(c, dict) or c.get("schema") not in (SCHEMA, DEVELOPMENT_SCHEMA):
         raise ValueError("unknown internal-wave protocol")
-    expected = contract(c.get("frozen_model"), c.get("case"), c.get("control"))
+    if c.get("schema") == DEVELOPMENT_SCHEMA:
+        if not isinstance(c.get("development"), dict):
+            raise ValueError("development declaration must be an object")
+        expected = development_contract(c.get("case"), c.get("control"), c["development"].get("vertical_tracer_scheme"), c["development"].get("problem"))
+    else:
+        expected = contract(c.get("frozen_model"), c.get("case"), c.get("control"))
     if digest(c) != digest(expected):
         raise ValueError("internal-wave contract differs from frozen definition")
+
+
+def development_contract(profile="primary", control="main", scheme="muscl_nodal_v1", problem="internal-wave"):
+    """New development experiment, never a replacement for the frozen holdout."""
+    if scheme not in ("donor_cell", "muscl_nodal_v1"):
+        raise ValueError("unknown vertical development scheme")
+    if problem == "internal-wave":
+        c = contract("zhenmode", profile, control)
+    elif problem == "thermal-wind" and profile == "coarse" and control == "main":
+        from zhenmode.benchmarks.configuration_scan import combination_contract
+
+        c = combination_contract(9)
+    else:
+        raise ValueError("unknown vertical-development physical row")
+    original = digest(c)
+    if problem == "thermal-wind":
+        c.update(frozen_model="zhenmode", control="main")
+    c.update(schema=DEVELOPMENT_SCHEMA,
+             development=dict(base_contract_sha256=original, vertical_tracer_scheme=scheme, problem=problem))
+    c["ocean_options"]["vertical_tracer_scheme"] = scheme
+    return c
 
 
 def matrix():

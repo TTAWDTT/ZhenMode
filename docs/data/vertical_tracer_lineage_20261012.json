@@ -1,0 +1,10 @@
+{
+  "reason": "the analytic zero-endpoint/logistic counterexample influenced the endpoint reconstruction revision",
+  "original_route_status": "independent-author development/regression control, not untouched post-fix validation",
+  "initial_probe_status": "stopped on old whole-column affine assertion after the imported production function had already changed endpoints to donor",
+  "first_probe_source_snapshot": "reviewed-face-function.py",
+  "amended_affine_specification": "only candidates reconstructed from internal nodes are affine-exact; physical endpoint candidates return endpoint donor values",
+  "unchanged_qualification_criteria": "positivity, face bounds, telescoping, exact characteristic inventory and refinement criteria are unchanged",
+  "chronology_clarification": "the route declaration preceded this route's numerical result review; it did not precede all concurrent development native results",
+  "new_reserved_route": "2D closed-cell steady streamfunction dye, declared separately after code freeze 2e08feb and not used for this endpoint change"
+}
