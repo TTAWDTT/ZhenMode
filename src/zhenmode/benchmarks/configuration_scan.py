@@ -4,10 +4,14 @@ These are development comparisons. Physical inputs, references and screen
 thresholds stay fixed; changing a setting creates a distinct contract identity.
 """
 
+from itertools import product
+
 from zhenmode.benchmarks.channel_dynamics import contract as channel_contract
 from zhenmode.benchmarks.standing_wave import digest, method_contract
 
 SCHEMA = "native-configuration-scan-v1"
+COMBINATION_SCHEMA = "native-configuration-combinations-v1"
+SCAN_SCHEMAS = (SCHEMA, COMBINATION_SCHEMA)
 PROBLEMS = ("standing-wave", "geostrophic-adjustment", "thermal-wind")
 COMMON = ("base", "dt-half", "dt-quarter", "grid-half")
 MODEL_SETTINGS = {
@@ -77,6 +81,8 @@ def contract(problem, model, setting):
 
 
 def validate_contract(c):
+    if isinstance(c, dict) and c.get("schema") == COMBINATION_SCHEMA:
+        return validate_combination(c)
     if not isinstance(c, dict) or c.get("schema") != SCHEMA or not isinstance(c.get("scan"), dict):
         raise ValueError("unknown numerical scan protocol")
     s = c["scan"]
@@ -97,3 +103,61 @@ def rows():
 def followup_rows():
     """Separate adaptive combination; never relabel an original matrix row."""
     return [dict(problem="thermal-wind", model="mom6", setting="mom-grid-double-fast4")]
+
+
+def combination_rows():
+    """Full products of declared axes on the original 32x32x16 thermal case.
+
+    The bounds are a development search, not a claim to cover every native option.
+    Existing compatible schemes only; pressure geometry and physics stay fixed.
+    """
+    result = []
+    for dt, rotation, tracer in product(
+        (50.0, 25.0, 12.5), ("joint_shear", "split_sources"),
+        ("product_fourth", "centered_second"),
+    ):
+        result.append(dict(model="zhenmode", dt_s=dt, rotation=rotation, tracer=tracer))
+    for dt, external_divisor, rk2b, bebt, tracer in product(
+        (50.0, 25.0, 12.5), (1, 4), (False, True), (0.1, 0.06),
+        ("PLM", "PPM:H3", "PPM"),
+    ):
+        result.append(dict(model="mom6", dt_s=dt, external_divisor=external_divisor,
+                           rk2b=rk2b, bebt=bebt, tracer=tracer))
+    for dt, substeps, tracer in product(
+        (50.0, 25.0, 12.5), (8, 16, 32), ("Centered2", "Centered4", "WENO5"),
+    ):
+        result.append(dict(model="oceananigans", dt_s=dt, substeps=substeps, tracer=tracer))
+    return [dict(index=i, **r) for i, r in enumerate(result)]
+
+
+def combination_contract(index):
+    declared = combination_rows()
+    if type(index) is not int or not 0 <= index < len(declared):
+        raise ValueError("unknown declared combination index")
+    row = declared[index]
+    c = channel_contract("thermal-wind", "coarse", "balanced-density-rotation")
+    c.update(schema=COMBINATION_SCHEMA, dt=row["dt_s"],
+             scan=dict(problem="thermal-wind", **row))
+    for name in ("DT", "DTBT", "DT_THERM", "DT_FORCING"):
+        c["mom_time_options"][name] = c["dt"]
+    if row["model"] == "zhenmode":
+        c["ocean_options"].update(density_rotation_scheme=row["rotation"],
+                                   tracer_transport_scheme=row["tracer"])
+    elif row["model"] == "mom6":
+        c["mom_time_options"].update(
+            DTBT=c["dt"] / row["external_divisor"], SPLIT_RK2B=row["rk2b"],
+            BEBT=row["bebt"], TRACER_ADVECTION_SCHEME=row["tracer"],
+        )
+    else:
+        c["oceananigans_options"].update(requested_substeps=row["substeps"],
+                                        tracer_advection=row["tracer"])
+    return c
+
+
+def validate_combination(c):
+    try:
+        expected = combination_contract(c["scan"]["index"])
+    except (KeyError, TypeError) as error:
+        raise ValueError("incomplete combination declaration") from error
+    if digest(c) != digest(expected):
+        raise ValueError("combination differs from declared configuration")

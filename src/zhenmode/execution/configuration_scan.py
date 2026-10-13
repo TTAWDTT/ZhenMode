@@ -6,6 +6,8 @@ from pathlib import Path
 
 from zhenmode.benchmarks.configuration_scan import (
     PROBLEMS,
+    combination_contract,
+    combination_rows,
     contract,
     followup_rows,
     rows,
@@ -17,6 +19,16 @@ from zhenmode.execution.runs import write_json
 
 def run(problem, model, setting, output, **options):
     c = contract(problem, model, setting)
+    return _run_contract(c, model, output, **options)
+
+
+def run_combination(index, output, **options):
+    c = combination_contract(index)
+    return _run_contract(c, c["scan"]["model"], output, **options)
+
+
+def _run_contract(c, model, output, **options):
+    problem = c["scan"]["problem"]
     if problem == "standing-wave":
         from zhenmode.evaluation.standing_wave import score
         from zhenmode.execution.standing_wave import write_report
@@ -44,18 +56,31 @@ def main(argv=None):
     p.add_argument("--problem", choices=PROBLEMS)
     p.add_argument("--model", choices=MODELS)
     p.add_argument("--setting")
+    p.add_argument("--combinations", action="store_true", help="plan the full thermal-wind products")
+    p.add_argument("--combination-index", type=int, help="execute one row of the thermal products")
     for name in ("mom-executable", "mom-source", "oceananigans-cache", "source-revision"):
         p.add_argument("--" + name)
     p.add_argument("--julia", default="julia")
     a = p.parse_args(argv)
     if a.plan:
-        write_json(a.plan, dict(schema="native-scan-plan-v1", rows=rows(), followups=followup_rows(), execution="not_started"), create=True)
+        if a.combination_index is not None:
+            p.error("--combination-index requires --output")
+        write_json(a.plan, dict(schema="native-scan-plan-v1",
+                               rows=combination_rows() if a.combinations else rows(),
+                               followups=[] if a.combinations else followup_rows(),
+                               execution="not_started"), create=True)
         return 0
-    if not all((a.problem, a.model, a.setting)):
+    if a.combinations:
+        p.error("--combinations requires --plan; select --combination-index for execution")
+    if a.combination_index is not None and any((a.problem, a.model, a.setting)):
+        p.error("--combination-index cannot be mixed with a legacy setting")
+    if a.combination_index is None and not all((a.problem, a.model, a.setting)):
         p.error("--output requires --problem, --model and --setting")
-    receipt = run(a.problem, a.model, a.setting, a.output,
-                  mom_executable=a.mom_executable, mom_source=a.mom_source,
-                  oceananigans_cache=a.oceananigans_cache, julia=a.julia,
-                  source_revision=a.source_revision)
+    options = dict(mom_executable=a.mom_executable, mom_source=a.mom_source,
+                   oceananigans_cache=a.oceananigans_cache, julia=a.julia,
+                   source_revision=a.source_revision)
+    receipt = (run_combination(a.combination_index, a.output, **options)
+               if a.combination_index is not None
+               else run(a.problem, a.model, a.setting, a.output, **options))
     print(json.dumps(dict(status=receipt["status"], models=receipt["models"]), indent=2))
     return 0
