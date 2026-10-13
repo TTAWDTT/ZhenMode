@@ -1,0 +1,66 @@
+{
+  "schema": "three-selected-numerics-v1",
+  "selection_scope": "user-accepted minimax rule on the completed thermal matrix",
+  "report_commit": "09ba0b59728fc7445eb58b8c8c6b3ca69384a672",
+  "functional_commit": "4ac979802565e110e206bcdb6c92496bc83d60df",
+  "models": {
+    "zhenmode": {
+      "selected_index": 9,
+      "dt_s": 12.5,
+      "options": {
+        "column_geometry": "nodal_dual_v1",
+        "conservative_kv": true,
+        "density_rotation_scheme": "joint_shear",
+        "external_mode_scheme": "symmetric",
+        "fct_adv": false,
+        "hydrostatic_surface_scheme": "linear_density",
+        "localize_conv": true,
+        "meridional_boundary_scheme": "closed_faces",
+        "mode_split": false,
+        "monotone_adv": false,
+        "polar_cap_rows": 0,
+        "polar_cap_taper": 0,
+        "pressure_continuity_scheme": "centered_fourth",
+        "process_time_scheme": "legacy",
+        "project_adv_vel": false,
+        "tracer_transport_scheme": "centered_second"
+      },
+      "old_contract_sha256": "a50f15bcee92206bdc0d99063ab372bd3a757424f6edbeec103ac79fcd5398e5"
+    },
+    "mom6": {
+      "selected_index": 67,
+      "dt_s": 12.5,
+      "options": {
+        "BEBT": 0.1,
+        "DT": 12.5,
+        "DTBT": 12.5,
+        "DT_FORCING": 12.5,
+        "DT_THERM": 12.5,
+        "SPLIT": true,
+        "SPLIT_RK2B": true,
+        "TRACER_ADVECTION_SCHEME": "PPM:H3"
+      },
+      "old_contract_sha256": "48c4cb79545cb5b55ab2769e1b6f562782ee1df2242c08844ae9067a8b5ce16f"
+    },
+    "oceananigans": {
+      "selected_index": 86,
+      "dt_s": 50,
+      "options": {
+        "closure": "nothing",
+        "coriolis": "FPlane",
+        "free_surface": "SplitExplicitFreeSurface",
+        "haline_contraction": 0.00076,
+        "momentum_advection": "VectorInvariant",
+        "requested_substeps": 8,
+        "source_commit": "1e8587b17171b0bba5bc6728118c3dbbd3c8acf6",
+        "thermal_expansion": 0.00019999999999999998,
+        "thermodynamic_variables": "T/S anomalies about 15 C/35 psu; physical constant-scalar witnesses",
+        "timestepper": "SplitRungeKutta3",
+        "tracer_advection": "WENO5",
+        "version": "0.113.5",
+        "vertical_coordinate": "ZStarCoordinate"
+      },
+      "old_contract_sha256": "2d80da14ad7ba98e310b3661340f3f21426141b9abe24e638298947667493053"
+    }
+  }
+}

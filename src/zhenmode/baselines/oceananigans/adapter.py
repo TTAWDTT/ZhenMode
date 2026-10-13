@@ -301,7 +301,7 @@ def convert(c, directory, resources):
             "substepping": native.substepping,
             "thermodynamic_variables": "native linear-EOS anomalies plus two advected physical witnesses",
         }
-        if c.get("schema") in ("native-configuration-scan-v1", "native-configuration-combinations-v1"):
+        if c.get("schema") in ("native-configuration-scan-v1", "native-configuration-combinations-v1", "frozen-internal-wave-v1"):
             native_details.update(
                 actual_substeps=int(native.actual_substeps),
                 actual_fractional_substep=float(native.actual_fractional_substep),

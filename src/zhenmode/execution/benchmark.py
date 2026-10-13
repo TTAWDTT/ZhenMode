@@ -105,6 +105,9 @@ def plan(profile, method, dt_seconds):
 
 def main(argv=None):
     arguments = list(sys.argv[1:] if argv is None else argv)
+    if arguments and arguments[0] == "internal-wave":
+        from zhenmode.execution.internal_wave import main as internal_wave
+        return internal_wave(arguments[1:])
     if arguments and arguments[0] == "configuration-scan":
         from zhenmode.execution.configuration_scan import main as scan
         return scan(arguments[1:])
@@ -122,6 +125,7 @@ def main(argv=None):
         return forced(arguments[1:])
     parser = argparse.ArgumentParser(prog="zhenmode benchmark")
     commands = parser.add_subparsers(dest="command", required=True)
+    commands.add_parser("internal-wave", help="run one frozen selected configuration on the internal-wave holdout")
     commands.add_parser("standing-wave", help="run native full models on one frozen Cartesian wave")
     commands.add_parser("channel", help="run rotating adjustment or stratified thermal-wind benchmarks")
     commands.add_parser("configuration-scan", help="run one declared numerical setting on an existing problem")
