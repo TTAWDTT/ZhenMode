@@ -1,0 +1,87 @@
+"""One-shot independent packaging verification after actual approved restore.
+
+Hash/ZIP/registry checks only. No NumPy, model, oracle, scoring or native calls.
+The directory reconstruction has already run once via the supplied restore.
+"""
+from pathlib import Path
+import datetime,hashlib,json,zipfile
+
+HERE=Path(__file__).resolve().parent
+STAGE=HERE.parent.parent
+SOURCE=STAGE.parent/'material-point-gradient-v1'
+DOCS=Path('D:/CodexWorktrees/thermal-full-scan/ocean-solver/docs')
+RESTORED=HERE/'final-restored'
+MANIFEST=DOCS/'data/neutral_shear_70_manifest.json'
+
+def sha(path):
+    h=hashlib.sha256()
+    with Path(path).open('rb') as f:
+        for block in iter(lambda:f.read(1024**2),b''):h.update(block)
+    return h.hexdigest()
+def original_path(value):
+    if value.startswith('/mnt/d/'):return Path('D:/'+value[len('/mnt/d/'):])
+    raise ValueError('Unexpected source host path '+value)
+def read(p):return json.loads(Path(p).read_text(encoding='utf-8-sig'))
+
+m=read(MANIFEST);errors=[];parts=[];whole=hashlib.sha256();total=0
+for i,part in enumerate(m['parts']):
+    path=DOCS/'data'/part['file'];size=path.stat().st_size;digest=sha(path)
+    ok=part['file']==f'neutral_shear_70_archive.part{i:03d}' and size==part['bytes'] and size<=20*1024**2 and digest==part['sha256']
+    parts.append(dict(**part,actual_bytes=size,actual_sha256=digest,pass_match=ok))
+    if not ok:errors.append('part '+part['file'])
+    with path.open('rb') as f:
+        for block in iter(lambda:f.read(1024**2),b''):whole.update(block);total+=len(block)
+if total!=m['archive_bytes'] or whole.hexdigest()!=m['archive_sha256']:errors.append('whole concatenated archive hash/size')
+archive=STAGE/'packaging/selected-originals.zip'
+if archive.stat().st_size!=total or sha(archive)!=whole.hexdigest():errors.append('original archive differs from part reconstruction')
+entries=[];expected={row['member']:row for row in m['original_files']}
+with zipfile.ZipFile(archive) as z:
+    if len(expected)!=426 or len(z.namelist())!=426 or set(z.namelist())!=set(expected):errors.append('archive exact member set')
+    for name,row in expected.items():
+        info=z.getinfo(name);raw=z.read(name);restored=RESTORED/name;original=original_path(row['original'])
+        actual_sha=hashlib.sha256(raw).hexdigest();restored_sha=sha(restored);original_sha=sha(original)
+        ok=(info.compress_type==zipfile.ZIP_STORED and len(raw)==row['bytes']==restored.stat().st_size==original.stat().st_size
+            and actual_sha==restored_sha==original_sha==row['sha256'])
+        entries.append(dict(member=name,bytes=len(raw),sha256=actual_sha,restored_sha256=restored_sha,original_sha256=original_sha,ZIP_STORED=info.compress_type==zipfile.ZIP_STORED,pass_match=ok))
+        if not ok:errors.append('member original/archive/restored '+name)
+actual_restored={p.relative_to(RESTORED).as_posix() for p in RESTORED.rglob('*') if p.is_file()}
+if actual_restored!=set(expected):errors.append('restored exact file set')
+omitted=[];snapshot_count=0;derived_count=0
+for row in m['excluded_duplicate_files']:
+    original=original_path(row['original']);same=original.stat().st_size==row['bytes'] and sha(original)==row['sha256'];name=row['member']
+    if '/outputs/' in name and name.endswith('.npz'):kind='original_snapshot_container';snapshot_count+=1
+    elif '/audit-input-' in name and name.endswith('.npz'):kind='derived_audit_container';derived_count+=1
+    else:kind='UNEXPECTED';errors.append('unexpected omission '+name)
+    if name in expected or (RESTORED/name).exists():errors.append('omission also included '+name)
+    if not same:errors.append('omission source hash '+name)
+    omitted.append(dict(member=name,sha256=row['sha256'],reason=row['reason'],kind=kind,original_match=same))
+if snapshot_count!=205 or derived_count!=10 or len(omitted)!=215:errors.append('omission exact counts')
+payload=read(RESTORED/'independent-neutral-shear-native/review/report-frame/PAYLOAD_EQUIVALENCE_RESULT.json')
+if payload['audited_case_count']!=5 or payload['audited_snapshot_count']!=205 or sha(RESTORED/'independent-neutral-shear-native/review/report-frame/PAYLOAD_EQUIVALENCE_RESULT.json')!=m['payload_equivalence_sha256']:errors.append('payload receipt binding')
+wheelid=read(RESTORED/'material-point-gradient-v1/wheel-identity.json');build=read(RESTORED/'material-point-gradient-v1/build-input.json')
+if wheelid['revision']!=m['source'] or build['revision']!=m['source']:errors.append('restored package source revision')
+installed=RESTORED/'material-point-gradient-v1/installed';package={p.relative_to(installed).as_posix():sha(p) for p in (installed/'zhenmode').rglob('*.py')}
+registry={key[:-3]:value for key,value in package.items()}
+if len(package)!=133 or registry!=wheelid['package_source_sha256']:errors.append('complete133 restored Python registry')
+wheel=RESTORED/'material-point-gradient-v1/wheel'/wheelid['wheel']
+if sha(wheel)!=wheelid['wheel_sha256']:errors.append('restored original wheel archive')
+with zipfile.ZipFile(wheel) as z:wheel_sources={name:hashlib.sha256(z.read(name)).hexdigest() for name in z.namelist() if name.startswith('zhenmode/') and name.endswith('.py')}
+if wheel_sources!=package:errors.append('restored wheel/installed exact133 source bytes')
+build_sources={'src/'+key:value for key,value in package.items()}
+if not all(build['files'].get(key)==value for key,value in build_sources.items()):errors.append('restored133 build registry')
+if sha(DOCS/'data/neutral_shear_70_restore.py.txt')!=sha(STAGE/'packaging/restore_packet.py'):errors.append('published restore script original bytes')
+excluded_present=[]
+for name in expected:
+    parts_name=Path(name).parts
+    if '__pycache__' in parts_name or 'next-order-diagnostic' in parts_name or name.startswith('independent-neutral-shear-native/review/report-frame/final-'):
+        excluded_present.append(name)
+if excluded_present:errors.append('other-exclusion category included')
+result=dict(utc=datetime.datetime.now(datetime.timezone.utc).isoformat(),verdict='PASS_ARCHIVE_RESTORE_ORIGINAL_BYTES_AND_133_SOURCE' if not errors else 'FAIL_RETAINED',
+            manifest_sha256=sha(MANIFEST),archive_bytes=total,archive_sha256=whole.hexdigest(),parts=parts,original_member_count=len(entries),restored_file_count=len(actual_restored),all_original_archive_restore_bytes_match=all(row['pass_match'] for row in entries),
+            omitted_snapshot_containers=snapshot_count,omitted_derived_containers=derived_count,omissions=omitted,other_exclusion_categories=m['other_exclusions'],other_exclusion_violations=excluded_present,
+            restored_python_files=len(package),restored_source_revision=m['source'],restored_wheel_sha256=sha(wheel),source133_registry=registry,source_provenance_limit='Restored source/wheel/build bytes; not new runtime/old loaded-path capture or new scientific qualification',
+            original_draft_sha256=sha(RESTORED/'independent-neutral-shear-native/results-draft.md'),current_public_report_sha256=sha(DOCS/'neutral_shear_70_results_zh.md'),
+            draft_difference='Archived results-draft is earlier publication wording snapshot by explicit root/report disclosure; it is not the final report identity',entries=entries,errors=errors,new_native_science_CI_runs=0)
+with (HERE/'final-ARCHIVE_VERIFICATION.json').open('x',encoding='utf-8') as f:json.dump(result,f,ensure_ascii=False,indent=2);f.write('\n')
+print(json.dumps({k:v for k,v in result.items() if k not in ('entries','omissions','source133_registry')},ensure_ascii=False,indent=2))
+if errors:raise SystemExit(1)

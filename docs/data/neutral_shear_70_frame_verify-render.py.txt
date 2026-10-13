@@ -1,0 +1,54 @@
+"""Final document/render/link/attribute checks only; no numerical science."""
+from pathlib import Path
+from hashlib import sha256
+from html.parser import HTMLParser
+import json,re,subprocess
+
+DOCS=Path('D:/CodexWorktrees/thermal-full-scan/ocean-solver/docs')
+HERE=Path(__file__).resolve().parent
+REPORT=DOCS/'neutral_shear_70_results_zh.md'
+md=REPORT.read_text(encoding='utf-8-sig')
+class Render(HTMLParser):
+    def __init__(self):super().__init__();self.in_p=False;self.pbuf=[];self.ps=[];self.links=[];self.tables=0;self.math=0;self.mathbuf=[];self.in_math=False;self.mathtexts=[];self.text=[]
+    def handle_starttag(self,t,a):
+        attrs=dict(a)
+        if t=='p':self.in_p=True;self.pbuf=[]
+        if t=='a':self.links.append(attrs.get('href'))
+        if t=='table':self.tables+=1
+        if t=='span' and attrs.get('class')=='math display':self.math+=1;self.in_math=True;self.mathbuf=[]
+    def handle_endtag(self,t):
+        if t=='p':self.ps.append(''.join(self.pbuf));self.in_p=False
+        if t=='span' and self.in_math:self.mathtexts.append(''.join(self.mathbuf));self.in_math=False
+    def handle_data(self,d):
+        self.text.append(d)
+        if self.in_p:self.pbuf.append(d)
+        if self.in_math:self.mathbuf.append(d)
+h=Render();h.feed((HERE/'final-report-VERIFIED.html').read_text(encoding='utf-8-sig'))
+plain=(HERE/'final-report-VERIFIED.txt').read_text(encoding='utf-8-sig')
+norm=lambda value:re.sub(r'\s+','',value)
+clean=lambda value:re.sub(r'\[([^\]]+)\]\([^)]+\)',r'\1',value).replace('`','').replace('**','')
+blocks=[b for b in re.split(r'\n\s*\n',md) if b.strip() and not b.lstrip().startswith(('#','|','```','$$'))]
+matches=[any(norm(clean(b))==norm(p) for p in h.ps) for b in blocks]
+links=re.findall(r'\[([^\]]+)\]\(([^)]+)\)',md)
+checks=[];errors=[]
+for label,url in links:
+    exists=None if url.startswith('https://') else (DOCS/url).is_file()
+    checks.append(dict(label=label,target=url,local_exists=exists))
+    if exists is False:errors.append('missing local link '+url)
+if h.links!=[url for label,url in links]:errors.append('rendered link order/target mismatch')
+if not all(matches):errors.append('missing or altered ordinary paragraphs')
+formula=re.search(r'\$\$\s*([\s\S]*?)\s*\$\$',md).group(1)
+html_formula= h.mathtexts[0].replace('\\[','').replace('\\]','') if h.math==1 else ''
+if h.math!=1 or norm(formula)!=norm(html_formula):errors.append('math block source differs or absent')
+if norm(formula) not in norm(plain):errors.append('plain formula drops math symbols')
+if h.tables!=2:errors.append('expected two tables')
+paths=list((DOCS/'data').glob('neutral_shear_70_*'))+[REPORT]
+attrs=subprocess.run(['git','-C',str(DOCS.parent),'check-attr','text','--']+[str(p.relative_to(DOCS.parent)).replace('\\','/') for p in paths],capture_output=True,text=True,check=True).stdout.splitlines()
+if len(attrs)!=len(paths) or any(not line.endswith('text: unset') for line in attrs):errors.append('original bytes not protected -text')
+result=dict(report_sha256=sha256(REPORT.read_bytes()).hexdigest(),ordinary_source_paragraphs=len(blocks),ordinary_paragraphs_all_rendered=all(matches),html_p_count=len(h.ps),tables=h.tables,math_blocks=h.math,math_source_exact=True if norm(formula)==norm(html_formula) else False,plain_math_source_exact=norm(formula) in norm(plain),
+            links=checks,render_link_count=len(h.links),text_unset_count=len(attrs),public_data_files_before_extra_frame=len(paths)-1,
+            swallow_candidates=re.findall(r'.{0,20}\.\s+[a-z]{3,}.{0,20}','\n'.join(h.ps)),errors=errors,scientific_or_native_CI_recomputations=0,
+            derivation_note='Pandoc2.12 final HTML recognizes literal$$ Math; plain Lua filter retains verbatim TeX source, avoiding lossy plain-writer symbol conversion. Original failed views retained.')
+with (HERE/'final-RENDER_VERIFICATION.json').open('x',encoding='utf-8') as f:json.dump(result,f,ensure_ascii=False,indent=2);f.write('\n')
+print(json.dumps(result,ensure_ascii=False,indent=2))
+if errors:raise SystemExit(1)

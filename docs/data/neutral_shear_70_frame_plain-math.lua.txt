@@ -1,0 +1,5 @@
+-- Pandoc's plain math conversion can drop unsupported TeX symbols.
+-- Preserve the exact math source in this derived plain-text reading copy.
+function Math(element)
+  return pandoc.Str(element.text)
+end
