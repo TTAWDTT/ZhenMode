@@ -148,6 +148,12 @@ def make_solver_global(grid, physics, dt, forcing=None,
         Requires centered_fourth pressure/continuity and un-limited advection;
         vertical donor transport and time integration retain their order.
         Signed fluxes have no general monotonicity or stability guarantee.
+      - tracer_transport_scheme='paired_product_fourth' additionally pairs the
+        material-point column moment with the same scalar/mass constituents,
+        retaining exact actual-zero-mass barriers. It requires the float64
+        uniform material-point channel with fourth_uniform_v1 gradient.
+        Vertical compatibility residuals and shared-blend limits remain;
+        this is not a fourth-order complete-model or positivity guarantee.
       - hydrostatic_surface_scheme='linear_density' integrates the top linear
         density anomaly from z=0 to eta in the restricted fourth-order channel.
         Continuity and reference capacities remain linear/static; this is not
@@ -219,7 +225,7 @@ def make_solver_global(grid, physics, dt, forcing=None,
         if (tracer_flux_arithmetic != 'integrated_reference_v1'
                 or column_mean_scheme != 'nodal_capacity'
                 or pressure_continuity_scheme != 'centered_fourth'
-                or tracer_transport_scheme != 'centered_second'
+                or tracer_transport_scheme not in ('centered_second', 'paired_product_fourth')
                 or monotone_adv or fct_adv or project_adv_vel):
             raise ValueError('material_point_v4 requires integrated arithmetic and the un-limited closed fourth-order nodal-capacity channel')
     if material_point_gradient_scheme not in ('minmod_v1', 'fourth_uniform_v1'):
@@ -264,8 +270,21 @@ def make_solver_global(grid, physics, dt, forcing=None,
         if (pressure_continuity_scheme != 'centered_fourth'
                 or physics.thermodynamics != 'linear' or np.asarray(grid.z)[0] != 0):
             raise ValueError('linear_density surface pressure requires the fourth-order linear-EOS channel with top z=0')
-    if tracer_transport_scheme not in ('centered_second', 'product_fourth'):
+    if tracer_transport_scheme not in ('centered_second', 'product_fourth', 'paired_product_fourth'):
         raise ValueError('unknown tracer_transport_scheme')
+    if tracer_transport_scheme == 'paired_product_fourth':
+        gaps = np.abs(np.diff(np.asarray(grid.z)))
+        if (vertical_tracer_scheme != 'material_point_v4'
+                or material_point_gradient_scheme != 'fourth_uniform_v1'
+                or column_geometry != 'nodal_dual_v1' or dtype != 'float64'
+                or process_time_scheme != 'legacy' or mode_split or grid.nz < 6
+                or momentum_vertical_velocity_scheme != 'dual_face_v1'
+                or momentum_tangent_filter_scheme != 'binomial_v1'
+                or np.asarray(grid.z)[0] != 0.
+                or not np.allclose(gaps, gaps[0], rtol=1e-12, atol=0.)
+                or not np.allclose(np.asarray(grid.depth), -np.asarray(grid.z)[-1],
+                                   rtol=1e-12, atol=0.)):
+            raise ValueError('paired_product_fourth requires the float64 uniform nodal material-point channel with fourth_uniform_v1 gradient and default momentum owners')
     if tracer_transport_scheme == 'product_fourth':
         if pressure_continuity_scheme != 'centered_fourth' or monotone_adv or fct_adv:
             raise ValueError('product_fourth requires the paired fourth-order channel without tracer limiters')

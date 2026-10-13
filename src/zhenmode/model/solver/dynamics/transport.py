@@ -1,7 +1,11 @@
 """Wet-face transport, continuity and tracer advection."""
 
 from zhenmode.model.solver.numerics.backend import jnp
-from zhenmode.model.solver.numerics.channel import channel_face_velocities, channel_tracer_fluxes
+from zhenmode.model.solver.numerics.channel import (
+    channel_face_velocities,
+    channel_paired_product_fluxes,
+    channel_tracer_fluxes,
+)
 from zhenmode.model.solver.numerics.column import (
     column_mean,
     cubic_point_integral,
@@ -210,6 +214,8 @@ def _limited_tracer_slope(tracer, wet, axis):
 
 def _horizontal_tracer_fluxes(T, u, v, p, face_transport):
     """Dispatch scalar transport while preserving the historical flux path."""
+    if getattr(p, 'tracer_transport_scheme', 'centered_second') == 'paired_product_fourth':
+        raise ValueError('paired_product_fourth requires integrated faces and paired column moments')
     if getattr(p, 'tracer_transport_scheme', 'centered_second') == 'product_fourth':
         return channel_tracer_fluxes(T, u, v, p, face_transport)
     return _legacy_horizontal_tracer_fluxes(T, u, v, p, face_transport)
@@ -285,13 +291,35 @@ def _legacy_horizontal_tracer_fluxes(T,u,v,p,face_transport):
 
 
 def _material_point_scalar_rate(T, Fz, mass_faces, shifted_faces, p, minimum=None,
-                                return_diagnostics=False):
+                                return_diagnostics=False, *, column_moments=None):
     """Joint conservative product-moment and point-velocity correction.
 
     The affine, horizontally constant column product identity motivates the
     target. General fields and disconnected spans retain projection residuals.
     Both horizontal and vertical anti-fluxes use one domain-wide Euler blend.
     """
+    paired = getattr(p, 'tracer_transport_scheme', 'centered_second') == 'paired_product_fourth'
+    if paired:
+        if column_moments is None or len(column_moments) != 2:
+            raise ValueError('paired_product_fourth requires both prepared column moments')
+        shape = getattr(T, 'shape', ())
+        if len(shape) != 3 or min(shape[:2]) < 5 or shape[-1] < 6:
+            raise ValueError('paired_product_fourth requires a full (nx, ny, nz) tracer array')
+        if len(mass_faces) != 2 or len(shifted_faces) != 2:
+            raise ValueError('paired_product_fourth requires both integrated face pairs')
+        fields = (('tracer', T, shape), ('Fz', Fz, shape[:-1]+(shape[-1]+1,)),
+                  ('Mx', mass_faces[0], shape), ('My', mass_faces[1], shape),
+                  ('Gx', shifted_faces[0], shape), ('Gy', shifted_faces[1], shape),
+                  ('column moments x', column_moments[0], shape[:-1]),
+                  ('column moments y', column_moments[1], shape[:-1]),
+                  ('dz_node', p.dz_node, (1, 1, shape[-1])),
+                  ('dz_iface', p.dz_iface, (1, 1, shape[-1]-1)))
+        for name, field, expected_shape in fields:
+            if (getattr(field, 'shape', None) != expected_shape
+                    or getattr(field, 'dtype', None) != jnp.dtype('float64')):
+                raise ValueError(f'paired_product_fourth {name} requires shape {expected_shape} and float64')
+    elif column_moments is not None:
+        raise ValueError('prepared column moments require paired_product_fourth')
     gradient_operator = (fourth_uniform_tracer_gradient
                          if getattr(p, 'material_point_gradient_scheme', 'minmod_v1') == 'fourth_uniform_v1'
                          else physical_tracer_gradient)
@@ -305,10 +333,13 @@ def _material_point_scalar_rate(T, Fz, mass_faces, shifted_faces, p, minimum=Non
                                                          mass_numerator, baseline_params, minimum)
     anti_faces = []
     for axis, mass, base in zip((0, 1), mass_faces, shifted_faces, strict=True):
-        face_q = .5*(shifted+jnp.roll(shifted, -1, axis=axis))
-        gradient = gradient_operator(face_q, p)
-        point_integral = point_mass_integral(mass, p)
-        moment = face_q[..., 0]*jnp.sum(mass, -1)+jnp.sum(h*gradient*point_integral, -1)
+        if paired:
+            moment = column_moments[axis]
+        else:
+            face_q = .5*(shifted+jnp.roll(shifted, -1, axis=axis))
+            gradient = gradient_operator(face_q, p)
+            point_integral = point_mass_integral(mass, p)
+            moment = face_q[..., 0]*jnp.sum(mass, -1)+jnp.sum(h*gradient*point_integral, -1)
         magnitude = jnp.sum(jnp.abs(mass), -1, keepdims=True)
         anti_faces.append(jnp.abs(mass)/jnp.where(magnitude > 0., magnitude, 1.)
                           *(moment-jnp.sum(base, -1))[..., None])
@@ -360,6 +391,11 @@ def _advection_scalar(T, u, v, Fz_in, p, return_boundary=False, face_transport=N
         if face_transport is None:
             face_transport = _layer_face_transports(u, v, p)
         reference = T.reshape(-1)[0]
+        if getattr(p, 'tracer_transport_scheme', 'centered_second') == 'paired_product_fourth':
+            faces, moments = channel_paired_product_fluxes(T-reference, u, v, p, face_transport)
+            rate, boundary = _material_point_scalar_rate(
+                T, Fz_in, face_transport, faces, p, minimum, column_moments=moments)
+            return (rate, boundary) if return_boundary else rate
         fx, fy = _horizontal_tracer_fluxes(T-reference, u, v, p, face_transport)
         shifted_numerator = _face_transport_divergence(fx*p.dz_node, fy*p.dz_node, p)
         mass_numerator = _face_transport_divergence(*face_transport, p)
