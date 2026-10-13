@@ -1,0 +1,11 @@
+{
+  "recorded_utc": "2026-10-12T23:09:58.1216404Z",
+  "type": "original Bn fixture plus explicit Bn/Fn label clarification",
+  "source_script_sha": "6dc6e6eab64da4f40274f944aa66a045ff010fcfa8910a873639315af673a1df",
+  "supersedes_only_script_hash": "a43a227362cf59599955cac3ba0a5f0411dcaf605bba9fc668709d5d984b13fc",
+  "retained_static_seal_1c3": "root-pre-numeric-seal.json remains original static review, execution found wrong fixture, not retroactive PASS",
+  "original_decl_sha": "f4d63f7dffb8d3b4039d0e62e39da6ed7f448402da2fa4bc101bec7a57653b20",
+  "fields_grids_sciencegates_source_unchanged": true,
+  "numeric_manufacture_rows_completed": 0,
+  "waiting_root_reseal": true
+}

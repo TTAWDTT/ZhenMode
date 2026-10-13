@@ -1,0 +1,9 @@
+{
+  "source_revision": "70d408583aa99db63e49d958d89dcaccad273f0e",
+  "workflow": "ci.yml",
+  "input": {
+    "full_validation": true
+  },
+  "require": "actualsamecommit pytestcount/MMS/logterminal notlintSUCCESS",
+  "thresholds_unchanged": true
+}

@@ -1,0 +1,10 @@
+{
+  "source": "70d408583aa99db63e49d958d89dcaccad273f0e",
+  "scope": "Independent metadata guard before new scientific controls; no numerical solver or data evaluation",
+  "required": "Windows Git HEAD/tracking HEAD identical and checkout clean; Git archive README/pyproject/src exactly equals146 build-input files; wheel bytes and all133 Python contents equal archive/build/installed bytes and complete registry; isolated loaded zhenmode path",
+  "evidence": "Independent direct file/tar/zip SHA256 rather than trusting root producer hash function; build log complete+identity present required before guard",
+  "resources": {"cpu":1,"wall_seconds":180,"memory_mib":4096,"GPU":false},
+  "timing": "Metadata hash/tar/zip work finite, no numerical projection; actual wall/RSS recorded by preserved resource wrapper",
+  "tool_choice": "BootLoops tools README and emitall GUIDE already read: task-specific Git archive/NPZ/PDE interfaces not provided by receipt emitter. Extend task-local evaluator/wrapper with exact file-byte controls; no toolkit solver invoked.",
+  "lineage": "Shares installed package resource supervisor only; independent source hashing logic and archive route. Source guard is software provenance, not scientific evidence."
+}

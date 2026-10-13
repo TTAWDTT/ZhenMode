@@ -1,0 +1,13 @@
+FAIL_RETAINED
+Traceback (most recent call last):
+  File "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/review/new_momentum_mms.py", line 68, in <module>
+    report['synthetic']=synthetic()
+                        ^^^^^^^^^^^
+  File "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/review/new_momentum_mms.py", line 43, in synthetic
+    normalone=np.asarray(_dealias_h_fd(jnp.ones((8,4,1)),p,normal=True))[0,:,0];require('original_normal_constant_not_preserved',np.array_equal(normalone,[5/8,9/8,9/8,5/8]))
+                                                                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/review/new_momentum_mms.py", line 26, in require
+    if not bool(condition):raise AssertionError({'name':name,'detail':detail})
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: {'name': 'original_normal_constant_not_preserved', 'detail': None}
+

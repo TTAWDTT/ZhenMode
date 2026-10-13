@@ -1,0 +1,24 @@
+{
+  "status": "PASS",
+  "case_index": 1,
+  "case": "main",
+  "metrics": {
+    "T_RMS": 9.50470031446601e-05,
+    "S_RMS": 2.501285789334958e-05,
+    "u_RMS": 3.937124966194141e-08,
+    "v_RMS": 2.510846444238586e-08,
+    "eta_RMS": 1.0133159533964772e-08,
+    "rho_RMS": 8.810050518488863e-09,
+    "u_normalized_RMS": 2.213638567332422e-06,
+    "v_normalized_RMS": 1.411717071045577e-06,
+    "eta_normalized_RMS": 4.2221498058186556e-06,
+    "rho_normalized_RMS": 2.86505707918337e-07,
+    "T_normalized_L1": 0.0011315530270999273,
+    "S_normalized_L1": 0.0011315965978100839
+  },
+  "raw_sha256": "337990cc4ab84ddb24d279e9fc3e721d07c6539ff1ab63ea10f7dee32ec05ddf",
+  "metadata_sha256": "32b1bf412f7032374ff808365287c08d37fa100523fcc807a681732b30e6e4a9",
+  "scope": "point tracer and steady balance supplement; fixed-H diagnostic inventories; no fullwatercolumn or ranking qualification",
+  "python": "/root/.local/share/bootloops-suite/bootloops/.venv/bin/python",
+  "numpy": "2.5.3"
+}

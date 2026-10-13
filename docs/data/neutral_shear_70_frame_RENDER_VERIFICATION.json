@@ -1,0 +1,44 @@
+{
+  "report_sha256": "0aa4277f03e5e00e523b28c861b1c81489ebb83c467d614584dd0fb2ed1b8335",
+  "ordinary_source_paragraphs": 23,
+  "ordinary_paragraphs_all_rendered": true,
+  "html_p_count": 24,
+  "tables": 2,
+  "math_blocks": 1,
+  "math_source_exact": true,
+  "plain_math_source_exact": true,
+  "links": [
+    {
+      "label": "70 报告",
+      "target": "material_point_gradient_70_results_zh.md",
+      "local_exists": true
+    },
+    {
+      "label": "Ft 报告",
+      "target": "momentum_tangent_filter_dabd_results_zh.md",
+      "local_exists": true
+    },
+    {
+      "label": "38306749152",
+      "target": "https://github.com/TTAWDTT/ZhenMode/actions/runs/38306749152",
+      "local_exists": null
+    },
+    {
+      "label": "清单",
+      "target": "data/neutral_shear_70_manifest.json",
+      "local_exists": true
+    },
+    {
+      "label": "还原脚本",
+      "target": "data/neutral_shear_70_restore.py.txt",
+      "local_exists": true
+    }
+  ],
+  "render_link_count": 5,
+  "text_unset_count": 15,
+  "public_data_files_before_extra_frame": 14,
+  "swallow_candidates": [],
+  "errors": [],
+  "scientific_or_native_CI_recomputations": 0,
+  "derivation_note": "Pandoc2.12 final HTML recognizes literal$$ Math; plain Lua filter retains verbatim TeX source, avoiding lossy plain-writer symbol conversion. Original failed views retained."
+}

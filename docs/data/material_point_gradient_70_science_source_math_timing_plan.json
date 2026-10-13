@@ -1,0 +1,12 @@
+{
+  "pilot_polynomial_elapsed_s":2.488779001,
+  "pilot_scalar_total_elapsed_s":5.520786487,
+  "pilot_scalar_first_call_s":3.208341011,
+  "pilot_scalar_steady_calls_s":[0.001289364,0.000617259,0.000485062],
+  "finite_unit":"One coarse scalar case and one fine properties/scalar case; completed coarse property receipt reused, no repeats; six interval plants and one stagnant projection plant",
+  "fine_to_coarse_element_ratio":16,
+  "conservative_projection_s":133.674,
+  "projection_provenance":"5.5208*(1+16)+2.4888*16, deliberately conservative input-volume scaling of measured same-code coarse stages; startup separately recorded, fine compilation scaling uncertain, not a precision ETA",
+  "launch_condition":"Measured finite conservative plan below180s wall cap, oneCPU4096MiB sampledRSS; stop if cap/failure, no criteria adjustment or larger batch",
+  "source_math_original_gates_unchanged":true
+}

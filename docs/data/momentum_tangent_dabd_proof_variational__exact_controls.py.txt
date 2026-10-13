@@ -1,0 +1,112 @@
+#!/usr/bin/env python3
+# One-shot pinned finite-filter proof certificate; no toolkit registration intended.
+# rankscreen/GUIDE.md was consulted: modular screens cannot certify these signed
+# polynomial identities. No external backend, native model, or numerical scan.
+import os, resource, signal, time, threading, json, argparse
+from pathlib import Path
+
+start = time.perf_counter()
+resource.setrlimit(resource.RLIMIT_AS, (4*1024**3, 4*1024**3))
+resource.setrlimit(resource.RLIMIT_CPU, (180, 180))
+signal.alarm(180)
+allowed = os.sched_getaffinity(0)
+os.sched_setaffinity(0, {min(allowed)})
+rss_samples = []
+stop = threading.Event()
+def sample():
+    while not stop.is_set():
+        for line in Path('/proc/self/status').read_text().splitlines():
+            if line.startswith('VmRSS:'):
+                rss_samples.append(int(line.split()[1])*1024)
+        stop.wait(0.01)
+sampler = threading.Thread(target=sample, daemon=True)
+sampler.start()
+import sympy as s
+
+p = argparse.ArgumentParser()
+p.add_argument('--sizes', default='4')
+p.add_argument('--tag', default='n4-pilot')
+args = p.parse_args()
+sizes = tuple(int(v) for v in args.sizes.split(','))
+assert sizes in ((4,), (5,8))
+rows = []
+def check(name, condition, details=None):
+    condition = bool(condition)
+    rows.append({'name':name,'passed':condition,'details':details})
+    print(('PASS ' if condition else 'FAIL ')+name, flush=True)
+    if not condition:
+        raise AssertionError(name)
+def tv(v):
+    return sum(abs(v[j+1]-v[j]) for j in range(len(v)-1))
+def matrices(n):
+    R=s.zeros(n-2,n)
+    for j in range(n-2):
+        R[j,j],R[j,j+1],R[j,j+2]=1,-2,1
+    L=s.zeros(n,n)
+    for j in range(n):
+        L[j,j]=-3 if j in (0,n-1) else -2
+        if j+1<n: L[j,j+1]=L[j+1,j]=1
+    return R,L,s.eye(n)-R.T*R/16,s.eye(n)-L*L/16
+
+try:
+    check('known-answer rational', s.Rational(1,2)+s.Rational(1,3)==s.Rational(5,6))
+    a,b,c,u,t=s.symbols('a b c u t', real=True)
+    defect=4*(a*a+2*b*b+c*c)-(a-2*b+c)**2
+    check('weighted-Cauchy local SOS',s.expand(defect-2*(a+b)**2-(a-c)**2-2*(b+c)**2)==0)
+    check('sine recurrence',s.trigsimp(s.sin(u-t)+s.sin(u+t)-2*s.cos(t)*s.sin(u))==0)
+    check('left odd endpoint',s.sin(-t/2)+s.sin(t/2)==0)
+    # At n*theta=k*pi, set cos(k*pi)=p=+-1, sin(k*pi)=0.
+    parity=s.symbols('parity', real=True)
+    right_outer=parity*s.sin(t/2)
+    right_inner=-parity*s.sin(t/2)
+    check('right odd endpoint reduced at k*pi',s.expand(right_outer+right_inner)==0)
+    check('sine-norm telescoping summand',s.trigsimp(s.sin(2*u+2*t)-s.sin(2*u)-2*s.sin(t)*s.cos(2*u+t))==0)
+    check('F normal symbol',s.expand(1-(-4*s.sin(t/2)**2)**2/16-(1-s.sin(t/2)**4))==0)
+    check('B normal symbol',s.trigsimp((1-s.sin(t/2)**2)**2-s.cos(t/2)**4)==0)
+    departure_F=s.series(s.sin(t/2)**4,t,0,6).removeO()
+    departure_B=s.series(1-s.cos(t/2)**4,t,0,6).removeO()
+    check('small-theta departures',departure_F==t**4/16 and departure_B==t**2/2-5*t**4/48, {'F':str(departure_F),'B':str(departure_B)})
+    for n in sizes:
+        R,L,Ft,Fn=matrices(n)
+        x=s.Matrix(s.symbols('x0:'+str(n),real=True))
+        z=s.Matrix(s.symbols('z0:'+str(n),real=True))
+        norm=(x.T*x)[0]
+        sos=12*(x[0]**2+x[-1]**2)+4*(x[1]**2+x[-2]**2)
+        for j in range(n-2):
+            sos+=2*(x[j]+x[j+1])**2+(x[j]-x[j+2])**2+2*(x[j+1]+x[j+2])**2
+        check(f'n{n} Gram defect identity',s.expand(16*norm-(R*x).dot(R*x)-sos)==0)
+        green=sum((x[j+1]-x[j])*(z[j+1]-z[j]) for j in range(n-1))+2*x[0]*z[0]+2*x[-1]*z[-1]
+        complement=sum((x[j+1]+x[j])*(z[j+1]+z[j]) for j in range(n-1))
+        check(f'n{n} bilinear Green identity',s.expand(-(x.T*L*z)[0]-green)==0)
+        check(f'n{n} complement identity',s.expand((x.T*(4*s.eye(n)+L)*z)[0]-complement)==0)
+        ones=s.ones(n,1); affine=s.Matrix(range(n))
+        check(f'n{n} symmetry',Ft==Ft.T and Fn==Fn.T)
+        check(f'n{n} affine kernel and rank',R*ones==s.zeros(n-2,1) and R*affine==s.zeros(n-2,1) and R.rank()==n-2)
+        check(f'n{n} fixed affine and sum',Ft*ones==ones and Ft*affine==affine and ones.T*Ft==ones.T)
+        d=R*x; accum=s.zeros(n,1)
+        for j in range(n-2):
+            accum[j]+=d[j]; accum[j+1]-=2*d[j]; accum[j+2]+=d[j]
+        check(f'n{n} transpose loop equals Gram',accum==R.T*R*x)
+        alternating=s.Matrix([(-1)**j for j in range(n)])
+        check(f'n{n} alternating kill',L*alternating==-4*alternating and Fn*alternating==s.zeros(n,1))
+        check(f'n{n} B polynomial',(s.eye(n)+L/4)**2==s.eye(n)+L/2+L*L/16)
+        if n==4:
+            quad=s.Matrix([0,1,4,9])
+            T1=Ft*quad; T2=Fn*ones
+            check('T1 exact',T1==s.Matrix([s.Rational(-1,8),s.Rational(9,8),s.Rational(33,8),s.Rational(71,8)]),list(map(str,T1)))
+            check('T2 exact',T2==s.Matrix([s.Rational(5,8),s.Rational(9,8),s.Rational(9,8),s.Rational(5,8)]),list(map(str,T2)))
+            wrong_t=s.eye(n)-R.T*R/4; wrong_n=s.eye(n)-L*L/4
+            wt=wrong_t*alternating; wn=wrong_n*alternating
+            check('Ft 1/4 plant CAUGHT',wt==s.Matrix([0,2,-2,0]) and wt.dot(wt)==8 and (alternating.T*wrong_t*alternating)[0]==-4, {'output':list(map(str,wt)),'norm2':'8','quadratic':'-4'})
+            check('Fn 1/4 plant CAUGHT',wn==-3*alternating and wn.dot(wn)==36,{'norm2':'36'})
+            e0=s.Matrix([1,0,0,0]); ft_e=Ft*e0; fn_e=Fn*e0
+            check('Ft positivity and TVD exclusion',min(ft_e)<0 and tv(ft_e)==s.Rational(17,16)>tv(e0),{'output':list(map(str,ft_e)),'TV':'17/16'})
+            check('Fn positivity and TVD exclusion',min(fn_e)<0 and tv(T2)==1>tv(ones),{'e0_output':list(map(str,fn_e)),'TV_Fn_ones':'1'})
+            W=s.diag(1,100,1,1)
+            et=(ft_e.T*W*ft_e)[0]; en=(fn_e.T*W*fn_e)[0]
+            check('unequal-weight exclusions',et==s.Rational(313,128)>1 and en==s.Rational(2537,256)>1,{'Ft':str(et),'Fn':str(en),'input':'1'})
+finally:
+    stop.set(); sampler.join()
+    result={'tag':args.tag,'sizes':sizes,'rows':rows,'elapsed_seconds':time.perf_counter()-start,'sampledRSS_peak_bytes':max(rss_samples,default=0),'rss_sample_count':len(rss_samples),'affinity':sorted(os.sched_getaffinity(0)),'memory_limit_bytes':4*1024**3,'cpu_seconds_limit':180,'sympy_version':s.__version__}
+    Path(f'exact_controls_{args.tag}.json').write_text(json.dumps(result,indent=2)+'\n')
+    print('SUMMARY '+json.dumps({k:v for k,v in result.items() if k!='rows'}),flush=True)

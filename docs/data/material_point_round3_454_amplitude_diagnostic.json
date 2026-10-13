@@ -1,0 +1,156 @@
+{
+  "declaration": {
+    "utc": "2026-10-12T15:11:51.256Z",
+    "scope": "development-only algebraic readback of existing native amplitudes, no new integration/no model selection",
+    "source_revision": "45407573fe205fae475a2d4bf68c2e653a420ed2",
+    "profiles": [
+      "primary",
+      "horizontal-coarse",
+      "vertical-fine"
+    ],
+    "formula": "Elinear_est=4 E(A/2)-E(A); Equadratic_est=2 E(A)-4 E(A/2); two data points cannot distinguish higher orders or prove nonlinear origin",
+    "units": "absolute fields, static initial-capacity space weighted plus trapezoid time RMS; not original scientific score, no new output trajectory",
+    "lineage": "existing native/analyticreference/JAX route shared; all cases contacted, not independent holdout",
+    "controls": {
+      "synthetic_polynomial_exact_abs": 1e-14,
+      "wrong_coefficient_rejected": true
+    },
+    "resources": {
+      "cpu": 1,
+      "wall_seconds": 180,
+      "memory_mib": 4096
+    },
+    "plan": "one primary readback first; elapsed measurement recorded before extending remaining two pairs, no native reruns"
+  },
+  "rows": [
+    {
+      "profile": "primary",
+      "elapsed_s": 0.09839139099999983,
+      "metrics": {
+        "eta": {
+          "original_absolute_RMS": 6.860584702972653e-10,
+          "linear_estimate_absolute_RMS": 2.7678699142164582e-11,
+          "quadratic_estimate_absolute_RMS": 6.853811617981482e-10,
+          "linear_estimate_to_original_ratio": 0.04034451922176773
+        },
+        "u": {
+          "original_absolute_RMS": 6.7044211169359525e-9,
+          "linear_estimate_absolute_RMS": 5.447041059052009e-10,
+          "quadratic_estimate_absolute_RMS": 6.6741480218120115e-9,
+          "linear_estimate_to_original_ratio": 0.08124550895665411
+        },
+        "v": {
+          "original_absolute_RMS": 9.30723521973093e-10,
+          "linear_estimate_absolute_RMS": 5.369587208785066e-10,
+          "quadratic_estimate_absolute_RMS": 7.094815485133572e-10,
+          "linear_estimate_to_original_ratio": 0.5769261313393882
+        },
+        "T": {
+          "original_absolute_RMS": 7.334242326890654e-9,
+          "linear_estimate_absolute_RMS": 1.6367534915166359e-9,
+          "quadratic_estimate_absolute_RMS": 6.957905321371968e-9,
+          "linear_estimate_to_original_ratio": 0.2231659956905918
+        },
+        "S": {
+          "original_absolute_RMS": 0,
+          "linear_estimate_absolute_RMS": 0,
+          "quadratic_estimate_absolute_RMS": 0,
+          "linear_estimate_to_original_ratio": null
+        }
+      },
+      "source_revision": "45407573fe205fae475a2d4bf68c2e653a420ed2",
+      "input_sha256": [
+        "e61a071025391932c3972bce2bbfea3792da77d6c0901522617a15900ff9ed98",
+        "be4e1b26ad3b93387a42140d332505f71bfe4bc858faadda596925e25d25bf4f"
+      ],
+      "scope": "development-only algebraic readback of existing native amplitudes, no new integration/no model selection",
+      "limitations": "Elinear_est=4 E(A/2)-E(A); Equadratic_est=2 E(A)-4 E(A/2); two data points cannot distinguish higher orders or prove nonlinear origin"
+    },
+    {
+      "profile": "horizontal-coarse",
+      "elapsed_s": 0.06316871599999985,
+      "metrics": {
+        "eta": {
+          "original_absolute_RMS": 6.505723877178419e-10,
+          "linear_estimate_absolute_RMS": 6.71158486911861e-11,
+          "quadratic_estimate_absolute_RMS": 6.466527418980401e-10,
+          "linear_estimate_to_original_ratio": 0.1031643057071994
+        },
+        "u": {
+          "original_absolute_RMS": 6.606115298347525e-9,
+          "linear_estimate_absolute_RMS": 1.7980829250395212e-9,
+          "quadratic_estimate_absolute_RMS": 6.3273785204638595e-9,
+          "linear_estimate_to_original_ratio": 0.2721846113538617
+        },
+        "v": {
+          "original_absolute_RMS": 1.8654353069359354e-9,
+          "linear_estimate_absolute_RMS": 1.6657782095756744e-9,
+          "quadratic_estimate_absolute_RMS": 6.829728686621302e-10,
+          "linear_estimate_to_original_ratio": 0.8929702377681449
+        },
+        "T": {
+          "original_absolute_RMS": 9.93416870497652e-9,
+          "linear_estimate_absolute_RMS": 6.36816656867997e-9,
+          "quadratic_estimate_absolute_RMS": 6.949359469214796e-9,
+          "linear_estimate_to_original_ratio": 0.6410366843770067
+        },
+        "S": {
+          "original_absolute_RMS": 0,
+          "linear_estimate_absolute_RMS": 0,
+          "quadratic_estimate_absolute_RMS": 0,
+          "linear_estimate_to_original_ratio": null
+        }
+      },
+      "source_revision": "45407573fe205fae475a2d4bf68c2e653a420ed2",
+      "input_sha256": [
+        "11bb381a6c2be614d526c67539cccbc37b15e9d4645d0f06c3cb1a6772c2cdd3",
+        "ebf2cec8d1cf13862abdbd9a418ff8dff0bb077831da0e7cc1bad2c67f171bd8"
+      ],
+      "scope": "development-only algebraic readback of existing native amplitudes, no new integration/no model selection",
+      "limitations": "Elinear_est=4 E(A/2)-E(A); Equadratic_est=2 E(A)-4 E(A/2); two data points cannot distinguish higher orders or prove nonlinear origin"
+    },
+    {
+      "profile": "vertical-fine",
+      "elapsed_s": 0.1472354960000004,
+      "metrics": {
+        "eta": {
+          "original_absolute_RMS": 6.892775152213413e-10,
+          "linear_estimate_absolute_RMS": 4.907872399352236e-12,
+          "quadratic_estimate_absolute_RMS": 6.892441413392363e-10,
+          "linear_estimate_to_original_ratio": 0.007120314083908883
+        },
+        "u": {
+          "original_absolute_RMS": 6.6718560129741514e-9,
+          "linear_estimate_absolute_RMS": 1.201555998139701e-10,
+          "quadratic_estimate_absolute_RMS": 6.6698689723626235e-9,
+          "linear_estimate_to_original_ratio": 0.018009321481206195
+        },
+        "v": {
+          "original_absolute_RMS": 3.7109812476545393e-10,
+          "linear_estimate_absolute_RMS": 1.0986272845135955e-10,
+          "quadratic_estimate_absolute_RMS": 3.440118778283903e-10,
+          "linear_estimate_to_original_ratio": 0.2960476518731976
+        },
+        "T": {
+          "original_absolute_RMS": 6.8765823824659715e-9,
+          "linear_estimate_absolute_RMS": 4.452449725663769e-10,
+          "quadratic_estimate_absolute_RMS": 6.83819506046063e-9,
+          "linear_estimate_to_original_ratio": 0.06474800239457179
+        },
+        "S": {
+          "original_absolute_RMS": 0,
+          "linear_estimate_absolute_RMS": 0,
+          "quadratic_estimate_absolute_RMS": 0,
+          "linear_estimate_to_original_ratio": null
+        }
+      },
+      "source_revision": "45407573fe205fae475a2d4bf68c2e653a420ed2",
+      "input_sha256": [
+        "b5d08eee2bd9719fd32077a5be2056413b9fd837cff9dac3c87ff905cf4188dd",
+        "a537f12344c6deb10c00544b76a65e1edbd357814147840a3f1f5457a9bc9bf4"
+      ],
+      "scope": "development-only algebraic readback of existing native amplitudes, no new integration/no model selection",
+      "limitations": "Elinear_est=4 E(A/2)-E(A); Equadratic_est=2 E(A)-4 E(A/2); two data points cannot distinguish higher orders or prove nonlinear origin"
+    }
+  ]
+}

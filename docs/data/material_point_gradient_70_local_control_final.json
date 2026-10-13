@@ -1,0 +1,20 @@
+{
+  "original_attempt": {
+    "passed": 168,
+    "failed": 2,
+    "duration_s": 96.7,
+    "receipt": "controls-gradient-attempt01-resources.json"
+  },
+  "corrected_affected_subset": {
+    "passed": 48,
+    "failed": 0,
+    "duration_s": 38.14,
+    "receipt": "controls-gradient-attempt02-resources.json"
+  },
+  "unique_control_collection": 170,
+  "all_controls_at_least_one_pass": true,
+  "not_single_run170pass": true,
+  "production_changed_for_failure": false,
+  "original_thresholds_unchanged": true,
+  "ruff": "fullrepositoryPASS"
+}

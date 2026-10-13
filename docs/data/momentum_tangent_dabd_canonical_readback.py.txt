@@ -1,0 +1,47 @@
+import argparse,hashlib,json,math,sys,time
+from pathlib import Path
+import numpy as np
+ROOT=Path(__file__).resolve().parent;STAGE=ROOT.parent;INST=STAGE/'material-point-gradient-v1/installed';sys.path.insert(0,str(INST))
+from zhenmode.evaluation.native_channel import load
+from zhenmode.evaluation.internal_wave import reference
+p=argparse.ArgumentParser();p.add_argument('--pilot',action='store_true');a=p.parse_args();start=time.monotonic()
+def read(path):return json.loads(Path(path).read_text())
+def sha(path):return hashlib.sha256(Path(path).read_bytes()).hexdigest()
+def rms(f,w,t):
+ w=np.broadcast_to(w,f.shape);axes=tuple(range(1,f.ndim));power=np.sum(f*f*w,axis=axes)/np.sum(w,axis=axes)
+ return math.sqrt(float(np.sum((power[1:]+power[:-1])*np.diff(t)/2)/(t[-1]-t[0])))
+# Known answer and hostile wrong prediction before any data comparison.
+t=np.array([0.,1.,2.]);q=np.broadcast_to(np.cos(4*np.pi*(np.arange(8)+.5)/8),(3,8));positive=rms(q,np.ones(8),t)
+assert abs(positive-1/math.sqrt(2))<1e-12 and rms(q-q,np.ones(8),t)==0.
+negative=rms(q-(-q),np.ones(8),t);assert abs(negative-2*positive)<1e-12 and negative>positive
+refroot=STAGE/'eta-second-order-reference';ref=read(refroot/'result.json');assert ref['reference_numerics_pass'] and all(ref['gates'].values())
+with np.load(refroot/'reference_arrays.npz',allow_pickle=False) as z:times=z['time'].copy();E=z['E_64'].copy();theta=z['theta2_64'].copy()
+records=[('70',STAGE/'material-point-gradient-v1/01-candidate-primary-main'),('dab',STAGE/'momentum-tangent-filter-v1/native-attempt02/01-candidate-primary-main')]
+c0=read(records[0][1]/'contract.json');arr=[];hashes={}
+for label,path in records:
+ c=read(path/'contract.json');x=load(path/'zhenmode/output.npz');assert np.array_equal(x['time'],times)
+ strip=lambda cc:{k:v for k,v in cc.items() if k not in ('development','ocean_options')}
+ assert strip(c)==strip(c0);assert c['amplitude_m']==ref['parameters']['A'] and c['H_m']==ref['parameters']['H']
+ assert c['internal_wave']['q']==ref['parameters']['q'] and c['f']==ref['parameters']['f'] and c['gravity']==ref['parameters']['g']
+ assert x['metadata']['model']=='ocean-solver' and theta.shape==(len(times),c['nz'])
+ arr.append((label,c,x));hashes[label]=sha(path/'zhenmode/output.npz')
+result=dict(pilot=a.pilot,controls=dict(cos2_RMS=positive,zero=0.,wrong_sign_RMS=negative),input_sha256=hashes,reference_npz_sha256=sha(refroot/'reference_arrays.npz'),reference_result_sha256=sha(refroot/'result.json'),shared_reference='REUSED frozen v2 n64, no new solve or fit; same firstlinearoracle; descriptive only',native_runs=0,source_edits=False,ranking='dab strictnative rankingFAIL unchanged, latestbest70',rows=[])
+if a.pilot:result['oracle_compared']=False
+else:
+ for label,c,x in arr:
+  linear=reference(c,x);cy=np.cos(2*ref['parameters']['k']*x['y_eta']);z=-np.linspace(0,c['H_m'],c['nz']);params=ref['parameters']
+  omega=params['omega'];m=params['m'];gamma=params['gamma'];A=params['A'];H=params['H']
+  theta20=-gamma*A*A*m/4*np.sin(omega*times)[:,None]**2*np.sin(2*m*(z+H))[None,:]
+  eta2=E[:,None]*cy[None,:];T2=theta20[:,None,:]+theta[:,None,:]*cy[None,:,None]
+  weights_eta=x['area'];weights_T=x['h']*x['area'][None,:,None]
+  errs={'eta':x['eta']-linear['eta'],'T':x['T']-linear['T']};preds={'eta':eta2,'T':T2};weights={'eta':weights_eta,'T':weights_T}
+  row={'name':label}
+  for name in ('eta','T'):
+   original=rms(errs[name],weights[name],times);prediction=rms(preds[name],weights[name],times);residual=rms(errs[name]-preds[name],weights[name],times)
+   assert original>0 and prediction>0
+   row[name]={'original_RMS':original,'fixed_reference_RMS':prediction,'residual_RMS':residual,'residual_fraction':residual/original,'units':'m' if name=='eta' else 'C'}
+  result['rows'].append(row)
+  with (ROOT/'row-journal.jsonl').open('a') as f:print(json.dumps(row),file=f)
+result['elapsed_s']=time.monotonic()-start;result['script_sha256']=sha(__file__);result['declaration_sha256']=sha(ROOT/'declaration.json')
+with (ROOT/('timing-pilot.json' if a.pilot else 'result.json')).open('x') as f:json.dump(result,f,indent=2)
+print(json.dumps({'pilot':a.pilot,'elapsed_s':result['elapsed_s'],'oracle_compared':False if a.pilot else True,'rows':result['rows']}))

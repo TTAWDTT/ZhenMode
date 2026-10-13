@@ -1,0 +1,97 @@
+{
+  "production_ece": "ece37c7b7ad383314e4dcfd982641d9ca541e1c3",
+  "open": "uniquephysicalattribution, nonlineartruth, genericnative qualification",
+  "algebra_grade": "VERIFIED-CLOSED applies only to pinned TargetsI/II, not formal/refereed/nativeenergy proof",
+  "accepted_3c8": "3c8e86bef2ee1fbfd50cca4343d6fc61694d9edc",
+  "numeric_status": "reference_numerics_pass=true; CONFIRMED_FINITE_NUMERIC independentn16/all41times",
+  "ranking": "ece primary strict improvement FAIL,2..9unexecuted",
+  "proof_snapshot": "OriginalFINAL_VERDICT numerical pending fields are historical and preserved; later reference_result and numeric_audit record completed finite computation",
+  "scope": "Byte-preserved finite canonical reference/proof/audit exports, no new native data or changed original scoring",
+  "files": [
+    {
+      "sha256": "0f1eaddb0bf78ecdbc43f29d594aa19635caa50a6c22bd3f162f89d83367f0d5",
+      "bytes": 32687,
+      "published": "data/momentum_point_ece_reference_result.json",
+      "source": "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\eta-second-order-reference\\result.json"
+    },
+    {
+      "sha256": "6ad1d285b68eb01ffab15116f3fccdf6683b4148afe7885a0ff96da663b632bd",
+      "bytes": 5032,
+      "published": "data/momentum_point_ece_reference_spec_v2.md",
+      "source": "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\eta-second-order-reference\\REFERENCE_SPEC-v2.md"
+    },
+    {
+      "sha256": "a3f7de9777a440d10e7f5a49627a34a3d8e6d9f6675e8ca066815429ae17c8e7",
+      "bytes": 505,
+      "published": "data/momentum_point_ece_reference_pre_numerical_erratum01.json",
+      "source": "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\eta-second-order-reference\\pre-numerical-erratum01.json"
+    },
+    {
+      "sha256": "90773fd8cd718c1d406d94b1381dbb0a0419c879195e977218919221b4e0c7ad",
+      "bytes": 9331,
+      "published": "data/momentum_point_ece_reference_evaluator.py.txt",
+      "source": "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\eta-second-order-reference\\reference.py"
+    },
+    {
+      "sha256": "596d042ba8e3d758035e78a121048cf57374dcc0535d855ce64abf11eced038b",
+      "bytes": 2557,
+      "published": "data/momentum_point_ece_reference_proof_verdict_snapshot.json",
+      "source": "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\eta-second-order-proof\\FINAL_VERDICT.json"
+    },
+    {
+      "sha256": "451e73bf3a06d9d3664636516e38733ca78ef7a80c50fb816461021e99c89c75",
+      "bytes": 4296,
+      "published": "data/momentum_point_ece_reference_proof_target_spec.md",
+      "source": "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\eta-second-order-proof\\TARGET_SPEC.md"
+    },
+    {
+      "sha256": "d3fd5fa982dbdcf455996d82cf324cdc95cc94fd45d4ade06854583b2448e0ac",
+      "bytes": 16697,
+      "published": "data/momentum_point_ece_reference_interface_ruling.md",
+      "source": "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\eta-second-order-proof\\cross-verify\\interface_ruling.md"
+    },
+    {
+      "sha256": "552e05ed7b880cb66a775b9ab65ebe7fe73574f7f232c57f335d170ac51c369b",
+      "bytes": 10984,
+      "published": "data/momentum_point_ece_reference_numeric_audit.md",
+      "source": "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\eta-second-order-proof\\cross-verify\\numeric-audit\\NUMERIC_AUDIT.md"
+    },
+    {
+      "sha256": "bc128e138b0bd31da3b93e63aa77209733156f5aa8db0d5364f571d3ea0b202a",
+      "bytes": 2343,
+      "published": "data/momentum_point_ece_reference_numeric_audit_result.json",
+      "source": "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\eta-second-order-proof\\cross-verify\\numeric-audit\\numeric_result.json"
+    },
+    {
+      "sha256": "2aa4bf3afe2897dc29f5d0ef503c21deef28bbb974e8f2a72ee08d8728720814",
+      "bytes": 6571,
+      "published": "data/momentum_point_ece_reference_numeric_audit_raw_readback.json",
+      "source": "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\eta-second-order-proof\\cross-verify\\numeric-audit\\raw_readback_result.json"
+    },
+    {
+      "sha256": "0561b5bab13492107659f5134102659902be07ebf350b2b1da327fdade02e201",
+      "bytes": 1653,
+      "published": "data/momentum_point_ece_reference_numeric_audit_declaration.json",
+      "source": "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\eta-second-order-proof\\cross-verify\\numeric-audit\\declaration.json"
+    },
+    {
+      "sha256": "1bd8e7414510786ee59983b4d7a9f84af5d3ab1b636f9342dabf062f8604a6c7",
+      "bytes": 3982,
+      "published": "data/momentum_point_ece_reference_numeric_audit_scoreboard.json",
+      "source": "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\eta-second-order-proof\\cross-verify\\numeric-audit\\scoreboard.json"
+    },
+    {
+      "sha256": "e3d80ca1317c41bc086166cdf2c6119f9f2b151180ba44442c83ec8a5fb5ffb5",
+      "bytes": 6610,
+      "published": "data/momentum_point_ece_reference_numeric_audit_evaluator.py.txt",
+      "source": "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\eta-second-order-proof\\cross-verify\\numeric-audit\\independent_numeric.py"
+    },
+    {
+      "sha256": "0d31a9285fbf05fb0d046fe575b09d675ec2d3b6249fc96a8804165291037be4",
+      "bytes": 7709,
+      "published": "data/momentum_point_ece_reference_raw_readback_evaluator.py.txt",
+      "source": "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\eta-second-order-proof\\cross-verify\\numeric-audit\\raw_readback.py"
+    }
+  ],
+  "code_archive_policy": "Original scientific evaluator bytes preserved as .py.txt documents; not repository importable modules. Original live evaluator paths/hashes unchanged."
+}

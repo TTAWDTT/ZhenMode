@@ -1,0 +1,287 @@
+"""PREPARED ONLY: separately gated select/pack phases; raw bytes, stdlib only."""
+import argparse
+import fnmatch
+import hashlib
+import json
+import os
+from pathlib import Path
+import resource
+import signal
+import time
+import zipfile
+
+HERE = Path(__file__).resolve().parent
+STAGE = HERE.parent
+BASE = STAGE.parent
+PRIOR = BASE / 'neutral-shear-paired-be647'
+HP = BASE / 'horizontal-paired-product-v1'
+OLD70 = BASE / 'independent-neutral-shear-native'
+SOURCE = 'be647d70fc7394f3014dca8bc776e207d4f02ae3'
+CASES = ('00-main', '01-main', '02-main', '03-zero-spice', '04-zero-shear-null')
+PART_BYTES = 20 * 1024 * 1024
+PREFIX = 'neutral_shear_paired_be647_attempt02'
+CORE = ('oracle.py', 'analytic_source_controls.py', 'audit_initial.py',
+        'audit_arrays.py', 'prepare_audit_input.py', 'audit_summary.py')
+EXCLUDED_COMPONENTS = {'__pycache__', 'publication-preparation', 'report-frame',
+                       'packet01', 'independent-restored01'}
+LATE_REPORT_PATTERNS = ('results-draft*.md', 'review/RESULTS_DRAFT*.json',
+                        'review/MAIN3_REPORT_ADDITION01.md')
+TOOLS = ('EXPORT_SPEC01.md', 'pack_original01.py', 'restore_original01.py.txt',
+         'ROOT_EXPORT_GATE_TEMPLATE01.json')
+
+
+def require(ok, message):
+    if not ok:
+        raise ValueError(message)
+
+
+def sha(path):
+    digest = hashlib.sha256()
+    with Path(path).open('rb') as stream:
+        for block in iter(lambda: stream.read(1024 * 1024), b''):
+            digest.update(block)
+    return digest.hexdigest()
+
+
+def read(path):
+    return json.loads(Path(path).read_text(encoding='utf-8-sig'))
+
+
+def write(path, value):
+    with Path(path).open('x', encoding='utf-8') as stream:
+        json.dump(value, stream, indent=2, ensure_ascii=False, allow_nan=False)
+        stream.write('\n')
+
+
+def within(root, name):
+    rel = Path(name)
+    path = (root / rel).resolve()
+    require(not rel.is_absolute() and '..' not in rel.parts and path.is_relative_to(root), 'escaped path')
+    return path
+
+
+def excluded(relative):
+    return (any(part in EXCLUDED_COMPONENTS for part in relative.parts)
+            or relative.suffix in {'.pyc', '.pyo'}
+            or any(fnmatch.fnmatchcase(relative.as_posix(), pat) for pat in LATE_REPORT_PATTERNS))
+
+
+def tree(root):
+    require(root.is_dir(), 'missing source directory: ' + str(root))
+    found = []
+    for path in root.rglob('*'):
+        relative = path.relative_to(root)
+        if excluded(relative):
+            continue
+        require(not path.is_symlink(), 'source symlink not allowed: ' + str(path))
+        if path.is_file():
+            found.append(path)
+    return found
+
+
+def catalog():
+    # No directory glob ever enters old70 native arrays or prior published packets.
+    paths = tree(STAGE) + tree(PRIOR) + tree(HP / 'installed')
+    paths += [HP / name for name in ('wheel-identity.json', 'build-input.json',
+              'build_install.py', 'SOURCE_READY-identity01.json', 'SOURCE_READY-qualified02.json',
+              'review/source-git.tar', 'wheel/zhenmode-0.1.0-py3-none-any.whl')]
+    paths += [OLD70 / name for name in ('declared-plan.json', 'pre-execution-definitions01.json')]
+    paths += [OLD70 / 'review' / name for name in CORE]
+    paths += [OLD70 / case / 'science-verdict01.json' for case in CASES]
+    paths += [HERE / name for name in TOOLS]
+    members = {}
+    for path in paths:
+        require(path.is_file() and not path.is_symlink(), 'missing/nonregular selected original: ' + str(path))
+        resolved = path.resolve()
+        require(resolved.is_relative_to(BASE), 'source outside finite BASE')
+        name = resolved.relative_to(BASE).as_posix()
+        require(name not in members, 'duplicate member: ' + name)
+        members[name] = resolved
+    require(len({name.casefold() for name in members}) == len(members), 'case-fold collision')
+    return dict(sorted(members.items()))
+
+
+def record(name, path):
+    before = path.stat()
+    digest = sha(path)
+    after = path.stat()
+    require((before.st_size, before.st_mtime_ns) == (after.st_size, after.st_mtime_ns),
+            'file changed while hashing: ' + name)
+    return {'member': name, 'path': str(path), 'bytes': after.st_size,
+            'sha256': digest, 'mtime_ns': after.st_mtime_ns}
+
+
+def prerequisites(gate):
+    require(gate['status'] == 'AUTHORIZED_ONE_IMMUTABLE_SELECTION_AND_PACK', 'no export permission')
+    require(gate['source_revision'] == SOURCE, 'wrong source')
+    require(gate['writers_stopped_for_included_paths'] is True, 'included source writers are not frozen')
+    require(gate['all_five_cases_and_summary_terminal'] is True, 'incomplete finite stage')
+    require(gate['resources'] == {'cpu': 1, 'wall_seconds': 180, 'memory_mib': 4096}, 'resource mismatch')
+    for name in TOOLS:
+        require(sha(HERE / name) == gate['prepared_file_sha256'][name], 'preparation changed: ' + name)
+    need = {'review/three-grid-verdict01.json', 'review/stage-verdict01.json',
+            'review/strict-coarse-comparison01.json', 'review/analytic01-binding.json',
+            'PREPARED_BUNDLE01.json', 'review/OBSERVER_BUNDLE01.json'}
+    for index, case in enumerate(CASES):
+        need.update(case + '/' + name for name in ('terminal.json', 'run-receipt.json',
+                    'science-verdict01.json', 'science-binding01.json'))
+        terminal = read(STAGE / case / 'terminal.json')
+        require(terminal['status'] == 'completed_native_unscored' and terminal['index'] == index,
+                'native case incomplete: ' + case)
+        require(terminal['source_revision'] == SOURCE and terminal['native_steps'] == 4800
+                and terminal['outputs'] == 41, 'native terminal scope changed')
+        require(sha(STAGE / case / 'native.npz') == terminal['native_sha256'], 'native digest mismatch')
+        verdict = read(STAGE / case / 'science-verdict01.json')
+        binding = read(STAGE / case / 'science-binding01.json')
+        require(verdict['status'] == 'PASS' and verdict['case_index'] == index, 'science verdict incomplete')
+        require(binding['status'] == 'PASS_BOUND_OBSERVER_RESULT' and binding['case_index'] == index,
+                'science binding incomplete')
+    require(need <= gate['final_prerequisite_sha256'].keys(), 'missing final prerequisite binding')
+    for name, digest in gate['final_prerequisite_sha256'].items():
+        require(sha(within(STAGE, name)) == digest, 'final prerequisite changed: ' + name)
+    require(read(STAGE / 'review/three-grid-verdict01.json')['status'] == 'PASS', 'summary incomplete')
+    final = read(STAGE / 'review/stage-verdict01.json')
+    require(final['status'] == 'PASS_BOUND_OBSERVER_RESULT'
+            and final['stage_status'] == 'PASS_FIXED_CONTACTED_DEVELOPMENT_CASES'
+            and final['qualified_case_indices'] == list(range(5)), 'finite stage binding incomplete')
+    require(read(STAGE / 'review/strict-coarse-comparison01.json')['status']
+            == 'PASS_STRICT_SAVED_RECEIPT_COMPARISON', 'strict comparison incomplete')
+
+
+def coverage(items):
+    members = {row['member']: row for row in items}
+    identity = read(HP / 'wheel-identity.json')
+    expected = {HP.name + '/installed/' + key + '.py': value
+                for key, value in identity['package_source_sha256'].items()}
+    actual = {name for name in members if name.startswith(HP.name + '/installed/') and name.endswith('.py')}
+    require(len(expected) == 133 and actual == expected.keys(), 'complete installed133 set required')
+    require(all(members[name]['sha256'] == digest for name, digest in expected.items()), 'installed source byte mismatch')
+    for case in CASES:
+        need = ('native.npz', 'initial-readback.npz', 'constant-source-readback.npz',
+                'audit-input01/audit-native.npz', 'audit-input01/audit-initial-diagnostics.npz')
+        require(all(STAGE.name + '/' + case + '/' + name in members for name in need), 'missing native/audit originals')
+        require(all(f'{STAGE.name}/{case}/outputs/output-{i:04d}.npz' in members for i in range(41)),
+                'missing original output archive')
+    bridge = read(STAGE / 'review/analytic01-binding.json')
+    require(len(bridge['origin_artifact_sha256']) == 23, 'bridge origin count differs from reviewed scope')
+    for name, digest in bridge['origin_artifact_sha256'].items():
+        item = members.get(PRIOR.name + '/' + name)
+        require(item is not None and item['sha256'] == digest, 'missing/changed analytic bridge original')
+    require(PRIOR.name + '/00-main/initial-readback.npz' in members
+            and PRIOR.name + '/INITIALIZE_FAILURE_DISPOSITION01.json' in members, 'failed initialization originals omitted')
+
+
+def verify_selection(selection):
+    current = catalog()
+    require(list(current) == [row['member'] for row in selection['files']], 'included file set changed after freeze')
+    for row in selection['files']:
+        require(record(row['member'], current[row['member']]) == row, 'selected source bytes/stat changed: ' + row['member'])
+
+
+def select(gate, gate_sha):
+    first = catalog()
+    items = [record(name, path) for name, path in first.items()]
+    coverage(items)
+    selection = {'schema': 'neutral-paired-attempt02-original-byte-selection-v1',
+                 'source_revision': SOURCE, 'gate_sha256': gate_sha,
+                 'scope': 'Five contacted development cases, complete original raw files and failed predecessor; byte export only.',
+                 'files': items, 'files_count': len(items),
+                 'original_bytes': sum(row['bytes'] for row in items),
+                 'excluded_components': sorted(EXCLUDED_COMPONENTS),
+                 'excluded_report_patterns': list(LATE_REPORT_PATTERNS),
+                 'later_metadata_policy': 'New report/freshframe/package/restore verdicts after snapshot are outside this immutable raw snapshot.',
+                 'selected_roots': [STAGE.name, PRIOR.name, HP.name + '/installed'],
+                 'old70_scope': 'Only five existing science-verdict JSONs, original plan, definitions and six core files; no old native arrays.'}
+    verify_selection(selection)
+    write(HERE / 'selection01.json', selection)
+    return {'files': len(items), 'selection_sha256': sha(HERE / 'selection01.json')}
+
+
+def pack(gate, gate_sha):
+    selection = read(HERE / 'selection01.json')
+    require(selection['gate_sha256'] == gate_sha, 'selection permission differs')
+    sealed = read(HERE / 'select-terminal01.json')
+    require(sealed['status'] == 'SEALED_ORIGINAL_BYTE_SELECTION' and sealed['phase'] == 'select'
+            and sealed['gate_sha256'] == gate_sha
+            and sealed['selection_sha256'] == sha(HERE / 'selection01.json'), 'sealed selection identity changed')
+    verify_selection(selection)
+    out = HERE / 'packet01'
+    require(not out.exists(), 'packet output exists; no automatic retry')
+    out.mkdir()
+    archive = out / (PREFIX + '_archive.zip')
+    with zipfile.ZipFile(archive, 'x', compression=zipfile.ZIP_STORED, allowZip64=True) as target:
+        for row in selection['files']:
+            path = Path(row['path'])
+            before = path.stat()
+            digest, size = hashlib.sha256(), 0
+            info = zipfile.ZipInfo(row['member'], date_time=(2026, 10, 13, 0, 0, 0))
+            info.compress_type = zipfile.ZIP_STORED
+            with path.open('rb') as source, target.open(info, 'w', force_zip64=True) as member:
+                for block in iter(lambda: source.read(1024 * 1024), b''):
+                    digest.update(block)
+                    size += len(block)
+                    member.write(block)
+            after = path.stat()
+            require(size == row['bytes'] and digest.hexdigest() == row['sha256']
+                    and before.st_mtime_ns == after.st_mtime_ns == row['mtime_ns'], 'source changed during pack')
+    verify_selection(selection)
+    parts, whole, total = [], hashlib.sha256(), 0
+    with archive.open('rb') as stream:
+        while True:
+            block = stream.read(PART_BYTES)
+            if not block:
+                break
+            name = f'{PREFIX}_archive.part{len(parts)+1:03d}'
+            with (out / name).open('xb') as part:
+                part.write(block)
+            whole.update(block)
+            total += len(block)
+            parts.append({'name': name, 'bytes': len(block), 'sha256': hashlib.sha256(block).hexdigest()})
+    reader = HERE / 'restore_original01.py.txt'
+    with (out / 'restore_original01.py.txt').open('xb') as stream:
+        stream.write(reader.read_bytes())
+    with (out / 'selection01.json').open('xb') as stream:
+        stream.write((HERE / 'selection01.json').read_bytes())
+    manifest = dict(selection, selection_sha256=sha(HERE / 'selection01.json'), parts=parts,
+                    archive_bytes=total, archive_sha256=whole.hexdigest(), compression='ZIP_STORED',
+                    part_bytes=PART_BYTES, restore_reader_sha256=sha(reader), packer_sha256=sha(__file__))
+    write(out / (PREFIX + '_manifest.json'), manifest)
+    return {'files': len(selection['files']), 'parts': len(parts), 'archive_bytes': total,
+            'archive_sha256': whole.hexdigest(), 'manifest_sha256': sha(out / (PREFIX + '_manifest.json')),
+            'independent_restore': 'PENDING_NOT_PERFORMED_BY_PACK_AUTHOR'}
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--phase', choices=('select', 'pack'), required=True)
+    args = parser.parse_args()
+    os.sched_setaffinity(0, {min(os.sched_getaffinity(0))})
+    resource.setrlimit(resource.RLIMIT_AS, (4 * 1024**3, 4 * 1024**3))
+    signal.signal(signal.SIGALRM, lambda *_: (_ for _ in ()).throw(TimeoutError('180 second byte-task wall limit')))
+    signal.alarm(180)
+    started = time.monotonic()
+    gate_path = HERE / 'ROOT_EXPORT_GATE01.json'
+    gate = read(gate_path)
+    gate_sha = sha(gate_path)
+    prerequisites(gate)
+    write(HERE / (args.phase + '-start01.json'), {'gate_sha256': gate_sha, 'phase': args.phase,
+          'script_sha256': sha(__file__), 'status': 'STARTED_NOT_COMPLETED'})
+    result = {'status': 'FAIL_PRESERVED_NO_PACKET_CLAIM', 'phase': args.phase,
+              'gate_sha256': gate_sha, 'model_calls': 0, 'numerical_decoding': False, 'scientific_recalculation': False}
+    try:
+        result.update(select(gate, gate_sha) if args.phase == 'select' else pack(gate, gate_sha))
+        result['status'] = 'SEALED_ORIGINAL_BYTE_SELECTION' if args.phase == 'select' else 'PACKED_ORIGINAL_BYTES_ONLY'
+    except BaseException as exc:
+        result['error'] = repr(exc)
+        raise
+    finally:
+        signal.alarm(0)
+        result.update(wall_seconds=time.monotonic()-started, cpu_affinity=sorted(os.sched_getaffinity(0)),
+                      maximum_process_rss_kib=resource.getrusage(resource.RUSAGE_SELF).ru_maxrss,
+                      memory_policy='RLIMIT_AS4GiB; peak process RSS reported, not GPU memory', script_sha256=sha(__file__))
+        write(HERE / (args.phase + '-terminal01.json'), result)
+        print(json.dumps(result, allow_nan=False))
+
+
+if __name__ == '__main__':
+    main()

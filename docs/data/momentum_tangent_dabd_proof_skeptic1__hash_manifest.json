@@ -1,0 +1,89 @@
+{
+  "generatedUTC": "2026-10-12T21:45:16.9142138Z",
+  "records": [
+    {
+      "file": "TARGET_SPEC.md",
+      "sha256": "53B671E917D83BC0F26F1A260C47407AE1F99BADB3BFC6DF7D3C89613259E9B8",
+      "bytes": 4202,
+      "lastWriteUTC": "2026-10-12T21:23:46.4221772Z"
+    },
+    {
+      "file": "primary/WORKFILE.md",
+      "sha256": "B74F91933A84852ABD88D377C8FAF5C27B1B984729D93E16665612EFADD4C8F6",
+      "bytes": 4284,
+      "lastWriteUTC": "2026-10-12T21:36:19.0884777Z"
+    },
+    {
+      "file": "variational/PROOF.md",
+      "sha256": "CB3DBB2252ACADFD938D79D1B71E4870EC211B25B192BEA0486B228591E84638",
+      "bytes": 12011,
+      "lastWriteUTC": "2026-10-12T21:34:10.2613593Z"
+    },
+    {
+      "file": "spectral/WORKFILE.md",
+      "sha256": "FE8283810D2CB08D779526EDB62AAD16BF4DC2BB9B36DFE4B90E25A7C47CB1CC",
+      "bytes": 18350,
+      "lastWriteUTC": "2026-10-12T21:34:41.1288553Z"
+    },
+    {
+      "file": "skeptic1/SKELETON.md",
+      "sha256": "C2EC0F1A810D529F45656B1D1D980F7A0DE61E4D33EE3328309FB504868C90DC",
+      "bytes": 3702,
+      "lastWriteUTC": "2026-10-12T21:38:20.3334142Z"
+    },
+    {
+      "file": "skeptic1/WORKFILE.md",
+      "sha256": "FDC4CB9D11B51D09487112A9BA5ED3EB532EFE4577F868FFFF566C71B7883ACD",
+      "bytes": 13747,
+      "lastWriteUTC": "2026-10-12T21:45:16.8599040Z"
+    },
+    {
+      "file": "skeptic1/SCOREBOARD.md",
+      "sha256": "D5924F1E2686325FD15B7C88D21C81C6751B66E979750A819DABD0A10EEFF8FF",
+      "bytes": 2284,
+      "lastWriteUTC": "2026-10-12T21:45:16.8508990Z"
+    },
+    {
+      "file": "skeptic1/FINAL_REVIEW.md",
+      "sha256": "84830FA74687F79D1B9091ABCFA794E44BB28766EE973E075C38F970601F2E9E",
+      "bytes": 3014,
+      "lastWriteUTC": "2026-10-12T21:45:16.8519015Z"
+    },
+    {
+      "file": "skeptic1/exact_audit.py",
+      "sha256": "C98BF8FFCE63B57E252BD1E171E7C684ADC71113412879147180074D5E825D6F",
+      "bytes": 9052,
+      "lastWriteUTC": "2026-10-12T21:42:56.2434734Z"
+    },
+    {
+      "file": "skeptic1/controls.json",
+      "sha256": "DB5A0E1D32A233F5B4B93A9C47B0C948E08C3CCB6C4ACEA5C63B8023BD77F489",
+      "bytes": 27038,
+      "lastWriteUTC": "2026-10-12T21:43:01.7759104Z"
+    },
+    {
+      "file": "skeptic1/bugreports.json",
+      "sha256": "6863C6CA7A875B1CFA28D8E656BBB4EE8312B5378D60031854FFA49BED30E669",
+      "bytes": 2933,
+      "lastWriteUTC": "2026-10-12T21:43:01.7801563Z"
+    },
+    {
+      "file": "skeptic1/receipt.json",
+      "sha256": "E4D161BFDEB9CF55A5CE3A75CE80621E3C63CE8101305D1C9F09AAB2EAD34A89",
+      "bytes": 529,
+      "lastWriteUTC": "2026-10-12T21:43:01.7829243Z"
+    },
+    {
+      "file": "skeptic1/stdout.txt",
+      "sha256": "FEC03AC767DC99EEAF295188C2EAF881D6159900B7B5C42CC8C923623C00C0FE",
+      "bytes": 633,
+      "lastWriteUTC": "2026-10-12T21:43:01.7839232Z"
+    },
+    {
+      "file": "skeptic1/stderr.txt",
+      "sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+      "bytes": 0,
+      "lastWriteUTC": "2026-10-12T21:42:59.9028597Z"
+    }
+  ]
+}

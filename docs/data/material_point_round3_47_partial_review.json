@@ -1,0 +1,47 @@
+{
+  "reviewer": "Lady /root/continuation_review",
+  "source_commit": "47e28804a618a8eb16d918db44f36ad72866dd1f",
+  "verdict": "OPEN: declared primary nonconstant gauge gate failed",
+  "source133_Git_wheel_build_installed_plan_paths_pass": true,
+  "primary_actual_capacity_and_predivision_mass_owner_bit_controls_pass": true,
+  "primary_constant_and_reverse_mass_assertions_passed_before_failure": true,
+  "fine32_controls_executed": false,
+  "gauge_max_absolute_difference": 2.8097102655739095E-08,
+  "gauge_original_limit": 1E-13,
+  "diagnostic_domain_alpha_nominal_and_shifted": [
+    1,
+    1
+  ],
+  "known1D_bridge": "REUSED unchanged core only; no old rerun, no new blind claim",
+  "new2D_reserved_reference_evaluated": false,
+  "native_integration_by_reviewer": false,
+  "root_reported_native_completed_indices": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6
+  ],
+  "root_reported_native_interrupted_index": 7,
+  "root_reported_native_unexecuted_indices": [
+    8,
+    9
+  ],
+  "independent_native10_acceptance": "not completed, do not claim",
+  "newCI": "separate software status, cannot override gauge OPEN",
+  "evidence_sha256": {
+    "source-math-declaration.json": "67121222db2679d71c64b050030151572fd39836583f856a82e9fd9ff7b6f702",
+    "source-top-math-pilot.json": "fca861ba796c3b48aafa6ef09636549a95837009d8e6d7394dc56e2bd78e18ac",
+    "source-top-math-complete.log": "9b1541e9ef4cc86ddcbceffd387bb1b96f46abb3dd3269ef6c499e2db64e6d43",
+    "source-top-math-complete-resources.json": "ee8a0af978354af73555adcd8c6e3a0afb4f5830855cf02de19b3d72722d8b86",
+    "source-top-math-failure01.json": "861667f1485b24db5aae6f439d43a53317a6d487283e4245831bfb10a233daad",
+    "gauge-diagnostic-declaration.json": "4136247989b4c5fa09c7880af3d69a363346c8b45028b4c6751a49dfeb6d3885",
+    "gauge-diagnostic-result.json": "4d781ca79deeb7ac55d422240fd705e0e98d9499635509e6dc17dc56bff9d2fa",
+    "gauge-diagnostic-arrays.npz": "dd91a7c481b4fdf7556d603a820653603e1edc80ca0b361570fcb6453c66e768",
+    "gauge-diagnostic-resources.json": "c569deeff0dad323cf63c76a69498c1252b801b01a723e559de93ef3da468b55",
+    "source-math-partial-report.md": "f0f986a8d1c0ddc0131c777e67e7360d6a7be351f509950834e3b9332f49b97c"
+  },
+  "recorded_utc": "2026-10-12T15:43:08.2930743Z"
+}

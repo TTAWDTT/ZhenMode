@@ -1,0 +1,14 @@
+"""Task-local wrapper: installed resource supervisor, no scoring/solver imports."""
+import argparse,json,os,sys
+from pathlib import Path
+ROOT=Path(__file__).resolve().parent
+sys.path.insert(0,str(ROOT.parent/'installed'))
+from zhenmode.execution.resources import run_process_group
+parser=argparse.ArgumentParser();parser.add_argument('script');parser.add_argument('tag');parser.add_argument('--pilot',action='store_true');args=parser.parse_args()
+target=(ROOT/args.script).resolve();assert target.parent==ROOT
+command=[sys.executable,str(target)]+(['--pilot'] if args.pilot else [])
+with (ROOT/(args.tag+'.log')).open('x') as log:
+    process,resources=run_process_group(command,cwd=str(ROOT),env=dict(os.environ,JAX_PLATFORMS='cpu',CUDA_VISIBLE_DEVICES='',PYTHONPATH='',OMP_NUM_THREADS='1',OPENBLAS_NUM_THREADS='1',MKL_NUM_THREADS='1'),stdout=log,resources=dict(cpu=1,memory_mib=4096,wall_seconds=180))
+with (ROOT/(args.tag+'-resources.json')).open('x') as stream:json.dump(dict(returncode=process.returncode,resources=resources),stream,indent=2)
+print((ROOT/(args.tag+'.log')).read_text());print(json.dumps(dict(returncode=process.returncode,resources=resources)))
+raise SystemExit(process.returncode)

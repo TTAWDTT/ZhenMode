@@ -1,0 +1,19 @@
+{
+  "schema": "independent-existing-full-ci-readback-v1",
+  "source_revision": "dabd48abd898c20e0471a5ab9fc18e9b61cfa96d",
+  "run_id": 38318954281,
+  "scope": "Read actual existing terminal workflow metadata and raw log only; never dispatch/rerun tests or substitute parent70 CI",
+  "observed_state": "2026-10-12T23:15Z independent gh run view: exact headSha candidate, workflow_dispatch, actual test job in_progress, pytest step in_progress, MMS pending, lint completed success; not a software PASS",
+  "acceptance": [
+    "Terminal metadata databaseId/source/event are exact expected run/revision/workflow_dispatch",
+    "full_validation=true in original declaration and dispatch receipt, plus actual complete tests/ command and MMS execution in raw log",
+    "test and lint jobs and pytest/MMS/ruff steps completed success, no skipped/pending step promoted",
+    "Actual checkout full sourceSHA in both lint and test logs",
+    "Parse actual one pytest terminal summary with passed/failed/error/warnings/duration counts; no inferred count from collection",
+    "Actual MMS ALL PASS with individual preceding PASS checks and actual ruff All checks passed line",
+    "Raw log bytes SHA256 and file locators recorded; all failure/network retry observations retained",
+    "CI verdict software-only and cannot repair native strict composite FAIL or enlarge scientific scope"
+  ],
+  "lineage": "Independent reading/parser of existing GitHub log/terminal, not independent execution of tests or scientific oracle",
+  "pending_policy": "No PASS until actual terminal+raw log available"
+}

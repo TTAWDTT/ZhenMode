@@ -1,0 +1,18 @@
+{
+  "source": "70d408583aa99db63e49d958d89dcaccad273f0e",
+  "source_identity": "PASS146Git/archive/buildand133wheel/installedactualPython",
+  "source_math": "PASS unchangedoriginalcriteria",
+  "fresh_1D": "PASS statedfinitecharacteristiccorecriteria; minimumalpha0, noactiveclaim",
+  "fresh_ACTIVE2D": "PASS all3meshesalpha1 feasibletrue andoriginalcriteria",
+  "scope": "Declared finite developmental source/math/1D/ACTIVE2D checks only",
+  "scientific_fullphysics_grade": "OPEN",
+  "fullCI": "Separate root check; not graded by this review",
+  "native": "No native run or new ranking evaluated by this reviewer",
+  "new_momentum": "dual_face_v1",
+  "gradient": "fourth_uniform_v1",
+  "no_profile_parameter_gate_change": true,
+  "no_solver_diagnostic_rerun": true,
+  "reference_contact_ledger": "reference-contact-ledger.json",
+  "raw_readback": "saved-readback.json",
+  "old_harness_FAIL_and_attempt01_units_FAIL_preserved": true
+}

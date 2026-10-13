@@ -1,0 +1,12 @@
+{
+  "parent": "70d408583aa99db63e49d958d89dcaccad273f0e",
+  "status": "UNCOMMITTED source; not HEADidentity",
+  "new_tests": "tests/fd/test_momentum_tangent_filter.py",
+  "pilot": "exact n4 dense matrix only; no native or score; source guard freezing later",
+  "remaining": "new tests excluding completed n4 plus prior170 affectedcontrols once after actual pilot time",
+  "cpu": 1,
+  "wall_s": 180,
+  "memory_mib": 4096,
+  "scientific_gates": "unchanged original thresholds; fixed matrix/norm/sum declaration no relaxed tests",
+  "baseline_source": "defaulthelper AST bitexact bridge +actual default replay future"
+}

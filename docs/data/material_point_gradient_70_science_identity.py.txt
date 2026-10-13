@@ -1,0 +1,36 @@
+"""Task-local identity guard; independent byte hashing, no producer imports."""
+import ast, hashlib, json, sys, tarfile, zipfile
+from pathlib import Path
+ROOT=Path(__file__).resolve().parent
+STAGE=ROOT.parent
+COMMIT='70d408583aa99db63e49d958d89dcaccad273f0e'
+INST=STAGE/'installed'
+sys.path.insert(0,str(INST))
+read=lambda p:json.loads(Path(p).read_text())
+sha=lambda p:hashlib.sha256(Path(p).read_bytes()).hexdigest()
+def verify():
+    identity=read(STAGE/'wheel-identity.json')
+    manifest=read(STAGE/'build-input.json')
+    git=read(ROOT/'windows-git-identity.json')
+    assert identity['revision']==manifest['revision']==git['HEAD']==git['tracking_HEAD']==COMMIT
+    assert git['clean'] and manifest['windows_git_checkout_clean']
+    assert len(manifest['files'])==146
+    with tarfile.open(ROOT/'frozen-source.tar') as archive:
+        actual={entry.name:hashlib.sha256(archive.extractfile(entry).read()).hexdigest() for entry in archive if entry.isfile()}
+    assert actual==manifest['files']
+    wheel=STAGE/'wheel'/identity['wheel']; assert sha(wheel)==identity['wheel_sha256']
+    expected=identity['package_source_sha256']
+    assert len(expected)==identity['verified_complete_python_count']==133
+    registry=ast.parse((INST/'zhenmode/provenance/sources.py').read_text())
+    names=next(ast.literal_eval(node.value) for node in registry.body if isinstance(node,ast.Assign) and any(isinstance(t,ast.Name) and t.id=='PACKAGE_SOURCE_MODULES' for t in node.targets))
+    assert set(names)==set(expected)
+    installed={p.relative_to(INST).with_suffix('').as_posix():sha(p) for p in (INST/'zhenmode').rglob('*.py')}
+    assert installed==expected
+    with zipfile.ZipFile(wheel) as zipped:
+        wheel_python={name[:-3]:hashlib.sha256(zipped.read(name)).hexdigest() for name in zipped.namelist() if name.startswith('zhenmode/') and name.endswith('.py')}
+    archive_python={name[4:-3]:value for name,value in actual.items() if name.startswith('src/zhenmode/') and name.endswith('.py')}
+    assert expected==wheel_python==archive_python
+    import zhenmode
+    assert Path(zhenmode.__file__).resolve()==(INST/'zhenmode/__init__.py').resolve()
+    return dict(commit=COMMIT,build_file_count=146,package_python_count=133,wheel_sha256=identity['wheel_sha256'],package_source_sha256=installed,loaded_package_path=str(Path(zhenmode.__file__).resolve()),archive_sha256=sha(ROOT/'frozen-source.tar'),build_input_sha256=sha(STAGE/'build-input.json'),wheel_identity_sha256=sha(STAGE/'wheel-identity.json'),windows_git_metadata_sha256=sha(ROOT/'windows-git-identity.json'))
+BEFORE=verify()

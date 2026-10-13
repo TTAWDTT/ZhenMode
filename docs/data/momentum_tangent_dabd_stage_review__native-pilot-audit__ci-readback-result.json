@@ -1,0 +1,95 @@
+{
+  "schema": "independent-actual-terminal-raw-log-readback-v1",
+  "utc": "2026-10-12T23:21:01.523519+00:00",
+  "verdict": "PASS_SOFTWARE_CI_ONLY",
+  "source_revision": "dabd48abd898c20e0471a5ab9fc18e9b61cfa96d",
+  "run_id": 38318954281,
+  "actual_terminal": "completed",
+  "actual_conclusion": "success",
+  "full_validation": "true original declaration/dispatch; actual complete tests/ and MMS commands/terminal summaries present",
+  "terminal_path": "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\momentum-tangent-filter-v1\\review\\native-pilot-audit\\ci-run-terminal.json",
+  "terminal_sha256": "2a9650b7f4412b428ed560a27daad589a35cd2b0713e92ce4738ba355aeeea8d",
+  "log_path": "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\momentum-tangent-filter-v1\\review\\native-pilot-audit\\ci-raw-full.log",
+  "log_sha256": "79fdff7ccdecb6055f7a197bb6b7d439f29b5a482fd312e2ac43e9122093821f",
+  "pytest": {
+    "line": 674,
+    "text": "test\tRun python -m pytest tests/ -q\t2026-10-12T23:17:29.3862771Z 1771 passed, 6710 warnings in 1571.69s (0:26:11)",
+    "passed": 1771,
+    "warnings": 6710,
+    "duration_s": 1571.69
+  },
+  "MMS": {
+    "summary": "ALL PASS",
+    "individual_pass_count": 5,
+    "summary_line": 697
+  },
+  "ruff": {
+    "result": "PASS",
+    "line": 867
+  },
+  "evidence": [
+    {
+      "line": 93,
+      "text": "test\tRun actions/checkout@v4\t2026-10-12T22:50:53.7424986Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +dabd48abd898c20e0471a5ab9fc18e9b61cfa96d:refs/remotes/origin/ttawdtt/nodal-endpoint-closure"
+    },
+    {
+      "line": 95,
+      "text": "test\tRun actions/checkout@v4\t2026-10-12T22:50:54.6707655Z  * [new ref]         dabd48abd898c20e0471a5ab9fc18e9b61cfa96d -> origin/ttawdtt/nodal-endpoint-closure"
+    },
+    {
+      "line": 107,
+      "text": "test\tRun actions/checkout@v4\t2026-10-12T22:50:54.7527528Z dabd48abd898c20e0471a5ab9fc18e9b61cfa96d"
+    },
+    {
+      "line": 810,
+      "text": "lint\tRun actions/checkout@v4\t2026-10-12T22:50:52.9312138Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +dabd48abd898c20e0471a5ab9fc18e9b61cfa96d:refs/remotes/origin/ttawdtt/nodal-endpoint-closure"
+    },
+    {
+      "line": 812,
+      "text": "lint\tRun actions/checkout@v4\t2026-10-12T22:50:53.6685142Z  * [new ref]         dabd48abd898c20e0471a5ab9fc18e9b61cfa96d -> origin/ttawdtt/nodal-endpoint-closure"
+    },
+    {
+      "line": 824,
+      "text": "lint\tRun actions/checkout@v4\t2026-10-12T22:50:53.7371547Z dabd48abd898c20e0471a5ab9fc18e9b61cfa96d"
+    },
+    {
+      "line": 674,
+      "text": "test\tRun python -m pytest tests/ -q\t2026-10-12T23:17:29.3862771Z 1771 passed, 6710 warnings in 1571.69s (0:26:11)"
+    },
+    {
+      "line": 687,
+      "text": "test\tRun python -m zhenmode mms\t2026-10-12T23:17:33.3270285Z   d_dx_rel_L2                    = 6.400e-03  [PASS]"
+    },
+    {
+      "line": 688,
+      "text": "test\tRun python -m zhenmode mms\t2026-10-12T23:17:33.3270889Z   d_dy_rel_L2                    = 1.487e-02  [PASS]"
+    },
+    {
+      "line": 689,
+      "text": "test\tRun python -m zhenmode mms\t2026-10-12T23:17:33.3271548Z   laplacian_linear_max           = 1.072e-06  [PASS]"
+    },
+    {
+      "line": 690,
+      "text": "test\tRun python -m zhenmode mms\t2026-10-12T23:17:33.3272172Z   divergence_free_max            = 0.000e+00  [PASS]"
+    },
+    {
+      "line": 695,
+      "text": "test\tRun python -m zhenmode mms\t2026-10-12T23:17:33.3274613Z   convergence ratio (expect ~4 for 2nd-order) = 4.30  [PASS]"
+    },
+    {
+      "line": 697,
+      "text": "test\tRun python -m zhenmode mms\t2026-10-12T23:17:33.3275326Z ALL PASS"
+    },
+    {
+      "line": 867,
+      "text": "lint\tRun ruff check .\t2026-10-12T22:50:55.3396273Z All checks passed!"
+    }
+  ],
+  "limits": [
+    "Reading existing run only, no new execution or redispatch",
+    "Not a scientific oracle",
+    "Native strict latest score FAIL remains; no batch expansion"
+  ],
+  "parser_sha256": "c91c5033a27c1c1358fe0cb89a37349ded94b6faebd5fb8200fb06cbaefe7786",
+  "declaration_sha256": "fdc6b83b0776cf3a23c29a891e6e9c13643045ff28863aa437ad05b473c854b6"
+}

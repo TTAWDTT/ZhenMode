@@ -1,0 +1,134 @@
+# One-shot NEW frozen-wheel instantaneous momentum manufacture; no time stepping.
+import argparse,hashlib,json,math,sys,time,traceback
+from pathlib import Path
+from types import SimpleNamespace
+HERE=Path(__file__).resolve().parent;STAGE=HERE.parent;INST=STAGE/'installed'
+sys.path.insert(0,str(INST))
+import jax,jax.numpy as jnp,numpy as np
+import zhenmode
+from zhenmode.model.config import PhysicsConfig
+from zhenmode.model.solver.geometry.grid import GlobalOceanGrid
+from zhenmode.model.solver.factory import make_solver_global
+from zhenmode.model.solver.dynamics import transport as tr,tendencies as td
+from zhenmode.model.solver.numerics.horizontal import _filter_tangent_gram_fd,_dealias_h_fd
+from zhenmode.model.solver.numerics.vertical import _d_dz,_fill_ghost_bottom
+parser=argparse.ArgumentParser();parser.add_argument('--pilot',action='store_true');ARGS=parser.parse_args()
+def load(p):return json.loads(Path(p).read_text(encoding='utf-8-sig'))
+def sha(p):return hashlib.sha256(Path(p).read_bytes()).hexdigest()
+DEC=load(HERE/'new-momentum-declaration.json');IDENT=load(HERE/'source-identity-result.json')
+assert IDENT['verdict']=='PASS_SOURCE_IDENTITY_133_AND_REUSED_OWNER_AST' and IDENT['revision']==DEC['source']
+assert Path(zhenmode.__file__).resolve().is_relative_to(INST.resolve())
+OUT=HERE/('new-momentum-timing.json' if ARGS.pilot else 'new-momentum-result.json')
+assert not OUT.exists()
+if not ARGS.pilot:assert not (HERE/'new-momentum-rows.jsonl').exists() and not (HERE/'new-momentum-arrays.npz').exists()
+started=time.monotonic();rows=[];arrays={};checks=[];report={'rows':rows,'checks':checks,'pilot':ARGS.pilot}
+def require(name,condition,detail=None):
+ if not bool(condition):raise AssertionError({'name':name,'detail':detail})
+ checks.append(name)
+def maxdef(a,b):return float(np.max(abs(np.asarray(a)-np.asarray(b))))
+def synthetic():
+ # Source-wheel controls of known fixtures, no prior raw science data is reused.
+ p=SimpleNamespace(dealias_lon_mask=jnp.ones((8,1,1)));R=np.array([[1,-2,1,0],[0,1,-2,1]],float);F=np.eye(4)-R.T@R/16
+ receipt=[]
+ for label,q in [('null',np.zeros(4)),('constant',np.full(4,7.)),('affine',np.arange(4,dtype=float)),('T1',np.array([0.,1.,4.,9.])),('e0',np.array([1.,0.,0.,0.]))]:
+  x=np.broadcast_to(q[None,:,None],(8,4,1));got=np.asarray(_filter_tangent_gram_fd(jnp.asarray(x),p));defect=maxdef(got,np.broadcast_to((F@q)[None,:,None],x.shape));budget=128*np.finfo(float).eps*np.sum(abs(x))
+  require('wheel_matrix_'+label,defect<=budget);require('wheel_norm_'+label,np.sum(got**2)<=np.sum(x**2)*(1+512*np.finfo(float).eps));require('wheel_mean_'+label,abs(float(np.sum(got-x)))<=512*np.finfo(float).eps*np.sum(abs(x)))
+  if label in ['null','constant','affine']:require('wheel_exact_'+label,np.array_equal(got,x))
+  if label=='T1':require('wheel_fixed_T1',np.array_equal(got[0,:,0],[-1/8,9/8,33/8,71/8]))
+  receipt.append({'label':label,'defect':defect,'budget':float(budget)})
+ q=np.array([1.,-1.,1.,-1.]);bad=(np.eye(4)-R.T@R/4)@q;require('falsequarter_norm_CAUGHT',np.sum(bad**2)>np.sum(q**2));require('falsequarter_matrix_fixture_mismatch_CAUGHT',not np.array_equal((np.eye(4)-R.T@R/4)@np.array([0.,1.,4.,9.]),np.array([-1/8,9/8,33/8,71/8])))
+ L=np.diag([-3.,-2.,-2.,-3.])+np.diag(np.ones(3),1)+np.diag(np.ones(3),-1);B=(np.eye(4)+L/4)@(np.eye(4)+L/4)
+ for i,q in enumerate(np.eye(4)):
+  signal=np.broadcast_to(q[None,:,None],(8,4,1));require('normal_Bn_basis_'+str(i),maxdef(_dealias_h_fd(jnp.asarray(signal),p,normal=True)[0,:,0],B@q)<=128*np.finfo(float).eps*np.sum(abs(signal)))
+ # Retained original Bn=(I+L/4)^2 has Bn1=[3/8,7/8,7/8,3/8].
+ # Unselected Fn1=[5/8,9/8,9/8,5/8] is a different object, never used here.
+ normalone=np.asarray(_dealias_h_fd(jnp.ones((8,4,1)),p,normal=True))[0,:,0];require('original_Bn_constant_not_preserved',np.array_equal(normalone,[3/8,7/8,7/8,3/8]))
+ return {'matrix':receipt,'falsequarter_CAUGHT':True,'original_Bn_constant_actual':normalone.tolist(),'not_normal_constant_preservation':True}
+def factory(g):
+ nx,ny,nz=g['Nx'],g['Ny'],g['Nz'];H=DEC['geometry']['H'];Lx=DEC['geometry']['Lx'];Ly=DEC['geometry']['Ly'];shape=(nx,ny,nz);x=(np.arange(nx)+.5)*Lx/nx;y=(np.arange(ny)+.5)*Ly/ny;z=-np.linspace(0.,H,nz)
+ grid=GlobalOceanGrid(lon=x,lat=y,dx_2d=np.full((nx,ny),Lx/nx),dy=Ly/ny,cos_lat=np.ones(ny),f=np.zeros((nx,ny)),z=z,dz=-np.diff(z),nz=nz,depth=np.full((nx,ny),H),wet_mask=np.ones((nx,ny)),ocean_mask=np.ones((nx,ny),bool),land_mask=np.zeros((nx,ny)),wet_mask_3d=np.ones(shape),nx=nx,ny=ny)
+ phys=PhysicsConfig(**dict.fromkeys(['nu_h','nu_v','nu_bi','kappa_h','kappa_v','kappa_bi','kappa_conv','kappa_gm','kappa_redi','r_bot','cd','tau_x','tau_y','Q_heat'],0.))
+ options=dict(return_params=True,polar_cap_rows=0,polar_cap_taper=0,conservative_kv=True,localize_conv=True)|DEC['candidate']
+ _,init,_,p,_=make_solver_global(grid,phys,DEC['geometry']['dt'],**options);old=p._replace(momentum_tangent_filter_scheme='binomial_v1')
+ for changed in [{'momentum_tangent_filter_scheme':'invalid'},{'dtype':'float32'},{'momentum_vertical_velocity_scheme':'point_primitive_v1'},{'mode_split':True},{'material_point_gradient_scheme':'minmod_v1'}]:
+  try:make_solver_global(grid,phys,DEC['geometry']['dt'],**(options|changed))
+  except ValueError:require('installed_API_reject_'+str((nx,ny,changed)),True)
+  else:raise AssertionError('installed API accepted unsupported selector family '+str(changed))
+ state=init()._replace(T=jnp.full(shape,15.),S=jnp.full(shape,35.),eta=jnp.zeros((nx,ny)))
+ @jax.jit
+ def call(u,v):
+  s=state._replace(u=u,v=v);w=tr._compute_vertical_velocity(s,p);Fz=tr._vertical_transport_iface(u,v,p)
+  uz=_d_dz(_fill_ghost_bottom(u,p),p);vz=_d_dz(_fill_ghost_bottom(v,p),p)
+  ux,uy=tr._gradient_face_gated_3d(u,p);vx,vy=tr._gradient_face_gated_3d(v,p,normal=True)
+  raw=(-(u*ux+v*uy+w*uz),-(u*vx+v*vy+w*vz))
+  newadv=tr._advection_flux_form(u,v,w,p);oldadv=tr._advection_flux_form(u,v,w,old)
+  newmom=td._compute_momentum_tendency(s,p);oldmom=td._compute_momentum_tendency(s,old)
+  filtered=_filter_tangent_gram_fd(raw[0],p)
+  return dict(newmom=newmom,oldmom=oldmom,newadv=newadv,oldadv=oldadv,raw=raw,directfilter=filtered,w=w,Fz=Fz,uz=uz,vz=vz)
+ return x,y,shape,p,call
+try:
+ report['synthetic']=synthetic()
+ for g in DEC['grids'][:1] if ARGS.pilot else DEC['grids']:
+  x,y,shape,p,call=factory(g);nx,ny,nz=shape;a=2*np.pi/DEC['geometry']['Lx'];b=np.pi/DEC['geometry']['Ly'];X=(a*x)[:,None,None];Y=(b*y)[None,:,None];U0=DEC['field']['U0'];h=np.broadcast_to(np.asarray(p.dz_node),shape)
+  require('fixed_h_positive_horizontal_'+str(g),np.all(h>0) and np.array_equal(h,np.broadcast_to(h[:1,:1,:],shape)))
+  def fields(amplitude):return jnp.asarray(np.broadcast_to(U0+amplitude*b*np.sin(X)*np.cos(Y),shape).copy()),jnp.asarray(np.broadcast_to(-amplitude*a*np.cos(X)*np.sin(Y),shape).copy())
+  if ARGS.pilot:
+   measured=[]
+   for repeat in range(2):
+    t=time.monotonic()
+    for amp in DEC['field']['amplitudes']:
+     u,v=fields(amp);jax.block_until_ready(call(u,v))
+    measured.append(time.monotonic()-t)
+   rows.append({'grid':g,'same_plus_minus_callset_seconds':measured,'oracle_compared':False});continue
+  zero=jax.tree.map(np.asarray,jax.block_until_ready(call(jnp.full(shape,U0),jnp.zeros(shape))))
+  require('actual_constant_tangent_owner_'+str(g),max(float(np.max(abs(zero['newmom'][0]))),float(np.max(abs(zero['oldmom'][0]))))<=DEC['gates']['constant_owner_max'])
+  for amp in DEC['field']['amplitudes']:
+   u,v=fields(amp)
+   # Analytic truth and detector controls before this production output is inspected.
+   truth=(np.broadcast_to(-U0*amp*a*b*np.cos(X)*np.cos(Y)-amp**2*a*b**2*np.sin(X)*np.cos(X),shape),np.broadcast_to(-U0*amp*a*a*np.sin(X)*np.sin(Y)-amp**2*a*a*b*np.sin(Y)*np.cos(Y),shape))
+   ux=np.broadcast_to(amp*a*b*np.cos(X)*np.cos(Y),shape);uy=np.broadcast_to(-amp*b*b*np.sin(X)*np.sin(Y),shape);vx=np.broadcast_to(amp*a*a*np.sin(X)*np.sin(Y),shape);vy=np.broadcast_to(-amp*a*b*np.cos(X)*np.cos(Y),shape)
+   for k,direct in enumerate((-(np.asarray(u)*ux+np.asarray(v)*uy),-(np.asarray(u)*vx+np.asarray(v)*vy))):require('product_rule_truth_'+str((ny,amp,k)),maxdef(direct,truth[k])<=128*np.finfo(float).eps*np.sum(abs(truth[k])))
+   denominators=[float(np.sum(h*abs(t))) for t in truth];require('positive_each_truth_norm_'+str((ny,amp)),all(z>0 for z in denominators))
+   require('analytic_clean_comparator_'+str((ny,amp)),all(float(np.sum(h*abs(t-t)))/den==0 for t,den in zip(truth,denominators)))
+   wrong=[float(np.sum(h*abs(-t-t)))/den for t,den in zip(truth,denominators)];require('analytic_wrong_sign_CAUGHT_'+str((ny,amp)),all(abs(z-2)<1e-14 and z>DEC['gates']['finest_combined_L1_relative_max'] for z in wrong))
+   observed=jax.tree.map(np.asarray,jax.block_until_ready(call(u,v)))
+   # Preserve every raw observation before any owner/norm/science assertion can fail.
+   tag=f'Nx{nx}_Ny{ny}_A{"plus" if amp>0 else "minus"}'
+   for key,values in [('u',np.asarray(u)),('v',np.asarray(v)),('h',h),('truth_u',truth[0]),('truth_v',truth[1])]:arrays[tag+'_'+key]=values
+   for key in ['w','Fz','uz','vz','directfilter']:arrays[tag+'_'+key]=observed[key]
+   for group in ['raw','newmom','oldmom','newadv','oldadv']:
+    for k,name in enumerate(['u','v']):arrays[tag+'_'+group+'_'+name]=observed[group][k]
+   np.savez(HERE/'new-momentum-arrays.npz',**arrays)
+   require('vertical_constant_source_gradients_'+str((ny,amp)),np.max(abs(observed['uz']))==0 and np.max(abs(observed['vz']))==0)
+   owner=max(maxdef(a0,b0) for owner0,adv0 in [(observed['newmom'],observed['newadv']),(observed['oldmom'],observed['oldadv'])] for a0,b0 in zip(owner0,adv0));require('full_owner_original_1e17_'+str((ny,amp)),owner<=DEC['gates']['actual_owner_max'])
+   require('direct_helper_owner_original_1e17_'+str((ny,amp)),maxdef(observed['directfilter'],observed['newmom'][0])<=DEC['gates']['actual_owner_max'])
+   normaldef=maxdef(observed['newmom'][1],observed['oldmom'][1]);require('normal_unchanged_numerical_'+str((ny,amp)),normaldef<=DEC['gates']['normal_max']);normalbits=np.array_equal(observed['newmom'][1].view(np.uint64),observed['oldmom'][1].view(np.uint64));require('normal_unchanged_bits_'+str((ny,amp)),normalbits)
+   raw=observed['raw'][0];out=observed['newmom'][0];normin=float(np.sum(h*raw**2));normout=float(np.sum(h*out**2));sumdef=abs(float(np.sum(h*(out-raw))));sumbudget=512*np.finfo(float).eps*float(np.sum(h*abs(raw)));require('fixed_weight_norm_'+str((ny,amp)),normout<=normin*(1+512*np.finfo(float).eps));require('fixed_weight_sum_'+str((ny,amp)),sumdef<=sumbudget)
+   errors=[float(np.sum(h*abs(r-t)))/den for r,t,den in zip(observed['newmom'],truth,denominators)]
+   def rms(err):return math.sqrt(float(np.sum(h*err**2)/np.sum(h)))
+   old_rms=rms(observed['oldmom'][0]-truth[0]);new_rms=rms(out-truth[0]);strict=new_rms<old_rms
+   # Save raw row before asserting strict-gate, so failure remains evidence.
+   row={'grid':g,'amplitude':amp,'normalized_L1_each':errors,'truth_L1_each':denominators,'uRMS_old':old_rms,'uRMS_new':new_rms,'uRMS_strict_improvement':strict,'owner_max':owner,'normal_maxdiff':normaldef,'normal_uint64_same':normalbits,'norm2_raw':normin,'norm2_filtered':normout,'sum_defect':sumdef,'sum_budget':sumbudget,'wrong_analytic_sign_relative':wrong,'actual_w_min':float(observed['w'].min()),'actual_w_max':float(observed['w'].max()),'native_bed_w_max':float(abs(observed['w'][...,-1]).max()),'uz_vz_max':0.0,'reversed_w_plant':'INAPPLICABLE_ZERO_VERTICAL_GRADIENTS'}
+   rows.append(row)
+   with (HERE/'new-momentum-rows.jsonl').open('a') as f:print(json.dumps(row),file=f)
+
+   print(json.dumps(row),flush=True);require('every_grid_sign_strict_uRMS_'+str((ny,amp)),strict)
+ if not ARGS.pilot:
+  for amp in DEC['field']['amplitudes']:
+   selected=[r for r in rows if r['amplitude']==amp];require('three_grid_denominator_'+str(amp),len(selected)==3)
+   for k in range(2):
+    e=[r['normalized_L1_each'][k] for r in selected];require('finest_original_L1_'+str((amp,k)),e[-1]<=DEC['gates']['finest_combined_L1_relative_max']);require('each_original_refinement_'+str((amp,k)),all(old/new>=DEC['gates']['each_refinement_min'] for old,new in zip(e[:-1],e[1:])))
+ report['verdict']='PASS_TIMING_ONLY_NO_ORACLE' if ARGS.pilot else 'PASS_NEW_FINITE_MOMENTUM_GATES'
+except Exception as error:report.update(verdict='FAIL_RETAINED',error=repr(error),traceback=traceback.format_exc())
+finally:
+ manifest=load(STAGE/'wheel-identity.json')['package_source_sha256'];actual={module:sha(INST/(module+'.py')) for module in manifest}
+ if actual!=manifest:report.update(verdict='FAIL_RETAINED',identity_error='installed source changed during execution')
+ paths={name:str(Path(mod.__file__).resolve()) for name,mod in list(sys.modules.items()) if name=='zhenmode' or name.startswith('zhenmode.')}
+ if not all(Path(path).is_relative_to(INST.resolve()) for path in paths.values()):report.update(verdict='FAIL_RETAINED',loaded_path_error=paths)
+ report.update(source=DEC['source'],scope=DEC['scope'],elapsed_s=time.monotonic()-started,package_source_sha256=actual,loadedpaths=paths,script_SHA=sha(__file__),declaration_SHA=sha(HERE/'new-momentum-declaration.json'),full_native_steps=0,ranking='root strict native70 pilot FAIL remains, not superseded by this finite manufacture')
+ with OUT.open('x') as f:json.dump(report,f,indent=2)
+ print(report['verdict'],flush=True)
+ if report['verdict'].startswith('FAIL'):print(report.get('traceback',report),flush=True);raise SystemExit(1)
+
+
+

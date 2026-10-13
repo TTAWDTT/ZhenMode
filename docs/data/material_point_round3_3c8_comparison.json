@@ -1,0 +1,75 @@
+{
+  "scope": "same six development grid/amplitude groups; reuse immutable frozen MOM6/Oceananigans outputs, no global SOTA claim",
+  "source_revision": "3c8e86bef2ee1fbfd50cca4343d6fc61694d9edc",
+  "selection_sha256": "479ed6b1140dd3f33cb0057ecad0a275b83b34dad54ba3314c2dc97b4ad543dc",
+  "groups": [
+    {
+      "profile": "primary",
+      "control": "main",
+      "mom6": 0.036699334480504484,
+      "oceananigans": 0.12285950114586117,
+      "zhenmode_v3": 0.0524039393437639,
+      "zhenmode_454": 0.005388509039568577,
+      "zhenmode_362": 0.005388509039568577,
+      "zhenmode_3c8": 0.005388509039568577,
+      "original_screens_pass": true
+    },
+    {
+      "profile": "primary",
+      "control": "half",
+      "mom6": 0.03639019551928815,
+      "oceananigans": 0.12288309188059326,
+      "zhenmode_v3": 0.05219678373040916,
+      "zhenmode_454": 0.002701289299679258,
+      "zhenmode_362": 0.0027012892996825487,
+      "zhenmode_3c8": 0.0027012892996825487,
+      "original_screens_pass": true
+    },
+    {
+      "profile": "horizontal-coarse",
+      "control": "main",
+      "mom6": 0.08869339763321504,
+      "oceananigans": 0.13654384226339566,
+      "zhenmode_v3": 0.05207124195854207,
+      "zhenmode_454": 0.0051097907013557325,
+      "zhenmode_362": 0.0051097907013557325,
+      "zhenmode_3c8": 0.0051097907013557325,
+      "original_screens_pass": true
+    },
+    {
+      "profile": "horizontal-coarse",
+      "control": "half",
+      "mom6": 0.08856800026656829,
+      "oceananigans": 0.13656578723702445,
+      "zhenmode_v3": 0.0518857154312009,
+      "zhenmode_454": 0.002597085100116228,
+      "zhenmode_362": 0.002597085100116228,
+      "zhenmode_3c8": 0.002597085100116228,
+      "original_screens_pass": true
+    },
+    {
+      "profile": "vertical-fine",
+      "control": "main",
+      "mom6": 0.030172678193749452,
+      "oceananigans": 0.04403194602861599,
+      "zhenmode_v3": 0.013479603952965834,
+      "zhenmode_454": 0.005413792384098446,
+      "zhenmode_362": 0.005413792384326902,
+      "zhenmode_3c8": 0.005413792384326902,
+      "original_screens_pass": true
+    },
+    {
+      "profile": "vertical-fine",
+      "control": "half",
+      "mom6": 0.029792652883607818,
+      "oceananigans": 0.04403889090009892,
+      "zhenmode_v3": 0.01263850656354917,
+      "zhenmode_454": 0.0027071644764075703,
+      "zhenmode_362": 0.0027071644764075703,
+      "zhenmode_3c8": 0.0027071644764075703,
+      "original_screens_pass": true
+    }
+  ],
+  "native_performance_comparison": false,
+  "global_SOTA": false
+}

@@ -1,0 +1,14 @@
+{
+  "confirmed": true,
+  "created_utc": "2026-10-12T21:11:24Z",
+  "source": "root collaboration message 2026-10-13",
+  "scope": "finite DEVELOPMENT software operator diagnosis only; all146 identity amendment authorized; no physics qualification",
+  "final_hashes": {
+    "DECLARATION.md": "12206d7f5c78ff013325057f508fe6b672802a9ea99e93d97606820d94125ce7",
+    "stencil_oracle.py": "1c9db4d034b82991ea240b0d310d7ed5ed9646d1b80837b7c5750da129d4c828",
+    "truth_generator.py": "805e5115b1cc104cd15f4f2d89d97748aeb06c4991aba6fbe60d6ff99717edd6",
+    "run_d1.py": "8a38ea09636e91c5abacf12466660723298bc94c6560a3549d95f16c467d939c",
+    "supervise.py": "2db1ece082abad88ca0e60903950db22cbbf44f535bf90c5ada8dd2f84ee9028",
+    "launch.sh": "2b43cde01f84c0266e2965efb1b5379aeae385eaf6cb91ce8604835ff2970e34"
+  }
+}

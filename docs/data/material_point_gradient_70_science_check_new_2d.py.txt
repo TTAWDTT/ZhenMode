@@ -1,0 +1,85 @@
+"""Fresh actual-owner ACTIVE2D RHS; analytic derivatives authored here only."""
+import argparse,hashlib,json,math,time
+from fractions import Fraction as Q
+from pathlib import Path
+import jax,jax.numpy as jnp,numpy as np
+from identity import BEFORE,ROOT,verify
+from common import geometry,snapshot,OPTIONS
+DB=(ROOT/'new-2d-declaration.json').read_bytes();DEC=json.loads(DB)
+def normalized(actual,truth,h):
+    numerator=np.sum(abs(actual-truth).astype(np.longdouble)*h.astype(np.longdouble))
+    denominator=np.sum(abs(truth).astype(np.longdouble)*h.astype(np.longdouble))
+    assert denominator>0
+    return float(numerator/denominator),float(numerator),float(denominator)
+# Comparator controls and exact polynomial derivative coefficients before data.
+pt=np.array([1.,-.5,.125]);ph=np.array([.5,1,.5])
+assert normalized(pt,pt,ph)[0]==0 and normalized(-pt,pt,ph)[0]==2
+assert normalized(pt,pt,ph)[0]<=.05 and not normalized(-pt,pt,ph)[0]<=.05
+for D in (Q(0),Q(1,7),Q(3,8),Q(5,6),Q(1)):
+    expanded=1-Q(7,5)*D-Q(9,5)*D**2+Q(6,5)*D**3
+    factorized=(1-2*D)*(1+Q(3,5)*D*(1-D))
+    assert expanded==factorized
+def setup(mesh):
+    geo=DEC['geometry'];Ny,Nz=mesh['Ny'],mesh['Nz'];H,Ly=geo['H'],geo['Ly']
+    grid,d,y,p=geometry(Ny,Nz,H=H,Lx=geo['Lx'],Ly=Ly,dt=geo['dt'])
+    Y=y[None,:,None]/Ly;D=d[None,None,:]/H;shape=(8,Ny,Nz)
+    fprime=(1-2*D)*(1+.6*D*(1-D));g=D+.14*D**2+.012*D**4
+    v=np.broadcast_to(.13/H*np.sin(math.pi*Y)*fprime,shape).copy()
+    q=np.broadcast_to(9+.052*np.cos(math.pi*Y)+(1+.037*np.cos(math.pi*Y))*g,shape).copy()
+    run=snapshot(jnp.zeros(shape),jnp.asarray(v),p)
+    return dict(Ny=Ny,Nz=Nz,Y=Y,D=D,d=d,p=p,q=q,v=v,run=run)
+def analytic(case):
+    Y,D=case['Y'],case['D'];H,Ly=DEC['geometry']['H'],DEC['geometry']['Ly']
+    # Expanded polynomial route differs from velocity field's factored form.
+    f=D-.7*D**2-.6*D**3+.3*D**4
+    w=-.13*math.pi/Ly*np.cos(math.pi*Y)*f
+    w=w.copy();w[...,0]=0.;w[...,-1]=0.
+    qy=-math.pi/Ly*np.sin(math.pi*Y)*(.052+.037*(D+.14*D**2+.012*D**4))
+    qd=(1+.037*np.cos(math.pi*Y))*(1+.28*D+.048*D**3)/H
+    return np.broadcast_to(-case['v']*qy-w*qd,case['q'].shape)
+def evaluate(mesh,pilot=False):
+    begin=time.monotonic();case=setup(mesh);p=case['p'];run=case['run'];q=case['q'];times=[]
+    data=None
+    for _ in range(4 if pilot else 1):
+        tick=time.monotonic();data=tuple(np.asarray(v) for v in jax.block_until_ready(run(jnp.asarray(q),jnp.asarray(False))))
+        times.append(time.monotonic()-tick)
+    if pilot:return dict(Ny=mesh['Ny'],Nz=mesh['Nz'],call_times_s=times,elapsed_s=time.monotonic()-begin,scope='Timing only; no analytic reference comparison or numerical display')
+    rate,boundary,core,alpha,feasible,antiZ,F,mx,my,ax,ay,Nm=data;h=np.asarray(p.dz_node)
+    # Full actual-owner positive/negative controls precede new oracle comparison.
+    const=tuple(np.asarray(v) for v in jax.block_until_ready(run(jnp.ones_like(jnp.asarray(q)),jnp.asarray(False))))
+    bad=tuple(np.asarray(v) for v in jax.block_until_ready(run(jnp.ones_like(jnp.asarray(q)),jnp.asarray(True))))
+    constant=float(np.max(abs(const[0])));badmass=float(np.max(abs(bad[0])))
+    expected=-(Nm+np.diff(bad[6],axis=-1))/h
+    defect=float(np.max(abs(bad[0]-expected)))
+    truth=analytic(case);relative,numerator,denominator=normalized(rate,truth,h)
+    step=float(p.dt/p.adv_nsub);Euler=q+step*rate
+    stock=np.sum(q.astype(np.longdouble)*h.astype(np.longdouble))/(8*mesh['Ny'])
+    change=np.sum((Euler.astype(np.longdouble)-q.astype(np.longdouble))*h.astype(np.longdouble))/(8*mesh['Ny'])
+    boundary_increment=np.mean(boundary.astype(np.longdouble))*np.longdouble(step)
+    residual=float(change-boundary_increment);limit=1e-12*max(1.,abs(float(stock)),abs(float(boundary_increment)))
+    zeroZ=bool(np.all(antiZ[F==0.]==0.));zeroH=bool(np.all(ax[mx==0.]==0.) and np.all(ay[my==0.]==0.))
+    north=bool(np.all(my[:,-1]==0.) and np.all(ay[:,-1]==0.));core_defect=float(np.max(abs(rate-core)))
+    capacity=np.array_equal(np.diff(np.r_[0.,.5*(case['d'][:-1]+case['d'][1:]),DEC['geometry']['H']]),h.reshape(-1))
+    ok=constant<=1e-17 and badmass>1e-12 and defect<=2e-12 and abs(residual)<=limit and np.min(Euler)>=-1e-14 and bool(feasible) and float(alpha)>.5 and zeroZ and zeroH and north and core_defect<=2e-12 and capacity
+    row=dict(Ny=mesh['Ny'],Nz=mesh['Nz'],relative_weighted_rate_L1=relative,error_numerator=numerator,analytic_denominator=denominator,constant_rhs_max=constant,badmass_constant_defect=badmass,badmass_formula_difference=defect,alpha=float(alpha),feasible=bool(feasible),minimum_Euler=float(np.min(Euler)),Euler_stock_initial=float(stock),Euler_stock_change=float(change),boundary_increment=float(boundary_increment),Euler_stock_residual=residual,Euler_stock_limit=limit,zero_vertical_pins=zeroZ,zero_horizontal_pins=zeroH,closed_north=north,actual_core_max=core_defect,capacity_exact=capacity,options=OPTIONS,controls_pass=bool(ok),elapsed_s=time.monotonic()-begin)
+    np.savez(ROOT/f'new-2d-raw-{mesh["Ny"]}x{mesh["Nz"]}.npz',q=q,rate=rate,truth=truth,core_rate=core,h=h,Euler=Euler,boundary=boundary,alpha=alpha,feasible=feasible,Fz=F,anti_vertical=antiZ,anti_x=ax,anti_y=ay,mass_x=mx,mass_y=my,mass_numerator=Nm,constant_rate=const[0],badmass_rate=bad[0])
+    with (ROOT/'new-2d-journal.jsonl').open('a') as stream:print(json.dumps(row),file=stream)
+    print('COMPLETED_MESH',json.dumps(row),flush=True)
+    return row
+parser=argparse.ArgumentParser();parser.add_argument('--pilot',action='store_true');args=parser.parse_args();clock=time.monotonic()
+assert json.loads((ROOT/'source-math-result.json').read_text())['verdict']=='PASS'
+assert json.loads((ROOT/'new-1d-result.json').read_text())['verdict']=='PASS'
+if args.pilot:
+    rows=[evaluate(DEC['meshes'][0],True)];ratios=[];ok=True;name='new-2d-timing-pilot.json';grade='timing-only'
+else:
+    rows=[]
+    for mesh in DEC['meshes']:
+        row=evaluate(mesh);rows.append(row)
+        if not row['controls_pass']:break
+    ratios=[a['relative_weighted_rate_L1']/b['relative_weighted_rate_L1'] for a,b in zip(rows[:-1],rows[1:])]
+    ok=len(rows)==len(DEC['meshes']) and all(row['controls_pass'] for row in rows) and rows[-1]['relative_weighted_rate_L1']<=.05 and all(r>=1.25 for r in ratios)
+    name='new-2d-result.json';grade='PASS' if ok else 'OPEN'
+after=verify();assert after==BEFORE
+record=dict(verdict=grade,rows=rows,refinement_ratios=ratios,completed_mesh_count=len(rows),declared_mesh_count=3,identity_before=BEFORE,identity_after=after,declaration_sha256=hashlib.sha256(DB).hexdigest(),evaluator_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),elapsed_s=time.monotonic()-clock,scope=DEC['scope'],lineage=DEC['lineage'],positive_negative_comparator_controls='PASS',native_run=False,parameters_or_gates_changed=False)
+with (ROOT/name).open('x') as stream:json.dump(record,stream,indent=2)
+print(json.dumps({k:v for k,v in record.items() if k not in ('identity_before','identity_after','rows')}));raise SystemExit(0 if ok else 2)

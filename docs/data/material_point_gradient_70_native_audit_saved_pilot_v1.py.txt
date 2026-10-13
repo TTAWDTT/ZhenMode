@@ -1,0 +1,189 @@
+"""Post-production independent saved-array audit. Never imports zhenmode."""
+import os
+os.environ.update(OMP_NUM_THREADS='1', OPENBLAS_NUM_THREADS='1', MKL_NUM_THREADS='1', JAX_PLATFORMS='cpu', CUDA_VISIBLE_DEVICES='', PYTHONPATH='')
+import datetime, hashlib, io, json, math, resource, signal, subprocess, tarfile, time, zipfile
+from pathlib import Path
+import numpy as np
+
+HERE = Path(__file__).resolve().parent
+STAGE = HERE.parent.parent
+WORK = Path('/mnt/d/CodexWorktrees/thermal-full-scan/ocean-solver')
+REV = '70d408583aa99db63e49d958d89dcaccad273f0e'
+start = time.monotonic()
+os.sched_setaffinity(0, {min(os.sched_getaffinity(0))})
+resource.setrlimit(resource.RLIMIT_AS, (4294967296, 4294967296))
+signal.signal(signal.SIGALRM, lambda *args: (_ for _ in ()).throw(TimeoutError('180 s audit cap')))
+signal.alarm(180)
+
+def utc(): return datetime.datetime.now(datetime.timezone.utc).isoformat()
+def sha(data): return hashlib.sha256(data).hexdigest()
+def filehash(path): return sha(Path(path).read_bytes())
+def read(path): return json.loads(Path(path).read_text())
+def digest(x): return sha(json.dumps(x, sort_keys=True, separators=(',', ':'), allow_nan=False).encode())
+def save(name, x):
+    with (HERE/name).open('x') as f: json.dump(x, f, indent=2, allow_nan=False)
+def require(c, msg):
+    if not c: raise ValueError(msg)
+def npz(path):
+    with zipfile.ZipFile(path) as z: require(sum(i.file_size for i in z.infolist()) <= 128*1024**2, 'NPZ decoded budget')
+    with np.load(path, allow_pickle=False) as z: a = {k: z[k] for k in z.files}
+    if 'metadata' in a: a['metadata'] = json.loads(str(a['metadata']))
+    return a
+def same(a,b): return a.shape == b.shape and a.dtype == b.dtype and np.array_equal(a,b)
+def close(a,b, inventory=False): return abs(a-b) <= (2e-14 if inventory else 5e-15 + 5e-12*abs(b))
+def rms(error, weight, times, duration):
+    # Independently accumulate a spatial mean square at each snapshot, then time trapezoids.
+    means=[]
+    for j in range(len(times)):
+        w=np.broadcast_to(weight[j],error[j].shape).ravel()
+        e=error[j].ravel()
+        means.append(float(np.dot(w,e*e)/np.sum(w)))
+    return math.sqrt(sum((means[j-1]+means[j])*(times[j]-times[j-1])/2 for j in range(1,len(times)))/duration)
+
+def controls():
+    if (HERE/'controls-result.json').exists():
+        require(read(HERE/'controls-result.json')['pass_all'], 'preserved controls failed')
+        return
+    t=np.array([0.,1.,2.]); e=np.broadcast_to(t[:,None,None],(3,2,2)).copy(); w=np.ones_like(e)
+    stream=io.BytesIO(); np.savez_compressed(stream,time=t,error=e,weight=w); stream.seek(0)
+    with np.load(stream,allow_pickle=False) as z: value=rms(z['error'],z['weight'],z['time'],2.)
+    require(close(value,math.sqrt(1.5)),'known trapezoidal RMS')
+    require(rms(np.zeros_like(e),w,t,2.)==0.,'zero null')
+    require(same(e,e.copy()),'exact clean twin')
+    bad=e.copy();bad[1,0,0]+=1e-3;require(not same(e,bad),'perturbation missed')
+    require(digest({'x':1})!=digest({'x':2}),'digest corruption missed')
+    require(sha(b'clean')!=sha(b'cleam'),'byte corruption missed')
+    cap=np.ones((2,2))*4.;require(np.allclose(cap,4.) and not np.allclose(cap*2,4.),'capacity corruption missed')
+    inventory=np.sum(np.full_like(e,7.)*w,axis=(1,2));require(np.max(np.abs(inventory/inventory[0]-1))==0.,'constant inventory')
+    result=dict(utc=utc(),positive_serialized_rms=value,expected=math.sqrt(1.5),zero_rms=0.,constant_inventory=0.,negative_perturbation_detected=True,negative_digest_detected=True,negative_byte_detected=True,negative_capacity_detected=True,pass_all=True,scope='audit reader/metric/comparison checks; not solver controls')
+    save('controls-result.json',result)
+
+def identity():
+    wheel=read(STAGE/'wheel-identity.json'); build=read(STAGE/'build-input.json'); plan=read(STAGE/'declared-plan.json')
+    require(wheel['revision']==build['revision']==plan['source_revision']==REV,'revision')
+    git=subprocess.check_output(['git','--git-dir=/mnt/d/Github/ocean-solver/.git','ls-tree','-r',REV],text=True)
+    blobs={line.split('\t',1)[1]:line.split()[2] for line in git.splitlines() if line.split()[1]=='blob'}
+    with tarfile.open(HERE.parent/'frozen-source.tar') as tar:
+        archive={x.name:tar.extractfile(x).read() for x in tar.getmembers() if x.isfile()}
+    for name,data in archive.items():
+        require(hashlib.sha1(b'blob '+str(len(data)).encode()+b'\0'+data).hexdigest()==blobs[name], 'archive/git blob '+name)
+    files={k:sha(v) for k,v in archive.items() if k.startswith('src/zhenmode/') and k.endswith('.py')}
+    require(len(files)==133,'complete Git Python count')
+    with zipfile.ZipFile(STAGE/'wheel'/wheel['wheel']) as z:
+        wh={k:sha(z.read(k)) for k in z.namelist() if k.startswith('zhenmode/') and k.endswith('.py')}
+    installed={p.relative_to(STAGE/'installed').as_posix():filehash(p) for p in (STAGE/'installed'/'zhenmode').rglob('*.py')}
+    source={k[4:]:v for k,v in files.items()}; registry={k[:-3]:v for k,v in source.items()}
+    require(source==wh==installed,'Git/archive/wheel/installed complete equality')
+    require(wheel['package_source_sha256']==plan['package_source_sha256']==registry,'package registries')
+    require(filehash(STAGE/'wheel'/wheel['wheel'])==wheel['wheel_sha256'],'wheel hash')
+    require(all(filehash(WORK/k)==v==sha(archive[k]) for k,v in build['files'].items()),'build input/worktree/archive equality')
+    require(filehash(STAGE/'protocol-before-runs.md')==plan['protocol_sha256'],'protocol hash')
+    factory=archive['src/zhenmode/model/solver/factory.py'].decode()
+    require("momentum_vertical_velocity_scheme='dual_face_v1'" in factory,'default momentum scheme')
+    result=dict(utc=utc(),revision=REV,full_python_count=len(source),build_input_file_count=len(build['files']),git_archive_wheel_installed_identical=True,git_archive_blob_count=len(archive),wheel_sha256=wheel['wheel_sha256'],module_hashes=registry,momentum_scheme='dual_face_v1 from source default; not separately recorded in actual_controls',loaded_python_paths='not recorded by native producer; identity verifies bytes of installed package, not historical sys.modules paths')
+    save('identity-result.json',result)
+    return registry,plan
+
+def reference(c,a):
+    # Direct pointwise form for ocean-solver nodal output; original linear reference.
+    gamma=c['internal_wave']['dT_dz_C_m'];q=c['internal_wave']['q'];m=q/c['H_m'];k=math.pi/c['Ly_m'];A=c['amplitude_m']
+    om=math.hypot(c['f'],math.sqrt(c['internal_wave']['N2_s_2'])*k/m)
+    z=-np.arange(c['nz'])*c['H_m']/(c['nz']-1)
+    cost=np.cos(om*a['time']);sint=np.sin(om*a['time'])
+    Tbase=(c['T_C']+gamma*z)[None,None,:]
+    Tdelta=-gamma*A*np.sin(m*(z+c['H_m']))[None,None,:]*np.cos(k*a['y_eta'])[None,:,None]*cost[:,None,None]
+    ref={'T':Tbase+Tdelta,'S':np.full_like(a['S'],c['S_psu']), 'eta':A*math.sin(q)*cost[:,None]*np.cos(k*a['y_eta'])[None,:]}
+    for v in ('u','v'):
+        spatial=np.sin(k*a['y_'+v])[:,None]*np.cos(m*(z+c['H_m']))[None,:]
+        ref[v]=A*m/k*spatial[None,:,:]*((-c['f']*cost) if v=='u' else om*sint)[:,None,None]
+    return ref,om
+
+def metric_readback(c,a):
+    ref,omega=reference(c,a);t=a['time']; vol=a['h']*a['area'][None,:,None]
+    metrics={}
+    mode=c['internal_wave'];A=c['amplitude_m'] or .01;m=mode['q']/c['H_m'];k=math.pi/c['Ly_m']
+    metrics['eta_error']=rms(a['eta']-ref['eta'],np.broadcast_to(a['area'],a['eta'].shape),t,c['duration_s'])/abs(A*math.sin(mode['q']))
+    for v in ('u','v'): metrics[v+'_error']=rms(a[v]-ref[v],a['volume_'+v],t,c['duration_s'])/(A*omega*m/k)
+    for v,key in [('T','T_error_C'),('S','S_error_psu')]:metrics[key]=rms(a[v]-ref[v],vol,t,c['duration_s'])
+    sums=vol.sum(axis=(1,2));metrics['volume']=float(np.max(np.abs(sums/sums[0]-1)))
+    for v in ('T','S'):
+        totals=(a[v]*vol).sum(axis=(1,2));metrics[v+'_inventory']=float(np.max(np.abs(totals/totals[0]-1)))
+    limits={v+'_error':c['thresholds']['error'] for v in ('eta','u','v')}
+    limits.update({v:c['thresholds'][v] for v in ('T_error_C','S_error_psu','volume')})
+    limits.update({v+'_inventory':c['thresholds']['tracer_inventory'] for v in ('T','S')})
+    failed=[k for k,v in metrics.items() if v>limits[k]]
+    null={}
+    if c['control']=='null':
+        for v in ('eta','u','v','T','S','h'):
+            null[v]=float(np.max(np.abs(a[v]-a[v][:1])))
+            if null[v]>c['thresholds']['null_absolute']:failed.append('null_'+v)
+    ratios={v:metrics[v]/limits[v] for v in ('eta_error','u_error','v_error','T_error_C','S_error_psu')}
+    initial={v:float(np.max(np.abs(a[v][0]-ref[v][0]))) for v in ref}
+    require(max(initial.values())<5e-11,'initial analytic fields')
+    return dict(metrics=metrics,limits=limits,failed_metrics=failed,normalized_error_ratios=ratios,composite=max(ratios.values()),null_absolute_errors=null,initial_errors=initial)
+
+def audit(index,journal,registry,plan):
+    row=next(r for r in journal if r['index']==index);folder=STAGE/row['directory'];c=read(folder/'contract.json');n=read(folder/'zhenmode/native-run.json');s=read(folder/'zhenmode/score.json');a=npz(folder/'zhenmode/output.npz');raw=npz(folder/'zhenmode/native.npz');meta=a['metadata'];r=read(folder/'zhenmode/resources.json');config=read(folder/'configuration.json')
+    require(row['status']=='completed','row completion')
+    require(c==plan['rows'][index]['contract']==config['contract'],'contract equality')
+    require(digest(c)==plan['rows'][index]['sha256']==s['contract_sha256']==meta['contract_sha256'],'contract hashes')
+    require(c['ocean_options']==n['actual_controls']==meta['recorded_numerics']['resolved_options'],'ocean options')
+    require(n['source_files_sha256']==registry==read(folder/'run.json')['package_source_sha256'],'runtime package hashes')
+    require(meta['source_sha']==n['source_sha']==s['source_sha']==config['source_revision']==REV,'source revision chain')
+    require(filehash(folder/'zhenmode/output.npz')==s['output_sha256']==row['report']['output_sha256'],'output hash chain')
+    require(filehash(folder/'zhenmode/initial.npz')==n['input_sha256']==meta['input_sha256'],'input hash chain')
+    expected_config=digest(dict(contract=c,controls=n['actual_controls'],physics=n['physics_zero'],runtime=n['runtime']))
+    require(meta['config_sha256']==expected_config,'config digest')
+    require(meta['executable_sha256']==n['runtime']['actual_executable_sha256']==s['executable_sha256'],'executable chain')
+    require(s==row['report'],'score/journal report')
+    for key,value in a.items():
+        if key!='metadata': require(value.dtype==np.float64 and np.isfinite(value).all(),'float64 finite '+key)
+    require(same(a['time'],np.arange(0,c['duration_s']+1,c['output_s'])) and same(a['time'],raw['time']),'complete time')
+    require(meta['steps']==int(c['duration_s']/c['dt']) and meta['dt_s']==c['dt'],'steps/dt')
+    for key in ('T','S','eta','u','v'):require(same(a[key],raw[key].reshape(a[key].shape)),'raw/output '+key)
+    h=np.broadcast_to(raw['dz_node'],raw['T'].shape).copy();h[...,0]+=raw['eta'];require(same(h.reshape(a['h'].shape),a['h']),'original dynamic h formula')
+    require(np.max(np.abs(a['h'].sum(-1)-c['H_m']-a['eta']))<=1e-10,'h surface sum')
+    require(np.all(a['h']>0),'positive h')
+    require(np.max(np.abs(raw['dz_node']-np.asarray(c['initial_h_m'])))<1e-10,'static node capacity')
+    for key in ('u','v'):require(np.allclose(a['volume_'+key],a['h']*a['area'][None,:,None],rtol=5e-14,atol=1e-10),'dynamic diagnostic volume '+key)
+    dx=c['Lx_m']/c['nx'];dy=c['Ly_m']/c['ny'];xy=np.stack(np.meshgrid((np.arange(c['nx'])+.5)*dx,(np.arange(c['ny'])+.5)*dy,indexing='ij'),axis=-1).reshape(-1,2)
+    for key in ('eta','u','v'):
+        require(np.allclose(a['x_'+key],xy[:,0],rtol=0,atol=1e-9) and np.allclose(a['y_'+key],xy[:,1],rtol=0,atol=1e-9),'coordinates '+key)
+    require(np.allclose(a['area'],dx*dy,rtol=1e-13,atol=0),'area')
+    rr=r['resources'];require(r['returncode']==0 and rr['stop_reason'] is None and rr['cpu_affinity']==1 and rr['peak_host_rss_bytes']<=4294967296 and rr['elapsed_wall_seconds']<=600,'native resource cap')
+    require(meta['total_wall_s']==rr['elapsed_wall_seconds'] and meta['aggregate_peak_bytes']==rr['peak_host_rss_bytes'],'resource metadata')
+    recomputed=metric_readback(c,a)
+    agreement={k:close(v,s['metrics'][k],inventory=k in ('volume','T_inventory','S_inventory')) for k,v in recomputed['metrics'].items()}
+    require(all(agreement.values()),'independent metric agreement '+repr(agreement))
+    require(recomputed['failed_metrics']==s['failed_metrics'] and (not recomputed['failed_metrics'])==s['engineering_screen_pass'],'science screen')
+    require(close(recomputed['composite'],s['composite']),'composite')
+    capacities={k:dict(shape=list(raw[k].shape),min=float(np.min(raw[k])),max=float(np.max(raw[k]))) for k in raw if k.startswith('dz')}
+    result=dict(index=index,utc=utc(),directory=row['directory'],identity_and_contract_pass=True,raw_output_fields_identical=True,static_capacities=capacities,dynamic_h_original_formula_exact=True,diagnostic_volumes_match_h_area=True,complete_snapshots=len(a['time']),steps=meta['steps'],metrics=recomputed,metric_agreement=agreement,native_resources=rr,input_sha256=meta['input_sha256'],output_sha256=s['output_sha256'],native_sha256=filehash(folder/'zhenmode/native.npz'),loaded_python_paths_recorded=False,momentum_scheme_evidence='source default dual_face_v1; omitted from actual_controls',qualifies='saved-row data integrity and arithmetic only',elapsed_audit_s=time.monotonic()-start)
+    if index==0:
+        old=STAGE.parent.parent/'vertical-accuracy-round2-20261012/band-stage/01-candidate-primary-main/zhenmode/output.npz';before=npz(old)
+        exact={k:same(a[k],before[k]) for k in a if k!='metadata'};require(len(exact)==17 and all(exact.values()),'default17 exact replay')
+        result['default17_exact']=exact;result['default_baseline_sha256']=filehash(old)
+    if index==1:
+        baseline=STAGE.parent/'material-point-v4-marginfix/01-candidate-primary-main/zhenmode/output.npz';before=npz(baseline);bc=read(baseline.parent.parent/'contract.json')
+        require(before['metadata']['source_sha']=='3c8e86bef2ee1fbfd50cca4343d6fc61694d9edc','3c8 baseline')
+        require(bc['thresholds']==c['thresholds'],'unchanged thresholds vs3c8')
+        prior=metric_readback(bc,before)
+        require(recomputed['composite']<prior['composite'],'strict lower score vs3c8')
+        require(recomputed['metrics']['T_error_C']<=8.530755561576719e-7,'T pilot gate')
+        changes={}
+        for k in ('T','S','eta','u','v'):
+            d=a[k]-before[k];changes[k]=dict(max_abs=float(np.max(np.abs(d))),raw_rms=float(np.sqrt(np.mean(d*d))),changed_elements=int(np.count_nonzero(d)),total_elements=int(d.size),initial_max_abs=float(np.max(np.abs(d[0]))),final_max_abs=float(np.max(np.abs(d[-1]))))
+        result.update(baseline_source=before['metadata']['source_sha'],baseline_sha256=filehash(baseline),baseline_metrics=prior,trajectory_change_descriptive=changes,strict_lower_original_composite=True,relative_score_change=recomputed['composite']/prior['composite']-1,static_dz_node_default_equal=same(raw['dz_node'],npz(STAGE/'00-previous-primary-main/zhenmode/native.npz')['dz_node']))
+    save('row-%02d-result.json'%index,result)
+    with (HERE/'audited-row-ledger.jsonl').open('a') as f:f.write(json.dumps(dict(index=index,utc=utc(),result='row-%02d-result.json'%index),allow_nan=False)+'\n')
+    print('AUDITED',index,flush=True)
+    return result
+
+controls()
+registry,plan=identity()
+journal=[json.loads(s) for s in (STAGE/'row-journal.jsonl').read_text().splitlines()]
+require({r['index'] for r in journal}=={0,1},'pilot snapshot only; future indices append via separate audit')
+require(not (HERE/'audited-row-ledger.jsonl').exists(),'do not recheck completed audit indices')
+results=[audit(i,journal,registry,plan) for i in (0,1)]
+save('audit-summary.json',dict(utc=utc(),verdict='SCOPE-PASS WITH PROVENANCE LIMITATIONS',audited_indices=[0,1],pending_indices=list(range(2,10)),source=REV,limits=['Historical loaded Python paths absent','momentum scheme inferred from source default','Analytic development reference is already contacted; no held-out physical qualification','Original 1D/2D and 47/362/mean/arithmetic FAIL records untouched','CI38306749152 not checked; no PASS inferred'],elapsed_s=time.monotonic()-start,peak_rss_bytes=resource.getrusage(resource.RUSAGE_SELF).ru_maxrss*1024,cpu_affinity=list(os.sched_getaffinity(0)),memory_cap_bytes=4294967296))
+print('SCOPE-PASS rows0,1; historical loaded paths absent; no global qualification',flush=True)

@@ -1,0 +1,12 @@
+Processing /mnt/d/CodexWorktrees/thermal-full-scan/ocean-solver
+  Preparing metadata (pyproject.toml): started
+  Preparing metadata (pyproject.toml): finished with status 'done'
+Building wheels for collected packages: zhenmode
+  Building wheel for zhenmode (pyproject.toml): started
+  Building wheel for zhenmode (pyproject.toml): finished with status 'done'
+  Created wheel for zhenmode: filename=zhenmode-0.1.0-py3-none-any.whl size=414986 sha256=7dbf38429a48355d2d10fe775c3bfd705d78497f19c9b832e4acddd6a5a22da2
+  Stored in directory: /tmp/pip-ephem-wheel-cache-8nhxzt_i/wheels/03/d8/8d/77298003ca7aae9455e419628a5d794efcc9aa1f57a58208c4
+Successfully built zhenmode
+Processing ./outputs/vertical-mean-round3-20261012/material-point-gradient-v1/wheel/zhenmode-0.1.0-py3-none-any.whl
+Installing collected packages: zhenmode
+Successfully installed zhenmode-0.1.0

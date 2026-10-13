@@ -1,0 +1,18 @@
+{
+  "declared_after_actual_pilot": true,
+  "pilot_elapsed_wall_s": 11.026787577,
+  "individual_call_s": [
+    1.5584892749999995,
+    0.0003396399999999744
+  ],
+  "finite_Ny": [
+    12,
+    24
+  ],
+  "conservative_projection_s": 88.214300616,
+  "reason": "two sizes plus synthetic/constant and compiler work, conservative 8x measured process wall; no oracle data inspected",
+  "wall_limit_s": 180,
+  "resources": "CPU1/4096MiB sampledRSS",
+  "script_sha256": "828d4dceccab0dcb5b8a0b2b130fcfb0aee12a98dc02c327839f6019f6f56ef8",
+  "existing_complete": false
+}

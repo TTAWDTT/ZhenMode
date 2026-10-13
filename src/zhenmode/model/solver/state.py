@@ -175,9 +175,16 @@ FDPhysParams = namedtuple('FDPhysParams', [
     'hydrostatic_surface_scheme',  # anomaly load from reference plane to eta
     'density_rotation_scheme',  # separate sources or forced shear rotation
     'vertical_tracer_scheme',  # donor cell or limited physical-node reconstruction
+    'hydrostatic_integral_scheme',  # cumulative pressure quadrature, independent of tracer capacities
+    'column_mean_weights',  # optional uniform-column point quadrature, not tracer capacities
+    'tracer_flux_arithmetic',  # original separate divisions or integrated reference decomposition
+    'tracer_point_primitive',  # optional cubic point inverse; original mass surface row
+    'momentum_vertical_velocity_scheme',  # dual-face sample or physical-node point primitive
+    'material_point_gradient_scheme',  # limited target or uniform fourth-order physical-depth target
+    'momentum_tangent_filter_scheme',  # legacy binomial or fixed-uniform Gram tendency filter
 ])
 
-FDPhysParams.__new__.__defaults__ = (None, False, False, False, False, False, False, False, None, None, None, -1.8, 0.0, False, 1.0, 150, None, 'none', None, 'default', 2, 'legacy', False, 'legacy', 'linear', None, None, None, None, None, 'forward_backward', 'clamped_nodes', 'centered_second', 'centered_second', 'reference_plane', 'split_sources', 'donor_cell')
+FDPhysParams.__new__.__defaults__ = (None, False, False, False, False, False, False, False, None, None, None, -1.8, 0.0, False, 1.0, 150, None, 'none', None, 'default', 2, 'legacy', False, 'legacy', 'linear', None, None, None, None, None, 'forward_backward', 'clamped_nodes', 'centered_second', 'centered_second', 'reference_plane', 'split_sources', 'donor_cell', 'trapezoidal', None, 'legacy', None, 'dual_face_v1', 'minmod_v1', 'binomial_v1')
 
 def _state_identity(state):
     # Incoming invalid states still need a failure report; do not pass them

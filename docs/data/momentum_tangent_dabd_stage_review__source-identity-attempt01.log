@@ -1,0 +1,14 @@
+fatal: not a git repository: /mnt/d/CodexWorktrees/thermal-full-scan/ocean-solver/D:/Github/ocean-solver/.git/worktrees/ocean-solver2
+FAIL_RETAINED
+checks=0 source133/build144
+Traceback (most recent call last):
+  File "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/review/source_identity.py", line 20, in <module>
+    require('exact_git_HEAD',subprocess.check_output(['git','rev-parse','HEAD'],cwd=WORK,text=True).strip()==REV)
+                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/subprocess.py", line 466, in check_output
+    return run(*popenargs, stdout=PIPE, timeout=timeout, check=True,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['git', 'rev-parse', 'HEAD']' returned non-zero exit status 128.
+

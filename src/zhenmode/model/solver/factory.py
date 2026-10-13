@@ -10,6 +10,10 @@ from zhenmode.model.solver.dynamics.transport import _compute_vertical_velocity
 from zhenmode.model.solver.geometry.fd_metrics import make_fd_params
 from zhenmode.model.solver.geometry.grid import validate_grid
 from zhenmode.model.solver.numerics.backend import jax, jnp, np
+from zhenmode.model.solver.numerics.column import (
+    cubic_reverse_primitive,
+    cubic_uniform_mean_weights,
+)
 from zhenmode.model.solver.numerics.horizontal import nu_nsub_for_2d_cfl
 from zhenmode.model.solver.physics.eos import _density_anomaly
 from zhenmode.model.solver.state import FDPhysParams, JaxStateG
@@ -55,7 +59,13 @@ def make_solver_global(grid, physics, dt, forcing=None,
                        tracer_transport_scheme='centered_second',
                        hydrostatic_surface_scheme='reference_plane',
                        density_rotation_scheme='split_sources',
-                       vertical_tracer_scheme='donor_cell'):
+                       vertical_tracer_scheme='donor_cell',
+                       hydrostatic_integral_scheme='trapezoidal',
+                       column_mean_scheme='nodal_capacity',
+                       tracer_flux_arithmetic='legacy',
+                       momentum_vertical_velocity_scheme='dual_face_v1',
+                       material_point_gradient_scheme='minmod_v1',
+                       momentum_tangent_filter_scheme='binomial_v1'):
     """Create a JIT-compiled global FD ocean solver.
 
     Key properties:
@@ -138,6 +148,12 @@ def make_solver_global(grid, physics, dt, forcing=None,
         Requires centered_fourth pressure/continuity and un-limited advection;
         vertical donor transport and time integration retain their order.
         Signed fluxes have no general monotonicity or stability guarantee.
+      - tracer_transport_scheme='paired_product_fourth' additionally pairs the
+        material-point column moment with the same scalar/mass constituents,
+        retaining exact actual-zero-mass barriers. It requires the float64
+        uniform material-point channel with fourth_uniform_v1 gradient.
+        Vertical compatibility residuals and shared-blend limits remain;
+        this is not a fourth-order complete-model or positivity guarantee.
       - hydrostatic_surface_scheme='linear_density' integrates the top linear
         density anomaly from z=0 to eta in the restricted fourth-order channel.
         Continuity and reference capacities remain linear/static; this is not
@@ -158,14 +174,91 @@ def make_solver_global(grid, physics, dt, forcing=None,
         if active_drag != 0:
             raise ValueError('symmetric external candidate requires separate bottom-drag qualification')
     validate_grid(grid)
-    if vertical_tracer_scheme not in ('donor_cell', 'muscl_nodal_v1'):
+    if tracer_flux_arithmetic not in ('legacy', 'integrated_reference_v1'):
+        raise ValueError('unknown tracer_flux_arithmetic')
+    if tracer_flux_arithmetic == 'integrated_reference_v1':
+        spacing = np.abs(np.diff(np.asarray(grid.z)))
+        if (column_geometry != 'nodal_dual_v1' or external_mode_scheme != 'symmetric'
+                or meridional_boundary_scheme != 'closed_faces' or mode_split
+                or grid.nz < 6 or np.asarray(grid.z)[0] != 0.
+                or not np.allclose(spacing, spacing[0], rtol=1e-12, atol=0.)
+                or not np.allclose(np.asarray(grid.depth), -np.asarray(grid.z)[-1], rtol=1e-12, atol=0.)
+                or not np.all(np.asarray(grid.wet_mask) == 1.)
+                or (grid.wet_mask_3d is not None and not np.all(np.asarray(grid.wet_mask_3d) == 1.))):
+            raise ValueError('integrated_reference_v1 requires a fully wet uniform physical-endpoint unsplit closed nodal channel with at least six nodes')
+    if hydrostatic_integral_scheme not in ('trapezoidal', 'cubic_uniform_v1'):
+        raise ValueError('unknown hydrostatic_integral_scheme')
+    if column_mean_scheme not in ('nodal_capacity', 'cubic_consistent_v1'):
+        raise ValueError('unknown column_mean_scheme')
+    if column_mean_scheme == 'cubic_consistent_v1':
+        if (hydrostatic_integral_scheme != 'cubic_uniform_v1' or grid.nz < 6
+                or external_mode_scheme != 'symmetric' or meridional_boundary_scheme != 'closed_faces'
+                or density_rotation_scheme != 'joint_shear' or mode_split
+                or pressure_continuity_scheme != 'centered_fourth' or project_adv_vel):
+            raise ValueError('cubic_consistent_v1 requires the unsplit cubic-pressure joint-shear closed channel with at least six nodes')
+    if hydrostatic_integral_scheme == 'cubic_uniform_v1':
+        gaps = np.abs(np.diff(np.asarray(grid.z)))
+        if (column_geometry != 'nodal_dual_v1' or physics.thermodynamics != 'linear'
+                or grid.nz < 4 or np.asarray(grid.z)[0] != 0.
+                or not np.allclose(gaps, gaps[0], rtol=1e-12, atol=0.)
+                or not np.allclose(np.asarray(grid.depth), -np.asarray(grid.z)[-1], rtol=1e-12, atol=0.)
+                or not np.all(np.asarray(grid.wet_mask) == 1.)
+                or (grid.wet_mask_3d is not None and not np.all(np.asarray(grid.wet_mask_3d) == 1.))):
+            raise ValueError('cubic_uniform_v1 requires a fully wet uniform linear-EOS nodal column with physical endpoints')
+    if vertical_tracer_scheme not in ('donor_cell', 'muscl_nodal_v1', 'muscl_endpoint_v2', 'muscl_band_v3', 'material_point_v4'):
         raise ValueError('unknown vertical_tracer_scheme')
-    if vertical_tracer_scheme == 'muscl_nodal_v1' and column_geometry != 'nodal_dual_v1':
+    if vertical_tracer_scheme in ('muscl_nodal_v1', 'muscl_endpoint_v2', 'muscl_band_v3') and column_geometry != 'nodal_dual_v1':
         raise ValueError('muscl_nodal_v1 requires nodal_dual_v1 physical midpoint faces')
-    if vertical_tracer_scheme == 'muscl_nodal_v1':
+    if vertical_tracer_scheme in ('muscl_nodal_v1', 'muscl_endpoint_v2', 'muscl_band_v3'):
         spacing = np.abs(np.diff(np.asarray(grid.z)))
         if not np.allclose(spacing, spacing[0], rtol=1e-12, atol=0.):
             raise ValueError('muscl_nodal_v1 currently requires uniformly spaced vertical nodes; nonuniform CFL qualification is unresolved')
+    if vertical_tracer_scheme in ('muscl_endpoint_v2', 'muscl_band_v3'):
+        minimum_nodes = 6 if vertical_tracer_scheme in ('muscl_band_v3', 'material_point_v4') else 4
+        if (process_time_scheme != 'legacy' or mode_split or grid.nz < minimum_nodes
+                or np.asarray(grid.z)[0] != 0.
+                or not np.allclose(np.asarray(grid.depth), -np.asarray(grid.z)[-1], rtol=1e-12, atol=0.)
+                or not np.all(np.asarray(grid.wet_mask) == 1)
+                or (grid.wet_mask_3d is not None and not np.all(np.asarray(grid.wet_mask_3d) == 1))):
+            raise ValueError(f'{vertical_tracer_scheme} requires fully wet unsplit legacy columns with physical surface/bottom nodes and at least {minimum_nodes} nodes')
+    if vertical_tracer_scheme == 'material_point_v4':
+        if (tracer_flux_arithmetic != 'integrated_reference_v1'
+                or column_mean_scheme != 'nodal_capacity'
+                or pressure_continuity_scheme != 'centered_fourth'
+                or tracer_transport_scheme not in ('centered_second', 'paired_product_fourth')
+                or monotone_adv or fct_adv or project_adv_vel):
+            raise ValueError('material_point_v4 requires integrated arithmetic and the un-limited closed fourth-order nodal-capacity channel')
+    if material_point_gradient_scheme not in ('minmod_v1', 'fourth_uniform_v1'):
+        raise ValueError('unknown material_point_gradient_scheme')
+    if material_point_gradient_scheme == 'fourth_uniform_v1':
+        if vertical_tracer_scheme != 'material_point_v4' or dtype != 'float64':
+            raise ValueError('fourth_uniform_v1 gradient requires float64 material_point_v4')
+    if momentum_vertical_velocity_scheme not in ('dual_face_v1', 'point_primitive_v1'):
+        raise ValueError('unknown momentum_vertical_velocity_scheme')
+    if momentum_vertical_velocity_scheme == 'point_primitive_v1':
+        if (tracer_flux_arithmetic != 'integrated_reference_v1'
+                or column_mean_scheme != 'nodal_capacity'
+                or pressure_continuity_scheme != 'centered_fourth'
+                or mode_split or process_time_scheme != 'legacy'
+                or project_adv_vel or dtype != 'float64'):
+            raise ValueError('point_primitive_v1 momentum requires the float64 unsplit integrated fourth-order nodal-capacity channel')
+    if momentum_tangent_filter_scheme not in ('binomial_v1', 'gram_fourth_v1'):
+        raise ValueError('unknown momentum_tangent_filter_scheme')
+    if momentum_tangent_filter_scheme == 'gram_fourth_v1':
+        if (vertical_tracer_scheme != 'material_point_v4'
+                or material_point_gradient_scheme != 'fourth_uniform_v1'
+                or tracer_flux_arithmetic != 'integrated_reference_v1'
+                or column_mean_scheme != 'nodal_capacity'
+                or hydrostatic_integral_scheme != 'cubic_uniform_v1'
+                or momentum_vertical_velocity_scheme != 'dual_face_v1'
+                or pressure_continuity_scheme != 'centered_fourth'
+                or external_mode_scheme != 'symmetric'
+                or meridional_boundary_scheme != 'closed_faces'
+                or mode_split or process_time_scheme != 'legacy'
+                or project_adv_vel or dtype != 'float64' or grid.ny < 4
+                or not np.all(np.asarray(grid.cos_lat) == 1.)
+                or not np.all(np.asarray(grid.dx_2d) == np.asarray(grid.dx_2d)[0, 0])):
+            raise ValueError('gram_fourth_v1 tangent filter requires the qualified float64 uniform integrated material-point closed channel with dual-face momentum')
     if density_rotation_scheme not in ('split_sources', 'joint_shear'):
         raise ValueError('unknown density_rotation_scheme')
     if density_rotation_scheme == 'joint_shear':
@@ -177,8 +270,21 @@ def make_solver_global(grid, physics, dt, forcing=None,
         if (pressure_continuity_scheme != 'centered_fourth'
                 or physics.thermodynamics != 'linear' or np.asarray(grid.z)[0] != 0):
             raise ValueError('linear_density surface pressure requires the fourth-order linear-EOS channel with top z=0')
-    if tracer_transport_scheme not in ('centered_second', 'product_fourth'):
+    if tracer_transport_scheme not in ('centered_second', 'product_fourth', 'paired_product_fourth'):
         raise ValueError('unknown tracer_transport_scheme')
+    if tracer_transport_scheme == 'paired_product_fourth':
+        gaps = np.abs(np.diff(np.asarray(grid.z)))
+        if (vertical_tracer_scheme != 'material_point_v4'
+                or material_point_gradient_scheme != 'fourth_uniform_v1'
+                or column_geometry != 'nodal_dual_v1' or dtype != 'float64'
+                or process_time_scheme != 'legacy' or mode_split or grid.nz < 6
+                or momentum_vertical_velocity_scheme != 'dual_face_v1'
+                or momentum_tangent_filter_scheme != 'binomial_v1'
+                or np.asarray(grid.z)[0] != 0.
+                or not np.allclose(gaps, gaps[0], rtol=1e-12, atol=0.)
+                or not np.allclose(np.asarray(grid.depth), -np.asarray(grid.z)[-1],
+                                   rtol=1e-12, atol=0.)):
+            raise ValueError('paired_product_fourth requires the float64 uniform nodal material-point channel with fourth_uniform_v1 gradient and default momentum owners')
     if tracer_transport_scheme == 'product_fourth':
         if pressure_continuity_scheme != 'centered_fourth' or monotone_adv or fct_adv:
             raise ValueError('product_fourth requires the paired fourth-order channel without tracer limiters')
@@ -577,7 +683,22 @@ def make_solver_global(grid, physics, dt, forcing=None,
         hydrostatic_surface_scheme=hydrostatic_surface_scheme,
         density_rotation_scheme=density_rotation_scheme,
         vertical_tracer_scheme=vertical_tracer_scheme,
+        hydrostatic_integral_scheme=hydrostatic_integral_scheme,
+        column_mean_weights=(jnp.asarray(cubic_uniform_mean_weights(grid.nz))[None, None]
+                             if column_mean_scheme == 'cubic_consistent_v1' else None),
+        tracer_flux_arithmetic=tracer_flux_arithmetic,
+        momentum_vertical_velocity_scheme=momentum_vertical_velocity_scheme,
+        material_point_gradient_scheme=material_point_gradient_scheme,
+        momentum_tangent_filter_scheme=momentum_tangent_filter_scheme,
+        tracer_point_primitive=(jnp.asarray(cubic_reverse_primitive(grid.nz, abs(float(grid.z[1]-grid.z[0]))))
+                                if vertical_tracer_scheme == 'material_point_v4' else None),
     )
+
+    if params.tracer_point_primitive is not None:
+        # np.linspace capacities differ by ulps from ideal uniform spacing.
+        # Use the same actual capacity object as the transport/continuity owner.
+        params = params._replace(tracer_point_primitive=params.tracer_point_primitive.at[0].set(
+            params.dz_node.reshape(-1)))
 
     if projection_preconditioner == 'jacobi':
         diagonal = _column_projection_diagonal(params)

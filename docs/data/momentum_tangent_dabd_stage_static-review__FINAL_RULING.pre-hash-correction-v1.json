@@ -1,0 +1,27 @@
+{
+  "recorded_utc": "2026-10-12T22:49:44.1319768Z",
+  "ruling": "CONFIRMED_ACTUAL_UNCOMMITTED_PATCH_SCOPE",
+  "worktree": "D:\\CodexWorktrees\\thermal-full-scan\\ocean-solver",
+  "HEAD_base": "1765dc45f0fd9be3ba232d09079a1f382a8017a7",
+  "candidate_SHA": null,
+  "state": "UNCOMMITTED",
+  "actionable_findings": [],
+  "reviewed_file_sha256": {
+    "src/zhenmode/benchmarks/internal_wave.py": "7a3cb5a04c031fb78ae427c58099071210b46408e6d25e105879c3bbcd26d7ba",
+    "src/zhenmode/model/solver/dynamics/transport.py": "63825f504d99b28f6387ec356e990fe6659d1a035a2832e68bdac80d64dee951",
+    "src/zhenmode/model/solver/factory.py": "3ef33786a6c768b38dfb034fc2109cc5e7f3271f01ccc109aa5a7ac8ffa17717",
+    "src/zhenmode/model/solver/numerics/horizontal.py": "430c3ed7b2222734c93b7e33d7003fe64b147e36a75c6b6d5584b5663a2e251b",
+    "src/zhenmode/model/solver/state.py": "851e96e868aed41a2f5882e9f1683f0f79056cd73ff35b281ba51cc0a8346d62",
+    "tests/fd/test_momentum_tangent_filter.py": "0e8742fa0cfa6fbc1cf560b4a651d0e0844661cd9783dff22abeeec4a4871034",
+    "docs/material_point_transport_v4_zh.md": "997ffc8a8f89d584e93a2d03e943fb35ac2aad0923ee011578b618f3d1b93e8b"
+  },
+  "source_snapshot": "source-snapshot.json",
+  "source_count": 133,
+  "reviewer_tests_run": 0,
+  "reviewer_native_runs": 0,
+  "reviewer_source_edits": 0,
+  "software_gate": "ROOT_PENDING_ACTUAL_AFFECTED_TEST_RESULTS",
+  "native_gate": "NOT_GRANTED",
+  "physics_gate": "NOT_GRANTED",
+  "restart_metadata_default": "FINGERPRINT_CHANGES_DOCUMENTED_NO_MIGRATION_CLAIM"
+}

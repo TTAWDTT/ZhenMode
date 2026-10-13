@@ -1,0 +1,118 @@
+"""One-shot problem-specific readback; no producer or solver imports.
+
+Rebuilds parity metrics from raw saved cases, checks 133 actual file bytes and
+exact stencil moments. Use only for this attempt's internal consistency. Fails
+on a bad numeric/hash comparator; scientific owner-bridge rejection is separate.
+"""
+import os, resource, signal, time, json, hashlib, ast
+from pathlib import Path
+from fractions import Fraction as F
+os.sched_setaffinity(0, {min(os.sched_getaffinity(0))})
+resource.setrlimit(resource.RLIMIT_AS, (1024*1024*1024, 1024*1024*1024))
+signal.alarm(60)
+import numpy as np
+start = time.monotonic()
+root = Path(__file__).resolve().parent.parent
+review = root/'review'
+def save(name, value):
+    with (review/name).open('x') as stream:
+        json.dump(value, stream, indent=2)
+def close(actual, target, atol=1e-26):
+    return bool(np.allclose(actual,target,rtol=1e-12,atol=atol))
+def parity(bp,bm,wp,wm):
+    # Group wave/background channels separately, unlike producer association.
+    return ((wp-wm)-(bp-bm))/2, ((wp+wm)-(bp+bm))/2
+shape=(2,3,5)
+bp=np.full(shape,5.); bm=np.full(shape,-5.)
+wp=np.full(shape,10.); wm=np.full(shape,-4.)
+odd,even=parity(bp,bm,wp,wm)
+assert np.array_equal(odd,np.full(shape,2.))
+assert np.array_equal(even,np.full(shape,3.))
+assert not close(-odd,np.full(shape,2.),atol=1e-15)
+zero=np.zeros(shape); assert all(np.array_equal(v,zero) for v in parity(zero,zero,zero,zero))
+# Exact finite-difference coefficient moment identities, independent of JAX.
+stencils=[([F(-25,12),F(4),F(-3),F(4,3),F(-1,4)],0),
+          ([F(-1,4),F(-5,6),F(3,2),F(-1,2),F(1,12)],1),
+          ([F(1,12),F(-2,3),F(0),F(2,3),F(-1,12)],2)]
+stencils += [([-v for v in stencil[::-1]],4-i) for stencil,i in stencils[:2]]
+for coefficients,i in stencils:
+    for degree in range(5):
+        measured=sum(c*F(j)**degree for j,c in enumerate(coefficients))
+        truth=F(0) if degree==0 else degree*F(i)**(degree-1)
+        assert measured==truth
+assert not sum((-c)*F(j) for j,c in enumerate(stencils[0][0]))==1
+result=json.loads((root/'result.json').read_text())
+inst=root.parent.parent/'material-point-v4-marginfix/installed'
+identity=json.loads((inst.parent/'wheel-identity.json').read_text())
+expected=identity['package_source_sha256']
+assert len(expected)==133
+hashes={key:hashlib.sha256((inst/(key+'.py')).read_bytes()).hexdigest() for key in expected}
+assert hashes==expected==result['source_before']==result['source_after']
+assert hashlib.sha256((root/'declaration.json').read_bytes()).hexdigest()==result['declaration_sha256']
+assert hashlib.sha256((root/'diagnostic.py').read_bytes()).hexdigest()==result['script_sha256']
+transport=(inst/'zhenmode/model/solver/dynamics/transport.py').read_text()
+tree=ast.parse(transport)
+fn=next(item for item in tree.body if isinstance(item,ast.FunctionDef) and item.name=='_material_point_scalar_rate')
+segment=''.join(transport.splitlines(keepends=True)[fn.lineno-1:fn.end_lineno])
+assert hashlib.sha256(segment.encode()).hexdigest()==result['prototype_source_sha256']
+diagnostic=(root/'diagnostic.py').read_text()
+dtree=ast.parse(diagnostic)
+assert 'scope=dict(tr.__dict__)' in diagnostic and "scope['physical_tracer_gradient']=fourth" in diagnostic
+assert 'exec(compile(text' in diagnostic and "scope['_material_point_scalar_rate']" in diagnostic
+source_calls=[node for node in ast.walk(fn) if isinstance(node,ast.Call) and isinstance(node.func,ast.Name) and node.func.id=='physical_tracer_gradient']
+assert len(source_calls)==2
+pilot_s=time.monotonic()-start
+save('timing-pilot.json',dict(elapsed_s=pilot_s,known_answer_controls='PASS',actual_source_hash_count=133,no_npz_opened=True))
+assert pilot_s<15
+data=np.load(root/'arrays.npz',allow_pickle=False)
+rows=[]
+for n in (16,32):
+    h=data[f'h_n{n}']; truth=data[f'truth_n{n}']
+    assert h.shape==(8,32,n) and np.all(np.isfinite(h)) and np.all(h>0)
+    # Separately construct geometry and analytic truth from the pinned fields.
+    expected_h=np.full(n,100/(n-1)); expected_h[[0,-1]]/=2
+    assert close(h,np.broadcast_to(expected_h,h.shape),atol=1e-14)
+    p=result['parameters']; z= -np.arange(n)*100/(n-1)
+    expected_truth=-p['gamma']*(.01**2)*p['omega']*p['m']/4*np.sin(2*p['m']*(z+100))
+    assert close(truth,np.broadcast_to(expected_truth,h.shape),atol=1e-26)
+    def rms(a):
+        # dot reduction differs from producer's np.sum expression.
+        return float(np.sqrt(np.dot(h.ravel(),np.square(a).ravel())/np.sum(h)))
+    row={'nodes':n,'truth_RMS_C_s':rms(truth),'variants':{}}
+    original=next(r for r in result['rows'] if r['nodes']==n)
+    for variant in ('production_minmod','external_fourth'):
+        record={}
+        for field in ('rate','desired','low_rate','delta'):
+            cases=[data[f'{variant}_{field}_a{a}_w{w}_n{n}'] for a,w in ((.01,0.),(-.01,0.),(.01,1.),(-.01,1.))]
+            assert all(a.shape==h.shape and np.all(np.isfinite(a)) for a in cases)
+            independent_odd,independent_even=parity(*cases)
+            bp,bm,wp,wm=cases
+            odd=(wp-wm-bp+bm)/2
+            even=(wp+wm-bp-bm)/2
+            assert np.array_equal(odd,data[f'{variant}_{field}_odd_n{n}'])
+            assert np.array_equal(even,data[f'{variant}_{field}_even_n{n}'])
+            association_bound=16*np.finfo(np.float64).eps*max(float(np.max(abs(a))) for a in cases)
+            association_delta=max(float(np.max(abs(odd-independent_odd))),float(np.max(abs(even-independent_even))))
+            assert association_delta<=association_bound
+            record[field]={'odd_wave_excess_RMS_C_s':rms(odd),'even_wave_error_RMS_C_s':rms(even-truth),'even_wave_RMS_C_s':rms(even)}
+            for key,value in record[field].items():
+                assert close(value,original['variants'][variant][field][key])
+            record[field].update(independently_grouped_odd_RMS_C_s=rms(independent_odd),independently_grouped_even_error_RMS_C_s=rms(independent_even-truth),association_delta_max_C_s=association_delta,association_bound_C_s=association_bound)
+        alphas=[]; feasibles=[]
+        for a,w in ((.01,0.),(-.01,0.),(.01,1.),(-.01,1.)):
+            alphas.append(float(data[f'{variant}_alpha_a{a}_w{w}_n{n}']))
+            feasibles.append(bool(data[f'{variant}_feasible_a{a}_w{w}_n{n}']))
+            assert alphas[-1]==1 and feasibles[-1]
+            rate=data[f'{variant}_rate_a{a}_w{w}_n{n}']
+            low=data[f'{variant}_low_rate_a{a}_w{w}_n{n}']; delta=data[f'{variant}_delta_a{a}_w{w}_n{n}']
+            assert close(rate,low+delta,atol=1e-25)
+            assert np.array_equal(low,data[f'production_minmod_low_rate_a{a}_w{w}_n{n}'])
+        record.update(alpha=alphas,feasible=feasibles)
+        row['variants'][variant]=record
+    for variant in ('minmod','fourth'):
+        row[variant+'_gradient_symmetric_bias_RMS_C_m']=rms(data[f'{variant}_gradient_bias_n{n}'])
+        assert close(row[variant+'_gradient_symmetric_bias_RMS_C_m'],original[variant+'_gradient_symmetric_bias_RMS_C_m'])
+    rows.append(row)
+save('raw-readback.json',dict(verdict='INTERNAL-CONSISTENCY-PASS / OWNER-BRIDGE-CORRECTED-SOURCE',rows=rows,controls='positive parity/null and sign corruption PASS; 25 exact stencil moments PASS; wrong derivative sign caught',hash_count=133,actual_hashes=hashes,artifact_sha256={name:hashlib.sha256((root/name).read_bytes()).hexdigest() for name in ('arrays.npz','result.json','diagnostic.py','declaration.json')},elapsed_s=time.monotonic()-start,peakRSS_KiB=resource.getrusage(resource.RUSAGE_SELF).ru_maxrss,source_direct_gradient_calls=2,scientific_grade='OPEN',lineage='Shared stored physics/parameters/source and NumPy; root scientific evaluation code not imported; values already observed before this audit; no blind/new physics qualification'))
+print(json.dumps(dict(verdict='INTERNAL-CONSISTENCY-PASS / OWNER-BRIDGE-CORRECTED-SOURCE',rows=rows,elapsed_s=time.monotonic()-start)))
+

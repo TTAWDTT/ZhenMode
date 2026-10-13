@@ -1,0 +1,13 @@
+{
+  "classification": "ENVIRONMENT_STARTUP_FAILURE_NOTSCIENTIFIC",
+  "source": "dabd48abd898c20e0471a5ab9fc18e9b61cfa96d",
+  "index0": "failed not completed, log preserved",
+  "index1_to9": "UNEXECUTED",
+  "worker_log": "00-previous-primary-main/zhenmode/run.log",
+  "message": "No module named zhenmode.execution.wave_zhenmode",
+  "elapsed_worker_s": 0.20079902900000945,
+  "no_native_arrays": true,
+  "cause": "root launcher omitted PYTHONPATH installed; sys.path inserted in driver is not inherited by worker subprocess",
+  "correction": "separate native-attempt02 same frozencontracts/source/resources/sciencegate, explicit PYTHONPATH immutable new installed; no overwrite/no thresholdchange",
+  "recorded_at": "2026-10-12T22:53:49.481Z"
+}

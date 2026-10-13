@@ -1,0 +1,15 @@
+{
+  "resources": {
+    "cpu_affinity": 1,
+    "elapsed_wall_seconds": 27.110896800000006,
+    "gpu_allocator_fraction": 0.4,
+    "gpu_memory_enforcement": "JAX allocator fraction; not a whole-device memory limit",
+    "host_memory_enforcement": "aggregate process-group /proc RSS sampled at 0.2 s; not a hard cgroup cap",
+    "memory_mib": 4096,
+    "peak_host_rss_bytes": 1141772288,
+    "stop_reason": null,
+    "termination_grace_seconds": 0,
+    "wall_seconds": 600
+  },
+  "returncode": 0
+}

@@ -1,0 +1,20 @@
+{
+  "status": "PASS",
+  "finite_sizes": [
+    4
+  ],
+  "exact_checks": 69,
+  "sympy_version": "1.14.0",
+  "python_executable": "/root/.local/share/bootloops-suite/bootloops/.venv/bin/python",
+  "cpu_affinity": [
+    0
+  ],
+  "wall_seconds": 1.786877921,
+  "cpu_seconds": 1.495117976,
+  "sampled_peak_RSS_bytes": 78430208,
+  "RSS_samples": 136,
+  "RSS_interval_seconds": 0.01,
+  "address_limit_bytes": 4294967296,
+  "CPU_limit_seconds": 180,
+  "script_sha256": "c98bf8ffce63b57e252bd1e171e7c684adc71113412879147180074d5e825d6f"
+}

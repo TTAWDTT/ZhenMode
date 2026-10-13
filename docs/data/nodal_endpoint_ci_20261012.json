@@ -1,0 +1,30 @@
+{
+  "schema": "round2-software-evidence-v1",
+  "endpoint": {
+    "commit": "afb68092910ae8e8fde614b9bf5c2ded7fd13c84",
+    "run": 38210074292,
+    "pytest_passed": 1633,
+    "MMS": "ALL PASS",
+    "status": "success"
+  },
+  "pressure": {
+    "commit": "051141d3e1d00a14f2419c6754cf19e71eb45355",
+    "run": 38211653844,
+    "pytest_passed": 1661,
+    "pytest_seconds": 1485.05,
+    "MMS": "ALL PASS",
+    "status": "success"
+  },
+  "band": {
+    "commit": "4095464479fca8c73be98cac93d9f859eb7e3bc6",
+    "run": 38212699023,
+    "status": "success",
+    "pytest_passed": 1670,
+    "pytest_seconds": 1538.21,
+    "warnings": "6710 warnings",
+    "MMS": "ALL PASS",
+    "source_tree": "a20b8d6c9a29b311ebea88053866d9e0a90ae102"
+  },
+  "scientific_independent1d": "OPEN: constant RHS original 1e-17 gate exceeded at21/41",
+  "all_scientific_acceptance": "OPEN"
+}

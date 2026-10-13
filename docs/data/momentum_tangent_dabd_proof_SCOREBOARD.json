@@ -1,0 +1,17 @@
+{
+  "targets": "I Ft Gram;II Fn sine contraction",
+  "X0": "NO-FIRE plantCAUGHT; first n8 defaulttrig simplifier failedcertifier retained Chebyshev remainder exactrepair accepted",
+  "primary": "CLOSED-UNVERIFIED primary/WORKFILE",
+  "diversity_arms": [
+    "variational running fresh forcedfiniteGreen",
+    "spectral running fresh forcedzeroextension"
+  ],
+  "skeptics": [
+    "S1mathCLEAN",
+    "S2mathCLEAN withtailFAILrootadmissibility"
+  ],
+  "cross": "C1confirmed/C2standaloneconfirmed/productionGAP",
+  "grade": "VERIFIED-CLOSED onlypinnedalgebra; productionconsumerGAP",
+  "no_production_edits": true,
+  "source_context": "70d408583aa99db63e49d958d89dcaccad273f0e"
+}

@@ -1,0 +1,14 @@
+{
+  "source":"70d408583aa99db63e49d958d89dcaccad273f0e",
+  "scope":"Fresh1D point-column core characteristic control with local horizontal compensation; not actual2D owner or native integration",
+  "grids":[37,73,145],"dt":0.003,"final_time":0.24,"heun_steps":80,
+  "profile":"q0(d)=6+0.11exp(0.62d)+0.08d^2+0.017d^4, d in[0,1]",
+  "flow":"a(d)=0.21sin(pi d); Fz on physical midpoint faces and zero endpoints; exactfoot=(2/pi)atan(exp(-.21pi t)tan(pi d/2))",
+  "manufactured_truth":"d/dt tan(pi d/2)=.21pi tan(pi d/2) follows exactly from d_dot=.21sin(pi d); q(d,t)=q0(foot). q0prime>=.0682>0; no amplitude/error/alpha fitting.",
+  "gates":{"constant_rhs_and_final":1e-17,"finest_normalized_weighted_L1":0.05,"each_refinement_min":1.25,"budget_scale":1e-12,"badmass_constant_exclusive":1e-12,"minimum_Euler":-1e-14,"all_feasible":true},
+  "controls":"Before new run: zero-error comparator PASS, planted .1 normalized error and refinement1 FAIL; exactfoot t0 profile within2e-14 and endpoint exact; wrong-sign characteristic exponent changes interior by>1e-4 atfinaltime; constants through full core; reverseFz constant negative; actual h budget longdouble",
+  "lineage":"Independent closed-form characteristic/profile; shares geometry/PDE/JAX and production cubic primitive, fourth gradient, integrated baseline/projection/blend. Emulated local horizontal Nm compensation expressly not2D owner; source/math and subsequent actualACTIVE2D are separate.",
+  "timing":"37nodes5Heun pilot timing-only with no exact/reference display; fixed threegrids80steps +constant80steps once after measured plan. Reuse no old numeric outputs.",
+  "resources":{"cpu":1,"wall_seconds":180,"memory_mib":4096,"GPU":false},
+  "contact":"Profile/grids chosen after70d4085freeze, before first numeric output. Excludes old21/41/81,25/49/97,33/65/129,29/57/113,35/69/137 and all priorprofiles; no rootpilot score used. Values burned afterthis evaluation."
+}

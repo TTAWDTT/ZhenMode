@@ -1,0 +1,13 @@
+{
+  "returncode": 0,
+  "resources": {
+    "cpu_affinity": 1,
+    "memory_mib": 4096,
+    "wall_seconds": 180,
+    "peak_host_rss_bytes": 847364096,
+    "stop_reason": null,
+    "termination_grace_seconds": 0,
+    "elapsed_wall_seconds": 22.45526746200001,
+    "host_memory_enforcement": "aggregate process-group /proc RSS sampled at 0.2 s; not a hard cgroup cap"
+  }
+}

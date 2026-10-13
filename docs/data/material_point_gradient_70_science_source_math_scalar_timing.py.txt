@@ -1,0 +1,18 @@
+"""Timing-only, fixed preregistered source/math coarse scalar kernel."""
+import json,time
+import jax,jax.numpy as jnp,numpy as np
+from identity import BEFORE,ROOT,verify
+from common import geometry,snapshot
+assert json.loads((ROOT/'source-math-pilot.json').read_text())['verdict']=='PASS'
+start=time.monotonic();grid,d,y,p=geometry(32,16);shape=(8,32,16)
+X=2*np.pi*np.arange(8)[:,None,None]/8;Y=np.pi*(np.arange(32)[None,:,None]+.5)/32;D=d[None,None,:]/100
+u=jnp.asarray(np.broadcast_to(.0017*np.sin(X)*(1+.35*D+.09*D**2),shape).copy())
+v=jnp.asarray(np.broadcast_to(.0023*np.sin(Y)*(1-.27*D+.11*D**3),shape).copy())
+q=jnp.asarray(13+.16*np.cos(X)+.023*np.cos(Y)+(D+.12*D**2+.025*D**4)*(1+.014*np.cos(X)*np.cos(Y)))
+run=snapshot(u,v,p,with_low=True);ticks=[]
+for _ in range(4):
+    tick=time.monotonic();jax.block_until_ready(run(q,jnp.asarray(False)));ticks.append(time.monotonic()-tick)
+after=verify();assert after==BEFORE
+result=dict(scope='Timing only; no numerical output/reference comparison',call_s=ticks,elapsed_s=time.monotonic()-start,source_unchanged=True,source=BEFORE['commit'])
+with (ROOT/'source-math-scalar-timing.json').open('x') as stream:json.dump(result,stream,indent=2)
+print(json.dumps(result))

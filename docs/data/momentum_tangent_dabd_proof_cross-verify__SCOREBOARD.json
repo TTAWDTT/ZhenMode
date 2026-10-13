@@ -1,0 +1,36 @@
+{
+  "date": "2026-10-13",
+  "role": "nonauthor-spec-only-reconstruction-and-interface",
+  "C1": "CONFIRMED",
+  "C1_targets": [
+    "I",
+    "II"
+  ],
+  "C2": "CONFIRMED_LIMITED_STANDALONE_ALGEBRA_ONLY",
+  "C2_production": "GAP_NO_NEW_IMPLEMENTATION_OR_SOFTWARE_PHYSICAL_CONTROLS",
+  "final_workflow_grade": "ROOT_ONLY_PENDING_S2_AND_FULL_GATE_AGGREGATION",
+  "compute_runs": 1,
+  "failed_compute_runs": 0,
+  "backend": "sourced suite SymPy 1.14.0",
+  "sizes": [
+    4
+  ],
+  "longitude_control_Nx": 4,
+  "elapsed_seconds": 2.255356526,
+  "cpu_affinity": [
+    0
+  ],
+  "sampled_peak_RSS_bytes": 75354112,
+  "rss_samples": 142,
+  "source_commit": "70d408583aa99db63e49d958d89dcaccad273f0e",
+  "native_edits": false,
+  "native_runs": false,
+  "running_skeptic_records_read": false,
+  "artifacts": [
+    "WORKFILE.md",
+    "independent_exact.py",
+    "exact-results.json",
+    "exact-run.log",
+    "read-order.jsonl"
+  ]
+}

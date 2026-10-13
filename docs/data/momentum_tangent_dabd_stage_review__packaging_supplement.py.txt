@@ -1,0 +1,16 @@
+# One-shot retrospective packaging-source supplement; stdlib only, no build/model.
+import hashlib,io,json,os,resource,subprocess,tarfile,time
+from pathlib import Path
+os.sched_setaffinity(0,{min(os.sched_getaffinity(0))});resource.setrlimit(resource.RLIMIT_CPU,(180,180));resource.setrlimit(resource.RLIMIT_AS,(4*1024**3,4*1024**3))
+HERE=Path(__file__).resolve().parent;STAGE=HERE.parent;WORK=Path('/mnt/d/CodexWorktrees/thermal-full-scan/ocean-solver');REV='dabd48abd898c20e0471a5ab9fc18e9b61cfa96d'
+old=json.loads((STAGE.parent/'material-point-gradient-v1/build-input.json').read_text());names=['README.md','pyproject.toml','scripts/build_distribution.py']
+archive=subprocess.check_output(['git','--git-dir=/mnt/d/Github/ocean-solver/.git/worktrees/ocean-solver2','--work-tree='+str(WORK),'archive','--format=tar',REV,*names],cwd=WORK)
+sha=lambda b:hashlib.sha256(b).hexdigest()
+with tarfile.open(fileobj=io.BytesIO(archive)) as tar:blob={m.name:tar.extractfile(m).read() for m in tar.getmembers() if m.isfile()}
+rows=[]
+for name in names:
+ git=sha(blob[name]);current=sha((WORK/name).read_bytes());expected=old['files'].get(name)
+ rows.append({'path':name,'Git_SHA':git,'current_SHA':current,'old70_manifest_SHA':expected,'Git_current_equal':git==current,'old70_exact_bridge':None if expected is None else git==current==expected,'meaning':'retrospective REUSED unchanged old70 packaging input' if expected and git==current==expected else 'current read-only Git/bytes supplement only; no old manifest capture'})
+report={'source':REV,'new_build_capture':{'count':144,'scope':'src only, no README/pyproject/scripts capture'},'old70_build_capture':{'count':len(old['files']),'extra_non_src':[p for p in old['files'] if not p.startswith('src/')]},'rows':rows,'scripts_init_exists':(WORK/'scripts/__init__.py').exists(),'build_time_execution_path':'NOT_CAPTURED_OR_ESTABLISHED_BY_THIS_RETROSPECTIVE_CHECK','no_rebuild':True,'source133_144_PASS_unchanged':True,'scope':'read-only retrospective source comparison, no numeric science or build'}
+with (HERE/'packaging-source-supplement.json').open('x') as f:json.dump(report,f,indent=2)
+print(json.dumps(report,indent=2))

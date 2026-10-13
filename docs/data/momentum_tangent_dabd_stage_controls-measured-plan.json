@@ -1,0 +1,20 @@
+{
+  "pilot": {
+    "returncode": 0,
+    "resources": {
+      "cpu_affinity": 1,
+      "memory_mib": 4096,
+      "wall_seconds": 180,
+      "peak_host_rss_bytes": 658219008,
+      "stop_reason": null,
+      "termination_grace_seconds": 0,
+      "elapsed_wall_seconds": 4.211029754999998,
+      "host_memory_enforcement": "aggregate process-group /proc RSS sampled at 0.2 s; not a hard cgroup cap"
+    }
+  },
+  "prior_affected_same_suite_s": 77.31,
+  "projection_s": 137.020148775,
+  "wall_s": 180,
+  "reason": "prior actual nearby 140-control suite plus conservative factor and five new-n4 measuredwalls; completed n4 excluded; finite affected suite only",
+  "new_pilot_not_repeated": true
+}

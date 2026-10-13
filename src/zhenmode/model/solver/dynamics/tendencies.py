@@ -12,6 +12,7 @@ from zhenmode.model.solver.dynamics.transport import (
     _advection_scalar,
     _compute_vertical_velocity,
     _layer_face_transports,
+    _requires_actual_mass_faces,
     _vertical_transport_iface,
 )
 from zhenmode.model.solver.numerics.backend import jax, jnp
@@ -101,6 +102,8 @@ def _compute_tracer_tendency(state, p, budget=None, face_transport=None, return_
     inside their explicit bounds at dt=3600 and stay evaluated ONCE. (D16)
     """
     measure_terms = budget is not None or return_terms
+    if face_transport is None and _requires_actual_mass_faces(p):
+        face_transport = _layer_face_transports(state.u, state.v, p)
     Fz = _vertical_transport_iface(state.u, state.v, p, face_transport=face_transport)
     if budget is not None and p.column_geometry in {'nodal_dual_v1', 'fixed_partial_v1'}:
         budget.tracer_transport(face_transport if face_transport is not None
@@ -116,11 +119,11 @@ def _compute_tracer_tendency(state, p, budget=None, face_transport=None, return_
             tT, tS = carry
             if measure_terms:
                 aT, top_T = _advection_scalar(tT, state.u, state.v, Fz, p, return_boundary=True, face_transport=face_transport)
-                aS, top_S = _advection_scalar(tS, state.u, state.v, Fz, p, return_boundary=True, face_transport=face_transport)
+                aS, top_S = _advection_scalar(tS, state.u, state.v, Fz, p, return_boundary=True, face_transport=face_transport, minimum=0.)
                 terms = (aT, aS, top_T, top_S)
             else:
                 aT = _advection_scalar(tT, state.u, state.v, Fz, p, face_transport=face_transport)
-                aS = _advection_scalar(tS, state.u, state.v, Fz, p, face_transport=face_transport)
+                aS = _advection_scalar(tS, state.u, state.v, Fz, p, face_transport=face_transport, minimum=0.)
                 terms = (aT, aS)
             return (tT + aT * dts, tS + aS * dts), terms
 
@@ -131,10 +134,10 @@ def _compute_tracer_tendency(state, p, budget=None, face_transport=None, return_
     else:
         if measure_terms:
             adv_T, top_T = _advection_scalar(state.T, state.u, state.v, Fz, p, return_boundary=True, face_transport=face_transport)
-            adv_S, top_S = _advection_scalar(state.S, state.u, state.v, Fz, p, return_boundary=True, face_transport=face_transport)
+            adv_S, top_S = _advection_scalar(state.S, state.u, state.v, Fz, p, return_boundary=True, face_transport=face_transport, minimum=0.)
         else:
             adv_T = _advection_scalar(state.T, state.u, state.v, Fz, p, face_transport=face_transport)
-            adv_S = _advection_scalar(state.S, state.u, state.v, Fz, p, face_transport=face_transport)
+            adv_S = _advection_scalar(state.S, state.u, state.v, Fz, p, face_transport=face_transport, minimum=0.)
 
     diff_h_T = _horizontal_tracer_diffusion(state.T, p)
     diff_h_S = _horizontal_tracer_diffusion(state.S, p)

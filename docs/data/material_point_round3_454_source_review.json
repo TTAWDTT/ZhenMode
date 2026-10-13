@@ -1,0 +1,27 @@
+{
+  "reviewer": "Lady /root/continuation_review",
+  "source_commit": "45407573fe205fae475a2d4bf68c2e653a420ed2",
+  "source_module_count": 133,
+  "Git_installed_build_wheel_plan_runtime_identity_pass": true,
+  "declared_new_1d_verdict": "PASS within statedcorecompensated1Dscope",
+  "completed_native_outputs_independently_audited": 10,
+  "original_scientific_screens_pass": 10,
+  "candidate_development_groups_better_than_frozen_MOM6_and_OA": 6,
+  "native_integrations_or_old_baseline_rescores_by_reviewer": 0,
+  "factory_primitive_exact_actual_capacity_claim": "REFUTED for454: primary11ULP/fine50ULP, separate newidentity needed",
+  "old_arithmetic_dynamic_h_exact_gate": "FAIL/OPEN retained",
+  "CI_software": "savedlog1715passed/6710warnings/845.07s andMMS ALLPASS",
+  "broader_physics_or_SOTA": "OPEN/outsidequalification",
+  "new_1d_contact_event": "33/65/129 profile/time data used tocertify454coredeclaredgates; now permanently contacted forlater source/tuning",
+  "evidence_sha256": {
+    "new-1d-declaration.json": "6ec643d8e435fb78f0e3d2595c0babc77d6c62fbb6361970597f5aaad5b9af01",
+    "new-1d-result.json": "29d81396da751822da4fb62a1eabebb8ac1648c7c6b1272134db79db29afef64",
+    "new-1d-independent-report.md": "abfcdc5ac0f4d8c05f41d08fdd3c3a35823593ab23990224e76ba43c2dd75a69",
+    "native-readback-declaration.json": "517303d164b8f31552083f19ab7e2aa2fc3f9686db0df2a18a5fc0a3618c24c0",
+    "native-readback-result.json": "4522c14bd6cea2f804c6dfdfb671b90e86815c8591e7511f47631bda6c8bf8e6",
+    "additional-configuration-audit.json": "83448588083bc2feff252aaea8150552ad7a9a6c48772a0655c46d6381c9a4de",
+    "git-frozen-source-result.json": "0b8f422b11e0ef48ea2e1df64d6d8e723e0c20418144f954712d9e96c0d11a80",
+    "frozen-454-independent-final-report.md": "be4165a1aa7357cd2d4fdf33fa9dee221e6a2608681f99041e3b73e3e754e43b"
+  },
+  "recorded_utc": "2026-10-12T15:20:26.5282331Z"
+}

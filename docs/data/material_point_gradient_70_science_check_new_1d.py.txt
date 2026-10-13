@@ -1,0 +1,81 @@
+"""One-shot new characteristic core evaluation; no native or scorer imports."""
+import argparse,hashlib,json,math,time
+from pathlib import Path
+from types import SimpleNamespace
+import jax,jax.numpy as jnp,numpy as np
+from identity import BEFORE,ROOT,verify
+from zhenmode.model.solver.numerics.column import cubic_point_integral
+from zhenmode.model.solver.numerics.vertical import integrated_reference_scalar_rate,fourth_uniform_tracer_gradient,point_vertical_antiflux,joint_scalar_blend
+jax.config.update('jax_enable_x64',True)
+DB=(ROOT/'new-1d-declaration.json').read_bytes();DEC=json.loads(DB);DT=DEC['dt']
+def initial(d):return 6+.11*np.exp(.62*d)+.08*d**2+.017*d**4
+def exact(d,t,wrong_sign=False):
+    foot=2/math.pi*np.arctan(math.exp((1 if wrong_sign else -1)*.21*math.pi*t)*np.tan(math.pi*d/2))
+    foot[[0,-1]]=[0.,1.]
+    return initial(foot)
+def accepted(error,ratios):return error<=.05 and all(r>=1.25 for r in ratios)
+assert accepted(0.,[2.,2.]) and not accepted(.1,[2.,2.]) and not accepted(.001,[1.,2.])
+plantd=np.linspace(0,1,19);assert max(abs(exact(plantd,0)-initial(plantd)))<=2e-14
+assert max(abs(exact(plantd,.24,True)-exact(plantd,.24)))>1e-4
+def setup(n):
+    d=np.linspace(0.,1.,n);h=np.diff(np.r_[0.,.5*(d[:-1]+d[1:]),1.])
+    F=np.r_[0.,.21*np.sin(math.pi*.5*(d[:-1]+d[1:])),0.];Nm=-np.diff(F)
+    p=SimpleNamespace(dz_node=jnp.asarray(h)[None,None,:],dz_iface=jnp.asarray(np.diff(d))[None,None,:],wet_mask_z=jnp.ones((1,1,n)),dt=DT,adv_nsub=1,vertical_tracer_scheme='muscl_band_v3')
+    fj=jnp.asarray(F)[None,None,:];nm=jnp.asarray(Nm)[None,None,:]
+    def core(q,reverse=False):
+        T=q[None,None,:];flow=-fj if reverse else fj;s=T-T.reshape(-1)[0];baseN=s*nm
+        low,boundary=integrated_reference_scalar_rate(T,flow,baseN,nm,p,minimum=0.)
+        residual=nm+jnp.diff(flow,axis=-1)
+        w=cubic_point_integral(-jnp.diff(flow,axis=-1)/p.dz_node,p)
+        w=w.at[...,0].set(flow[...,0]).at[...,-1].set(0.)
+        gradient=fourth_uniform_tracer_gradient(s,p)
+        target=s[...,0]*flow[...,0]+jnp.sum(p.dz_node*gradient*w,-1)
+        magnitude=jnp.sum(jnp.abs(nm),-1,keepdims=True)
+        antiN=jnp.abs(nm)/jnp.where(magnitude>0,magnitude,1.)*(target-jnp.sum(baseN,-1))[...,None]
+        desired=-w*gradient-T*residual/p.dz_node
+        antiZ=point_vertical_antiflux(desired-low,antiN,flow,p)
+        delta=-(antiN+jnp.diff(antiZ,axis=-1))/p.dz_node
+        alpha,feasible=joint_scalar_blend(T,low,delta,flow,p,minimum=0.)
+        rate=low+alpha*delta;horizontal=T*nm+alpha*antiN
+        return rate[0,0],horizontal[0,0],boundary[0,0],alpha,feasible,antiZ[0,0]
+    return d,h,jax.jit(core),jax.jit(lambda q:core(q,True))
+def evolve(n,steps,constant=False):
+    d,h,rhs,reverse=setup(n);q=np.ones(n) if constant else initial(d);start=q.copy()
+    stock0=np.dot(q.astype(np.longdouble),h.astype(np.longdouble));input_total=np.longdouble(0.)
+    maxbudget=0.;constant_rhs=0.;minimum=float(np.min(q));feasible=True;alpha=1.;ticks=[]
+    for _ in range(steps):
+        tick=time.monotonic();r1,H1,B1,a1,f1,_=map(np.asarray,rhs(jnp.asarray(q)))
+        predictor=q+DT*r1;r2,H2,B2,a2,f2,_=map(np.asarray,rhs(jnp.asarray(predictor)))
+        euler2=predictor+DT*r2;new=q+DT*(r1+r2)/2
+        minimum=min(minimum,float(np.min(predictor)),float(np.min(euler2)));feasible=feasible and bool(f1) and bool(f2);alpha=min(alpha,float(a1),float(a2))
+        horizontal=-np.sum(H1.astype(np.longdouble)+H2.astype(np.longdouble))*np.longdouble(DT)/2
+        boundary=(np.longdouble(float(B1))+np.longdouble(float(B2)))*np.longdouble(DT)/2
+        expected=horizontal+boundary;change=np.dot(new.astype(np.longdouble)-q.astype(np.longdouble),h.astype(np.longdouble))
+        maxbudget=max(maxbudget,float(abs(change-expected)));input_total+=expected
+        if constant:constant_rhs=max(constant_rhs,float(np.max(abs(r1))),float(np.max(abs(r2))))
+        q=new;ticks.append(time.monotonic()-tick)
+    stock=np.dot(q.astype(np.longdouble),h.astype(np.longdouble));negative=float(np.max(abs(np.asarray(reverse(jnp.ones(n))[0]))))
+    budget=dict(stock_initial=float(stock0),stock_final=float(stock),horizontal_plus_boundary=float(input_total),inventory_residual=float(stock-stock0-input_total),budget_limit=1e-12*max(1.,abs(float(stock0)),abs(float(input_total))),maximum_step_budget=maxbudget,constant_rhs_max=constant_rhs,reversed_mass_constant_defect=negative,minimum_Euler=minimum,all_feasible=feasible,minimum_alpha=alpha)
+    return d,h,start,q,budget,ticks
+parser=argparse.ArgumentParser();parser.add_argument('--pilot',action='store_true');args=parser.parse_args();clock=time.monotonic()
+assert json.loads((ROOT/'source-math-result.json').read_text())['verdict']=='PASS'
+if args.pilot:
+    _,_,_,_,_,ticks=evolve(DEC['grids'][0],5)
+    result=dict(verdict='timing-only',scope='No characteristic truth/display/comparison; fixed fiveHeunsteps',nodes=DEC['grids'][0],step_times_s=ticks,elapsed_s=time.monotonic()-clock);name='new-1d-timing-pilot.json';ok=True
+else:
+    cases=[];amplitude=float(initial(np.array([1.]))[0]-initial(np.array([0.]))[0])
+    for n in DEC['grids']:
+        _,_,cstart,cfinal,ccontrol,_=evolve(n,DEC['heun_steps'],True)
+        d,h,start,q,budget,_=evolve(n,DEC['heun_steps']);truth=exact(d,DEC['final_time'])
+        error=float(np.sum(abs(q-truth)*h)/np.sum(h)/amplitude)
+        np.savez(ROOT/f'new-1d-raw-n{n}.npz',depth=d,h=h,initial=start,final=q,truth=truth,constant_initial=cstart,constant_final=cfinal)
+        cases.append(dict(nodes=n,normalized_weighted_L1=error,endpoint_drift=float(np.max(abs(q[[0,-1]]-start[[0,-1]]))),budget=budget,constant_rhs_max=ccontrol['constant_rhs_max'],constant_final_drift=float(np.max(abs(cfinal-cstart))),badmass_defect=ccontrol['reversed_mass_constant_defect'],constant_all_feasible=ccontrol['all_feasible']))
+        with (ROOT/'new-1d-journal.jsonl').open('a') as stream:print(json.dumps(cases[-1]),file=stream)
+        print('COMPLETED_GRID',n,flush=True)
+    ratios=[a['normalized_weighted_L1']/b['normalized_weighted_L1'] for a,b in zip(cases[:-1],cases[1:])]
+    ok=accepted(cases[-1]['normalized_weighted_L1'],ratios) and all(c['constant_rhs_max']<=1e-17 and c['constant_final_drift']<=1e-17 and c['badmass_defect']>1e-12 and c['constant_all_feasible'] and c['budget']['all_feasible'] and c['budget']['minimum_Euler']>=-1e-14 and abs(c['budget']['inventory_residual'])<=c['budget']['budget_limit'] for c in cases)
+    result=dict(verdict='PASS' if ok else 'OPEN',cases=cases,refinement_ratios=ratios,initial_continuous_range=amplitude,elapsed_s=time.monotonic()-clock);name='new-1d-result.json'
+after=verify();assert after==BEFORE
+result.update(source=BEFORE['commit'],identity_before=BEFORE,identity_after=after,declaration_sha256=hashlib.sha256(DB).hexdigest(),evaluator_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),positive_negative_truth_controls='PASS',scope=DEC['scope'],lineage=DEC['lineage'],native_run=False,parameters_or_gates_adjusted=False)
+with (ROOT/name).open('x') as stream:json.dump(result,stream,indent=2)
+print(json.dumps({k:v for k,v in result.items() if k not in ('identity_before','identity_after')}));raise SystemExit(0 if ok else 2)

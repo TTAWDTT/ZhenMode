@@ -1,0 +1,15 @@
+{
+  "source": "dabd48abd898c20e0471a5ab9fc18e9b61cfa96d",
+  "source_parent": "../wheel-identity.json",
+  "same_frozen_contracts_as": "../declared-plan.json",
+  "correction_only": "explicit immutable-installed PYTHONPATH childenvironment",
+  "failedattempt_preserved": "../row-journal.jsonl index0 failed notcompleted, no workerarrays",
+  "indices": [
+    0,
+    1
+  ],
+  "science": "pending so nofineexpansion",
+  "score_gate": 0.0053878283060362665,
+  "resources": "1CPU600s4096MiB/GPU0 .40allocator original sampledRSS",
+  "declared_at": "2026-10-12T22:53:49.483Z"
+}

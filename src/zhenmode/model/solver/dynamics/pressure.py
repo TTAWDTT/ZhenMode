@@ -2,6 +2,7 @@
 
 from zhenmode.model.config import G_EARTH, RHO_0
 from zhenmode.model.solver.numerics.backend import jnp
+from zhenmode.model.solver.numerics.column import column_mean
 from zhenmode.model.solver.numerics.contacts import (
     OFFSETS,
     gradient_from_differences,
@@ -12,10 +13,28 @@ from zhenmode.model.solver.numerics.vertical import _fill_ghost_bottom
 from zhenmode.model.solver.physics.eos import _density_anomaly
 
 
+def _cubic_uniform_density_integral(density, spacing):
+    """Integrate each uniform interval's cubic nodal interpolant cumulatively.
+
+    One-sided four-node closures avoid parity restrictions at the physical
+    endpoints. This is a pressure quadrature, never a tracer inventory change.
+    """
+    first = spacing[..., :1] * (9*density[..., :1] + 19*density[..., 1:2]
+                                - 5*density[..., 2:3] + density[..., 3:4]) / 24
+    middle = spacing[..., 1:-1] * (-density[..., :-3] + 13*density[..., 1:-2]
+                                   + 13*density[..., 2:-1] - density[..., 3:]) / 24
+    last = spacing[..., -1:] * (density[..., -4:-3] - 5*density[..., -3:-2]
+                                + 19*density[..., -2:-1] + 9*density[..., -1:]) / 24
+    pieces = jnp.concatenate((first, middle, last), axis=-1)
+    return jnp.concatenate((jnp.zeros_like(density[..., :1]), jnp.cumsum(pieces, axis=-1)), axis=-1)
+
+
 def _baroclinic_pressure(state, p):
-    """Wet-masked trapezoidal density-anomaly integral, in Pa."""
+    """Wet-masked density-anomaly integral with the selected quadrature, in Pa."""
     rho_prime = _density_anomaly(state.T, state.S, p)
     rho_prime = rho_prime * p.wet_mask_z          # zero out ghost water
+    if getattr(p, 'hydrostatic_integral_scheme', 'trapezoidal') == 'cubic_uniform_v1':
+        return G_EARTH * _cubic_uniform_density_integral(rho_prime, p.dz_3d)
     rho_avg = 0.5 * (rho_prime[..., :-1] + rho_prime[..., 1:])
     dp = G_EARTH * rho_avg * p.dz_3d
     p_bc = jnp.zeros_like(state.T)
@@ -41,7 +60,7 @@ def _density_pressure(state, p):
 
 
 def _compute_hydrostatic_pressure(state, p):
-    """Full hydrostatic pressure via cumulative trapezoidal integration.
+    """Full hydrostatic pressure via cumulative density integration.
 
     The density anomaly is masked by wet_mask_z (zeroed below the seafloor) BEFORE
     integration, so ghost layers contribute dp = 0 and the pressure stays constant
@@ -144,11 +163,10 @@ def _compute_bt_rho_pgf(state, p):
             if p.surface_pressure_pa is not None:
                 pressure = pressure + p.surface_pressure_pa[..., None]
             gx, gy = _gradient_conservative_3d(pressure, p)
-            return (-jnp.sum(gx * p.dz_norm, axis=-1) / RHO_0,
-                    -jnp.sum(gy * p.dz_norm, axis=-1) / RHO_0)
+            return (-column_mean(gx, p) / RHO_0,
+                    -column_mean(gy, p) / RHO_0)
         acceleration_x, acceleration_y = _compute_pressure_gradient(state._replace(eta=jnp.zeros_like(state.eta)), p)
-        return (jnp.sum(acceleration_x * p.dz_norm, axis=-1),
-                jnp.sum(acceleration_y * p.dz_norm, axis=-1))
+        return (column_mean(acceleration_x, p), column_mean(acceleration_y, p))
     p_bc = _baroclinic_pressure(state, p)
     if p.surface_pressure_pa is not None:
         p_bc = p_bc + p.surface_pressure_pa[..., None]

@@ -1,0 +1,493 @@
+{
+  "status": "PASS_LITERAL_RECORD_TRANSCRIPTION_ONLY",
+  "report_sha256": "ad31d12bcd682764a6f6fd3463cdb1b95c34a31462e76efc89a6c618a53e34e2",
+  "scope": "Literal decimal transcription of saved 3 historical and 3 new science JSON metrics into RMS and normalized-L1 comparison tables only; no scientific computation.",
+  "check_count": 48,
+  "failed_count": 0,
+  "source_records": [
+    {
+      "kind": "historical",
+      "case": "00-main",
+      "path": "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\independent-neutral-shear-native\\00-main\\science-verdict01.json",
+      "sha256": "147163432215ed57ab88037b1974f09c65dbf859a2f2d43ec3cb436c737da837",
+      "status": "PASS"
+    },
+    {
+      "kind": "new",
+      "case": "00-main",
+      "path": "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\00-main\\science-verdict01.json",
+      "sha256": "abec6f2aa16308cd012e1a64686241ae824670fe0bef5cad2a1db3d7d15027bb",
+      "status": "PASS"
+    },
+    {
+      "kind": "historical",
+      "case": "01-main",
+      "path": "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\independent-neutral-shear-native\\01-main\\science-verdict01.json",
+      "sha256": "17949d807a332500e848e2040bb38bc906954a78cb32878f4966e8bb58ebe89d",
+      "status": "PASS"
+    },
+    {
+      "kind": "new",
+      "case": "01-main",
+      "path": "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\01-main\\science-verdict01.json",
+      "sha256": "bb4d6ffcf6347a42486e798b9960702827c10fcc752edf1c5223adeef7b782d8",
+      "status": "PASS"
+    },
+    {
+      "kind": "historical",
+      "case": "02-main",
+      "path": "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\independent-neutral-shear-native\\02-main\\science-verdict01.json",
+      "sha256": "1c5e1a10d2b2ee18f49e8a170fd1ca6b68448211fa7ee70300e750399fd30cbe",
+      "status": "PASS"
+    },
+    {
+      "kind": "new",
+      "case": "02-main",
+      "path": "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\02-main\\science-verdict01.json",
+      "sha256": "e28264427788a7bcfb5515e882cbe2941e36c29b27c3be7573b4b9bdf6deacdb",
+      "status": "PASS"
+    }
+  ],
+  "checks": [
+    {
+      "line": 109,
+      "case": "00-main",
+      "kind": "historical",
+      "metric": "T_RMS",
+      "printed": "0.00037185579607669175",
+      "source_json_token": "0.00037185579607669175",
+      "exact_decimal_equal": true
+    },
+    {
+      "line": 109,
+      "case": "00-main",
+      "kind": "new",
+      "metric": "T_RMS",
+      "printed": "0.00004407068051203133",
+      "source_json_token": "4.407068051203133e-05",
+      "exact_decimal_equal": true
+    },
+    {
+      "line": 110,
+      "case": "00-main",
+      "kind": "historical",
+      "metric": "S_RMS",
+      "printed": "9.785685754199627e-5",
+      "source_json_token": "9.785685754199627e-05",
+      "exact_decimal_equal": true
+    },
+    {
+      "line": 110,
+      "case": "00-main",
+      "kind": "new",
+      "metric": "S_RMS",
+      "printed": "1.159755332239367e-5",
+      "source_json_token": "1.159755332239367e-05",
+      "exact_decimal_equal": true
+    },
+    {
+      "line": 111,
+      "case": "00-main",
+      "kind": "historical",
+      "metric": "u_RMS",
+      "printed": "6.267188586846027e-7",
+      "source_json_token": "6.267188586846027e-07",
+      "exact_decimal_equal": true
+    },
+    {
+      "line": 111,
+      "case": "00-main",
+      "kind": "new",
+      "metric": "u_RMS",
+      "printed": "6.267190974384345e-7",
+      "source_json_token": "6.267190974384345e-07",
+      "exact_decimal_equal": true
+    },
+    {
+      "line": 112,
+      "case": "00-main",
+      "kind": "historical",
+      "metric": "v_RMS",
+      "printed": "3.9936859710475823e-7",
+      "source_json_token": "3.9936859710475823e-07",
+      "exact_decimal_equal": true
+    },
+    {
+      "line": 112,
+      "case": "00-main",
+      "kind": "new",
+      "metric": "v_RMS",
+      "printed": "3.993686689417414e-7",
+      "source_json_token": "3.993686689417414e-07",
+      "exact_decimal_equal": true
+    },
+    {
+      "line": 113,
+      "case": "00-main",
+      "kind": "historical",
+      "metric": "eta_RMS",
+      "printed": "1.610920454078542e-7",
+      "source_json_token": "1.610920454078542e-07",
+      "exact_decimal_equal": true
+    },
+    {
+      "line": 113,
+      "case": "00-main",
+      "kind": "new",
+      "metric": "eta_RMS",
+      "printed": "1.610920517871372e-7",
+      "source_json_token": "1.610920517871372e-07",
+      "exact_decimal_equal": true
+    },
+    {
+      "line": 114,
+      "case": "00-main",
+      "kind": "historical",
+      "metric": "rho_RMS",
+      "printed": "3.203975302594049e-8",
+      "source_json_token": "3.203975302594049e-08",
+      "exact_decimal_equal": true
+    },
+    {
+      "line": 114,
+      "case": "00-main",
+      "kind": "new",
+      "metric": "rho_RMS",
+      "printed": "3.208585535915747e-8",
+      "source_json_token": "3.208585535915747e-08",
+      "exact_decimal_equal": true
+    },
+    {
+      "line": 115,
+      "case": "01-main",
+      "kind": "historical",
+      "metric": "T_RMS",
+      "printed": "9.50470031446601e-5",
+      "source_json_token": "9.50470031446601e-05",
+      "exact_decimal_equal": true
+    },
+    {
+      "line": 115,
+      "case": "01-main",
+      "kind": "new",
+      "metric": "T_RMS",
+      "printed": "2.906948527432644e-6",
+      "source_json_token": "2.906948527432644e-06",
+      "exact_decimal_equal": true
+    },
+    {
+      "line": 116,
+      "case": "01-main",
+      "kind": "historical",
+      "metric": "S_RMS",
+      "printed": "2.501285789334958e-5",
+      "source_json_token": "2.501285789334958e-05",
+      "exact_decimal_equal": true
+    },
+    {
+      "line": 116,
+      "case": "01-main",
+      "kind": "new",
+      "metric": "S_RMS",
+      "printed": "7.651418903982357e-7",
+      "source_json_token": "7.651418903982357e-07",
+      "exact_decimal_equal": true
+    },
+    {
+      "line": 117,
+      "case": "01-main",
+      "kind": "historical",
+      "metric": "u_RMS",
+      "printed": "3.937124966194141e-8",
+      "source_json_token": "3.937124966194141e-08",
+      "exact_decimal_equal": true
+    },
+    {
+      "line": 117,
+      "case": "01-main",
+      "kind": "new",
+      "metric": "u_RMS",
+      "printed": "3.940144359945673e-8",
+      "source_json_token": "3.940144359945673e-08",
+      "exact_decimal_equal": true
+    },
+    {
+      "line": 118,
+      "case": "01-main",
+      "kind": "historical",
+      "metric": "v_RMS",
+      "printed": "2.510846444238586e-8",
+      "source_json_token": "2.510846444238586e-08",
+      "exact_decimal_equal": true
+    },
+    {
+      "line": 118,
+      "case": "01-main",
+      "kind": "new",
+      "metric": "v_RMS",
+      "printed": "2.5144035723863297e-8",
+      "source_json_token": "2.5144035723863297e-08",
+      "exact_decimal_equal": true
+    },
+    {
+      "line": 119,
+      "case": "01-main",
+      "kind": "historical",
+      "metric": "eta_RMS",
+      "printed": "1.0133159533964772e-8",
+      "source_json_token": "1.0133159533964772e-08",
+      "exact_decimal_equal": true
+    },
+    {
+      "line": 119,
+      "case": "01-main",
+      "kind": "new",
+      "metric": "eta_RMS",
+      "printed": "1.0134820447526767e-8",
+      "source_json_token": "1.0134820447526767e-08",
+      "exact_decimal_equal": true
+    },
+    {
+      "line": 120,
+      "case": "01-main",
+      "kind": "historical",
+      "metric": "rho_RMS",
+      "printed": "8.810050518488863e-9",
+      "source_json_token": "8.810050518488863e-09",
+      "exact_decimal_equal": true
+    },
+    {
+      "line": 120,
+      "case": "01-main",
+      "kind": "new",
+      "metric": "rho_RMS",
+      "printed": "9.997809298960032e-9",
+      "source_json_token": "9.997809298960032e-09",
+      "exact_decimal_equal": true
+    },
+    {
+      "line": 121,
+      "case": "02-main",
+      "kind": "historical",
+      "metric": "T_RMS",
+      "printed": "2.3893683930442902e-5",
+      "source_json_token": "2.3893683930442902e-05",
+      "exact_decimal_equal": true
+    },
+    {
+      "line": 121,
+      "case": "02-main",
+      "kind": "new",
+      "metric": "T_RMS",
+      "printed": "1.8639626226425045e-7",
+      "source_json_token": "1.8639626226425045e-07",
+      "exact_decimal_equal": true
+    },
+    {
+      "line": 122,
+      "case": "02-main",
+      "kind": "historical",
+      "metric": "S_RMS",
+      "printed": "6.28811511182653e-6",
+      "source_json_token": "6.28811511182653e-06",
+      "exact_decimal_equal": true
+    },
+    {
+      "line": 122,
+      "case": "02-main",
+      "kind": "new",
+      "metric": "S_RMS",
+      "printed": "4.851795175610486e-8",
+      "source_json_token": "4.851795175610486e-08",
+      "exact_decimal_equal": true
+    },
+    {
+      "line": 123,
+      "case": "02-main",
+      "kind": "historical",
+      "metric": "u_RMS",
+      "printed": "2.9475166435966397e-9",
+      "source_json_token": "2.9475166435966397e-09",
+      "exact_decimal_equal": true
+    },
+    {
+      "line": 123,
+      "case": "02-main",
+      "kind": "new",
+      "metric": "u_RMS",
+      "printed": "2.959939457146428e-9",
+      "source_json_token": "2.959939457146428e-09",
+      "exact_decimal_equal": true
+    },
+    {
+      "line": 124,
+      "case": "02-main",
+      "kind": "historical",
+      "metric": "v_RMS",
+      "printed": "3.006819882529949e-9",
+      "source_json_token": "3.006819882529949e-09",
+      "exact_decimal_equal": true
+    },
+    {
+      "line": 124,
+      "case": "02-main",
+      "kind": "new",
+      "metric": "v_RMS",
+      "printed": "3.04283398177509e-9",
+      "source_json_token": "3.04283398177509e-09",
+      "exact_decimal_equal": true
+    },
+    {
+      "line": 125,
+      "case": "02-main",
+      "kind": "historical",
+      "metric": "eta_RMS",
+      "printed": "6.718963122851496e-10",
+      "source_json_token": "6.718963122851496e-10",
+      "exact_decimal_equal": true
+    },
+    {
+      "line": 125,
+      "case": "02-main",
+      "kind": "new",
+      "metric": "eta_RMS",
+      "printed": "6.730816123352594e-10",
+      "source_json_token": "6.730816123352594e-10",
+      "exact_decimal_equal": true
+    },
+    {
+      "line": 126,
+      "case": "02-main",
+      "kind": "historical",
+      "metric": "rho_RMS",
+      "printed": "5.724012971667923e-9",
+      "source_json_token": "5.724012971667923e-09",
+      "exact_decimal_equal": true
+    },
+    {
+      "line": 126,
+      "case": "02-main",
+      "kind": "new",
+      "metric": "rho_RMS",
+      "printed": "5.8147541560952455e-9",
+      "source_json_token": "5.8147541560952455e-09",
+      "exact_decimal_equal": true
+    },
+    {
+      "line": 132,
+      "case": "00-main",
+      "kind": "historical",
+      "metric": "T_normalized_L1",
+      "printed": "0.004432841208314006",
+      "source_json_token": "0.004432841208314006",
+      "exact_decimal_equal": true
+    },
+    {
+      "line": 132,
+      "case": "00-main",
+      "kind": "historical",
+      "metric": "S_normalized_L1",
+      "printed": "0.004432843590280222",
+      "source_json_token": "0.004432843590280222",
+      "exact_decimal_equal": true
+    },
+    {
+      "line": 132,
+      "case": "00-main",
+      "kind": "new",
+      "metric": "T_normalized_L1",
+      "printed": "0.0005232532100036479",
+      "source_json_token": "0.0005232532100036479",
+      "exact_decimal_equal": true
+    },
+    {
+      "line": 132,
+      "case": "00-main",
+      "kind": "new",
+      "metric": "S_normalized_L1",
+      "printed": "0.0005232674350391263",
+      "source_json_token": "0.0005232674350391263",
+      "exact_decimal_equal": true
+    },
+    {
+      "line": 133,
+      "case": "01-main",
+      "kind": "historical",
+      "metric": "T_normalized_L1",
+      "printed": "0.0011315530270999273",
+      "source_json_token": "0.0011315530270999273",
+      "exact_decimal_equal": true
+    },
+    {
+      "line": 133,
+      "case": "01-main",
+      "kind": "historical",
+      "metric": "S_normalized_L1",
+      "printed": "0.0011315965978100839",
+      "source_json_token": "0.0011315965978100839",
+      "exact_decimal_equal": true
+    },
+    {
+      "line": 133,
+      "case": "01-main",
+      "kind": "new",
+      "metric": "T_normalized_L1",
+      "printed": "3.443243607504523e-5",
+      "source_json_token": "3.443243607504523e-05",
+      "exact_decimal_equal": true
+    },
+    {
+      "line": 133,
+      "case": "01-main",
+      "kind": "new",
+      "metric": "S_normalized_L1",
+      "printed": "3.443516315837632e-5",
+      "source_json_token": "3.443516315837632e-05",
+      "exact_decimal_equal": true
+    },
+    {
+      "line": 134,
+      "case": "02-main",
+      "kind": "historical",
+      "metric": "T_normalized_L1",
+      "printed": "0.0002850273731176967",
+      "source_json_token": "0.0002850273731176967",
+      "exact_decimal_equal": true
+    },
+    {
+      "line": 134,
+      "case": "02-main",
+      "kind": "historical",
+      "metric": "S_normalized_L1",
+      "printed": "0.00028505070362881165",
+      "source_json_token": "0.00028505070362881165",
+      "exact_decimal_equal": true
+    },
+    {
+      "line": 134,
+      "case": "02-main",
+      "kind": "new",
+      "metric": "T_normalized_L1",
+      "printed": "2.241470620123557e-6",
+      "source_json_token": "2.241470620123557e-06",
+      "exact_decimal_equal": true
+    },
+    {
+      "line": 134,
+      "case": "02-main",
+      "kind": "new",
+      "metric": "S_normalized_L1",
+      "printed": "2.1978454536730308e-6",
+      "source_json_token": "2.1978454536730308e-06",
+      "exact_decimal_equal": true
+    }
+  ],
+  "npz_decoded": 0,
+  "model_calls": 0,
+  "observer_calls": 0,
+  "physics_metrics_computed": 0,
+  "ratios_computed": 0,
+  "source_ci_repeated": false,
+  "controls_3_4_assessed": false,
+  "final_summary_assessed": false
+}

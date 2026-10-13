@@ -1,0 +1,1684 @@
+[
+  {
+    "name": "known-rational",
+    "pass": true,
+    "values": {
+      "actual": "5/6",
+      "expected": "5/6",
+      "residual": "0"
+    }
+  },
+  {
+    "name": "numeric-comparator-mismatch-caught",
+    "pass": true,
+    "values": "None"
+  },
+  {
+    "name": "matrix-null-Ft",
+    "pass": true,
+    "values": {
+      "actual": [
+        [
+          "0"
+        ],
+        [
+          "0"
+        ],
+        [
+          "0"
+        ],
+        [
+          "0"
+        ]
+      ],
+      "expected": [
+        [
+          "0"
+        ],
+        [
+          "0"
+        ],
+        [
+          "0"
+        ],
+        [
+          "0"
+        ]
+      ],
+      "residual": [
+        [
+          "0"
+        ],
+        [
+          "0"
+        ],
+        [
+          "0"
+        ],
+        [
+          "0"
+        ]
+      ]
+    }
+  },
+  {
+    "name": "matrix-null-Fn",
+    "pass": true,
+    "values": {
+      "actual": [
+        [
+          "0"
+        ],
+        [
+          "0"
+        ],
+        [
+          "0"
+        ],
+        [
+          "0"
+        ]
+      ],
+      "expected": [
+        [
+          "0"
+        ],
+        [
+          "0"
+        ],
+        [
+          "0"
+        ],
+        [
+          "0"
+        ]
+      ],
+      "residual": [
+        [
+          "0"
+        ],
+        [
+          "0"
+        ],
+        [
+          "0"
+        ],
+        [
+          "0"
+        ]
+      ]
+    }
+  },
+  {
+    "name": "Ft-symmetry",
+    "pass": true,
+    "values": "None"
+  },
+  {
+    "name": "Ft-Loewner-lower",
+    "pass": true,
+    "values": "None"
+  },
+  {
+    "name": "Ft-Loewner-upper",
+    "pass": true,
+    "values": "None"
+  },
+  {
+    "name": "Ft-contraction-clean-twin",
+    "pass": true,
+    "values": "None"
+  },
+  {
+    "name": "Fn-symmetry",
+    "pass": true,
+    "values": "None"
+  },
+  {
+    "name": "Fn-Loewner-lower",
+    "pass": true,
+    "values": "None"
+  },
+  {
+    "name": "Fn-Loewner-upper",
+    "pass": true,
+    "values": "None"
+  },
+  {
+    "name": "Fn-contraction-clean-twin",
+    "pass": true,
+    "values": "None"
+  },
+  {
+    "name": "T1",
+    "pass": true,
+    "values": {
+      "actual": [
+        [
+          "-1/8"
+        ],
+        [
+          "9/8"
+        ],
+        [
+          "33/8"
+        ],
+        [
+          "71/8"
+        ]
+      ],
+      "expected": [
+        [
+          "-1/8"
+        ],
+        [
+          "9/8"
+        ],
+        [
+          "33/8"
+        ],
+        [
+          "71/8"
+        ]
+      ],
+      "residual": [
+        [
+          "0"
+        ],
+        [
+          "0"
+        ],
+        [
+          "0"
+        ],
+        [
+          "0"
+        ]
+      ]
+    }
+  },
+  {
+    "name": "T2",
+    "pass": true,
+    "values": {
+      "actual": [
+        [
+          "5/8"
+        ],
+        [
+          "9/8"
+        ],
+        [
+          "9/8"
+        ],
+        [
+          "5/8"
+        ]
+      ],
+      "expected": [
+        [
+          "5/8"
+        ],
+        [
+          "9/8"
+        ],
+        [
+          "9/8"
+        ],
+        [
+          "5/8"
+        ]
+      ],
+      "residual": [
+        [
+          "0"
+        ],
+        [
+          "0"
+        ],
+        [
+          "0"
+        ],
+        [
+          "0"
+        ]
+      ]
+    }
+  },
+  {
+    "name": "Ft-constant",
+    "pass": true,
+    "values": {
+      "actual": [
+        [
+          "1"
+        ],
+        [
+          "1"
+        ],
+        [
+          "1"
+        ],
+        [
+          "1"
+        ]
+      ],
+      "expected": [
+        [
+          "1"
+        ],
+        [
+          "1"
+        ],
+        [
+          "1"
+        ],
+        [
+          "1"
+        ]
+      ],
+      "residual": [
+        [
+          "0"
+        ],
+        [
+          "0"
+        ],
+        [
+          "0"
+        ],
+        [
+          "0"
+        ]
+      ]
+    }
+  },
+  {
+    "name": "Ft-affine",
+    "pass": true,
+    "values": {
+      "actual": [
+        [
+          "0"
+        ],
+        [
+          "1"
+        ],
+        [
+          "2"
+        ],
+        [
+          "3"
+        ]
+      ],
+      "expected": [
+        [
+          "0"
+        ],
+        [
+          "1"
+        ],
+        [
+          "2"
+        ],
+        [
+          "3"
+        ]
+      ],
+      "residual": [
+        [
+          "0"
+        ],
+        [
+          "0"
+        ],
+        [
+          "0"
+        ],
+        [
+          "0"
+        ]
+      ]
+    }
+  },
+  {
+    "name": "Ft-scaled-affine",
+    "pass": true,
+    "values": {
+      "actual": [
+        [
+          "1/8"
+        ],
+        [
+          "3/8"
+        ],
+        [
+          "5/8"
+        ],
+        [
+          "7/8"
+        ]
+      ],
+      "expected": [
+        [
+          "1/8"
+        ],
+        [
+          "3/8"
+        ],
+        [
+          "5/8"
+        ],
+        [
+          "7/8"
+        ]
+      ],
+      "residual": [
+        [
+          "0"
+        ],
+        [
+          "0"
+        ],
+        [
+          "0"
+        ],
+        [
+          "0"
+        ]
+      ]
+    }
+  },
+  {
+    "name": "Ft-sum-row",
+    "pass": true,
+    "values": {
+      "actual": [
+        [
+          "1",
+          "1",
+          "1",
+          "1"
+        ]
+      ],
+      "expected": [
+        [
+          "1",
+          "1",
+          "1",
+          "1"
+        ]
+      ],
+      "residual": [
+        [
+          "0",
+          "0",
+          "0",
+          "0"
+        ]
+      ]
+    }
+  },
+  {
+    "name": "Ft-fixed-space-exact-dimension",
+    "pass": true,
+    "values": "None"
+  },
+  {
+    "name": "Fn-no-fixed-eigenvalue-one",
+    "pass": true,
+    "values": "None"
+  },
+  {
+    "name": "Nyquist-L",
+    "pass": true,
+    "values": {
+      "actual": [
+        [
+          "-4"
+        ],
+        [
+          "4"
+        ],
+        [
+          "-4"
+        ],
+        [
+          "4"
+        ]
+      ],
+      "expected": [
+        [
+          "-4"
+        ],
+        [
+          "4"
+        ],
+        [
+          "-4"
+        ],
+        [
+          "4"
+        ]
+      ],
+      "residual": [
+        [
+          "0"
+        ],
+        [
+          "0"
+        ],
+        [
+          "0"
+        ],
+        [
+          "0"
+        ]
+      ]
+    }
+  },
+  {
+    "name": "Nyquist-Fn-kill",
+    "pass": true,
+    "values": {
+      "actual": [
+        [
+          "0"
+        ],
+        [
+          "0"
+        ],
+        [
+          "0"
+        ],
+        [
+          "0"
+        ]
+      ],
+      "expected": [
+        [
+          "0"
+        ],
+        [
+          "0"
+        ],
+        [
+          "0"
+        ],
+        [
+          "0"
+        ]
+      ],
+      "residual": [
+        [
+          "0"
+        ],
+        [
+          "0"
+        ],
+        [
+          "0"
+        ],
+        [
+          "0"
+        ]
+      ]
+    }
+  },
+  {
+    "name": "Ft-scatter-free-vector",
+    "pass": true,
+    "values": {
+      "actual": [
+        [
+          "15*x0/16 + x1/8 - x2/16"
+        ],
+        [
+          "x0/8 + 11*x1/16 + x2/4 - x3/16"
+        ],
+        [
+          "-x0/16 + x1/4 + 11*x2/16 + x3/8"
+        ],
+        [
+          "-x1/16 + x2/8 + 15*x3/16"
+        ]
+      ],
+      "expected": [
+        [
+          "15*x0/16 + x1/8 - x2/16"
+        ],
+        [
+          "x0/8 + 11*x1/16 + x2/4 - x3/16"
+        ],
+        [
+          "-x0/16 + x1/4 + 11*x2/16 + x3/8"
+        ],
+        [
+          "-x1/16 + x2/8 + 15*x3/16"
+        ]
+      ],
+      "residual": [
+        [
+          "0"
+        ],
+        [
+          "0"
+        ],
+        [
+          "0"
+        ],
+        [
+          "0"
+        ]
+      ]
+    }
+  },
+  {
+    "name": "Fn-two-tridiagonal-free-vector",
+    "pass": true,
+    "values": {
+      "actual": [
+        [
+          "3*x0/8 + 5*x1/16 - x2/16"
+        ],
+        [
+          "5*x0/16 + 5*x1/8 + x2/4 - x3/16"
+        ],
+        [
+          "-x0/16 + x1/4 + 5*x2/8 + 5*x3/16"
+        ],
+        [
+          "-x1/16 + 5*x2/16 + 3*x3/8"
+        ]
+      ],
+      "expected": [
+        [
+          "3*x0/8 + 5*x1/16 - x2/16"
+        ],
+        [
+          "5*x0/16 + 5*x1/8 + x2/4 - x3/16"
+        ],
+        [
+          "-x0/16 + x1/4 + 5*x2/8 + 5*x3/16"
+        ],
+        [
+          "-x1/16 + 5*x2/16 + 3*x3/8"
+        ]
+      ],
+      "residual": [
+        [
+          "0"
+        ],
+        [
+          "0"
+        ],
+        [
+          "0"
+        ],
+        [
+          "0"
+        ]
+      ]
+    }
+  },
+  {
+    "name": "Gram-free-quadratic",
+    "pass": true,
+    "values": {
+      "actual": "x0*(x0 - 2*x1 + x2) + x1*(-2*x0 + 5*x1 - 4*x2 + x3) + x2*(x0 - 4*x1 + 5*x2 - 2*x3) + x3*(x1 - 2*x2 + x3)",
+      "expected": "(x0 - 2*x1 + x2)**2 + (x1 - 2*x2 + x3)**2",
+      "residual": "0"
+    }
+  },
+  {
+    "name": "normal-Green-bilinear",
+    "pass": true,
+    "values": {
+      "actual": "-z0*(-3*x0 + x1) - z1*(x0 - 2*x1 + x2) - z2*(x1 - 2*x2 + x3) - z3*(x2 - 3*x3)",
+      "expected": "2*x0*z0 + 2*x3*z3 + (-x0 + x1)*(-z0 + z1) + (-x1 + x2)*(-z1 + z2) + (-x2 + x3)*(-z2 + z3)",
+      "residual": "0"
+    }
+  },
+  {
+    "name": "normal-upper-bilinear",
+    "pass": true,
+    "values": {
+      "actual": "z0*(x0 + x1) + z1*(x0 + 2*x1 + x2) + z2*(x1 + 2*x2 + x3) + z3*(x2 + x3)",
+      "expected": "(x0 + x1)*(z0 + z1) + (x1 + x2)*(z1 + z2) + (x2 + x3)*(z2 + z3)",
+      "residual": "0"
+    }
+  },
+  {
+    "name": "weighted-Cauchy-defect",
+    "pass": true,
+    "values": {
+      "actual": "4*a**2 + 8*b**2 + 4*c**2 - (a - 2*b + c)**2",
+      "expected": "2*(a + b)**2 + (a - c)**2 + 2*(b + c)**2",
+      "residual": "0"
+    }
+  },
+  {
+    "name": "aggregate-Cauchy-defect-n4",
+    "pass": true,
+    "values": {
+      "actual": "16*x0**2 + 16*x1**2 + 16*x2**2 + 16*x3**2 - (x0 - 2*x1 + x2)**2 - (x1 - 2*x2 + x3)**2",
+      "expected": "12*x0**2 + 4*x1**2 + 4*x2**2 + 12*x3**2 + 2*(x0 + x1)**2 + (x0 - x2)**2 + 4*(x1 + x2)**2 + (x1 - x3)**2 + 2*(x2 + x3)**2",
+      "residual": "0"
+    }
+  },
+  {
+    "name": "shift-Laurent-product",
+    "pass": true,
+    "values": {
+      "actual": "(1 - 2/z + z**(-2))*(z**2 - 2*z + 1)",
+      "expected": "(-z + 2 - 1/z)**2",
+      "residual": "0"
+    }
+  },
+  {
+    "name": "generic-sine-recurrence",
+    "pass": true,
+    "values": {
+      "actual": "-2*sin(u) - sin(theta - u) + sin(theta + u)",
+      "expected": "-4*sin(theta/2)**2*sin(u)",
+      "residual": "0"
+    }
+  },
+  {
+    "name": "left-odd-ghost",
+    "pass": true,
+    "values": {
+      "actual": "-sin(theta/2)",
+      "expected": "-sin(theta/2)",
+      "residual": "0"
+    }
+  },
+  {
+    "name": "right-odd-ghost",
+    "pass": true,
+    "values": {
+      "actual": "(-1)**k*sin(theta/2)",
+      "expected": "(-1)**k*sin(theta/2)",
+      "residual": "0"
+    }
+  },
+  {
+    "name": "sine-norm-telescope",
+    "pass": true,
+    "values": {
+      "actual": "2*sin(theta)*cos(theta + u)",
+      "expected": "-sin(u) + sin(2*theta + u)",
+      "residual": "0"
+    }
+  },
+  {
+    "name": "n4-sine-all-rows",
+    "pass": true,
+    "values": {
+      "actual": [
+        [
+          "-3*sqrt(1/2 - sqrt(2)/4) + sqrt(sqrt(2)/4 + 1/2)",
+          "-sqrt(2)",
+          "-3*sqrt(sqrt(2)/4 + 1/2) - sqrt(1/2 - sqrt(2)/4)",
+          "-4"
+        ],
+        [
+          "-sqrt(sqrt(2)/4 + 1/2) + sqrt(1/2 - sqrt(2)/4)",
+          "-sqrt(2)",
+          "sqrt(1/2 - sqrt(2)/4) + sqrt(sqrt(2)/4 + 1/2)",
+          "4"
+        ],
+        [
+          "-sqrt(sqrt(2)/4 + 1/2) + sqrt(1/2 - sqrt(2)/4)",
+          "sqrt(2)",
+          "sqrt(1/2 - sqrt(2)/4) + sqrt(sqrt(2)/4 + 1/2)",
+          "-4"
+        ],
+        [
+          "-3*sqrt(1/2 - sqrt(2)/4) + sqrt(sqrt(2)/4 + 1/2)",
+          "sqrt(2)",
+          "-3*sqrt(sqrt(2)/4 + 1/2) - sqrt(1/2 - sqrt(2)/4)",
+          "4"
+        ]
+      ],
+      "expected": [
+        [
+          "(-2 + sqrt(2))*sqrt(1/2 - sqrt(2)/4)",
+          "-sqrt(2)",
+          "(-2 - sqrt(2))*sqrt(sqrt(2)/4 + 1/2)",
+          "-4"
+        ],
+        [
+          "(-2 + sqrt(2))*sqrt(sqrt(2)/4 + 1/2)",
+          "-sqrt(2)",
+          "-(-2 - sqrt(2))*sqrt(1/2 - sqrt(2)/4)",
+          "4"
+        ],
+        [
+          "(-2 + sqrt(2))*sqrt(sqrt(2)/4 + 1/2)",
+          "sqrt(2)",
+          "-(-2 - sqrt(2))*sqrt(1/2 - sqrt(2)/4)",
+          "-4"
+        ],
+        [
+          "(-2 + sqrt(2))*sqrt(1/2 - sqrt(2)/4)",
+          "sqrt(2)",
+          "(-2 - sqrt(2))*sqrt(sqrt(2)/4 + 1/2)",
+          "4"
+        ]
+      ],
+      "residual": [
+        [
+          "0",
+          "0",
+          "0",
+          "0"
+        ],
+        [
+          "0",
+          "0",
+          "0",
+          "0"
+        ],
+        [
+          "0",
+          "0",
+          "0",
+          "0"
+        ],
+        [
+          "0",
+          "0",
+          "0",
+          "0"
+        ]
+      ]
+    }
+  },
+  {
+    "name": "n4-sine-Gram-Nyquist",
+    "pass": true,
+    "values": {
+      "actual": [
+        [
+          "2",
+          "0",
+          "0",
+          "0"
+        ],
+        [
+          "0",
+          "2",
+          "0",
+          "0"
+        ],
+        [
+          "0",
+          "0",
+          "2",
+          "0"
+        ],
+        [
+          "0",
+          "0",
+          "0",
+          "4"
+        ]
+      ],
+      "expected": [
+        [
+          "2",
+          "0",
+          "0",
+          "0"
+        ],
+        [
+          "0",
+          "2",
+          "0",
+          "0"
+        ],
+        [
+          "0",
+          "0",
+          "2",
+          "0"
+        ],
+        [
+          "0",
+          "0",
+          "0",
+          "4"
+        ]
+      ],
+      "residual": [
+        [
+          "0",
+          "0",
+          "0",
+          "0"
+        ],
+        [
+          "0",
+          "0",
+          "0",
+          "0"
+        ],
+        [
+          "0",
+          "0",
+          "0",
+          "0"
+        ],
+        [
+          "0",
+          "0",
+          "0",
+          "0"
+        ]
+      ]
+    }
+  },
+  {
+    "name": "n4-Fn-spectral-map",
+    "pass": true,
+    "values": {
+      "actual": [
+        [
+          "3*sqrt(1/2 - sqrt(2)/4)/8 + sqrt(sqrt(2)/4 + 1/2)/4",
+          "3*sqrt(2)/8",
+          "-sqrt(1/2 - sqrt(2)/4)/4 + 3*sqrt(sqrt(2)/4 + 1/2)/8",
+          "0"
+        ],
+        [
+          "sqrt(1/2 - sqrt(2)/4)/4 + 7*sqrt(sqrt(2)/4 + 1/2)/8",
+          "3*sqrt(2)/8",
+          "-7*sqrt(1/2 - sqrt(2)/4)/8 + sqrt(sqrt(2)/4 + 1/2)/4",
+          "0"
+        ],
+        [
+          "sqrt(1/2 - sqrt(2)/4)/4 + 7*sqrt(sqrt(2)/4 + 1/2)/8",
+          "-3*sqrt(2)/8",
+          "-7*sqrt(1/2 - sqrt(2)/4)/8 + sqrt(sqrt(2)/4 + 1/2)/4",
+          "0"
+        ],
+        [
+          "3*sqrt(1/2 - sqrt(2)/4)/8 + sqrt(sqrt(2)/4 + 1/2)/4",
+          "-3*sqrt(2)/8",
+          "-sqrt(1/2 - sqrt(2)/4)/4 + 3*sqrt(sqrt(2)/4 + 1/2)/8",
+          "0"
+        ]
+      ],
+      "expected": [
+        [
+          "sqrt(1/2 - sqrt(2)/4)*(1 - (-2 + sqrt(2))**2/16)",
+          "3*sqrt(2)/8",
+          "(1 - (-2 - sqrt(2))**2/16)*sqrt(sqrt(2)/4 + 1/2)",
+          "0"
+        ],
+        [
+          "(1 - (-2 + sqrt(2))**2/16)*sqrt(sqrt(2)/4 + 1/2)",
+          "3*sqrt(2)/8",
+          "-sqrt(1/2 - sqrt(2)/4)*(1 - (-2 - sqrt(2))**2/16)",
+          "0"
+        ],
+        [
+          "(1 - (-2 + sqrt(2))**2/16)*sqrt(sqrt(2)/4 + 1/2)",
+          "-3*sqrt(2)/8",
+          "-sqrt(1/2 - sqrt(2)/4)*(1 - (-2 - sqrt(2))**2/16)",
+          "0"
+        ],
+        [
+          "sqrt(1/2 - sqrt(2)/4)*(1 - (-2 + sqrt(2))**2/16)",
+          "-3*sqrt(2)/8",
+          "(1 - (-2 - sqrt(2))**2/16)*sqrt(sqrt(2)/4 + 1/2)",
+          "0"
+        ]
+      ],
+      "residual": [
+        [
+          "0",
+          "0",
+          "0",
+          "0"
+        ],
+        [
+          "0",
+          "0",
+          "0",
+          "0"
+        ],
+        [
+          "0",
+          "0",
+          "0",
+          "0"
+        ],
+        [
+          "0",
+          "0",
+          "0",
+          "0"
+        ]
+      ]
+    }
+  },
+  {
+    "name": "n4-B-spectral-map",
+    "pass": true,
+    "values": {
+      "actual": [
+        [
+          "sqrt(1/2 - sqrt(2)/4)/8 + sqrt(sqrt(2)/4 + 1/2)/4",
+          "sqrt(2)/8",
+          "-sqrt(1/2 - sqrt(2)/4)/4 + sqrt(sqrt(2)/4 + 1/2)/8",
+          "0"
+        ],
+        [
+          "sqrt(1/2 - sqrt(2)/4)/4 + 5*sqrt(sqrt(2)/4 + 1/2)/8",
+          "sqrt(2)/8",
+          "-5*sqrt(1/2 - sqrt(2)/4)/8 + sqrt(sqrt(2)/4 + 1/2)/4",
+          "0"
+        ],
+        [
+          "sqrt(1/2 - sqrt(2)/4)/4 + 5*sqrt(sqrt(2)/4 + 1/2)/8",
+          "-sqrt(2)/8",
+          "-5*sqrt(1/2 - sqrt(2)/4)/8 + sqrt(sqrt(2)/4 + 1/2)/4",
+          "0"
+        ],
+        [
+          "sqrt(1/2 - sqrt(2)/4)/8 + sqrt(sqrt(2)/4 + 1/2)/4",
+          "-sqrt(2)/8",
+          "-sqrt(1/2 - sqrt(2)/4)/4 + sqrt(sqrt(2)/4 + 1/2)/8",
+          "0"
+        ]
+      ],
+      "expected": [
+        [
+          "sqrt(1/2 - sqrt(2)/4)*(sqrt(2)/4 + 1/2)**2",
+          "sqrt(2)/8",
+          "(1/2 - sqrt(2)/4)**2*sqrt(sqrt(2)/4 + 1/2)",
+          "0"
+        ],
+        [
+          "(sqrt(2)/4 + 1/2)**(5/2)",
+          "sqrt(2)/8",
+          "-(1/2 - sqrt(2)/4)**(5/2)",
+          "0"
+        ],
+        [
+          "(sqrt(2)/4 + 1/2)**(5/2)",
+          "-sqrt(2)/8",
+          "-(1/2 - sqrt(2)/4)**(5/2)",
+          "0"
+        ],
+        [
+          "sqrt(1/2 - sqrt(2)/4)*(sqrt(2)/4 + 1/2)**2",
+          "-sqrt(2)/8",
+          "(1/2 - sqrt(2)/4)**2*sqrt(sqrt(2)/4 + 1/2)",
+          "0"
+        ]
+      ],
+      "residual": [
+        [
+          "0",
+          "0",
+          "0",
+          "0"
+        ],
+        [
+          "0",
+          "0",
+          "0",
+          "0"
+        ],
+        [
+          "0",
+          "0",
+          "0",
+          "0"
+        ],
+        [
+          "0",
+          "0",
+          "0",
+          "0"
+        ]
+      ]
+    }
+  },
+  {
+    "name": "B-polynomial",
+    "pass": true,
+    "values": {
+      "actual": [
+        [
+          "1/8",
+          "3/16",
+          "1/16",
+          "0"
+        ],
+        [
+          "3/16",
+          "3/8",
+          "1/4",
+          "1/16"
+        ],
+        [
+          "1/16",
+          "1/4",
+          "3/8",
+          "3/16"
+        ],
+        [
+          "0",
+          "1/16",
+          "3/16",
+          "1/8"
+        ]
+      ],
+      "expected": [
+        [
+          "1/8",
+          "3/16",
+          "1/16",
+          "0"
+        ],
+        [
+          "3/16",
+          "3/8",
+          "1/4",
+          "1/16"
+        ],
+        [
+          "1/16",
+          "1/4",
+          "3/8",
+          "3/16"
+        ],
+        [
+          "0",
+          "1/16",
+          "3/16",
+          "1/8"
+        ]
+      ],
+      "residual": [
+        [
+          "0",
+          "0",
+          "0",
+          "0"
+        ],
+        [
+          "0",
+          "0",
+          "0",
+          "0"
+        ],
+        [
+          "0",
+          "0",
+          "0",
+          "0"
+        ],
+        [
+          "0",
+          "0",
+          "0",
+          "0"
+        ]
+      ]
+    }
+  },
+  {
+    "name": "B-Fn-Loewner-comparison",
+    "pass": true,
+    "values": "None"
+  },
+  {
+    "name": "normal-symbol-Fn",
+    "pass": true,
+    "values": {
+      "actual": "1 - sin(theta/2)**4",
+      "expected": "1 - sin(theta/2)**4",
+      "residual": "0"
+    }
+  },
+  {
+    "name": "normal-symbol-B",
+    "pass": true,
+    "values": {
+      "actual": "(1 - sin(theta/2)**2)**2",
+      "expected": "cos(theta/2)**4",
+      "residual": "0"
+    }
+  },
+  {
+    "name": "symbol-difference",
+    "pass": true,
+    "values": {
+      "actual": "-sin(theta/2)**4 - cos(theta/2)**4 + 1",
+      "expected": "2*(1 - sin(theta/2)**2)*sin(theta/2)**2",
+      "residual": "0"
+    }
+  },
+  {
+    "name": "Fn-symbol-series",
+    "pass": true,
+    "values": {
+      "actual": "theta**4/16",
+      "expected": "theta**4/16",
+      "residual": "0"
+    }
+  },
+  {
+    "name": "B-symbol-series",
+    "pass": true,
+    "values": {
+      "actual": "-5*theta**4/48 + theta**2/2",
+      "expected": "-5*theta**4/48 + theta**2/2",
+      "residual": "0"
+    }
+  },
+  {
+    "name": "Ft-1/4-plant-output",
+    "pass": true,
+    "values": {
+      "actual": [
+        [
+          "0"
+        ],
+        [
+          "2"
+        ],
+        [
+          "-2"
+        ],
+        [
+          "0"
+        ]
+      ],
+      "expected": [
+        [
+          "0"
+        ],
+        [
+          "2"
+        ],
+        [
+          "-2"
+        ],
+        [
+          "0"
+        ]
+      ],
+      "residual": [
+        [
+          "0"
+        ],
+        [
+          "0"
+        ],
+        [
+          "0"
+        ],
+        [
+          "0"
+        ]
+      ]
+    }
+  },
+  {
+    "name": "Ft-1/4-plant-squarednorm",
+    "pass": true,
+    "values": {
+      "actual": "8",
+      "expected": "8",
+      "residual": "0"
+    }
+  },
+  {
+    "name": "Ft-1/4-plant-CAUGHT",
+    "pass": true,
+    "values": {
+      "PSD_failure": {
+        "principal_indices": [
+          "1"
+        ],
+        "determinant": "-1/4"
+      },
+      "contraction_failure": {
+        "principal_indices": [
+          "1"
+        ],
+        "determinant": "-3/8"
+      }
+    }
+  },
+  {
+    "name": "Fn-1/4-plant-output",
+    "pass": true,
+    "values": {
+      "actual": [
+        [
+          "-3"
+        ],
+        [
+          "3"
+        ],
+        [
+          "-3"
+        ],
+        [
+          "3"
+        ]
+      ],
+      "expected": [
+        [
+          "-3"
+        ],
+        [
+          "3"
+        ],
+        [
+          "-3"
+        ],
+        [
+          "3"
+        ]
+      ],
+      "residual": [
+        [
+          "0"
+        ],
+        [
+          "0"
+        ],
+        [
+          "0"
+        ],
+        [
+          "0"
+        ]
+      ]
+    }
+  },
+  {
+    "name": "Fn-1/4-plant-squarednorm",
+    "pass": true,
+    "values": {
+      "actual": "36",
+      "expected": "36",
+      "residual": "0"
+    }
+  },
+  {
+    "name": "Fn-1/4-plant-CAUGHT",
+    "pass": true,
+    "values": {
+      "PSD_failure": {
+        "principal_indices": [
+          "0"
+        ],
+        "determinant": "-3/2"
+      },
+      "contraction_failure": {
+        "principal_indices": [
+          "0"
+        ],
+        "determinant": "-23/8"
+      }
+    }
+  },
+  {
+    "name": "Ft-1/4-plant-negative-quadratic",
+    "pass": true,
+    "values": {
+      "actual": "-4",
+      "expected": "-4",
+      "residual": "0"
+    }
+  },
+  {
+    "name": "Ft-e0",
+    "pass": true,
+    "values": {
+      "actual": [
+        [
+          "15/16"
+        ],
+        [
+          "1/8"
+        ],
+        [
+          "-1/16"
+        ],
+        [
+          "0"
+        ]
+      ],
+      "expected": [
+        [
+          "15/16"
+        ],
+        [
+          "1/8"
+        ],
+        [
+          "-1/16"
+        ],
+        [
+          "0"
+        ]
+      ],
+      "residual": [
+        [
+          "0"
+        ],
+        [
+          "0"
+        ],
+        [
+          "0"
+        ],
+        [
+          "0"
+        ]
+      ]
+    }
+  },
+  {
+    "name": "Fn-e0",
+    "pass": true,
+    "values": {
+      "actual": [
+        [
+          "3/8"
+        ],
+        [
+          "5/16"
+        ],
+        [
+          "-1/16"
+        ],
+        [
+          "0"
+        ]
+      ],
+      "expected": [
+        [
+          "3/8"
+        ],
+        [
+          "5/16"
+        ],
+        [
+          "-1/16"
+        ],
+        [
+          "0"
+        ]
+      ],
+      "residual": [
+        [
+          "0"
+        ],
+        [
+          "0"
+        ],
+        [
+          "0"
+        ],
+        [
+          "0"
+        ]
+      ]
+    }
+  },
+  {
+    "name": "T1-TV-equality-not-increase",
+    "pass": true,
+    "values": {
+      "actual": "9",
+      "expected": "9",
+      "residual": "0"
+    }
+  },
+  {
+    "name": "T1-TV-value",
+    "pass": true,
+    "values": {
+      "actual": "9",
+      "expected": "9",
+      "residual": "0"
+    }
+  },
+  {
+    "name": "Ft-pointwise-positivity-overclaim-CAUGHT",
+    "pass": true,
+    "values": {
+      "instance": [
+        [
+          "1"
+        ],
+        [
+          "0"
+        ],
+        [
+          "0"
+        ],
+        [
+          "0"
+        ]
+      ],
+      "lhs": "-1/16",
+      "rhs": "0",
+      "residual": "-1/16"
+    }
+  },
+  {
+    "name": "Fn-pointwise-positivity-overclaim-CAUGHT",
+    "pass": true,
+    "values": {
+      "instance": [
+        [
+          "1"
+        ],
+        [
+          "0"
+        ],
+        [
+          "0"
+        ],
+        [
+          "0"
+        ]
+      ],
+      "lhs": "-1/16",
+      "rhs": "0",
+      "residual": "-1/16"
+    }
+  },
+  {
+    "name": "Ft-TVD-overclaim-CAUGHT",
+    "pass": true,
+    "values": {
+      "instance": [
+        [
+          "1"
+        ],
+        [
+          "0"
+        ],
+        [
+          "0"
+        ],
+        [
+          "0"
+        ]
+      ],
+      "lhs": "17/16",
+      "rhs": "1",
+      "residual": "1/16"
+    }
+  },
+  {
+    "name": "Fn-TVD-overclaim-CAUGHT",
+    "pass": true,
+    "values": {
+      "instance": [
+        [
+          "1"
+        ],
+        [
+          "1"
+        ],
+        [
+          "1"
+        ],
+        [
+          "1"
+        ]
+      ],
+      "lhs": "1",
+      "rhs": "0",
+      "residual": "1"
+    }
+  },
+  {
+    "name": "Fn-constant-preservation-overclaim-CAUGHT",
+    "pass": true,
+    "values": {
+      "instance": [
+        [
+          "1"
+        ],
+        [
+          "1"
+        ],
+        [
+          "1"
+        ],
+        [
+          "1"
+        ]
+      ],
+      "lhs": "5/8",
+      "rhs": "1",
+      "residual": "-3/8"
+    }
+  },
+  {
+    "name": "Ft-arbitrary-weight-contraction-overclaim-CAUGHT",
+    "pass": true,
+    "values": {
+      "instance": [
+        [
+          "1"
+        ],
+        [
+          "0"
+        ],
+        [
+          "0"
+        ],
+        [
+          "0"
+        ]
+      ],
+      "lhs": "313/128",
+      "rhs": "1",
+      "residual": "185/128"
+    }
+  },
+  {
+    "name": "Fn-arbitrary-weight-contraction-overclaim-CAUGHT",
+    "pass": true,
+    "values": {
+      "instance": [
+        [
+          "1"
+        ],
+        [
+          "0"
+        ],
+        [
+          "0"
+        ],
+        [
+          "0"
+        ]
+      ],
+      "lhs": "2537/256",
+      "rhs": "1",
+      "residual": "2281/256"
+    }
+  },
+  {
+    "name": "Fn-maximum-principle-overclaim-CAUGHT",
+    "pass": true,
+    "values": {
+      "instance": [
+        [
+          "1"
+        ],
+        [
+          "1"
+        ],
+        [
+          "1"
+        ],
+        [
+          "1"
+        ]
+      ],
+      "lhs": "9/8",
+      "rhs": "1",
+      "residual": "1/8"
+    }
+  },
+  {
+    "name": "Ft-TVD-exact17/16",
+    "pass": true,
+    "values": {
+      "actual": "17/16",
+      "expected": "17/16",
+      "residual": "0"
+    }
+  },
+  {
+    "name": "Fn-TVD-exact1",
+    "pass": true,
+    "values": {
+      "actual": "1",
+      "expected": "1",
+      "residual": "0"
+    }
+  },
+  {
+    "name": "Ft-weighted-exact",
+    "pass": true,
+    "values": {
+      "actual": "313/128",
+      "expected": "313/128",
+      "residual": "0"
+    }
+  },
+  {
+    "name": "Fn-weighted-exact",
+    "pass": true,
+    "values": {
+      "actual": "2537/256",
+      "expected": "2537/256",
+      "residual": "0"
+    }
+  },
+  {
+    "name": "finite-control-denominator",
+    "pass": true,
+    "values": {
+      "checks_before_denominator": "68"
+    }
+  }
+]

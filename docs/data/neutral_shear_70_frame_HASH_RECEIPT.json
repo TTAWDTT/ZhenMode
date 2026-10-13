@@ -1,0 +1,123 @@
+{
+  "utc": "2026-10-13T03:05:05.822505+00:00",
+  "verdict": "DOCS_PACKAGING_SCOPE_PASS_ZERO_RESIDUAL_FINDINGS",
+  "source_revision": "70d408583aa99db63e49d958d89dcaccad273f0e",
+  "archive_bytes": 235311286,
+  "archive_sha256": "caea40c0a881d5be064ef6f861d0ed430e97fc0dc4da10e3338b6feaf14dc405",
+  "original_files": 426,
+  "omitted_duplicate_files": 215,
+  "parts": [
+    {
+      "file": "neutral_shear_70_archive.part000",
+      "bytes": 20971520,
+      "sha256": "6c0276a9c3317800c90910f9d371352650c6455869aca0572b2f36500aede945"
+    },
+    {
+      "file": "neutral_shear_70_archive.part001",
+      "bytes": 20971520,
+      "sha256": "0e23c716cf6c2273fa6ef7c12c24930783a45a6c348b7a2e96de91456bdfaf9e"
+    },
+    {
+      "file": "neutral_shear_70_archive.part002",
+      "bytes": 20971520,
+      "sha256": "af92363545c8874dfec4b76de177dc414750ba8c2c6d204f309da3831d6683da"
+    },
+    {
+      "file": "neutral_shear_70_archive.part003",
+      "bytes": 20971520,
+      "sha256": "c7240ba49d4d7ede0418a9b34d71fc700113bcc63bf6263ec6e8722c22c35860"
+    },
+    {
+      "file": "neutral_shear_70_archive.part004",
+      "bytes": 20971520,
+      "sha256": "f9b3c26311106f1fc505a5d4bf78997e025b329a94b88004f513753ed28e1dbb"
+    },
+    {
+      "file": "neutral_shear_70_archive.part005",
+      "bytes": 20971520,
+      "sha256": "1f514aa36bdc475fa659a3b4d4b1ca74d7498e494db0a4bebb2462d77263714a"
+    },
+    {
+      "file": "neutral_shear_70_archive.part006",
+      "bytes": 20971520,
+      "sha256": "95e70e5e22ea53b97336a04b9d3b43e306b85bd0c39a669253f3a31108911f64"
+    },
+    {
+      "file": "neutral_shear_70_archive.part007",
+      "bytes": 20971520,
+      "sha256": "8310391f3141d150723e4e862d49645e1e7b862e174275b098ab51cb23624d6a"
+    },
+    {
+      "file": "neutral_shear_70_archive.part008",
+      "bytes": 20971520,
+      "sha256": "e13fd0f9d8bcaa016f9a81165c2e1e14f0648c3dda5521e29bcfe907ea449ea4"
+    },
+    {
+      "file": "neutral_shear_70_archive.part009",
+      "bytes": 20971520,
+      "sha256": "942193511cfe1c8ba6520836cc7aedacd7e5bc11b80fb9a368a8e8583e45a438"
+    },
+    {
+      "file": "neutral_shear_70_archive.part010",
+      "bytes": 20971520,
+      "sha256": "ada139369f671ba6c70ddb6d9ab2f21dfe08bc002052c5634a81502574af6edf"
+    },
+    {
+      "file": "neutral_shear_70_archive.part011",
+      "bytes": 4624566,
+      "sha256": "b3f7d17aceb61e6763ce94209dd722432fd3d22e44aa48f570117ecbd04c99ea"
+    }
+  ],
+  "actual_restore_invocations": 1,
+  "restored133_source_bytes": "PASS",
+  "payload_equivalence_single_invocation": "5cases205snapshots10dynamicfieldsplusTimebitexact",
+  "science_gate_recomputations": 0,
+  "native_runs": 0,
+  "CI_runs": 0,
+  "public_author_is_reviewer": false,
+  "scope": "Finite contacted-family point-tracer/balance/fixedH diagnostic5case; no holdout/fullwatercolumn/nonlinear-momentum/SOTA; oldbest70 and FtFAIL unchanged",
+  "original_archive_draft_is_final_public_report": false,
+  "final_frame_records_added_after_archive": true,
+  "files": [
+    {
+      "path": "D:\\CodexWorktrees\\thermal-full-scan\\ocean-solver\\docs\\neutral_shear_70_results_zh.md",
+      "bytes": 10955,
+      "sha256": "0aa4277f03e5e00e523b28c861b1c81489ebb83c467d614584dd0fb2ed1b8335"
+    },
+    {
+      "path": "D:\\CodexWorktrees\\thermal-full-scan\\ocean-solver\\docs\\data\\neutral_shear_70_manifest.json",
+      "bytes": 266656,
+      "sha256": "214de8a81c41dcadd6bccbb00c16480d9594fbd7993116ff965c50db51086a3c"
+    },
+    {
+      "path": "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\independent-neutral-shear-native\\review\\report-frame\\final-FINAL_REVIEW.md",
+      "bytes": 13722,
+      "sha256": "814e332f97908a8de323c45768035601c5ac82dff680c58efbb33d1e19bcee4f"
+    },
+    {
+      "path": "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\independent-neutral-shear-native\\review\\report-frame\\final-ARCHIVE_VERIFICATION.json",
+      "bytes": 302143,
+      "sha256": "0015da3c9d59b78d2ad28157c35cad00d4882ec5a02fd2f934260e19fc948fa7"
+    },
+    {
+      "path": "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\independent-neutral-shear-native\\review\\report-frame\\final-RENDER_VERIFICATION.json",
+      "bytes": 1394,
+      "sha256": "5ad9351ad5b5c34015fc281d781f2ed6619fc091992f6494451835d5f5b5140c"
+    },
+    {
+      "path": "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\independent-neutral-shear-native\\review\\report-frame\\final-INITIAL_RENDER_DEFECT.json",
+      "bytes": 1056,
+      "sha256": "4915f1ac2dd44e2e9895d427bd7a4c802f8adc58dd8913afab711540690f0d28"
+    },
+    {
+      "path": "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\independent-neutral-shear-native\\review\\report-frame\\final-report-VERIFIED.html",
+      "bytes": 17040,
+      "sha256": "5bcba40b9242af8a04672ba5e90f7d44e806370315ee11bd9504f302697819fd"
+    },
+    {
+      "path": "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\independent-neutral-shear-native\\review\\report-frame\\final-report-VERIFIED.txt",
+      "bytes": 11132,
+      "sha256": "922e528a9204ac8cf1ece39d2273667f986557679efb08c6af000ed6db61ecd6"
+    }
+  ]
+}

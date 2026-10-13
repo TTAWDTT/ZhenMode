@@ -1,0 +1,100 @@
+"""Independent task-local source/math controls; no old scores/scorer imports."""
+import argparse,hashlib,json,math,time
+from pathlib import Path
+from types import SimpleNamespace
+import jax,jax.numpy as jnp,numpy as np
+from identity import BEFORE,ROOT,verify
+from common import geometry,snapshot
+from zhenmode.model.solver.numerics.column import cubic_point_integral,point_mass_integral
+from zhenmode.model.solver.numerics.vertical import fourth_uniform_tracer_gradient,joint_scalar_blend,point_vertical_antiflux
+DB=(ROOT/'source-math-declaration.json').read_bytes();DEC=json.loads(DB)
+assert json.loads((ROOT/'source-identity-result.json').read_text())['verdict']=='PASS'
+def write(name,result):
+    with (ROOT/name).open('x') as stream:json.dump(result,stream,indent=2)
+# Planted comparator must accept clean, reject deliberately false values.
+assert 0.<=1e-14 and not 2e-14<=1e-14
+assert 0.<=1e-13 and not 2e-13<=1e-13
+def build(mesh):
+    grid,d,y,p=geometry(mesh['Ny'],mesh['Nz']);shape=(8,mesh['Ny'],mesh['Nz'])
+    X=2*np.pi*np.arange(8)[:,None,None]/8;Y=np.pi*(np.arange(mesh['Ny'])[None,:,None]+.5)/mesh['Ny'];D=d[None,None,:]/100
+    u=jnp.asarray(np.broadcast_to(.0017*np.sin(X)*(1+.35*D+.09*D**2),shape).copy())
+    v=jnp.asarray(np.broadcast_to(.0023*np.sin(Y)*(1-.27*D+.11*D**3),shape).copy())
+    q=jnp.asarray(13+.16*np.cos(X)+.023*np.cos(Y)+(D+.12*D**2+.025*D**4)*(1+.014*np.cos(X)*np.cos(Y)))
+    return d,p,u,v,q
+def properties(mesh):
+    begin=time.monotonic();d,p,u,v,q=build(mesh)
+    exacth=np.diff(np.r_[0.,.5*(d[:-1]+d[1:]),100.]);h=np.asarray(p.dz_node).reshape(-1)
+    capacity=np.array_equal(exacth,h) and np.array_equal(np.asarray(p.tracer_point_primitive)[0],h)
+    integral=jax.jit(lambda a:cubic_point_integral(a,p));polynomials=[]
+    for degree in range(4):
+        got=np.asarray(integral(jnp.asarray(d**degree)[None,None,:]))[0,0]
+        truth=(100**(degree+1)-d**(degree+1))/(degree+1)
+        defect=float(np.max(abs(got[1:]-truth[1:])))/max(1.,float(np.max(abs(truth))))
+        polynomials.append(defect)
+    gradient=jax.jit(lambda a:fourth_uniform_tracer_gradient(a,p));derivatives=[]
+    for degree in range(5):
+        got=np.asarray(gradient(jnp.asarray(7+(d/100)**degree)[None,None,:]))[0,0]
+        truth=np.zeros_like(d) if degree==0 else degree*(d/100)**(degree-1)/100
+        derivatives.append(float(np.max(abs(got-truth))))
+        if degree==0:assert np.array_equal(got,np.zeros_like(got))
+    wrong_sign=float(np.max(abs(-got-truth)));assert wrong_sign>1e-3
+    from zhenmode.model.solver.dynamics.transport import _layer_face_transports
+    faces=_layer_face_transports(u,v,p);masssum=[]
+    for mass in faces:
+        got=np.asarray(jax.jit(lambda a:point_mass_integral(a,p))(mass))[...,0]
+        direct=np.asarray(jax.jit(lambda a:jnp.sum(a,-1))(mass));masssum.append(np.array_equal(got,direct))
+    return dict(Ny=mesh['Ny'],Nz=mesh['Nz'],capacity_exact=capacity,pointmass_actualsum_exact=masssum,integral_polynomial_relative_defects=polynomials,gradient_polynomial_absolute_defects=derivatives,negative_derivative_wrong_sign=wrong_sign,elapsed_s=time.monotonic()-begin)
+def scalar(mesh):
+    begin=time.monotonic();d,p,u,v,q=build(mesh);run=snapshot(u,v,p,with_low=True)
+    def call(a,reverse=False):return tuple(np.asarray(v) for v in jax.block_until_ready(run(a,jnp.asarray(reverse))))
+    constants=[]
+    for C in (1.,35.,-7.):
+        normal=call(jnp.full_like(q,C));bad=call(jnp.full_like(q,C),True)
+        truth=-C*(bad[11]+np.diff(bad[6],axis=-1))/np.asarray(p.dz_node)
+        constants.append(dict(C=C,constant_max=float(np.max(abs(normal[0]))),badmass_defect=float(np.max(abs(bad[0]))),badmass_formula_max=float(np.max(abs(bad[0]-truth)))))
+    data=call(q);kelvin=call(q+273.15)
+    rate,boundary=data[:2];h=np.asarray(p.dz_node)
+    stock=np.sum(rate.astype(np.longdouble)*h.astype(np.longdouble));surface=np.sum(boundary.astype(np.longdouble))
+    residual=float(stock-surface);limit=1e-12*max(1.,abs(float(stock)),abs(float(surface)))
+    gauge=float(np.max(abs(rate-kelvin[0])))
+    low_equal=np.array_equal(data[12],data[13])
+    np.savez(ROOT/f'source-math-raw-n{mesh["Nz"]}.npz',q=np.asarray(q),rate=rate,kelvin_rate=kelvin[0],boundary=boundary,h=h,Fz=data[6],mass_numerator=data[11],low_fourth=data[12],low_minmod=data[13])
+    return dict(constants=constants,gauge_max=gauge,stock_residual=residual,stock_limit=limit,baseline_low_bitwise_equal=low_equal,alpha=float(data[3]),feasible=bool(data[4]),actual_core_max=float(np.max(abs(data[0]-data[2]))),scalar_elapsed_s=time.monotonic()-begin)
+def intervals_projection():
+    p=SimpleNamespace(dt=1.,adv_nsub=1,dz_iface=jnp.ones((1,1,2)))
+    q=jnp.array([[[1.,2.,3.]]]);F=jnp.zeros((1,1,4))
+    run=jax.jit(lambda low,delta:joint_scalar_blend(q,low,delta,F,p,minimum=0.))
+    cases=[('null',[0,0,0],[0,0,0],1.,True),('lower',[-2,0,0],[2,0,0],1.,True),('empty_null',[-2,0,0],[0,0,0],0.,False),('empty_negative',[-2,0,0],[-1,0,0],0.,False),('upper',[0,0,0],[4,0,0],.5,True),('lower_cap',[0,0,0],[0,0,-4],.5,True)]
+    out=[]
+    for name,low,delta,a,f in cases:
+        alpha,feasible=map(np.asarray,run(jnp.asarray([[low]],dtype=float),jnp.asarray([[delta]],dtype=float)))
+        out.append(dict(name=name,alpha=float(alpha),feasible=bool(feasible),passed=float(alpha)==a and bool(feasible)==f))
+    assert out[0]['passed'] and not(out[0]['alpha']==.5)
+    h=np.array([.5,1,1,1,1,1,1,1,.5]);p2=SimpleNamespace(dz_node=jnp.asarray(h)[None,None,:])
+    mass=jnp.ones((2,2,10)).at[...,0].set(.2).at[...,-1].set(0).at[...,4].set(0)
+    desired=jnp.broadcast_to(jnp.linspace(-2e-5,3e-5,9),(2,2,9));horizontal=jnp.full_like(desired,1e-7)
+    anti=np.asarray(jax.jit(lambda a,b:point_vertical_antiflux(a,b,mass,p2))(desired,horizontal))
+    pins=bool(np.all(anti[..., [0,4,-1]]==0))
+    divergence=-np.diff(anti,axis=-1)/h
+    budgets=[float(np.max(abs(np.sum(divergence[...,a:b]*h[a:b],axis=-1)))) for a,b in ((0,4),(4,9))]
+    return out,dict(exact_pins=pins,span_stock_residuals=budgets,stock_limit=1e-12)
+def good(row):
+    yes=row['capacity_exact'] and all(row['pointmass_actualsum_exact']) and max(row['integral_polynomial_relative_defects'])<=1e-14 and max(row['gradient_polynomial_absolute_defects'])<=1e-14
+    if 'constants' in row:
+        yes=yes and all(c['constant_max']<=1e-17 and c['badmass_defect']>1e-12 and c['badmass_formula_max']<=2e-12 for c in row['constants'])
+        yes=yes and row['gauge_max']<=1e-13 and abs(row['stock_residual'])<=row['stock_limit'] and row['baseline_low_bitwise_equal']
+    return bool(yes)
+parser=argparse.ArgumentParser();parser.add_argument('--pilot',action='store_true');args=parser.parse_args();clock=time.monotonic()
+if args.pilot:
+    rows=[properties(DEC['geometry'][0])];intervals=[];projection=None;name='source-math-pilot.json'
+else:
+    pilot=json.loads((ROOT/'source-math-pilot.json').read_text());assert pilot['verdict']=='PASS' and pilot['evaluator_sha256']==hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
+    primary=dict(pilot['rows'][0]);primary.update(scalar(DEC['geometry'][0]));primary['pilot_properties_reused']=True
+    fine=properties(DEC['geometry'][1]);fine.update(scalar(DEC['geometry'][1]));rows=[primary,fine]
+    intervals,projection=intervals_projection();name='source-math-result.json'
+after=verify();assert after==BEFORE
+ok=all(good(row) for row in rows) and all(item['passed'] for item in intervals)
+if projection is not None:ok=ok and projection['exact_pins'] and max(projection['span_stock_residuals'])<=projection['stock_limit']
+record=dict(verdict='PASS' if ok else 'OPEN',rows=rows,intervals=intervals,projection=projection,identity_before=BEFORE,identity_after=after,declaration_sha256=hashlib.sha256(DB).hexdigest(),evaluator_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),elapsed_s=time.monotonic()-clock,scope=DEC['scope'],lineage=DEC['lineage'],native_run=False)
+write(name,record);print(json.dumps({k:v for k,v in record.items() if k not in ('identity_before','identity_after')}))
+raise SystemExit(0 if ok else 2)

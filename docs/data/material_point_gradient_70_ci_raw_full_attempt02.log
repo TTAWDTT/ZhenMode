@@ -1,0 +1,886 @@
+lint	Set up job	﻿2026-10-12T20:50:00.2997304Z Current runner version: '2.337.0'
+lint	Set up job	2026-10-12T20:50:00.3026182Z ##[group]Runner Image Provisioner
+lint	Set up job	2026-10-12T20:50:00.3027122Z Hosted Compute Agent
+lint	Set up job	2026-10-12T20:50:00.3027847Z Version: 20261002.596
+lint	Set up job	2026-10-12T20:50:00.3028475Z Commit: c3d12f3313a95f25162a1503be624f3b0617f8c0
+lint	Set up job	2026-10-12T20:50:00.3029270Z Build Date: 2026-10-02T22:28:27Z
+lint	Set up job	2026-10-12T20:50:00.3029984Z Worker ID: {7dac2ac8-3e39-48ff-a38e-14fa6b47e6fb}
+lint	Set up job	2026-10-12T20:50:00.3030699Z Region: eastus
+lint	Set up job	2026-10-12T20:50:00.3031321Z Cloud: Azure
+lint	Set up job	2026-10-12T20:50:00.3031852Z ##[endgroup]
+lint	Set up job	2026-10-12T20:50:00.3033587Z ##[group]Operating System
+lint	Set up job	2026-10-12T20:50:00.3034353Z Ubuntu
+lint	Set up job	2026-10-12T20:50:00.3034869Z 24.04.5
+lint	Set up job	2026-10-12T20:50:00.3035432Z LTS
+lint	Set up job	2026-10-12T20:50:00.3036325Z ##[endgroup]
+lint	Set up job	2026-10-12T20:50:00.3036901Z ##[group]Runner Image
+lint	Set up job	2026-10-12T20:50:00.3037611Z Image: ubuntu-24.04
+lint	Set up job	2026-10-12T20:50:00.3038209Z Version: 20261004.327.1
+lint	Set up job	2026-10-12T20:50:00.3039313Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261004.327/images/ubuntu/Ubuntu2404-Readme.md
+lint	Set up job	2026-10-12T20:50:00.3041093Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261004.327
+lint	Set up job	2026-10-12T20:50:00.3042077Z ##[endgroup]
+lint	Set up job	2026-10-12T20:50:00.3043245Z ##[group]GITHUB_TOKEN Permissions
+lint	Set up job	2026-10-12T20:50:00.3045489Z Contents: read
+lint	Set up job	2026-10-12T20:50:00.3046344Z Metadata: read
+lint	Set up job	2026-10-12T20:50:00.3047005Z Packages: read
+lint	Set up job	2026-10-12T20:50:00.3047566Z ##[endgroup]
+lint	Set up job	2026-10-12T20:50:00.3049857Z Secret source: Actions
+lint	Set up job	2026-10-12T20:50:00.3050870Z Cache mode: write
+lint	Set up job	2026-10-12T20:50:00.3051834Z Prepare workflow directory
+lint	Set up job	2026-10-12T20:50:00.3390165Z Prepare all required actions
+lint	Set up job	2026-10-12T20:50:00.3439394Z Getting action download info
+lint	Set up job	2026-10-12T20:50:00.5375437Z Download action repository 'actions/checkout@v4' (SHA:11d5960a326750d5838078e36cf38b85af677262)
+lint	Set up job	2026-10-12T20:50:00.6456473Z Download action repository 'actions/setup-python@v5' (SHA:a26af69be951a213d495a4c3e4e4022e16d87065)
+lint	Set up job	2026-10-12T20:50:00.8270499Z Complete job name: lint
+lint	Run actions/checkout@v4	﻿2026-10-12T20:50:00.9045625Z ##[group]Run actions/checkout@v4
+lint	Run actions/checkout@v4	2026-10-12T20:50:00.9047082Z with:
+lint	Run actions/checkout@v4	2026-10-12T20:50:00.9047549Z   repository: TTAWDTT/ZhenMode
+lint	Run actions/checkout@v4	2026-10-12T20:50:00.9051639Z   token: ***
+lint	Run actions/checkout@v4	2026-10-12T20:50:00.9052065Z   ssh-strict: true
+lint	Run actions/checkout@v4	2026-10-12T20:50:00.9052493Z   ssh-user: git
+lint	Run actions/checkout@v4	2026-10-12T20:50:00.9052939Z   persist-credentials: true
+lint	Run actions/checkout@v4	2026-10-12T20:50:00.9053424Z   clean: true
+lint	Run actions/checkout@v4	2026-10-12T20:50:00.9053867Z   sparse-checkout-cone-mode: true
+lint	Run actions/checkout@v4	2026-10-12T20:50:00.9054392Z   fetch-depth: 1
+lint	Run actions/checkout@v4	2026-10-12T20:50:00.9054824Z   fetch-tags: false
+lint	Run actions/checkout@v4	2026-10-12T20:50:00.9055262Z   show-progress: true
+lint	Run actions/checkout@v4	2026-10-12T20:50:00.9055710Z   lfs: false
+lint	Run actions/checkout@v4	2026-10-12T20:50:00.9056300Z   submodules: false
+lint	Run actions/checkout@v4	2026-10-12T20:50:00.9056747Z   set-safe-directory: true
+lint	Run actions/checkout@v4	2026-10-12T20:50:00.9057252Z   allow-unsafe-pr-checkout: false
+lint	Run actions/checkout@v4	2026-10-12T20:50:00.9058032Z ##[endgroup]
+lint	Run actions/checkout@v4	2026-10-12T20:50:01.0130203Z Syncing repository: TTAWDTT/ZhenMode
+lint	Run actions/checkout@v4	2026-10-12T20:50:01.0133143Z ##[group]Getting Git version info
+lint	Run actions/checkout@v4	2026-10-12T20:50:01.0134392Z Working directory is '/home/runner/work/ZhenMode/ZhenMode'
+lint	Run actions/checkout@v4	2026-10-12T20:50:01.0136500Z [command]/usr/bin/git version
+lint	Run actions/checkout@v4	2026-10-12T20:50:01.0167298Z git version 2.55.0
+lint	Run actions/checkout@v4	2026-10-12T20:50:01.0192416Z ##[endgroup]
+lint	Run actions/checkout@v4	2026-10-12T20:50:01.0207946Z Temporarily overriding HOME='/home/runner/work/_temp/12f4aff4-d54c-4e1d-8580-2644c9088bfc' before making global git config changes
+lint	Run actions/checkout@v4	2026-10-12T20:50:01.0209922Z Adding repository directory to the temporary git global config as a safe directory
+lint	Run actions/checkout@v4	2026-10-12T20:50:01.0213363Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/ZhenMode/ZhenMode
+lint	Run actions/checkout@v4	2026-10-12T20:50:01.0263396Z Deleting the contents of '/home/runner/work/ZhenMode/ZhenMode'
+lint	Run actions/checkout@v4	2026-10-12T20:50:01.0269993Z ##[group]Initializing the repository
+lint	Run actions/checkout@v4	2026-10-12T20:50:01.0275663Z [command]/usr/bin/git init /home/runner/work/ZhenMode/ZhenMode
+lint	Run actions/checkout@v4	2026-10-12T20:50:01.0413460Z hint: Using 'master' as the name for the initial branch. This default branch name
+lint	Run actions/checkout@v4	2026-10-12T20:50:01.0415208Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+lint	Run actions/checkout@v4	2026-10-12T20:50:01.0417420Z hint: to use in all of your new repositories, which will suppress this warning,
+lint	Run actions/checkout@v4	2026-10-12T20:50:01.0418628Z hint: call:
+lint	Run actions/checkout@v4	2026-10-12T20:50:01.0419335Z hint:
+lint	Run actions/checkout@v4	2026-10-12T20:50:01.0420185Z hint: 	git config --global init.defaultBranch <name>
+lint	Run actions/checkout@v4	2026-10-12T20:50:01.0421166Z hint:
+lint	Run actions/checkout@v4	2026-10-12T20:50:01.0422085Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+lint	Run actions/checkout@v4	2026-10-12T20:50:01.0423617Z hint: 'development'. The just-created branch can be renamed via this command:
+lint	Run actions/checkout@v4	2026-10-12T20:50:01.0424899Z hint:
+lint	Run actions/checkout@v4	2026-10-12T20:50:01.0425580Z hint: 	git branch -m <name>
+lint	Run actions/checkout@v4	2026-10-12T20:50:01.0426538Z hint:
+lint	Run actions/checkout@v4	2026-10-12T20:50:01.0427595Z hint: Disable this message with "git config set advice.defaultBranchName false"
+lint	Run actions/checkout@v4	2026-10-12T20:50:01.0434331Z Initialized empty Git repository in /home/runner/work/ZhenMode/ZhenMode/.git/
+lint	Run actions/checkout@v4	2026-10-12T20:50:01.0446913Z [command]/usr/bin/git remote add origin https://github.com/TTAWDTT/ZhenMode
+lint	Run actions/checkout@v4	2026-10-12T20:50:01.0494503Z ##[endgroup]
+lint	Run actions/checkout@v4	2026-10-12T20:50:01.0496106Z ##[group]Disabling automatic garbage collection
+lint	Run actions/checkout@v4	2026-10-12T20:50:01.0499408Z [command]/usr/bin/git config --local gc.auto 0
+lint	Run actions/checkout@v4	2026-10-12T20:50:01.0532555Z ##[endgroup]
+lint	Run actions/checkout@v4	2026-10-12T20:50:01.0533965Z ##[group]Setting up auth
+lint	Run actions/checkout@v4	2026-10-12T20:50:01.0538513Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+lint	Run actions/checkout@v4	2026-10-12T20:50:01.0572835Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+lint	Run actions/checkout@v4	2026-10-12T20:50:01.0921036Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+lint	Run actions/checkout@v4	2026-10-12T20:50:01.0999440Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+lint	Run actions/checkout@v4	2026-10-12T20:50:01.1250632Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+lint	Run actions/checkout@v4	2026-10-12T20:50:01.1288327Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+lint	Run actions/checkout@v4	2026-10-12T20:50:01.1519347Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+lint	Run actions/checkout@v4	2026-10-12T20:50:01.1562100Z ##[endgroup]
+lint	Run actions/checkout@v4	2026-10-12T20:50:01.1571848Z ##[group]Fetching the repository
+lint	Run actions/checkout@v4	2026-10-12T20:50:01.1573917Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +70d408583aa99db63e49d958d89dcaccad273f0e:refs/remotes/origin/ttawdtt/nodal-endpoint-closure
+lint	Run actions/checkout@v4	2026-10-12T20:50:01.6286420Z From https://github.com/TTAWDTT/ZhenMode
+lint	Run actions/checkout@v4	2026-10-12T20:50:01.6290584Z  * [new ref]         70d408583aa99db63e49d958d89dcaccad273f0e -> origin/ttawdtt/nodal-endpoint-closure
+lint	Run actions/checkout@v4	2026-10-12T20:50:01.6298324Z ##[endgroup]
+lint	Run actions/checkout@v4	2026-10-12T20:50:01.6300920Z ##[group]Determining the checkout info
+lint	Run actions/checkout@v4	2026-10-12T20:50:01.6303938Z ##[endgroup]
+lint	Run actions/checkout@v4	2026-10-12T20:50:01.6306184Z [command]/usr/bin/git sparse-checkout disable
+lint	Run actions/checkout@v4	2026-10-12T20:50:01.6358149Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+lint	Run actions/checkout@v4	2026-10-12T20:50:01.6394595Z ##[group]Checking out the ref
+lint	Run actions/checkout@v4	2026-10-12T20:50:01.6401338Z [command]/usr/bin/git checkout --progress --force -B ttawdtt/nodal-endpoint-closure refs/remotes/origin/ttawdtt/nodal-endpoint-closure
+lint	Run actions/checkout@v4	2026-10-12T20:50:01.6898320Z Switched to a new branch 'ttawdtt/nodal-endpoint-closure'
+lint	Run actions/checkout@v4	2026-10-12T20:50:01.6904460Z branch 'ttawdtt/nodal-endpoint-closure' set up to track 'origin/ttawdtt/nodal-endpoint-closure'.
+lint	Run actions/checkout@v4	2026-10-12T20:50:01.6912662Z ##[endgroup]
+lint	Run actions/checkout@v4	2026-10-12T20:50:01.6961729Z [command]/usr/bin/git log -1 --format=%H
+lint	Run actions/checkout@v4	2026-10-12T20:50:01.6992117Z 70d408583aa99db63e49d958d89dcaccad273f0e
+lint	Run actions/setup-python@v5	﻿2026-10-12T20:50:01.7405611Z ##[group]Run actions/setup-python@v5
+lint	Run actions/setup-python@v5	2026-10-12T20:50:01.7407628Z with:
+lint	Run actions/setup-python@v5	2026-10-12T20:50:01.7408580Z   python-version: 3.12
+lint	Run actions/setup-python@v5	2026-10-12T20:50:01.7409627Z   check-latest: false
+lint	Run actions/setup-python@v5	2026-10-12T20:50:01.7420914Z   token: ***
+lint	Run actions/setup-python@v5	2026-10-12T20:50:01.7422208Z   update-environment: true
+lint	Run actions/setup-python@v5	2026-10-12T20:50:01.7423331Z   allow-prereleases: false
+lint	Run actions/setup-python@v5	2026-10-12T20:50:01.7424436Z   freethreaded: false
+lint	Run actions/setup-python@v5	2026-10-12T20:50:01.7425434Z ##[endgroup]
+lint	Run actions/setup-python@v5	2026-10-12T20:50:01.8850720Z ##[group]Installed versions
+lint	Run actions/setup-python@v5	2026-10-12T20:50:01.8962229Z (node:2290) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+lint	Run actions/setup-python@v5	2026-10-12T20:50:01.8966171Z (Use `node --trace-deprecation ...` to show where the warning was created)
+lint	Run actions/setup-python@v5	2026-10-12T20:50:01.8968618Z Successfully set up CPython (3.12.15)
+lint	Run actions/setup-python@v5	2026-10-12T20:50:01.8970968Z ##[endgroup]
+lint	Run pip install ruff	﻿2026-10-12T20:50:01.9175693Z ##[group]Run pip install ruff
+lint	Run pip install ruff	2026-10-12T20:50:01.9177464Z [36;1mpip install ruff[0m
+lint	Run pip install ruff	2026-10-12T20:50:01.9499391Z shell: /usr/bin/bash -e {0}
+lint	Run pip install ruff	2026-10-12T20:50:01.9500768Z env:
+lint	Run pip install ruff	2026-10-12T20:50:01.9502017Z   pythonLocation: /opt/hostedtoolcache/Python/3.12.15/x64
+lint	Run pip install ruff	2026-10-12T20:50:01.9504003Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.12.15/x64/lib/pkgconfig
+lint	Run pip install ruff	2026-10-12T20:50:01.9506212Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.15/x64
+lint	Run pip install ruff	2026-10-12T20:50:01.9508011Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.15/x64
+lint	Run pip install ruff	2026-10-12T20:50:01.9509803Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.15/x64
+lint	Run pip install ruff	2026-10-12T20:50:01.9511612Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.12.15/x64/lib
+lint	Run pip install ruff	2026-10-12T20:50:01.9513073Z ##[endgroup]
+lint	Run pip install ruff	2026-10-12T20:50:03.1962783Z Collecting ruff
+lint	Run pip install ruff	2026-10-12T20:50:03.2619207Z   Downloading ruff-0.17.0-py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (20 kB)
+lint	Run pip install ruff	2026-10-12T20:50:03.2811885Z Downloading ruff-0.17.0-py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (10.4 MB)
+lint	Run pip install ruff	2026-10-12T20:50:03.5320728Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 10.4/10.4 MB 45.2 MB/s  0:00:00
+lint	Run pip install ruff	2026-10-12T20:50:03.5802608Z Installing collected packages: ruff
+lint	Run pip install ruff	2026-10-12T20:50:03.6908194Z Successfully installed ruff-0.17.0
+lint	Run ruff check .	﻿2026-10-12T20:50:03.7485568Z ##[group]Run ruff check .
+lint	Run ruff check .	2026-10-12T20:50:03.7486290Z [36;1mruff check .[0m
+lint	Run ruff check .	2026-10-12T20:50:03.7553921Z shell: /usr/bin/bash -e {0}
+lint	Run ruff check .	2026-10-12T20:50:03.7554299Z env:
+lint	Run ruff check .	2026-10-12T20:50:03.7554666Z   pythonLocation: /opt/hostedtoolcache/Python/3.12.15/x64
+lint	Run ruff check .	2026-10-12T20:50:03.7555260Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.12.15/x64/lib/pkgconfig
+lint	Run ruff check .	2026-10-12T20:50:03.7556132Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.15/x64
+lint	Run ruff check .	2026-10-12T20:50:03.7556680Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.15/x64
+lint	Run ruff check .	2026-10-12T20:50:03.7557212Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.15/x64
+lint	Run ruff check .	2026-10-12T20:50:03.7557809Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.12.15/x64/lib
+lint	Run ruff check .	2026-10-12T20:50:03.7558258Z ##[endgroup]
+lint	Run ruff check .	2026-10-12T20:50:03.8099839Z All checks passed!
+lint	Post Run actions/setup-python@v5	﻿2026-10-12T20:50:03.8222721Z Post job cleanup.
+lint	Post Run actions/setup-python@v5	2026-10-12T20:50:03.9452631Z (node:2333) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+lint	Post Run actions/setup-python@v5	2026-10-12T20:50:03.9454099Z (Use `node --trace-deprecation ...` to show where the warning was created)
+lint	Post Run actions/checkout@v4	﻿2026-10-12T20:50:03.9689268Z Post job cleanup.
+lint	Post Run actions/checkout@v4	2026-10-12T20:50:04.0597858Z [command]/usr/bin/git version
+lint	Post Run actions/checkout@v4	2026-10-12T20:50:04.0641588Z git version 2.55.0
+lint	Post Run actions/checkout@v4	2026-10-12T20:50:04.0683007Z Temporarily overriding HOME='/home/runner/work/_temp/a51e4fa6-d218-405a-9a74-5b3023053995' before making global git config changes
+lint	Post Run actions/checkout@v4	2026-10-12T20:50:04.0684600Z Adding repository directory to the temporary git global config as a safe directory
+lint	Post Run actions/checkout@v4	2026-10-12T20:50:04.0690109Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/ZhenMode/ZhenMode
+lint	Post Run actions/checkout@v4	2026-10-12T20:50:04.0731638Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+lint	Post Run actions/checkout@v4	2026-10-12T20:50:04.0770675Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+lint	Post Run actions/checkout@v4	2026-10-12T20:50:04.1029326Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+lint	Post Run actions/checkout@v4	2026-10-12T20:50:04.1065442Z http.https://github.com/.extraheader
+lint	Post Run actions/checkout@v4	2026-10-12T20:50:04.1073567Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+lint	Post Run actions/checkout@v4	2026-10-12T20:50:04.1110849Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+lint	Post Run actions/checkout@v4	2026-10-12T20:50:04.1423567Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+lint	Post Run actions/checkout@v4	2026-10-12T20:50:04.1490717Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+lint	Complete job	﻿2026-10-12T20:50:04.1902170Z Cleaning up orphan processes
+lint	Complete job	2026-10-12T20:50:04.2199490Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/setup-python@v5. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+test	Set up job	﻿2026-10-12T20:50:00.7530895Z Current runner version: '2.337.0'
+test	Set up job	2026-10-12T20:50:00.7551959Z ##[group]Runner Image Provisioner
+test	Set up job	2026-10-12T20:50:00.7552670Z Hosted Compute Agent
+test	Set up job	2026-10-12T20:50:00.7553205Z Version: 20261002.596
+test	Set up job	2026-10-12T20:50:00.7553771Z Commit: c3d12f3313a95f25162a1503be624f3b0617f8c0
+test	Set up job	2026-10-12T20:50:00.7554371Z Build Date: 2026-10-02T22:28:27Z
+test	Set up job	2026-10-12T20:50:00.7554976Z Worker ID: {a0267e36-62ed-491d-ad2c-2a6a778bd496}
+test	Set up job	2026-10-12T20:50:00.7555584Z Region: westus3
+test	Set up job	2026-10-12T20:50:00.7556078Z Cloud: Azure
+test	Set up job	2026-10-12T20:50:00.7556570Z ##[endgroup]
+test	Set up job	2026-10-12T20:50:00.7557899Z ##[group]Operating System
+test	Set up job	2026-10-12T20:50:00.7558474Z Ubuntu
+test	Set up job	2026-10-12T20:50:00.7558908Z 24.04.5
+test	Set up job	2026-10-12T20:50:00.7559309Z LTS
+test	Set up job	2026-10-12T20:50:00.7559926Z ##[endgroup]
+test	Set up job	2026-10-12T20:50:00.7560632Z ##[group]Runner Image
+test	Set up job	2026-10-12T20:50:00.7561162Z Image: ubuntu-24.04
+test	Set up job	2026-10-12T20:50:00.7561683Z Version: 20261004.327.1
+test	Set up job	2026-10-12T20:50:00.7562557Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261004.327/images/ubuntu/Ubuntu2404-Readme.md
+test	Set up job	2026-10-12T20:50:00.7563998Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261004.327
+test	Set up job	2026-10-12T20:50:00.7564854Z ##[endgroup]
+test	Set up job	2026-10-12T20:50:00.7565791Z ##[group]GITHUB_TOKEN Permissions
+test	Set up job	2026-10-12T20:50:00.7567679Z Contents: read
+test	Set up job	2026-10-12T20:50:00.7568186Z Metadata: read
+test	Set up job	2026-10-12T20:50:00.7568637Z Packages: read
+test	Set up job	2026-10-12T20:50:00.7569153Z ##[endgroup]
+test	Set up job	2026-10-12T20:50:00.7571037Z Secret source: Actions
+test	Set up job	2026-10-12T20:50:00.7571968Z Cache mode: write
+test	Set up job	2026-10-12T20:50:00.7572539Z Prepare workflow directory
+test	Set up job	2026-10-12T20:50:00.7837804Z Prepare all required actions
+test	Set up job	2026-10-12T20:50:00.7893221Z Getting action download info
+test	Set up job	2026-10-12T20:50:01.0888254Z Download action repository 'actions/checkout@v4' (SHA:11d5960a326750d5838078e36cf38b85af677262)
+test	Set up job	2026-10-12T20:50:01.2062632Z Download action repository 'actions/setup-python@v5' (SHA:a26af69be951a213d495a4c3e4e4022e16d87065)
+test	Set up job	2026-10-12T20:50:01.5219359Z Complete job name: test
+test	Run actions/checkout@v4	﻿2026-10-12T20:50:01.5859453Z ##[group]Run actions/checkout@v4
+test	Run actions/checkout@v4	2026-10-12T20:50:01.5860109Z with:
+test	Run actions/checkout@v4	2026-10-12T20:50:01.5860612Z   repository: TTAWDTT/ZhenMode
+test	Run actions/checkout@v4	2026-10-12T20:50:01.5863544Z   token: ***
+test	Run actions/checkout@v4	2026-10-12T20:50:01.5863898Z   ssh-strict: true
+test	Run actions/checkout@v4	2026-10-12T20:50:01.5864250Z   ssh-user: git
+test	Run actions/checkout@v4	2026-10-12T20:50:01.5864602Z   persist-credentials: true
+test	Run actions/checkout@v4	2026-10-12T20:50:01.5864984Z   clean: true
+test	Run actions/checkout@v4	2026-10-12T20:50:01.5865331Z   sparse-checkout-cone-mode: true
+test	Run actions/checkout@v4	2026-10-12T20:50:01.5865744Z   fetch-depth: 1
+test	Run actions/checkout@v4	2026-10-12T20:50:01.5866082Z   fetch-tags: false
+test	Run actions/checkout@v4	2026-10-12T20:50:01.5866430Z   show-progress: true
+test	Run actions/checkout@v4	2026-10-12T20:50:01.5866785Z   lfs: false
+test	Run actions/checkout@v4	2026-10-12T20:50:01.5867108Z   submodules: false
+test	Run actions/checkout@v4	2026-10-12T20:50:01.5867461Z   set-safe-directory: true
+test	Run actions/checkout@v4	2026-10-12T20:50:01.5867855Z   allow-unsafe-pr-checkout: false
+test	Run actions/checkout@v4	2026-10-12T20:50:01.5868409Z ##[endgroup]
+test	Run actions/checkout@v4	2026-10-12T20:50:01.6736704Z Syncing repository: TTAWDTT/ZhenMode
+test	Run actions/checkout@v4	2026-10-12T20:50:01.6738934Z ##[group]Getting Git version info
+test	Run actions/checkout@v4	2026-10-12T20:50:01.6739970Z Working directory is '/home/runner/work/ZhenMode/ZhenMode'
+test	Run actions/checkout@v4	2026-10-12T20:50:01.6741536Z [command]/usr/bin/git version
+test	Run actions/checkout@v4	2026-10-12T20:50:01.6791840Z git version 2.55.0
+test	Run actions/checkout@v4	2026-10-12T20:50:01.6807190Z ##[endgroup]
+test	Run actions/checkout@v4	2026-10-12T20:50:01.6818440Z Temporarily overriding HOME='/home/runner/work/_temp/b1db7fe8-710b-4108-aa3e-0eb3d1842a94' before making global git config changes
+test	Run actions/checkout@v4	2026-10-12T20:50:01.6820150Z Adding repository directory to the temporary git global config as a safe directory
+test	Run actions/checkout@v4	2026-10-12T20:50:01.6822746Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/ZhenMode/ZhenMode
+test	Run actions/checkout@v4	2026-10-12T20:50:01.6965682Z Deleting the contents of '/home/runner/work/ZhenMode/ZhenMode'
+test	Run actions/checkout@v4	2026-10-12T20:50:01.6971890Z ##[group]Initializing the repository
+test	Run actions/checkout@v4	2026-10-12T20:50:01.6973197Z [command]/usr/bin/git init /home/runner/work/ZhenMode/ZhenMode
+test	Run actions/checkout@v4	2026-10-12T20:50:01.7050787Z hint: Using 'master' as the name for the initial branch. This default branch name
+test	Run actions/checkout@v4	2026-10-12T20:50:01.7052026Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+test	Run actions/checkout@v4	2026-10-12T20:50:01.7053506Z hint: to use in all of your new repositories, which will suppress this warning,
+test	Run actions/checkout@v4	2026-10-12T20:50:01.7054581Z hint: call:
+test	Run actions/checkout@v4	2026-10-12T20:50:01.7055062Z hint:
+test	Run actions/checkout@v4	2026-10-12T20:50:01.7055653Z hint: 	git config --global init.defaultBranch <name>
+test	Run actions/checkout@v4	2026-10-12T20:50:01.7056390Z hint:
+test	Run actions/checkout@v4	2026-10-12T20:50:01.7057077Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+test	Run actions/checkout@v4	2026-10-12T20:50:01.7058203Z hint: 'development'. The just-created branch can be renamed via this command:
+test	Run actions/checkout@v4	2026-10-12T20:50:01.7059104Z hint:
+test	Run actions/checkout@v4	2026-10-12T20:50:01.7059586Z hint: 	git branch -m <name>
+test	Run actions/checkout@v4	2026-10-12T20:50:01.7060191Z hint:
+test	Run actions/checkout@v4	2026-10-12T20:50:01.7061166Z hint: Disable this message with "git config set advice.defaultBranchName false"
+test	Run actions/checkout@v4	2026-10-12T20:50:01.7062416Z Initialized empty Git repository in /home/runner/work/ZhenMode/ZhenMode/.git/
+test	Run actions/checkout@v4	2026-10-12T20:50:01.7064363Z [command]/usr/bin/git remote add origin https://github.com/TTAWDTT/ZhenMode
+test	Run actions/checkout@v4	2026-10-12T20:50:01.7106287Z ##[endgroup]
+test	Run actions/checkout@v4	2026-10-12T20:50:01.7107273Z ##[group]Disabling automatic garbage collection
+test	Run actions/checkout@v4	2026-10-12T20:50:01.7110174Z [command]/usr/bin/git config --local gc.auto 0
+test	Run actions/checkout@v4	2026-10-12T20:50:01.7141645Z ##[endgroup]
+test	Run actions/checkout@v4	2026-10-12T20:50:01.7142527Z ##[group]Setting up auth
+test	Run actions/checkout@v4	2026-10-12T20:50:01.7146699Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+test	Run actions/checkout@v4	2026-10-12T20:50:01.7175012Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+test	Run actions/checkout@v4	2026-10-12T20:50:01.7485447Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+test	Run actions/checkout@v4	2026-10-12T20:50:01.7520194Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+test	Run actions/checkout@v4	2026-10-12T20:50:01.7717085Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+test	Run actions/checkout@v4	2026-10-12T20:50:01.7747604Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+test	Run actions/checkout@v4	2026-10-12T20:50:01.7937063Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+test	Run actions/checkout@v4	2026-10-12T20:50:01.7972084Z ##[endgroup]
+test	Run actions/checkout@v4	2026-10-12T20:50:01.7973063Z ##[group]Fetching the repository
+test	Run actions/checkout@v4	2026-10-12T20:50:01.7980975Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +70d408583aa99db63e49d958d89dcaccad273f0e:refs/remotes/origin/ttawdtt/nodal-endpoint-closure
+test	Run actions/checkout@v4	2026-10-12T20:50:03.0278793Z From https://github.com/TTAWDTT/ZhenMode
+test	Run actions/checkout@v4	2026-10-12T20:50:03.0281421Z  * [new ref]         70d408583aa99db63e49d958d89dcaccad273f0e -> origin/ttawdtt/nodal-endpoint-closure
+test	Run actions/checkout@v4	2026-10-12T20:50:03.0286731Z ##[endgroup]
+test	Run actions/checkout@v4	2026-10-12T20:50:03.0288196Z ##[group]Determining the checkout info
+test	Run actions/checkout@v4	2026-10-12T20:50:03.0289766Z ##[endgroup]
+test	Run actions/checkout@v4	2026-10-12T20:50:03.0291156Z [command]/usr/bin/git sparse-checkout disable
+test	Run actions/checkout@v4	2026-10-12T20:50:03.0339992Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+test	Run actions/checkout@v4	2026-10-12T20:50:03.0370253Z ##[group]Checking out the ref
+test	Run actions/checkout@v4	2026-10-12T20:50:03.0374034Z [command]/usr/bin/git checkout --progress --force -B ttawdtt/nodal-endpoint-closure refs/remotes/origin/ttawdtt/nodal-endpoint-closure
+test	Run actions/checkout@v4	2026-10-12T20:50:03.0776631Z Switched to a new branch 'ttawdtt/nodal-endpoint-closure'
+test	Run actions/checkout@v4	2026-10-12T20:50:03.0779459Z branch 'ttawdtt/nodal-endpoint-closure' set up to track 'origin/ttawdtt/nodal-endpoint-closure'.
+test	Run actions/checkout@v4	2026-10-12T20:50:03.0786243Z ##[endgroup]
+test	Run actions/checkout@v4	2026-10-12T20:50:03.0824169Z [command]/usr/bin/git log -1 --format=%H
+test	Run actions/checkout@v4	2026-10-12T20:50:03.0848096Z 70d408583aa99db63e49d958d89dcaccad273f0e
+test	Run actions/setup-python@v5	﻿2026-10-12T20:50:03.1155847Z ##[group]Run actions/setup-python@v5
+test	Run actions/setup-python@v5	2026-10-12T20:50:03.1156868Z with:
+test	Run actions/setup-python@v5	2026-10-12T20:50:03.1157595Z   python-version: 3.12
+test	Run actions/setup-python@v5	2026-10-12T20:50:03.1158402Z   cache: pip
+test	Run actions/setup-python@v5	2026-10-12T20:50:03.1159143Z   check-latest: false
+test	Run actions/setup-python@v5	2026-10-12T20:50:03.1166353Z   token: ***
+test	Run actions/setup-python@v5	2026-10-12T20:50:03.1167139Z   update-environment: true
+test	Run actions/setup-python@v5	2026-10-12T20:50:03.1168029Z   allow-prereleases: false
+test	Run actions/setup-python@v5	2026-10-12T20:50:03.1168901Z   freethreaded: false
+test	Run actions/setup-python@v5	2026-10-12T20:50:03.1169699Z ##[endgroup]
+test	Run actions/setup-python@v5	2026-10-12T20:50:03.2227675Z ##[group]Installed versions
+test	Run actions/setup-python@v5	2026-10-12T20:50:03.2316102Z (node:2094) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+test	Run actions/setup-python@v5	2026-10-12T20:50:03.2319268Z (Use `node --trace-deprecation ...` to show where the warning was created)
+test	Run actions/setup-python@v5	2026-10-12T20:50:03.2321260Z Successfully set up CPython (3.12.15)
+test	Run actions/setup-python@v5	2026-10-12T20:50:03.2323278Z ##[endgroup]
+test	Run actions/setup-python@v5	2026-10-12T20:50:03.2999777Z [command]/opt/hostedtoolcache/Python/3.12.15/x64/bin/pip cache dir
+test	Run actions/setup-python@v5	2026-10-12T20:50:03.6583010Z /home/runner/.cache/pip
+test	Run actions/setup-python@v5	2026-10-12T20:50:03.8802146Z Cache hit for: setup-python-Linux-x64-24.04-Ubuntu-python-3.12.15-pip-7ebed7385606bc106ca2543cec8e7484f5e0e56af9bb2cfa6930b9f58297641d
+test	Run actions/setup-python@v5	2026-10-12T20:50:03.8884092Z (node:2094) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+test	Run actions/setup-python@v5	2026-10-12T20:50:05.1077414Z Received 33554432 of 173022964 (19.4%), 32.0 MBs/sec
+test	Run actions/setup-python@v5	2026-10-12T20:50:06.1080804Z Received 138412032 of 173022964 (80.0%), 66.0 MBs/sec
+test	Run actions/setup-python@v5	2026-10-12T20:50:06.6246657Z Received 173022964 of 173022964 (100.0%), 65.6 MBs/sec
+test	Run actions/setup-python@v5	2026-10-12T20:50:06.6247432Z Cache Size: ~165 MB (173022964 B)
+test	Run actions/setup-python@v5	2026-10-12T20:50:06.6338284Z [command]/usr/bin/tar -xf /home/runner/work/_temp/d5d90a78-a1b8-4933-b5b1-3245e607e32e/cache.tzst -P -C /home/runner/work/ZhenMode/ZhenMode --use-compress-program unzstd
+test	Run actions/setup-python@v5	2026-10-12T20:50:06.8169013Z Cache restored successfully
+test	Run actions/setup-python@v5	2026-10-12T20:50:06.8242220Z Cache restored from key: setup-python-Linux-x64-24.04-Ubuntu-python-3.12.15-pip-7ebed7385606bc106ca2543cec8e7484f5e0e56af9bb2cfa6930b9f58297641d
+test	Run pip install -e ".[dev]"	﻿2026-10-12T20:50:06.8419530Z ##[group]Run pip install -e ".[dev]"
+test	Run pip install -e ".[dev]"	2026-10-12T20:50:06.8419896Z [36;1mpip install -e ".[dev]"[0m
+test	Run pip install -e ".[dev]"	2026-10-12T20:50:06.9243525Z shell: /usr/bin/bash -e {0}
+test	Run pip install -e ".[dev]"	2026-10-12T20:50:06.9243861Z env:
+test	Run pip install -e ".[dev]"	2026-10-12T20:50:06.9244114Z   pythonLocation: /opt/hostedtoolcache/Python/3.12.15/x64
+test	Run pip install -e ".[dev]"	2026-10-12T20:50:06.9244527Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.12.15/x64/lib/pkgconfig
+test	Run pip install -e ".[dev]"	2026-10-12T20:50:06.9244944Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.15/x64
+test	Run pip install -e ".[dev]"	2026-10-12T20:50:06.9245265Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.15/x64
+test	Run pip install -e ".[dev]"	2026-10-12T20:50:06.9245575Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.15/x64
+test	Run pip install -e ".[dev]"	2026-10-12T20:50:06.9245879Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.12.15/x64/lib
+test	Run pip install -e ".[dev]"	2026-10-12T20:50:06.9246157Z ##[endgroup]
+test	Run pip install -e ".[dev]"	2026-10-12T20:50:07.4610693Z Obtaining file:///home/runner/work/ZhenMode/ZhenMode
+test	Run pip install -e ".[dev]"	2026-10-12T20:50:07.4625022Z   Installing build dependencies: started
+test	Run pip install -e ".[dev]"	2026-10-12T20:50:08.0279062Z   Installing build dependencies: finished with status 'done'
+test	Run pip install -e ".[dev]"	2026-10-12T20:50:08.0284833Z   Checking if build backend supports build_editable: started
+test	Run pip install -e ".[dev]"	2026-10-12T20:50:08.3169486Z   Checking if build backend supports build_editable: finished with status 'done'
+test	Run pip install -e ".[dev]"	2026-10-12T20:50:08.3177188Z   Getting requirements to build editable: started
+test	Run pip install -e ".[dev]"	2026-10-12T20:50:08.7030066Z   Getting requirements to build editable: finished with status 'done'
+test	Run pip install -e ".[dev]"	2026-10-12T20:50:08.7042552Z   Preparing editable metadata (pyproject.toml): started
+test	Run pip install -e ".[dev]"	2026-10-12T20:50:08.8676648Z   Preparing editable metadata (pyproject.toml): finished with status 'done'
+test	Run pip install -e ".[dev]"	2026-10-12T20:50:09.0607010Z Collecting numpy>=1.26 (from zhenmode==0.1.0)
+test	Run pip install -e ".[dev]"	2026-10-12T20:50:09.0623394Z   Using cached numpy-2.5.4-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl.metadata (6.6 kB)
+test	Run pip install -e ".[dev]"	2026-10-12T20:50:09.1484457Z Collecting scipy>=1.12 (from zhenmode==0.1.0)
+test	Run pip install -e ".[dev]"	2026-10-12T20:50:09.1495770Z   Using cached scipy-1.18.1-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl.metadata (62 kB)
+test	Run pip install -e ".[dev]"	2026-10-12T20:50:09.1969670Z Collecting netCDF4>=1.6 (from zhenmode==0.1.0)
+test	Run pip install -e ".[dev]"	2026-10-12T20:50:09.1980781Z   Using cached netcdf4-1.7.4-cp311-abi3-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl.metadata (2.1 kB)
+test	Run pip install -e ".[dev]"	2026-10-12T20:50:09.2129660Z Collecting jax>=0.4 (from zhenmode==0.1.0)
+test	Run pip install -e ".[dev]"	2026-10-12T20:50:09.2139101Z   Using cached jax-0.11.2-py3-none-any.whl.metadata (13 kB)
+test	Run pip install -e ".[dev]"	2026-10-12T20:50:09.2385337Z Collecting PyYAML>=6.0 (from zhenmode==0.1.0)
+test	Run pip install -e ".[dev]"	2026-10-12T20:50:09.2395542Z   Using cached pyyaml-6.0.3-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (2.4 kB)
+test	Run pip install -e ".[dev]"	2026-10-12T20:50:09.2676130Z Collecting pytest>=8.0 (from zhenmode==0.1.0)
+test	Run pip install -e ".[dev]"	2026-10-12T20:50:09.2685900Z   Using cached pytest-9.1.1-py3-none-any.whl.metadata (7.6 kB)
+test	Run pip install -e ".[dev]"	2026-10-12T20:50:09.4946770Z Collecting ruff>=0.6 (from zhenmode==0.1.0)
+test	Run pip install -e ".[dev]"	2026-10-12T20:50:09.4958225Z   Using cached ruff-0.17.0-py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (20 kB)
+test	Run pip install -e ".[dev]"	2026-10-12T20:50:09.5586887Z Collecting setuptools>=68.0 (from zhenmode==0.1.0)
+test	Run pip install -e ".[dev]"	2026-10-12T20:50:09.5597646Z   Using cached setuptools-84.0.0-py3-none-any.whl.metadata (6.6 kB)
+test	Run pip install -e ".[dev]"	2026-10-12T20:50:09.5936949Z Collecting jaxlib<=0.11.2,>=0.11.2 (from jax>=0.4->zhenmode==0.1.0)
+test	Run pip install -e ".[dev]"	2026-10-12T20:50:09.5946887Z   Using cached jaxlib-0.11.2-cp312-cp312-manylinux_2_27_x86_64.whl.metadata (1.3 kB)
+test	Run pip install -e ".[dev]"	2026-10-12T20:50:09.6120750Z Collecting ml_dtypes>=0.5.0 (from jax>=0.4->zhenmode==0.1.0)
+test	Run pip install -e ".[dev]"	2026-10-12T20:50:09.6130896Z   Using cached ml_dtypes-0.6.0-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl.metadata (8.8 kB)
+test	Run pip install -e ".[dev]"	2026-10-12T20:50:09.6221380Z Collecting opt_einsum (from jax>=0.4->zhenmode==0.1.0)
+test	Run pip install -e ".[dev]"	2026-10-12T20:50:09.6230602Z   Using cached opt_einsum-3.4.0-py3-none-any.whl.metadata (6.3 kB)
+test	Run pip install -e ".[dev]"	2026-10-12T20:50:09.6588380Z Collecting cftime (from netCDF4>=1.6->zhenmode==0.1.0)
+test	Run pip install -e ".[dev]"	2026-10-12T20:50:09.6599196Z   Using cached cftime-1.6.6-cp311-abi3-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl.metadata (8.7 kB)
+test	Run pip install -e ".[dev]"	2026-10-12T20:50:09.6716752Z Collecting certifi (from netCDF4>=1.6->zhenmode==0.1.0)
+test	Run pip install -e ".[dev]"	2026-10-12T20:50:09.6726802Z   Using cached certifi-2026.7.22-py3-none-any.whl.metadata (2.5 kB)
+test	Run pip install -e ".[dev]"	2026-10-12T20:50:09.6815041Z Collecting iniconfig>=1.0.1 (from pytest>=8.0->zhenmode==0.1.0)
+test	Run pip install -e ".[dev]"	2026-10-12T20:50:09.6823953Z   Using cached iniconfig-2.3.1-py3-none-any.whl.metadata (2.8 kB)
+test	Run pip install -e ".[dev]"	2026-10-12T20:50:09.6917780Z Collecting packaging>=22 (from pytest>=8.0->zhenmode==0.1.0)
+test	Run pip install -e ".[dev]"	2026-10-12T20:50:09.6927796Z   Using cached packaging-26.3-py3-none-any.whl.metadata (3.5 kB)
+test	Run pip install -e ".[dev]"	2026-10-12T20:50:09.7001397Z Collecting pluggy<2,>=1.5 (from pytest>=8.0->zhenmode==0.1.0)
+test	Run pip install -e ".[dev]"	2026-10-12T20:50:09.7010705Z   Using cached pluggy-1.6.0-py3-none-any.whl.metadata (4.8 kB)
+test	Run pip install -e ".[dev]"	2026-10-12T20:50:09.7143821Z Collecting pygments>=2.7.2 (from pytest>=8.0->zhenmode==0.1.0)
+test	Run pip install -e ".[dev]"	2026-10-12T20:50:09.7153478Z   Using cached pygments-2.21.0-py3-none-any.whl.metadata (2.5 kB)
+test	Run pip install -e ".[dev]"	2026-10-12T20:50:09.7241487Z Using cached jax-0.11.2-py3-none-any.whl (3.3 MB)
+test	Run pip install -e ".[dev]"	2026-10-12T20:50:09.7259434Z Using cached jaxlib-0.11.2-cp312-cp312-manylinux_2_27_x86_64.whl (89.9 MB)
+test	Run pip install -e ".[dev]"	2026-10-12T20:50:09.7507157Z Using cached ml_dtypes-0.6.0-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl (409 kB)
+test	Run pip install -e ".[dev]"	2026-10-12T20:50:09.7516931Z Using cached netcdf4-1.7.4-cp311-abi3-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl (10.1 MB)
+test	Run pip install -e ".[dev]"	2026-10-12T20:50:09.7552629Z Using cached numpy-2.5.4-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl (16.7 MB)
+test	Run pip install -e ".[dev]"	2026-10-12T20:50:09.7605643Z Using cached pytest-9.1.1-py3-none-any.whl (386 kB)
+test	Run pip install -e ".[dev]"	2026-10-12T20:50:09.7615536Z Using cached pluggy-1.6.0-py3-none-any.whl (20 kB)
+test	Run pip install -e ".[dev]"	2026-10-12T20:50:09.7624658Z Using cached iniconfig-2.3.1-py3-none-any.whl (7.6 kB)
+test	Run pip install -e ".[dev]"	2026-10-12T20:50:09.7633188Z Using cached packaging-26.3-py3-none-any.whl (129 kB)
+test	Run pip install -e ".[dev]"	2026-10-12T20:50:09.7642273Z Using cached pygments-2.21.0-py3-none-any.whl (1.3 MB)
+test	Run pip install -e ".[dev]"	2026-10-12T20:50:09.7654793Z Using cached pyyaml-6.0.3-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (807 kB)
+test	Run pip install -e ".[dev]"	2026-10-12T20:50:09.7665740Z Using cached ruff-0.17.0-py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (10.4 MB)
+test	Run pip install -e ".[dev]"	2026-10-12T20:50:09.7702145Z Using cached scipy-1.18.1-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl (35.3 MB)
+test	Run pip install -e ".[dev]"	2026-10-12T20:50:09.7808898Z Using cached setuptools-84.0.0-py3-none-any.whl (818 kB)
+test	Run pip install -e ".[dev]"	2026-10-12T20:50:09.7819996Z Using cached certifi-2026.7.22-py3-none-any.whl (136 kB)
+test	Run pip install -e ".[dev]"	2026-10-12T20:50:09.7829610Z Using cached cftime-1.6.6-cp311-abi3-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl (1.7 MB)
+test	Run pip install -e ".[dev]"	2026-10-12T20:50:09.7842782Z Using cached opt_einsum-3.4.0-py3-none-any.whl (71 kB)
+test	Run pip install -e ".[dev]"	2026-10-12T20:50:09.9434130Z Building wheels for collected packages: zhenmode
+test	Run pip install -e ".[dev]"	2026-10-12T20:50:09.9440712Z   Building editable for zhenmode (pyproject.toml): started
+test	Run pip install -e ".[dev]"	2026-10-12T20:50:10.1335336Z   Building editable for zhenmode (pyproject.toml): finished with status 'done'
+test	Run pip install -e ".[dev]"	2026-10-12T20:50:10.1339926Z   Created wheel for zhenmode: filename=zhenmode-0.1.0-0.editable-py3-none-any.whl size=3138 sha256=26eb0a0ef55e0c4be8f2c09efdc79907a24c2e385eec5a86939f742d7e5fbef1
+test	Run pip install -e ".[dev]"	2026-10-12T20:50:10.1341642Z   Stored in directory: /tmp/pip-ephem-wheel-cache-7nfrbhbx/wheels/a0/6a/07/4a721ef6d47516bb67c4af36139b100e468abb8c73134a3b1f
+test	Run pip install -e ".[dev]"	2026-10-12T20:50:10.1353694Z Successfully built zhenmode
+test	Run pip install -e ".[dev]"	2026-10-12T20:50:10.1844978Z Installing collected packages: setuptools, ruff, PyYAML, pygments, pluggy, packaging, opt_einsum, numpy, iniconfig, certifi, scipy, pytest, ml_dtypes, cftime, netCDF4, jaxlib, jax, zhenmode
+test	Run pip install -e ".[dev]"	2026-10-12T20:50:23.0533640Z 
+test	Run pip install -e ".[dev]"	2026-10-12T20:50:23.0556128Z Successfully installed PyYAML-6.0.3 certifi-2026.7.22 cftime-1.6.6 iniconfig-2.3.1 jax-0.11.2 jaxlib-0.11.2 ml_dtypes-0.6.0 netCDF4-1.7.4 numpy-2.5.4 opt_einsum-3.4.0 packaging-26.3 pluggy-1.6.0 pygments-2.21.0 pytest-9.1.1 ruff-0.17.0 scipy-1.18.1 setuptools-84.0.0 zhenmode-0.1.0
+test	Run python scripts/make_synthetic_bathymetry.py	﻿2026-10-12T20:50:23.2877720Z ##[group]Run python scripts/make_synthetic_bathymetry.py
+test	Run python scripts/make_synthetic_bathymetry.py	2026-10-12T20:50:23.2878262Z [36;1mpython scripts/make_synthetic_bathymetry.py[0m
+test	Run python scripts/make_synthetic_bathymetry.py	2026-10-12T20:50:23.2938939Z shell: /usr/bin/bash -e {0}
+test	Run python scripts/make_synthetic_bathymetry.py	2026-10-12T20:50:23.2939165Z env:
+test	Run python scripts/make_synthetic_bathymetry.py	2026-10-12T20:50:23.2939402Z   pythonLocation: /opt/hostedtoolcache/Python/3.12.15/x64
+test	Run python scripts/make_synthetic_bathymetry.py	2026-10-12T20:50:23.2939776Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.12.15/x64/lib/pkgconfig
+test	Run python scripts/make_synthetic_bathymetry.py	2026-10-12T20:50:23.2940124Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.15/x64
+test	Run python scripts/make_synthetic_bathymetry.py	2026-10-12T20:50:23.2940569Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.15/x64
+test	Run python scripts/make_synthetic_bathymetry.py	2026-10-12T20:50:23.2940878Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.15/x64
+test	Run python scripts/make_synthetic_bathymetry.py	2026-10-12T20:50:23.2941191Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.12.15/x64/lib
+test	Run python scripts/make_synthetic_bathymetry.py	2026-10-12T20:50:23.2941470Z ##[endgroup]
+test	Run python scripts/make_synthetic_bathymetry.py	2026-10-12T20:50:23.9735226Z wrote SYNTHETIC bathymetry -> /home/runner/work/ZhenMode/ZhenMode/data/ETOPO_2022_v1_r3600x1800_surface.nc.npz
+test	Run python scripts/make_synthetic_bathymetry.py	2026-10-12T20:50:23.9735781Z   3600 x 1800 cells at 0.1 deg, ocean fraction 76.9%
+test	Run python scripts/make_synthetic_bathymetry.py	2026-10-12T20:50:23.9736203Z   NOT ETOPO: use it only to un-skip the grid tests, never for a science run.
+test	Run python -m pytest tests/ -q	﻿2026-10-12T20:50:24.1052143Z ##[group]Run python -m pytest tests/ -q
+test	Run python -m pytest tests/ -q	2026-10-12T20:50:24.1052605Z [36;1mpython -m pytest tests/ -q[0m
+test	Run python -m pytest tests/ -q	2026-10-12T20:50:24.1109192Z shell: /usr/bin/bash -e {0}
+test	Run python -m pytest tests/ -q	2026-10-12T20:50:24.1109422Z env:
+test	Run python -m pytest tests/ -q	2026-10-12T20:50:24.1109653Z   pythonLocation: /opt/hostedtoolcache/Python/3.12.15/x64
+test	Run python -m pytest tests/ -q	2026-10-12T20:50:24.1110022Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.12.15/x64/lib/pkgconfig
+test	Run python -m pytest tests/ -q	2026-10-12T20:50:24.1110520Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.15/x64
+test	Run python -m pytest tests/ -q	2026-10-12T20:50:24.1110860Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.15/x64
+test	Run python -m pytest tests/ -q	2026-10-12T20:50:24.1111166Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.15/x64
+test	Run python -m pytest tests/ -q	2026-10-12T20:50:24.1111470Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.12.15/x64/lib
+test	Run python -m pytest tests/ -q	2026-10-12T20:50:24.1111736Z ##[endgroup]
+test	Run python -m pytest tests/ -q	2026-10-12T20:50:32.3915080Z ........................................................................ [  4%]
+test	Run python -m pytest tests/ -q	2026-10-12T20:50:37.2732557Z ........................................................................ [  8%]
+test	Run python -m pytest tests/ -q	2026-10-12T20:50:38.7439259Z ........................................................................ [ 12%]
+test	Run python -m pytest tests/ -q	2026-10-12T20:50:44.1182126Z ........................................................................ [ 16%]
+test	Run python -m pytest tests/ -q	2026-10-12T20:50:51.4429319Z ........................................................................ [ 20%]
+test	Run python -m pytest tests/ -q	2026-10-12T20:50:53.5554747Z ........................................................................ [ 24%]
+test	Run python -m pytest tests/ -q	2026-10-12T20:51:01.0860000Z ........................................................................ [ 28%]
+test	Run python -m pytest tests/ -q	2026-10-12T20:51:01.9968641Z ........................................................................ [ 32%]
+test	Run python -m pytest tests/ -q	2026-10-12T20:51:06.3931047Z ........................................................................ [ 37%]
+test	Run python -m pytest tests/ -q	2026-10-12T20:51:06.8582519Z ........................................................................ [ 41%]
+test	Run python -m pytest tests/ -q	2026-10-12T20:51:13.4762700Z ........................................................................ [ 45%]
+test	Run python -m pytest tests/ -q	2026-10-12T20:51:17.2553603Z ........................................................................ [ 49%]
+test	Run python -m pytest tests/ -q	2026-10-12T20:51:46.2916236Z ........................................................................ [ 53%]
+test	Run python -m pytest tests/ -q	2026-10-12T20:52:26.9553151Z ........................................................................ [ 57%]
+test	Run python -m pytest tests/ -q	2026-10-12T20:53:15.4279613Z ........................................................................ [ 61%]
+test	Run python -m pytest tests/ -q	2026-10-12T20:54:02.3083506Z ........................................................................ [ 65%]
+test	Run python -m pytest tests/ -q	2026-10-12T20:55:08.1229004Z ........................................................................ [ 69%]
+test	Run python -m pytest tests/ -q	2026-10-12T21:00:55.9967371Z ........................................................................ [ 74%]
+test	Run python -m pytest tests/ -q	2026-10-12T21:01:24.4811269Z ........................................................................ [ 78%]
+test	Run python -m pytest tests/ -q	2026-10-12T21:06:10.4867780Z ........................................................................ [ 82%]
+test	Run python -m pytest tests/ -q	2026-10-12T21:06:34.9610000Z ........................................................................ [ 86%]
+test	Run python -m pytest tests/ -q	2026-10-12T21:06:49.0516866Z ........................................................................ [ 90%]
+test	Run python -m pytest tests/ -q	2026-10-12T21:08:27.8932304Z ........................................................................ [ 94%]
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.5020025Z ........................................................................ [ 98%]
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.7999334Z ......................                                                   [100%]
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.7999980Z =============================== warnings summary ===============================
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8000638Z tests/baselines/test_forcing.py: 176 warnings
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8001675Z   /home/runner/work/ZhenMode/ZhenMode/src/zhenmode/baselines/mom6/forcing.py:94: DeprecationWarning: Setting the shape on a NumPy array has been deprecated in NumPy 2.5.
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8002857Z   As an alternative, you can create a new view using np.reshape (with copy=False if needed).
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8003565Z     variable[month, :, :] = np.ascontiguousarray(value.T, dtype=np.float32)
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8004404Z 
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8004947Z tests/baselines/test_mom6_contract.py::test_standing_wave_cell_mean_preparation_uses_exact_spatial_integral
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8006254Z   /home/runner/work/ZhenMode/ZhenMode/src/zhenmode/baselines/mom6/adapter.py:729: DeprecationWarning: Setting the shape on a NumPy array has been deprecated in NumPy 2.5.
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8007411Z   As an alternative, you can create a new view using np.reshape (with copy=False if needed).
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8007987Z     height[:] = interfaces
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8008193Z 
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8008674Z tests/baselines/test_mom6_contract.py::test_standing_wave_cell_mean_preparation_uses_exact_spatial_integral
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8009631Z tests/baselines/test_mom6_contract.py::test_standing_wave_cell_mean_preparation_uses_exact_spatial_integral
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8010997Z   /home/runner/work/ZhenMode/ZhenMode/src/zhenmode/baselines/mom6/adapter.py:733: DeprecationWarning: Setting the shape on a NumPy array has been deprecated in NumPy 2.5.
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8012193Z   As an alternative, you can create a new view using np.reshape (with copy=False if needed).
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8012952Z     variable[:] = value
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8013139Z 
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8013483Z tests/baselines/test_oceananigans.py::test_native_time_first_netcdf_axes_and_layer_order
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8014266Z tests/baselines/test_oceananigans.py::test_native_time_first_netcdf_axes_and_layer_order
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8015039Z tests/baselines/test_oceananigans.py::test_native_time_first_netcdf_axes_and_layer_order
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8015820Z tests/baselines/test_oceananigans.py::test_native_time_first_netcdf_axes_and_layer_order
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8016578Z tests/baselines/test_oceananigans.py::test_native_time_first_netcdf_axes_and_layer_order
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8017376Z tests/baselines/test_oceananigans.py::test_native_time_first_netcdf_axes_and_layer_order
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8018594Z   /home/runner/work/ZhenMode/ZhenMode/tests/baselines/test_oceananigans.py:29: DeprecationWarning: Setting the shape on a NumPy array has been deprecated in NumPy 2.5.
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8019662Z   As an alternative, you can create a new view using np.reshape (with copy=False if needed).
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8020210Z     d.createVariable(name, "f8", dims)[:] = values
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8020585Z 
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8020735Z tests/baselines/test_omip2_time.py: 216 warnings
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8021112Z tests/data/test_jra55_preparation.py: 408 warnings
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8021915Z   /home/runner/work/ZhenMode/ZhenMode/tests/support/jra55_inputs.py:32: DeprecationWarning: Setting the shape on a NumPy array has been deprecated in NumPy 2.5.
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8022841Z   As an alternative, you can create a new view using np.reshape (with copy=False if needed).
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8023403Z     ds.createVariable(v.bounds,'f8',(axis,'bounds'))[:]=bounds[axis]
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8023702Z 
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8023834Z tests/baselines/test_omip2_time.py: 99 warnings
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8024203Z tests/data/test_jra55_preparation.py: 187 warnings
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8025034Z   /home/runner/work/ZhenMode/ZhenMode/tests/support/jra55_inputs.py:56: DeprecationWarning: Setting the shape on a NumPy array has been deprecated in NumPy 2.5.
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8026084Z   As an alternative, you can create a new view using np.reshape (with copy=False if needed).
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8026612Z     v[:]=value
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8026752Z 
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8026893Z tests/baselines/test_omip2_time.py: 54 warnings
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8027250Z tests/data/test_jra55_preparation.py: 102 warnings
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8028118Z   /home/runner/work/ZhenMode/ZhenMode/tests/support/jra55_inputs.py:45: DeprecationWarning: Setting the shape on a NumPy array has been deprecated in NumPy 2.5.
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8029086Z   As an alternative, you can create a new view using np.reshape (with copy=False if needed).
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8030013Z     ds.createVariable('time_bounds','f8',('time','bounds'))[:]=epoch+np.column_stack((np.arange(count)*cadence,(np.arange(count)+1)*cadence))
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8030944Z 
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8031087Z tests/baselines/test_omip2_time.py: 9 warnings
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8031440Z tests/data/test_jra55_preparation.py: 17 warnings
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8032325Z   /home/runner/work/ZhenMode/ZhenMode/tests/support/jra55_inputs.py:58: DeprecationWarning: Setting the shape on a NumPy array has been deprecated in NumPy 2.5.
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8033321Z   As an alternative, you can create a new view using np.reshape (with copy=False if needed).
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8033811Z     v[0]=0
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8033945Z 
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8034091Z tests/baselines/test_omip2_time.py: 9 warnings
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8034486Z tests/data/test_jra55_preparation.py: 17 warnings
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8035338Z   /home/runner/work/ZhenMode/ZhenMode/tests/support/jra55_inputs.py:59: DeprecationWarning: Setting the shape on a NumPy array has been deprecated in NumPy 2.5.
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8036316Z   As an alternative, you can create a new view using np.reshape (with copy=False if needed).
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8037016Z     v[1]=400
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8037144Z 
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8037278Z tests/baselines/test_omip2_time.py: 9 warnings
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8037647Z tests/data/test_jra55_preparation.py: 17 warnings
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8038456Z   /home/runner/work/ZhenMode/ZhenMode/tests/support/jra55_inputs.py:68: DeprecationWarning: Setting the shape on a NumPy array has been deprecated in NumPy 2.5.
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8039427Z   As an alternative, you can create a new view using np.reshape (with copy=False if needed).
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8039901Z     v[:]=area
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8040029Z 
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8040164Z tests/baselines/test_omip2_time.py: 225 warnings
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8040684Z tests/data/test_jra55_preparation.py: 90 warnings
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8041526Z   /home/runner/work/ZhenMode/ZhenMode/src/zhenmode/preparation/forcing.py:372: DeprecationWarning: Setting the shape on a NumPy array has been deprecated in NumPy 2.5.
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8042545Z   As an alternative, you can create a new view using np.reshape (with copy=False if needed).
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8043032Z     out[index] = mapped
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8043192Z 
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8043328Z tests/baselines/test_omip2_time.py: 54 warnings
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8043694Z tests/data/test_jra55_preparation.py: 24 warnings
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8044532Z   /home/runner/work/ZhenMode/ZhenMode/src/zhenmode/preparation/forcing.py:352: DeprecationWarning: Setting the shape on a NumPy array has been deprecated in NumPy 2.5.
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8045495Z   As an alternative, you can create a new view using np.reshape (with copy=False if needed).
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8046121Z     native.createVariable("time_bounds", "f8", ("time", "bounds"))[:] = bounds[
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8046495Z 
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8046628Z tests/baselines/test_omip2_time.py: 65 warnings
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8047137Z tests/data/test_native_bottom_preparation.py: 844 warnings
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8047544Z tests/data/test_native_fd_inputs.py: 481 warnings
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8047935Z tests/data/test_native_initialization.py: 184 warnings
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8048302Z tests/data/test_wind_sample.py: 1 warning
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8048660Z tests/data/test_woa_initialization.py: 107 warnings
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8049040Z tests/runtime/test_native_wind_run.py: 96 warnings
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8049925Z   /opt/hostedtoolcache/Python/3.12.15/x64/lib/python3.12/site-packages/numpy/ma/core.py:3524: DeprecationWarning: Setting the shape on a NumPy array has been deprecated in NumPy 2.5.
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8051130Z   As an alternative, you can create a new view using np.reshape (with copy=False if needed).
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8051700Z     super(MaskedArray, type(self)).shape.__set__(self, shape)
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8051979Z 
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8052118Z tests/baselines/test_omip2_time.py: 24 warnings
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8052995Z   /home/runner/work/ZhenMode/ZhenMode/src/zhenmode/baselines/mom6/omip2_time.py:78: DeprecationWarning: Setting the shape on a NumPy array has been deprecated in NumPy 2.5.
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8054160Z   As an alternative, you can create a new view using np.reshape (with copy=False if needed).
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8054640Z     clone[block] = values
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8054804Z 
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8054956Z tests/baselines/test_tripolar_geometry.py: 14 warnings
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8055939Z   /home/runner/work/ZhenMode/ZhenMode/tests/baselines/test_tripolar_geometry.py:97: DeprecationWarning: Setting the shape on a NumPy array has been deprecated in NumPy 2.5.
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8056938Z   As an alternative, you can create a new view using np.reshape (with copy=False if needed).
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8057457Z     ds.createVariable(k, "f8", ("nyp", "nxp"))[:] = v
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8057709Z 
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8057858Z tests/baselines/test_tripolar_geometry.py: 10 warnings
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8058738Z   /home/runner/work/ZhenMode/ZhenMode/src/zhenmode/baselines/mom6/tripolar.py:239: DeprecationWarning: Setting the shape on a NumPy array has been deprecated in NumPy 2.5.
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8059901Z   As an alternative, you can create a new view using np.reshape (with copy=False if needed).
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8060492Z     variable[:] = value
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8060653Z 
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8060978Z tests/data/test_explicit_input_paths.py::test_exact_woa_and_inventory_ignore_conflicting_twin
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8061988Z   /home/runner/work/ZhenMode/ZhenMode/tests/data/test_explicit_input_paths.py:32: DeprecationWarning: Setting the shape on a NumPy array has been deprecated in NumPy 2.5.
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8063014Z   As an alternative, you can create a new view using np.reshape (with copy=False if needed).
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8063595Z     ds.createVariable("t_an", "f8", ("time", "depth", "lat", "lon"))[:] = 7
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8063923Z 
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8064279Z tests/data/test_input_sources.py::test_netcdf_declared_finite_fill_is_missing
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8064884Z tests/data/test_input_sources.py::test_normal_metadata_netcdf_passes_array_strict
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8065540Z tests/data/test_input_sources.py::test_netcdf_unknown_units_or_encoding_rejected[options0]
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8066300Z tests/data/test_input_sources.py::test_netcdf_unknown_units_or_encoding_rejected[options1]
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8067025Z tests/data/test_input_sources.py::test_wrong_coordinate_units_or_direction_rejected[lon-units-radians]
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8067797Z tests/data/test_input_sources.py::test_wrong_coordinate_units_or_direction_rejected[depth-units-cm]
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8068558Z tests/data/test_input_sources.py::test_wrong_coordinate_units_or_direction_rejected[depth-positive-up]
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8069355Z tests/data/test_input_sources.py::test_packed_netcdf_valid_decoded_value_equal_to_encoded_fill_is_preserved
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8070516Z   /home/runner/work/ZhenMode/ZhenMode/tests/support/data/input_sources.py:41: DeprecationWarning: Setting the shape on a NumPy array has been deprecated in NumPy 2.5.
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8071494Z   As an alternative, you can create a new view using np.reshape (with copy=False if needed).
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8072156Z     variable[:] = np.full(variable.shape, 9.96921e36 if sentinel else 7., dtype=np.float32)
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8072550Z 
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8072916Z tests/data/test_input_sources.py::test_packed_netcdf_valid_decoded_value_equal_to_encoded_fill_is_preserved
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8073997Z   /home/runner/work/ZhenMode/ZhenMode/tests/data/test_input_sources.py:347: DeprecationWarning: Setting the shape on a NumPy array has been deprecated in NumPy 2.5.
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8075041Z   As an alternative, you can create a new view using np.reshape (with copy=False if needed).
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8075591Z     variable[:] = np.full(variable.shape, 5, dtype=np.int16)
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8075861Z 
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8075975Z tests/data/test_jra55.py: 264 warnings
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8076739Z   /home/runner/work/ZhenMode/ZhenMode/tests/data/test_jra55.py:45: DeprecationWarning: Setting the shape on a NumPy array has been deprecated in NumPy 2.5.
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8077842Z   As an alternative, you can create a new view using np.reshape (with copy=False if needed).
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8078314Z     v[:] = value
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8078452Z 
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8078566Z tests/data/test_jra55.py: 24 warnings
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8079315Z   /home/runner/work/ZhenMode/ZhenMode/tests/data/test_jra55.py:47: DeprecationWarning: Setting the shape on a NumPy array has been deprecated in NumPy 2.5.
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8080225Z   As an alternative, you can create a new view using np.reshape (with copy=False if needed).
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8080848Z     v[:] = np.array([290, 293, 296])[:, None, None]
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8081073Z 
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8081184Z tests/data/test_jra55.py: 144 warnings
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8081929Z   /home/runner/work/ZhenMode/ZhenMode/tests/data/test_jra55.py:35: DeprecationWarning: Setting the shape on a NumPy array has been deprecated in NumPy 2.5.
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8082871Z   As an alternative, you can create a new view using np.reshape (with copy=False if needed).
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8083528Z     b[:] = [[0, cadence], [cadence, 2 * cadence]]
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8083752Z 
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8083869Z tests/data/test_jra55.py: 24 warnings
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8084606Z   /home/runner/work/ZhenMode/ZhenMode/tests/data/test_jra55.py:49: DeprecationWarning: Setting the shape on a NumPy array has been deprecated in NumPy 2.5.
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8085546Z   As an alternative, you can create a new view using np.reshape (with copy=False if needed).
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8086042Z     v[:] = np.array([100, 400])[:, None, None]
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8086262Z 
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8086545Z tests/data/test_jra55.py::test_reject_metadata[shortwave_down-<lambda>-bounds]
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8087434Z   /home/runner/work/ZhenMode/ZhenMode/tests/data/test_jra55.py:95: DeprecationWarning: Setting the shape on a NumPy array has been deprecated in NumPy 2.5.
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8088366Z   As an alternative, you can create a new view using np.reshape (with copy=False if needed).
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8089032Z     ('shortwave_down', lambda ds: ds['time_bounds'].__setitem__((1, 0), 10000), 'bounds'),
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8089396Z 
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8089634Z tests/data/test_jra55.py::test_reject_wet_values[wind_u-uas-nan-nonfinite]
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8090229Z tests/data/test_jra55.py::test_reject_wet_values[specific_humidity-huss-50.0-humidity]
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8091020Z tests/data/test_jra55.py::test_reject_wet_values[pressure_pa-psl-1013.0-pressure]
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8091628Z tests/data/test_jra55.py::test_reject_wet_values[temperature_k-tas-17.0-Kelvin]
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8092197Z tests/data/test_jra55.py::test_reject_wet_values[rain-prra--1.0-negative]
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8093077Z   /home/runner/work/ZhenMode/ZhenMode/tests/data/test_jra55.py:112: DeprecationWarning: Setting the shape on a NumPy array has been deprecated in NumPy 2.5.
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8094024Z   As an alternative, you can create a new view using np.reshape (with copy=False if needed).
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8094652Z     modify(forcing_files, field, lambda ds: ds[var].__setitem__(slice(None), value))
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8095009Z 
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8095200Z tests/data/test_jra55.py::test_identity_missing_files_and_window
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8096045Z   /home/runner/work/ZhenMode/ZhenMode/tests/data/test_jra55.py:123: DeprecationWarning: Setting the shape on a NumPy array has been deprecated in NumPy 2.5.
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8097009Z   As an alternative, you can create a new view using np.reshape (with copy=False if needed).
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8097695Z     modify(forcing_files, 'wind_u', lambda ds: ds['uas'].__setitem__(0, 9.), rehash=False)
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8098094Z 
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8098236Z tests/data/test_jra55_preparation.py: 20 warnings
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8099104Z   /home/runner/work/ZhenMode/ZhenMode/tests/data/test_jra55_preparation.py:161: DeprecationWarning: Setting the shape on a NumPy array has been deprecated in NumPy 2.5.
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8100497Z   As an alternative, you can create a new view using np.reshape (with copy=False if needed).
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8100987Z     ds[variable][:] = value
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8101160Z 
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8101327Z tests/data/test_native_bottom_preparation.py: 48 warnings
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8101763Z tests/data/test_native_fd_inputs.py: 30 warnings
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8102155Z tests/data/test_native_initialization.py: 14 warnings
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8102550Z tests/data/test_woa_initialization.py: 34 warnings
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8102938Z tests/runtime/test_native_wind_run.py: 6 warnings
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8103817Z   /home/runner/work/ZhenMode/ZhenMode/tests/support/data/native_initialization.py:27: DeprecationWarning: Setting the shape on a NumPy array has been deprecated in NumPy 2.5.
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8104839Z   As an alternative, you can create a new view using np.reshape (with copy=False if needed).
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8105471Z     ds.createVariable('climatology_bounds','f8',('time','nbounds'))[:]=[[0.,12.]]
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8105848Z 
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8106158Z tests/data/test_native_bottom_preparation.py: 24 warnings
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8106568Z tests/data/test_native_fd_inputs.py: 15 warnings
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8106956Z tests/data/test_native_initialization.py: 7 warnings
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8107353Z tests/data/test_woa_initialization.py: 17 warnings
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8107733Z tests/runtime/test_native_wind_run.py: 3 warnings
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8108669Z   /home/runner/work/ZhenMode/ZhenMode/tests/support/data/native_initialization.py:54: DeprecationWarning: Setting the shape on a NumPy array has been deprecated in NumPy 2.5.
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8109686Z   As an alternative, you can create a new view using np.reshape (with copy=False if needed).
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8110236Z     field[:]=np.array([0.,500.,4000.])[:,None]+np.zeros((3,2))
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8110635Z 
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8110806Z tests/data/test_native_bottom_preparation.py: 72 warnings
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8111220Z tests/data/test_native_fd_inputs.py: 45 warnings
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8111605Z tests/data/test_native_initialization.py: 21 warnings
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8112003Z tests/data/test_woa_initialization.py: 21 warnings
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8112383Z tests/runtime/test_native_wind_run.py: 9 warnings
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8113219Z   /home/runner/work/ZhenMode/ZhenMode/src/zhenmode/preparation/woa.py:210: DeprecationWarning: Setting the shape on a NumPy array has been deprecated in NumPy 2.5.
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8114186Z   As an alternative, you can create a new view using np.reshape (with copy=False if needed).
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8114693Z     valid_output[0,level]=valid.astype(np.int8)
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8114921Z 
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8115090Z tests/data/test_native_bottom_preparation.py: 24 warnings
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8115487Z tests/data/test_native_fd_inputs.py: 15 warnings
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8115875Z tests/data/test_native_initialization.py: 5 warnings
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8116261Z tests/runtime/test_native_wind_run.py: 3 warnings
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8117120Z   /home/runner/work/ZhenMode/ZhenMode/src/zhenmode/preparation/native_initial.py:190: DeprecationWarning: Setting the shape on a NumPy array has been deprecated in NumPy 2.5.
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8118116Z   As an alternative, you can create a new view using np.reshape (with copy=False if needed).
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8118721Z     deep_variable[:] = np.ascontiguousarray(deep_thickness.transpose(2, 1, 0))
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8119067Z 
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8119239Z tests/data/test_native_bottom_preparation.py: 72 warnings
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8119627Z tests/data/test_native_fd_inputs.py: 45 warnings
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8120009Z tests/data/test_native_initialization.py: 15 warnings
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8120519Z tests/runtime/test_native_wind_run.py: 9 warnings
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8121406Z   /home/runner/work/ZhenMode/ZhenMode/src/zhenmode/preparation/native_initial.py:226: DeprecationWarning: Setting the shape on a NumPy array has been deprecated in NumPy 2.5.
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8122568Z   As an alternative, you can create a new view using np.reshape (with copy=False if needed).
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8123106Z     v[:] = np.ascontiguousarray(value.transpose(2, 1, 0))
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8123357Z 
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8123537Z tests/data/test_native_bottom_preparation.py: 610 warnings
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8123936Z tests/data/test_native_fd_inputs.py: 375 warnings
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8124328Z tests/data/test_native_initialization.py: 120 warnings
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8124718Z tests/runtime/test_native_wind_run.py: 75 warnings
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8125575Z   /home/runner/work/ZhenMode/ZhenMode/src/zhenmode/preparation/native_initial.py:330: DeprecationWarning: Setting the shape on a NumPy array has been deprecated in NumPy 2.5.
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8126595Z   As an alternative, you can create a new view using np.reshape (with copy=False if needed).
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8127192Z     masks[name][level] = np.ascontiguousarray(value.T, dtype=np.int8)
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8127499Z 
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8127670Z tests/data/test_native_bottom_preparation.py: 122 warnings
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8128276Z tests/data/test_native_fd_inputs.py: 75 warnings
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8128652Z tests/data/test_native_initialization.py: 24 warnings
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8129040Z tests/runtime/test_native_wind_run.py: 15 warnings
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8129885Z   /home/runner/work/ZhenMode/ZhenMode/src/zhenmode/preparation/native_initial.py:331: DeprecationWarning: Setting the shape on a NumPy array has been deprecated in NumPy 2.5.
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8130986Z   As an alternative, you can create a new view using np.reshape (with copy=False if needed).
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8131514Z     anchors[level] = np.ascontiguousarray(
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8131730Z 
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8131898Z tests/data/test_native_bottom_preparation.py: 122 warnings
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8132302Z tests/data/test_native_fd_inputs.py: 75 warnings
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8132675Z tests/data/test_native_initialization.py: 24 warnings
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8133058Z tests/runtime/test_native_wind_run.py: 15 warnings
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8133900Z   /home/runner/work/ZhenMode/ZhenMode/src/zhenmode/preparation/native_initial.py:334: DeprecationWarning: Setting the shape on a NumPy array has been deprecated in NumPy 2.5.
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8134885Z   As an alternative, you can create a new view using np.reshape (with copy=False if needed).
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8135534Z     distances[level] = np.ascontiguousarray(filled["nearest_anchor_path_distance_m"].T)
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8135935Z 
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8136125Z tests/data/test_native_bottom_preparation.py: 16 warnings
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8137024Z   /home/runner/work/ZhenMode/ZhenMode/src/zhenmode/preparation/bottom.py:266: DeprecationWarning: Setting the shape on a NumPy array has been deprecated in NumPy 2.5.
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8137997Z   As an alternative, you can create a new view using np.reshape (with copy=False if needed).
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8138625Z     ds["unresolved_support"][:] = (wet & ~resolved).transpose(2, 1, 0).astype(np.int8)
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8138984Z 
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8139161Z tests/data/test_native_bottom_preparation.py: 80 warnings
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8140019Z   /home/runner/work/ZhenMode/ZhenMode/src/zhenmode/preparation/bottom.py:274: DeprecationWarning: Setting the shape on a NumPy array has been deprecated in NumPy 2.5.
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8141134Z   As an alternative, you can create a new view using np.reshape (with copy=False if needed).
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8141726Z     trace_variable(name, "i1")[:] = values.transpose(2, 1, 0).astype(np.int8)
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8142059Z 
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8142223Z tests/data/test_native_bottom_preparation.py: 64 warnings
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8143061Z   /home/runner/work/ZhenMode/ZhenMode/src/zhenmode/preparation/bottom.py:286: DeprecationWarning: Setting the shape on a NumPy array has been deprecated in NumPy 2.5.
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8144004Z   As an alternative, you can create a new view using np.reshape (with copy=False if needed).
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8144859Z     trace_variable(name, "i8")[:] = values.transpose(2, 1, 0)
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8145123Z 
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8145291Z tests/data/test_native_bottom_preparation.py: 16 warnings
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8146126Z   /home/runner/work/ZhenMode/ZhenMode/src/zhenmode/preparation/bottom.py:289: DeprecationWarning: Setting the shape on a NumPy array has been deprecated in NumPy 2.5.
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8147106Z   As an alternative, you can create a new view using np.reshape (with copy=False if needed).
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8147724Z     distance[:] = np.where(fill & ~regional, result["extension_distance_m"], 0).transpose(
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8148083Z 
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8148247Z tests/data/test_native_bottom_preparation.py: 80 warnings
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8149093Z   /home/runner/work/ZhenMode/ZhenMode/src/zhenmode/preparation/bottom.py:304: DeprecationWarning: Setting the shape on a NumPy array has been deprecated in NumPy 2.5.
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8150042Z   As an alternative, you can create a new view using np.reshape (with copy=False if needed).
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8150727Z     variable[:] = values.transpose(2, 1, 0)
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8151080Z 
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8151408Z tests/data/test_native_bottom_preparation.py::test_unanchored_surface_stays_blocked_in_public_cli
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8152459Z   /home/runner/work/ZhenMode/ZhenMode/tests/data/test_native_bottom_preparation.py:161: DeprecationWarning: Setting the shape on a NumPy array has been deprecated in NumPy 2.5.
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8153412Z   As an alternative, you can create a new view using np.reshape (with copy=False if needed).
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8153884Z     data["unresolved_support"][0, 0, 1] = 1
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8154092Z 
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8154571Z tests/data/test_native_bottom_preparation.py::test_arithmetic_sensitivity_has_two_anchors_and_refuses_out_of_domain_without_clipping[9.0-1]
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8155640Z tests/data/test_native_bottom_preparation.py::test_arithmetic_sensitivity_has_two_anchors_and_refuses_out_of_domain_without_clipping[9.0-1]
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8156705Z tests/data/test_native_bottom_preparation.py::test_arithmetic_sensitivity_has_two_anchors_and_refuses_out_of_domain_without_clipping[9.0-1]
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8157772Z tests/data/test_native_bottom_preparation.py::test_arithmetic_sensitivity_has_two_anchors_and_refuses_out_of_domain_without_clipping[9.0-1]
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8158870Z tests/data/test_native_bottom_preparation.py::test_arithmetic_sensitivity_has_two_anchors_and_refuses_out_of_domain_without_clipping[-2.0-0]
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8159932Z tests/data/test_native_bottom_preparation.py::test_arithmetic_sensitivity_has_two_anchors_and_refuses_out_of_domain_without_clipping[-2.0-0]
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8161137Z tests/data/test_native_bottom_preparation.py::test_arithmetic_sensitivity_has_two_anchors_and_refuses_out_of_domain_without_clipping[-2.0-0]
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8162220Z tests/data/test_native_bottom_preparation.py::test_arithmetic_sensitivity_has_two_anchors_and_refuses_out_of_domain_without_clipping[-2.0-0]
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8163420Z   /home/runner/work/ZhenMode/ZhenMode/tests/data/test_native_bottom_preparation.py:212: DeprecationWarning: Setting the shape on a NumPy array has been deprecated in NumPy 2.5.
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8164431Z   As an alternative, you can create a new view using np.reshape (with copy=False if needed).
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8164911Z     data[name][0, 1, 0, 1] = value
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8165105Z 
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8165606Z tests/data/test_native_bottom_preparation.py::test_arithmetic_sensitivity_has_two_anchors_and_refuses_out_of_domain_without_clipping[9.0-1]
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8166693Z tests/data/test_native_bottom_preparation.py::test_arithmetic_sensitivity_has_two_anchors_and_refuses_out_of_domain_without_clipping[-2.0-0]
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8167884Z   /home/runner/work/ZhenMode/ZhenMode/tests/data/test_native_bottom_preparation.py:213: DeprecationWarning: Setting the shape on a NumPy array has been deprecated in NumPy 2.5.
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8169027Z   As an alternative, you can create a new view using np.reshape (with copy=False if needed).
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8169526Z     data["unresolved_support"][1, 0, 1] = 0
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8169734Z 
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8170228Z tests/data/test_native_bottom_preparation.py::test_arithmetic_sensitivity_has_two_anchors_and_refuses_out_of_domain_without_clipping[9.0-1]
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8171470Z tests/data/test_native_bottom_preparation.py::test_arithmetic_sensitivity_has_two_anchors_and_refuses_out_of_domain_without_clipping[-2.0-0]
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8172698Z   /home/runner/work/ZhenMode/ZhenMode/tests/data/test_native_bottom_preparation.py:214: DeprecationWarning: Setting the shape on a NumPy array has been deprecated in NumPy 2.5.
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8173723Z   As an alternative, you can create a new view using np.reshape (with copy=False if needed).
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8174263Z     data["nearest_original_anchor_flat_index"][1, 0, 1] = 2
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8174525Z 
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8175022Z tests/data/test_native_bottom_preparation.py::test_arithmetic_sensitivity_has_two_anchors_and_refuses_out_of_domain_without_clipping[9.0-1]
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8176255Z tests/data/test_native_bottom_preparation.py::test_arithmetic_sensitivity_has_two_anchors_and_refuses_out_of_domain_without_clipping[-2.0-0]
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8177472Z   /home/runner/work/ZhenMode/ZhenMode/tests/data/test_native_bottom_preparation.py:215: DeprecationWarning: Setting the shape on a NumPy array has been deprecated in NumPy 2.5.
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8178465Z   As an alternative, you can create a new view using np.reshape (with copy=False if needed).
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8178987Z     data["nearest_anchor_path_distance_m"][1, 0, 1] = 0
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8179227Z 
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8179407Z tests/data/test_native_geometry_preparation.py: 10 warnings
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8180432Z   /home/runner/work/ZhenMode/ZhenMode/tests/data/test_native_geometry_preparation.py:48: DeprecationWarning: Setting the shape on a NumPy array has been deprecated in NumPy 2.5.
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8181482Z   As an alternative, you can create a new view using np.reshape (with copy=False if needed).
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8181957Z     variable[:] = elevation
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8182118Z 
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8182544Z tests/data/test_native_geometry_preparation.py::test_named_reference_dry_conflict_preserves_uncertainty_and_only_one_cell
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8183592Z tests/data/test_native_geometry_preparation.py::test_exclusion_cannot_delete_water_or_accept_an_ambiguous_policy[exclusions0-cannot delete known water]
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8184705Z tests/data/test_native_geometry_preparation.py::test_exclusion_cannot_delete_water_or_accept_an_ambiguous_policy[exclusions1-native centre]
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8185793Z tests/data/test_native_geometry_preparation.py::test_exclusion_cannot_delete_water_or_accept_an_ambiguous_policy[exclusions2-invalid reference]
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8186899Z tests/data/test_native_geometry_preparation.py::test_exclusion_cannot_delete_water_or_accept_an_ambiguous_policy[exclusions3-invalid reference]
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8187970Z tests/data/test_native_geometry_preparation.py::test_exclusion_cannot_delete_water_or_accept_an_ambiguous_policy[all-explicit refinements]
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8189068Z tests/data/test_native_geometry_preparation.py::test_exclusion_cannot_delete_water_or_accept_an_ambiguous_policy[exclusions5-cannot delete known water]
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8190445Z   /home/runner/work/ZhenMode/ZhenMode/tests/data/test_native_geometry_preparation.py:174: DeprecationWarning: Setting the shape on a NumPy array has been deprecated in NumPy 2.5.
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8191503Z   As an alternative, you can create a new view using np.reshape (with copy=False if needed).
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8191976Z     v[:] = -10
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8192111Z 
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8192539Z tests/data/test_native_geometry_preparation.py::test_named_reference_dry_conflict_preserves_uncertainty_and_only_one_cell
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8193603Z tests/data/test_native_geometry_preparation.py::test_exclusion_cannot_delete_water_or_accept_an_ambiguous_policy[exclusions0-cannot delete known water]
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8194864Z tests/data/test_native_geometry_preparation.py::test_exclusion_cannot_delete_water_or_accept_an_ambiguous_policy[exclusions1-native centre]
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8195958Z tests/data/test_native_geometry_preparation.py::test_exclusion_cannot_delete_water_or_accept_an_ambiguous_policy[exclusions2-invalid reference]
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8197062Z tests/data/test_native_geometry_preparation.py::test_exclusion_cannot_delete_water_or_accept_an_ambiguous_policy[exclusions3-invalid reference]
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:44.8198158Z tests/data/test_native_geometry_preparation.py::test_exclusion_cannot_delete_water_or_accept_an_ambiguous_policy[all-explicit refinements]
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:46.0271157Z tests/data/test_native_geometry_preparation.py::test_exclusion_cannot_delete_water_or_accept_an_ambiguous_policy[exclusions5-cannot delete known water]
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:46.0272557Z   /home/runner/work/ZhenMode/ZhenMode/tests/data/test_native_geometry_preparation.py:178: DeprecationWarning: Setting the shape on a NumPy array has been deprecated in NumPy 2.5.
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:46.0273940Z   As an alternative, you can create a new view using np.reshape (with copy=False if needed).
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:46.0274419Z     v[90, :2] = 10
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:46.0274553Z 
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:46.0274968Z tests/data/test_native_initialization.py::test_deep_extension_reuses_prepared_source_plane_across_shallower_sill[False]
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:46.0275866Z tests/data/test_native_initialization.py::test_deep_extension_reuses_prepared_source_plane_across_shallower_sill[True]
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:46.0276932Z   /home/runner/work/ZhenMode/ZhenMode/tests/data/test_native_initialization.py:147: DeprecationWarning: Setting the shape on a NumPy array has been deprecated in NumPy 2.5.
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:46.0277880Z   As an alternative, you can create a new view using np.reshape (with copy=False if needed).
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:46.0278351Z     data["ptemp"][0, 2, 0, 1] = 1.0
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:46.0278557Z 
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:46.0278954Z tests/data/test_native_initialization.py::test_deep_extension_reuses_prepared_source_plane_across_shallower_sill[False]
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:46.0279842Z tests/data/test_native_initialization.py::test_deep_extension_reuses_prepared_source_plane_across_shallower_sill[True]
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:46.0281065Z   /home/runner/work/ZhenMode/ZhenMode/tests/data/test_native_initialization.py:150: DeprecationWarning: Setting the shape on a NumPy array has been deprecated in NumPy 2.5.
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:46.0282015Z   As an alternative, you can create a new view using np.reshape (with copy=False if needed).
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:46.0282510Z     data["paired_source_support"][0, 2, 1, 1] = 0
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:46.0282729Z 
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:46.0282852Z tests/data/test_wind_sample.py: 60 warnings
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:46.0283205Z tests/evaluation/test_forced_channel.py: 25 warnings
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:46.0284006Z   /home/runner/work/ZhenMode/ZhenMode/tests/support/weather_source.py:50: DeprecationWarning: Setting the shape on a NumPy array has been deprecated in NumPy 2.5.
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:46.0284933Z   As an alternative, you can create a new view using np.reshape (with copy=False if needed).
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:46.0285481Z     a[:] = np.broadcast_to(np.array(values[var])[:, None, None], (3, 3, 3))
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:46.0285780Z 
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:46.0286232Z tests/data/test_woa_initialization.py::test_initial_source_refuses_metadata_or_pressure_disagreement[pressure_surface-surface-zero]
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:46.0287391Z   /home/runner/work/ZhenMode/ZhenMode/tests/support/data/native_initialization.py:56: DeprecationWarning: Setting the shape on a NumPy array has been deprecated in NumPy 2.5.
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:46.0288340Z   As an alternative, you can create a new view using np.reshape (with copy=False if needed).
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:46.0288788Z     field[0]=1.
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:46.0288922Z 
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:46.0289219Z tests/data/test_woa_initialization.py::test_paired_annual_time_and_bounds_are_checked[bounds]
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:46.0290570Z   /home/runner/work/ZhenMode/ZhenMode/tests/data/test_woa_initialization.py:98: DeprecationWarning: Setting the shape on a NumPy array has been deprecated in NumPy 2.5.
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:46.0291512Z   As an alternative, you can create a new view using np.reshape (with copy=False if needed).
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:46.0291994Z     ds['climatology_bounds'][:]=[[0.,1.]]
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:46.0292201Z 
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:46.0292525Z tests/evaluation/test_protocol_pipeline.py::test_native_shared_grid_units_and_binding_rejected[grid]
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:46.0293230Z tests/evaluation/test_protocol_pipeline.py::test_native_shared_grid_units_and_binding_rejected[wet]
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:46.0293927Z tests/evaluation/test_protocol_pipeline.py::test_native_shared_grid_units_and_binding_rejected[unit]
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:46.0294673Z tests/evaluation/test_protocol_pipeline.py::test_native_shared_grid_units_and_binding_rejected[unbound_geometry]
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:46.0295688Z   /home/runner/work/ZhenMode/ZhenMode/tests/evaluation/test_protocol_pipeline.py:235: DeprecationWarning: Setting the shape on a NumPy array has been deprecated in NumPy 2.5.
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:46.0296769Z   As an alternative, you can create a new view using np.reshape (with copy=False if needed).
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:46.0297248Z     temp[:] = bundle[2]["T_top"].transpose(0, 2, 1)
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:46.0297460Z 
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:46.0297765Z tests/evaluation/test_protocol_pipeline.py::test_native_shared_grid_units_and_binding_rejected[grid]
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:46.0298450Z tests/evaluation/test_protocol_pipeline.py::test_native_shared_grid_units_and_binding_rejected[wet]
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:46.0299138Z tests/evaluation/test_protocol_pipeline.py::test_native_shared_grid_units_and_binding_rejected[unit]
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:46.0299880Z tests/evaluation/test_protocol_pipeline.py::test_native_shared_grid_units_and_binding_rejected[unbound_geometry]
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:46.0301134Z   /home/runner/work/ZhenMode/ZhenMode/tests/evaluation/test_protocol_pipeline.py:241: DeprecationWarning: Setting the shape on a NumPy array has been deprecated in NumPy 2.5.
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:46.0302066Z   As an alternative, you can create a new view using np.reshape (with copy=False if needed).
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:46.0302620Z     ds.createVariable("wet", "f8", ("lat", "lon"))[:] = 2 if bad == "wet" else 1
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:46.0302914Z 
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:46.0303235Z tests/evaluation/test_score_external_model.py::test_score_external_field_uses_shared_grid_and_wet_mask
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:46.0303965Z tests/evaluation/test_score_external_model.py::test_score_external_field_rejects_coordinate_mismatch
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:46.0304702Z tests/evaluation/test_score_external_model.py::test_score_external_field_converts_hours_to_days
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:46.0305435Z tests/evaluation/test_score_external_model.py::test_score_external_field_rejects_missing_time_units
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:46.0306174Z tests/evaluation/test_score_external_model.py::test_score_external_field_flags_incomplete_coverage
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:46.0306902Z tests/evaluation/test_score_external_model.py::test_no_land_fill_still_transposes_non_square_grid
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:46.0307614Z tests/evaluation/test_score_external_model.py::test_mom6_cli_uses_normalized_shared_time_window
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:46.0308413Z tests/evaluation/test_score_external_model.py::test_external_score_uses_provided_shared_area_without_independence_claim
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:46.0309512Z   /home/runner/work/ZhenMode/ZhenMode/tests/evaluation/test_score_external_model.py:37: DeprecationWarning: Setting the shape on a NumPy array has been deprecated in NumPy 2.5.
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:46.0310654Z   As an alternative, you can create a new view using np.reshape (with copy=False if needed).
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:46.0311208Z     wet[:] = (np.array([[1, 1, 1], [1, 0, 1], [1, 1, 0]], dtype=np.int8)
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:46.0311481Z 
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:46.0311811Z tests/evaluation/test_score_external_model.py::test_score_external_field_uses_shared_grid_and_wet_mask
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:46.0312559Z tests/evaluation/test_score_external_model.py::test_score_external_field_rejects_coordinate_mismatch
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:46.0313460Z tests/evaluation/test_score_external_model.py::test_score_external_field_converts_hours_to_days
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:46.0314192Z tests/evaluation/test_score_external_model.py::test_score_external_field_rejects_missing_time_units
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:46.0314924Z tests/evaluation/test_score_external_model.py::test_score_external_field_flags_incomplete_coverage
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:46.0315653Z tests/evaluation/test_score_external_model.py::test_no_land_fill_still_transposes_non_square_grid
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:46.0316407Z tests/evaluation/test_score_external_model.py::test_mom6_cli_uses_normalized_shared_time_window
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:46.0317219Z tests/evaluation/test_score_external_model.py::test_external_score_uses_provided_shared_area_without_independence_claim
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:46.0318345Z   /home/runner/work/ZhenMode/ZhenMode/tests/evaluation/test_score_external_model.py:39: DeprecationWarning: Setting the shape on a NumPy array has been deprecated in NumPy 2.5.
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:46.0319336Z   As an alternative, you can create a new view using np.reshape (with copy=False if needed).
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:46.0319956Z     temp[:] = values
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:46.0320102Z 
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:46.0320580Z tests/evaluation/test_score_external_model.py::test_score_external_field_flags_incomplete_coverage
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:46.0321656Z   /home/runner/work/ZhenMode/ZhenMode/tests/evaluation/test_score_external_model.py:110: DeprecationWarning: Setting the shape on a NumPy array has been deprecated in NumPy 2.5.
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:46.0322721Z   As an alternative, you can create a new view using np.reshape (with copy=False if needed).
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:46.0323226Z     dataset["wet_mask"][:] = 0
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:46.0323425Z 
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:46.0323773Z tests/evaluation/test_score_external_model.py::test_score_external_field_flags_incomplete_coverage
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:46.0324835Z   /home/runner/work/ZhenMode/ZhenMode/tests/evaluation/test_score_external_model.py:111: DeprecationWarning: Setting the shape on a NumPy array has been deprecated in NumPy 2.5.
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:46.0325823Z   As an alternative, you can create a new view using np.reshape (with copy=False if needed).
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:46.0326310Z     dataset["wet_mask"][0, 0] = 1
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:46.0326498Z 
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:46.0326652Z tests/runtime/test_native_wind_run.py: 33 warnings
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:46.0327446Z   /home/runner/work/ZhenMode/ZhenMode/tests/runtime/test_native_wind_run.py:55: DeprecationWarning: Setting the shape on a NumPy array has been deprecated in NumPy 2.5.
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:46.0328357Z   As an alternative, you can create a new view using np.reshape (with copy=False if needed).
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:46.0328866Z     v[:] = 0.001 if field in {"snow", "calving"} else value
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:46.0329100Z 
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:46.0329238Z tests/runtime/test_native_wind_run.py: 18 warnings
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:46.0330023Z   /home/runner/work/ZhenMode/ZhenMode/tests/runtime/test_native_wind_run.py:41: DeprecationWarning: Setting the shape on a NumPy array has been deprecated in NumPy 2.5.
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:46.0331089Z   As an alternative, you can create a new view using np.reshape (with copy=False if needed).
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:46.0331640Z     data.createVariable("time_bounds", "f8", ("time", "bnds"))[:] = [
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:46.0331920Z 
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:46.0332161Z -- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+test	Run python -m pytest tests/ -q	2026-10-12T21:09:46.0332628Z 1750 passed, 6710 warnings in 1159.33s (0:19:19)
+test	Run python -m zhenmode mms	﻿2026-10-12T21:09:47.9713576Z ##[group]Run python -m zhenmode mms
+test	Run python -m zhenmode mms	2026-10-12T21:09:47.9713856Z [36;1mpython -m zhenmode mms[0m
+test	Run python -m zhenmode mms	2026-10-12T21:09:47.9775429Z shell: /usr/bin/bash -e {0}
+test	Run python -m zhenmode mms	2026-10-12T21:09:47.9775649Z env:
+test	Run python -m zhenmode mms	2026-10-12T21:09:47.9775873Z   pythonLocation: /opt/hostedtoolcache/Python/3.12.15/x64
+test	Run python -m zhenmode mms	2026-10-12T21:09:47.9776230Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.12.15/x64/lib/pkgconfig
+test	Run python -m zhenmode mms	2026-10-12T21:09:47.9776572Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.15/x64
+test	Run python -m zhenmode mms	2026-10-12T21:09:47.9776873Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.15/x64
+test	Run python -m zhenmode mms	2026-10-12T21:09:47.9777189Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.15/x64
+test	Run python -m zhenmode mms	2026-10-12T21:09:47.9777492Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.12.15/x64/lib
+test	Run python -m zhenmode mms	2026-10-12T21:09:47.9777755Z ##[endgroup]
+test	Run python -m zhenmode mms	2026-10-12T21:09:49.5777827Z === Global FD Solver — MMS verification ===
+test	Run python -m zhenmode mms	2026-10-12T21:09:49.5778245Z   d_dx_rel_L2                    = 6.400e-03  [PASS]
+test	Run python -m zhenmode mms	2026-10-12T21:09:49.5778526Z   d_dy_rel_L2                    = 1.487e-02  [PASS]
+test	Run python -m zhenmode mms	2026-10-12T21:09:49.5778865Z   laplacian_linear_max           = 1.072e-06  [PASS]
+test	Run python -m zhenmode mms	2026-10-12T21:09:49.5779120Z   divergence_free_max            = 0.000e+00  [PASS]
+test	Run python -m zhenmode mms	2026-10-12T21:09:49.5779290Z 
+test	Run python -m zhenmode mms	2026-10-12T21:09:49.5779423Z --- 2nd-order convergence check (d/dy) ---
+test	Run python -m zhenmode mms	2026-10-12T21:09:49.5779662Z   coarse (ny=14)  d/dy rel L2 = 1.487e-02
+test	Run python -m zhenmode mms	2026-10-12T21:09:49.5779880Z   fine   (ny=28)  d/dy rel L2 = 3.460e-03
+test	Run python -m zhenmode mms	2026-10-12T21:09:49.5780146Z   convergence ratio (expect ~4 for 2nd-order) = 4.30  [PASS]
+test	Run python -m zhenmode mms	2026-10-12T21:09:49.5780553Z 
+test	Run python -m zhenmode mms	2026-10-12T21:09:49.5780657Z ALL PASS
+test	Post Run actions/setup-python@v5	﻿2026-10-12T21:09:49.6731975Z Post job cleanup.
+test	Post Run actions/setup-python@v5	2026-10-12T21:09:49.7707608Z Cache hit occurred on the primary key setup-python-Linux-x64-24.04-Ubuntu-python-3.12.15-pip-7ebed7385606bc106ca2543cec8e7484f5e0e56af9bb2cfa6930b9f58297641d, not saving cache.
+test	Post Run actions/setup-python@v5	2026-10-12T21:09:49.7709155Z (node:2660) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+test	Post Run actions/setup-python@v5	2026-10-12T21:09:49.7710025Z (Use `node --trace-deprecation ...` to show where the warning was created)
+test	Post Run actions/checkout@v4	﻿2026-10-12T21:09:49.7839716Z Post job cleanup.
+test	Post Run actions/checkout@v4	2026-10-12T21:09:49.8529813Z [command]/usr/bin/git version
+test	Post Run actions/checkout@v4	2026-10-12T21:09:49.8568909Z git version 2.55.0
+test	Post Run actions/checkout@v4	2026-10-12T21:09:49.8603627Z Temporarily overriding HOME='/home/runner/work/_temp/5973d95b-136a-4618-83e7-7af1e200c239' before making global git config changes
+test	Post Run actions/checkout@v4	2026-10-12T21:09:49.8604634Z Adding repository directory to the temporary git global config as a safe directory
+test	Post Run actions/checkout@v4	2026-10-12T21:09:49.8608476Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/ZhenMode/ZhenMode
+test	Post Run actions/checkout@v4	2026-10-12T21:09:49.8643889Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+test	Post Run actions/checkout@v4	2026-10-12T21:09:49.8674208Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+test	Post Run actions/checkout@v4	2026-10-12T21:09:49.8896065Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+test	Post Run actions/checkout@v4	2026-10-12T21:09:49.8918275Z http.https://github.com/.extraheader
+test	Post Run actions/checkout@v4	2026-10-12T21:09:49.8927608Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+test	Post Run actions/checkout@v4	2026-10-12T21:09:49.8959713Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+test	Post Run actions/checkout@v4	2026-10-12T21:09:49.9193946Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+test	Post Run actions/checkout@v4	2026-10-12T21:09:49.9226016Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+test	Complete job	﻿2026-10-12T21:09:49.9555054Z Cleaning up orphan processes
+test	Complete job	2026-10-12T21:09:49.9826269Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/setup-python@v5. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/

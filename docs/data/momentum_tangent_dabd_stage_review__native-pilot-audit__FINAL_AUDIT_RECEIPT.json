@@ -1,0 +1,115 @@
+{
+  "utc": "2026-10-12T23:21:49.292386+00:00",
+  "source": "dabd48abd898c20e0471a5ab9fc18e9b61cfa96d",
+  "saved_data_arithmetic": "PASS_WITH_RETAINED_ONE_METADATA_HARNESS_RECOVERY",
+  "software_CI": "PASS_EXISTING_SAME_SOURCE_FULL_RUN_READBACK",
+  "scientific_promotion": "FAIL_STRICT_LATEST_BEST_NATIVE_COMPOSITE",
+  "strict_gate_pass": false,
+  "allow_expansion": false,
+  "audited_completed_native_rows": [
+    0,
+    1
+  ],
+  "unexecuted_native_rows": [
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9
+  ],
+  "candidate_score_original": 0.005418658568218491,
+  "candidate_score_independently_recomputed": 0.005418658568218491,
+  "frozen70_score_original": 0.0053878283060362665,
+  "frozen70_score_independently_recomputed": 0.005387828306036266,
+  "CI": {
+    "run_id": 38318954281,
+    "pytest_passed": 1771,
+    "pytest_warnings": 6710,
+    "pytest_duration_s": 1571.69,
+    "MMS": {
+      "summary": "ALL PASS",
+      "individual_pass_count": 5,
+      "summary_line": 697
+    },
+    "ruff": {
+      "result": "PASS",
+      "line": 867
+    },
+    "raw_log_sha256": "79fdff7ccdecb6055f7a197bb6b7d439f29b5a482fd312e2ac43e9122093821f"
+  },
+  "limits": [
+    "Source registries and wheel bytes do not capture historical worker loaded Python paths",
+    "dual_face_v1 omitted from actual_controls; inferred from captured frozen factory default and worker options call",
+    "Contacted linear development reference; no untouched holdout/fullphysics",
+    "Source133/144 chain is retrieved bridge",
+    "No fine/null/thermal/indices2..9 native executed",
+    "Candidate raw arrays were read in stopped audit and finite metadata recovery; no new solver run"
+  ],
+  "rerun_native_or_CI": 0,
+  "reviewer_authored_candidate_production_or_public_report": false,
+  "files": [
+    {
+      "path": "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\momentum-tangent-filter-v1\\review\\native-pilot-audit\\AUDIT_REPORT.md",
+      "bytes": 12667,
+      "sha256": "fd1430ade99ab9bbbb8e835d7f2b2f7b7a69eb9ec4d4b23f6384b6101b25fd82"
+    },
+    {
+      "path": "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\momentum-tangent-filter-v1\\review\\native-pilot-audit\\audit-summary.json",
+      "bytes": 3140,
+      "sha256": "a5cab4058c282a42c4ed3791b7768fe4f53d81b34ce73dd450b4c1487c5f5c0b"
+    },
+    {
+      "path": "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\momentum-tangent-filter-v1\\review\\native-pilot-audit\\ci-readback-result.json",
+      "bytes": 4361,
+      "sha256": "4529136b91f92874dc1f197601f327402052705b4470e20f7e556ba62fa8b8ba"
+    },
+    {
+      "path": "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\momentum-tangent-filter-v1\\review\\native-pilot-audit\\row-00-result.json",
+      "bytes": 10784,
+      "sha256": "ed0f22cf2d7e2b9c9c0b9dedc8d6ca75528323d1771765c5db2e3a2cc5975e80"
+    },
+    {
+      "path": "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\momentum-tangent-filter-v1\\review\\native-pilot-audit\\row-01-result.json",
+      "bytes": 13673,
+      "sha256": "43ae90f74a9ddfaa04a9d8695dc7526f08a02ba51956487ae9215f4b2ee4f36e"
+    },
+    {
+      "path": "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\momentum-tangent-filter-v1\\review\\native-pilot-audit\\source-bridge-result.json",
+      "bytes": 17189,
+      "sha256": "a8c8881136d89d02637f718299654649cf7efcc0a2560abaf682aac4e0f0f3fb"
+    },
+    {
+      "path": "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\momentum-tangent-filter-v1\\review\\native-pilot-audit\\metadata-contract-diff.json",
+      "bytes": 3276,
+      "sha256": "5ddf6001527fade1a3f35f66d1a908e78093b2383cd7d6bb64f6218bff2da8cd"
+    },
+    {
+      "path": "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\momentum-tangent-filter-v1\\review\\native-pilot-audit\\controls-result.json",
+      "bytes": 553,
+      "sha256": "b420aa27dd6be4c9bcd282d74f6a4afad17a300a12730409ee03dfacdbec8051"
+    },
+    {
+      "path": "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\momentum-tangent-filter-v1\\review\\native-pilot-audit\\ci-parser-controls.json",
+      "bytes": 837,
+      "sha256": "1844a7519ab4dff5d2ea6b01070ba274cd0791d701789286b47f893ad79e8539"
+    },
+    {
+      "path": "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\momentum-tangent-filter-v1\\review\\native-pilot-audit\\audit-declaration.json",
+      "bytes": 4924,
+      "sha256": "0db31a9845a89d6a168873c1e80f9b3070ff9b572849596dc1515678ae9565e5"
+    },
+    {
+      "path": "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\momentum-tangent-filter-v1\\review\\native-pilot-audit\\resume-declaration.json",
+      "bytes": 1698,
+      "sha256": "f46ed3f830d3dfe7f83c0ec185a41e64e76008e49017bb66db6cbdb17bb70332"
+    },
+    {
+      "path": "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\momentum-tangent-filter-v1\\review\\native-pilot-audit\\failure-full-20261012T231252399612.json",
+      "bytes": 1204,
+      "sha256": "d8652570acf8866bc1c16c317e062d7ba41c3aa6f9bf578c3c28101f547c6a51"
+    }
+  ]
+}

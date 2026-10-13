@@ -1,0 +1,36 @@
+{
+  "recorded_utc": "2026-10-12T23:13:12.8271179Z",
+  "source": "dabd48abd898c20e0471a5ab9fc18e9b61cfa96d",
+  "declared_after_actual_pilot": true,
+  "pilot_tag": "new-momentum-timing-attempt03",
+  "pilot_process_wall_seconds": 6.2140707909999975,
+  "pilot_same_plus_minus_callset_seconds": [
+    1.1361412709999996,
+    0.0005241170000047646
+  ],
+  "pilot_oracle_comparison": false,
+  "projection_seconds": 74.56884949199997,
+  "projection_basis": "conservative12x measured process wall for3fixed grids,6manufactures,constantowner+sourcecontrols/compiler/storage; heuristic allowance, not calibrated exact cost law",
+  "hard_budget": {
+    "wall_seconds": 180,
+    "GPU": false,
+    "cpu": 1,
+    "memory_mib": 4096
+  },
+  "complete_indices": [
+    "(12,14,9) A+30",
+    "(12,14,9) A-30",
+    "(24,28,9) A+30",
+    "(24,28,9) A-30",
+    "(48,56,9) A+30",
+    "(48,56,9) A-30"
+  ],
+  "complete_runs": 1,
+  "completed_comparison_indices_before_launch": 0,
+  "fields_gates_unchanged": true,
+  "script_sha": "6dc6e6eab64da4f40274f944aa66a045ff010fcfa8910a873639315af673a1df",
+  "declaration_sha": "f4d63f7dffb8d3b4039d0e62e39da6ed7f448402da2fa4bc101bec7a57653b20",
+  "verified_python": "/root/.venvs/zhenmode-managed-bench-20261005/bin/python",
+  "native_steps": 0,
+  "ranking_FAIL": "root native70strictscore failure remains, no native2..9/fine expansion"
+}

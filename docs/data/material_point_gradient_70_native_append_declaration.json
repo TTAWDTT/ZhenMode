@@ -1,0 +1,37 @@
+{
+  "schema": "saved-native-append-audit-v1",
+  "declared_utc": "2026-10-12T21:14:44.1582114Z",
+  "indices": [
+    5,
+    2,
+    3,
+    4,
+    6,
+    7,
+    8,
+    9
+  ],
+  "never_recheck": [
+    0,
+    1
+  ],
+  "mode": "read saved arrays only; no integration or fitting",
+  "pilot_script_sha256": "307adfbf5a04e491781593c62196930de6ab5b7f3a31f0ec25a3109af57fdfdf",
+  "resources": {
+    "cpu": 1,
+    "memory_bytes": 4294967296,
+    "wall_seconds": 180
+  },
+  "timing": {
+    "remaining_rows": 8,
+    "qualification": "projection shares previous coarse reader; larger arrays and thermal formula are changes, actual elapsed separately measured; stop at finite180s cap",
+    "linear_same_readback_projection_s": 6.8993797440000435,
+    "measured_prior_wall_s": 1.7248449360000109,
+    "measured_prior_rows": 2
+  },
+  "controls": "Retain passed pilot audit controls; add thermal independently planted quadratic/steady shear/neutral spice null controls before remaining raw arrays",
+  "metric_comparator": "Preserve original audit tolerance 5e-15+5e-12*abs(stored), inventory absolute difference<=2e-14; original physics thresholds never change",
+  "lineage": "Same contacted analytic development references/contracts/NumPy float64; independent code with no project scoring imports; no pristine heldout qualification",
+  "comparison": "Before/after source raw trajectory differences are descriptive only, no new equivalencegate",
+  "thermal_inventory": "Recompute original dynamic-h/area weighted inventory and preserve both published value3.1254998589247407e-12 and independently computed arithmetic delta"
+}

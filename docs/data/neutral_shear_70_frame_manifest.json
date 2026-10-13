@@ -1,0 +1,108 @@
+{
+  "report_sha256": "0aa4277f03e5e00e523b28c861b1c81489ebb83c467d614584dd0fb2ed1b8335",
+  "frames": [
+    {
+      "original": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/independent-neutral-shear-native/review/report-frame/final-ARCHIVE_VERIFICATION.json",
+      "export": "docs/data/neutral_shear_70_frame_ARCHIVE_VERIFICATION.json",
+      "bytes": 302143,
+      "sha256": "0015da3c9d59b78d2ad28157c35cad00d4882ec5a02fd2f934260e19fc948fa7"
+    },
+    {
+      "original": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/independent-neutral-shear-native/review/report-frame/final-FINAL_REVIEW.md",
+      "export": "docs/data/neutral_shear_70_frame_FINAL_REVIEW.md",
+      "bytes": 13722,
+      "sha256": "814e332f97908a8de323c45768035601c5ac82dff680c58efbb33d1e19bcee4f"
+    },
+    {
+      "original": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/independent-neutral-shear-native/review/report-frame/final-FRAME_REVIEW.json",
+      "export": "docs/data/neutral_shear_70_frame_FRAME_REVIEW.json",
+      "bytes": 1870,
+      "sha256": "9fb4e43b4de3992233fb3ede3d2b25c2ae5f4b81450f19d33ec00466afcb6dd0"
+    },
+    {
+      "original": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/independent-neutral-shear-native/review/report-frame/final-FRAME_REVIEW.md",
+      "export": "docs/data/neutral_shear_70_frame_FRAME_REVIEW.md",
+      "bytes": 1101,
+      "sha256": "71b536bda23fba2cab4d4757a15a1610de460f32537be8065e6b5441682d0901"
+    },
+    {
+      "original": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/independent-neutral-shear-native/review/report-frame/final-HASH_RECEIPT.json",
+      "export": "docs/data/neutral_shear_70_frame_HASH_RECEIPT.json",
+      "bytes": 5286,
+      "sha256": "88a7483ee38ac5212c4a5e459dbde0356aba165e57e3c6db68b8225e1f2144e5"
+    },
+    {
+      "original": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/independent-neutral-shear-native/review/report-frame/final-INITIAL_RENDER_DEFECT.json",
+      "export": "docs/data/neutral_shear_70_frame_INITIAL_RENDER_DEFECT.json",
+      "bytes": 1056,
+      "sha256": "4915f1ac2dd44e2e9895d427bd7a4c802f8adc58dd8913afab711540690f0d28"
+    },
+    {
+      "original": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/independent-neutral-shear-native/review/report-frame/final-pandoc-ast.json",
+      "export": "docs/data/neutral_shear_70_frame_pandoc-ast.json",
+      "bytes": 29034,
+      "sha256": "9d9a84e94b8d43d2377e1321bea059d9095a23621fa203168128da1da0525812"
+    },
+    {
+      "original": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/independent-neutral-shear-native/review/report-frame/final-plain-math.lua",
+      "export": "docs/data/neutral_shear_70_frame_plain-math.lua.txt",
+      "bytes": 204,
+      "sha256": "d8e1104fa5984a5a1b993a907021320e4f2c1f4d8456264d2564468aa458c82a"
+    },
+    {
+      "original": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/independent-neutral-shear-native/review/report-frame/final-RENDER_VERIFICATION.json",
+      "export": "docs/data/neutral_shear_70_frame_RENDER_VERIFICATION.json",
+      "bytes": 1394,
+      "sha256": "5ad9351ad5b5c34015fc281d781f2ed6619fc091992f6494451835d5f5b5140c"
+    },
+    {
+      "original": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/independent-neutral-shear-native/review/report-frame/final-report-correctmath.html",
+      "export": "docs/data/neutral_shear_70_frame_report-correctmath.html",
+      "bytes": 16899,
+      "sha256": "66c4701bdeb425e26840a94740d70dae3c14de9f3c552172ed3878a488dbea3b"
+    },
+    {
+      "original": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/independent-neutral-shear-native/review/report-frame/final-report-verbatim.txt",
+      "export": "docs/data/neutral_shear_70_frame_report-verbatim.txt",
+      "bytes": 11096,
+      "sha256": "e012c985289e6a340a8386fdaf93e688b87f9e06ed16383f6c8849fec5be3272"
+    },
+    {
+      "original": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/independent-neutral-shear-native/review/report-frame/final-report-VERIFIED.html",
+      "export": "docs/data/neutral_shear_70_frame_report-VERIFIED.html",
+      "bytes": 17040,
+      "sha256": "5bcba40b9242af8a04672ba5e90f7d44e806370315ee11bd9504f302697819fd"
+    },
+    {
+      "original": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/independent-neutral-shear-native/review/report-frame/final-report-VERIFIED.txt",
+      "export": "docs/data/neutral_shear_70_frame_report-VERIFIED.txt",
+      "bytes": 11132,
+      "sha256": "922e528a9204ac8cf1ece39d2273667f986557679efb08c6af000ed6db61ecd6"
+    },
+    {
+      "original": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/independent-neutral-shear-native/review/report-frame/final-report.html",
+      "export": "docs/data/neutral_shear_70_frame_report.html",
+      "bytes": 16859,
+      "sha256": "3128f2d058a15aab49a48230415f8bbae65b0f10dd744559d3b5969c33a18bb3"
+    },
+    {
+      "original": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/independent-neutral-shear-native/review/report-frame/final-report.txt",
+      "export": "docs/data/neutral_shear_70_frame_report.txt",
+      "bytes": 11096,
+      "sha256": "e012c985289e6a340a8386fdaf93e688b87f9e06ed16383f6c8849fec5be3272"
+    },
+    {
+      "original": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/independent-neutral-shear-native/review/report-frame/final-verify-archive.py",
+      "export": "docs/data/neutral_shear_70_frame_verify-archive.py.txt",
+      "bytes": 7557,
+      "sha256": "2d1ec606526cfc65fae483de05bf866fe75f1abc3ed97ba33103f89d99d9d1e1"
+    },
+    {
+      "original": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/independent-neutral-shear-native/review/report-frame/final-verify-render.py",
+      "export": "docs/data/neutral_shear_70_frame_verify-render.py.txt",
+      "bytes": 4023,
+      "sha256": "30ceae20577aa435d3582c6f96ae88db4dd4396be29ee4b42d448b97251f81f1"
+    }
+  ],
+  "scope": "Separate final publication review, retains initial render defect and final correction; no new native/science/CI"
+}

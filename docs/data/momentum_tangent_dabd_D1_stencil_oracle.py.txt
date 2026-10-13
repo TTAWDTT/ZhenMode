@@ -1,0 +1,66 @@
+"""One-shot D1 scalar index oracle; deliberately no native/JAX/NumPy imports."""
+import math
+
+
+def ghost(row, j, role):
+    n = len(row)
+    if 0 <= j < n:
+        return row[j]
+    if role == 'edge':
+        return row[0 if j < 0 else n-1]
+    index = -j-1 if j < 0 else 2*n-j-1
+    return (-1 if role == 'odd' else 1)*row[index]
+
+
+def gradient(row, h, role):
+    return [(ghost(row, j+1, role)-ghost(row, j-1, role))/(2*h)
+            for j in range(len(row))]
+
+
+def binomial(row, role):
+    return [sum(w*ghost(row, j+d, role) for d,w in zip(range(-2,3),(1,4,6,4,1)))/16
+            for j in range(len(row))]
+
+
+def gradient4(row, h):
+    return [(8*(ghost(row,j+1,'even')-ghost(row,j-1,'even'))
+             -(ghost(row,j+2,'even')-ghost(row,j-2,'even')))/(12*h)
+            for j in range(len(row))]
+
+
+def normal_faces4(row):
+    n=len(row)
+    return [(7*(ghost(row,j,'odd')+ghost(row,j+1,'odd'))
+             -ghost(row,j-1,'odd')-ghost(row,j+2,'odd'))/12
+            if j < n-1 else 0*row[0] for j in range(n)]
+
+
+def divergence4(row,h):
+    faces=normal_faces4(row)
+    return [(faces[j]-(faces[j-1] if j else 0*row[0]))/h for j in range(len(row))]
+
+
+def derivative_z(column,z):
+    n=len(column)
+    return [(column[min(i+1,n-1)]-column[max(i-1,0)])
+            /(z[min(i+1,n-1)]-z[max(i-1,0)]) for i in range(n)]
+
+
+def raw_advection(u,v,w,z,h,u_role='edge'):
+    n,nz=len(u),len(z)
+    gyu=[gradient([u[j][i] for j in range(n)],h,u_role) for i in range(nz)]
+    gyv=[gradient([v[j][i] for j in range(n)],h,'odd') for i in range(nz)]
+    gzu=[derivative_z(row,z) for row in u]
+    gzv=[derivative_z(row,z) for row in v]
+    rawu=[[-v[j][i]*gyu[i][j]-w[j][i]*gzu[j][i] for i in range(nz)] for j in range(n)]
+    rawv=[[-v[j][i]*gyv[i][j]-w[j][i]*gzv[j][i] for i in range(nz)] for j in range(n)]
+    return rawu,rawv,gyu,gyv,gzu,gzv
+
+
+def filter_matrix(matrix,role):
+    columns=[binomial([row[i] for row in matrix],role) for i in range(len(matrix[0]))]
+    return [[columns[i][j] for i in range(len(columns))] for j in range(len(matrix))]
+
+
+def term_scale(matrix):
+    return max(1.,sum(abs(float(x)) for row in matrix for x in row))

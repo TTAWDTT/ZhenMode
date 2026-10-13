@@ -1,0 +1,102 @@
+"""Append-only bounded vertical-module development experiment."""
+import argparse
+import datetime
+import json
+import os
+import sys
+import time
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parent
+sys.path.insert(0, str(ROOT / 'installed'))
+from zhenmode.benchmarks.internal_wave import contract, development_contract, validate_contract
+from zhenmode.benchmarks.standing_wave import digest
+from zhenmode.evaluation.internal_wave import score as wave_score
+from zhenmode.evaluation.channel_dynamics import score as channel_score
+from zhenmode.evaluation.native_channel import load
+from zhenmode.execution.channel_dynamics import write_report
+from zhenmode.execution.native_channel import execute
+from zhenmode.execution.runs import write_json
+from zhenmode.provenance.sources import package_source_hashes, sha256_file
+import zhenmode
+
+
+def cases():
+    return [('previous-primary-main', development_contract(scheme='muscl_band_v3')),
+            ('candidate-primary-main', development_contract(scheme='material_point_v4', gradient='fourth_uniform_v1', tangent_filter='gram_fourth_v1', integral='cubic_uniform_v1', arithmetic='integrated_reference_v1')),
+            ('candidate-primary-half', development_contract(control='half', scheme='material_point_v4', gradient='fourth_uniform_v1', tangent_filter='gram_fourth_v1', integral='cubic_uniform_v1', arithmetic='integrated_reference_v1')),
+            ('candidate-horizontal-main', development_contract('horizontal-coarse', scheme='material_point_v4', gradient='fourth_uniform_v1', tangent_filter='gram_fourth_v1', integral='cubic_uniform_v1', arithmetic='integrated_reference_v1')),
+            ('candidate-horizontal-half', development_contract('horizontal-coarse', 'half', scheme='material_point_v4', gradient='fourth_uniform_v1', tangent_filter='gram_fourth_v1', integral='cubic_uniform_v1', arithmetic='integrated_reference_v1')),
+            ('candidate-vertical-main', development_contract('vertical-fine', scheme='material_point_v4', gradient='fourth_uniform_v1', tangent_filter='gram_fourth_v1', integral='cubic_uniform_v1', arithmetic='integrated_reference_v1')),
+            ('candidate-vertical-half', development_contract('vertical-fine', 'half', scheme='material_point_v4', gradient='fourth_uniform_v1', tangent_filter='gram_fourth_v1', integral='cubic_uniform_v1', arithmetic='integrated_reference_v1')),
+            ('candidate-null', development_contract(control='null', scheme='material_point_v4', gradient='fourth_uniform_v1', tangent_filter='gram_fourth_v1', integral='cubic_uniform_v1', arithmetic='integrated_reference_v1')),
+            ('default-null', contract('zhenmode', control='null')),
+            ('candidate-thermal', development_contract('coarse', 'main', scheme='material_point_v4', gradient='fourth_uniform_v1', tangent_filter='gram_fourth_v1', problem='thermal-wind', integral='cubic_uniform_v1', arithmetic='integrated_reference_v1'))]
+
+
+def read(path):
+    return json.loads(Path(path).read_text())
+
+
+def utc():
+    return datetime.datetime.now(datetime.timezone.utc).isoformat()
+
+
+def freeze():
+    write_json(ROOT / 'declared-plan.json', dict(declared_utc=utc(),
+               source_revision=read(ROOT / 'wheel-identity.json')['revision'],
+               package_source_sha256=package_source_hashes(zhenmode.__file__),
+               protocol_sha256=sha256_file(ROOT / 'protocol-before-runs.md'),
+               rows=[dict(index=i, name=name, contract=c, sha256=digest(c)) for i, (name, c) in enumerate(cases())],
+               gate='original fixed thresholds; default replay, null, six development waves, thermal regression; no global qualification'), create=True)
+
+
+def run(indices):
+    plan = read(ROOT / 'declared-plan.json')
+    assert package_source_hashes(zhenmode.__file__) == plan['package_source_sha256']
+    journal = ROOT / 'row-journal.jsonl'
+    previous = [json.loads(s) for s in journal.read_text().splitlines()] if journal.exists() else []
+    assert not {r['index'] for r in previous}.intersection(indices)
+    for index in indices:
+        name, c = cases()[index]
+        assert digest(c) == plan['rows'][index]['sha256']
+        folder = ROOT / f'{index:02d}-{name}'
+        row = dict(index=index, name=name, status='failed', started_utc=utc(), directory=folder.name)
+        start = time.monotonic()
+        try:
+            evaluator = channel_score if c['benchmark'] == 'thermal-wind' else wave_score
+            receipt = execute(c, folder, evaluator=evaluator, definition_validator=validate_contract,
+                              reporter=write_report, scope='vertical tracer development; formerly independent wave is now development',
+                              limitations=['same fixed physical definitions and thresholds; no retuning of other options',
+                                           'linear reference; no global SOTA or full climate qualification'],
+                              models=('zhenmode',), source_revision=plan['source_revision'])
+            row.update(status='completed', report=receipt['models']['zhenmode'],
+                       resources=read(folder / 'zhenmode/resources.json'))
+            if name == 'previous-primary-main':
+                old = ROOT.parent.parent / 'vertical-accuracy-round2-20261012/band-stage/01-candidate-primary-main/zhenmode/output.npz'
+                import numpy as np
+                before, after = load(old), load(folder / 'zhenmode/output.npz')
+                row['previous_replay_arrays_equal'] = all(np.array_equal(before[q], after[q]) for q in before if q != 'metadata')
+                if not row['previous_replay_arrays_equal']:
+                    raise ValueError('default numerical replay differs; retain result and investigate before candidate expansion')
+        except BaseException as error:
+            row['status'] = 'failed'
+            row['error'] = type(error).__name__ + ': ' + str(error)
+            raise
+        finally:
+            row.update(finished_utc=utc(), elapsed_s=time.monotonic() - start)
+            with journal.open('a') as stream:
+                stream.write(json.dumps(row, allow_nan=False) + '\n')
+            print('ROW', json.dumps(row, allow_nan=False), flush=True)
+    assert package_source_hashes(zhenmode.__file__) == plan['package_source_sha256']
+
+
+p = argparse.ArgumentParser()
+p.add_argument('command', choices=('freeze', 'run'))
+p.add_argument('--indices', type=int, nargs='+')
+args = p.parse_args()
+os.sched_setaffinity(0, {0})
+if args.command == 'freeze':
+    freeze()
+else:
+    run(args.indices)

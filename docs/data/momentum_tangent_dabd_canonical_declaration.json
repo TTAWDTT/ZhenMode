@@ -1,0 +1,22 @@
+{
+  "phase": "readonly finite new70/dab primarydata versus REUSED frozen canonical secondorder64reference",
+  "inputs": [
+    "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/material-point-gradient-v1/01-candidate-primary-main/zhenmode/output.npz",
+    "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/native-attempt02/01-candidate-primary-main/zhenmode/output.npz",
+    "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/eta-second-order-reference/reference_arrays.npz",
+    "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/eta-second-order-reference/result.json",
+    "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/material-point-gradient-v1/01-candidate-primary-main/contract.json"
+  ],
+  "reference": "original v2 fixedparameters/no refit/n16n32n64convergence/n16 independent SciPyexpm audited; reuseE64/theta64 on exact primary16nodes andtime, no resimulate or new solve",
+  "objects": "eta and T RMS originalfirstlinearoracle and residual after samefixed canonicalprediction only; measured alignment does not change score or nativeFAIL",
+  "controls": "fixed n8cos2/t[0,1,2] constant RMS1/sqrt2/zero0 knownanswers and reversedprediction residual2RMS caught before data; exacttime/grid/physicalcontract matching",
+  "resources": {
+    "cpu": 1,
+    "wall_s": 180,
+    "memory_mib": 4096
+  },
+  "timing": "coarse hash+NPZ headerread timing-only no numericaloraclecomparison, then actualtime finite2rows once",
+  "lineage": "ROOT authored new reader, same stored native/shared firstlinearoracle/canonical model; notindependent holdout/wholephysics/refittedacceptance. Need non-author outputaudit before published conclusion.",
+  "unchanged": "globalSOTAOPEN; latest70rankingbest; dabnative strictscoreFAIL no2..9 expansion; no source/package edits",
+  "created_at": "2026-10-12T23:05:57.826Z"
+}

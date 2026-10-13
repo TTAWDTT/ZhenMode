@@ -1,0 +1,12 @@
+{
+  "scope": "Attempt01 post hoc independent source-interface and raw-array readback only; no JAX solver, no native, no production edits, no diagnostic rerun",
+  "status_before_readback": "Known scalar-flux owner bridge mismatch found by source inspection; production interpretation rejected regardless of numeric readback",
+  "lineage": "Diagnostic report already read; post hoc evaluator therefore is not blind qualification. Shares stored physics/parameters, arrays, package source and NumPy arithmetic; does not import root diagnostic or evaluation functions.",
+  "tool_choice": "BootLoops tools README and emitall GUIDE read: emitall re-emits receipt fields and does not derive NPZ parity metrics, so this problem-specific one-shot raw-array audit uses NumPy plus stdlib Fraction/hashlib; no toolkit/domain engine.",
+  "controls_before_npz": "Exact synthetic odd/even pairs O=2,E=3, zero/null exact; wrong-sign odd must fail at atol1e-15; exact Fraction five-point derivative moments degrees0..4 at both left points, middle, and reflected right points; positive-depth derivative sign",
+  "finite_scope": "133 installed-source hashes; 2 grids x 2 variants x 4 fields x 4 amplitude/wave raw arrays; stored parity and alpha/feasible; no new solver values",
+  "comparison_tolerance": "Reported RMS relative1e-12 absolute1e-26; stored parity absolute1e-25; exact identity hashes; all alpha1 feasibleTrue; separate saved-array consistency from science acceptance",
+  "resources": {"cpu":1,"wall_s":60,"address_space_mib":1024,"threads":1},
+  "timing": "Unknown measuring now: metadata+fixture pilot in same bounded process before NPZ; require pilot<15s, then fixed 2-grid raw readback once; actual elapsed and peakRSS recorded",
+  "scientific_grade": "OPEN; no heldout precision escalation/fulltime/native/stability or independent physics claim"
+}

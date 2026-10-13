@@ -1,0 +1,13 @@
+ROW {"index": 0, "name": "previous-primary-main", "status": "failed", "started_utc": "2026-10-12T22:52:25.981435+00:00", "directory": "00-previous-primary-main", "error": "RuntimeError: zhenmode worker failed (1); see /mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/00-previous-primary-main/zhenmode/run.log", "finished_utc": "2026-10-12T22:52:27.902618+00:00", "elapsed_s": 1.921164129999994}
+Traceback (most recent call last):
+  File "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/run_iteration.py", line 102, in <module>
+    run(args.indices)
+  File "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/run_iteration.py", line 68, in run
+    receipt = execute(c, folder, evaluator=evaluator, definition_validator=validate_contract,
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/installed/zhenmode/execution/native_channel.py", line 231, in execute
+    resources = launch(root / "configuration.json", model, directory)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/installed/zhenmode/execution/native_channel.py", line 163, in launch
+    raise RuntimeError(
+RuntimeError: zhenmode worker failed (1); see /mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/00-previous-primary-main/zhenmode/run.log

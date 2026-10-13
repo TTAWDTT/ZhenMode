@@ -1,0 +1,7 @@
+Traceback (most recent call last):
+  File "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-wall-filter-proof-70/spectral/exact_controls.py", line 89, in <module>
+    check('Ft-not-TVD',TV(t1)>TV(x1),[TV(x1),TV(t1)])
+  File "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-wall-filter-proof-70/spectral/exact_controls.py", line 23, in check
+    assert predicate, name
+           ^^^^^^^^^
+AssertionError: Ft-not-TVD

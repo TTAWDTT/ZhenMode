@@ -1,0 +1,208 @@
+{
+  "status": "PASS_FINAL_EXACT_REPORT_FRAME_RECORD_REVIEW",
+  "reviewer": "Lady / neutral_paired_report_frame",
+  "fresh_non_author_context": true,
+  "report_path": "D:\\CodexWorktrees\\thermal-full-scan\\ocean-solver\\docs\\neutral_shear_paired_be647_results_zh.md",
+  "report_sha256": "7d0f3ee390ec7fc87d0272c62de4231fc5067524d7326cc3012b0b062089b3a9",
+  "render_path": "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\publication-preparation\\report-render04.html",
+  "render_sha256": "1a8ca635567fdb59122d214e02f82e393aa351b8dc0619c52db489745e08ba0f",
+  "prose_passes_before_final": 2,
+  "final_full_cold_read": true,
+  "final_abstract_cold_read": true,
+  "audience_groups": 6,
+  "audience_axis_rows": 12,
+  "unresolved_findings": 0,
+  "prior_findings": [
+    {
+      "id": "english_F1",
+      "severity": "MEDIUM",
+      "status": "resolved_in_final_Chinese"
+    },
+    {
+      "id": "english_F2",
+      "severity": "MEDIUM",
+      "status": "resolved_in_final_Chinese"
+    },
+    {
+      "id": "english_F3",
+      "severity": "MEDIUM",
+      "status": "resolved_in_final_Chinese"
+    },
+    {
+      "id": "english_F4",
+      "severity": "MEDIUM",
+      "status": "resolved_in_final_Chinese"
+    },
+    {
+      "id": "Chinese_F5",
+      "severity": "LOW",
+      "status": "root_fixed_reviewer_verified"
+    },
+    {
+      "id": "Chinese_F6",
+      "severity": "LOW",
+      "status": "root_fixed_reviewer_verified"
+    },
+    {
+      "id": "Chinese_F7",
+      "severity": "LOW",
+      "status": "root_fixed_reviewer_verified"
+    }
+  ],
+  "inherited_checked_number_count": 185,
+  "inherited_number_check_report_sha256": "006d7eaace99beea221973851347466f2f9f0de9b5e50d2af1229bb7e2f1b8f4",
+  "inherited_number_check_json_sha256": "8830245c3e7a0913282b6ad9bbf1fa18d3b6f4691d88601dbc1e40c50c1ef757",
+  "scientific_number_body_unchanged_since_that_check": true,
+  "changed_lines_since_pre_restore": [
+    9,
+    242,
+    244
+  ],
+  "final_links": [
+    {
+      "relative_target": "data/neutral_shear_paired_be647/records/neutral-shear-paired-be647-attempt02/declared-plan.json",
+      "exists": true,
+      "sha256": "e8fa4dcd323f464777e441f7aa6b14fdf2b8a4e2150dc883065f66254688a165",
+      "equals_original_saved_sha": true
+    },
+    {
+      "relative_target": "data/neutral_shear_paired_be647/records/neutral-shear-paired-be647-attempt02/review/three-grid-verdict01.json",
+      "exists": true,
+      "sha256": "d0154595eb0ed9217bc913e001d2c58fa3a23622910f299d6546e6437649536a",
+      "equals_original_saved_sha": true
+    },
+    {
+      "relative_target": "data/neutral_shear_paired_be647/records/neutral-shear-paired-be647-attempt02/review/stage-verdict01.json",
+      "exists": true,
+      "sha256": "5c575ce220b427c631e75c412b184e91c5c63d1785c844836e49677db6a5b767",
+      "equals_original_saved_sha": true
+    },
+    {
+      "relative_target": "data/neutral_shear_paired_be647/records/independent-neutral-shear-native/00-main/science-verdict01.json",
+      "exists": true,
+      "sha256": "147163432215ed57ab88037b1974f09c65dbf859a2f2d43ec3cb436c737da837",
+      "equals_original_saved_sha": true
+    },
+    {
+      "relative_target": "data/neutral_shear_paired_be647/records/independent-neutral-shear-native/01-main/science-verdict01.json",
+      "exists": true,
+      "sha256": "17949d807a332500e848e2040bb38bc906954a78cb32878f4966e8bb58ebe89d",
+      "equals_original_saved_sha": true
+    },
+    {
+      "relative_target": "data/neutral_shear_paired_be647/records/independent-neutral-shear-native/02-main/science-verdict01.json",
+      "exists": true,
+      "sha256": "1c5e1a10d2b2ee18f49e8a170fd1ca6b68448211fa7ee70300e750399fd30cbe",
+      "equals_original_saved_sha": true
+    },
+    {
+      "relative_target": "data/neutral_shear_paired_be647/records/neutral-shear-paired-be647-attempt02/00-main/science-verdict01.json",
+      "exists": true,
+      "sha256": "abec6f2aa16308cd012e1a64686241ae824670fe0bef5cad2a1db3d7d15027bb",
+      "equals_original_saved_sha": true
+    },
+    {
+      "relative_target": "data/neutral_shear_paired_be647/records/neutral-shear-paired-be647-attempt02/01-main/science-verdict01.json",
+      "exists": true,
+      "sha256": "bb4d6ffcf6347a42486e798b9960702827c10fcc752edf1c5223adeef7b782d8",
+      "equals_original_saved_sha": true
+    },
+    {
+      "relative_target": "data/neutral_shear_paired_be647/records/neutral-shear-paired-be647-attempt02/02-main/science-verdict01.json",
+      "exists": true,
+      "sha256": "e28264427788a7bcfb5515e882cbe2941e36c29b27c3be7573b4b9bdf6deacdb",
+      "equals_original_saved_sha": true
+    },
+    {
+      "relative_target": "data/neutral_shear_paired_be647/records/neutral-shear-paired-be647-attempt02/03-zero-spice/science-verdict01.json",
+      "exists": true,
+      "sha256": "114128da2d532a004c8739709c47156b6b2963006293ab64a65be6c82695ec4a",
+      "equals_original_saved_sha": true
+    },
+    {
+      "relative_target": "data/neutral_shear_paired_be647/records/neutral-shear-paired-be647-attempt02/04-zero-shear-null/science-verdict01.json",
+      "exists": true,
+      "sha256": "08d6255d777b1808fd14b85180fb1c61c1807b45bdca2383e65a927d75fa9835",
+      "equals_original_saved_sha": true
+    },
+    {
+      "relative_target": "data/neutral_shear_paired_be647/records/neutral-shear-paired-be647-attempt02/review/strict-coarse-comparison01.json",
+      "exists": true,
+      "sha256": "6fe28229f57788384eaa1ec2571aeefbb9661c2b586ab42e3529580a5ef693de",
+      "equals_original_saved_sha": true
+    },
+    {
+      "relative_target": "data/neutral_shear_paired_be647/records/neutral-shear-paired-be647-attempt02/case2-measured-plan01.json",
+      "exists": true,
+      "sha256": "a2f44f1e02b791df01a74413358b6885c7fc83352dbc41bdbeb6573e51194f48",
+      "equals_original_saved_sha": true
+    },
+    {
+      "relative_target": "data/neutral_shear_paired_be647/records/neutral-shear-paired-be647-attempt02/review/analytic01-binding.json",
+      "exists": true,
+      "sha256": "bb64108e4ecab249abed7acabc5ae793dae4dfa6022f352e99dc0bee25ad0a07",
+      "equals_original_saved_sha": true
+    },
+    {
+      "relative_target": "data/neutral_shear_paired_be647/records/neutral-shear-paired-be647-attempt02/review/PILOT_TERMINAL_REVIEW01.json",
+      "exists": true,
+      "sha256": "c0d5951bc49358540c1ac956f7cca66bf9570badaedcb76e2896eb1554a5af86",
+      "equals_original_saved_sha": true
+    },
+    {
+      "relative_target": "data/neutral_shear_paired_be647/records/neutral-shear-paired-be647-attempt02/review/CASE1_TERMINAL_REVIEW01.json",
+      "exists": true,
+      "sha256": "427847be63658c62306b7f0662c95c32da7c2859a3c7833ccb878b8844af494e",
+      "equals_original_saved_sha": true
+    },
+    {
+      "relative_target": "data/neutral_shear_paired_be647/records/neutral-shear-paired-be647-attempt02/review/CASE2_TERMINAL_REVIEW01.json",
+      "exists": true,
+      "sha256": "39d48111fba8ce36b247e9ae66aab6fa477aeb61a0539eff340b6dad07182756",
+      "equals_original_saved_sha": true
+    },
+    {
+      "relative_target": "data/neutral_shear_paired_be647/records/neutral-shear-paired-be647-attempt02/review/CONTROLS_SUMMARY_TERMINAL_REVIEW01.json",
+      "exists": true,
+      "sha256": "b1c48c51ca81b8865120b444062918d75b6fc64893fd6a2e08fc3f601006eac5",
+      "equals_original_saved_sha": true
+    }
+  ],
+  "final_links_count": 18,
+  "restore_source_records": [
+    {
+      "path": "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\publication-preparation\\INDEPENDENT_RESTORE_REVIEW01.json",
+      "sha256": "c67f91869e3fd5cac2fc047b7aa4da857c6563610b12fc3c11d7a4a62c5e2205"
+    },
+    {
+      "path": "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\publication-preparation\\independent-restore01-resources.json",
+      "sha256": "de6598c327c7c0a16842c2539c70c2dcad2ddf8a15916a4c8c95c23d0baf8cc8"
+    },
+    {
+      "path": "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\publication-preparation\\INDEPENDENT_RESTORE_VERDICT01.json",
+      "sha256": "10a09a0a64849524de545b42c8646264cbf6e95685c3853b2d3dee90404d1ffb"
+    }
+  ],
+  "restore_scope": "Independent byte preservation for exact selected841 originals only; no new numerical/scientific validity claim",
+  "public_packet": {
+    "manifest_sha256": "476ddf2848d6a6ab341d6b7f40223f287a3ad19f3a1ba4533c9fe96bcca48796",
+    "selection_sha256": "57c8517de678ae4921490af23fa76464f0165a574a83127d601b38065181b603",
+    "reader_sha256": "37c6dac738db527495f389708dc906de5a3d47a71d653fe5b82c87f384e9b4ac",
+    "part_files_present": 33,
+    "part_bytes_not_hashed_by_this_review": true
+  },
+  "mathml_count": 6,
+  "display_mathml_count": 4,
+  "npz_decoded": 0,
+  "model_calls": 0,
+  "oracle_calls": 0,
+  "observer_calls": 0,
+  "physics_metrics_computed": 0,
+  "ratios_recomputed": 0,
+  "forecast_recomputed": false,
+  "source_ci_qualification_repeated": false,
+  "archive_restore_repeated": false,
+  "author_report_modified_by_reviewer": false,
+  "original_scientific_barriers_modified": false,
+  "scope": "Exact report and actual MathML render, record transcription, links, frame/prose and saved independent-byte-restore claims only. No general PDE/order/holdout/moving-surface/ranking qualification. Verdict expires for changes to bound report or render bytes."
+}

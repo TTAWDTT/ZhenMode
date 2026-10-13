@@ -1,0 +1,4 @@
+AUTHOR-CONTROLS-PASS n=4 checks=38/38
+T1=[-1/8, 9/8, 33/8, 71/8]; T2=[5/8, 9/8, 9/8, 5/8]
+PLANTS CAUGHT: Ft norm2=8>4, quadratic=-4; Fn norm2=36>4
+TIMING wall_seconds=1.352844 cpu_seconds=1.179166 sampled_peak_rss_bytes=71766016 samples=58

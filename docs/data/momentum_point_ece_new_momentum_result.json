@@ -1,0 +1,247 @@
+{
+  "scope": "NEW independently differentiated actual production point-momentum owner instantaneous RHS; no native trajectory, energy, pressure or fulltime qualification",
+  "verdict": "PASS",
+  "rows": [
+    {
+      "ny": 36,
+      "nz": 19,
+      "components": [
+        {
+          "name": "u",
+          "relative_weighted_L1": 0.00341402792635394,
+          "error_weighted_L1": 6.924140850960426e-09,
+          "oracle_weighted_L1": 2.028144174659743e-06,
+          "reversed_w_max_abs_defect": 3.840758242605978e-10,
+          "full_owner_minus_advection_max": 5.169878828456423e-26,
+          "zero_candidate_normalized_L1": 1.0,
+          "zero_candidate_rejected": true
+        },
+        {
+          "name": "v",
+          "relative_weighted_L1": 0.01575948603363871,
+          "error_weighted_L1": 5.94783534284146e-08,
+          "oracle_weighted_L1": 3.7741302794683616e-06,
+          "reversed_w_max_abs_defect": 4.225824168514746e-10,
+          "full_owner_minus_advection_max": 0.0,
+          "zero_candidate_normalized_L1": 1.0,
+          "zero_candidate_rejected": true
+        }
+      ],
+      "constant_u_tendency_max": 0.0,
+      "resolved_momentum_scheme": "point_primitive_v1",
+      "physical_top_exact": true,
+      "physical_bed_exact": true,
+      "default_expression_exact": true,
+      "point_branch_differs_from_dual": true,
+      "actual_capacity_exact": true,
+      "closed_north_exact": true,
+      "top_mass_max_abs": 2.7376378415525156e-08,
+      "point_minus_dual_max_abs": 9.855496229582883e-07,
+      "actual_options": {
+        "column_geometry": "nodal_dual_v1",
+        "conservative_kv": true,
+        "localize_conv": true,
+        "polar_cap_rows": 0,
+        "polar_cap_taper": 0,
+        "external_mode_scheme": "symmetric",
+        "meridional_boundary_scheme": "closed_faces",
+        "pressure_continuity_scheme": "centered_fourth",
+        "tracer_transport_scheme": "centered_second",
+        "density_rotation_scheme": "joint_shear",
+        "hydrostatic_surface_scheme": "linear_density",
+        "hydrostatic_integral_scheme": "cubic_uniform_v1",
+        "column_mean_scheme": "nodal_capacity",
+        "vertical_tracer_scheme": "material_point_v4",
+        "tracer_flux_arithmetic": "integrated_reference_v1",
+        "momentum_vertical_velocity_scheme": "point_primitive_v1"
+      },
+      "f_exact_zero": true,
+      "physics_coefficients": {
+        "nu_h": 0.0,
+        "nu_v": 0.0,
+        "nu_bi": 0.0,
+        "kappa_h": 0.0,
+        "kappa_v": 0.0,
+        "kappa_bi": 0.0,
+        "kappa_conv": 0.0,
+        "kappa_gm": 0.0,
+        "kappa_redi": 0.0,
+        "r_bot": 0.0,
+        "cd": 0.0
+      },
+      "controls_pass": true,
+      "elapsed_s": 3.180960368000001
+    },
+    {
+      "ny": 72,
+      "nz": 37,
+      "components": [
+        {
+          "name": "u",
+          "relative_weighted_L1": 0.0008411337930545741,
+          "error_weighted_L1": 3.420256627256885e-09,
+          "oracle_weighted_L1": 4.066245650214856e-06,
+          "reversed_w_max_abs_defect": 3.8617035548233656e-10,
+          "full_owner_minus_advection_max": 5.169878828456423e-26,
+          "zero_candidate_normalized_L1": 1.0,
+          "zero_candidate_rejected": true
+        },
+        {
+          "name": "v",
+          "relative_weighted_L1": 0.003959729229393033,
+          "error_weighted_L1": 2.9817518852177125e-08,
+          "oracle_weighted_L1": 7.530191365319115e-06,
+          "reversed_w_max_abs_defect": 4.2584049841269407e-10,
+          "full_owner_minus_advection_max": 0.0,
+          "zero_candidate_normalized_L1": 1.0,
+          "zero_candidate_rejected": true
+        }
+      ],
+      "constant_u_tendency_max": 0.0,
+      "resolved_momentum_scheme": "point_primitive_v1",
+      "physical_top_exact": true,
+      "physical_bed_exact": true,
+      "default_expression_exact": true,
+      "point_branch_differs_from_dual": true,
+      "actual_capacity_exact": true,
+      "closed_north_exact": true,
+      "top_mass_max_abs": 6.848997011348388e-09,
+      "point_minus_dual_max_abs": 4.931277848160775e-07,
+      "actual_options": {
+        "column_geometry": "nodal_dual_v1",
+        "conservative_kv": true,
+        "localize_conv": true,
+        "polar_cap_rows": 0,
+        "polar_cap_taper": 0,
+        "external_mode_scheme": "symmetric",
+        "meridional_boundary_scheme": "closed_faces",
+        "pressure_continuity_scheme": "centered_fourth",
+        "tracer_transport_scheme": "centered_second",
+        "density_rotation_scheme": "joint_shear",
+        "hydrostatic_surface_scheme": "linear_density",
+        "hydrostatic_integral_scheme": "cubic_uniform_v1",
+        "column_mean_scheme": "nodal_capacity",
+        "vertical_tracer_scheme": "material_point_v4",
+        "tracer_flux_arithmetic": "integrated_reference_v1",
+        "momentum_vertical_velocity_scheme": "point_primitive_v1"
+      },
+      "f_exact_zero": true,
+      "physics_coefficients": {
+        "nu_h": 0.0,
+        "nu_v": 0.0,
+        "nu_bi": 0.0,
+        "kappa_h": 0.0,
+        "kappa_v": 0.0,
+        "kappa_bi": 0.0,
+        "kappa_conv": 0.0,
+        "kappa_gm": 0.0,
+        "kappa_redi": 0.0,
+        "r_bot": 0.0,
+        "cd": 0.0
+      },
+      "controls_pass": true,
+      "elapsed_s": 2.294986023000007
+    },
+    {
+      "ny": 144,
+      "nz": 73,
+      "components": [
+        {
+          "name": "u",
+          "relative_weighted_L1": 0.00020871013377251943,
+          "error_weighted_L1": 1.6983725790501095e-09,
+          "oracle_weighted_L1": 8.137470607446526e-06,
+          "reversed_w_max_abs_defect": 3.863426877901405e-10,
+          "full_owner_minus_advection_max": 5.169878828456423e-26,
+          "zero_candidate_normalized_L1": 1.0,
+          "zero_candidate_rejected": true
+        },
+        {
+          "name": "v",
+          "relative_weighted_L1": 0.0009911776654407006,
+          "error_weighted_L1": 1.4918567928023303e-08,
+          "oracle_weighted_L1": 1.505135602645986e-05,
+          "reversed_w_max_abs_defect": 4.272064580488612e-10,
+          "full_owner_minus_advection_max": 0.0,
+          "zero_candidate_normalized_L1": 1.0,
+          "zero_candidate_rejected": true
+        }
+      ],
+      "constant_u_tendency_max": 0.0,
+      "resolved_momentum_scheme": "point_primitive_v1",
+      "physical_top_exact": true,
+      "physical_bed_exact": true,
+      "default_expression_exact": true,
+      "point_branch_differs_from_dual": true,
+      "actual_capacity_exact": true,
+      "closed_north_exact": true,
+      "top_mass_max_abs": 1.7125551182100493e-09,
+      "point_minus_dual_max_abs": 2.466079370204715e-07,
+      "actual_options": {
+        "column_geometry": "nodal_dual_v1",
+        "conservative_kv": true,
+        "localize_conv": true,
+        "polar_cap_rows": 0,
+        "polar_cap_taper": 0,
+        "external_mode_scheme": "symmetric",
+        "meridional_boundary_scheme": "closed_faces",
+        "pressure_continuity_scheme": "centered_fourth",
+        "tracer_transport_scheme": "centered_second",
+        "density_rotation_scheme": "joint_shear",
+        "hydrostatic_surface_scheme": "linear_density",
+        "hydrostatic_integral_scheme": "cubic_uniform_v1",
+        "column_mean_scheme": "nodal_capacity",
+        "vertical_tracer_scheme": "material_point_v4",
+        "tracer_flux_arithmetic": "integrated_reference_v1",
+        "momentum_vertical_velocity_scheme": "point_primitive_v1"
+      },
+      "f_exact_zero": true,
+      "physics_coefficients": {
+        "nu_h": 0.0,
+        "nu_v": 0.0,
+        "nu_bi": 0.0,
+        "kappa_h": 0.0,
+        "kappa_v": 0.0,
+        "kappa_bi": 0.0,
+        "kappa_conv": 0.0,
+        "kappa_gm": 0.0,
+        "kappa_redi": 0.0,
+        "r_bot": 0.0,
+        "cd": 0.0
+      },
+      "controls_pass": true,
+      "elapsed_s": 2.4867530159999944
+    }
+  ],
+  "declaration_sha256": "9fbb97a1af8347473255b6b211b1c6d965943dff160d24819c1fbc440f7e0f5f",
+  "evaluator_sha256": "aa478ebef899d6def340db7efd9eed337c758f5d0387ba4225d499b3cfcc8c3c",
+  "identity_before": {
+    "commit": "ece37c7b7ad383314e4dcfd982641d9ca541e1c3",
+    "modules": 133,
+    "path": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-point-v1/installed",
+    "manifest_sha256": "a89cfb5f8f159a91108160549e1786eb35a33775563d1a5599a3c88498481d20",
+    "wheel_sha256": "c2a2c360502e8220d248acad108f6e9da5575c11c1bfcfcc5c5f1acd107fa04a"
+  },
+  "identity_after": {
+    "commit": "ece37c7b7ad383314e4dcfd982641d9ca541e1c3",
+    "modules": 133,
+    "path": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-point-v1/installed",
+    "manifest_sha256": "a89cfb5f8f159a91108160549e1786eb35a33775563d1a5599a3c88498481d20",
+    "wheel_sha256": "c2a2c360502e8220d248acad108f6e9da5575c11c1bfcfcc5c5f1acd107fa04a"
+  },
+  "elapsed_s": 8.926381979000013,
+  "lineage": "Separate reviewer manually differentiated continuous streamfunction/u and oracle, actual production momentum/continuity/pressure paths. Shared PDE, geometry, JAX/compiler/horizontalfilter weaken independence; polynomial diagnostics may share discrete face coefficients separately. No old certificate is newblind proof.",
+  "native_integrations": 0,
+  "model_or_threshold_changes_after_results": false,
+  "ranking_gate": "Independent from failed ece native primary ranking gate, which remains FAIL/OPEN",
+  "refinement_ratios": {
+    "u": [
+      4.058840525186738,
+      4.030153102059509
+    ],
+    "v": [
+      3.9799403243676847,
+      3.9949742285934633
+    ]
+  }
+}

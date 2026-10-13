@@ -1,0 +1,99 @@
+"""Restore selected original bytes only; no NumPy, model or scientific imports."""
+import argparse
+import hashlib
+import json
+from pathlib import Path, PurePosixPath
+import stat
+import zipfile
+
+PREFIX = 'neutral_shear_paired_be647_attempt02'
+ROOTS = {'neutral-shear-paired-be647-attempt02', 'neutral-shear-paired-be647',
+         'horizontal-paired-product-v1', 'independent-neutral-shear-native'}
+
+
+def require(ok, message):
+    if not ok:
+        raise ValueError(message)
+
+
+def safe(name):
+    require(isinstance(name, str) and '\\' not in name and ':' not in name, 'unsafe member syntax')
+    path = PurePosixPath(name)
+    require(not path.is_absolute() and all(p not in ('', '.', '..') for p in name.split('/')),
+            'unsafe member path')
+    require(path.parts[0] in ROOTS, 'unexpected member root')
+    return path
+
+
+def main():
+    parser = argparse.ArgumentParser(description='Original bytes only; no model or scoring calls')
+    parser.add_argument('--output', type=Path, required=True)
+    parser.add_argument('--manifest', type=Path,
+                        default=Path(__file__).with_name(PREFIX + '_manifest.json'))
+    args = parser.parse_args()
+    output = args.output.resolve()
+    joined = output.with_name(output.name + '-joined.zip')
+    require(not output.exists() and not joined.exists(), 'fresh output and joined archive required; no retry')
+    manifest_bytes = args.manifest.read_bytes()
+    m = json.loads(manifest_bytes.decode('utf-8-sig'))
+    require(m['compression'] == 'ZIP_STORED' and m['part_bytes'] == 20 * 1024 * 1024,
+            'unexpected archive method')
+    require(m['source_revision'] == 'be647d70fc7394f3014dca8bc776e207d4f02ae3', 'wrong source declaration')
+    items = {row['member']: row for row in m['files']}
+    require(len(items) == len(m['files']) == m['files_count'], 'duplicate/count mismatch')
+    require(len({name.casefold() for name in items}) == len(items), 'case collision')
+    for name, row in items.items():
+        safe(name)
+        require(type(row['bytes']) is int and row['bytes'] >= 0, 'invalid member byte count')
+    require(m['parts'], 'empty part list')
+    output.parent.mkdir(parents=True, exist_ok=True)
+    whole, total = hashlib.sha256(), 0
+    with joined.open('xb') as target:
+        for index, part in enumerate(m['parts'], 1):
+            require(part['name'] == f'{PREFIX}_archive.part{index:03d}', 'unsafe/nonsequential part')
+            require(0 < part['bytes'] <= m['part_bytes'], 'part size')
+            if index != len(m['parts']):
+                require(part['bytes'] == m['part_bytes'], 'nonfinal short part')
+            digest, size = hashlib.sha256(), 0
+            with (args.manifest.parent / part['name']).open('rb') as source:
+                for block in iter(lambda: source.read(1024 * 1024), b''):
+                    digest.update(block)
+                    whole.update(block)
+                    size += len(block)
+                    total += len(block)
+                    target.write(block)
+            require(size == part['bytes'] and digest.hexdigest() == part['sha256'], 'part byte mismatch')
+    require(total == m['archive_bytes'] and whole.hexdigest() == m['archive_sha256'], 'whole archive mismatch')
+    with zipfile.ZipFile(joined) as archive:
+        entries = archive.infolist()
+        require(len(entries) == len(items) and {i.filename for i in entries} == items.keys(), 'exact ZIP inventory mismatch')
+        for entry in entries:
+            require(not entry.is_dir() and not stat.S_ISLNK(entry.external_attr >> 16), 'nonregular ZIP member')
+            require(entry.compress_type == zipfile.ZIP_STORED and not entry.flag_bits & 1, 'compressed/encrypted member')
+            require(entry.file_size == items[entry.filename]['bytes'], 'ZIP size differs from selected source')
+        output.mkdir()
+        for name, row in items.items():
+            path = output.joinpath(*safe(name).parts)
+            require(path.resolve().is_relative_to(output), 'escaped output')
+            path.parent.mkdir(parents=True, exist_ok=True)
+            digest, size = hashlib.sha256(), 0
+            with archive.open(name) as source, path.open('xb') as target:
+                for block in iter(lambda: source.read(1024 * 1024), b''):
+                    digest.update(block)
+                    size += len(block)
+                    target.write(block)
+            require(size == row['bytes'] and digest.hexdigest() == row['sha256'], 'restored original byte mismatch: ' + name)
+    receipt = {'status': 'RESTORED_ALL_SELECTED_ORIGINAL_BYTES', 'files': len(items),
+               'parts': len(m['parts']), 'archive_sha256': whole.hexdigest(),
+               'manifest_sha256': hashlib.sha256(manifest_bytes).hexdigest(),
+               'joined_archive_retained': str(joined), 'model_calls': 0,
+               'numerical_decoding': False, 'scientific_recalculation': False,
+               'scope': 'Byte restoration only; independent source-vs-restored verification belongs to a separate reviewer.'}
+    with (output / 'RESTORE_RECEIPT.json').open('x', encoding='utf-8') as stream:
+        json.dump(receipt, stream, indent=2)
+        stream.write('\n')
+    print(json.dumps(receipt))
+
+
+if __name__ == '__main__':
+    main()

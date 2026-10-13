@@ -1,0 +1,50 @@
+"""One-shot high precision D1 identities, no native inputs or old result reads."""
+import hashlib,json,pathlib,sys,time
+import mpmath as mp
+import stencil_oracle as oracle
+
+
+def generate(dps):
+    records=[]
+    with mp.workdps(dps):
+        for n in (8,16):
+            h=mp.mpf(1)/n
+            s=[mp.sin(mp.pi*(mp.mpf(j)+mp.mpf(1)/2)/n) for j in range(n)]
+            q=[mp.sin(2*mp.pi*(mp.mpf(j)+mp.mpf(1)/2)/n) for j in range(n)]
+            c=[mp.cos(mp.pi*(mp.mpf(j)+mp.mpf(1)/2)/n) for j in range(n)]
+            de,do=oracle.gradient(s,h,'edge'),oracle.gradient(s,h,'odd')
+            be,bo=oracle.binomial(q,'edge'),oracle.binomial(q,'odd')
+            ce,cv=oracle.binomial(c,'edge'),oracle.binomial(c,'even')
+            k4=(8*mp.sin(mp.pi*h)-mp.sin(2*mp.pi*h))/(6*h)
+            identities=[de[0]-do[0]+s[0]/h,
+                        be[0]-bo[0]-(9*q[0]+q[1])/16,
+                        be[1]-bo[1]-q[0]/8,ce[0]-cv[0]-(c[0]-c[1])/16]
+            identities += [bo[j]-mp.cos(mp.pi*h)**4*q[j] for j in range(n)]
+            identities += [x+k4*s[j] for j,x in enumerate(oracle.gradient4(c,h))]
+            identities += [x-k4*c[j] for j,x in enumerate(oracle.divergence4(s,h))]
+            residual=max(abs(x) for x in identities)
+            if residual > mp.power(10,-dps+10):
+                raise ArithmeticError('MP identity gate failed')
+            records.append(dict(ny=n,identity_count=len(identities),max_residual=mp.nstr(residual,dps),
+                odd_gradient=list(map(lambda x:mp.nstr(x,dps),do)),
+                edge_gradient=list(map(lambda x:mp.nstr(x,dps),de)),
+                edge_filter=list(map(lambda x:mp.nstr(x,dps),be)),
+                odd_filter=list(map(lambda x:mp.nstr(x,dps),bo)),
+                K4=mp.nstr(k4,dps)))
+    return records
+
+
+if __name__=='__main__':
+    out=pathlib.Path(sys.argv[1]);out.mkdir(exist_ok=False)
+    start=time.monotonic()
+    data=dict(kind='DEVELOPMENT MP finite identities only',generator=__file__,
+        generator_sha256=hashlib.sha256(pathlib.Path(__file__).read_bytes()).hexdigest(),
+        oracle_sha256=hashlib.sha256(pathlib.Path(oracle.__file__).read_bytes()).hexdigest(),
+        mpmath_version=mp.__version__,python=sys.executable,created_utc=time.strftime('%Y-%m-%dT%H:%M:%SZ',time.gmtime()),
+        inputs={'Ny':[8,16],'coordinate':'(j+1/2)/Ny','k':'pi','product_k':'2*pi'},
+        contacts=['new D1 software diagnosis; no fit, old pilot or certification'],
+        accuracy_basis='80/160dps finite-identity residual, not rigorous ball bound',
+        precisions={str(dps):generate(dps) for dps in (80,160)})
+    data['elapsed_s']=time.monotonic()-start
+    (out/'truth.json').write_text(json.dumps(data,indent=2)+'\n')
+    print(json.dumps({'stage':'truth','records':4,'elapsed_s':data['elapsed_s']}),flush=True)

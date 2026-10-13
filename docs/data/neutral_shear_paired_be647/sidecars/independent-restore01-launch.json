@@ -1,0 +1,23 @@
+{
+  "status": "STARTED_NOT_COMPLETION",
+  "argv": [
+    "/root/.venvs/zhenmode-managed-bench-20261005/bin/python",
+    "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/neutral-shear-paired-be647-attempt02/publication-preparation/independent_restore01.py"
+  ],
+  "cwd": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/neutral-shear-paired-be647-attempt02/publication-preparation",
+  "declaration_sha256": "f4baded42e20e2659297599a24456e1973a87f2a00477b0c390bc099db2dc79a",
+  "supervisor_sha256": "8fea0d09abb2a7590cd14013c9ec8ec222a795d7b713857861d1747c6724ad14",
+  "worker_sha256": "073d97bbb93c084bf5a657d1bb2a5b02ce6d004daabf3a2b57297645fbad5cc7",
+  "interpreter": "/root/.venvs/zhenmode-managed-bench-20261005/bin/python",
+  "interpreter_sha256": "e50d468e8b0adfb05733f5b87b3cff34829c4a8c1aea50c865aa8bdfe4bb150f",
+  "cpu_affinity": [
+    0
+  ],
+  "resources": {
+    "cpu": 1,
+    "wall_seconds": 180,
+    "memory_mib": 4096,
+    "sample_seconds": 0.2
+  },
+  "model_calls": 0
+}

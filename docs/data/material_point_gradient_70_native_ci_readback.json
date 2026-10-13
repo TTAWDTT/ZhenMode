@@ -1,0 +1,69 @@
+{
+  "schema": "independent-saved-CI-log-readback-v1",
+  "readback_utc": "2026-10-12T21:21:19.1996412Z",
+  "verdict": "PASS saved CI log and terminal consistent",
+  "source_revision": "70d408583aa99db63e49d958d89dcaccad273f0e",
+  "run_id": 38306749152,
+  "terminal_status": "completed",
+  "terminal_conclusion": "success",
+  "full_validation_flag": "true in saved declaration, dispatch receipt and terminal; actual full tests/ command plus MMS executed in log",
+  "pytest": {
+    "warnings": 6710,
+    "duration_s": 1159.33,
+    "actual_summary_count": 1,
+    "passed": 1750
+  },
+  "MMS": {
+    "summary_count": 1,
+    "individual_pass_checks": 5,
+    "summary": "ALL PASS"
+  },
+  "ruff": "All checks passed! actual lint result",
+  "log_path": "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\ci-70d-full-attempt02.log",
+  "log_sha256": "a937993d72323c5d23a5b5430ee3981fde540946ae795fe012dec88a62cedab4",
+  "terminal_sha256": "be64be128b1786b10ac063318bb8fac0c5ca1b92096c9fb646cc64ea6736106f",
+  "evidence": [
+    {
+      "line": 107,
+      "text": "lint\tRun actions/checkout@v4\t2026-10-12T20:50:01.6992117Z 70d408583aa99db63e49d958d89dcaccad273f0e"
+    },
+    {
+      "line": 150,
+      "text": "lint\tRun ruff check .\t2026-10-12T20:50:03.8099839Z All checks passed!"
+    },
+    {
+      "line": 276,
+      "text": "test\tRun actions/checkout@v4\t2026-10-12T20:50:03.0848096Z 70d408583aa99db63e49d958d89dcaccad273f0e"
+    },
+    {
+      "line": 856,
+      "text": "test\tRun python -m zhenmode mms\t2026-10-12T21:09:49.5778245Z   d_dx_rel_L2                    = 6.400e-03  [PASS]"
+    },
+    {
+      "line": 857,
+      "text": "test\tRun python -m zhenmode mms\t2026-10-12T21:09:49.5778526Z   d_dy_rel_L2                    = 1.487e-02  [PASS]"
+    },
+    {
+      "line": 858,
+      "text": "test\tRun python -m zhenmode mms\t2026-10-12T21:09:49.5778865Z   laplacian_linear_max           = 1.072e-06  [PASS]"
+    },
+    {
+      "line": 859,
+      "text": "test\tRun python -m zhenmode mms\t2026-10-12T21:09:49.5779120Z   divergence_free_max            = 0.000e+00  [PASS]"
+    },
+    {
+      "line": 864,
+      "text": "test\tRun python -m zhenmode mms\t2026-10-12T21:09:49.5780146Z   convergence ratio (expect ~4 for 2nd-order) = 4.30  [PASS]"
+    },
+    {
+      "line": 866,
+      "text": "test\tRun python -m zhenmode mms\t2026-10-12T21:09:49.5780657Z ALL PASS"
+    }
+  ],
+  "earlier_attempt": "Saved status observation records first log network timeout before download, separate from software status; no software FAIL inferred",
+  "limitations": [
+    "Readback of existing logs/receipts only, no redispatch or rerun",
+    "Software CI is not global/fullphysics qualification",
+    "Native and prior FAIL/OPEN evidence are not changed"
+  ]
+}

@@ -1,0 +1,11 @@
+docs/data/momentum_point_ece_* -text
+docs/data/material_point_gradient_70_* -text
+docs/data/momentum_tangent_dabd_* -text
+docs/momentum_tangent_filter_dabd_results_zh.md -text
+docs/material_point_gradient_70_results_zh.md -text
+docs/data/neutral_shear_70_* -text
+docs/neutral_shear_70_results_zh.md -text
+docs/data/horizontal_paired_be647_* -text
+docs/horizontal_paired_product_be647_results_zh.md -text
+docs/data/neutral_shear_paired_be647/** -text
+docs/neutral_shear_paired_be647_results_zh.md -text

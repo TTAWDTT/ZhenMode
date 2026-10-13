@@ -1,0 +1,5300 @@
+{
+  "status": "PASS_RECORD_BINDING_REVIEW",
+  "case_index": 1,
+  "created_utc": "2026-10-13T11:15:59.2336680Z",
+  "reviewer": "Lady / arithmetic_static_fresh",
+  "scope": "One case1 terminal metadata/raw-byte identity review; no science or model execution; no case0 recheck",
+  "prior_coarse_review_sha256": "c0d5951bc49358540c1ac956f7cca66bf9570badaedcb76e2896eb1554a5af86",
+  "context": {
+    "selection_sha256": "6af6737ad8eca03cd588dbd5551a0635525449cdd58eea1cf7a1d555764a842a",
+    "observer_bundle_sha256": "e6a53b6c126e9b5cea0011376e86a14b722a04bce286fb36fde3951f5d879dda",
+    "definitions_sha256": "f09f42e9970d48dfd33649f2f7dd58bd9871c707ab92d6ddb3e170b6b891a703",
+    "declared_plan_sha256": "e8fa4dcd323f464777e441f7aa6b14fdf2b8a4e2150dc883065f66254688a165",
+    "manifest_sha256": "c217495711be5216ea139219bc42088dd3f05285d851955f691625dd9a375848",
+    "source_revision": "be647d70fc7394f3014dca8bc776e207d4f02ae3",
+    "producer_bundle_sha256": "67ecb7e0b1a77cc8ea0480b4c11c8b9a311dc2f403fd678a4ddab0aaa6866188"
+  },
+  "resources": {
+    "initialize": {
+      "cpu_affinity": 1,
+      "memory_mib": 4096,
+      "wall_seconds": 600,
+      "peak_host_rss_bytes": 1045143552,
+      "stop_reason": null,
+      "termination_grace_seconds": 0,
+      "elapsed_wall_seconds": 18.444258705,
+      "host_memory_enforcement": "aggregate process-group /proc RSS sampled at 0.2 s; not a hard cgroup cap"
+    },
+    "timing": {
+      "cpu_affinity": 1,
+      "memory_mib": 4096,
+      "wall_seconds": 600,
+      "peak_host_rss_bytes": 1447505920,
+      "stop_reason": null,
+      "termination_grace_seconds": 0,
+      "elapsed_wall_seconds": 38.096644565000005,
+      "host_memory_enforcement": "aggregate process-group /proc RSS sampled at 0.2 s; not a hard cgroup cap"
+    },
+    "run": {
+      "cpu_affinity": 1,
+      "memory_mib": 4096,
+      "wall_seconds": 600,
+      "peak_host_rss_bytes": 1448624128,
+      "stop_reason": null,
+      "termination_grace_seconds": 0,
+      "elapsed_wall_seconds": 51.128220907,
+      "host_memory_enforcement": "aggregate process-group /proc RSS sampled at 0.2 s; not a hard cgroup cap"
+    },
+    "initial": {
+      "cpu_affinity": 1,
+      "memory_mib": 4096,
+      "wall_seconds": 180,
+      "peak_host_rss_bytes": 38936576,
+      "stop_reason": null,
+      "termination_grace_seconds": 0,
+      "elapsed_wall_seconds": 1.407783288,
+      "host_memory_enforcement": "aggregate process-group /proc RSS sampled at 0.2 s; not a hard cgroup cap"
+    },
+    "adapter": {
+      "cpu_affinity": 1,
+      "memory_mib": 4096,
+      "wall_seconds": 180,
+      "peak_host_rss_bytes": 101146624,
+      "stop_reason": null,
+      "termination_grace_seconds": 0,
+      "elapsed_wall_seconds": 3.014562541,
+      "host_memory_enforcement": "aggregate process-group /proc RSS sampled at 0.2 s; not a hard cgroup cap"
+    },
+    "science": {
+      "cpu_affinity": 1,
+      "memory_mib": 4096,
+      "wall_seconds": 180,
+      "peak_host_rss_bytes": 90124288,
+      "stop_reason": null,
+      "termination_grace_seconds": 0,
+      "elapsed_wall_seconds": 1.805286208,
+      "host_memory_enforcement": "aggregate process-group /proc RSS sampled at 0.2 s; not a hard cgroup cap"
+    }
+  },
+  "retrieved_metrics": {
+    "T_RMS": 2.906948527432644E-06,
+    "S_RMS": 7.651418903982357E-07,
+    "u_RMS": 3.940144359945673E-08,
+    "v_RMS": 2.5144035723863297E-08,
+    "eta_RMS": 1.0134820447526767E-08,
+    "rho_RMS": 9.997809298960032E-09,
+    "u_normalized_RMS": 2.215336213842437E-06,
+    "v_normalized_RMS": 1.4137170573615817E-06,
+    "eta_normalized_RMS": 4.2228418531361535E-06,
+    "rho_normalized_RMS": 3.2513200972227747E-07,
+    "T_normalized_L1": 3.443243607504523E-05,
+    "S_normalized_L1": 3.443516315837632E-05
+  },
+  "native_steps": 4800,
+  "outputs": 41,
+  "initializer_four_sha256": {
+    "initial_sha256": "840a58ec23a540b51c0bd3c7401e180a8884d34b2513cd524dcc8466b851a4d9",
+    "params_sha256": "3309643c19c9b11bcaf84ed932b0dc0d381f0aa25dfae7f42d9c5dfc59266ae2",
+    "initialize_receipt_sha256": "b49edd3e2a6ad5710d2712726bc2b7fba6f8e4c664ec1175bd2e710c22000189",
+    "constant_source_sha256": "a913f052105597ef2c1407736b07d46a943d5b72c2d63469b22896924840c84d"
+  },
+  "actual_loaded_source_paths": [
+    {
+      "module": "zhenmode",
+      "actual_path": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/horizontal-paired-product-v1/installed/zhenmode/__init__.py",
+      "captured_sha256": "37d5510890297eb78a6974bdb3959c3b224f5e2c381939113af51d7a58e71188"
+    },
+    {
+      "module": "zhenmode.model",
+      "actual_path": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/horizontal-paired-product-v1/installed/zhenmode/model/__init__.py",
+      "captured_sha256": "239c1f8fd5b5a454930824715e99ecde75470b7c89274fbef5f7a1fba4619538"
+    },
+    {
+      "module": "zhenmode.model.inputs",
+      "actual_path": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/horizontal-paired-product-v1/installed/zhenmode/model/inputs/__init__.py",
+      "captured_sha256": "150aa43ee0dcf4c3217308ca7254bc7d196a7f2c70e5e9a0e5ace3e76cb940af"
+    },
+    {
+      "module": "zhenmode.model.inputs.quality",
+      "actual_path": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/horizontal-paired-product-v1/installed/zhenmode/model/inputs/quality.py",
+      "captured_sha256": "3b5b05c518d2e927acb4dd0049c7f679ea36b5cfcb2f3f508120389da0e771a2"
+    },
+    {
+      "module": "zhenmode.provenance",
+      "actual_path": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/horizontal-paired-product-v1/installed/zhenmode/provenance/__init__.py",
+      "captured_sha256": "daf5d6bfcecc2b278842a3426572a906a824b2a1f520668da6bb8992e35bd64e"
+    },
+    {
+      "module": "zhenmode.provenance.sources",
+      "actual_path": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/horizontal-paired-product-v1/installed/zhenmode/provenance/sources.py",
+      "captured_sha256": "b422a776558810077f543b8a3b3b99f9584ffafa0b292515a93ac1a96bb99bcc"
+    },
+    {
+      "module": "zhenmode.model.inputs.sources",
+      "actual_path": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/horizontal-paired-product-v1/installed/zhenmode/model/inputs/sources.py",
+      "captured_sha256": "846b83f00b10a680b09b424878857e70cd54e99ca8a20aa73367da34f599e687"
+    },
+    {
+      "module": "zhenmode.model.config",
+      "actual_path": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/horizontal-paired-product-v1/installed/zhenmode/model/config.py",
+      "captured_sha256": "890d6b7666877a53d655f070030a5810e687f7f6201325d20b34003dcf7b39ea"
+    },
+    {
+      "module": "zhenmode.model.solver",
+      "actual_path": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/horizontal-paired-product-v1/installed/zhenmode/model/solver/__init__.py",
+      "captured_sha256": "229c94a88ab915568cdb3e04a06896ba1d78a817d0054ead4145186272b82d7e"
+    },
+    {
+      "module": "zhenmode.model.solver.geometry",
+      "actual_path": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/horizontal-paired-product-v1/installed/zhenmode/model/solver/geometry/__init__.py",
+      "captured_sha256": "b4e9370dd4ce8e3ed7d1dad3c2b35beec912a7d9b43f7f407c3c90e960b2079a"
+    },
+    {
+      "module": "zhenmode.model.solver.geometry.grid",
+      "actual_path": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/horizontal-paired-product-v1/installed/zhenmode/model/solver/geometry/grid.py",
+      "captured_sha256": "54c5ebd94d6431e6301363e1e0ba6228212b311563a5edd3fde6c0760d9bebf3"
+    },
+    {
+      "module": "zhenmode.model.solver.dynamics",
+      "actual_path": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/horizontal-paired-product-v1/installed/zhenmode/model/solver/dynamics/__init__.py",
+      "captured_sha256": "92253b086944c0a62935772ba54bdbc89297fe9567822d267fd15b2cf2bb5611"
+    },
+    {
+      "module": "zhenmode.model.solver.numerics",
+      "actual_path": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/horizontal-paired-product-v1/installed/zhenmode/model/solver/numerics/__init__.py",
+      "captured_sha256": "929b966423d7801ab47df95b5b84043f63b7cfe905184555eff61e4bdfb426b1"
+    },
+    {
+      "module": "zhenmode.model.solver.numerics.backend",
+      "actual_path": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/horizontal-paired-product-v1/installed/zhenmode/model/solver/numerics/backend.py",
+      "captured_sha256": "416c3ecf3ec992f66402af2e2b81db5c66f421686691592a01b6865036485197"
+    },
+    {
+      "module": "zhenmode.model.solver.numerics.column",
+      "actual_path": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/horizontal-paired-product-v1/installed/zhenmode/model/solver/numerics/column.py",
+      "captured_sha256": "ae9013fb0628e6cbdc8d2027bd899d7815e0864e76a649ed88e5dcb0968d405a"
+    },
+    {
+      "module": "zhenmode.model.solver.numerics.contacts",
+      "actual_path": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/horizontal-paired-product-v1/installed/zhenmode/model/solver/numerics/contacts.py",
+      "captured_sha256": "e91b99345dd7c9688045021e8a895d9b7193606879cb0b0927de6b3b76062e32"
+    },
+    {
+      "module": "zhenmode.model.solver.numerics.vertical",
+      "actual_path": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/horizontal-paired-product-v1/installed/zhenmode/model/solver/numerics/vertical.py",
+      "captured_sha256": "6d5693b4a6dde1842be9e216e4674a42d53794b048189701620c02242e348dab"
+    },
+    {
+      "module": "zhenmode.model.solver.numerics.channel",
+      "actual_path": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/horizontal-paired-product-v1/installed/zhenmode/model/solver/numerics/channel.py",
+      "captured_sha256": "ab46eadafa84c0a0756b76f0451e0c636e36bcca5d76101cc6f6e62cc9151038"
+    },
+    {
+      "module": "zhenmode.model.solver.numerics.horizontal",
+      "actual_path": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/horizontal-paired-product-v1/installed/zhenmode/model/solver/numerics/horizontal.py",
+      "captured_sha256": "430c3ed7b2222734c93b7e33d7003fe64b147e36a75c6b6d5584b5663a2e251b"
+    },
+    {
+      "module": "zhenmode.model.solver.physics",
+      "actual_path": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/horizontal-paired-product-v1/installed/zhenmode/model/solver/physics/__init__.py",
+      "captured_sha256": "a5ebfc7e1dfa65dc7dc52f47cd345a3e0afadf8d5236eb226ba1c22162e5e1ee"
+    },
+    {
+      "module": "zhenmode.model.solver.physics.eos",
+      "actual_path": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/horizontal-paired-product-v1/installed/zhenmode/model/solver/physics/eos.py",
+      "captured_sha256": "50a2529714bef3967143ab28eccfc530cc92fe66d1125de70c4ba7147005a07a"
+    },
+    {
+      "module": "zhenmode.model.solver.dynamics.pressure",
+      "actual_path": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/horizontal-paired-product-v1/installed/zhenmode/model/solver/dynamics/pressure.py",
+      "captured_sha256": "53b065815da2905df325bb5deab1ecd11babb7eba54076235243158bad38d824"
+    },
+    {
+      "module": "zhenmode.model.solver.dynamics.transport",
+      "actual_path": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/horizontal-paired-product-v1/installed/zhenmode/model/solver/dynamics/transport.py",
+      "captured_sha256": "23a93aac12a769afbe948cd812d1d7b68f4563a79b61b4f39034ae6e2e4f276a"
+    },
+    {
+      "module": "zhenmode.model.solver.dynamics.projection",
+      "actual_path": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/horizontal-paired-product-v1/installed/zhenmode/model/solver/dynamics/projection.py",
+      "captured_sha256": "64313d7abca6fe4c4ea0f181f469272eb7d6c6c862c19375b2d1dfbedebfb968"
+    },
+    {
+      "module": "zhenmode.model.solver.physics.isopycnal",
+      "actual_path": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/horizontal-paired-product-v1/installed/zhenmode/model/solver/physics/isopycnal.py",
+      "captured_sha256": "8165becfd9a23844761362e36c20161260506e3cd3244a203ae44bde75de7298"
+    },
+    {
+      "module": "zhenmode.model.solver.state",
+      "actual_path": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/horizontal-paired-product-v1/installed/zhenmode/model/solver/state.py",
+      "captured_sha256": "851e96e868aed41a2f5882e9f1683f0f79056cd73ff35b281ba51cc0a8346d62"
+    },
+    {
+      "module": "zhenmode.model.solver.physics.surface",
+      "actual_path": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/horizontal-paired-product-v1/installed/zhenmode/model/solver/physics/surface.py",
+      "captured_sha256": "0eade693636cd017d5772e2c0cee83c1a5050c49ad3a2936591356ef4cb163b8"
+    },
+    {
+      "module": "zhenmode.model.solver.physics.vertical",
+      "actual_path": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/horizontal-paired-product-v1/installed/zhenmode/model/solver/physics/vertical.py",
+      "captured_sha256": "e2305eed74d2c2caed01d70e4a734af4c5a7c06b14647d8bb0f3e118b5db8a3e"
+    },
+    {
+      "module": "zhenmode.model.solver.timestepping",
+      "actual_path": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/horizontal-paired-product-v1/installed/zhenmode/model/solver/timestepping/__init__.py",
+      "captured_sha256": "913ed45d926d13a9a89517aacd0095980dd2ff7c15e44bd1c0d850b94c09f6a6"
+    },
+    {
+      "module": "zhenmode.model.solver.timestepping.subcycles",
+      "actual_path": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/horizontal-paired-product-v1/installed/zhenmode/model/solver/timestepping/subcycles.py",
+      "captured_sha256": "fada7101b16464e2e21ec0bac4bfff7d399cf4e9073a4af7035528203f74598b"
+    },
+    {
+      "module": "zhenmode.model.solver.dynamics.tendencies",
+      "actual_path": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/horizontal-paired-product-v1/installed/zhenmode/model/solver/dynamics/tendencies.py",
+      "captured_sha256": "698a8d680089259d7f15a91166d8d89e2ac6d31800af3ca416883757c5f8ec89"
+    },
+    {
+      "module": "zhenmode.model.solver.geometry.fd_metrics",
+      "actual_path": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/horizontal-paired-product-v1/installed/zhenmode/model/solver/geometry/fd_metrics.py",
+      "captured_sha256": "26a9c836450d9b0d0c5d932f0c910799c7036a68a6266f5c36138574ae79b478"
+    },
+    {
+      "module": "zhenmode.model.solver.dynamics.barotropic",
+      "actual_path": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/horizontal-paired-product-v1/installed/zhenmode/model/solver/dynamics/barotropic.py",
+      "captured_sha256": "c4137232f53baaf4eec9ecac4406368f148a6ee1763f91f48957ca0ba9c0b0a6"
+    },
+    {
+      "module": "zhenmode.model.solver.timestepping.step",
+      "actual_path": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/horizontal-paired-product-v1/installed/zhenmode/model/solver/timestepping/step.py",
+      "captured_sha256": "d888979831d99467af6b4b39ed1008a13d8b616b52a93daa38be322b1964c4ae"
+    },
+    {
+      "module": "zhenmode.model.solver.factory",
+      "actual_path": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/horizontal-paired-product-v1/installed/zhenmode/model/solver/factory.py",
+      "captured_sha256": "8123849af4ce529487be47687ad541f38946c9a32b692dc31e0bf6befaf4697b"
+    }
+  ],
+  "captured_complete_source_count": 133,
+  "loaded_path_count": 35,
+  "source_scope": "Recorded before/after complete source maps compared to sealed manifest; immutable installed source not rehashed in this records-only extension",
+  "retrieved_science_observations": 220,
+  "retrieved_science_assertions": 212,
+  "retrieved_science_failed_assertions": 0,
+  "retrieved_inventory_and_limits": [
+    {
+      "name": "positive_h",
+      "value": 1.25,
+      "pass": true
+    },
+    {
+      "name": "temperature_floor",
+      "value": 13.811586479168568,
+      "pass": true
+    },
+    {
+      "name": "salinity_floor",
+      "value": 34.978947265665255,
+      "pass": true
+    },
+    {
+      "name": "original_constant_source_core:constant_T_rhs",
+      "value": 0.0,
+      "pass": true
+    },
+    {
+      "name": "original_constant_source_core:constant_S_rhs",
+      "value": 0.0,
+      "pass": true
+    },
+    {
+      "name": "original_diagnostic_inventory_relative:volume",
+      "value": 0.0,
+      "pass": true
+    },
+    {
+      "name": "original_diagnostic_inventory_relative:T",
+      "value": 2.412962835030336E-13,
+      "pass": true
+    },
+    {
+      "name": "original_diagnostic_inventory_relative:S",
+      "value": 3.2914184764619687E-15,
+      "pass": true
+    },
+    {
+      "name": "unrepresented_upper_cap_transport_m2_s",
+      "value": 6.930522393877726E-08
+    },
+    {
+      "name": "upper_cap_T_background_inventory_proxy_error_C_m",
+      "value": 3.750000000000001E-06
+    }
+  ],
+  "inherited_prerequisites_not_rechecked": {
+    "review/analytic01-binding.json": {
+      "sha256": "bb64108e4ecab249abed7acabc5ae793dae4dfa6022f352e99dc0bee25ad0a07",
+      "basis": "SHA from completed PILOT_TERMINAL_REVIEW01, not reread or rerun"
+    },
+    "00-main/science-binding01.json": {
+      "sha256": "91cb0a102a780e2f42c154663cacd3e52d93c3b6d4c983794bc62d833a278c47",
+      "basis": "Prior root-completed coarse qualification; recorded prerequisite only, not rehashed or recertified by this case1 review"
+    },
+    "review/strict-coarse-comparison01.json": {
+      "sha256": "6fe28229f57788384eaa1ec2571aeefbb9661c2b586ab42e3529580a5ef693de",
+      "basis": "SHA from completed PILOT_TERMINAL_REVIEW01, not reread or rerun"
+    }
+  },
+  "checks": [
+    {
+      "name": "prior completed review identity",
+      "pass": true
+    },
+    {
+      "name": "initialize authorized exact mode/index/tag",
+      "pass": true
+    },
+    {
+      "name": "initialize gate context source_revision",
+      "pass": true
+    },
+    {
+      "name": "initialize gate context selection_sha256",
+      "pass": true
+    },
+    {
+      "name": "initialize gate context manifest_sha256",
+      "pass": true
+    },
+    {
+      "name": "initialize gate context declared_plan_sha256",
+      "pass": true
+    },
+    {
+      "name": "initialize gate context definitions_sha256",
+      "pass": true
+    },
+    {
+      "name": "initialize producer bundle",
+      "pass": true
+    },
+    {
+      "name": "initialize prerequisite prior completed identity review/analytic01-binding.json",
+      "pass": true
+    },
+    {
+      "name": "initialize prerequisite SHA ROOT_BRIDGE_STATIC_REVIEW01.json",
+      "pass": true
+    },
+    {
+      "name": "initialize prerequisite SHA review/ATTEMPT02_STATIC_REVIEW01.json",
+      "pass": true
+    },
+    {
+      "name": "initialize prerequisite SHA 00-main/science-verdict01.json",
+      "pass": true
+    },
+    {
+      "name": "initialize prerequisite prior completed identity review/strict-coarse-comparison01.json",
+      "pass": true
+    },
+    {
+      "name": "initialize prerequisite SHA review/science00-attempt01-resources.json",
+      "pass": true
+    },
+    {
+      "name": "initialize gate chain",
+      "pass": true
+    },
+    {
+      "name": "initialize start/launch chain",
+      "pass": true
+    },
+    {
+      "name": "initialize exact launch identity",
+      "pass": true
+    },
+    {
+      "name": "initialize worker identity",
+      "pass": true
+    },
+    {
+      "name": "initialize parent success",
+      "pass": true
+    },
+    {
+      "name": "initialize resource bounds",
+      "pass": true
+    },
+    {
+      "name": "initialize source import root",
+      "pass": true
+    },
+    {
+      "name": "timing authorized exact mode/index/tag",
+      "pass": true
+    },
+    {
+      "name": "timing gate context source_revision",
+      "pass": true
+    },
+    {
+      "name": "timing gate context selection_sha256",
+      "pass": true
+    },
+    {
+      "name": "timing gate context manifest_sha256",
+      "pass": true
+    },
+    {
+      "name": "timing gate context declared_plan_sha256",
+      "pass": true
+    },
+    {
+      "name": "timing gate context definitions_sha256",
+      "pass": true
+    },
+    {
+      "name": "timing producer bundle",
+      "pass": true
+    },
+    {
+      "name": "timing prerequisite SHA 01-main/initializer-verdict.json",
+      "pass": true
+    },
+    {
+      "name": "timing prerequisite SHA 01-main/initial-binding01.json",
+      "pass": true
+    },
+    {
+      "name": "timing prerequisite SHA 01-main/initial-readback.npz",
+      "pass": true
+    },
+    {
+      "name": "timing prerequisite SHA 01-main/actual-params.json",
+      "pass": true
+    },
+    {
+      "name": "timing prerequisite SHA 01-main/initialize-receipt.json",
+      "pass": true
+    },
+    {
+      "name": "timing prerequisite SHA 01-main/constant-source-readback.npz",
+      "pass": true
+    },
+    {
+      "name": "timing gate chain",
+      "pass": true
+    },
+    {
+      "name": "timing start/launch chain",
+      "pass": true
+    },
+    {
+      "name": "timing exact launch identity",
+      "pass": true
+    },
+    {
+      "name": "timing worker identity",
+      "pass": true
+    },
+    {
+      "name": "timing parent success",
+      "pass": true
+    },
+    {
+      "name": "timing resource bounds",
+      "pass": true
+    },
+    {
+      "name": "timing source import root",
+      "pass": true
+    },
+    {
+      "name": "run authorized exact mode/index/tag",
+      "pass": true
+    },
+    {
+      "name": "run gate context source_revision",
+      "pass": true
+    },
+    {
+      "name": "run gate context selection_sha256",
+      "pass": true
+    },
+    {
+      "name": "run gate context manifest_sha256",
+      "pass": true
+    },
+    {
+      "name": "run gate context declared_plan_sha256",
+      "pass": true
+    },
+    {
+      "name": "run gate context definitions_sha256",
+      "pass": true
+    },
+    {
+      "name": "run producer bundle",
+      "pass": true
+    },
+    {
+      "name": "run prerequisite SHA 01-main/initializer-verdict.json",
+      "pass": true
+    },
+    {
+      "name": "run prerequisite SHA 01-main/initial-binding01.json",
+      "pass": true
+    },
+    {
+      "name": "run prerequisite SHA 01-main/initial-readback.npz",
+      "pass": true
+    },
+    {
+      "name": "run prerequisite SHA 01-main/actual-params.json",
+      "pass": true
+    },
+    {
+      "name": "run prerequisite SHA 01-main/initialize-receipt.json",
+      "pass": true
+    },
+    {
+      "name": "run prerequisite SHA 01-main/constant-source-readback.npz",
+      "pass": true
+    },
+    {
+      "name": "run prerequisite SHA native-allow-case01.json",
+      "pass": true
+    },
+    {
+      "name": "run prerequisite SHA case1-measured-plan01.json",
+      "pass": true
+    },
+    {
+      "name": "run prerequisite SHA 01-main/timing-receipt.json",
+      "pass": true
+    },
+    {
+      "name": "run prerequisite SHA ROOT_GATE_PRODUCER_timing_01.json",
+      "pass": true
+    },
+    {
+      "name": "run prerequisite SHA timing01-attempt01-launch.json",
+      "pass": true
+    },
+    {
+      "name": "run prerequisite SHA timing01-attempt01-resources.json",
+      "pass": true
+    },
+    {
+      "name": "run prerequisite prior completed identity review/strict-coarse-comparison01.json",
+      "pass": true
+    },
+    {
+      "name": "run gate chain",
+      "pass": true
+    },
+    {
+      "name": "run start/launch chain",
+      "pass": true
+    },
+    {
+      "name": "run exact launch identity",
+      "pass": true
+    },
+    {
+      "name": "run worker identity",
+      "pass": true
+    },
+    {
+      "name": "run parent success",
+      "pass": true
+    },
+    {
+      "name": "run resource bounds",
+      "pass": true
+    },
+    {
+      "name": "run source import root",
+      "pass": true
+    },
+    {
+      "name": "initializer actual zero native steps",
+      "pass": true
+    },
+    {
+      "name": "timing actual two twelve-step windows",
+      "pass": true
+    },
+    {
+      "name": "native exact completed original population",
+      "pass": true
+    },
+    {
+      "name": "native original bytes chain",
+      "pass": true
+    },
+    {
+      "name": "terminal/run receipt exact same bytes",
+      "pass": true
+    },
+    {
+      "name": "immutable per-case allow exact index/source/bundle",
+      "pass": true
+    },
+    {
+      "name": "per-run allowance path/prerequisite",
+      "pass": true
+    },
+    {
+      "name": "initial binding context selection_sha256",
+      "pass": true
+    },
+    {
+      "name": "initial binding context observer_bundle_sha256",
+      "pass": true
+    },
+    {
+      "name": "initial binding context definitions_sha256",
+      "pass": true
+    },
+    {
+      "name": "initial binding context declared_plan_sha256",
+      "pass": true
+    },
+    {
+      "name": "initial binding context manifest_sha256",
+      "pass": true
+    },
+    {
+      "name": "initial binding context source_revision",
+      "pass": true
+    },
+    {
+      "name": "initial binding context producer_bundle_sha256",
+      "pass": true
+    },
+    {
+      "name": "initial observer gate context selection_sha256",
+      "pass": true
+    },
+    {
+      "name": "initial observer gate context observer_bundle_sha256",
+      "pass": true
+    },
+    {
+      "name": "initial observer gate context definitions_sha256",
+      "pass": true
+    },
+    {
+      "name": "initial observer gate context declared_plan_sha256",
+      "pass": true
+    },
+    {
+      "name": "initial observer gate context manifest_sha256",
+      "pass": true
+    },
+    {
+      "name": "initial observer gate context source_revision",
+      "pass": true
+    },
+    {
+      "name": "initial observer gate context producer_bundle_sha256",
+      "pass": true
+    },
+    {
+      "name": "initial observer launch context selection_sha256",
+      "pass": true
+    },
+    {
+      "name": "initial observer launch context observer_bundle_sha256",
+      "pass": true
+    },
+    {
+      "name": "initial observer launch context definitions_sha256",
+      "pass": true
+    },
+    {
+      "name": "initial observer launch context declared_plan_sha256",
+      "pass": true
+    },
+    {
+      "name": "initial observer launch context manifest_sha256",
+      "pass": true
+    },
+    {
+      "name": "initial observer launch context source_revision",
+      "pass": true
+    },
+    {
+      "name": "initial observer launch context producer_bundle_sha256",
+      "pass": true
+    },
+    {
+      "name": "initial observer resources context selection_sha256",
+      "pass": true
+    },
+    {
+      "name": "initial observer resources context observer_bundle_sha256",
+      "pass": true
+    },
+    {
+      "name": "initial observer resources context definitions_sha256",
+      "pass": true
+    },
+    {
+      "name": "initial observer resources context declared_plan_sha256",
+      "pass": true
+    },
+    {
+      "name": "initial observer resources context manifest_sha256",
+      "pass": true
+    },
+    {
+      "name": "initial observer resources context source_revision",
+      "pass": true
+    },
+    {
+      "name": "initial observer resources context producer_bundle_sha256",
+      "pass": true
+    },
+    {
+      "name": "initial observer mode/index/tag",
+      "pass": true
+    },
+    {
+      "name": "initial observer successful binding",
+      "pass": true
+    },
+    {
+      "name": "initial binding input SHA 01-main/actual-params.json",
+      "pass": true
+    },
+    {
+      "name": "initial binding input SHA 01-main/constant-source-readback.npz",
+      "pass": true
+    },
+    {
+      "name": "initial binding input SHA 01-main/initial-readback.npz",
+      "pass": true
+    },
+    {
+      "name": "initial binding input SHA 01-main/initialize-receipt.json",
+      "pass": true
+    },
+    {
+      "name": "initial binding input SHA 01-main/initialize-start.json",
+      "pass": true
+    },
+    {
+      "name": "initial binding input SHA 01-main/initialize-worker-start.json",
+      "pass": true
+    },
+    {
+      "name": "initial binding input SHA ROOT_GATE_PRODUCER_initialize_01.json",
+      "pass": true
+    },
+    {
+      "name": "initial binding input SHA initialize01-attempt01-launch.json",
+      "pass": true
+    },
+    {
+      "name": "initial binding input SHA initialize01-attempt01-resources.json",
+      "pass": true
+    },
+    {
+      "name": "initial binding input prior completed identity review/analytic01-binding.json",
+      "pass": true
+    },
+    {
+      "name": "initial binding output SHA 01-main/initializer-verdict.json",
+      "pass": true
+    },
+    {
+      "name": "initial binding output SHA review/initial01-attempt01-launch.json",
+      "pass": true
+    },
+    {
+      "name": "initial binding output SHA review/initial01-attempt01-resources.json",
+      "pass": true
+    },
+    {
+      "name": "initial binding output SHA review/initial01-attempt01.log",
+      "pass": true
+    },
+    {
+      "name": "initial binding output SHA review/initial01-journal01.jsonl",
+      "pass": true
+    },
+    {
+      "name": "initial gate input SHA 01-main/initialize-receipt.json",
+      "pass": true
+    },
+    {
+      "name": "initial gate input SHA ROOT_GATE_PRODUCER_initialize_01.json",
+      "pass": true
+    },
+    {
+      "name": "initial gate input SHA initialize01-attempt01-launch.json",
+      "pass": true
+    },
+    {
+      "name": "initial gate input SHA initialize01-attempt01-resources.json",
+      "pass": true
+    },
+    {
+      "name": "initial gate input SHA 01-main/initialize-start.json",
+      "pass": true
+    },
+    {
+      "name": "initial gate input SHA 01-main/initialize-worker-start.json",
+      "pass": true
+    },
+    {
+      "name": "initial gate input SHA 01-main/initial-readback.npz",
+      "pass": true
+    },
+    {
+      "name": "initial gate input SHA 01-main/actual-params.json",
+      "pass": true
+    },
+    {
+      "name": "initial gate input SHA 01-main/constant-source-readback.npz",
+      "pass": true
+    },
+    {
+      "name": "initial gate input prior completed identity review/analytic01-binding.json",
+      "pass": true
+    },
+    {
+      "name": "initial launch input SHA 01-main/actual-params.json",
+      "pass": true
+    },
+    {
+      "name": "initial launch input SHA 01-main/constant-source-readback.npz",
+      "pass": true
+    },
+    {
+      "name": "initial launch input SHA 01-main/initial-readback.npz",
+      "pass": true
+    },
+    {
+      "name": "initial launch input SHA 01-main/initialize-receipt.json",
+      "pass": true
+    },
+    {
+      "name": "initial launch input SHA 01-main/initialize-start.json",
+      "pass": true
+    },
+    {
+      "name": "initial launch input SHA 01-main/initialize-worker-start.json",
+      "pass": true
+    },
+    {
+      "name": "initial launch input SHA ROOT_GATE_PRODUCER_initialize_01.json",
+      "pass": true
+    },
+    {
+      "name": "initial launch input SHA initialize01-attempt01-launch.json",
+      "pass": true
+    },
+    {
+      "name": "initial launch input SHA initialize01-attempt01-resources.json",
+      "pass": true
+    },
+    {
+      "name": "initial launch input prior completed identity review/analytic01-binding.json",
+      "pass": true
+    },
+    {
+      "name": "initial observer gate/start chain",
+      "pass": true
+    },
+    {
+      "name": "initial observer launch/resource/verdict chain",
+      "pass": true
+    },
+    {
+      "name": "initial observer exact declared argv",
+      "pass": true
+    },
+    {
+      "name": "initial observer resource bounds",
+      "pass": true
+    },
+    {
+      "name": "adapter binding context selection_sha256",
+      "pass": true
+    },
+    {
+      "name": "adapter binding context observer_bundle_sha256",
+      "pass": true
+    },
+    {
+      "name": "adapter binding context definitions_sha256",
+      "pass": true
+    },
+    {
+      "name": "adapter binding context declared_plan_sha256",
+      "pass": true
+    },
+    {
+      "name": "adapter binding context manifest_sha256",
+      "pass": true
+    },
+    {
+      "name": "adapter binding context source_revision",
+      "pass": true
+    },
+    {
+      "name": "adapter binding context producer_bundle_sha256",
+      "pass": true
+    },
+    {
+      "name": "adapter observer gate context selection_sha256",
+      "pass": true
+    },
+    {
+      "name": "adapter observer gate context observer_bundle_sha256",
+      "pass": true
+    },
+    {
+      "name": "adapter observer gate context definitions_sha256",
+      "pass": true
+    },
+    {
+      "name": "adapter observer gate context declared_plan_sha256",
+      "pass": true
+    },
+    {
+      "name": "adapter observer gate context manifest_sha256",
+      "pass": true
+    },
+    {
+      "name": "adapter observer gate context source_revision",
+      "pass": true
+    },
+    {
+      "name": "adapter observer gate context producer_bundle_sha256",
+      "pass": true
+    },
+    {
+      "name": "adapter observer launch context selection_sha256",
+      "pass": true
+    },
+    {
+      "name": "adapter observer launch context observer_bundle_sha256",
+      "pass": true
+    },
+    {
+      "name": "adapter observer launch context definitions_sha256",
+      "pass": true
+    },
+    {
+      "name": "adapter observer launch context declared_plan_sha256",
+      "pass": true
+    },
+    {
+      "name": "adapter observer launch context manifest_sha256",
+      "pass": true
+    },
+    {
+      "name": "adapter observer launch context source_revision",
+      "pass": true
+    },
+    {
+      "name": "adapter observer launch context producer_bundle_sha256",
+      "pass": true
+    },
+    {
+      "name": "adapter observer resources context selection_sha256",
+      "pass": true
+    },
+    {
+      "name": "adapter observer resources context observer_bundle_sha256",
+      "pass": true
+    },
+    {
+      "name": "adapter observer resources context definitions_sha256",
+      "pass": true
+    },
+    {
+      "name": "adapter observer resources context declared_plan_sha256",
+      "pass": true
+    },
+    {
+      "name": "adapter observer resources context manifest_sha256",
+      "pass": true
+    },
+    {
+      "name": "adapter observer resources context source_revision",
+      "pass": true
+    },
+    {
+      "name": "adapter observer resources context producer_bundle_sha256",
+      "pass": true
+    },
+    {
+      "name": "adapter observer mode/index/tag",
+      "pass": true
+    },
+    {
+      "name": "adapter observer successful binding",
+      "pass": true
+    },
+    {
+      "name": "adapter binding input SHA 01-main/actual-params.json",
+      "pass": true
+    },
+    {
+      "name": "adapter binding input SHA 01-main/constant-source-readback.npz",
+      "pass": true
+    },
+    {
+      "name": "adapter binding input SHA 01-main/initial-binding01.json",
+      "pass": true
+    },
+    {
+      "name": "adapter binding input SHA 01-main/initial-readback.npz",
+      "pass": true
+    },
+    {
+      "name": "adapter binding input SHA 01-main/initialize-receipt.json",
+      "pass": true
+    },
+    {
+      "name": "adapter binding input SHA 01-main/initializer-verdict.json",
+      "pass": true
+    },
+    {
+      "name": "adapter binding input SHA 01-main/native.npz",
+      "pass": true
+    },
+    {
+      "name": "adapter binding input SHA 01-main/params-run.json",
+      "pass": true
+    },
+    {
+      "name": "adapter binding input SHA 01-main/run-receipt.json",
+      "pass": true
+    },
+    {
+      "name": "adapter binding input SHA 01-main/run-start.json",
+      "pass": true
+    },
+    {
+      "name": "adapter binding input SHA 01-main/run-worker-start.json",
+      "pass": true
+    },
+    {
+      "name": "adapter binding input SHA ROOT_GATE_PRODUCER_run_01.json",
+      "pass": true
+    },
+    {
+      "name": "adapter binding input SHA native01-attempt01-launch.json",
+      "pass": true
+    },
+    {
+      "name": "adapter binding input SHA native01-attempt01-resources.json",
+      "pass": true
+    },
+    {
+      "name": "adapter binding output SHA 01-main/audit-input01/adapter-receipt.json",
+      "pass": true
+    },
+    {
+      "name": "adapter binding output SHA 01-main/audit-input01/audit-initial-diagnostics.npz",
+      "pass": true
+    },
+    {
+      "name": "adapter binding output SHA 01-main/audit-input01/audit-metadata.json",
+      "pass": true
+    },
+    {
+      "name": "adapter binding output SHA 01-main/audit-input01/audit-native.npz",
+      "pass": true
+    },
+    {
+      "name": "adapter binding output SHA review/adapter01-attempt01-launch.json",
+      "pass": true
+    },
+    {
+      "name": "adapter binding output SHA review/adapter01-attempt01-resources.json",
+      "pass": true
+    },
+    {
+      "name": "adapter binding output SHA review/adapter01-attempt01.log",
+      "pass": true
+    },
+    {
+      "name": "adapter gate input SHA 01-main/actual-params.json",
+      "pass": true
+    },
+    {
+      "name": "adapter gate input SHA 01-main/constant-source-readback.npz",
+      "pass": true
+    },
+    {
+      "name": "adapter gate input SHA 01-main/initial-binding01.json",
+      "pass": true
+    },
+    {
+      "name": "adapter gate input SHA 01-main/initial-readback.npz",
+      "pass": true
+    },
+    {
+      "name": "adapter gate input SHA 01-main/initialize-receipt.json",
+      "pass": true
+    },
+    {
+      "name": "adapter gate input SHA 01-main/initializer-verdict.json",
+      "pass": true
+    },
+    {
+      "name": "adapter gate input SHA 01-main/native.npz",
+      "pass": true
+    },
+    {
+      "name": "adapter gate input SHA 01-main/params-run.json",
+      "pass": true
+    },
+    {
+      "name": "adapter gate input SHA 01-main/run-receipt.json",
+      "pass": true
+    },
+    {
+      "name": "adapter gate input SHA 01-main/run-start.json",
+      "pass": true
+    },
+    {
+      "name": "adapter gate input SHA 01-main/run-worker-start.json",
+      "pass": true
+    },
+    {
+      "name": "adapter gate input SHA ROOT_GATE_PRODUCER_run_01.json",
+      "pass": true
+    },
+    {
+      "name": "adapter gate input SHA native01-attempt01-launch.json",
+      "pass": true
+    },
+    {
+      "name": "adapter gate input SHA native01-attempt01-resources.json",
+      "pass": true
+    },
+    {
+      "name": "adapter launch input SHA 01-main/actual-params.json",
+      "pass": true
+    },
+    {
+      "name": "adapter launch input SHA 01-main/constant-source-readback.npz",
+      "pass": true
+    },
+    {
+      "name": "adapter launch input SHA 01-main/initial-binding01.json",
+      "pass": true
+    },
+    {
+      "name": "adapter launch input SHA 01-main/initial-readback.npz",
+      "pass": true
+    },
+    {
+      "name": "adapter launch input SHA 01-main/initialize-receipt.json",
+      "pass": true
+    },
+    {
+      "name": "adapter launch input SHA 01-main/initializer-verdict.json",
+      "pass": true
+    },
+    {
+      "name": "adapter launch input SHA 01-main/native.npz",
+      "pass": true
+    },
+    {
+      "name": "adapter launch input SHA 01-main/params-run.json",
+      "pass": true
+    },
+    {
+      "name": "adapter launch input SHA 01-main/run-receipt.json",
+      "pass": true
+    },
+    {
+      "name": "adapter launch input SHA 01-main/run-start.json",
+      "pass": true
+    },
+    {
+      "name": "adapter launch input SHA 01-main/run-worker-start.json",
+      "pass": true
+    },
+    {
+      "name": "adapter launch input SHA ROOT_GATE_PRODUCER_run_01.json",
+      "pass": true
+    },
+    {
+      "name": "adapter launch input SHA native01-attempt01-launch.json",
+      "pass": true
+    },
+    {
+      "name": "adapter launch input SHA native01-attempt01-resources.json",
+      "pass": true
+    },
+    {
+      "name": "adapter observer gate/start chain",
+      "pass": true
+    },
+    {
+      "name": "adapter observer launch/resource/verdict chain",
+      "pass": true
+    },
+    {
+      "name": "adapter observer exact declared argv",
+      "pass": true
+    },
+    {
+      "name": "adapter observer resource bounds",
+      "pass": true
+    },
+    {
+      "name": "science binding context selection_sha256",
+      "pass": true
+    },
+    {
+      "name": "science binding context observer_bundle_sha256",
+      "pass": true
+    },
+    {
+      "name": "science binding context definitions_sha256",
+      "pass": true
+    },
+    {
+      "name": "science binding context declared_plan_sha256",
+      "pass": true
+    },
+    {
+      "name": "science binding context manifest_sha256",
+      "pass": true
+    },
+    {
+      "name": "science binding context source_revision",
+      "pass": true
+    },
+    {
+      "name": "science binding context producer_bundle_sha256",
+      "pass": true
+    },
+    {
+      "name": "science observer gate context selection_sha256",
+      "pass": true
+    },
+    {
+      "name": "science observer gate context observer_bundle_sha256",
+      "pass": true
+    },
+    {
+      "name": "science observer gate context definitions_sha256",
+      "pass": true
+    },
+    {
+      "name": "science observer gate context declared_plan_sha256",
+      "pass": true
+    },
+    {
+      "name": "science observer gate context manifest_sha256",
+      "pass": true
+    },
+    {
+      "name": "science observer gate context source_revision",
+      "pass": true
+    },
+    {
+      "name": "science observer gate context producer_bundle_sha256",
+      "pass": true
+    },
+    {
+      "name": "science observer launch context selection_sha256",
+      "pass": true
+    },
+    {
+      "name": "science observer launch context observer_bundle_sha256",
+      "pass": true
+    },
+    {
+      "name": "science observer launch context definitions_sha256",
+      "pass": true
+    },
+    {
+      "name": "science observer launch context declared_plan_sha256",
+      "pass": true
+    },
+    {
+      "name": "science observer launch context manifest_sha256",
+      "pass": true
+    },
+    {
+      "name": "science observer launch context source_revision",
+      "pass": true
+    },
+    {
+      "name": "science observer launch context producer_bundle_sha256",
+      "pass": true
+    },
+    {
+      "name": "science observer resources context selection_sha256",
+      "pass": true
+    },
+    {
+      "name": "science observer resources context observer_bundle_sha256",
+      "pass": true
+    },
+    {
+      "name": "science observer resources context definitions_sha256",
+      "pass": true
+    },
+    {
+      "name": "science observer resources context declared_plan_sha256",
+      "pass": true
+    },
+    {
+      "name": "science observer resources context manifest_sha256",
+      "pass": true
+    },
+    {
+      "name": "science observer resources context source_revision",
+      "pass": true
+    },
+    {
+      "name": "science observer resources context producer_bundle_sha256",
+      "pass": true
+    },
+    {
+      "name": "science observer mode/index/tag",
+      "pass": true
+    },
+    {
+      "name": "science observer successful binding",
+      "pass": true
+    },
+    {
+      "name": "science binding input SHA 01-main/actual-params.json",
+      "pass": true
+    },
+    {
+      "name": "science binding input SHA 01-main/adapter-binding01.json",
+      "pass": true
+    },
+    {
+      "name": "science binding input SHA 01-main/audit-input01/adapter-receipt.json",
+      "pass": true
+    },
+    {
+      "name": "science binding input SHA 01-main/audit-input01/audit-initial-diagnostics.npz",
+      "pass": true
+    },
+    {
+      "name": "science binding input SHA 01-main/audit-input01/audit-metadata.json",
+      "pass": true
+    },
+    {
+      "name": "science binding input SHA 01-main/audit-input01/audit-native.npz",
+      "pass": true
+    },
+    {
+      "name": "science binding input SHA 01-main/constant-source-readback.npz",
+      "pass": true
+    },
+    {
+      "name": "science binding input SHA 01-main/initial-binding01.json",
+      "pass": true
+    },
+    {
+      "name": "science binding input SHA 01-main/initial-readback.npz",
+      "pass": true
+    },
+    {
+      "name": "science binding input SHA 01-main/initialize-receipt.json",
+      "pass": true
+    },
+    {
+      "name": "science binding input SHA 01-main/initializer-verdict.json",
+      "pass": true
+    },
+    {
+      "name": "science binding input SHA 01-main/native.npz",
+      "pass": true
+    },
+    {
+      "name": "science binding input SHA 01-main/params-run.json",
+      "pass": true
+    },
+    {
+      "name": "science binding input SHA 01-main/run-receipt.json",
+      "pass": true
+    },
+    {
+      "name": "science binding input SHA 01-main/run-start.json",
+      "pass": true
+    },
+    {
+      "name": "science binding input SHA 01-main/run-worker-start.json",
+      "pass": true
+    },
+    {
+      "name": "science binding input SHA ROOT_GATE_PRODUCER_run_01.json",
+      "pass": true
+    },
+    {
+      "name": "science binding input SHA native01-attempt01-launch.json",
+      "pass": true
+    },
+    {
+      "name": "science binding input SHA native01-attempt01-resources.json",
+      "pass": true
+    },
+    {
+      "name": "science binding output SHA 01-main/science-verdict01.json",
+      "pass": true
+    },
+    {
+      "name": "science binding output SHA review/science01-attempt01-launch.json",
+      "pass": true
+    },
+    {
+      "name": "science binding output SHA review/science01-attempt01-resources.json",
+      "pass": true
+    },
+    {
+      "name": "science binding output SHA review/science01-attempt01.log",
+      "pass": true
+    },
+    {
+      "name": "science binding output SHA review/science01-journal01.jsonl",
+      "pass": true
+    },
+    {
+      "name": "science gate input SHA 01-main/actual-params.json",
+      "pass": true
+    },
+    {
+      "name": "science gate input SHA 01-main/constant-source-readback.npz",
+      "pass": true
+    },
+    {
+      "name": "science gate input SHA 01-main/initial-binding01.json",
+      "pass": true
+    },
+    {
+      "name": "science gate input SHA 01-main/initial-readback.npz",
+      "pass": true
+    },
+    {
+      "name": "science gate input SHA 01-main/initialize-receipt.json",
+      "pass": true
+    },
+    {
+      "name": "science gate input SHA 01-main/initializer-verdict.json",
+      "pass": true
+    },
+    {
+      "name": "science gate input SHA 01-main/native.npz",
+      "pass": true
+    },
+    {
+      "name": "science gate input SHA 01-main/params-run.json",
+      "pass": true
+    },
+    {
+      "name": "science gate input SHA 01-main/run-receipt.json",
+      "pass": true
+    },
+    {
+      "name": "science gate input SHA 01-main/run-start.json",
+      "pass": true
+    },
+    {
+      "name": "science gate input SHA 01-main/run-worker-start.json",
+      "pass": true
+    },
+    {
+      "name": "science gate input SHA ROOT_GATE_PRODUCER_run_01.json",
+      "pass": true
+    },
+    {
+      "name": "science gate input SHA native01-attempt01-launch.json",
+      "pass": true
+    },
+    {
+      "name": "science gate input SHA native01-attempt01-resources.json",
+      "pass": true
+    },
+    {
+      "name": "science gate input SHA 01-main/audit-input01/audit-native.npz",
+      "pass": true
+    },
+    {
+      "name": "science gate input SHA 01-main/audit-input01/audit-initial-diagnostics.npz",
+      "pass": true
+    },
+    {
+      "name": "science gate input SHA 01-main/audit-input01/audit-metadata.json",
+      "pass": true
+    },
+    {
+      "name": "science gate input SHA 01-main/audit-input01/adapter-receipt.json",
+      "pass": true
+    },
+    {
+      "name": "science gate input SHA 01-main/adapter-binding01.json",
+      "pass": true
+    },
+    {
+      "name": "science launch input SHA 01-main/actual-params.json",
+      "pass": true
+    },
+    {
+      "name": "science launch input SHA 01-main/adapter-binding01.json",
+      "pass": true
+    },
+    {
+      "name": "science launch input SHA 01-main/audit-input01/adapter-receipt.json",
+      "pass": true
+    },
+    {
+      "name": "science launch input SHA 01-main/audit-input01/audit-initial-diagnostics.npz",
+      "pass": true
+    },
+    {
+      "name": "science launch input SHA 01-main/audit-input01/audit-metadata.json",
+      "pass": true
+    },
+    {
+      "name": "science launch input SHA 01-main/audit-input01/audit-native.npz",
+      "pass": true
+    },
+    {
+      "name": "science launch input SHA 01-main/constant-source-readback.npz",
+      "pass": true
+    },
+    {
+      "name": "science launch input SHA 01-main/initial-binding01.json",
+      "pass": true
+    },
+    {
+      "name": "science launch input SHA 01-main/initial-readback.npz",
+      "pass": true
+    },
+    {
+      "name": "science launch input SHA 01-main/initialize-receipt.json",
+      "pass": true
+    },
+    {
+      "name": "science launch input SHA 01-main/initializer-verdict.json",
+      "pass": true
+    },
+    {
+      "name": "science launch input SHA 01-main/native.npz",
+      "pass": true
+    },
+    {
+      "name": "science launch input SHA 01-main/params-run.json",
+      "pass": true
+    },
+    {
+      "name": "science launch input SHA 01-main/run-receipt.json",
+      "pass": true
+    },
+    {
+      "name": "science launch input SHA 01-main/run-start.json",
+      "pass": true
+    },
+    {
+      "name": "science launch input SHA 01-main/run-worker-start.json",
+      "pass": true
+    },
+    {
+      "name": "science launch input SHA ROOT_GATE_PRODUCER_run_01.json",
+      "pass": true
+    },
+    {
+      "name": "science launch input SHA native01-attempt01-launch.json",
+      "pass": true
+    },
+    {
+      "name": "science launch input SHA native01-attempt01-resources.json",
+      "pass": true
+    },
+    {
+      "name": "science observer gate/start chain",
+      "pass": true
+    },
+    {
+      "name": "science observer launch/resource/verdict chain",
+      "pass": true
+    },
+    {
+      "name": "science observer exact declared argv",
+      "pass": true
+    },
+    {
+      "name": "science observer resource bounds",
+      "pass": true
+    },
+    {
+      "name": "own independent initializer PASS",
+      "pass": true
+    },
+    {
+      "name": "initializer four SHA initial_sha256",
+      "pass": true
+    },
+    {
+      "name": "initializer four SHA params_sha256",
+      "pass": true
+    },
+    {
+      "name": "initializer four SHA initialize_receipt_sha256",
+      "pass": true
+    },
+    {
+      "name": "initializer four SHA constant_source_sha256",
+      "pass": true
+    },
+    {
+      "name": "initializer producer archived identity",
+      "pass": true
+    },
+    {
+      "name": "adapter explicit structural scope",
+      "pass": true
+    },
+    {
+      "name": "adapter original SHA 01-main/native.npz",
+      "pass": true
+    },
+    {
+      "name": "adapter original SHA 01-main/run-receipt.json",
+      "pass": true
+    },
+    {
+      "name": "adapter original SHA 01-main/params-run.json",
+      "pass": true
+    },
+    {
+      "name": "adapter original SHA 01-main/initial-readback.npz",
+      "pass": true
+    },
+    {
+      "name": "adapter original SHA 01-main/actual-params.json",
+      "pass": true
+    },
+    {
+      "name": "adapter original SHA 01-main/initialize-receipt.json",
+      "pass": true
+    },
+    {
+      "name": "adapter original SHA 01-main/initializer-verdict.json",
+      "pass": true
+    },
+    {
+      "name": "adapter original SHA 01-main/constant-source-readback.npz",
+      "pass": true
+    },
+    {
+      "name": "adapter output SHA 01-main/audit-input01/audit-native.npz",
+      "pass": true
+    },
+    {
+      "name": "adapter output SHA 01-main/audit-input01/audit-initial-diagnostics.npz",
+      "pass": true
+    },
+    {
+      "name": "adapter output SHA 01-main/audit-input01/audit-metadata.json",
+      "pass": true
+    },
+    {
+      "name": "original science PASS index1 main",
+      "pass": true
+    },
+    {
+      "name": "science actual input identities",
+      "pass": true
+    },
+    {
+      "name": "selected manifest hash and revision",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before full set",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/benchmarks/internal_wave",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/evaluation/internal_wave",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/execution/internal_wave",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/__init__",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/__main__",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/baselines/__init__",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/baselines/oceananigans/__init__",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/baselines/oceananigans/adapter",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/baselines/cli",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/baselines/mom6/__init__",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/baselines/mom6/adapter",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/baselines/mom6/coupled_sources",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/baselines/mom6/forcing",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/baselines/mom6/omip2",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/baselines/mom6/omip2_time",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/baselines/mom6/tripolar",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/baselines/mom6/standing_wave",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/benchmarks/__init__",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/benchmarks/standing_wave",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/benchmarks/configuration_scan",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/execution/configuration_scan",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/evaluation/standing_wave",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/evaluation/wave_study",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/evaluation/native_channel",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/evaluation/channel_dynamics",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/benchmarks/channel_dynamics",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/execution/channel_dynamics",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/baselines/mom6/channel_initial",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/baselines/oceananigans/channel_initial",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/cli",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/coupling/__init__",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/preparation/__init__",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/evaluation/__init__",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/evaluation/cli",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/evaluation/external",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/evaluation/gate",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/evaluation/ice",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/evaluation/manifest",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/evaluation/metrics",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/evaluation/pipeline",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/evaluation/protocols",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/evaluation/table",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/execution/__init__",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/execution/benchmark",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/execution/standing_wave",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/execution/native_channel",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/execution/wave_zhenmode",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/preparation/woa",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/preparation/native_initial",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/preparation/coast",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/preparation/bottom",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/preparation/fd",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/execution/wind_run",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/coupling/sis2",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/coupling/geometry",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/preparation/acquisition",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/preparation/forcing",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/preparation/wind_sample",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/benchmarks/forced_channel",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/evaluation/forced_channel",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/execution/forced_channel",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/execution/cli",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/execution/options",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/execution/profiling",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/execution/resolve",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/execution/resources",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/execution/runs",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/execution/schema",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/execution/worker",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/model/__init__",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/model/config",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/model/diagnostics/__init__",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/model/diagnostics/budgets",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/model/diagnostics/mixed_layer",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/model/diagnostics/surface_budget",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/model/diagnostics/snapshot",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/model/inputs/__init__",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/model/inputs/bathymetry",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/model/inputs/coastline",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/model/inputs/forcing/__init__",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/model/inputs/forcing/bundle",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/model/inputs/forcing/idealized",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/model/inputs/forcing/jra55",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/model/inputs/forcing/online",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/model/inputs/forcing/reanalysis",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/model/inputs/forcing/seasonal",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/model/inputs/initial_conditions",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/model/inputs/prepare",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/model/inputs/quality",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/model/inputs/sources",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/model/io/__init__",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/model/io/output",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/model/io/records",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/model/io/restart",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/model/runtime/__init__",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/model/runtime/cli",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/model/runtime/monitor",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/model/runtime/reporting",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/model/runtime/run",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/model/runtime/run_loop",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/model/solver/__init__",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/model/solver/dynamics/__init__",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/model/solver/dynamics/barotropic",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/model/solver/dynamics/pressure",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/model/solver/dynamics/projection",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/model/solver/dynamics/tendencies",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/model/solver/dynamics/transport",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/model/solver/factory",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/model/solver/geometry/__init__",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/model/solver/geometry/fd_metrics",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/model/solver/geometry/grid",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/model/solver/numerics/__init__",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/model/solver/numerics/backend",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/model/solver/numerics/channel",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/model/solver/numerics/column",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/model/solver/numerics/contacts",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/model/solver/numerics/horizontal",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/model/solver/numerics/vertical",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/model/solver/physics/__init__",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/model/solver/physics/air_sea",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/model/solver/physics/eos",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/model/solver/physics/isopycnal",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/model/solver/physics/surface",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/model/solver/physics/sis2",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/model/solver/physics/teos10",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/model/solver/physics/vertical",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/model/solver/state",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/model/solver/timestepping/__init__",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/model/solver/timestepping/step",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/model/solver/timestepping/subcycles",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/model/verification",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/provenance/__init__",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_before identity zhenmode/provenance/sources",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after full set",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/benchmarks/internal_wave",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/evaluation/internal_wave",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/execution/internal_wave",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/__init__",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/__main__",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/baselines/__init__",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/baselines/oceananigans/__init__",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/baselines/oceananigans/adapter",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/baselines/cli",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/baselines/mom6/__init__",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/baselines/mom6/adapter",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/baselines/mom6/coupled_sources",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/baselines/mom6/forcing",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/baselines/mom6/omip2",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/baselines/mom6/omip2_time",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/baselines/mom6/tripolar",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/baselines/mom6/standing_wave",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/benchmarks/__init__",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/benchmarks/standing_wave",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/benchmarks/configuration_scan",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/execution/configuration_scan",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/evaluation/standing_wave",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/evaluation/wave_study",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/evaluation/native_channel",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/evaluation/channel_dynamics",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/benchmarks/channel_dynamics",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/execution/channel_dynamics",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/baselines/mom6/channel_initial",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/baselines/oceananigans/channel_initial",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/cli",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/coupling/__init__",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/preparation/__init__",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/evaluation/__init__",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/evaluation/cli",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/evaluation/external",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/evaluation/gate",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/evaluation/ice",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/evaluation/manifest",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/evaluation/metrics",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/evaluation/pipeline",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/evaluation/protocols",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/evaluation/table",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/execution/__init__",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/execution/benchmark",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/execution/standing_wave",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/execution/native_channel",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/execution/wave_zhenmode",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/preparation/woa",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/preparation/native_initial",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/preparation/coast",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/preparation/bottom",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/preparation/fd",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/execution/wind_run",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/coupling/sis2",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/coupling/geometry",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/preparation/acquisition",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/preparation/forcing",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/preparation/wind_sample",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/benchmarks/forced_channel",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/evaluation/forced_channel",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/execution/forced_channel",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/execution/cli",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/execution/options",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/execution/profiling",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/execution/resolve",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/execution/resources",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/execution/runs",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/execution/schema",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/execution/worker",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/model/__init__",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/model/config",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/model/diagnostics/__init__",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/model/diagnostics/budgets",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/model/diagnostics/mixed_layer",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/model/diagnostics/surface_budget",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/model/diagnostics/snapshot",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/model/inputs/__init__",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/model/inputs/bathymetry",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/model/inputs/coastline",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/model/inputs/forcing/__init__",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/model/inputs/forcing/bundle",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/model/inputs/forcing/idealized",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/model/inputs/forcing/jra55",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/model/inputs/forcing/online",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/model/inputs/forcing/reanalysis",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/model/inputs/forcing/seasonal",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/model/inputs/initial_conditions",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/model/inputs/prepare",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/model/inputs/quality",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/model/inputs/sources",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/model/io/__init__",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/model/io/output",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/model/io/records",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/model/io/restart",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/model/runtime/__init__",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/model/runtime/cli",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/model/runtime/monitor",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/model/runtime/reporting",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/model/runtime/run",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/model/runtime/run_loop",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/model/solver/__init__",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/model/solver/dynamics/__init__",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/model/solver/dynamics/barotropic",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/model/solver/dynamics/pressure",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/model/solver/dynamics/projection",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/model/solver/dynamics/tendencies",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/model/solver/dynamics/transport",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/model/solver/factory",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/model/solver/geometry/__init__",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/model/solver/geometry/fd_metrics",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/model/solver/geometry/grid",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/model/solver/numerics/__init__",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/model/solver/numerics/backend",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/model/solver/numerics/channel",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/model/solver/numerics/column",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/model/solver/numerics/contacts",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/model/solver/numerics/horizontal",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/model/solver/numerics/vertical",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/model/solver/physics/__init__",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/model/solver/physics/air_sea",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/model/solver/physics/eos",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/model/solver/physics/isopycnal",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/model/solver/physics/surface",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/model/solver/physics/sis2",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/model/solver/physics/teos10",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/model/solver/physics/vertical",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/model/solver/state",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/model/solver/timestepping/__init__",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/model/solver/timestepping/step",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/model/solver/timestepping/subcycles",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/model/verification",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/provenance/__init__",
+      "pass": true
+    },
+    {
+      "name": "initialize package_source_after identity zhenmode/provenance/sources",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before full set",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/benchmarks/internal_wave",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/evaluation/internal_wave",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/execution/internal_wave",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/__init__",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/__main__",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/baselines/__init__",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/baselines/oceananigans/__init__",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/baselines/oceananigans/adapter",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/baselines/cli",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/baselines/mom6/__init__",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/baselines/mom6/adapter",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/baselines/mom6/coupled_sources",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/baselines/mom6/forcing",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/baselines/mom6/omip2",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/baselines/mom6/omip2_time",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/baselines/mom6/tripolar",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/baselines/mom6/standing_wave",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/benchmarks/__init__",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/benchmarks/standing_wave",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/benchmarks/configuration_scan",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/execution/configuration_scan",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/evaluation/standing_wave",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/evaluation/wave_study",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/evaluation/native_channel",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/evaluation/channel_dynamics",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/benchmarks/channel_dynamics",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/execution/channel_dynamics",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/baselines/mom6/channel_initial",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/baselines/oceananigans/channel_initial",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/cli",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/coupling/__init__",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/preparation/__init__",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/evaluation/__init__",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/evaluation/cli",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/evaluation/external",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/evaluation/gate",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/evaluation/ice",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/evaluation/manifest",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/evaluation/metrics",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/evaluation/pipeline",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/evaluation/protocols",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/evaluation/table",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/execution/__init__",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/execution/benchmark",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/execution/standing_wave",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/execution/native_channel",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/execution/wave_zhenmode",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/preparation/woa",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/preparation/native_initial",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/preparation/coast",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/preparation/bottom",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/preparation/fd",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/execution/wind_run",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/coupling/sis2",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/coupling/geometry",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/preparation/acquisition",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/preparation/forcing",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/preparation/wind_sample",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/benchmarks/forced_channel",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/evaluation/forced_channel",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/execution/forced_channel",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/execution/cli",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/execution/options",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/execution/profiling",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/execution/resolve",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/execution/resources",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/execution/runs",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/execution/schema",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/execution/worker",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/model/__init__",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/model/config",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/model/diagnostics/__init__",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/model/diagnostics/budgets",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/model/diagnostics/mixed_layer",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/model/diagnostics/surface_budget",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/model/diagnostics/snapshot",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/model/inputs/__init__",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/model/inputs/bathymetry",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/model/inputs/coastline",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/model/inputs/forcing/__init__",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/model/inputs/forcing/bundle",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/model/inputs/forcing/idealized",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/model/inputs/forcing/jra55",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/model/inputs/forcing/online",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/model/inputs/forcing/reanalysis",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/model/inputs/forcing/seasonal",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/model/inputs/initial_conditions",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/model/inputs/prepare",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/model/inputs/quality",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/model/inputs/sources",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/model/io/__init__",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/model/io/output",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/model/io/records",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/model/io/restart",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/model/runtime/__init__",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/model/runtime/cli",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/model/runtime/monitor",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/model/runtime/reporting",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/model/runtime/run",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/model/runtime/run_loop",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/model/solver/__init__",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/model/solver/dynamics/__init__",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/model/solver/dynamics/barotropic",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/model/solver/dynamics/pressure",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/model/solver/dynamics/projection",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/model/solver/dynamics/tendencies",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/model/solver/dynamics/transport",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/model/solver/factory",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/model/solver/geometry/__init__",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/model/solver/geometry/fd_metrics",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/model/solver/geometry/grid",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/model/solver/numerics/__init__",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/model/solver/numerics/backend",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/model/solver/numerics/channel",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/model/solver/numerics/column",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/model/solver/numerics/contacts",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/model/solver/numerics/horizontal",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/model/solver/numerics/vertical",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/model/solver/physics/__init__",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/model/solver/physics/air_sea",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/model/solver/physics/eos",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/model/solver/physics/isopycnal",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/model/solver/physics/surface",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/model/solver/physics/sis2",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/model/solver/physics/teos10",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/model/solver/physics/vertical",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/model/solver/state",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/model/solver/timestepping/__init__",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/model/solver/timestepping/step",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/model/solver/timestepping/subcycles",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/model/verification",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/provenance/__init__",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_before identity zhenmode/provenance/sources",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after full set",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/benchmarks/internal_wave",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/evaluation/internal_wave",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/execution/internal_wave",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/__init__",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/__main__",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/baselines/__init__",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/baselines/oceananigans/__init__",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/baselines/oceananigans/adapter",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/baselines/cli",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/baselines/mom6/__init__",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/baselines/mom6/adapter",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/baselines/mom6/coupled_sources",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/baselines/mom6/forcing",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/baselines/mom6/omip2",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/baselines/mom6/omip2_time",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/baselines/mom6/tripolar",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/baselines/mom6/standing_wave",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/benchmarks/__init__",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/benchmarks/standing_wave",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/benchmarks/configuration_scan",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/execution/configuration_scan",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/evaluation/standing_wave",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/evaluation/wave_study",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/evaluation/native_channel",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/evaluation/channel_dynamics",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/benchmarks/channel_dynamics",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/execution/channel_dynamics",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/baselines/mom6/channel_initial",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/baselines/oceananigans/channel_initial",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/cli",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/coupling/__init__",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/preparation/__init__",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/evaluation/__init__",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/evaluation/cli",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/evaluation/external",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/evaluation/gate",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/evaluation/ice",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/evaluation/manifest",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/evaluation/metrics",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/evaluation/pipeline",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/evaluation/protocols",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/evaluation/table",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/execution/__init__",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/execution/benchmark",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/execution/standing_wave",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/execution/native_channel",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/execution/wave_zhenmode",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/preparation/woa",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/preparation/native_initial",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/preparation/coast",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/preparation/bottom",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/preparation/fd",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/execution/wind_run",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/coupling/sis2",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/coupling/geometry",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/preparation/acquisition",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/preparation/forcing",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/preparation/wind_sample",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/benchmarks/forced_channel",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/evaluation/forced_channel",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/execution/forced_channel",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/execution/cli",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/execution/options",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/execution/profiling",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/execution/resolve",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/execution/resources",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/execution/runs",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/execution/schema",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/execution/worker",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/model/__init__",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/model/config",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/model/diagnostics/__init__",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/model/diagnostics/budgets",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/model/diagnostics/mixed_layer",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/model/diagnostics/surface_budget",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/model/diagnostics/snapshot",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/model/inputs/__init__",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/model/inputs/bathymetry",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/model/inputs/coastline",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/model/inputs/forcing/__init__",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/model/inputs/forcing/bundle",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/model/inputs/forcing/idealized",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/model/inputs/forcing/jra55",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/model/inputs/forcing/online",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/model/inputs/forcing/reanalysis",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/model/inputs/forcing/seasonal",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/model/inputs/initial_conditions",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/model/inputs/prepare",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/model/inputs/quality",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/model/inputs/sources",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/model/io/__init__",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/model/io/output",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/model/io/records",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/model/io/restart",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/model/runtime/__init__",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/model/runtime/cli",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/model/runtime/monitor",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/model/runtime/reporting",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/model/runtime/run",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/model/runtime/run_loop",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/model/solver/__init__",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/model/solver/dynamics/__init__",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/model/solver/dynamics/barotropic",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/model/solver/dynamics/pressure",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/model/solver/dynamics/projection",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/model/solver/dynamics/tendencies",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/model/solver/dynamics/transport",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/model/solver/factory",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/model/solver/geometry/__init__",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/model/solver/geometry/fd_metrics",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/model/solver/geometry/grid",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/model/solver/numerics/__init__",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/model/solver/numerics/backend",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/model/solver/numerics/channel",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/model/solver/numerics/column",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/model/solver/numerics/contacts",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/model/solver/numerics/horizontal",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/model/solver/numerics/vertical",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/model/solver/physics/__init__",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/model/solver/physics/air_sea",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/model/solver/physics/eos",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/model/solver/physics/isopycnal",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/model/solver/physics/surface",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/model/solver/physics/sis2",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/model/solver/physics/teos10",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/model/solver/physics/vertical",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/model/solver/state",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/model/solver/timestepping/__init__",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/model/solver/timestepping/step",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/model/solver/timestepping/subcycles",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/model/verification",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/provenance/__init__",
+      "pass": true
+    },
+    {
+      "name": "timing package_source_after identity zhenmode/provenance/sources",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before full set",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/benchmarks/internal_wave",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/evaluation/internal_wave",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/execution/internal_wave",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/__init__",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/__main__",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/baselines/__init__",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/baselines/oceananigans/__init__",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/baselines/oceananigans/adapter",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/baselines/cli",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/baselines/mom6/__init__",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/baselines/mom6/adapter",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/baselines/mom6/coupled_sources",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/baselines/mom6/forcing",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/baselines/mom6/omip2",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/baselines/mom6/omip2_time",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/baselines/mom6/tripolar",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/baselines/mom6/standing_wave",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/benchmarks/__init__",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/benchmarks/standing_wave",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/benchmarks/configuration_scan",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/execution/configuration_scan",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/evaluation/standing_wave",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/evaluation/wave_study",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/evaluation/native_channel",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/evaluation/channel_dynamics",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/benchmarks/channel_dynamics",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/execution/channel_dynamics",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/baselines/mom6/channel_initial",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/baselines/oceananigans/channel_initial",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/cli",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/coupling/__init__",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/preparation/__init__",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/evaluation/__init__",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/evaluation/cli",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/evaluation/external",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/evaluation/gate",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/evaluation/ice",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/evaluation/manifest",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/evaluation/metrics",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/evaluation/pipeline",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/evaluation/protocols",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/evaluation/table",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/execution/__init__",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/execution/benchmark",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/execution/standing_wave",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/execution/native_channel",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/execution/wave_zhenmode",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/preparation/woa",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/preparation/native_initial",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/preparation/coast",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/preparation/bottom",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/preparation/fd",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/execution/wind_run",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/coupling/sis2",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/coupling/geometry",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/preparation/acquisition",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/preparation/forcing",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/preparation/wind_sample",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/benchmarks/forced_channel",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/evaluation/forced_channel",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/execution/forced_channel",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/execution/cli",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/execution/options",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/execution/profiling",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/execution/resolve",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/execution/resources",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/execution/runs",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/execution/schema",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/execution/worker",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/model/__init__",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/model/config",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/model/diagnostics/__init__",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/model/diagnostics/budgets",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/model/diagnostics/mixed_layer",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/model/diagnostics/surface_budget",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/model/diagnostics/snapshot",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/model/inputs/__init__",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/model/inputs/bathymetry",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/model/inputs/coastline",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/model/inputs/forcing/__init__",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/model/inputs/forcing/bundle",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/model/inputs/forcing/idealized",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/model/inputs/forcing/jra55",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/model/inputs/forcing/online",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/model/inputs/forcing/reanalysis",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/model/inputs/forcing/seasonal",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/model/inputs/initial_conditions",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/model/inputs/prepare",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/model/inputs/quality",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/model/inputs/sources",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/model/io/__init__",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/model/io/output",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/model/io/records",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/model/io/restart",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/model/runtime/__init__",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/model/runtime/cli",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/model/runtime/monitor",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/model/runtime/reporting",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/model/runtime/run",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/model/runtime/run_loop",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/model/solver/__init__",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/model/solver/dynamics/__init__",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/model/solver/dynamics/barotropic",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/model/solver/dynamics/pressure",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/model/solver/dynamics/projection",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/model/solver/dynamics/tendencies",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/model/solver/dynamics/transport",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/model/solver/factory",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/model/solver/geometry/__init__",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/model/solver/geometry/fd_metrics",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/model/solver/geometry/grid",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/model/solver/numerics/__init__",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/model/solver/numerics/backend",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/model/solver/numerics/channel",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/model/solver/numerics/column",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/model/solver/numerics/contacts",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/model/solver/numerics/horizontal",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/model/solver/numerics/vertical",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/model/solver/physics/__init__",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/model/solver/physics/air_sea",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/model/solver/physics/eos",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/model/solver/physics/isopycnal",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/model/solver/physics/surface",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/model/solver/physics/sis2",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/model/solver/physics/teos10",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/model/solver/physics/vertical",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/model/solver/state",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/model/solver/timestepping/__init__",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/model/solver/timestepping/step",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/model/solver/timestepping/subcycles",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/model/verification",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/provenance/__init__",
+      "pass": true
+    },
+    {
+      "name": "run package_source_before identity zhenmode/provenance/sources",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after full set",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/benchmarks/internal_wave",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/evaluation/internal_wave",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/execution/internal_wave",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/__init__",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/__main__",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/baselines/__init__",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/baselines/oceananigans/__init__",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/baselines/oceananigans/adapter",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/baselines/cli",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/baselines/mom6/__init__",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/baselines/mom6/adapter",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/baselines/mom6/coupled_sources",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/baselines/mom6/forcing",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/baselines/mom6/omip2",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/baselines/mom6/omip2_time",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/baselines/mom6/tripolar",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/baselines/mom6/standing_wave",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/benchmarks/__init__",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/benchmarks/standing_wave",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/benchmarks/configuration_scan",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/execution/configuration_scan",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/evaluation/standing_wave",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/evaluation/wave_study",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/evaluation/native_channel",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/evaluation/channel_dynamics",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/benchmarks/channel_dynamics",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/execution/channel_dynamics",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/baselines/mom6/channel_initial",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/baselines/oceananigans/channel_initial",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/cli",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/coupling/__init__",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/preparation/__init__",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/evaluation/__init__",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/evaluation/cli",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/evaluation/external",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/evaluation/gate",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/evaluation/ice",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/evaluation/manifest",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/evaluation/metrics",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/evaluation/pipeline",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/evaluation/protocols",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/evaluation/table",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/execution/__init__",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/execution/benchmark",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/execution/standing_wave",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/execution/native_channel",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/execution/wave_zhenmode",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/preparation/woa",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/preparation/native_initial",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/preparation/coast",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/preparation/bottom",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/preparation/fd",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/execution/wind_run",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/coupling/sis2",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/coupling/geometry",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/preparation/acquisition",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/preparation/forcing",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/preparation/wind_sample",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/benchmarks/forced_channel",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/evaluation/forced_channel",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/execution/forced_channel",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/execution/cli",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/execution/options",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/execution/profiling",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/execution/resolve",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/execution/resources",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/execution/runs",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/execution/schema",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/execution/worker",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/model/__init__",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/model/config",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/model/diagnostics/__init__",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/model/diagnostics/budgets",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/model/diagnostics/mixed_layer",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/model/diagnostics/surface_budget",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/model/diagnostics/snapshot",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/model/inputs/__init__",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/model/inputs/bathymetry",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/model/inputs/coastline",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/model/inputs/forcing/__init__",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/model/inputs/forcing/bundle",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/model/inputs/forcing/idealized",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/model/inputs/forcing/jra55",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/model/inputs/forcing/online",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/model/inputs/forcing/reanalysis",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/model/inputs/forcing/seasonal",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/model/inputs/initial_conditions",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/model/inputs/prepare",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/model/inputs/quality",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/model/inputs/sources",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/model/io/__init__",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/model/io/output",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/model/io/records",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/model/io/restart",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/model/runtime/__init__",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/model/runtime/cli",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/model/runtime/monitor",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/model/runtime/reporting",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/model/runtime/run",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/model/runtime/run_loop",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/model/solver/__init__",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/model/solver/dynamics/__init__",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/model/solver/dynamics/barotropic",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/model/solver/dynamics/pressure",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/model/solver/dynamics/projection",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/model/solver/dynamics/tendencies",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/model/solver/dynamics/transport",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/model/solver/factory",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/model/solver/geometry/__init__",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/model/solver/geometry/fd_metrics",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/model/solver/geometry/grid",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/model/solver/numerics/__init__",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/model/solver/numerics/backend",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/model/solver/numerics/channel",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/model/solver/numerics/column",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/model/solver/numerics/contacts",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/model/solver/numerics/horizontal",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/model/solver/numerics/vertical",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/model/solver/physics/__init__",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/model/solver/physics/air_sea",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/model/solver/physics/eos",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/model/solver/physics/isopycnal",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/model/solver/physics/surface",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/model/solver/physics/sis2",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/model/solver/physics/teos10",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/model/solver/physics/vertical",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/model/solver/state",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/model/solver/timestepping/__init__",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/model/solver/timestepping/step",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/model/solver/timestepping/subcycles",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/model/verification",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/provenance/__init__",
+      "pass": true
+    },
+    {
+      "name": "run package_source_after identity zhenmode/provenance/sources",
+      "pass": true
+    },
+    {
+      "name": "actual loaded source root zhenmode",
+      "pass": true
+    },
+    {
+      "name": "actual loaded path in captured source zhenmode",
+      "pass": true
+    },
+    {
+      "name": "actual loaded source root zhenmode.model",
+      "pass": true
+    },
+    {
+      "name": "actual loaded path in captured source zhenmode.model",
+      "pass": true
+    },
+    {
+      "name": "actual loaded source root zhenmode.model.inputs",
+      "pass": true
+    },
+    {
+      "name": "actual loaded path in captured source zhenmode.model.inputs",
+      "pass": true
+    },
+    {
+      "name": "actual loaded source root zhenmode.model.inputs.quality",
+      "pass": true
+    },
+    {
+      "name": "actual loaded path in captured source zhenmode.model.inputs.quality",
+      "pass": true
+    },
+    {
+      "name": "actual loaded source root zhenmode.provenance",
+      "pass": true
+    },
+    {
+      "name": "actual loaded path in captured source zhenmode.provenance",
+      "pass": true
+    },
+    {
+      "name": "actual loaded source root zhenmode.provenance.sources",
+      "pass": true
+    },
+    {
+      "name": "actual loaded path in captured source zhenmode.provenance.sources",
+      "pass": true
+    },
+    {
+      "name": "actual loaded source root zhenmode.model.inputs.sources",
+      "pass": true
+    },
+    {
+      "name": "actual loaded path in captured source zhenmode.model.inputs.sources",
+      "pass": true
+    },
+    {
+      "name": "actual loaded source root zhenmode.model.config",
+      "pass": true
+    },
+    {
+      "name": "actual loaded path in captured source zhenmode.model.config",
+      "pass": true
+    },
+    {
+      "name": "actual loaded source root zhenmode.model.solver",
+      "pass": true
+    },
+    {
+      "name": "actual loaded path in captured source zhenmode.model.solver",
+      "pass": true
+    },
+    {
+      "name": "actual loaded source root zhenmode.model.solver.geometry",
+      "pass": true
+    },
+    {
+      "name": "actual loaded path in captured source zhenmode.model.solver.geometry",
+      "pass": true
+    },
+    {
+      "name": "actual loaded source root zhenmode.model.solver.geometry.grid",
+      "pass": true
+    },
+    {
+      "name": "actual loaded path in captured source zhenmode.model.solver.geometry.grid",
+      "pass": true
+    },
+    {
+      "name": "actual loaded source root zhenmode.model.solver.dynamics",
+      "pass": true
+    },
+    {
+      "name": "actual loaded path in captured source zhenmode.model.solver.dynamics",
+      "pass": true
+    },
+    {
+      "name": "actual loaded source root zhenmode.model.solver.numerics",
+      "pass": true
+    },
+    {
+      "name": "actual loaded path in captured source zhenmode.model.solver.numerics",
+      "pass": true
+    },
+    {
+      "name": "actual loaded source root zhenmode.model.solver.numerics.backend",
+      "pass": true
+    },
+    {
+      "name": "actual loaded path in captured source zhenmode.model.solver.numerics.backend",
+      "pass": true
+    },
+    {
+      "name": "actual loaded source root zhenmode.model.solver.numerics.column",
+      "pass": true
+    },
+    {
+      "name": "actual loaded path in captured source zhenmode.model.solver.numerics.column",
+      "pass": true
+    },
+    {
+      "name": "actual loaded source root zhenmode.model.solver.numerics.contacts",
+      "pass": true
+    },
+    {
+      "name": "actual loaded path in captured source zhenmode.model.solver.numerics.contacts",
+      "pass": true
+    },
+    {
+      "name": "actual loaded source root zhenmode.model.solver.numerics.vertical",
+      "pass": true
+    },
+    {
+      "name": "actual loaded path in captured source zhenmode.model.solver.numerics.vertical",
+      "pass": true
+    },
+    {
+      "name": "actual loaded source root zhenmode.model.solver.numerics.channel",
+      "pass": true
+    },
+    {
+      "name": "actual loaded path in captured source zhenmode.model.solver.numerics.channel",
+      "pass": true
+    },
+    {
+      "name": "actual loaded source root zhenmode.model.solver.numerics.horizontal",
+      "pass": true
+    },
+    {
+      "name": "actual loaded path in captured source zhenmode.model.solver.numerics.horizontal",
+      "pass": true
+    },
+    {
+      "name": "actual loaded source root zhenmode.model.solver.physics",
+      "pass": true
+    },
+    {
+      "name": "actual loaded path in captured source zhenmode.model.solver.physics",
+      "pass": true
+    },
+    {
+      "name": "actual loaded source root zhenmode.model.solver.physics.eos",
+      "pass": true
+    },
+    {
+      "name": "actual loaded path in captured source zhenmode.model.solver.physics.eos",
+      "pass": true
+    },
+    {
+      "name": "actual loaded source root zhenmode.model.solver.dynamics.pressure",
+      "pass": true
+    },
+    {
+      "name": "actual loaded path in captured source zhenmode.model.solver.dynamics.pressure",
+      "pass": true
+    },
+    {
+      "name": "actual loaded source root zhenmode.model.solver.dynamics.transport",
+      "pass": true
+    },
+    {
+      "name": "actual loaded path in captured source zhenmode.model.solver.dynamics.transport",
+      "pass": true
+    },
+    {
+      "name": "actual loaded source root zhenmode.model.solver.dynamics.projection",
+      "pass": true
+    },
+    {
+      "name": "actual loaded path in captured source zhenmode.model.solver.dynamics.projection",
+      "pass": true
+    },
+    {
+      "name": "actual loaded source root zhenmode.model.solver.physics.isopycnal",
+      "pass": true
+    },
+    {
+      "name": "actual loaded path in captured source zhenmode.model.solver.physics.isopycnal",
+      "pass": true
+    },
+    {
+      "name": "actual loaded source root zhenmode.model.solver.state",
+      "pass": true
+    },
+    {
+      "name": "actual loaded path in captured source zhenmode.model.solver.state",
+      "pass": true
+    },
+    {
+      "name": "actual loaded source root zhenmode.model.solver.physics.surface",
+      "pass": true
+    },
+    {
+      "name": "actual loaded path in captured source zhenmode.model.solver.physics.surface",
+      "pass": true
+    },
+    {
+      "name": "actual loaded source root zhenmode.model.solver.physics.vertical",
+      "pass": true
+    },
+    {
+      "name": "actual loaded path in captured source zhenmode.model.solver.physics.vertical",
+      "pass": true
+    },
+    {
+      "name": "actual loaded source root zhenmode.model.solver.timestepping",
+      "pass": true
+    },
+    {
+      "name": "actual loaded path in captured source zhenmode.model.solver.timestepping",
+      "pass": true
+    },
+    {
+      "name": "actual loaded source root zhenmode.model.solver.timestepping.subcycles",
+      "pass": true
+    },
+    {
+      "name": "actual loaded path in captured source zhenmode.model.solver.timestepping.subcycles",
+      "pass": true
+    },
+    {
+      "name": "actual loaded source root zhenmode.model.solver.dynamics.tendencies",
+      "pass": true
+    },
+    {
+      "name": "actual loaded path in captured source zhenmode.model.solver.dynamics.tendencies",
+      "pass": true
+    },
+    {
+      "name": "actual loaded source root zhenmode.model.solver.geometry.fd_metrics",
+      "pass": true
+    },
+    {
+      "name": "actual loaded path in captured source zhenmode.model.solver.geometry.fd_metrics",
+      "pass": true
+    },
+    {
+      "name": "actual loaded source root zhenmode.model.solver.dynamics.barotropic",
+      "pass": true
+    },
+    {
+      "name": "actual loaded path in captured source zhenmode.model.solver.dynamics.barotropic",
+      "pass": true
+    },
+    {
+      "name": "actual loaded source root zhenmode.model.solver.timestepping.step",
+      "pass": true
+    },
+    {
+      "name": "actual loaded path in captured source zhenmode.model.solver.timestepping.step",
+      "pass": true
+    },
+    {
+      "name": "actual loaded source root zhenmode.model.solver.factory",
+      "pass": true
+    },
+    {
+      "name": "actual loaded path in captured source zhenmode.model.solver.factory",
+      "pass": true
+    },
+    {
+      "name": "actual recorded selection x64/device",
+      "pass": true
+    },
+    {
+      "name": "science journal no failed assertions",
+      "pass": true
+    }
+  ],
+  "file_sha256": {
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\review\\PILOT_TERMINAL_REVIEW01.json": "c0d5951bc49358540c1ac956f7cca66bf9570badaedcb76e2896eb1554a5af86",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\ROOT_BRIDGE_STATIC_REVIEW01.json": "439d77b75c71a4d760c647329507434309c732a3692ac4fb1df46fd75312a65d",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\review\\ATTEMPT02_STATIC_REVIEW01.json": "1e423a49266c6c2a9dc38d8eda84beedcdf7e9029267cf98969629c7aab8ffca",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\00-main\\science-verdict01.json": "abec6f2aa16308cd012e1a64686241ae824670fe0bef5cad2a1db3d7d15027bb",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\review\\science00-attempt01-resources.json": "53d2ccf34779ca20aedd79caec2f865aeaec3e67ec88b3c577eebb402a714a0b",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\ROOT_GATE_PRODUCER_initialize_01.json": "ae89df1f140ae5f863347eaec22490b5e6543812134074e204be00f8e1c67d19",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\01-main\\initialize-start.json": "551c41c92c344b9f75e936c539aa86de460ce98117decbcb6d22d7efe9504661",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\01-main\\initialize-worker-start.json": "b6cb6da4ceec0083e07ea4248bc56dfa4769d285b5d70afae25170d2287b4c27",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\initialize01-attempt01-launch.json": "dad0ae9c6a03d597c3c456a7f44d5d3804239c9549969127ff382e86172cabdb",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\01-main\\initializer-verdict.json": "2c9d2aacf6cceb224ca4230bb553a6e975888caad001b905286cfdc95f35d372",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\01-main\\initial-binding01.json": "6b73189c56fbcad5368189d95f5f94aeabb6351f9dc1d89bb9f2243aa5f9496b",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\01-main\\initial-readback.npz": "840a58ec23a540b51c0bd3c7401e180a8884d34b2513cd524dcc8466b851a4d9",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\01-main\\actual-params.json": "3309643c19c9b11bcaf84ed932b0dc0d381f0aa25dfae7f42d9c5dfc59266ae2",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\01-main\\initialize-receipt.json": "b49edd3e2a6ad5710d2712726bc2b7fba6f8e4c664ec1175bd2e710c22000189",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\01-main\\constant-source-readback.npz": "a913f052105597ef2c1407736b07d46a943d5b72c2d63469b22896924840c84d",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\ROOT_GATE_PRODUCER_timing_01.json": "f9c4972cf9428686a69d87cb122c25d21b11e505862ef2bdc34dfad853a9ccda",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\01-main\\timing-start.json": "d0e7786b806e8fe892464951cc8e5c946b3df0ef01b4ddbcc45da3568a573b97",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\01-main\\timing-worker-start.json": "d9b095c8466c05afede81f3c848c6c859e1cba142369c1aa93907f308199f2cc",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\timing01-attempt01-launch.json": "f0d34a23b96d72dff8a8c3f87cbdb51b169576800da1d3df5e15d6d605515366",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\native-allow-case01.json": "3872bc4c75f89a44fb59ad5dbbba52cc06fe25c10bac0ea946379e072652506e",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\case1-measured-plan01.json": "8a9eef8b1e6a1dfeb84976c8302e93acf2310f9aa423493378a84212cf20ceaa",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\01-main\\timing-receipt.json": "6cac180be0824918dd75344a250414c679b25192e9964af7accbc27118885e6a",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\timing01-attempt01-resources.json": "e2613457afebbba37111d07b0efc226014793b8bc4985e3be0b74fb3c46c90b4",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\ROOT_GATE_PRODUCER_run_01.json": "b01413438ac2def1ae02814365f5908b38ea06dc3511506dcd28ff64fcc59a5d",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\01-main\\run-start.json": "42419790f30f297fc98be97e9a493505099dd4e7aef429e354c5720e75405beb",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\01-main\\run-worker-start.json": "9d8380f23b0d25af0f1d37d85c983a3e080dfba2caa6ecde0d8455fb6001ff73",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\native01-attempt01-launch.json": "85b5a2908214421d668a306b7fe6bad5aabc7ddadb99a0500cbf7b8340a44c2d",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\01-main\\native.npz": "13d529b508e2625ede9ef3ee91a74400bc1d0e1bb12cd3a527f4612ef1b95b41",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\01-main\\terminal.json": "186b1618bd7bf3a710468149fa2ca7fbca6cf2c2abfb2659489ae02641a68bea",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\01-main\\run-receipt.json": "186b1618bd7bf3a710468149fa2ca7fbca6cf2c2abfb2659489ae02641a68bea",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\initialize01-attempt01-resources.json": "3f5332d542d8364ff077a4984a94c9a5593985837a9117564120559248aa8bed",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\review\\initial01-attempt01-launch.json": "20e8dc7a58d46c3577c2c52d1b12ba412832739472a1774b50786e8fdf38d389",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\review\\initial01-attempt01-resources.json": "899a5353503b568e799a5dae86b7ee948bfece7d9da51e16902a6db3644f001b",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\review\\initial01-attempt01.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\review\\initial01-journal01.jsonl": "31f90171807f889c244dfb0b316e7c234472a4f92d811fa185621a0d72aacb96",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\review\\ROOT_GATE_OBSERVER_initial_01.json": "a05c606c691b6864d87cd780a7916cd471ed0174bbf4d5075f4acc1f7076b19b",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\review\\initial01-start01.json": "424e943529a50802165606420d0e9cb018621bf8a9e075ef4a4506d397c98ed9",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\01-main\\params-run.json": "3309643c19c9b11bcaf84ed932b0dc0d381f0aa25dfae7f42d9c5dfc59266ae2",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\native01-attempt01-resources.json": "9839ccac10388ef60c16685b91b42eff45e8dccd6f355ce1c1dfa120d6d22b77",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\01-main\\audit-input01\\adapter-receipt.json": "69403198664338eafd2d30e8fb71cf5e676e0973d79db00d120d64edcc6c21ec",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\01-main\\audit-input01\\audit-initial-diagnostics.npz": "6a5a5d6b554574dcc50f7d0444bc6e441361fc37bf70422cbb38a13b8dd85d3f",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\01-main\\audit-input01\\audit-metadata.json": "049e8ea8c80743abe40606e602368256ee830fe24bc389b44f311c571851e227",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\01-main\\audit-input01\\audit-native.npz": "3cd4a57135669cbdbecd4decc105fa89db6f345ac4a86a64779a01b348bf7a9b",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\review\\adapter01-attempt01-launch.json": "15364b05c80dee2e116dce6c56e365873242fcb3772185e5b53a6026a22f50ea",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\review\\adapter01-attempt01-resources.json": "61d62ebe2be1fab5c73e296e6d7e50c17d717a1ce230a818c9addc9919024fa5",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\review\\adapter01-attempt01.log": "ca96be65a5a9e4f339ee94ff6ecd2f94394cc3b4a2f3fcead06a4416e9cad389",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\review\\ROOT_GATE_OBSERVER_adapter_01.json": "5d8f5d3320a858d83913cc2396b72ed86aa47e746ab173041ed07a2455a4aa0d",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\review\\adapter01-start01.json": "d0d7e458fed5af14b30b99bb194c64caee4d1955e5e10fdbef96e64ef871a4f7",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\01-main\\adapter-binding01.json": "99fb3da3d7c80ac8c6d9a7794accef12499c339414f7af96a617b8e02364c6c6",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\01-main\\science-verdict01.json": "bb4d6ffcf6347a42486e798b9960702827c10fcc752edf1c5223adeef7b782d8",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\review\\science01-attempt01-launch.json": "9a75314ff08d989b26508bbc60e63eb9e5fa237069c30ebb6430306f7ec19372",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\review\\science01-attempt01-resources.json": "70f971ba0714e0d0589eedafecbb7c619358bf620570639d627dc7d281c68220",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\review\\science01-attempt01.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\review\\science01-journal01.jsonl": "f72e0c03ad7e45f21da3ac87b3cd53ede55bd01a8b532eeb68cae0e96fad2bbb",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\review\\ROOT_GATE_OBSERVER_science_01.json": "2ce8d74b427602f00f917b9198c3a8fdfd856a9dca3af5bdf3e971ea144146fd",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\neutral-shear-paired-be647-attempt02\\review\\science01-start01.json": "137c997e98079f8b04f217fa02faf8dd6e54fa059a087a14445aca19c2ddb54b",
+    "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\horizontal-paired-product-v1\\wheel-identity.json": "c217495711be5216ea139219bc42088dd3f05285d851955f691625dd9a375848"
+  },
+  "npz_decoded": 0,
+  "model_calls": 0,
+  "core_audit_calls": 0,
+  "metrics_recomputed": 0,
+  "permission_created": false,
+  "limitations": [
+    "Case0 review reused without repeated verification",
+    "No new historical case1 strict-improvement gate",
+    "Case2/3/4 and final three-grid summary not qualified by this record",
+    "Contacted DEVELOPMENT/staticH/eta-cap/zero analytic acceleration restrictions unchanged"
+  ]
+}

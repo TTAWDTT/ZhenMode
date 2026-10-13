@@ -1,0 +1,24 @@
+{
+  "phase": "UNCOMMITTED newFt source",
+  "controls_unique": 191,
+  "pilot": "n4 onePASS 3.19s",
+  "remaining": "190PASS/1deselected/1warning100.72s originaln4 excluded",
+  "single_191_run": false,
+  "ruff": "whole repo PASS after isort only",
+  "resources": {
+    "returncode": 0,
+    "resources": {
+      "cpu_affinity": 1,
+      "memory_mib": 4096,
+      "wall_seconds": 180,
+      "peak_host_rss_bytes": 1580048384,
+      "stop_reason": null,
+      "termination_grace_seconds": 0,
+      "elapsed_wall_seconds": 103.056594778,
+      "host_memory_enforcement": "aggregate process-group /proc RSS sampled at 0.2 s; not a hard cgroup cap"
+    }
+  },
+  "warning": "numpy.ndarray binary-size RuntimeWarning in existing infrastructure check retained",
+  "production_static": "pending reviewer final",
+  "scope": "localsoftware/matrix/owner guards; no fullCI/native/wholephysics PASS"
+}

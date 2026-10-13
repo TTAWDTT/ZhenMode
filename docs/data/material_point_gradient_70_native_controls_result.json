@@ -1,0 +1,13 @@
+{
+  "utc": "2026-10-12T20:59:55.092577+00:00",
+  "positive_serialized_rms": 1.224744871391589,
+  "expected": 1.224744871391589,
+  "zero_rms": 0.0,
+  "constant_inventory": 0.0,
+  "negative_perturbation_detected": true,
+  "negative_digest_detected": true,
+  "negative_byte_detected": true,
+  "negative_capacity_detected": true,
+  "pass_all": true,
+  "scope": "audit reader/metric/comparison checks; not solver controls"
+}

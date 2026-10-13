@@ -1,0 +1,17 @@
+# 07至08包装说明独立差异审阅
+
+Lady /root/paired_report_frame，仅只读源、清单、选择记录、恢复程序和HTML新增文字。没有运行恢复脚本；独立恢复验证由另一非作者审阅者执行，本审不会重复恢复或把尚未收到的receipt记成通过。没有重算科学指标、读取NPZ数组或调用模型。
+
+08 Markdown SHA256：c0a3a871d440c5338dbfe267f3dd3acb5456bad06c08ac9fbe973fb64b243298；HTML：3086d57d61f4150e2cb02414a48b21df04e6eb89cb39da7af1f12f878cafde79。07至08仅替换末段包装信息并添加恢复CLI与链接，科学正文、公式、表、已有范围声明没有改动。新增段落按prose-lint读过，最后单独冷读开头与结尾，未发现科学印象升级。
+
+08有一项LOW可用性发现：下载引导直接给 `python docs/data/horizontal_paired_be647_restore.py.txt ...`，没有明确工作目录与下载文件摆放。一般读者单独下载文件后未必存在docs/data。建议把引导改成“将清单、清单列出的六个分块及恢复脚本保存到仓库docs/data目录，从仓库根目录执行：”。这只是明确现有命令的运行上下文，不增加恢复调用。
+
+selection01 SHA256 d615dd1aeaf0e7a08aeaae446ed9e71c481602a3c6faeb913ffa82646f9c7d9f；manifest SHA256 79e6389f46d0c76efce928087d7f00a9a8c4b7ffd19ed0fef649b1633a76bf34；恢复脚本 SHA256 8638a8f90c4e49ad1ced8c7f18ac323c7cdf39a2a469c86a300023e47c3a519c。选择与清单的831项path/member/bytes/sha256逐项相同。各条bytes总和117724367，与两份元数据一致；实际ZIP的FileInfo长度117909515，与正文及manifest一致。六块声明前五各20971520字节、第六13051915字节，均不超过20MiB；全包及各块实际SHA核对仍由另一审阅者负责。
+
+831项分为horizontal-paired-product-v1 629项、next-order-diagnostic 179项、reused-inputs 23项。十份native子目录每份都有initial.npz/native.npz/output.npz清单项；旧MOM/OA十二份固定score、旧70六份score、旧默认output及旧方法参考/失败记录另在reused-inputs中。包内07稿MD/HTML的清单SHA与此前审阅绑定值一致。未发现缓存、包装自身、08最终报告或未执行概念成员；正文没有把所选快照说成全部工作目录导出。这里只检查清单集合，不冒充每项ZIP原字节已独立恢复的证明。
+
+完整通读恢复程序：默认manifest定位于脚本同目录，分块也在同目录读取；先检查各part长度/SHA及完整ZIP长度/SHA，检查成员集合、路径和各成员原文件长度/SHA，再写到必须不存在的output目录。程序不导入科学模型和评分实现；ZIP只是按清单恢复原字节，不能建立历史实际worker的绝对加载路径和未保存参数。正文明确了这个限制。manifest自身份SHA由报告提供，程序没有自行宣称建立外部可信根。
+
+HTML新增文字与Markdown一致，恢复CLI在pre代码节点完整呈现。四个链接保留原目标：manifest和restore指向data/相对路径，PR69及CI38349641430指向已有仓库记录。公开文件移动到docs时仍须父任务确认相对链接确有对应目标。
+
+受众表01的14项标准反驳继续成立；新增复现读者反驳是“原字节恢复能否回补历史运行身份、或者已被称为独立复算？”08在恢复说明同段明确不能回补、且没有冒称独立恢复已完成。强科学结论仍仅为有限开发面板微小改善。收到实际独立恢复receipt和最终一句后须再核对该句与证据，不能把本记录当作恢复PASS。

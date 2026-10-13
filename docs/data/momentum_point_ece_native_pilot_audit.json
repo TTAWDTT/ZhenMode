@@ -1,0 +1,305 @@
+{
+  "scope": "Two completed native pilots0/1 saved data/source independent arithmetic audit only; no integration",
+  "rows": [
+    {
+      "index": 0,
+      "name": "previous-primary-main",
+      "source_revision": "ece37c7b7ad383314e4dcfd982641d9ca541e1c3",
+      "output_sha256": "a469e295231b7dfbecd95dca53ab096045a97b720c3956c3e4d1dcd5e97991b9",
+      "raw_native_sha256": "3a4188ccc82a6c04a0707d5e325ccd50b97da5ecd644b95e6751ca14f185d954",
+      "native_run_sha256": "4ca434b62ac06cc73abc48d68c619e8cc2681ae87db6b8a5f53ad0cc6e79e9ff",
+      "score_sha256": "12f06a38abd21d5f20c828283cf05850a8a72a881b2b8aac9e2e5b962d9ab1cc",
+      "actual_options": {
+        "column_geometry": "nodal_dual_v1",
+        "conservative_kv": true,
+        "density_rotation_scheme": "joint_shear",
+        "external_mode_scheme": "symmetric",
+        "fct_adv": false,
+        "hydrostatic_surface_scheme": "linear_density",
+        "localize_conv": true,
+        "meridional_boundary_scheme": "closed_faces",
+        "mode_split": false,
+        "monotone_adv": false,
+        "polar_cap_rows": 0,
+        "polar_cap_taper": 0,
+        "pressure_continuity_scheme": "centered_fourth",
+        "process_time_scheme": "legacy",
+        "project_adv_vel": false,
+        "tracer_transport_scheme": "centered_second",
+        "vertical_tracer_scheme": "muscl_band_v3"
+      },
+      "independent_metrics": {
+        "eta_error": 0.005240393934376391,
+        "u_error": 0.0004422366211386958,
+        "v_error": 0.0002725527726522239,
+        "T_error_C": 8.53075556157672e-07,
+        "S_error_psu": 0.0,
+        "volume": 4.336808689942018e-19,
+        "T_inventory": 2.9376457863494743e-16,
+        "S_inventory": 4.336808689942018e-19
+      },
+      "metric_differences": {
+        "eta_error": 0.0,
+        "u_error": -3.198396408832238e-18,
+        "v_error": -5.421010862427522e-20,
+        "T_error_C": 1.0587911840678754e-22,
+        "S_error_psu": 0.0,
+        "volume": -2.216109240560371e-16,
+        "T_inventory": -1.503246312151152e-16,
+        "S_inventory": -2.216109240560371e-16
+      },
+      "screen_pass": true,
+      "static_capacity_exact": true,
+      "published_states_exact": true,
+      "dynamic_h_formula_bit_exact": true,
+      "flattened_collocated_volume_bit_exact": true,
+      "factory_geometry": {
+        "scope": "primitive not active on this replay/default row"
+      },
+      "composite": 0.0524039393437639,
+      "null_absolute_errors": {},
+      "previous_all_numeric_arrays_exact": true,
+      "previous_output_sha256": "8ce7c681904bc4be00858b0f464ca0a48cd6a16d493b15765931f5cf461c8b15",
+      "trajectory_difference_to3c8": {
+        "previous_output_sha256": "0de0d552c08eef922d8bee7105cacafbde9aca00266a23cd95eba3b2fead8f20",
+        "previous_source_revision": "3c8e86bef2ee1fbfd50cca4343d6fc61694d9edc",
+        "fields": {
+          "T": {
+            "max_abs_difference": 0.0,
+            "numeric_arrays_exact": true,
+            "units": "degC"
+          },
+          "S": {
+            "max_abs_difference": 0.0,
+            "numeric_arrays_exact": true,
+            "units": "psu"
+          },
+          "eta": {
+            "max_abs_difference": 0.0,
+            "numeric_arrays_exact": true,
+            "units": "m"
+          },
+          "u": {
+            "max_abs_difference": 0.0,
+            "numeric_arrays_exact": true,
+            "units": "m/s"
+          },
+          "v": {
+            "max_abs_difference": 0.0,
+            "numeric_arrays_exact": true,
+            "units": "m/s"
+          }
+        },
+        "scope": "Descriptive measured saved trajectory differences; no equivalence gate"
+      },
+      "elapsed_s": 0.1910409570000411
+    },
+    {
+      "index": 1,
+      "name": "candidate-primary-main",
+      "source_revision": "ece37c7b7ad383314e4dcfd982641d9ca541e1c3",
+      "output_sha256": "97a7af537c47771f69cfe17573571045365b2cbe9f8b22c6219341899fa78088",
+      "raw_native_sha256": "d2673aa2fd24b24205854b0d7c7603abc2acee6646fd8f987b9a320d9da4466d",
+      "native_run_sha256": "b07dc154d4d1598c861d461792ef6601e90e804112a0adba11e2a60495c94194",
+      "score_sha256": "273030bdfc0aa5b2a34712ca8376946f69b0fd4e863834a35ca89b3793b022af",
+      "actual_options": {
+        "column_geometry": "nodal_dual_v1",
+        "conservative_kv": true,
+        "density_rotation_scheme": "joint_shear",
+        "external_mode_scheme": "symmetric",
+        "fct_adv": false,
+        "hydrostatic_integral_scheme": "cubic_uniform_v1",
+        "hydrostatic_surface_scheme": "linear_density",
+        "localize_conv": true,
+        "meridional_boundary_scheme": "closed_faces",
+        "mode_split": false,
+        "momentum_vertical_velocity_scheme": "point_primitive_v1",
+        "monotone_adv": false,
+        "polar_cap_rows": 0,
+        "polar_cap_taper": 0,
+        "pressure_continuity_scheme": "centered_fourth",
+        "process_time_scheme": "legacy",
+        "project_adv_vel": false,
+        "tracer_flux_arithmetic": "integrated_reference_v1",
+        "tracer_transport_scheme": "centered_second",
+        "vertical_tracer_scheme": "material_point_v4"
+      },
+      "independent_metrics": {
+        "eta_error": 0.000541619162072386,
+        "u_error": 3.187644386925748e-05,
+        "v_error": 3.0958170745433144e-06,
+        "T_error_C": 7.242707124017776e-09,
+        "S_error_psu": 0.0,
+        "volume": 5.421010862427522e-19,
+        "T_inventory": 1.2029223103726672e-16,
+        "S_inventory": 5.963111948670274e-19
+      },
+      "metric_differences": {
+        "eta_error": -1.0842021724855044e-19,
+        "u_error": 2.507217523872729e-19,
+        "v_error": -7.4750657595192005e-19,
+        "T_error_C": 0.0,
+        "S_error_psu": 0.0,
+        "volume": -2.2150250383878856e-16,
+        "T_inventory": -1.0175237388776459e-16,
+        "S_inventory": -2.2144829373016428e-16
+      },
+      "screen_pass": true,
+      "static_capacity_exact": true,
+      "published_states_exact": true,
+      "dynamic_h_formula_bit_exact": true,
+      "flattened_collocated_volume_bit_exact": true,
+      "factory_geometry": {
+        "factory_capacity_equals_archived": true,
+        "primitive_top_equals_actual_capacity": true,
+        "primitive_top_capacity_max_abs_difference": 0.0,
+        "primitive_top_capacity_max_ULP_difference": 0,
+        "primitive_top_mismatched_nodes": [],
+        "actual_capacity": [
+          3.3333333333333335,
+          6.666666666666666,
+          6.666666666666668,
+          6.666666666666668,
+          6.666666666666664,
+          6.666666666666671,
+          6.666666666666664,
+          6.666666666666664,
+          6.666666666666671,
+          6.666666666666664,
+          6.666666666666664,
+          6.666666666666671,
+          6.666666666666671,
+          6.666666666666657,
+          6.666666666666671,
+          3.3333333333333286
+        ],
+        "primitive_top": [
+          3.3333333333333335,
+          6.666666666666666,
+          6.666666666666668,
+          6.666666666666668,
+          6.666666666666664,
+          6.666666666666671,
+          6.666666666666664,
+          6.666666666666664,
+          6.666666666666671,
+          6.666666666666664,
+          6.666666666666664,
+          6.666666666666671,
+          6.666666666666671,
+          6.666666666666657,
+          6.666666666666671,
+          3.3333333333333286
+        ],
+        "scope": "exact factory parameter construction only; no initializer, solver step or native integration"
+      },
+      "composite": 0.00541619162072386,
+      "null_absolute_errors": {},
+      "frozen_competitors_no_rescore": [
+        {
+          "model": "mom6",
+          "composite": 0.03669933448050444,
+          "previous_output_sha256": "514b1934d4c97f475449637de62ff116b3f2523a8da4e320a8edcce04e6e5290",
+          "current_better": true
+        },
+        {
+          "model": "oceananigans",
+          "composite": 0.12285950114576731,
+          "previous_output_sha256": "0908ef1906227cef95a152a5c27f2bbfbafd7ac350a4e6a7d2d0cb4358080377",
+          "current_better": true
+        }
+      ],
+      "trajectory_difference_to3c8": {
+        "previous_output_sha256": "1fef45cf2409721d07fef49f74549a9739bb6b9ccbec4aa0408b11b100f93fab",
+        "previous_source_revision": "3c8e86bef2ee1fbfd50cca4343d6fc61694d9edc",
+        "fields": {
+          "T": {
+            "max_abs_difference": 5.422245763497813e-09,
+            "numeric_arrays_exact": false,
+            "units": "degC"
+          },
+          "S": {
+            "max_abs_difference": 0.0,
+            "numeric_arrays_exact": true,
+            "units": "psu"
+          },
+          "eta": {
+            "max_abs_difference": 2.5538390107622774e-11,
+            "numeric_arrays_exact": false,
+            "units": "m"
+          },
+          "u": {
+            "max_abs_difference": 2.860557059305405e-09,
+            "numeric_arrays_exact": false,
+            "units": "m/s"
+          },
+          "v": {
+            "max_abs_difference": 2.2414059396897888e-09,
+            "numeric_arrays_exact": false,
+            "units": "m/s"
+          }
+        },
+        "scope": "Descriptive measured saved trajectory differences; no equivalence gate"
+      },
+      "elapsed_s": 1.85917939899997
+    }
+  ],
+  "all_consistent": true,
+  "all_scientific_screens_pass": true,
+  "declaration_sha256": "648d7a3f95cc0d90a7a8aa8b2f4c28d0432dfb7f537464e663d075624958cb33",
+  "audit_source_sha256": "2cc55d1fb317a8b1c5e6768885c884602f79734dff7de381885d0352b2ad0886",
+  "trajectory_difference_addendum_sha256": "3f92224da5210981fbbf1776e5693c46ce97e196ddd5e8e4e03d181fa48b0e0c",
+  "previous_independent_source_sha256": "c56a6c31cd478a281beaec8da992a19aa00f1603f5e034b280f6de425102c0c5",
+  "wave_math_source_sha256": "49db1fd077bc517c6c296dde51c058f48d1996e011552ef749ae33091a0f8058",
+  "controls": {
+    "constant_three_RMS": "pass",
+    "zero_RMS": "pass",
+    "clean_comparison": "pass",
+    "doubled_metric_rejected": "pass",
+    "nonfinite_rejected": "pass"
+  },
+  "identity_before": {
+    "commit": "ece37c7b7ad383314e4dcfd982641d9ca541e1c3",
+    "modules": 133,
+    "path": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-point-v1/installed",
+    "manifest_sha256": "a89cfb5f8f159a91108160549e1786eb35a33775563d1a5599a3c88498481d20",
+    "wheel_sha256": "c2a2c360502e8220d248acad108f6e9da5575c11c1bfcfcc5c5f1acd107fa04a"
+  },
+  "identity_after": {
+    "commit": "ece37c7b7ad383314e4dcfd982641d9ca541e1c3",
+    "modules": 133,
+    "path": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-point-v1/installed",
+    "manifest_sha256": "a89cfb5f8f159a91108160549e1786eb35a33775563d1a5599a3c88498481d20",
+    "wheel_sha256": "c2a2c360502e8220d248acad108f6e9da5575c11c1bfcfcc5c5f1acd107fa04a"
+  },
+  "elapsed_s": 1.1225548400000207,
+  "pilot_reused_without_recomputation": true,
+  "lineage": "Wave oracle independently authored in earlier review; PDE/physicalgeometry shared. Native data alreadycontacted, no newblind status. Factory parameters only, never initializer/step. Prior3c8 scalarcertificate REUSED by explicit unchanged AST bridge, not newmomentumqualification.",
+  "original_arithmetic_dynamic_h_exact_gate": "FAIL/OPEN retained",
+  "new_momentum_component_gate": "PASS",
+  "scalar3c8_certificates": "REUSED unchanged-owner AST only",
+  "ranking": {
+    "strict_score_ceiling": 0.005388509039568577,
+    "measured_score": 0.00541619162072386,
+    "strict_improvement": false,
+    "original_v3_T_ceiling": 8.530755561576719e-07,
+    "measured_T": 7.242707124017776e-09,
+    "T_repair_gate": true
+  },
+  "ranking_gate": "FAIL/OPEN retained",
+  "overall_scientific_qualification": "OPEN; rankingFAIL blocks promotion/expansion",
+  "unexecuted_indices": [
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9
+  ],
+  "raw_execution_order": [
+    0,
+    1
+  ]
+}

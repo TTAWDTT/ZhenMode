@@ -1,0 +1,32 @@
+{
+  "utc": "2026-10-12T21:00:17.272493+00:00",
+  "verdict": "SCOPE-PASS WITH PROVENANCE LIMITATIONS",
+  "audited_indices": [
+    0,
+    1
+  ],
+  "pending_indices": [
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9
+  ],
+  "source": "70d408583aa99db63e49d958d89dcaccad273f0e",
+  "limits": [
+    "Historical loaded Python paths absent",
+    "momentum scheme inferred from source default",
+    "Analytic development reference is already contacted; no held-out physical qualification",
+    "Original 1D/2D and 47/362/mean/arithmetic FAIL records untouched",
+    "CI38306749152 not checked; no PASS inferred"
+  ],
+  "elapsed_s": 1.7248449360000109,
+  "peak_rss_bytes": 71921664,
+  "cpu_affinity": [
+    0
+  ],
+  "memory_cap_bytes": 4294967296
+}

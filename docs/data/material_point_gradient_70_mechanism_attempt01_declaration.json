@@ -1,0 +1,34 @@
+{
+  "scope": "DEVELOPMENT instantaneousfirstmode passive-scalar nonlinear/limiter mechanism; no native/no newblind/sourceedit/newscore",
+  "base_source": "3c8e86bef2ee1fbfd50cca4343d6fc61694d9edc",
+  "geometry": {
+    "nx": 8,
+    "ny": 32,
+    "nodes": [
+      16,
+      32
+    ],
+    "H": 100,
+    "Lx": 20000,
+    "Ly": 20000
+  },
+  "phase": "omega*t=pi/4 fixedbeforecomparison",
+  "fields": "pinned firstorder u1/v1/theta1 frometa-second-order-proof TargetI; Tbg15+gamma*z; A±.01 andqwavefactor0/1, no parameterfit",
+  "truth": "odd backgroundR=gamma*A*omega*sin(mZ)*cos(ky)*sinphase; evenN(theta1)=−gamma*A²*omega*m/4*sin2mZ*sin2phase uniformY",
+  "tests": [
+    "currentmaterialpoint full/desired/low/delta/alpha/feasible",
+    "currentminmod physical_tracer_gradient nonlinearbias sym g(+A)+g(−A)−2g_bg",
+    "externalAST-copy onlypoint desired+horizontalmoment gradients replaced withunlimitedfivepoint fourthderivative; baselineMUSCL/pointprojection/blend untouched",
+    "gradientpositiveconstant+degree0..4 syntheticcontrols atol1e-14C/m beforecomparison; corruptedsignnegative >1e-3 scaledprofile",
+    "odd-wave minusodd-background shouldzero analytically; even-wave minuseven-background shouldTargetI nonlinearRHS",
+    "save actualRHSarrays/controlalpha andsourceidentitybeforeafter for independentreadback"
+  ],
+  "prototype": "fixed4th centeredinterior +5pointone-sidedtwoendpointnodes; localconcentrationdifferences preserveconstant0; pairedsameprimitive, no slopeepsilonclipping",
+  "causal_limits": "Limiter is intentionallynonsmooth; diagnosticmayidentifyA|A| term but doesnotcertifyunlimitedscheme stability orfulltime. No newproductionuntilboundedactualoutput/source-review evidence.",
+  "resources": {
+    "cpu": 1,
+    "wall_s": 180,
+    "memory_mib": 4096
+  },
+  "timing": "coarse16 timingonlywithouttruthcomparison/output thenfinite16/32 exactlyonce; keep originalmatrices/stages failures"
+}

@@ -1,0 +1,9 @@
+{
+  "pilot":{"Ny":30,"Nz":31,"first_call_s":3.292355904,"poststartup_calls_s":[0.002122852,0.002047135,0.000822427],"total_case_elapsed_s":5.001894343},
+  "finite_unit":"At most three declared actual RHS meshes30x31/60x61/120x121; one nonconstant plusconstant/reversedmass permesh; save raw arrays/journal; stop immediately on any permesh controlFAIL",
+  "element_ratios":[1,3.935483871,15.612903226],
+  "conservative_projection_s":105,
+  "projection_provenance":"Measured samecode coarse case5.0019s times suminputvolume ratios20.5484, plus steady extra calls/identity metadata; startup separated and fineJIT scaling uncertain, no precise ETA claim",
+  "gate_changes":false,
+  "launch":"OneCPU180s4096MiB sampled aggregateRSS, boundedthreegrid once, never retune/select afterresult; alpha>.5/allfeasible everymesh remains mandatory"
+}

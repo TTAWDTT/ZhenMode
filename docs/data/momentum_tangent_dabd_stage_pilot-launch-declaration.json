@@ -1,0 +1,16 @@
+{
+  "source": "dabd48abd898c20e0471a5ab9fc18e9b61cfa96d",
+  "wheel": "3cabb4b324ff012611c440df1065fc2e230c0366dd0f9431c4a8c59e27a4523b",
+  "rows": [
+    0,
+    1
+  ],
+  "full_CI": "38318954281 inprogress notPASS",
+  "science": "independent postfreeze newcontrols pending; nofutureexpansion untilscience+pilotexit0",
+  "strict_score_vs70": 0.0053878283060362665,
+  "resources": "native1CPU600s4096MiBsampleRSS GPU0 same environment",
+  "source_133_complete": true,
+  "candidate": "gram_fourth_v1 tangent/fourth_uniform_v1 scalar/dual_face_v1 momentum",
+  "olddefault": "original frozen bandv3 replay exact17array gate; no recomputeMOM/OA",
+  "declared_at": "2026-10-12T22:52:16.633Z"
+}

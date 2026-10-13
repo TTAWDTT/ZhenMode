@@ -1,0 +1,92 @@
+# One-shot spec-pinned hostile n4 control; not a general reusable toolkit instrument.
+# Consulted rankscreen guide; rank-screen semantics do not cover these operator tests.
+import os, sys, json, time, resource, threading, itertools, hashlib
+from pathlib import Path
+T0=time.perf_counter()
+resource.setrlimit(resource.RLIMIT_AS,(4*1024**3,4*1024**3))
+os.sched_setaffinity(0,{min(os.sched_getaffinity(0))})
+out=Path(__file__).parent
+rss=[]; stop=threading.Event()
+def sample():
+    while not stop.is_set():
+        for line in Path('/proc/self/status').read_text().splitlines():
+            if line.startswith('VmRSS:'): rss.append(int(line.split()[1]))
+        stop.wait(.01)
+th=threading.Thread(target=sample,daemon=True); th.start()
+import sympy as s
+checks=[]; plants=[]
+def check(name,condition,detail=None):
+    checks.append({'name':name,'pass':bool(condition),'detail':detail})
+    if not condition: raise AssertionError(name)
+def enc(v):
+    if isinstance(v,s.MatrixBase): return [str(a) for a in v]
+    return str(v)
+def sq(v): return (v.T*v)[0]
+def tv(v): return sum(abs(v[i+1]-v[i]) for i in range(len(v)-1))
+def zero(A): return all(s.simplify(v)==0 for v in A)
+try:
+    check('trivial rational known answer',s.Rational(1,16)*16==1)
+    n=4; I=s.eye(n)
+    R=s.zeros(2,4)
+    for j in range(2):
+        for h,c in enumerate((1,-2,1)): R[j,j+h]=c
+    L=s.zeros(4)
+    for j in range(4):
+        L[j,j]=-3 if j in (0,3) else -2
+        if j<3: L[j,j+1]=L[j+1,j]=1
+    Ft=I-R.T*R/16; Fn=I-L*L/16; B=(I+L/4)**2
+    one=s.ones(4,1); jvec=s.Matrix(range(4)); e=s.eye(4)[:,0]
+    alt=s.Matrix([1,-1,1,-1]); t1=s.Matrix([0,1,4,9])
+    check('T1',Ft*t1==s.Matrix([s.Rational(-1,8),s.Rational(9,8),s.Rational(33,8),s.Rational(71,8)]),enc(Ft*t1))
+    check('T2',Fn*one==s.Matrix([s.Rational(5,8),s.Rational(9,8),s.Rational(9,8),s.Rational(5,8)]),enc(Fn*one))
+    check('T1 TV does not rise',tv(t1)==tv(Ft*t1)==9)
+    check('Ft e0 TV rise',tv(e)==1 and tv(Ft*e)==s.Rational(17,16),{'input':enc(tv(e)),'output':enc(tv(Ft*e))})
+    check('Ft positivity failure',min(Ft*e)==-s.Rational(1,16),enc(Ft*e))
+    check('Fn positivity failure',min(Fn*e)==-s.Rational(1,16),enc(Fn*e))
+    check('Fn constant TV rise',tv(one)==0 and tv(Fn*one)==1)
+    check('Ft constants',Ft*one==one)
+    check('Ft affine',Ft*jvec==jvec)
+    check('Ft mean functional',one.T*Ft==one.T)
+    check('R rank and kernel dimension',R.rank()==2)
+    check('Fn Nyquist kill',Fn*alt==s.zeros(4,1))
+    q=R*t1
+    qget=lambda idx: q[idx] if 0<=idx<2 else 0
+    direct=s.Matrix([t1[idx]-(qget(idx)-2*qget(idx-1)+qget(idx-2))/16 for idx in range(4)])
+    check('O(n) transpose addition identity',direct==Ft*t1)
+    for name,A in [('Ft',Ft),('I-Ft',I-Ft),('Fn',Fn),('I-Fn',I-Fn)]:
+        check(name+' symmetric',A==A.T)
+        for size in range(1,5):
+            for ids in itertools.combinations(range(4),size):
+                d=A.extract(ids,ids).det()
+                check(name+' principal minor '+str(ids),d>=0,str(d))
+    waves=[]
+    for k in range(1,5):
+        theta=s.pi*k/4; v=s.Matrix([s.sin(theta*(s.Rational(1,2)+idx)) for idx in range(4)])
+        lam=-4*s.sin(theta/2)**2; waves.append(v)
+        check('L sine k='+str(k),zero(L*v-lam*v))
+        check('Fn symbol k='+str(k),zero(Fn*v-(1-s.sin(theta/2)**4)*v))
+        check('Bn symbol k='+str(k),zero(B*v-s.cos(theta/2)**4*v))
+    check('complete n4 sine basis',s.simplify(s.Matrix.hstack(*waves).det())!=0)
+    W=s.diag(1,16,1,1)
+    for name,F in [('Ft',Ft),('Fn',Fn)]:
+        before=(e.T*W*e)[0]; after=((F*e).T*W*(F*e))[0]
+        check(name+' unequal-weight contraction trap',after>before,{'before':str(before),'after':str(after),'residual':str(after-before)})
+    for name,Fwrong,expect,norm_after,quad in [
+        ('Ft',I-R.T*R/4,s.Matrix([0,2,-2,0]),8,-4),
+        ('Fn',I-L*L/4,-3*alt,36,-12)]:
+        y=Fwrong*alt
+        check(name+' plant output',y==expect)
+        check(name+' plant norm',sq(y)==norm_after and sq(alt)==4)
+        check(name+' plant quadratic', (alt.T*Fwrong*alt)[0]==quad)
+        caught=sq(y)>sq(alt) and (alt.T*Fwrong*alt)[0]<0
+        check(name+' 1/4 false plant CAUGHT',caught)
+        plants.append({'failing_step':'coefficient 1/4 preserves contraction and Loewner nonnegativity','operator':name,'instance':['1','-1','1','-1'],'output':enc(y),'norm_before':'4','norm_after':str(sq(y)),'norm_residual':str(sq(y)-sq(alt)),'quadratic':str((alt.T*Fwrong*alt)[0]),'verdict':'CAUGHT'})
+    status='PASS'
+except BaseException as ex:
+    status='FAIL'; error=repr(ex)
+finally:
+    stop.set(); th.join()
+    report={'status':status,'n':4,'exact_domain':'SymPy exact expressions/rationals; no floats','python':sys.version,'executable':sys.executable,'sympy':s.__version__ if 's' in globals() else None,'cpu_affinity':sorted(os.sched_getaffinity(0)),'wall_seconds':time.perf_counter()-T0,'rss_samples':len(rss),'sampled_peak_rss_kib':max(rss,default=0),'rlimit_as_bytes':resource.getrlimit(resource.RLIMIT_AS)[0],'script_sha256':hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),'checks':checks,'plants':plants,'error':locals().get('error')}
+    (out/'exact_n4.json').write_text(json.dumps(report,indent=2)+'\n')
+    print(json.dumps({'status':status,'checks':len(checks),'plants_caught':len(plants),'wall_seconds':report['wall_seconds'],'sampled_peak_rss_kib':report['sampled_peak_rss_kib']}))
+if status!='PASS':sys.exit(1)

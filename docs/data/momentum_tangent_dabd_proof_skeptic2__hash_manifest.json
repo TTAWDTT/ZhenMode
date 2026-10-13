@@ -1,0 +1,75 @@
+{
+  "closing_utc": "2026-10-12T21:53:40.5099482Z",
+  "proof_seal_checks": [
+    {
+      "path": "primary/WORKFILE.md",
+      "at_access": "B74F91933A84852ABD88D377C8FAF5C27B1B984729D93E16665612EFADD4C8F6",
+      "at_close": "B74F91933A84852ABD88D377C8FAF5C27B1B984729D93E16665612EFADD4C8F6",
+      "unchanged": true
+    },
+    {
+      "path": "variational/PROOF.md",
+      "at_access": "CB3DBB2252ACADFD938D79D1B71E4870EC211B25B192BEA0486B228591E84638",
+      "at_close": "CB3DBB2252ACADFD938D79D1B71E4870EC211B25B192BEA0486B228591E84638",
+      "unchanged": true
+    },
+    {
+      "path": "spectral/WORKFILE.md",
+      "at_access": "FE8283810D2CB08D779526EDB62AAD16BF4DC2BB9B36DFE4B90E25A7C47CB1CC",
+      "at_close": "FE8283810D2CB08D779526EDB62AAD16BF4DC2BB9B36DFE4B90E25A7C47CB1CC",
+      "unchanged": true
+    }
+  ],
+  "artifacts": [
+    {
+      "name": "exact_n4.exitcode",
+      "sha256": "9A271F2A916B0B6EE6CECB2426F0B3206EF074578BE55D9BC94F6F3FE3AB86AA",
+      "bytes": 2
+    },
+    {
+      "name": "exact_n4.json",
+      "sha256": "E5FECE97CDB2CCC3D6276EB17FAAAE6A02ABEC1D0EFE68D0CA30AD4CF678BE3B",
+      "bytes": 11587
+    },
+    {
+      "name": "exact_n4.py",
+      "sha256": "7D18975DA0BEBABC816ECD8C5F4E6CD3497A514B3939EF63D780C5F1DBEB6A04",
+      "bytes": 5391
+    },
+    {
+      "name": "exact_n4.stderr",
+      "sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+      "bytes": 0
+    },
+    {
+      "name": "exact_n4.stdout",
+      "sha256": "5B9F54091A9AEF60FA8383D3EFACD50D28B10C3874B43F281531D6935D0EE043",
+      "bytes": 114
+    },
+    {
+      "name": "FINAL_REVIEW.md",
+      "sha256": "F884EB00035A4848AA14C9FF51E8D46DFC88DA4DFC5D895510A4A01AD1772669",
+      "bytes": 2917
+    },
+    {
+      "name": "run_n4.sh",
+      "sha256": "1375A47632536F09272E672C10AF708A97B69542BFC07DFD065629FE431D8F61",
+      "bytes": 433
+    },
+    {
+      "name": "SCOREBOARD.md",
+      "sha256": "C1C4CA628B4E893C25D478F9A378EDEC13B89702D094ECE313EE4B312AB317B4",
+      "bytes": 1118
+    },
+    {
+      "name": "SKELETON.md",
+      "sha256": "2AA6352FFCA2A3324D58032E4443444D0299C7E5E0AE96FD49017E325E38947D",
+      "bytes": 1516
+    },
+    {
+      "name": "WORKFILE.md",
+      "sha256": "9E92EA33D8A5472BB3A9DBD63D18A5855AFCC49E332CDCAD9DAA15AFFD9E06C1",
+      "bytes": 16362
+    }
+  ]
+}

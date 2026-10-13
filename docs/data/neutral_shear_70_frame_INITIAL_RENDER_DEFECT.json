@@ -1,0 +1,12 @@
+{
+  "schema": "preserved-document-render-defect-v1",
+  "original_public_report_sha256": "81ec847bca72e15e5d9f2a51a25eab6df513f933680f59f4c7ad3bdb111597ef",
+  "classification": "BLOCKING_RENDER_INTEGRITY_ONLY_NOT_SCIENTIFIC_FAILURE",
+  "observed": "Actual Pandoc2.12 parsed original multiline backslash-bracket block as ordinary paragraph/raw macros; HTML/plain lost Phi/eta/tfrac and incorrectly converted N^2(z^2 into superscript",
+  "retained_views": ["final-report.html", "final-report.txt", "final-report-correctmath.html", "final-pandoc-ast.json"],
+  "correction_by_author": "Only public math block delimiters changed to literal double-dollar; original formula content/quantities, stage archive and archived draft unchanged",
+  "corrected_public_report_sha256": "0aa4277f03e5e00e523b28c861b1c81489ebb83c467d614584dd0fb2ed1b8335",
+  "reviewer_edited_public_document": false,
+  "native_science_CI_runs": 0,
+  "policy": "Initial render is not relabeled PASS; final rendering is independently regenerated and read under corrected exact report identity"
+}

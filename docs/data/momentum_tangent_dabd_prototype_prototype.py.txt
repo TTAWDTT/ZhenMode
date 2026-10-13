@@ -1,0 +1,116 @@
+"""Declared external Ft-only producer; immutable source, no model stepping."""
+import argparse,hashlib,inspect,json,math,sys,time
+from pathlib import Path
+from types import SimpleNamespace
+ROOT=Path(__file__).resolve().parent
+INST=ROOT.parent/'material-point-gradient-v1/installed';sys.path.insert(0,str(INST))
+import jax,jax.numpy as jnp,numpy as np
+import zhenmode
+from zhenmode.model.config import PhysicsConfig
+from zhenmode.model.solver.geometry.grid import GlobalOceanGrid
+from zhenmode.model.solver.factory import make_solver_global
+import zhenmode.model.solver.dynamics.transport as tr
+import zhenmode.model.solver.dynamics.tendencies as tendencies
+from zhenmode.provenance.sources import package_source_hashes
+p0=argparse.ArgumentParser();p0.add_argument('--pilot',action='store_true');args=p0.parse_args()
+dec=json.loads((ROOT/'declaration.json').read_text());proof=json.loads((ROOT.parent/'momentum-wall-filter-proof-70/FINAL_VERDICT.json').read_text());assert proof['standalone_consumer_permitted'] and not proof['production_consumer_permitted']
+before=package_source_hashes(zhenmode.__file__);expected=json.loads((INST.parent/'wheel-identity.json').read_text())['package_source_sha256'];assert before==expected and len(before)==133
+old_filter=tr._dealias_h_fd
+
+def ft_only(field,p,*,normal=False,coefficient=1/16):
+ if normal:return old_filter(field,p,normal=True)
+ if field.shape[1]<4:raise ValueError('Ft requires at least4 meridional samples')
+ spectral=jnp.fft.fft(field,axis=0)*p.dealias_lon_mask
+ values=jnp.real(jnp.fft.ifft(spectral,axis=0))
+ r=(values[:,2:]-values[:,1:-1])-(values[:,1:-1]-values[:,:-2])
+ pad=[(0,0)]*values.ndim
+ pad[1]=(0,2);adj=jnp.pad(r,pad)
+ pad[1]=(1,1);adj=adj-2*jnp.pad(r,pad)
+ pad[1]=(2,0);adj=adj+jnp.pad(r,pad)
+ return values-coefficient*adj
+
+adv_text=inspect.getsource(tr._advection_flux_form);adv_scope=dict(tr.__dict__);adv_scope['_dealias_h_fd']=ft_only
+exec(compile(adv_text,'<external-Ft-only-advection>','exec'),adv_scope);new_adv=adv_scope['_advection_flux_form']
+mom_text=inspect.getsource(tendencies._compute_momentum_tendency);mom_scope=dict(tendencies.__dict__);mom_scope['_advection_flux_form']=new_adv
+exec(compile(mom_text,'<external-Ft-only-momentum>','exec'),mom_scope);new_momentum=mom_scope['_compute_momentum_tendency']
+start=time.monotonic();arrays={};controls=[]
+def synthetic():
+ mask=jnp.asarray(np.array([1,1,1,0,0,0,1,1]))[:,None,None];p=SimpleNamespace(dealias_lon_mask=mask)
+ R=np.array([[1,-2,1,0],[0,1,-2,1]],float);F=np.eye(4)-R.T@R/16
+ results=[]
+ for label,q in [('null',np.zeros(4)),('constant',np.full(4,7.)),('affine',np.arange(4,dtype=float)),('quadratic',np.arange(4,dtype=float)**2),('alternating',np.array([1,-1,1,-1],float)),('e0',np.array([1,0,0,0],float))]:
+  original=np.broadcast_to(q[None,:,None],(8,4,1)).copy();value=np.asarray(jax.block_until_ready(jax.jit(lambda x:ft_only(x,p))(jnp.asarray(original))))
+  expected0=np.broadcast_to((F@q)[None,:,None],value.shape);scale=float(np.sum(abs(original)));norm=float(np.sum(original**2));outnorm=float(np.sum(value**2));sumdef=abs(float(value.sum()-original.sum()))
+  defect=float(np.max(abs(value-expected0)));budget=128*np.finfo(float).eps*scale
+  assert defect<=budget and outnorm<=norm*(1+512*np.finfo(float).eps) and sumdef<=512*np.finfo(float).eps*scale
+  if label in ('null','constant','affine'):assert np.array_equal(value,original)
+  results.append(dict(label=label,matrixdefect=defect,budget=budget,norm2=norm,filterednorm2=outnorm,sumdefect=sumdef))
+ bad=np.asarray(ft_only(jnp.asarray(np.broadcast_to(np.array([1,-1,1,-1])[None,:,None],(8,4,1))),p,coefficient=1/4));assert float(np.sum(bad**2))>32
+ altx=np.broadcast_to(np.array([1,-1,1,-1,1,-1,1,-1])[:,None,None],(8,4,1));assert np.max(abs(np.asarray(ft_only(jnp.asarray(altx),p))))==0.
+ low=np.broadcast_to(np.cos(2*np.pi*np.arange(8)/8)[:,None,None],(8,4,1));assert np.max(abs(np.asarray(ft_only(jnp.asarray(low),p))-low))<=128*np.finfo(float).eps*np.sum(abs(low))
+ L=np.diag([-3.,-2.,-2.,-3.])+np.diag(np.ones(3),1)+np.diag(np.ones(3),-1);B=(np.eye(4)+L/4)@(np.eye(4)+L/4)
+ normal_defects=[]
+ for basis in np.eye(4):
+  signal=np.broadcast_to(basis[None,:,None],(8,4,1)).copy();got=np.asarray(ft_only(jnp.asarray(signal),p,normal=True))[0,:,0]
+  normal_defects.append(float(np.max(abs(got-B@basis))));assert normal_defects[-1]<=128*np.finfo(float).eps*np.sum(abs(signal))
+ quad=np.broadcast_to(np.array([0.,1.,4.,9.])[None,:,None],(8,4,1));qt=np.asarray(ft_only(jnp.asarray(quad),p))[0,:,0]
+ assert np.array_equal(qt,np.array([-1/8,9/8,33/8,71/8]))
+ impulse=np.broadcast_to(np.array([1.,0.,0.,0.])[None,:,None],(8,4,1));ep=np.asarray(ft_only(jnp.asarray(impulse),p))[0,:,0]
+ minimum=float(ep.min());tv_before=1.;tv_after=float(np.sum(abs(np.diff(ep))));assert minimum==-1/16 and tv_after==17/16 and tv_after>tv_before
+ return dict(knownanswer=results,wrongcoefficient_caught=True,NxNyquist_exactzero=True,Nxlowmode_preserved=True,normalBn_basis_defects=normal_defects,T1_actual=qt.tolist(),nonpositivity_e0_min=minimum,e0_TV_before=tv_before,e0_TV_after=tv_after,notTVD=tv_after>tv_before)
+control=synthetic()
+def one(n):
+ nx,ny,H,Lx,Ly=8,n,90.,11000.,15000.
+ x=(np.arange(nx)+.5)*Lx/nx;y=(np.arange(ny)+.5)*Ly/ny;d=np.linspace(0.,H,17);z=-d;shape=(nx,ny,17)
+ grid=GlobalOceanGrid(lon=x,lat=y,dx_2d=np.full((nx,ny),Lx/nx),dy=Ly/ny,cos_lat=np.ones(ny),f=np.zeros((nx,ny)),z=z,dz=-np.diff(z),nz=17,depth=np.full((nx,ny),H),wet_mask=np.ones((nx,ny)),ocean_mask=np.ones((nx,ny),dtype=bool),land_mask=np.zeros((nx,ny)),wet_mask_3d=np.ones(shape),nx=nx,ny=ny)
+ phys=PhysicsConfig(**dict.fromkeys(('nu_h','nu_v','nu_bi','kappa_h','kappa_v','kappa_bi','kappa_conv','kappa_gm','kappa_redi','r_bot','cd','tau_x','tau_y','Q_heat'),0.))
+ _,init,_,p,_=make_solver_global(grid,phys,11.25,return_params=True,column_geometry='nodal_dual_v1',conservative_kv=True,localize_conv=True,polar_cap_rows=0,polar_cap_taper=0,external_mode_scheme='symmetric',meridional_boundary_scheme='closed_faces',pressure_continuity_scheme='centered_fourth',hydrostatic_surface_scheme='linear_density',density_rotation_scheme='joint_shear',vertical_tracer_scheme='material_point_v4',tracer_flux_arithmetic='integrated_reference_v1',hydrostatic_integral_scheme='cubic_uniform_v1',material_point_gradient_scheme='fourth_uniform_v1')
+ Y=np.pi*y[None,:,None]/Ly;D=d[None,None,:]/H
+ u=jnp.asarray(np.broadcast_to(.025+.003*np.cos(Y)+.002*np.sin(Y)+.004*D+.001*D**2,shape).copy());v=jnp.asarray(np.broadcast_to(.14/H*np.sin(Y)*(1-2*D),shape).copy());wa=jnp.asarray(np.broadcast_to(.14*np.pi/Ly*np.cos(Y)*D*(1-D),shape).copy())
+ state=init()._replace(u=u,v=v,T=jnp.full(shape,15.),S=jnp.full(shape,35.),eta=jnp.zeros((nx,ny)))
+ @jax.jit
+ def compute(s,w):
+  olda=tr._advection_flux_form(s.u,s.v,w,p);newa=new_adv(s.u,s.v,w,p)
+  oldm=tendencies._compute_momentum_tendency(s,p);newm=new_momentum(s,p)
+  wn=tr._compute_vertical_velocity(s,p);gux,guy=tr._gradient_face_gated_3d(s.u,p);guz=tr._d_dz(tr._fill_ghost_bottom(s.u,p),p)
+  raw=-(s.u*gux+s.v*guy+wn*guz)
+  oldnative=tr._advection_flux_form(s.u,s.v,wn,p);newnative=new_adv(s.u,s.v,wn,p)
+  F=tr._vertical_transport_iface(s.u,s.v,p)
+  return olda,newa,oldm,newm,raw,oldnative,newnative,wn,F
+ if args.pilot:
+  ticks=[]
+  for _ in range(2):
+   t=time.monotonic();jax.block_until_ready(compute(state,wa));ticks.append(time.monotonic()-t)
+  return dict(Ny=n,individual_call_s=ticks,oracle_compared=False)
+ # Zero tangent case tests owner before manufactured oracle.
+ constant=state._replace(u=jnp.full(shape,.025))
+ zero_old,zero_new=jax.block_until_ready((tendencies._compute_momentum_tendency(constant,p),new_momentum(constant,p)))
+ assert np.max(abs(np.asarray(zero_old[0])))==0. and np.max(abs(np.asarray(zero_new[0])))==0.
+ data=jax.tree.map(np.asarray,jax.block_until_ready(compute(state,wa)));old_a,new_a,old_m,new_m,raw,old_native,new_native,wn,F=data
+ assert all(np.max(abs(a-b))<=2e-12 for a,b in zip(old_m,old_native))
+ assert all(np.max(abs(a-b))<=2e-12 for a,b in zip(new_m,new_native))
+ assert np.max(abs(old_a[1]-new_a[1]))<=2e-12 and np.max(abs(old_m[1]-new_m[1]))<=2e-12
+ h=np.broadcast_to(np.asarray(p.dz_node),shape)
+ assert np.min(h)>0. and np.array_equal(h,np.broadcast_to(h[:,:1,:],shape))
+ assert np.array_equal(np.asarray(p.cos_lat),np.ones(ny)) and np.max(np.asarray(state.eta))==0.
+ raw_norm=float(np.sum(raw**2*h));new_norm=float(np.sum(new_m[0]**2*h));sumdef=abs(float(np.sum((new_m[0]-raw)*h)));sumscale=float(np.sum(abs(raw)*h))
+ assert new_norm<=raw_norm*(1+512*np.finfo(float).eps)
+ assert sumdef<=512*np.finfo(float).eps*sumscale
+ uy=np.pi/Ly*(-.003*np.sin(Y)+.002*np.cos(Y));uz=-(.004+.002*D)/H;vy=.14*np.pi/(H*Ly)*np.cos(Y)*(1-2*D);vz=.28/H**2*np.sin(Y)
+ truthu=np.broadcast_to(-np.asarray(v)*uy-np.asarray(wa)*uz,shape);truthv=np.broadcast_to(-np.asarray(v)*vy-np.asarray(wa)*vz,shape)
+ def rms(a):return math.sqrt(float(np.sum(a*a*h)/np.sum(h)))
+ row=dict(Ny=n,analytic_w_u_RMS_old=rms(old_a[0]-truthu),analytic_w_u_RMS_new=rms(new_a[0]-truthu),actual_native_w_u_RMS_old=rms(old_m[0]-truthu),actual_native_w_u_RMS_new=rms(new_m[0]-truthu),analytic_w_v_RMS_old=rms(old_a[1]-truthv),analytic_w_v_RMS_new=rms(new_a[1]-truthv),normalmaxdiff=float(np.max(abs(new_m[1]-old_m[1]))),normalbitwise=np.array_equal(new_m[1],old_m[1]),sum_defect=sumdef,sum_budget=512*np.finfo(float).eps*sumscale,old_sum_defect=abs(float(np.sum((old_m[0]-raw)*h))),norm2_input=raw_norm,norm2_output=new_norm,owner_otherterms_max=max(float(np.max(abs(a-b))) for aa,bb in ((old_m,old_native),(new_m,new_native)) for a,b in zip(aa,bb)),constant_u_exactzero=True)
+ row['analytic_w_u_strict_improvement']=row['analytic_w_u_RMS_new']<row['analytic_w_u_RMS_old']
+ for key,value in [('old_analytic_u',old_a[0]),('new_analytic_u',new_a[0]),('old_native_u',old_m[0]),('new_native_u',new_m[0]),('normal_old',old_m[1]),('normal_new',new_m[1]),('raw_native_u',raw),('truth_u',truthu),('truth_v',truthv),('actualh',h),('w_analytic',np.asarray(wa)),('w_native',wn),('Fz',F),('u',np.asarray(u)),('v',np.asarray(v))]:arrays[f'{key}_Ny{n}']=value
+ with (ROOT/'row-journal.jsonl').open('a') as file:print(json.dumps(row),file=file)
+ print(json.dumps(row),flush=True);return row
+if not args.pilot:assert not (ROOT/'row-journal.jsonl').exists()
+rows=[one(n) for n in ([12] if args.pilot else dec['geometry']['Ny'])]
+after=package_source_hashes(zhenmode.__file__);assert before==after and tr._dealias_h_fd is old_filter
+modulepaths={name:str(Path(mod.__file__).resolve()) for name,mod in list(sys.modules.items()) if name=='zhenmode' or name.startswith('zhenmode.')}
+assert all(Path(path).is_relative_to(INST.resolve()) for path in modulepaths.values())
+if not args.pilot:np.savez(ROOT/'arrays.npz',**arrays)
+result=dict(pilot=args.pilot,scope=dec['scope'],design=dec['design_fixed_before_measurement'],controls=control,rows=rows,all_analytic_u_improved=None if args.pilot else all(row['analytic_w_u_strict_improvement'] for row in rows),elapsed_s=time.monotonic()-start,source_before=before,source_after=after,loadedpaths=modulepaths,script_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),declaration_sha256=hashlib.sha256((ROOT/'declaration.json').read_bytes()).hexdigest(),adv_AST_sha256=hashlib.sha256(adv_text.encode()).hexdigest(),mom_AST_sha256=hashlib.sha256(mom_text.encode()).hexdigest(),production_edited=False,full_native_runs=0)
+with (ROOT/('timing-pilot.json' if args.pilot else 'result.json')).open('x') as file:json.dump(result,file,indent=2)
+print(json.dumps(dict(elapsed_s=result['elapsed_s'],pilot=args.pilot,all_analytic_u_improved=result['all_analytic_u_improved'])),flush=True)
+if not args.pilot and not result['all_analytic_u_improved']:raise SystemExit(1)

@@ -1,0 +1,409 @@
+{
+  "utc": "2026-10-12T23:12:44.947328+00:00",
+  "scope": "Actual six NPZ directory/header scans plus one small actual time/metadata read; no science metric from real fields",
+  "npz_headers": [
+    {
+      "path": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/native-attempt02/00-previous-primary-main/zhenmode/initial.npz",
+      "stored_bytes": 7536,
+      "entries": [
+        {
+          "name": "u.npy",
+          "bytes": 32896,
+          "compressed_bytes": 2852
+        },
+        {
+          "name": "v.npy",
+          "bytes": 32896,
+          "compressed_bytes": 132
+        },
+        {
+          "name": "T.npy",
+          "bytes": 32896,
+          "compressed_bytes": 3358
+        },
+        {
+          "name": "S.npy",
+          "bytes": 32896,
+          "compressed_bytes": 157
+        },
+        {
+          "name": "eta.npy",
+          "bytes": 2176,
+          "compressed_bytes": 285
+        },
+        {
+          "name": "ice.npy",
+          "bytes": 2176,
+          "compressed_bytes": 86
+        }
+      ]
+    },
+    {
+      "path": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/native-attempt02/00-previous-primary-main/zhenmode/native.npz",
+      "stored_bytes": 474204,
+      "entries": [
+        {
+          "name": "u.npy",
+          "bytes": 1343616,
+          "compressed_bytes": 170030
+        },
+        {
+          "name": "v.npy",
+          "bytes": 1343616,
+          "compressed_bytes": 164938
+        },
+        {
+          "name": "T.npy",
+          "bytes": 1343616,
+          "compressed_bytes": 124949
+        },
+        {
+          "name": "S.npy",
+          "bytes": 1343616,
+          "compressed_bytes": 2066
+        },
+        {
+          "name": "eta.npy",
+          "bytes": 84096,
+          "compressed_bytes": 10607
+        },
+        {
+          "name": "time.npy",
+          "bytes": 456,
+          "compressed_bytes": 213
+        },
+        {
+          "name": "x.npy",
+          "bytes": 192,
+          "compressed_bytes": 102
+        },
+        {
+          "name": "y.npy",
+          "bytes": 384,
+          "compressed_bytes": 201
+        },
+        {
+          "name": "dz_node.npy",
+          "bytes": 256,
+          "compressed_bytes": 100
+        }
+      ]
+    },
+    {
+      "path": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/native-attempt02/00-previous-primary-main/zhenmode/output.npz",
+      "stored_bytes": 527080,
+      "entries": [
+        {
+          "name": "time.npy",
+          "bytes": 456,
+          "compressed_bytes": 213
+        },
+        {
+          "name": "x_eta.npy",
+          "bytes": 2176,
+          "compressed_bytes": 111
+        },
+        {
+          "name": "y_eta.npy",
+          "bytes": 2176,
+          "compressed_bytes": 220
+        },
+        {
+          "name": "area.npy",
+          "bytes": 2176,
+          "compressed_bytes": 91
+        },
+        {
+          "name": "eta.npy",
+          "bytes": 84096,
+          "compressed_bytes": 10605
+        },
+        {
+          "name": "h.npy",
+          "bytes": 1343616,
+          "compressed_bytes": 16430
+        },
+        {
+          "name": "T.npy",
+          "bytes": 1343616,
+          "compressed_bytes": 124947
+        },
+        {
+          "name": "S.npy",
+          "bytes": 1343616,
+          "compressed_bytes": 2064
+        },
+        {
+          "name": "x_u.npy",
+          "bytes": 2176,
+          "compressed_bytes": 111
+        },
+        {
+          "name": "y_u.npy",
+          "bytes": 2176,
+          "compressed_bytes": 220
+        },
+        {
+          "name": "width_u.npy",
+          "bytes": 2176,
+          "compressed_bytes": 85
+        },
+        {
+          "name": "u.npy",
+          "bytes": 1343616,
+          "compressed_bytes": 170029
+        },
+        {
+          "name": "volume_u.npy",
+          "bytes": 1343616,
+          "compressed_bytes": 16403
+        },
+        {
+          "name": "x_v.npy",
+          "bytes": 2176,
+          "compressed_bytes": 111
+        },
+        {
+          "name": "y_v.npy",
+          "bytes": 2176,
+          "compressed_bytes": 220
+        },
+        {
+          "name": "v.npy",
+          "bytes": 1343616,
+          "compressed_bytes": 164937
+        },
+        {
+          "name": "volume_v.npy",
+          "bytes": 1343616,
+          "compressed_bytes": 16403
+        },
+        {
+          "name": "metadata.npy",
+          "bytes": 9744,
+          "compressed_bytes": 1848
+        }
+      ]
+    },
+    {
+      "path": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/native-attempt02/01-candidate-primary-main/zhenmode/initial.npz",
+      "stored_bytes": 7536,
+      "entries": [
+        {
+          "name": "u.npy",
+          "bytes": 32896,
+          "compressed_bytes": 2852
+        },
+        {
+          "name": "v.npy",
+          "bytes": 32896,
+          "compressed_bytes": 132
+        },
+        {
+          "name": "T.npy",
+          "bytes": 32896,
+          "compressed_bytes": 3358
+        },
+        {
+          "name": "S.npy",
+          "bytes": 32896,
+          "compressed_bytes": 157
+        },
+        {
+          "name": "eta.npy",
+          "bytes": 2176,
+          "compressed_bytes": 285
+        },
+        {
+          "name": "ice.npy",
+          "bytes": 2176,
+          "compressed_bytes": 86
+        }
+      ]
+    },
+    {
+      "path": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/native-attempt02/01-candidate-primary-main/zhenmode/native.npz",
+      "stored_bytes": 473598,
+      "entries": [
+        {
+          "name": "u.npy",
+          "bytes": 1343616,
+          "compressed_bytes": 169948
+        },
+        {
+          "name": "v.npy",
+          "bytes": 1343616,
+          "compressed_bytes": 164948
+        },
+        {
+          "name": "T.npy",
+          "bytes": 1343616,
+          "compressed_bytes": 124420
+        },
+        {
+          "name": "S.npy",
+          "bytes": 1343616,
+          "compressed_bytes": 2066
+        },
+        {
+          "name": "eta.npy",
+          "bytes": 84096,
+          "compressed_bytes": 10602
+        },
+        {
+          "name": "time.npy",
+          "bytes": 456,
+          "compressed_bytes": 213
+        },
+        {
+          "name": "x.npy",
+          "bytes": 192,
+          "compressed_bytes": 102
+        },
+        {
+          "name": "y.npy",
+          "bytes": 384,
+          "compressed_bytes": 201
+        },
+        {
+          "name": "dz_node.npy",
+          "bytes": 256,
+          "compressed_bytes": 100
+        }
+      ]
+    },
+    {
+      "path": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/native-attempt02/01-candidate-primary-main/zhenmode/output.npz",
+      "stored_bytes": 526554,
+      "entries": [
+        {
+          "name": "time.npy",
+          "bytes": 456,
+          "compressed_bytes": 213
+        },
+        {
+          "name": "x_eta.npy",
+          "bytes": 2176,
+          "compressed_bytes": 111
+        },
+        {
+          "name": "y_eta.npy",
+          "bytes": 2176,
+          "compressed_bytes": 220
+        },
+        {
+          "name": "area.npy",
+          "bytes": 2176,
+          "compressed_bytes": 91
+        },
+        {
+          "name": "eta.npy",
+          "bytes": 84096,
+          "compressed_bytes": 10600
+        },
+        {
+          "name": "h.npy",
+          "bytes": 1343616,
+          "compressed_bytes": 16431
+        },
+        {
+          "name": "T.npy",
+          "bytes": 1343616,
+          "compressed_bytes": 124418
+        },
+        {
+          "name": "S.npy",
+          "bytes": 1343616,
+          "compressed_bytes": 2064
+        },
+        {
+          "name": "x_u.npy",
+          "bytes": 2176,
+          "compressed_bytes": 111
+        },
+        {
+          "name": "y_u.npy",
+          "bytes": 2176,
+          "compressed_bytes": 220
+        },
+        {
+          "name": "width_u.npy",
+          "bytes": 2176,
+          "compressed_bytes": 85
+        },
+        {
+          "name": "u.npy",
+          "bytes": 1343616,
+          "compressed_bytes": 169945
+        },
+        {
+          "name": "volume_u.npy",
+          "bytes": 1343616,
+          "compressed_bytes": 16394
+        },
+        {
+          "name": "x_v.npy",
+          "bytes": 2176,
+          "compressed_bytes": 111
+        },
+        {
+          "name": "y_v.npy",
+          "bytes": 2176,
+          "compressed_bytes": 220
+        },
+        {
+          "name": "v.npy",
+          "bytes": 1343616,
+          "compressed_bytes": 164946
+        },
+        {
+          "name": "volume_v.npy",
+          "bytes": 1343616,
+          "compressed_bytes": 16394
+        },
+        {
+          "name": "metadata.npy",
+          "bytes": 10584,
+          "compressed_bytes": 1948
+        }
+      ]
+    }
+  ],
+  "actual_small_read_s": 0.005014257999988558,
+  "actual_members": [
+    "time",
+    "x_eta",
+    "y_eta",
+    "area",
+    "eta",
+    "h",
+    "T",
+    "S",
+    "x_u",
+    "y_u",
+    "width_u",
+    "u",
+    "volume_u",
+    "x_v",
+    "y_v",
+    "v",
+    "volume_v",
+    "metadata"
+  ],
+  "actual_snapshots": 41,
+  "actual_steps": 4800,
+  "synthetic_RMS": 0.5774404731225549,
+  "synthetic_shape": [
+    41,
+    256,
+    16
+  ],
+  "synthetic_one_norm_s": 0.024680130999996663,
+  "projected_full_readback_s": 0.780950164999723,
+  "projection_basis": "15 independently accumulated five-variable norms for completed0/1 and frozen70 plus small-read/header overhead; constant coarse grid only. Actual duration measured by full audit.",
+  "cpu_affinity": [
+    0
+  ],
+  "memory_cap_bytes": 4294967296,
+  "elapsed_s": 0.07198712000000285
+}

@@ -1,0 +1,136 @@
+{
+  "mismatch_caught": "('deliberate_comparator_mismatch', -1/6)",
+  "R": "Matrix([[1, -2, 1, 0], [0, 1, -2, 1]])",
+  "L": "Matrix([[-3, 1, 0, 0], [1, -2, 1, 0], [0, 1, -2, 1], [0, 0, 1, -3]])",
+  "Ft": "Matrix([[15/16, 1/8, -1/16, 0], [1/8, 11/16, 1/4, -1/16], [-1/16, 1/4, 11/16, 1/8], [0, -1/16, 1/8, 15/16]])",
+  "Fn": "Matrix([[3/8, 5/16, -1/16, 0], [5/16, 5/8, 1/4, -1/16], [-1/16, 1/4, 5/8, 5/16], [0, -1/16, 5/16, 3/8]])",
+  "B": "Matrix([[1/8, 3/16, 1/16, 0], [3/16, 3/8, 1/4, 1/16], [1/16, 1/4, 3/8, 3/16], [0, 1/16, 3/16, 1/8]])",
+  "Ft_PSD_minors_F_IminusF_FminusF2": [
+    15,
+    15,
+    15
+  ],
+  "Fn_PSD_minors_F_IminusF_FminusF2": [
+    15,
+    15,
+    15
+  ],
+  "T1": [
+    "-1/8",
+    "9/8",
+    "33/8",
+    "71/8"
+  ],
+  "T2": [
+    "5/8",
+    "9/8",
+    "9/8",
+    "5/8"
+  ],
+  "Ft_eigenvalues": {
+    "7/8": 1,
+    "3/8": 1,
+    "1": 2
+  },
+  "Fn_eigenvalues": {
+    "3/4": 1,
+    "5/8 - sqrt(2)/4": 1,
+    "sqrt(2)/4 + 5/8": 1,
+    "0": 1
+  },
+  "false_t_plant": {
+    "output": [
+      "0",
+      "2",
+      "-2",
+      "0"
+    ],
+    "input_norm2": "4",
+    "output_norm2": "8",
+    "quadratic_form": "-4",
+    "caught": true
+  },
+  "false_n_plant": {
+    "output": [
+      "-3",
+      "3",
+      "-3",
+      "3"
+    ],
+    "input_norm2": "4",
+    "output_norm2": "36",
+    "caught": true
+  },
+  "Ft_composition_energy": {
+    "before": "513808843729/8116208100",
+    "after": "25007107543969/461722060800",
+    "uniform_weight": "arbitrary fixed w > 0"
+  },
+  "Fn_composition_energy": {
+    "before": "513808843729/8116208100",
+    "after": "977199828155/55406647296",
+    "uniform_weight": "arbitrary fixed w > 0"
+  },
+  "checks": [
+    "known_answer",
+    "tangent_stencil_basis_0",
+    "normal_stencil_basis_0",
+    "tangent_stencil_basis_1",
+    "normal_stencil_basis_1",
+    "tangent_stencil_basis_2",
+    "normal_stencil_basis_2",
+    "tangent_stencil_basis_3",
+    "normal_stencil_basis_3",
+    "Ft_symmetry",
+    "Ft_zero",
+    "Fn_symmetry",
+    "Fn_zero",
+    "T1",
+    "T2",
+    "Ft_constant",
+    "Ft_affine",
+    "Ft_mean_row",
+    "R_rank",
+    "Fn_Nyquist",
+    "sine_L_1",
+    "sine_Fn_1",
+    "sine_B_1",
+    "sine_L_2",
+    "sine_Fn_2",
+    "sine_B_2",
+    "sine_L_3",
+    "sine_Fn_3",
+    "sine_B_3",
+    "sine_L_4",
+    "sine_Fn_4",
+    "sine_B_4",
+    "B_comparison_matrix",
+    "wrong_t_fixture",
+    "wrong_n_fixture",
+    "longitude_projection_idempotent",
+    "longitude_projection_symmetric",
+    "Ft_tensor_commute",
+    "Ft_tensor_composition",
+    "Ft_energy_split",
+    "Fn_tensor_commute",
+    "Fn_tensor_composition",
+    "Fn_energy_split"
+  ],
+  "timing": {
+    "elapsed_seconds": 2.255356526,
+    "rss_samples": 142,
+    "sampled_peak_RSS_bytes": 75354112,
+    "ru_maxrss_bytes": 75169792,
+    "cpu_affinity": [
+      0
+    ],
+    "wall_cap_seconds": 180,
+    "address_space_cap_bytes": 4294967296
+  },
+  "environment": {
+    "sympy": "1.14.0",
+    "python": "3.12.3 (main, Aug 31 2026, 10:18:26) [GCC 13.3.0]",
+    "script_sha256": "e2dead200b6bf9511af74cead7d833482e264c252536b76d3444df9bc21903cb"
+  },
+  "verdict": "PASS: independent exact n=4 fixtures, boundary stencil, planted catches, and composition controls"
+}

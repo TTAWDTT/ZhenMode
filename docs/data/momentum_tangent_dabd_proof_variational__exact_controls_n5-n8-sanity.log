@@ -1,0 +1,28 @@
+PASS known-answer rational
+PASS weighted-Cauchy local SOS
+PASS sine recurrence
+PASS left odd endpoint
+PASS right odd endpoint reduced at k*pi
+PASS sine-norm telescoping summand
+PASS F normal symbol
+PASS B normal symbol
+PASS small-theta departures
+PASS n5 Gram defect identity
+PASS n5 bilinear Green identity
+PASS n5 complement identity
+PASS n5 symmetry
+PASS n5 affine kernel and rank
+PASS n5 fixed affine and sum
+PASS n5 transpose loop equals Gram
+PASS n5 alternating kill
+PASS n5 B polynomial
+PASS n8 Gram defect identity
+PASS n8 bilinear Green identity
+PASS n8 complement identity
+PASS n8 symmetry
+PASS n8 affine kernel and rank
+PASS n8 fixed affine and sum
+PASS n8 transpose loop equals Gram
+PASS n8 alternating kill
+PASS n8 B polynomial
+SUMMARY {"tag": "n5-n8-sanity", "sizes": [5, 8], "elapsed_seconds": 0.4398548700000049, "sampledRSS_peak_bytes": 68870144, "rss_sample_count": 36, "affinity": [0], "memory_limit_bytes": 4294967296, "cpu_seconds_limit": 180, "sympy_version": "1.14.0"}

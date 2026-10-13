@@ -1,0 +1,28 @@
+{
+  "source_revision": "3629de8062929a9f4d139028b3b0dcca392c5226",
+  "setup_function_sha256": "42341f9bb8c608f2ebc4d5aaaadde3c978637a85029b09dd669439d96aa3dd62",
+  "embedded_alpha": 0.0,
+  "embedded_feasible": false,
+  "original_instrumented_alpha": 0.0,
+  "original_instrumented_feasible": false,
+  "original_lo": 2.386066257516362e-14,
+  "original_hi": -1.1093846257164162e-14,
+  "new_alpha": 0.0,
+  "new_feasible": true,
+  "new_lo": 0.0,
+  "new_hi": -0.0,
+  "baseline_floor_min": 11.773721953170899,
+  "baseline_bounds_violation_count": 0,
+  "worst_hi_index": [
+    0,
+    6,
+    16
+  ],
+  "worst_hi": -1.1093846257164162e-14,
+  "worst_low": -1.3728195904057946e-06,
+  "worst_upper": 0.07841176617843004,
+  "worst_delta": -7.157962798863365e-09,
+  "identity_before_after_equal": true,
+  "elapsed_s": 5.057843746000001,
+  "scope": "development arithmetic diagnostic only; originalnew2D362OPEN unchanged"
+}

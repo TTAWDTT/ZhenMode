@@ -1,0 +1,156 @@
+{
+  "tag": "n5-n8-sanity",
+  "sizes": [
+    5,
+    8
+  ],
+  "rows": [
+    {
+      "name": "known-answer rational",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "weighted-Cauchy local SOS",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "sine recurrence",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "left odd endpoint",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "right odd endpoint reduced at k*pi",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "sine-norm telescoping summand",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "F normal symbol",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "B normal symbol",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "small-theta departures",
+      "passed": true,
+      "details": {
+        "F": "t**4/16",
+        "B": "-5*t**4/48 + t**2/2"
+      }
+    },
+    {
+      "name": "n5 Gram defect identity",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "n5 bilinear Green identity",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "n5 complement identity",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "n5 symmetry",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "n5 affine kernel and rank",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "n5 fixed affine and sum",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "n5 transpose loop equals Gram",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "n5 alternating kill",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "n5 B polynomial",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "n8 Gram defect identity",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "n8 bilinear Green identity",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "n8 complement identity",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "n8 symmetry",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "n8 affine kernel and rank",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "n8 fixed affine and sum",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "n8 transpose loop equals Gram",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "n8 alternating kill",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "n8 B polynomial",
+      "passed": true,
+      "details": null
+    }
+  ],
+  "elapsed_seconds": 0.4398548700000049,
+  "sampledRSS_peak_bytes": 68870144,
+  "rss_sample_count": 36,
+  "affinity": [
+    0
+  ],
+  "memory_limit_bytes": 4294967296,
+  "cpu_seconds_limit": 180,
+  "sympy_version": "1.14.0"
+}

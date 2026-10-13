@@ -1,0 +1,143 @@
+{
+  "independent_n16_time_weighted_comparison": {
+    "eta_relative_RMS": 1.2763933834538466e-14,
+    "theta_mode2_relative_RMS": 6.927613388479379e-13,
+    "threshold": 1e-07,
+    "weighting": "trapezoidal saved time; theta averaged across physical z observation nodes"
+  },
+  "saved_grid_gate_readback": {
+    "eta32_64": 1.8758322128692746e-16,
+    "theta32_64": 5.522953216595545e-16,
+    "finest_Bsurface_plus_N2E": 4.3189190939452875e-16,
+    "pressure_velocity_high_states": "not saved: numeric replay of these n64 checks unavailable; implementation source audited instead"
+  },
+  "rawdata_descriptive_metric_readback": [
+    {
+      "name": "3c8",
+      "measured": {
+        "eta_original_RMS_m": 6.860584702972653e-10,
+        "eta_model_RMS_m": 7.051645033463736e-10,
+        "eta_residual_RMS_m": 3.81414859376025e-11,
+        "eta_residual_fraction": 0.05559509515431827,
+        "T_original_RMS_C": 7.334242326890638e-09,
+        "T_model_RMS_C": 6.799621461113437e-09,
+        "T_residual_RMS_C": 2.808595478271924e-09,
+        "T_residual_fraction": 0.382942825324212
+      },
+      "saved_scalar_relative_differences": {
+        "eta_original_RMS_m": 0.0,
+        "eta_model_RMS_m": 0.0,
+        "eta_residual_RMS_m": 0.0,
+        "eta_residual_fraction": 0.0,
+        "T_original_RMS_C": 0.0,
+        "T_model_RMS_C": 0.0,
+        "T_residual_RMS_C": 0.0,
+        "T_residual_fraction": 0.0
+      },
+      "max_relative_difference": 0.0,
+      "output_sha256": "1fef45cf2409721d07fef49f74549a9739bb6b9ccbec4aa0408b11b100f93fab"
+    },
+    {
+      "name": "ece",
+      "measured": {
+        "eta_original_RMS_m": 6.895829831340842e-10,
+        "eta_model_RMS_m": 7.051645033463736e-10,
+        "eta_residual_RMS_m": 3.541752548321291e-11,
+        "eta_residual_fraction": 0.051360788113192515,
+        "T_original_RMS_C": 7.242707124017776e-09,
+        "T_model_RMS_C": 6.799621461113437e-09,
+        "T_residual_RMS_C": 2.5598884918289927e-09,
+        "T_residual_fraction": 0.3534436016803804
+      },
+      "saved_scalar_relative_differences": {
+        "eta_original_RMS_m": 0.0,
+        "eta_model_RMS_m": 0.0,
+        "eta_residual_RMS_m": 0.0,
+        "eta_residual_fraction": 0.0,
+        "T_original_RMS_C": 0.0,
+        "T_model_RMS_C": 0.0,
+        "T_residual_RMS_C": 0.0,
+        "T_residual_fraction": 0.0
+      },
+      "max_relative_difference": 0.0,
+      "output_sha256": "97a7af537c47771f69cfe17573571045365b2cbe9f8b22c6219341899fa78088"
+    }
+  ],
+  "source_identity": {
+    "actual_installed_py_count": 133,
+    "saved_source_before_count": 133,
+    "saved_source_after_count": 133,
+    "wheel_declared_count": 133,
+    "all_dictionary_bytes_equal": true,
+    "note": "source_after is written using before dictionary after an actual package_source_hashes equality assertion; final installed bytes independently match both records"
+  },
+  "actual_ci_readback": [
+    {
+      "label": "ece",
+      "path": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/ci-ece-full-attempt02.log",
+      "sha256": "f0eadc7d1495e30b4fdd3322fa1dfe105c2a7490e3ef107bce8d3a34c3fdf94b",
+      "terminal_path": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-point-v1/full-ci-terminal.json",
+      "source_revision": "ece37c7b7ad383314e4dcfd982641d9ca541e1c3",
+      "run_id": 38293318389,
+      "terminal_conclusion": "success",
+      "raw_log_claim": {
+        "line": 841,
+        "verbatim": "test\tRun python -m pytest tests/ -q\t2026-10-12T19:14:41.6533004Z 1737 passed, 6710 warnings in 1589.16s (0:26:29)",
+        "passed": 1737,
+        "warnings": 6710,
+        "elapsed_s": 1589.16
+      }
+    },
+    {
+      "label": "3c8",
+      "path": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/ci-3c8-full.log",
+      "sha256": "fa897aa6b1af6f0d210bfa271a31526b32b1c2011268ac6cbf6170f8473565f0",
+      "terminal_path": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/material-point-v4-marginfix/full-ci-terminal.json",
+      "source_revision": "3c8e86bef2ee1fbfd50cca4343d6fc61694d9edc",
+      "run_id": 38286199660,
+      "terminal_conclusion": "success",
+      "raw_log_claim": {
+        "line": 672,
+        "verbatim": "test\tRun python -m pytest tests/ -q\t2026-10-12T18:02:46.4697608Z 1721 passed, 6710 warnings in 1081.12s (0:18:01)",
+        "passed": 1721,
+        "warnings": 6710,
+        "elapsed_s": 1081.12
+      }
+    }
+  ],
+  "inputs": [
+    {
+      "path": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/material-point-v4-marginfix/01-candidate-primary-main/contract.json",
+      "sha256": "92627ff3eadc0b3c733aa77e17467a629d7e78624d43f49d700893eb3b682358"
+    },
+    {
+      "path": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/eta-second-order-reference/reference_arrays.npz",
+      "sha256": "9feb7111e614cf5e3a98624d7195128cc02f9be1084a9fdbf8deae2ab3844b02"
+    },
+    {
+      "path": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/eta-second-order-proof/cross-verify/numeric-audit/independent_arrays.npz",
+      "sha256": "a85cd2a0148ae95c717f9d687e9e4d94be9d9715041240efb7abdfed02a6e637"
+    },
+    {
+      "path": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/material-point-v4-marginfix/01-candidate-primary-main/contract.json",
+      "sha256": "92627ff3eadc0b3c733aa77e17467a629d7e78624d43f49d700893eb3b682358"
+    },
+    {
+      "path": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/material-point-v4-marginfix/01-candidate-primary-main/zhenmode/output.npz",
+      "sha256": "1fef45cf2409721d07fef49f74549a9739bb6b9ccbec4aa0408b11b100f93fab"
+    },
+    {
+      "path": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-point-v1/01-candidate-primary-main/contract.json",
+      "sha256": "b3d87b9ae7f28ef488d1f533d84f9e98ed007f0029ac20cbf24566c4af0a9699"
+    },
+    {
+      "path": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-point-v1/01-candidate-primary-main/zhenmode/output.npz",
+      "sha256": "97a7af537c47771f69cfe17573571045365b2cbe9f8b22c6219341899fa78088"
+    },
+    {
+      "path": "/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/material-point-v4-marginfix/wheel-identity.json",
+      "sha256": "2ac0a15f4900935e92e939c1f2d263a7519edf845f5584f18114bb3618d2439b"
+    }
+  ],
+  "scope": "CONFIRMED finite saved-array computation and source identity; no native integration, parameterfit, new score, exclusive causal attribution or arbitrary-precision certificate"
+}

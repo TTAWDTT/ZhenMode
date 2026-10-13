@@ -1,0 +1,12 @@
+{
+  "scope": "Attempt02 only: post hoc independent raw-array/source-owner check, no solver/JAX/native rerun and no source edits",
+  "history": "Attempt01 owner-unit mismatch REJECT; previous posthoc readback fixed1e-25 cancellation comparison FAIL preserved under ../review/readback-failure-01.json. Attempt02 numerical outputs summarized by root before audit, so not blind science qualification.",
+  "controls": "Before NPZ: exact parity O2 E3, exact null, wrong-sign parity caught; Fraction exact degree0..4 derivative moments at two left, two right, middle positions; negative derivative sign caught; hashes direct file bytes",
+  "finite_scope": "133 source hashes, two grids16/32 x two variants x four fields x four raw cases; stored parity/alpha/feasible and bitwise low equality; no new PDE data",
+  "criteria": "Bitwise producer-association parity reproduces saved arrays; independent association difference bounded by16*float64epsilon*max(raw case amplitude); RMS report consistency rel1e-12 abs1e-26; reconstructed h abs1e-14 and truth abs1e-26; hashes exact. Independent parity RMS reported separately and cancellation-floor values not precise certified digits.",
+  "resources": {"cpu":1,"wall_s":60,"address_space_mib":1024,"threads":1},
+  "timing": "Attempt01 identical metadata+fixture pilot measured by preserved timing-pilot.json; new metadata+fixture pilot also recorded before NPZ, then fixed16/32 once; require pilot<15s",
+  "lineage": "Shared saved source/physics/parameters/NumPy, root diagnostic not imported or executed; independent code can check assembly/parity, not physics independence; post hoc development only",
+  "tool_stewardship": "Consulted tools README plus emitall full GUIDE; receipt emitter has no NPZ parity derivation. This one-shot problem-specific readback stays task-local; no scientific/domain toolkit engine invoked.",
+  "standing_rule": "Owner units or controls failure stops scope acceptance; scientific thresholds and profiles immutable"
+}

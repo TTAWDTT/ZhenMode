@@ -1,0 +1,37 @@
+{
+  "grade": "CONFIRMED_READONLY_DIAGNOSTIC_ARITHMETIC_AND_REFERENCE_INTERFACE",
+  "author": "filter_cross_verify nonauthor",
+  "checks": 64,
+  "audit_runs": 1,
+  "failed_numeric_audit_runs": 0,
+  "native_runs": 0,
+  "reference_solves": 0,
+  "rootreader_reruns": 0,
+  "project_scorer_or_refhelper_imports": 0,
+  "weights": "eta area, T actual dynamic h*area; per_snapshot normalization then trapezoid60000s",
+  "reference_grade": "REUSED v2 n64 fixedphysics/linearcontinuity/fixedH; notfullphysics/holdout/exclusivecause",
+  "canonical_eta_ratio_dab_over70": 0.9413779831004814,
+  "canonical_T_ratio_dab_over70": 1.0024523602572144,
+  "firstlinear_eta_ratio_dab_over70": 1.0057222057628832,
+  "precision": "native and reference float64; longdouble accumulation not new source digits",
+  "original_native_score": "dab strict70FAIL unchanged",
+  "native_expansion": "NOT_GRANTED",
+  "author_minor_control_gap": "declared constantRMS1 not separately asserted; independently checked1 here without root rerun",
+  "resource": {
+    "elapsed_s": 0.3196737329999999,
+    "CPU_affinity": [
+      0
+    ],
+    "sampled_RSS_peak_bytes": 57200640,
+    "RSS_samples": 27,
+    "CPU_wall_caps_s": 180,
+    "address_cap_bytes": 4294967296
+  },
+  "artifact_sha256": {
+    "audit-declaration.json": "e21c9d337992674340f3d3fdabf9ce04419201d9b355d28e8c973e8a9b2fca5a",
+    "independent_readback.py": "00b6d30d01c5e94c74027bb21f0649d3b3e2198dd800a802e5053ed1720cb0c7",
+    "independent-results.json": "1f14ce4a7da9dfcea3b4a5c2787ce2f56667bb41fa14af9fcbdfc77229c94afa",
+    "independent-run.log": "8b2eda301be7fc1e9a737049df3c873517a18bd7fd1e66199f77b1333252b073",
+    "WORKFILE.md": "62f47d18db924fac5287c692333a287dee932d77bbf207e485954a853a30fe10"
+  }
+}

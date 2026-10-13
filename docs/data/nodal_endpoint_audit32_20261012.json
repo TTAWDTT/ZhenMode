@@ -1,0 +1,19 @@
+{
+  "native_completed_and_audited": 32,
+  "prior22_recomputed_again": false,
+  "all_consistent": true,
+  "source_counts": {
+    "afb6809": 10,
+    "051141d": 12,
+    "4095464": 10
+  },
+  "audit_files": {
+    "native-audit-22.json": "b81374168420d0f1668cf8e31154065f932df72c85aa4bbf72ff1b0bf57b46f2",
+    "native-audit-v3-10.json": "5e57c0075e08f199f8396688079573269e9afa2af82a121bc0cf04bb174e8796"
+  },
+  "wave_scores_independently_recomputed": 29,
+  "thermal_initial_geometry_inventory_checks": 3,
+  "screen_pass_count": 32,
+  "limits": "development wave reference, continuous PDE and physical constants shared; thermal full trajectory not independently certified",
+  "integration_performed": false
+}

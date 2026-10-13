@@ -1,0 +1,11 @@
+{
+  "checks": [
+    "exact_git_HEAD"
+  ],
+  "scope": "source identity plus explicitly REUSED unchanged-owner bridge; no numerical science replay",
+  "verdict": "FAIL_RETAINED",
+  "error": "AssertionError('git_worktree_clean')",
+  "traceback": "Traceback (most recent call last):\n  File \"/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/review/source_identity.py\", line 26, in <module>\n    require('git_worktree_clean',subprocess.check_output(GIT+['status','--porcelain'],cwd=WORK,text=True).strip()=='')\n  File \"/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/review/source_identity.py\", line 17, in require\n    if not condition:raise AssertionError(name)\n                     ^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: git_worktree_clean\n",
+  "elapsed_s": 2.2826363169999997,
+  "script_SHA": "96fb2167c1f5703cd347b88c5a7b749992755e15e41d50d41f73945815e1abc8"
+}

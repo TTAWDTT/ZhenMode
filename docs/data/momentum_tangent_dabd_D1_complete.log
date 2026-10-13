@@ -1,0 +1,7 @@
+{"stage": "controls", "ny": 8, "positive_rows": 28, "mutations": 28}
+{"stage": "primary", "case": 1, "ny": 8, "phase": 0.5235987755982988, "artifact": "case01_ny8_phase0.5235987755982988"}
+{"stage": "primary", "case": 2, "ny": 8, "phase": 1.0471975511965976, "artifact": "case02_ny8_phase1.047197551196598"}
+{"stage": "controls", "ny": 16, "positive_rows": 82, "mutations": 41}
+{"stage": "primary", "case": 3, "ny": 16, "phase": 0.5235987755982988, "artifact": "case03_ny16_phase0.5235987755982988"}
+{"stage": "primary", "case": 4, "ny": 16, "phase": 1.0471975511965976, "artifact": "case04_ny16_phase1.047197551196598"}
+{"verdict": "FINITE STENCIL DEVELOPMENT PASS; physical attribution OPEN", "primary_count": 4, "expected_primary_count": 4, "positive_gate_count": 108, "mutation_groups": ["MP_edge_filter", "MP_edge_gradient", "MP_odd_filter", "MP_odd_gradient", "continuity", "continuity_index", "edge_index", "even_control", "f_u", "f_v", "face_dispatch", "filter_delta", "filter_delta_north", "filter_edge", "filter_odd", "full_u_analytic", "full_u_native", "full_v_analytic", "full_v_native", "gradient", "gradient_identity", "linear", "north_face", "null", "odd_index", "paired_work", "pressure", "pressure_dispatch", "pressure_index", "primary_gu", "primary_gv", "primary_gzu", "primary_gzv", "raw_u_analytic", "raw_u_native", "raw_v_analytic", "raw_v_native", "raw_wall_delta", "role", "scalar_linear", "south_face"], "continuous_errors_graded": false, "elapsed_s": 6.686841207999919}

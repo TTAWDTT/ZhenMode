@@ -1,0 +1,11 @@
+import argparse,json,os,sys
+from pathlib import Path
+ROOT=Path(__file__).resolve().parent
+sys.path.insert(0,str(ROOT.parent/'material-point-gradient-v1/installed'))
+from zhenmode.execution.resources import run_process_group
+p=argparse.ArgumentParser();p.add_argument('tag');p.add_argument('--pilot',action='store_true');a=p.parse_args()
+with (ROOT/(a.tag+'.log')).open('x') as log:
+ process,resources=run_process_group([sys.executable,str(ROOT/'readback.py')]+(['--pilot'] if a.pilot else []),cwd=str(ROOT),env=dict(os.environ,JAX_PLATFORMS='cpu',CUDA_VISIBLE_DEVICES='',PYTHONPATH=''),stdout=log,resources=dict(cpu=1,memory_mib=4096,wall_seconds=180))
+with (ROOT/(a.tag+'-resources.json')).open('x') as f:json.dump(dict(returncode=process.returncode,resources=resources),f,indent=2)
+print((ROOT/(a.tag+'.log')).read_text());print(json.dumps(dict(returncode=process.returncode,resources=resources)))
+raise SystemExit(process.returncode)

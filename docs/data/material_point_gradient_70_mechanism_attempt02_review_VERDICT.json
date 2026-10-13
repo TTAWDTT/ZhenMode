@@ -1,0 +1,23 @@
+{
+  "verdict": "SCOPE-ACCEPT",
+  "scope": "DEVELOPMENT instantaneous mechanism and justification for explicit opt-in source patch confined to material-point desired/moments",
+  "scientific_acceptance": "OPEN",
+  "attempt01": "REJECT owner-unit mismatch; unchanged failure evidence retained",
+  "attempt02_owner_bridge": "Corrected fx*dz_node/fy*dz_node matches production source owner",
+  "source_envelope": "133 actual installed package file hashes matched wheel identity, result before and after; frozen3c8e86b, not worktree ece37c7",
+  "raw_readback": "PASS stored parity bitwise, independent grouping within predeclared raw-amplitude epsilon bound, all16 alpha1 feasibleTrue,8 low_rate cases bitwise equal between selectors",
+  "controls": "PASS exact positive parity/null/wrong-sign comparator and25 exact derivative moments/negative sign",
+  "limitations": "Shared prescribed physics/parameters/source/NumPy; root outputs observed before audit; not blind, not precision-escalated, not fulltime/native/stability/rank or fully independent science evidence",
+  "even_error": "16 improves,32 worsens; no all-error-improvement claim",
+  "implementation_conditions": [
+    "Explicit opt-in only; preserve default limited and best3c8 configuration",
+    "Only point desired and horizontal column moment direct gradient call sites",
+    "Preserve original baseline function and globals; no global monkeypatch",
+    "Retain current fully-wet uniform physical-endpoint unsplit closed nodal >=6 owner envelope",
+    "No threshold/profile/native qualification change",
+    "Review actual code and bounded owner/default/budget controls before calling patch verified"
+  ],
+  "report": "../../review/REVIEW.md",
+  "metrics": "raw-readback.json",
+  "new_fit_contacts": "These known-truth16/32 mechanism observations helped choose optional fourth derivative; not independent qualification for resulting patch"
+}

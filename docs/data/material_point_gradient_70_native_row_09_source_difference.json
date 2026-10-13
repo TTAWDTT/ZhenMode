@@ -1,0 +1,140 @@
+{
+  "index": 9,
+  "utc": "2026-10-12T21:16:28.025325+00:00",
+  "current_source": "70d408583aa99db63e49d958d89dcaccad273f0e",
+  "old_source": "3c8e86bef2ee1fbfd50cca4343d6fc61694d9edc",
+  "old_output_sha256": "43b939aa3c1e4e3148ffcf47813ae45bd1dd9f0cbe08812d1a36861369496d47",
+  "old_contract_sha256": "afd06d4736fc5180007bfbb977d00d145c33800f5f0f8851cc2fdaec70bd4f3e",
+  "trajectory_difference": {
+    "T": {
+      "max_abs": 8.805231713537864e-06,
+      "raw_rms": 7.222019553101347e-07,
+      "initial_max_abs": 0.0,
+      "final_max_abs": 7.211574219567751e-06,
+      "changed_elements": 517876,
+      "total_elements": 540672
+    },
+    "S": {
+      "max_abs": 6.123694177517791e-06,
+      "raw_rms": 3.9221912629059854e-07,
+      "initial_max_abs": 0.0,
+      "final_max_abs": 6.123694177517791e-06,
+      "changed_elements": 442512,
+      "total_elements": 540672
+    },
+    "eta": {
+      "max_abs": 1.7457687478397363e-07,
+      "raw_rms": 1.3605133628464997e-08,
+      "initial_max_abs": 0.0,
+      "final_max_abs": 1.7457687478397363e-07,
+      "changed_elements": 32768,
+      "total_elements": 33792
+    },
+    "u": {
+      "max_abs": 2.200335298779785e-06,
+      "raw_rms": 1.0347120380028521e-07,
+      "initial_max_abs": 0.0,
+      "final_max_abs": 2.200335298779785e-06,
+      "changed_elements": 524288,
+      "total_elements": 540672
+    },
+    "v": {
+      "max_abs": 4.281345126729326e-06,
+      "raw_rms": 2.0730048290251936e-07,
+      "initial_max_abs": 0.0,
+      "final_max_abs": 4.281345126729326e-06,
+      "changed_elements": 524288,
+      "total_elements": 540672
+    }
+  },
+  "old_metrics": {
+    "metrics": {
+      "eta_error": 0.000667329662159743,
+      "u_error": 0.0003076370207986619,
+      "v_error": 0.00019704566582412684,
+      "T_error_C": 3.2791988354997506e-05,
+      "S_error_psu": 6.815990080079415e-06,
+      "volume": 1.1102230246251565e-16,
+      "T_inventory": 3.1252778143198157e-12,
+      "S_inventory": 2.220446049250313e-16
+    },
+    "limits": {
+      "eta_error": 0.1,
+      "u_error": 0.1,
+      "v_error": 0.1,
+      "T_error_C": 0.010000000000000002,
+      "S_error_psu": 0.002631578947368421,
+      "volume": 1e-10,
+      "T_inventory": 1e-08,
+      "S_inventory": 1e-08
+    },
+    "failed_metrics": [],
+    "normalized_error_ratios": {
+      "eta_error": 0.006673296621597429,
+      "u_error": 0.0030763702079866185,
+      "v_error": 0.001970456658241268,
+      "T_error_C": 0.0032791988354997498,
+      "S_error_psu": 0.0025900762304301777
+    },
+    "composite": 0.006673296621597429,
+    "composite_scope": "descriptive recomputation only; thermal production score does not publish a composite",
+    "null_absolute_errors": {},
+    "initial_errors": {
+      "eta": 1.734723475976807e-18,
+      "T": 0.0,
+      "S": 0.0,
+      "u": 1.3877787807814457e-17,
+      "v": 0.0
+    }
+  },
+  "current_metrics": {
+    "metrics": {
+      "eta_error": 0.0006673286760035832,
+      "u_error": 0.00030763334436475045,
+      "v_error": 0.00019702172924214738,
+      "T_error_C": 3.2750856066568785e-05,
+      "S_error_psu": 6.80128585725626e-06,
+      "volume": 2.220446049250313e-16,
+      "T_inventory": 3.1254998589247407e-12,
+      "S_inventory": 2.220446049250313e-16
+    },
+    "limits": {
+      "eta_error": 0.1,
+      "u_error": 0.1,
+      "v_error": 0.1,
+      "T_error_C": 0.010000000000000002,
+      "S_error_psu": 0.002631578947368421,
+      "volume": 1e-10,
+      "T_inventory": 1e-08,
+      "S_inventory": 1e-08
+    },
+    "failed_metrics": [],
+    "normalized_error_ratios": {
+      "eta_error": 0.006673286760035832,
+      "u_error": 0.0030763334436475043,
+      "v_error": 0.0019702172924214736,
+      "T_error_C": 0.003275085606656878,
+      "S_error_psu": 0.002584488625757379
+    },
+    "composite": 0.006673286760035832,
+    "composite_scope": "descriptive recomputation only; thermal production score does not publish a composite",
+    "null_absolute_errors": {},
+    "initial_errors": {
+      "eta": 1.734723475976807e-18,
+      "T": 0.0,
+      "S": 0.0,
+      "u": 1.3877787807814457e-17,
+      "v": 0.0
+    }
+  },
+  "scope": "Descriptive source change only; no new equivalencegate",
+  "thermal_T_inventory_arithmetic": {
+    "published": 3.1254998589247407e-12,
+    "independently_recomputed": 3.1254998589247407e-12,
+    "absolute_delta": 0.0,
+    "original_limit": 1e-08,
+    "published_pass": true,
+    "independent_pass": true,
+    "explanation": "Direct original dynamic-h/area NumPy inventory; equality at printed digits is not a separate qualification gate"
+  }
+}

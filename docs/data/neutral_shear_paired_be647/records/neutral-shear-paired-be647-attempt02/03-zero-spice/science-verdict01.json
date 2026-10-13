@@ -1,0 +1,22 @@
+{
+  "status": "PASS",
+  "case_index": 3,
+  "case": "zero-spice",
+  "metrics": {
+    "T_RMS": 1.5633406897973986e-07,
+    "S_RMS": 0.0,
+    "u_RMS": 6.267052727777532e-07,
+    "v_RMS": 3.993684794674932e-07,
+    "eta_RMS": 1.6108959256060907e-07,
+    "rho_RMS": 3.204848382016417e-08,
+    "u_normalized_RMS": 3.523634566043419e-05,
+    "v_normalized_RMS": 2.2454391880294615e-05,
+    "eta_normalized_RMS": 6.712066356692045e-05,
+    "rho_normalized_RMS": 1.0422271161029e-06
+  },
+  "raw_sha256": "2a641777c53db5fa353c51256fda9694d3d79e2a1aea0827887bb9b6ad2990c4",
+  "metadata_sha256": "892c458b91d56e27b2fc58c91ac3bd48f56746940064ef2a1b543b1be54e655e",
+  "scope": "point tracer and steady balance supplement; fixed-H diagnostic inventories; no fullwatercolumn or ranking qualification",
+  "python": "/root/.venvs/zhenmode-managed-bench-20261005/bin/python",
+  "numpy": "2.5.3"
+}

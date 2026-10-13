@@ -1,0 +1,33 @@
+{
+  "utc": "2026-10-13T03:06:08.354424+00:00",
+  "verdict": "NONAUTHOR_FINAL_DOCUMENT_AND_PACKAGING_PASS_ZERO_RESIDUAL_FINDINGS",
+  "report_sha256": "0aa4277f03e5e00e523b28c861b1c81489ebb83c467d614584dd0fb2ed1b8335",
+  "manifest_sha256": "214de8a81c41dcadd6bccbb00c16480d9594fbd7993116ff965c50db51086a3c",
+  "archive_sha256": "caea40c0a881d5be064ef6f861d0ed430e97fc0dc4da10e3338b6feaf14dc405",
+  "archive_bytes": 235311286,
+  "parts": 12,
+  "restored_original_files": 426,
+  "restored_source_python_files": 133,
+  "omitted_duplicate_files": 215,
+  "render": {
+    "ordinary_paragraphs": 23,
+    "tables": 2,
+    "math_blocks": 1,
+    "formula_source_exact": true,
+    "links": 5,
+    "errors": []
+  },
+  "verification_sha256": {
+    "final-ARCHIVE_VERIFICATION.json": "0015da3c9d59b78d2ad28157c35cad00d4882ec5a02fd2f934260e19fc948fa7",
+    "final-RENDER_VERIFICATION.json": "5ad9351ad5b5c34015fc281d781f2ed6619fc091992f6494451835d5f5b5140c",
+    "final-FINAL_REVIEW.md": "814e332f97908a8de323c45768035601c5ac82dff680c58efbb33d1e19bcee4f",
+    "final-INITIAL_RENDER_DEFECT.json": "4915f1ac2dd44e2e9895d427bd7a4c802f8adc58dd8913afab711540690f0d28"
+  },
+  "identity_limit": "Archive results-draft is earlier wording snapshot, not final public report0aa. Original report81 and failed initial renders retained. Only math delimiters changed81->0aa; source/arrays/thresholds/archive unchanged.",
+  "scientific_limit": "Five finite contacted-family point-tracer/balance and fixedH diagnostic cases; no newholdout/fullupperwatercolumn/generalnonlinear-momentum/SOTA. Originalbest70 and rejectedFt ranking unchanged.",
+  "reviewer_authored_public_report_or_source": false,
+  "science_gate_recomputations": 0,
+  "new_native_or_CI_runs": 0,
+  "actual_archive_restore_invocations": 1,
+  "after_archive_final_review_not_claimed_in426_members": true
+}

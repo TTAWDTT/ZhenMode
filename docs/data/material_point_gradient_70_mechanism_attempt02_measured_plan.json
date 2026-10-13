@@ -1,0 +1,14 @@
+{
+  "pilot_returncode": 0,
+  "pilot_resource_wall_s": 12.429502732,
+  "pilot_compute_s": 8.488587789,
+  "finite_nodes": [
+    16,
+    32
+  ],
+  "safety_margin": 8,
+  "conservative_seconds": 99.436021856,
+  "cap_s": 180,
+  "no_repeated_completed_attempt01": true,
+  "ownerunits": "production layer integratedshiftedfaces"
+}

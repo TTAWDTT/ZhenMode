@@ -1,0 +1,24 @@
+{
+  "schema": "independent-byte-restore-gate-v1",
+  "status": "SOURCE_AND_SCOPE_REVIEWED_ONE_RESTORE_ADMITTED",
+  "reviewer": "Lady /root/arithmetic_static_fresh",
+  "root_authorization": "Parent task explicitly requested one byte-only restore after source/manifest inspection",
+  "auditor_sha256": "787b11cb56c6889d29d7ed8f911de779839ab721d42416f0d7474465ef1d5d65",
+  "restore_script_sha256": "8638a8f90c4e49ad1ced8c7f18ac323c7cdf39a2a469c86a300023e47c3a519c",
+  "manifest_sha256": "79e6389f46d0c76efce928087d7f00a9a8c4b7ffd19ed0fef649b1633a76bf34",
+  "selection_sha256": "d615dd1aeaf0e7a08aeaae446ed9e71c481602a3c6faeb913ffa82646f9c7d9f",
+  "target": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/horizontal-paired-product-v1/publication-preparation/independent-restored01",
+  "target_absent_verified": true,
+  "all_actual_member_names_safe": true,
+  "duplicate_casefold_names": 0,
+  "original_source_mutations_authorized": false,
+  "restore_invocations_authorized": 1,
+  "resources": {
+    "cpu": 1,
+    "wall_seconds": 180,
+    "memory_mib": 4096
+  },
+  "numerical_decoding_authorized": false,
+  "model_or_scoring_authorized": false,
+  "scope": "831 selected original file bytes only; excluded caches/publication packaging/subsequent concept and post-snapshot final report metadata remain outside packet"
+}

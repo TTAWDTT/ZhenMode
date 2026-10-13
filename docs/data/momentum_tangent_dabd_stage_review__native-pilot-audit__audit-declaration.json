@@ -1,0 +1,71 @@
+{
+  "schema": "independent-saved-native-pilot-audit-v1",
+  "declared_utc": "2026-10-12 23:10:09 UTC",
+  "source_revision": "dabd48abd898c20e0471a5ab9fc18e9b61cfa96d",
+  "scope": "One finite audit of saved native-attempt02 completed indices 0 and 1; raw/output interchange, default17 replay, original screens, independently recomputed candidate-vs-frozen70 score. No new solver integration, CI dispatch, coefficient/field/threshold change, batch expansion, document authorship or commit.",
+  "expected_indices": [
+    0,
+    1
+  ],
+  "unexecuted_indices": [
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9
+  ],
+  "prior_failed_attempt": "Original stage 00 startup failed before import; no arrays. Keep launch failure and failed row journal as environment failure, not a completed scientific row.",
+  "lineage": {
+    "producer": "Frozen installed native solver plus project scorer, at expected candidate commit",
+    "checker": "Separate standalone stdlib/NumPy implementation, no zhenmode or project scoring helper import; scalar compensated summation for snapshot spatial norms and time quadrature",
+    "shared": [
+      "Saved native arrays",
+      "Frozen contracts/analytic reference and metric convention",
+      "Float64 NumPy transcendental evaluations"
+    ],
+    "contact": "Published pilot metrics and strict FAIL already seen before this declaration; old panel/analytic reference already contacted development data. This is post-production arithmetic/data-integrity readback, never pristine holdout or arbitrary-precision certification.",
+    "source_identity_bridge": "Reuse separately authored review/source-identity-result.json 133 Python/144 build file chain; verify receipt and registry identities, not claim this reviewer reran whole Git/wheel audit",
+    "limits": [
+      "Historical worker loaded Python paths absent unless actual saved native metadata explicitly captures them; source registry alone does not retroactively capture paths",
+      "dual_face_v1 actual option may be inferred from factory/worker defaults rather than captured",
+      "Original scientific and software failures remain unchanged"
+    ]
+  },
+  "gate": {
+    "metric_agreement": "Use the pre-existing70 native-audit contract: abs(actual-stored) <=5e-15+5e-12*abs(stored); inventory differences <=2e-14. This readback agreement is not a solver threshold.",
+    "initial_analytic_fields": "max absolute error <5e-11 (original gate)",
+    "diagnostic_capacity": "rtol5e-14, atol1e-10 m^3 (inherited contract)",
+    "source_config_options_hashes": "exact identities",
+    "raw_output_fields": "same dtype/shape/array values",
+    "default_replay": "17 named numeric arrays exactly identical to preserved old-default output",
+    "original_screens": "All original contract metric limits unchanged; fail lists must agree with stored score",
+    "strict_latest_score": "candidate composite < frozen70 composite; classify actual FALSE as scientific FAIL retained. No substituted older baseline, no threshold adjustment.",
+    "temperature_repair": "candidate T_error_C <=8.530755561576719e-7 original repair gate",
+    "fail_behavior": "Unexpected audit failure stops and is preserved; actual strict gate failure is reported as FAIL and forbids indices2..9."
+  },
+  "controls": {
+    "positive": "NPZ serialized known three-time two-space error has exact trapezoid mean-square1.5; constant inventory stable; clean hash/array/metric comparisons pass.",
+    "null": "Serialized zero error gives exact0 RMS and identical17-array container compares exact.",
+    "negative": [
+      "Perturbed array catches exact mismatch",
+      "Corrupted digest/byte catches identity mismatch",
+      "Incorrect dynamic capacity catches volume mismatch",
+      "Metric changed outside inherited budget fails comparator",
+      "Changed strict comparison direction catches greater candidate",
+      "Shifted time breaks expected complete-grid checker",
+      "Changed coordinates/source/options produce failed exact checks"
+    ]
+  },
+  "timing": {
+    "cpu_affinity_count": 1,
+    "wall_cap_s": 180,
+    "memory_cap_bytes": 4294967296,
+    "cheap_pilot": "Controls first; actual NPZ header+small time/metadata read and one synthetic snapshot-space/time RMS at actual coarse shapes; write measured projection before full audit.",
+    "full_readback": "Once for both completed rows and preserved70 baseline; progress unit completed row receipt in append-only ledger.",
+    "precision": "float64 stored arrays; no arbitrary precision or two-precision science claim."
+  },
+  "tool_stewardship": "Read full toolkit tools/README.md, gatekeeper/GUIDE.md, emitall/GUIDE.md and prior70 audit contract. Gatekeeper handles AMFlow/CV payloads and emitall re-emits receipts; neither recomputes ocean NPZ space/time norms or native metadata contracts. A one-shot project-specific auditor is therefore justified, not a duplicate general toolkit instrument."
+}

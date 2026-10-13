@@ -1,0 +1,129 @@
+{
+  "index": 3,
+  "utc": "2026-10-12T21:16:26.700465+00:00",
+  "current_source": "70d408583aa99db63e49d958d89dcaccad273f0e",
+  "old_source": "3c8e86bef2ee1fbfd50cca4343d6fc61694d9edc",
+  "old_output_sha256": "6c76260e315f1447a46919667854644a784b4ad55b414b2755af41fa0fe55233",
+  "old_contract_sha256": "db62de8a9ca7aeaf7d6906904175d817d4da375fa719e8fd18fef8979b56db5d",
+  "trajectory_difference": {
+    "T": {
+      "max_abs": 4.923823127001015e-09,
+      "raw_rms": 1.035392828200905e-09,
+      "initial_max_abs": 0.0,
+      "final_max_abs": 1.373143376781627e-09,
+      "changed_elements": 76768,
+      "total_elements": 83968
+    },
+    "S": {
+      "max_abs": 0.0,
+      "raw_rms": 0.0,
+      "initial_max_abs": 0.0,
+      "final_max_abs": 0.0,
+      "changed_elements": 0,
+      "total_elements": 83968
+    },
+    "eta": {
+      "max_abs": 2.2721921049379494e-11,
+      "raw_rms": 7.609901175573447e-12,
+      "initial_max_abs": 0.0,
+      "final_max_abs": 8.247631033356866e-12,
+      "changed_elements": 5120,
+      "total_elements": 5248
+    },
+    "u": {
+      "max_abs": 1.4086282596630952e-09,
+      "raw_rms": 2.9214472058865587e-10,
+      "initial_max_abs": 0.0,
+      "final_max_abs": 4.100213528348152e-10,
+      "changed_elements": 81920,
+      "total_elements": 83968
+    },
+    "v": {
+      "max_abs": 1.1226516545548553e-09,
+      "raw_rms": 2.421053287275838e-10,
+      "initial_max_abs": 0.0,
+      "final_max_abs": 6.632128557598339e-10,
+      "changed_elements": 81920,
+      "total_elements": 83968
+    }
+  },
+  "old_metrics": {
+    "metrics": {
+      "eta_error": 0.0005109790701355738,
+      "u_error": 3.151948986150059e-05,
+      "v_error": 8.900475780398904e-06,
+      "T_error_C": 9.934168704976506e-09,
+      "S_error_psu": 0.0,
+      "volume": 2.220446049250313e-16,
+      "T_inventory": 2.220446049250313e-16,
+      "S_inventory": 2.220446049250313e-16
+    },
+    "limits": {
+      "eta_error": 0.1,
+      "u_error": 0.1,
+      "v_error": 0.1,
+      "T_error_C": 2e-05,
+      "S_error_psu": 1e-10,
+      "volume": 1e-10,
+      "T_inventory": 1e-08,
+      "S_inventory": 1e-08
+    },
+    "failed_metrics": [],
+    "normalized_error_ratios": {
+      "eta_error": 0.005109790701355738,
+      "u_error": 0.00031519489861500584,
+      "v_error": 8.900475780398904e-05,
+      "T_error_C": 0.0004967084352488253,
+      "S_error_psu": 0.0
+    },
+    "composite": 0.005109790701355738,
+    "null_absolute_errors": {},
+    "initial_errors": {
+      "T": 0.0,
+      "S": 0.0,
+      "eta": 4.4196061605361256e-18,
+      "u": 5.421010862427522e-20,
+      "v": 0.0
+    }
+  },
+  "current_metrics": {
+    "metrics": {
+      "eta_error": 0.0005106513974973418,
+      "u_error": 3.135275688182004e-05,
+      "v_error": 8.502511981806308e-06,
+      "T_error_C": 9.381114645517458e-09,
+      "S_error_psu": 0.0,
+      "volume": 2.220446049250313e-16,
+      "T_inventory": 2.220446049250313e-16,
+      "S_inventory": 2.220446049250313e-16
+    },
+    "limits": {
+      "eta_error": 0.1,
+      "u_error": 0.1,
+      "v_error": 0.1,
+      "T_error_C": 2e-05,
+      "S_error_psu": 1e-10,
+      "volume": 1e-10,
+      "T_inventory": 1e-08,
+      "S_inventory": 1e-08
+    },
+    "failed_metrics": [],
+    "normalized_error_ratios": {
+      "eta_error": 0.005106513974973417,
+      "u_error": 0.00031352756881820035,
+      "v_error": 8.502511981806307e-05,
+      "T_error_C": 0.0004690557322758729,
+      "S_error_psu": 0.0
+    },
+    "composite": 0.005106513974973417,
+    "null_absolute_errors": {},
+    "initial_errors": {
+      "T": 0.0,
+      "S": 0.0,
+      "eta": 4.4196061605361256e-18,
+      "u": 5.421010862427522e-20,
+      "v": 0.0
+    }
+  },
+  "scope": "Descriptive source change only; no new equivalencegate"
+}

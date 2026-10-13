@@ -1,0 +1,17 @@
+{
+  "status": "SEALED_ORIGINAL_BYTE_SELECTION",
+  "phase": "select",
+  "gate_sha256": "90859dababf587da7e67ec4076a356318da7ef2d545efe77d5490d6f4c00e9a3",
+  "model_calls": 0,
+  "numerical_decoding": false,
+  "scientific_recalculation": false,
+  "files": 841,
+  "selection_sha256": "57c8517de678ae4921490af23fa76464f0165a574a83127d601b38065181b603",
+  "wall_seconds": 48.179980365,
+  "cpu_affinity": [
+    0
+  ],
+  "maximum_process_rss_kib": 22892,
+  "memory_policy": "RLIMIT_AS4GiB; peak process RSS reported, not GPU memory",
+  "script_sha256": "6122c29af2004d62ba95ade12cde3dd43d0d74e9f1016cfb26ef9465da314809"
+}

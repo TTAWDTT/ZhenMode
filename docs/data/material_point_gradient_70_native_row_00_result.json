@@ -1,0 +1,110 @@
+{
+  "index": 0,
+  "utc": "2026-10-12T21:00:17.083058+00:00",
+  "directory": "00-previous-primary-main",
+  "identity_and_contract_pass": true,
+  "raw_output_fields_identical": true,
+  "static_capacities": {
+    "dz_node": {
+      "shape": [
+        1,
+        1,
+        16
+      ],
+      "min": 3.3333333333333286,
+      "max": 6.666666666666671
+    }
+  },
+  "dynamic_h_original_formula_exact": true,
+  "diagnostic_volumes_match_h_area": true,
+  "complete_snapshots": 41,
+  "steps": 4800,
+  "metrics": {
+    "metrics": {
+      "eta_error": 0.005240393934376464,
+      "u_error": 0.0004422366211386121,
+      "v_error": 0.0002725527726521349,
+      "T_error_C": 8.530755561576719e-07,
+      "S_error_psu": 0.0,
+      "volume": 2.220446049250313e-16,
+      "T_inventory": 4.440892098500626e-16,
+      "S_inventory": 2.220446049250313e-16
+    },
+    "limits": {
+      "eta_error": 0.1,
+      "u_error": 0.1,
+      "v_error": 0.1,
+      "T_error_C": 2e-05,
+      "S_error_psu": 1e-10,
+      "volume": 1e-10,
+      "T_inventory": 1e-08,
+      "S_inventory": 1e-08
+    },
+    "failed_metrics": [],
+    "normalized_error_ratios": {
+      "eta_error": 0.05240393934376463,
+      "u_error": 0.004422366211386121,
+      "v_error": 0.002725527726521349,
+      "T_error_C": 0.04265377780788359,
+      "S_error_psu": 0.0
+    },
+    "composite": 0.05240393934376463,
+    "null_absolute_errors": {},
+    "initial_errors": {
+      "T": 0.0,
+      "S": 0.0,
+      "eta": 4.435699786533957e-18,
+      "u": 5.421010862427522e-20,
+      "v": 0.0
+    }
+  },
+  "metric_agreement": {
+    "eta_error": true,
+    "u_error": true,
+    "v_error": true,
+    "T_error_C": true,
+    "S_error_psu": true,
+    "volume": true,
+    "T_inventory": true,
+    "S_inventory": true
+  },
+  "native_resources": {
+    "cpu_affinity": 1,
+    "elapsed_wall_seconds": 25.099442608000004,
+    "gpu_allocator_fraction": 0.4,
+    "gpu_memory_enforcement": "JAX allocator fraction; not a whole-device memory limit",
+    "host_memory_enforcement": "aggregate process-group /proc RSS sampled at 0.2 s; not a hard cgroup cap",
+    "memory_mib": 4096,
+    "peak_host_rss_bytes": 1043107840,
+    "stop_reason": null,
+    "termination_grace_seconds": 0,
+    "wall_seconds": 600
+  },
+  "input_sha256": "c50329a3dbf3f94ac2f88f3c3016308220a9395c436e9562aebe287c0f9fc93a",
+  "output_sha256": "c8c5e1209e4e001fae24bd289e5a0b3716b903a4e7d373b43529c2566e286b8d",
+  "native_sha256": "3a4188ccc82a6c04a0707d5e325ccd50b97da5ecd644b95e6751ca14f185d954",
+  "loaded_python_paths_recorded": false,
+  "momentum_scheme_evidence": "source default dual_face_v1; omitted from actual_controls",
+  "qualifies": "saved-row data integrity and arithmetic only",
+  "elapsed_audit_s": 1.540627587000003,
+  "default17_exact": {
+    "time": true,
+    "x_eta": true,
+    "y_eta": true,
+    "area": true,
+    "eta": true,
+    "h": true,
+    "T": true,
+    "S": true,
+    "x_u": true,
+    "y_u": true,
+    "width_u": true,
+    "u": true,
+    "volume_u": true,
+    "x_v": true,
+    "y_v": true,
+    "v": true,
+    "volume_v": true
+  },
+  "default_baseline_sha256": "8ce7c681904bc4be00858b0f464ca0a48cd6a16d493b15765931f5cf461c8b15"
+}

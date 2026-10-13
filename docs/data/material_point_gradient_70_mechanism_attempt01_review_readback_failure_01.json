@@ -1,0 +1,8 @@
+{
+  "status": "FAIL retained",
+  "script": "readback.py",
+  "failed_check": "line89 independent association parity vs producer-saved parity absolute1e-25",
+  "reason": "Different floating subtraction association can differ at the cancellation floor; this comparison cannot certify cancellation-floor digits. The failed absolute tolerance remains preserved, not silently relaxed.",
+  "scope": "Only the readback arithmetic criterion failed; no diagnostic rerun. Attempt01 separately fails production owner bridge due omitted nodal thickness factor.",
+  "next_check": "Separate attempt02 raw audit will report independently associated parity and producer-association consistency distinctly, with a raw-amplitude epsilon bound for association difference. No scientific threshold changes."
+}

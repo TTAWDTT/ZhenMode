@@ -69,17 +69,42 @@ def validate_contract(c):
     if c.get("schema") == DEVELOPMENT_SCHEMA:
         if not isinstance(c.get("development"), dict):
             raise ValueError("development declaration must be an object")
-        expected = development_contract(c.get("case"), c.get("control"), c["development"].get("vertical_tracer_scheme"), c["development"].get("problem"))
+        expected = development_contract(c.get("case"), c.get("control"), c["development"].get("vertical_tracer_scheme"), c["development"].get("problem"), c["development"].get("hydrostatic_integral_scheme", "trapezoidal"), c["development"].get("column_mean_scheme", "nodal_capacity"), c["development"].get("tracer_flux_arithmetic", "legacy"), c["development"].get("momentum_vertical_velocity_scheme", "dual_face_v1"), c["development"].get("material_point_gradient_scheme", "minmod_v1"), c["development"].get("momentum_tangent_filter_scheme", "binomial_v1"), c["development"].get("tracer_transport_scheme", "centered_second"))
     else:
         expected = contract(c.get("frozen_model"), c.get("case"), c.get("control"))
     if digest(c) != digest(expected):
         raise ValueError("internal-wave contract differs from frozen definition")
 
 
-def development_contract(profile="primary", control="main", scheme="muscl_nodal_v1", problem="internal-wave"):
+def development_contract(profile="primary", control="main", scheme="muscl_nodal_v1", problem="internal-wave", integral="trapezoidal", mean="nodal_capacity", arithmetic="legacy", momentum="dual_face_v1", gradient="minmod_v1", tangent_filter="binomial_v1", horizontal="centered_second"):
     """New development experiment, never a replacement for the frozen holdout."""
-    if scheme not in ("donor_cell", "muscl_nodal_v1"):
+    if scheme not in ("donor_cell", "muscl_nodal_v1", "muscl_endpoint_v2", "muscl_band_v3", "material_point_v4"):
         raise ValueError("unknown vertical development scheme")
+    if integral not in ("trapezoidal", "cubic_uniform_v1"):
+        raise ValueError("unknown pressure development integral")
+    if mean not in ("nodal_capacity", "cubic_consistent_v1"):
+        raise ValueError("unknown column development mean")
+    if arithmetic not in ("legacy", "integrated_reference_v1"):
+        raise ValueError("unknown tracer development arithmetic")
+    if momentum not in ("dual_face_v1", "point_primitive_v1"):
+        raise ValueError("unknown momentum vertical-velocity scheme")
+    if gradient not in ("minmod_v1", "fourth_uniform_v1"):
+        raise ValueError("unknown material-point gradient scheme")
+    if gradient != "minmod_v1" and scheme != "material_point_v4":
+        raise ValueError("fourth_uniform_v1 gradient requires material_point_v4")
+    if tangent_filter not in ("binomial_v1", "gram_fourth_v1"):
+        raise ValueError("unknown momentum tangent-filter scheme")
+    if tangent_filter != "binomial_v1" and (scheme != "material_point_v4" or gradient != "fourth_uniform_v1"
+            or integral != "cubic_uniform_v1" or mean != "nodal_capacity"
+            or arithmetic != "integrated_reference_v1" or momentum != "dual_face_v1"):
+        raise ValueError("gram_fourth_v1 requires the qualified material-point fourth-gradient dual-face family")
+    if horizontal not in ("centered_second", "paired_product_fourth"):
+        raise ValueError("unknown horizontal tracer development scheme")
+    if horizontal != "centered_second" and (scheme != "material_point_v4"
+            or gradient != "fourth_uniform_v1" or mean != "nodal_capacity"
+            or arithmetic != "integrated_reference_v1" or momentum != "dual_face_v1"
+            or tangent_filter != "binomial_v1"):
+        raise ValueError("paired_product_fourth requires the integrated material-point fourth-gradient family with default momentum owners")
     if problem == "internal-wave":
         c = contract("zhenmode", profile, control)
     elif problem == "thermal-wind" and profile == "coarse" and control == "main":
@@ -94,6 +119,41 @@ def development_contract(profile="primary", control="main", scheme="muscl_nodal_
     c.update(schema=DEVELOPMENT_SCHEMA,
              development=dict(base_contract_sha256=original, vertical_tracer_scheme=scheme, problem=problem))
     c["ocean_options"]["vertical_tracer_scheme"] = scheme
+    if integral != "trapezoidal":
+        c["ocean_options"]["hydrostatic_integral_scheme"] = integral
+        c["development"]["hydrostatic_integral_scheme"] = integral
+    if mean != "nodal_capacity":
+        c["ocean_options"]["column_mean_scheme"] = mean
+        c["development"]["column_mean_scheme"] = mean
+    if arithmetic != "legacy":
+        c["ocean_options"]["tracer_flux_arithmetic"] = arithmetic
+        c["development"]["tracer_flux_arithmetic"] = arithmetic
+    if momentum != "dual_face_v1":
+        c["ocean_options"]["momentum_vertical_velocity_scheme"] = momentum
+        c["development"]["momentum_vertical_velocity_scheme"] = momentum
+    if gradient != "minmod_v1":
+        c["ocean_options"]["material_point_gradient_scheme"] = gradient
+        c["development"]["material_point_gradient_scheme"] = gradient
+    if tangent_filter != "binomial_v1":
+        c["ocean_options"]["momentum_tangent_filter_scheme"] = tangent_filter
+        c["development"]["momentum_tangent_filter_scheme"] = tangent_filter
+    if horizontal != "centered_second":
+        c["ocean_options"]["tracer_transport_scheme"] = horizontal
+        c["development"]["tracer_transport_scheme"] = horizontal
+    # Validate the resolved selectors, including settings inherited from the
+    # frozen physical row, without changing any accepted contract's identity.
+    options = c["ocean_options"]
+    if mean == "cubic_consistent_v1" and integral != "cubic_uniform_v1":
+        raise ValueError("cubic_consistent_v1 requires cubic_uniform_v1 pressure")
+    if scheme == "material_point_v4" and (
+        arithmetic != "integrated_reference_v1" or mean != "nodal_capacity"
+        or options["tracer_transport_scheme"] not in ("centered_second", "paired_product_fourth")
+    ):
+        raise ValueError("material_point_v4 requires integrated arithmetic, nodal capacity and a compatible horizontal scheme")
+    if momentum == "point_primitive_v1" and (
+        arithmetic != "integrated_reference_v1" or mean != "nodal_capacity"
+    ):
+        raise ValueError("point_primitive_v1 requires integrated arithmetic and nodal capacity")
     return c
 
 

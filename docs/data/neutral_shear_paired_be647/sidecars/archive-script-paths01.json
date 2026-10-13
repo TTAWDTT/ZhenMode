@@ -1,0 +1,31 @@
+{
+  "historical_publication_commit": "1d163bc4603bf7418a44f3b6257ea44ccf6d1956",
+  "reason": "The immutable historical Python attachments were scanned as project code by Ruff. Public attachment suffixes now end .py.txt; payload bytes, original archive members and historical validation identities remain unchanged.",
+  "original_evidence_archive_sha256": "79747029cdf37d73f79f0263f6faa5b38a9e586fa7c866140656e4f7cbcab8ab",
+  "files": [
+    {
+      "old_path": "docs/data/neutral_shear_paired_be647/sidecars/independent_restore01.py",
+      "new_path": "docs/data/neutral_shear_paired_be647/sidecars/independent_restore01.py.txt",
+      "sha256": "073d97bbb93c084bf5a657d1bb2a5b02ce6d004daabf3a2b57297645fbad5cc7",
+      "bytes": 15939
+    },
+    {
+      "old_path": "docs/data/neutral_shear_paired_be647/sidecars/independent_restore_supervisor01.py",
+      "new_path": "docs/data/neutral_shear_paired_be647/sidecars/independent_restore_supervisor01.py.txt",
+      "sha256": "8fea0d09abb2a7590cd14013c9ec8ec222a795d7b713857861d1747c6724ad14",
+      "bytes": 4338
+    },
+    {
+      "old_path": "docs/data/neutral_shear_paired_be647/sidecars/report-frame/check-zh-final-records01.py",
+      "new_path": "docs/data/neutral_shear_paired_be647/sidecars/report-frame/check-zh-final-records01.py.txt",
+      "sha256": "b93e81022b8389bc8f5cd8c3184cafcd17ea5e961226e09ba091f308aaa794c9",
+      "bytes": 6451
+    },
+    {
+      "old_path": "docs/data/neutral_shear_paired_be647/sidecars/report-frame/check-zh-pre-restore01.py",
+      "new_path": "docs/data/neutral_shear_paired_be647/sidecars/report-frame/check-zh-pre-restore01.py.txt",
+      "sha256": "728dc9bde3a13db613aea8fe9cf01f7088dfb9cea54cbb14f2b664bca6586e99",
+      "bytes": 9624
+    }
+  ]
+}

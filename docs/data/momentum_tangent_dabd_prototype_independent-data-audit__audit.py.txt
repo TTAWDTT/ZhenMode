@@ -1,0 +1,160 @@
+# One-shot read-only audit of archived finite data; no project imports or helper calls.
+import os,time,json,hashlib,threading,resource,traceback
+from pathlib import Path
+from fractions import Fraction as Q
+os.sched_setaffinity(0,{min(os.sched_getaffinity(0))})
+resource.setrlimit(resource.RLIMIT_AS,(4*1024**3,4*1024**3))
+resource.setrlimit(resource.RLIMIT_CPU,(180,180))
+started=time.perf_counter();rss=[];done=threading.Event()
+def monitor():
+ while not done.is_set():
+  with open('/proc/self/status') as f:
+   for line in f:
+    if line.startswith('VmRSS:'):rss.append(int(line.split()[1])*1024);break
+  done.wait(.01)
+threading.Thread(target=monitor,daemon=True).start()
+import numpy as np
+HERE=Path(__file__).resolve().parent;STAGE=HERE.parent;INST=STAGE.parent/'material-point-gradient-v1/installed'
+report={'checks':[],'rows':[],'controls':{},'limitations':[]}
+def check(name,condition,details=None):
+ if not bool(condition):raise AssertionError({'check':name,'details':details})
+ report['checks'].append(name)
+def sha(path):return hashlib.sha256(Path(path).read_bytes()).hexdigest()
+def load(path):return json.loads(Path(path).read_text(encoding='utf-8-sig'))
+def close(name,a,b,scale):
+ a=np.asarray(a);b=np.asarray(b);defect=float(np.max(abs(a-b)))
+ budget=128*np.finfo(float).eps*float(scale)
+ check(name,defect<=budget,{'defect':defect,'budget':budget})
+ return {'maxabs_defect':defect,'budget':budget}
+def metric(name,a,b):
+ budget=512*np.finfo(float).eps*max(abs(float(a)),abs(float(b)))
+ check(name,abs(float(a)-float(b))<=budget,{'actual':str(a),'claimed':str(b),'budget':budget})
+
+try:
+ # Controls run before archived numerical data are loaded.
+ R4=[[Q(int(j==i))-2*Q(int(j==i+1))+Q(int(j==i+2)) for j in range(4)] for i in range(2)]
+ def frac_apply(x,coef):
+  z=[sum(R4[i][j]*x[j] for j in range(4)) for i in range(2)]
+  return [x[j]-coef*sum(R4[i][j]*z[i] for i in range(2)) for j in range(4)]
+ expected=[Q(-1,8),Q(9,8),Q(33,8),Q(71,8)]
+ check('Fraction_T1_positive',frac_apply([Q(0),Q(1),Q(4),Q(9)],Q(1,16))==expected)
+ for x in [[Q(0)]*4,[Q(7)]*4,list(map(Q,range(4)))]:check('Fraction_null_affine_'+str(x),frac_apply(x,Q(1,16))==x)
+ planted=frac_apply([Q(1),Q(-1),Q(1),Q(-1)],Q(1,4))
+ check('Fraction_wrong_coefficient_trap',planted==[Q(0),Q(2),Q(-2),Q(0)] and sum(t*t for t in planted)>4)
+ mismatch=frac_apply([Q(0),Q(1),Q(4),Q(9)],Q(1,4))
+ check('Fraction_comparator_mismatch_caught',mismatch!=expected)
+ close('numerical_positive_comparator',np.array([1.,2.]),np.array([1.,2.]),3.)
+ try:close('deliberate_numeric_mismatch',np.array([1.,2.]),np.array([1.,2.01]),3.)
+ except AssertionError as err:report['controls']['numerical_mismatch_caught']=str(err)
+ else:raise AssertionError('numeric comparator did not fire')
+
+ paths=[STAGE/name for name in ['arrays.npz','row-journal.jsonl','result.json','complete-resources.json','declaration.json','finite-plan.json','static-interface-seal.json','pre-execution-addendum01.json','prototype.py','run.py']]
+ input_hashes={str(p.relative_to(STAGE)):sha(p) for p in paths}
+ result=load(STAGE/'result.json');resources=load(STAGE/'complete-resources.json');dec=load(STAGE/'declaration.json');plan=load(STAGE/'finite-plan.json');seal=load(STAGE/'static-interface-seal.json')
+ journal=[json.loads(line) for line in (STAGE/'row-journal.jsonl').read_text().splitlines() if line.strip()]
+ expected_source=load(INST.parent/'wheel-identity.json')['package_source_sha256']
+ check('source_manifests_133_equal',len(expected_source)==133 and result['source_before']==result['source_after']==expected_source)
+ # SHA computation implemented locally, without importing project provenance.
+ actual_source={module:sha(INST/(module+'.py')) for module in expected_source}
+ check('source_133_actual_bytes_match',actual_source==expected_source)
+ check('source_script_seal_plan_same',result['script_sha256']==input_hashes['prototype.py']==plan['script_sha256']==seal['artifact_sha256']['prototype.py'])
+ check('declaration_identity',result['declaration_sha256']==input_hashes['declaration.json']==seal['artifact_sha256']['declaration.json'])
+ check('run_seal_identity',input_hashes['run.py']==seal['artifact_sha256']['run.py'])
+ check('terminal_clean_complete',resources['returncode']==0 and resources['resources']['stop_reason'] is None and not result['pilot'])
+ check('resource_bounds',resources['resources']['elapsed_wall_seconds']<=180 and resources['resources']['peak_host_rss_bytes']<=4*1024**3 and resources['resources']['cpu_affinity']==1)
+ check('no_production_or_step_claim',not result['production_edited'] and result['full_native_runs']==0)
+ check('journal_exactly_two_rows',[r['Ny'] for r in journal]==[12,24] and journal==result['rows'])
+ check('loadedpaths_frozen',all(Path(p).resolve().is_relative_to(INST.resolve()) for p in result['loadedpaths'].values()))
+ report['original_execution']={'returncode':0,'wall_seconds':resources['resources']['elapsed_wall_seconds'],'sampled_RSS_peak':resources['resources']['peak_host_rss_bytes'],'source_manifest_count':133}
+
+ # Explicit real cosine form of the original Nx8 cutoff |k|<=2.
+ nx=8;ii=np.arange(nx);P=np.ones((nx,nx))/nx
+ for wave in [1,2]:P+=2*np.cos(2*np.pi*wave*(ii[:,None]-ii[None,:])/nx)/nx
+ close('cosine_projector_symmetric',P,P.T,abs(P).sum())
+ close('cosine_projector_idempotent',P@P,P,abs(P).sum())
+ close('cosine_projector_constant',P@np.ones(nx),np.ones(nx),nx)
+ data=np.load(STAGE/'arrays.npz',allow_pickle=False)
+ basekeys=['old_analytic_u','new_analytic_u','old_native_u','new_native_u','normal_old','normal_new','raw_native_u','truth_u','truth_v','actualh','w_analytic','w_native','Fz','u','v']
+ expectedkeys={f'{key}_Ny{n}' for n in [12,24] for key in basekeys}
+ check('array_denominator_30',set(data.files)==expectedkeys)
+ for n,claimed in zip([12,24],journal):
+  A={key:np.array(data[f'{key}_Ny{n}'],copy=False) for key in basekeys}
+  shape=(8,n,17)
+  for key in basekeys:
+   check(f'Ny{n}_{key}_shape',A[key].shape==((8,n,18) if key=='Fz' else shape))
+   check(f'Ny{n}_{key}_finite',np.all(np.isfinite(A[key])))
+  h=A['actualh'];raw=A['raw_native_u'];N=17;H=90.;Ly=15000.;d=np.arange(N)*H/(N-1);y=(np.arange(n)+.5)*Ly/n
+  fixedh=np.full(N,H/(N-1));fixedh[[0,-1]]*=.5
+  check(f'Ny{n}_h_exact_fixed_positive',np.all(h>0) and np.array_equal(h,np.broadcast_to(fixedh,shape)))
+  Y=(np.pi*y/Ly)[None,:,None];D=(d/H)[None,None,:]
+  ub=np.broadcast_to(.025+.003*np.cos(Y)+.002*np.sin(Y)+.004*D+.001*D**2,shape)
+  vb=np.broadcast_to(.14/H*np.sin(Y)*(1-2*D),shape)
+  wab=np.broadcast_to(.14*np.pi/Ly*np.cos(Y)*D*(1-D),shape)
+  fieldchecks={k:close(f'Ny{n}_{k}_declared',A[k],b,np.sum(abs(b))) for k,b in [('u',ub),('v',vb),('w_analytic',wab)]}
+  # Factorized analytic accelerations, independent of producer derivative helpers.
+  scale=.14*np.pi/(H*Ly)
+  truthu=np.broadcast_to(scale*(np.sin(Y)*(1-2*D)*(.003*np.sin(Y)-.002*np.cos(Y))+np.cos(Y)*D*(1-D)*(.004+.002*D)),shape)
+  truthv=np.broadcast_to(-.14**2*np.pi/(H**2*Ly)*np.sin(Y)*np.cos(Y)*(1-2*D+2*D**2),shape)
+  truthchecks={key:close(f'Ny{n}_{key}_factorized',A[key],b,np.sum(abs(b))) for key,b in [('truth_u',truthu),('truth_v',truthv)]}
+  check(f'Ny{n}_actual_w_upper_dualface',np.array_equal(A['w_native'],-A['Fz'][...,:-1]))
+  R=np.zeros((n-2,n))
+  for j in range(n-2):R[j,j:j+3]=[1.,-2.,1.]
+  Ft=np.eye(n)-(R.T@R)/16
+  # Independently assemble old generic edge five-point matrix, not even reflection.
+  Be=np.zeros((n,n))
+  for j in range(n):
+   for offset,weight in zip([-2,-1,0,1,2],[1,4,6,4,1]):Be[j,min(n-1,max(0,j+offset))]+=weight/16
+  def dense_filter(v,F):return np.einsum('ab,ij,bjk->aik',P,F,v,optimize=False)
+  native_new=dense_filter(raw,Ft);native_old=dense_filter(raw,Be)
+  nf=close(f'Ny{n}_native_Ft_dense',A['new_native_u'],native_new,np.sum(abs(raw)))
+  of=close(f'Ny{n}_native_original_edge_dense',A['old_native_u'],native_old,np.sum(abs(raw)))
+  # Bare original physical-z finite differences; no model/helper call.
+  uzfd=np.empty(shape)
+  uzfd[...,1:-1]=(A['u'][...,2:]-A['u'][...,:-2])/( -(d[2:]-d[:-2]) )
+  uzfd[...,0]=(A['u'][...,1]-A['u'][...,0])/(-(d[1]-d[0]))
+  uzfd[...,-1]=(A['u'][...,-1]-A['u'][...,-2])/(-(d[-1]-d[-2]))
+  rawanalytic=raw-(A['w_analytic']-A['w_native'])*uzfd
+  afn=close(f'Ny{n}_analytic_Ft_dense',A['new_analytic_u'],dense_filter(rawanalytic,Ft),np.sum(abs(rawanalytic)))
+  afo=close(f'Ny{n}_analytic_original_edge_dense',A['old_analytic_u'],dense_filter(rawanalytic,Be),np.sum(abs(rawanalytic)))
+  normaldef=float(np.max(abs(A['normal_new']-A['normal_old'])))
+  check(f'Ny{n}_normal_numerical_gate',normaldef<=2e-12)
+  normalbits=np.array_equal(A['normal_new'].view(np.uint64),A['normal_old'].view(np.uint64))
+  check(f'Ny{n}_normal_recorded_bit_report',normalbits==claimed['normalbitwise'])
+  metric(f'Ny{n}_normal_recorded_difference',normaldef,claimed['normalmaxdiff'])
+  row={'Ny':n,'field_checks':fieldchecks,'analytic_truth_checks':truthchecks,'dense_filters':{'native_Ft':nf,'native_edge':of,'analytic_Ft':afn,'analytic_edge':afo},'normal_maxdiff':normaldef,'normal_same_uint64_bits':normalbits}
+  for dtype,name in [(np.float64,'float64'),(np.longdouble,'longdouble')]:
+   def total(x):return np.sum(np.asarray(x,dtype=dtype),dtype=dtype)
+   hh=h.astype(dtype);inp=total(raw.astype(dtype)**2*hh);out=total(A['new_native_u'].astype(dtype)**2*hh)
+   sumdef=abs(total((A['new_native_u'].astype(dtype)-raw.astype(dtype))*hh));sumscale=total(abs(raw.astype(dtype))*hh);sumbudget=512*np.finfo(float).eps*sumscale
+   check(f'Ny{n}_{name}_weighted_norm',out<=inp*(1+512*np.finfo(float).eps))
+   check(f'Ny{n}_{name}_weighted_sum',sumdef<=sumbudget)
+   def rms_delta(v,t):return np.sqrt(total((v.astype(dtype)-np.asarray(t,dtype=dtype))**2*hh)/total(hh))
+   errors={f'{kind}_{oldnew}':rms_delta(A[f'{oldnew}_{kind}_u'],truthu) for kind in ['analytic','native'] for oldnew in ['old','new']}
+   strict=errors['analytic_new']<errors['analytic_old']
+   check(f'Ny{n}_{name}_strict_analytic_u_improvement',strict)
+   # Producer metric equality is tested against same archived truth; own factorized truth separately above.
+   for kind in ['analytic','native']:
+    for oldnew in ['old','new']:
+     got=rms_delta(A[f'{oldnew}_{kind}_u'],A['truth_u'])
+     label=f'{"analytic_w" if kind=="analytic" else "actual_native_w"}_u_RMS_{oldnew}'
+     metric(f'Ny{n}_{name}_{label}_recorded',got,claimed[label])
+   metric(f'Ny{n}_{name}_norm_input_recorded',inp,claimed['norm2_input']);metric(f'Ny{n}_{name}_norm_output_recorded',out,claimed['norm2_output'])
+   row[name]={'norm2_input':str(inp),'norm2_output':str(out),'sum_defect':str(sumdef),'sum_budget':str(sumbudget),'own_truth_RMS':{k:str(v) for k,v in errors.items()},'analytic_u_strict_improvement':bool(strict),'w_native_minus_analytic_RMS':str(rms_delta(A['w_native'],A['w_analytic']))}
+  row['w_scope']={'actual_native_min':float(A['w_native'].min()),'actual_native_max':float(A['w_native'].max()),'native_bottom_maxabs':float(abs(A['w_native'][...,-1]).max()),'analytic_bottom_maxabs':float(abs(A['w_analytic'][...,-1]).max()),'original_upper_dualface_positioning_retained':True}
+  report['rows'].append(row)
+ data.close()
+ check('original_all_improved_flag',result['all_analytic_u_improved'] is True)
+ check('inputs_unchanged_by_audit',all(sha(path)==input_hashes[str(path.relative_to(STAGE))] for path in paths))
+ report['input_sha256']=input_hashes
+ report['limitations']=['No analytic-w v output arrays archived: reported analytic-v RMS not independently reconstructed. Native normal unchanged is independently bit-checked.','Owner constant-zero and other-force control outputs are scalar receipts plus frozen code; actual archived raw-to-filter equality independently checked.','Float64 source data cap accuracy; longdouble only raises archive arithmetic precision, not physical/source precision.','Archived data and declared manufactured fields are shared; this is finite consumer/source/data audit, not a holdout, whole-model, time-step, or physics grade.']
+ report['verdict']='PASS_FINITE_STANDALONE_DATA_ARITHMETIC_AND_SOURCE_IDENTITY'
+except Exception as error:
+ report['verdict']='FAIL_RETAINED';report['error']=repr(error);report['traceback']=traceback.format_exc()
+finally:
+ done.set();report['timing']={'wall_seconds':time.perf_counter()-started,'sampled_RSS_peak_bytes':max(rss) if rss else None,'RSS_samples':len(rss),'affinity':sorted(os.sched_getaffinity(0)),'address_space_cap':4*1024**3,'CPU_cap_s':180,'wall_cap_s':180}
+ report['environment']={'python':os.sys.version,'numpy':np.__version__,'longdouble_mantissa_bits':np.finfo(np.longdouble).nmant,'script_sha256':sha(__file__)}
+ (HERE/'audit-results.json').write_text(json.dumps(report,indent=2)+'\n')
+ print(report['verdict']);print('checks='+str(len(report['checks'])))
+ print(json.dumps(report['timing']))
+ if report['verdict'].startswith('FAIL'):print(report['error']);print(report['traceback']);raise SystemExit(1)
+ for row in report['rows']:print('Ny'+str(row['Ny'])+' own analytic-u old/new='+row['longdouble']['own_truth_RMS']['analytic_old']+'/'+row['longdouble']['own_truth_RMS']['analytic_new']+'; normal_bits='+str(row['normal_same_uint64_bits']))

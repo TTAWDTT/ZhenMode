@@ -1,0 +1,4 @@
+PASS: independent exact n=4 fixtures, boundary stencil, planted catches, and composition controls
+T1=['-1/8', '9/8', '33/8', '71/8']; T2=['5/8', '9/8', '9/8', '5/8']
+wrong_t norm2=8>4, quadratic=-4; wrong_n norm2=36>4: CAUGHT
+{"elapsed_seconds": 2.255356526, "rss_samples": 142, "sampled_peak_RSS_bytes": 75354112, "ru_maxrss_bytes": 75169792, "cpu_affinity": [0], "wall_cap_seconds": 180, "address_space_cap_bytes": 4294967296}

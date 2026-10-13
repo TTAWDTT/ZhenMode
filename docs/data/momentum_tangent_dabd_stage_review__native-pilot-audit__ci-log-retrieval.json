@@ -1,0 +1,10 @@
+{
+  "started_utc": "2026-10-12T23:20:56.496874+00:00",
+  "finished_utc": "2026-10-12T23:21:00.048282+00:00",
+  "command": "gh run view 38318954281 --repo TTAWDTT/ZhenMode --log",
+  "retrieval": "Original gh stdout bytes saved without Unicode/newline transformation",
+  "log_path": "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\momentum-tangent-filter-v1\\review\\native-pilot-audit\\ci-raw-full.log",
+  "bytes": 114610,
+  "sha256": "79fdff7ccdecb6055f7a197bb6b7d439f29b5a482fd312e2ac43e9122093821f",
+  "reruns_or_dispatches": 0
+}

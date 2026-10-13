@@ -1,0 +1,6 @@
+{
+  "scope": "Timestamp provenance only; no acceptance or numeric gate change",
+  "original": "CI_READBACK_DECLARATION observed_state uses a typed 2026-10-12T23:15Z clock label for the first gh observation",
+  "correction": "The first gh response was actually read, but its exact observation clock was not saved. Do not cite that typed clock as measured timing. ci-live-observation01.json provides a separately timestamped actual read; this is a new metadata read, not a retroactive time capture.",
+  "pending_policy": "Only actual terminal plus raw logs can yield CI PASS; native strict FAIL remains"
+}

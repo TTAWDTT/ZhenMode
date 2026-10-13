@@ -1,0 +1,97 @@
+"""Declared DEV parity diagnostic: unchanged immutable production package."""
+import argparse,hashlib,inspect,json,math,sys,time
+from pathlib import Path
+ROOT=Path(__file__).resolve().parent
+INST=ROOT.parent/'material-point-v4-marginfix/installed';sys.path.insert(0,str(INST))
+import jax,jax.numpy as jnp,numpy as np
+import zhenmode
+from zhenmode.model.config import PhysicsConfig
+from zhenmode.model.solver.geometry.grid import GlobalOceanGrid
+from zhenmode.model.solver.factory import make_solver_global
+import zhenmode.model.solver.dynamics.transport as tr
+from zhenmode.model.solver.numerics.vertical import physical_tracer_gradient
+from zhenmode.provenance.sources import package_source_hashes
+parser=argparse.ArgumentParser();parser.add_argument('--pilot',action='store_true');args=parser.parse_args()
+before=package_source_hashes(zhenmode.__file__);expected=json.loads((INST.parent/'wheel-identity.json').read_text())['package_source_sha256'];assert before==expected and len(before)==133
+assert str(INST.resolve()) in str(Path(zhenmode.__file__).resolve())
+dec=json.loads((ROOT/'declaration.json').read_text());params=json.loads((ROOT.parent/'eta-second-order-reference/result.json').read_text())['parameters']
+start=time.monotonic()
+def fourth(q,p):
+ h=p.dz_iface[...,:1]
+ def left(a):
+  g0=(48*(a[...,1:2]-a[...,0:1])-36*(a[...,2:3]-a[...,0:1])+16*(a[...,3:4]-a[...,0:1])-3*(a[...,4:5]-a[...,0:1]))/(12*h)
+  g1=(-3*(a[...,0:1]-a[...,1:2])+18*(a[...,2:3]-a[...,1:2])-6*(a[...,3:4]-a[...,1:2])+(a[...,4:5]-a[...,1:2]))/(12*h)
+  return g0,g1
+ a,b=left(q);c,d=left(q[...,::-1]);mid=(8*(q[...,3:-1]-q[...,1:-3])-(q[...,4:]-q[...,:-4]))/(12*h)
+ return jnp.concatenate((a,b,mid,-d,-c),-1)
+text=inspect.getsource(tr._material_point_scalar_rate);scope=dict(tr.__dict__);scope['physical_tracer_gradient']=fourth
+exec(compile(text,'<external-fourth-gradient-prototype>','exec'),scope);prototype=scope['_material_point_scalar_rate']
+assert scope['integrated_reference_scalar_rate'] is tr.integrated_reference_scalar_rate
+arrays={};controls=[];rows=[]
+def one(n):
+ nx,ny,H,Lx,Ly=8,32,100.,20000.,20000.
+ x=(np.arange(nx)+.5)*Lx/nx;y=(np.arange(ny)+.5)*Ly/ny;d=np.linspace(0.,H,n);z=-d
+ shape=(nx,ny,n)
+ grid=GlobalOceanGrid(lon=x,lat=y,dx_2d=np.full((nx,ny),Lx/nx),dy=Ly/ny,cos_lat=np.ones(ny),f=np.full((nx,ny),1e-4),z=z,dz=-np.diff(z),nz=n,depth=np.full((nx,ny),H),wet_mask=np.ones((nx,ny)),ocean_mask=np.ones((nx,ny),dtype=bool),land_mask=np.zeros((nx,ny)),wet_mask_3d=np.ones(shape),nx=nx,ny=ny)
+ phys=PhysicsConfig(**dict.fromkeys(('nu_h','nu_v','nu_bi','kappa_h','kappa_v','kappa_bi','kappa_conv','kappa_gm','kappa_redi','r_bot','cd'),0.))
+ _,init,_,p,_=make_solver_global(grid,phys,12.5,return_params=True,column_geometry='nodal_dual_v1',conservative_kv=True,localize_conv=True,polar_cap_rows=0,polar_cap_taper=0,external_mode_scheme='symmetric',meridional_boundary_scheme='closed_faces',pressure_continuity_scheme='centered_fourth',hydrostatic_surface_scheme='linear_density',density_rotation_scheme='joint_shear',vertical_tracer_scheme='material_point_v4',tracer_flux_arithmetic='integrated_reference_v1',hydrostatic_integral_scheme='cubic_uniform_v1')
+
+ D=d/H
+ # Known-answer derivative controls before any physical comparison.
+ defects=[]
+ for degree in range(5):
+  q0=np.broadcast_to(7.+D**degree,shape).copy();truth0=np.broadcast_to(np.zeros(n) if degree==0 else degree*D**(degree-1)/H,shape)
+  got=np.asarray(jax.block_until_ready(jax.jit(lambda a:fourth(a,p))(jnp.asarray(q0))))
+  defects.append(float(np.max(abs(got-truth0))));assert defects[-1]<=1e-14
+ negative=float(np.max(abs(-got-truth0)));assert negative>1e-3
+ controls.append(dict(n=n,polynomial_defects=defects,negative_wrong_sign=negative))
+ k,m,o,gamma,f=params['k'],params['m'],params['omega'],params['gamma'],params['f'];phase=math.pi/4
+ Y=k*y[None,:,None];Z=m*(z[None,None,:]+H)
+ bg=jnp.asarray(np.broadcast_to(15.+gamma*z,shape).copy())
+ @jax.jit
+ def evaluate(amp,wave):
+  u=jnp.broadcast_to(-amp*f*m/k*jnp.cos(Z)*jnp.sin(Y)*math.cos(phase),shape)
+  v=jnp.broadcast_to(amp*o*m/k*jnp.cos(Z)*jnp.sin(Y)*math.sin(phase),shape)
+  q=bg+jnp.broadcast_to(-wave*gamma*amp*jnp.sin(Z)*jnp.cos(Y)*math.cos(phase),shape)
+  mass=tr._layer_face_transports(u,v,p);Fz=tr._vertical_transport_iface(u,v,p,face_transport=mass)
+  shifted=q-q.reshape(-1)[0];faces=tr._horizontal_tracer_fluxes(shifted,u,v,p,mass)
+  result=[]
+  for function in (tr._material_point_scalar_rate,prototype):
+   rate,_,di=function(q,Fz,mass,faces,p,return_diagnostics=True)
+   result.append((rate,di['desired'],di['low_rate'],di['delta'],di['blend'],di['feasible']))
+  return tuple(result),physical_tracer_gradient(q,p),fourth(q,p)
+ values={};ticks=[]
+ for amp in (.01,-.01):
+  for wave in (0.,1.):
+   tick=time.monotonic();out=jax.block_until_ready(evaluate(amp,wave));ticks.append(time.monotonic()-tick)
+   values[(amp,wave)]=jax.tree.map(np.asarray,out)
+ if args.pilot:return dict(nodes=n,calls=4,individual_call_s=ticks,oracle_compared=False)
+ h=np.broadcast_to(np.asarray(p.dz_node),shape)
+ def rms(a):return math.sqrt(float(np.sum(a*a*h)/np.sum(h)))
+ truth=np.broadcast_to(-gamma*.01**2*o*m/4*np.sin(2*Z)*math.sin(2*phase),shape)
+ row=dict(nodes=n,even_truth_RMS_C_s=rms(truth),variants={})
+ for variant,label in enumerate(('production_minmod','external_fourth')):
+  records=[values[(a,w)][0][variant] for a,w in ((.01,0.),(-.01,0.),(.01,1.),(-.01,1.))]
+  summary={}
+  for field,key in enumerate(('rate','desired','low_rate','delta')):
+   a,b,c,e=[r[field] for r in records];odd=(c-e-a+b)/2;even=(c+e-a-b)/2
+   summary[key]=dict(odd_wave_excess_RMS_C_s=rms(odd),even_wave_error_RMS_C_s=rms(even-truth),even_wave_RMS_C_s=rms(even))
+   arrays[f'{label}_{key}_odd_n{n}']=odd;arrays[f'{label}_{key}_even_n{n}']=even
+  summary['alpha']=[float(r[4]) for r in records];summary['feasible']=[bool(r[5]) for r in records]
+  for a,w in ((.01,0.),(-.01,0.),(.01,1.),(-.01,1.)):
+   rec=values[(a,w)][0][variant]
+   for i,key in enumerate(('rate','desired','low_rate','delta','alpha','feasible')):arrays[f'{label}_{key}_a{a}_w{w}_n{n}']=rec[i]
+  row['variants'][label]=summary
+ for index,label in ((1,'minmod'),(2,'fourth')):
+  bias=values[(.01,1.)][index]+values[(-.01,1.)][index]-values[(.01,0.)][index]-values[(-.01,0.)][index]
+  row[label+'_gradient_symmetric_bias_RMS_C_m']=rms(bias);arrays[f'{label}_gradient_bias_n{n}']=bias
+ arrays[f'truth_n{n}']=truth;arrays[f'h_n{n}']=h
+ with (ROOT/'row-journal.jsonl').open('a') as stream:print(json.dumps(row),file=stream)
+ print(json.dumps(row),flush=True);return row
+if not args.pilot:assert not (ROOT/'row-journal.jsonl').exists()
+rows=[one(n) for n in ([16] if args.pilot else dec['geometry']['nodes'])]
+after=package_source_hashes(zhenmode.__file__);assert after==before
+if not args.pilot:np.savez(ROOT/'arrays.npz',**arrays)
+result=dict(pilot=args.pilot,rows=rows,controls=controls,elapsed_s=time.monotonic()-start,source_before=before,source_after=after,declaration_sha256=hashlib.sha256((ROOT/'declaration.json').read_bytes()).hexdigest(),script_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),prototype_source_sha256=hashlib.sha256(text.encode()).hexdigest(),parameters=params,source_changed=False)
+with (ROOT/('timing-pilot.json' if args.pilot else 'result.json')).open('x') as stream:json.dump(result,stream,indent=2)
+print(json.dumps(dict(elapsed_s=result['elapsed_s'],pilot=args.pilot)),flush=True)

@@ -1,0 +1,9 @@
+import os,sys,json
+from pathlib import Path
+sys.path.insert(0,'/mnt/d/CodexWorktrees/thermal-full-scan/ocean-solver/src')
+from zhenmode.execution.resources import run_process_group
+root=Path('/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/material-point-gradient-v1')
+with (root/'controls-gradient-attempt01.log').open('x') as log:
+ result,receipt=run_process_group([sys.executable,'-m','pytest','tests/fd/test_material_point_gradient.py','tests/fd/test_point_momentum_polynomial.py','tests/fd/test_point_momentum_velocity.py','tests/fd/test_material_point_transport.py','tests/fd/test_reference_flux_arithmetic.py','tests/fd/test_consistent_column_mean.py','tests/fd/test_cubic_pressure_integral.py','tests/fd/test_surface_density_pressure.py','tests/fd/test_nodal_endpoint_flux.py','tests/fd/test_vertical_tracer_reconstruction.py','tests/evaluation/test_internal_wave_development.py','tests/infrastructure/test_source_layout.py','-q'],cwd='/mnt/d/CodexWorktrees/thermal-full-scan/ocean-solver',env=dict(os.environ,JAX_PLATFORMS='cpu',PYTHONPATH='/mnt/d/CodexWorktrees/thermal-full-scan/ocean-solver/src'),stdout=log,resources=dict(cpu=1,memory_mib=4096,wall_seconds=180))
+(root/'controls-gradient-attempt01-resources.json').write_text(json.dumps(dict(returncode=result.returncode,resources=receipt),indent=2))
+print((root/'controls-gradient-attempt01.log').read_text());sys.exit(result.returncode)

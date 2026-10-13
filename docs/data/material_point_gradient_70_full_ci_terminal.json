@@ -1,0 +1,15 @@
+{
+  "source_revision": "70d408583aa99db63e49d958d89dcaccad273f0e",
+  "id": 38306749152,
+  "status": "completed",
+  "conclusion": "success",
+  "full_validation": true,
+  "pytest_passed": 1750,
+  "pytest_warnings": 6710,
+  "pytest_duration_s": 1159.33,
+  "MMS": "ALL PASS actualsame-source log",
+  "ruff": "PASS",
+  "log": "../ci-70d-full-attempt02.log",
+  "log_sha256": "a937993d72323c5d23a5b5430ee3981fde540946ae795fe012dec88a62cedab4",
+  "earlier_network_log_failure": "firstghlogdownload timedout before file; attempt02 read-only retry succeeded"
+}

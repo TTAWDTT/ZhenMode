@@ -1,0 +1,48 @@
+{
+  "source_revision": "70d408583aa99db63e49d958d89dcaccad273f0e",
+  "baseline_source": "3c8e86bef2ee1fbfd50cca4343d6fc61694d9edc",
+  "previous_score": 0.005388509039568577,
+  "candidate_score": 0.0053878283060362665,
+  "relative_score_change": -0.00012633059113609235,
+  "metrics": {
+    "eta_error": {
+      "before": 0.0005388509039568577,
+      "after": 0.0005387828306036267,
+      "relative_change": -0.00012633059113598133
+    },
+    "u_error": {
+      "before": 0.00003198853242502769,
+      "after": 0.000031921402933548914,
+      "relative_change": -0.002098548648210352
+    },
+    "v_error": {
+      "before": 0.000004440723369690159,
+      "after": 0.000004082506786096297,
+      "relative_change": -0.08066626848203251
+    },
+    "T_error_C": {
+      "before": 7.334242326890638e-9,
+      "after": 7.088858339175954e-9,
+      "relative_change": -0.033457305714456154
+    },
+    "S_error_psu": {
+      "before": 0,
+      "after": 0,
+      "relative_change": null
+    },
+    "T_inventory": {
+      "before": 2.220446049250313e-16,
+      "after": 2.220446049250313e-16,
+      "relative_change": 0
+    },
+    "S_inventory": {
+      "before": 2.220446049250313e-16,
+      "after": 2.220446049250313e-16,
+      "relative_change": 0
+    }
+  },
+  "strict_improvement": true,
+  "science": true,
+  "independent_source_math_newscience": "pending; no batchexpansion yet",
+  "full_CI": "38306749152 inprogress noPASS"
+}

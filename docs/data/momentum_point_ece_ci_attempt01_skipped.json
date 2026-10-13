@@ -1,0 +1,13 @@
+{
+  "source_revision": "ece37c7b7ad383314e4dcfd982641d9ca541e1c3",
+  "run_id": 38292930386,
+  "status": "completed",
+  "conclusion": "success",
+  "lint": "PASS",
+  "test_job": "SKIPPED",
+  "pytest_or_MMS": "NOT EXECUTED",
+  "reason": "workflow_dispatch defaults full_validation=false; rootomittedinput. Caughtbylogandjobsinspection, not counted fullPASS.",
+  "original_declaration": "full-ci-declaration.json intent retained notproof",
+  "raw_log": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/ci-ece-full.log",
+  "action": "dispatchsecondidenticalsource with explicit full_validation=true; preserveallgates/sourceplan"
+}

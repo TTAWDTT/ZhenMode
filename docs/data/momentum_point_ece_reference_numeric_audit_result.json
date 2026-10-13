@@ -1,0 +1,98 @@
+{
+  "records": [
+    {
+      "name": "constant_control",
+      "status": "PASS",
+      "max_abs": 5.551115123125783e-17
+    },
+    {
+      "name": "resonance_control",
+      "status": "PASS",
+      "max_abs": 9.43689570931383e-16
+    },
+    {
+      "name": "zero_a_constant",
+      "status": "PASS",
+      "max_abs": 0.0
+    },
+    {
+      "name": "zero_a_cos",
+      "status": "PASS",
+      "max_abs": 4.996003610813204e-16
+    },
+    {
+      "name": "zero_a_sin",
+      "status": "PASS",
+      "max_abs": 3.3306690738754696e-16
+    },
+    {
+      "name": "zero_a_nu0_cos",
+      "status": "PASS",
+      "max_abs": 0.0
+    },
+    {
+      "name": "zero_a_nu0_sin",
+      "status": "PASS",
+      "max_abs": 0.0
+    },
+    {
+      "name": "wrong_rotation",
+      "status": "CAUGHT",
+      "max_abs": 1.4161468365471424
+    },
+    {
+      "name": "relative_comparator_plant",
+      "status": "CAUGHT",
+      "relative_error": 0.00990099009900991,
+      "threshold": 1e-07
+    },
+    {
+      "name": "assembly",
+      "status": "PASS",
+      "n": 16,
+      "dimension_augmented": 52,
+      "skew_relative": 4.720495022742931e-18,
+      "forcing_coefficients": {
+        "Cu": 1.6461691212979703e-12,
+        "Cv": 1.725018767827348e-12,
+        "Q": 2.4978934787563903e-21
+      },
+      "last_column_discarded": [
+        1.6129032258064515
+      ],
+      "initial_second_order_max_abs": 0.0,
+      "time_count": 41,
+      "max_time": 60000.0
+    },
+    {
+      "name": "one_exponential_timing",
+      "status": "PASS",
+      "elapsed_s": 0.0004900610000007077
+    },
+    {
+      "name": "independent_evaluation",
+      "status": "PASS",
+      "elapsed_s": 0.01284154399999693
+    },
+    {
+      "name": "root_n16_comparison",
+      "status": "PASS",
+      "eta_relative_RMS": 1.2767860426403096e-14,
+      "theta_relative_RMS": 6.930205540858173e-13,
+      "eta_max_abs_m": 3.567216391634932e-23,
+      "theta_max_abs_C": 2.3920383104414312e-23,
+      "threshold": 1e-07,
+      "opposite_eta_plant_relative": 1.9999999999999998
+    },
+    {
+      "name": "overall",
+      "status": "CONFIRMED_FINITE_NUMERIC",
+      "not_new_proof_closure": true,
+      "physical_attribution": "OPEN",
+      "precision": "binary64; no arbitrary-precision digit certificate"
+    }
+  ],
+  "scipy": "1.16.3",
+  "numpy": "2.5.3",
+  "elapsed_s": 0.05532370899999961
+}

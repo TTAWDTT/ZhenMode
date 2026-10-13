@@ -1,0 +1,156 @@
+{
+  "grade": "CONFIRMED_FINITE_NUMERIC",
+  "new_proof_closure": false,
+  "physical_attribution": "OPEN",
+  "threshold_changed": false,
+  "source_edits": false,
+  "native_reruns": 0,
+  "n": 16,
+  "saved_time_count": 41,
+  "main_eta_relative_RMS": 1.2767860426403096E-14,
+  "main_theta_relative_RMS": 6.930205540858173E-13,
+  "setup_failures": [
+    "PowerShell JSON object conversion rejected case-distinct k/K; no parsed count accepted",
+    "Hashtable console selection displayed null labels while stored identities remained valid"
+  ],
+  "runs": [
+    {
+      "id": "pilot",
+      "grade": "PASS",
+      "resources": {
+        "true_exit": 0,
+        "wall_s": 0.5114831390000001,
+        "peak_aggregate_sampled_rss_bytes": 69599232,
+        "sample_seconds": 0.1,
+        "rss_scope": "supervisor recursive process tree",
+        "affinity": [
+          0
+        ],
+        "samples": [
+          [
+            0.005106064000000465,
+            13340672
+          ],
+          [
+            0.10546901400000053,
+            39575552
+          ],
+          [
+            0.20911294300000005,
+            48795648
+          ],
+          [
+            0.30942725900000045,
+            60149760
+          ],
+          [
+            0.40975666300000047,
+            69599232
+          ]
+        ],
+        "termination_reason": null,
+        "python": "/root/.local/share/bootloops-suite/bootloops/.venv/bin/python"
+      }
+    },
+    {
+      "id": "full-n16",
+      "grade": "CONFIRMED",
+      "resources": {
+        "true_exit": 0,
+        "wall_s": 0.40979726100000136,
+        "peak_aggregate_sampled_rss_bytes": 72077312,
+        "sample_seconds": 0.1,
+        "rss_scope": "supervisor recursive process tree",
+        "affinity": [
+          0
+        ],
+        "samples": [
+          [
+            0.004841631000001456,
+            13365248
+          ],
+          [
+            0.10517861900000014,
+            54489088
+          ],
+          [
+            0.20556823100000088,
+            71004160
+          ],
+          [
+            0.30822569500000085,
+            72077312
+          ]
+        ],
+        "termination_reason": null,
+        "python": "/root/.local/share/bootloops-suite/bootloops/.venv/bin/python"
+      }
+    },
+    {
+      "id": "raw-readback1",
+      "grade": "PASS_RETAINED",
+      "path": "readback1/"
+    },
+    {
+      "id": "raw-readback2",
+      "grade": "CONFIRMED",
+      "resources": {
+        "true_exit": 0,
+        "wall_s": 0.91032388,
+        "peak_aggregate_sampled_rss_bytes": 73564160,
+        "sample_seconds": 0.1,
+        "rss_scope": "supervisor recursive process tree",
+        "affinity": [
+          0
+        ],
+        "samples": [
+          [
+            0.005148323999996762,
+            13369344
+          ],
+          [
+            0.10650297899999828,
+            39440384
+          ],
+          [
+            0.20680186599999928,
+            47710208
+          ],
+          [
+            0.30716517599999804,
+            73388032
+          ],
+          [
+            0.40746617199999946,
+            73424896
+          ],
+          [
+            0.507841814999999,
+            73535488
+          ],
+          [
+            0.6082196089999954,
+            73547776
+          ],
+          [
+            0.7086407609999981,
+            73560064
+          ],
+          [
+            0.8089960669999954,
+            73564160
+          ]
+        ],
+        "termination_reason": null,
+        "python": "/root/.local/share/bootloops-suite/bootloops/.venv/bin/python"
+      }
+    }
+  ],
+  "pending": [
+    "No independently rerun n64 pressure/velocity boundary states available in saved NPZ; source-audited only",
+    "No exclusive native causality or new nonlinear scalar/alpha diagnosis"
+  ],
+  "source_count": 133,
+  "ci_ece_passed": 1737,
+  "ci_3c8_passed": 1721
+}

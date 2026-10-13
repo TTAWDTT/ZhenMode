@@ -1,0 +1,24 @@
+{
+  "status": "COMPLETED_BYTE_SUPERVISION",
+  "returncode": 0,
+  "stop_reason": null,
+  "elapsed_wall_seconds": 68.40982751099999,
+  "peak_sampled_child_group_rss_bytes": 46821376,
+  "rss_samples": 341,
+  "cpu_affinity": [
+    0
+  ],
+  "resources": {
+    "cpu": 1,
+    "wall_seconds": 180,
+    "memory_mib": 4096,
+    "sample_seconds": 0.2
+  },
+  "host_memory_policy": "0.2-second aggregate child-process-group RSS, not a hard cgroup; inherited per-process RLIMIT_AS4GiB",
+  "supervisor_peak_rss_kib": 18484,
+  "launch_sha256": "a41b6809de4bcaea0b0eb9d9cb94a0db4185a2de4b88449f97f20a1319665050",
+  "declaration_sha256": "f4baded42e20e2659297599a24456e1973a87f2a00477b0c390bc099db2dc79a",
+  "model_calls": 0,
+  "npz_decoded": 0,
+  "worker_verdict_sha256": "10a09a0a64849524de545b42c8646264cbf6e95685c3853b2d3dee90404d1ffb"
+}

@@ -1,0 +1,9 @@
+# 最终非作者文档与包装准出
+
+零残余 findings。报告SHA `0aa4277f03e5e00e523b28c861b1c81489ebb83c467d614584dd0fb2ed1b8335`；manifest SHA `214de8a81c41dcadd6bccbb00c16480d9594fbd7993116ff965c50db51086a3c`。
+
+一次实际复原及独立核对通过：426原件、133Python源码、12parts、235311286 bytes、archive SHA `caea40c0a881d5be064ef6f861d0ed430e97fc0dc4da10e3338b6feaf14dc405`。215重复容器明确省略；205快照全部十字段及time的元素bits核对已封存。实际Pandoc最后读回23正文段、两表、一个完整公式和五链接均通过。
+
+首render缺陷与旧报告81身份保留；公开0aa仅由公式定界符修复得到。archive内results-draft是较早文案快照，不能冒充0aa终稿。各具体验证SHA绑定在 [final-FRAME_REVIEW.json](final-FRAME_REVIEW.json)。
+
+仅有限已接触物理族的点值温盐/平衡与固定H诊断；不授予holdout、全水柱、一般非线性动量或SOTA。原best70分数、FtFAIL及全部历史限制保持。审查者未写或改公共报告/生产源码，无科学gate、native或CI重算。

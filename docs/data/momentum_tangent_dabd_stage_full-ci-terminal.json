@@ -1,0 +1,16 @@
+{
+  "source": "dabd48abd898c20e0471a5ab9fc18e9b61cfa96d",
+  "id": 38318954281,
+  "status": "completed",
+  "conclusion": "success",
+  "actual_pytest_passed": 1771,
+  "warnings": 6710,
+  "pytest_s": 1571.69,
+  "MMS": "5checks ALL PASS",
+  "ruff": "PASS",
+  "raw_log": "review/native-pilot-audit/ci-raw-full.log",
+  "raw_log_sha256": "79fdff7ccdecb6055f7a197bb6b7d439f29b5a482fd312e2ac43e9122093821f",
+  "independent_audit": "review/native-pilot-audit/FINAL_AUDIT_RECEIPT.json",
+  "scope": "Software PASS not native ranking/physics promotion",
+  "observed_at": "2026-10-12T23:25:03.660Z"
+}

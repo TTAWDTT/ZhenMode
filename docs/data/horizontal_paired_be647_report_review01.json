@@ -1,0 +1,92 @@
+{
+  "schema": "paired-product-report-fresh-frame-review-v1",
+  "reviewer": "Lady /root/paired_report_frame",
+  "created_utc": "2026-10-13T09:06:01.7311046Z",
+  "status": "BODY_TEXT_AND_STRUCTURAL_RENDER_REVIEWED_PACKAGE_FINAL_DIFF_PENDING",
+  "fresh_context": true,
+  "author_algorithm_data_participation": false,
+  "original_version": "results-full04",
+  "current_version": "results-full07",
+  "full_read": true,
+  "honesty_number_pass": true,
+  "composition_pass": true,
+  "pattern_pass": true,
+  "colleague_pass": true,
+  "continuous_read": true,
+  "cold_abstract_last": true,
+  "audiences": 7,
+  "correctness_novelty_rows": 14,
+  "initial_reviewer_findings": 4,
+  "all_initial_findings_fixed_in07": true,
+  "new07_body_findings": 0,
+  "model_calls": 0,
+  "metrics_recomputed": 0,
+  "array_reads": 0,
+  "ci_reruns": 0,
+  "tests_run": 0,
+  "browser_visual_verified": false,
+  "browser_rejection": "IAB blocked file://; no workaround attempted",
+  "mathml_blocks": 3,
+  "tables": 3,
+  "paragraphs": 30,
+  "package_review_complete": false,
+  "parse_attempt_error": "One PowerShell foreach pipeline ParseError before any reads; corrected once. No scientific execution.",
+  "hashes": [
+    {
+      "path": "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\horizontal-paired-product-v1\\results-full04.md",
+      "sha256": "8c3dc8bfdaaff39dcfd10ccd2fb26c8cfbedddb56e643f2e19ffceb24d972e31"
+    },
+    {
+      "path": "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\horizontal-paired-product-v1\\results-full04.html",
+      "sha256": "1b8e6522311442c8ef74893197d56e755e4cb227638a8e2dfff63d4e398023d0"
+    },
+    {
+      "path": "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\horizontal-paired-product-v1\\results-full06.md",
+      "sha256": "138843b35861067377bebc89f43697d8bef46de7fcdad25de66cc3188211afb4"
+    },
+    {
+      "path": "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\horizontal-paired-product-v1\\results-full06.html",
+      "sha256": "6bc9bd5931a8d1ffb3a11f6e1c83e12a206b57cb858153254b55d6e8669fe6e2"
+    },
+    {
+      "path": "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\horizontal-paired-product-v1\\results-full07.md",
+      "sha256": "67af3740d81a30b9c2fa1916c052ae1cab2a94f28ff6d299ddebdb58d07c56c4"
+    },
+    {
+      "path": "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\horizontal-paired-product-v1\\results-full07.html",
+      "sha256": "530c63672477280c81d761ce058c6e0b1ea6984dad3191e50f63fac52afb6cc5"
+    },
+    {
+      "path": "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\horizontal-paired-product-v1\\review\\report-frame\\referee_sim_results-full04-to07_01.md",
+      "sha256": "74e0d8344051a7aa063871108c3f854ff96816dc0ae801a1e16fd704e496fb2b"
+    },
+    {
+      "path": "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\horizontal-paired-product-v1\\review\\report-frame\\rendered-text07.txt",
+      "sha256": "6319a47835d9468c89eeecb78b4db61005bcd38dcf5e80d17280f24b3942468a"
+    },
+    {
+      "path": "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\horizontal-paired-product-v1\\review\\remaining-native-audit\\all10-record-summary01.json",
+      "sha256": "6a55fa7e9c5f73afbc40a61766e27115523d9b22dc64d34da8de8546933e76c0"
+    },
+    {
+      "path": "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\horizontal-paired-product-v1\\review\\source-audit-attempt02\\source-identity-result.json",
+      "sha256": "8db930ccfac0c3997f6b835b2d4cec8d12a9bea6ad60f5d78f0e1debed8ccd0f"
+    },
+    {
+      "path": "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\horizontal-paired-product-v1\\review\\CI_TERMINAL_REVIEW01.json",
+      "sha256": "92ebb513cd7b621c3d1ca4e8c89359429613322141c07bd9252e87fe41d5c80c"
+    },
+    {
+      "path": "D:\\Github\\ocean-solver\\outputs\\vertical-mean-round3-20261012\\horizontal-paired-product-v1\\review\\paired-audit01-verdict.json",
+      "sha256": "b91013258290e33d0b40b9cc67d134e1edb822d7e777790b4387caac114087ad"
+    },
+    {
+      "path": "C:\\Users\\86153\\.codex\\plugins\\cache\\bootloops\\bootloops-research\\1.0.0\\skills\\prose-lint\\SKILL.md",
+      "sha256": "68fc0afb5da4e6198764732d0fd64dce8d0c18b4569befc35432fe0ccf61b1bb"
+    },
+    {
+      "path": "C:\\Users\\86153\\.codex\\plugins\\cache\\bootloops\\bootloops-research\\1.0.0\\skills\\referee-sim\\SKILL.md",
+      "sha256": "492d459aab1367e1489fd269642c9b101bb7cf4f20b338b8bc9edee976fabffa"
+    }
+  ]
+}

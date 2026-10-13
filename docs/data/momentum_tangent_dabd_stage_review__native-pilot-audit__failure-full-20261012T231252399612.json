@@ -1,0 +1,9 @@
+{
+  "utc": "2026-10-12T23:12:52.399659+00:00",
+  "mode": "full",
+  "classification": "AUDIT_HARNESS_OR_DATA_FAILURE_NOT_RELABELED",
+  "error": "AssertionError('same full physical contract except candidate tangent option')",
+  "traceback": "Traceback (most recent call last):\n  File \"/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/review/native-pilot-audit/audit_saved_pilot.py\", line 296, in <module>\n    elif mode=='full':full_audit()\n                      ^^^^^^^^^^^^\n  File \"/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/review/native-pilot-audit/audit_saved_pilot.py\", line 263, in full_audit\n    require(c_noopt==bc_noopt,'same full physical contract except candidate tangent option')\n  File \"/mnt/d/Github/ocean-solver/outputs/vertical-mean-round3-20261012/momentum-tangent-filter-v1/review/native-pilot-audit/audit_saved_pilot.py\", line 38, in require\n    if not condition: raise AssertionError(name)\n                      ^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: same full physical contract except candidate tangent option\n",
+  "elapsed_s": 0.6359279119999997,
+  "new_native_runs": 0
+}

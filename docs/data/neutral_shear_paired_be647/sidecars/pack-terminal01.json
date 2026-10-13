@@ -1,0 +1,21 @@
+{
+  "status": "PACKED_ORIGINAL_BYTES_ONLY",
+  "phase": "pack",
+  "gate_sha256": "90859dababf587da7e67ec4076a356318da7ef2d545efe77d5490d6f4c00e9a3",
+  "model_calls": 0,
+  "numerical_decoding": false,
+  "scientific_recalculation": false,
+  "files": 841,
+  "parts": 33,
+  "archive_bytes": 673508371,
+  "archive_sha256": "79747029cdf37d73f79f0263f6faa5b38a9e586fa7c866140656e4f7cbcab8ab",
+  "manifest_sha256": "476ddf2848d6a6ab341d6b7f40223f287a3ad19f3a1ba4533c9fe96bcca48796",
+  "independent_restore": "PENDING_NOT_PERFORMED_BY_PACK_AUTHOR",
+  "wall_seconds": 63.513201041,
+  "cpu_affinity": [
+    0
+  ],
+  "maximum_process_rss_kib": 67828,
+  "memory_policy": "RLIMIT_AS4GiB; peak process RSS reported, not GPU memory",
+  "script_sha256": "6122c29af2004d62ba95ade12cde3dd43d0d74e9f1016cfb26ef9465da314809"
+}

@@ -1,7 +1,16 @@
 """Wet-face transport, continuity and tracer advection."""
 
 from zhenmode.model.solver.numerics.backend import jnp
-from zhenmode.model.solver.numerics.channel import channel_face_velocities, channel_tracer_fluxes
+from zhenmode.model.solver.numerics.channel import (
+    channel_face_velocities,
+    channel_paired_product_fluxes,
+    channel_tracer_fluxes,
+)
+from zhenmode.model.solver.numerics.column import (
+    column_mean,
+    cubic_point_integral,
+    point_mass_integral,
+)
 from zhenmode.model.solver.numerics.contacts import (
     contact_divergence,
     contact_material_derivative,
@@ -12,13 +21,25 @@ from zhenmode.model.solver.numerics.horizontal import (
     _dealias_h_fd,
     _divergence_h,
     _face_thickness,
+    _filter_tangent_gram_fd,
     _gradient_face_gated_3d,
 )
 from zhenmode.model.solver.numerics.vertical import (
+    _conservative_endpoint_flux,
     _d_dz,
     _fill_ghost_bottom,
     _vertical_tracer_face_values,
+    fourth_uniform_tracer_gradient,
+    integrated_reference_scalar_rate,
+    joint_scalar_blend,
+    physical_tracer_gradient,
+    point_vertical_antiflux,
 )
+
+
+def _requires_actual_mass_faces(params):
+    return (getattr(params, 'column_mean_weights', None) is not None
+            or getattr(params, 'tracer_flux_arithmetic', 'legacy') == 'integrated_reference_v1')
 
 
 def _column_divergence(u, v, p):
@@ -28,6 +49,11 @@ def _column_divergence(u, v, p):
     advection budget uses, so a zero here is exactly the discretely
     divergence-free condition the tracer flux operator needs. (D13)
     """
+    if _requires_actual_mass_faces(p):
+        faces = _layer_face_transports(u, v, p)
+        integrand = _face_transport_divergence(*faces, p)
+        # Use the vertical inverse's summation order for its surface transport.
+        return jnp.cumsum(integrand[..., ::-1], axis=-1)[..., -1] * p.wet_mask
     return jnp.sum(_divergence_h(u, v, p) * p.dz_node, axis=-1) * p.wet_mask
 
 def _layer_face_transports(velocity_x, velocity_y, params):
@@ -36,6 +62,11 @@ def _layer_face_transports(velocity_x, velocity_y, params):
         return contact_transports(velocity_x,velocity_y,params)
     if getattr(params, 'pressure_continuity_scheme', 'centered_second') == 'centered_fourth':
         fx, fy = channel_face_velocities(velocity_x, velocity_y)
+        if getattr(params, 'column_mean_weights', None) is not None:
+            layers = (fx * params.dz_node, fy * params.dz_node)
+            return tuple(layer + params.dz_norm *
+                         (column_mean(face, params)*params.H_sw-jnp.sum(layer, axis=-1))[..., None]
+                         for face, layer in zip((fx, fy), layers, strict=True))
         return fx * params.dz_node, fy * params.dz_node
     thickness_x = _face_thickness(params, 0)
     thickness_y = _face_thickness(params, 1)
@@ -87,6 +118,8 @@ def _vertical_transport_iface(u, v, p, face_transport=None):
     no CFL limit removes. Fz[..., 0] is the column-integrated horizontal divergence,
     the rigid-lid leak the barotropic subcycle absorbs via Fz_top = Fz[0]*T[0]. (D7)
     """
+    if face_transport is None and _requires_actual_mass_faces(p):
+        face_transport = _layer_face_transports(u, v, p)
     if face_transport is not None:
         integrand = _face_transport_divergence(*face_transport, p)
         accumulated = jnp.cumsum(integrand[..., ::-1], axis=-1)[..., ::-1]
@@ -102,7 +135,7 @@ def _vertical_transport_iface(u, v, p, face_transport=None):
 def _barotropic_velocity(u, v, p):
     """Depth-averaged (barotropic) horizontal velocity."""
     if p.column_geometry in {'nodal_dual_v1', 'fixed_partial_v1'}:
-        return jnp.sum(u * p.dz_norm, axis=-1), jnp.sum(v * p.dz_norm, axis=-1)
+        return column_mean(u, p), column_mean(v, p)
     u_avg = 0.5 * (u[..., :-1] + u[..., 1:])
     v_avg = 0.5 * (v[..., :-1] + v[..., 1:])
     ubt = jnp.sum(u_avg * p.dz_norm, axis=-1)
@@ -114,19 +147,24 @@ def _reference_depth_divergence(ubt, vbt, p):
     return _column_divergence(ubt[..., None], vbt[..., None], p)
 
 def _compute_vertical_velocity(state, p):
-    """Diagnose w from horizontal continuity. w=0 at bottom. Masked on land.
+    """Upward physical-z velocity supplied to momentum and diagnostics.
 
-    w = -Fz, the exact interface transports of _vertical_transport_iface sign-flipped
-    to the w>0 = DOWNWARD convention. A trapezoid node-w built from div_avg + cumsum
-    could not invert the advection's discrete face-flux divergence pointwise, leaving
-    a T-proportional source (an exponential pump); the exact inverse closes
-    div_x + div_y + div_z to machine precision for a uniform tracer. No dealiasing:
-    dealiasing w would re-open the non-closure the exact inverse just fixed.
-    (D6, D7)
+    The default retains the historical upper dual-face sample -Fz[..., :-1].
+    This is an exact face-divergence inverse, but its last sample is above the
+    physical bed. The optional point primitive instead evaluates the same
+    horizontal divergence at physical nodes, with actual top -Fz0 and bed 0.
+    Scalar transport continues to use the unchanged Fz face-flux owner.
+    Neither option establishes whole-model energy or time accuracy.
     """
     Fz = _vertical_transport_iface(state.u, state.v, p)
-    w = -Fz[..., :-1] * p.wet_mask_z
-    return w
+    if getattr(p, 'momentum_vertical_velocity_scheme', 'dual_face_v1') == 'point_primitive_v1':
+        divergence = -jnp.diff(Fz, axis=-1) / p.dz_node
+        w = -cubic_point_integral(divergence, p)
+        w = w.at[..., 0].set(-Fz[..., 0]).at[..., -1].set(0.)
+    else:
+        w = -Fz[..., :-1]
+    return w * p.wet_mask_z
+
 
 def _advection_flux_form(u, v, w, p):
     """3D advective-form momentum advection (FD, land-masked, dealiased).
@@ -151,7 +189,10 @@ def _advection_flux_form(u, v, w, p):
         dv_dx, dv_dy = _gradient_face_gated_3d(v, p, normal=closed_faces)
         adv_u = -(u * du_dx + v * du_dy + w * du_dz)
         adv_v = -(u * dv_dx + v * dv_dy + w * dv_dz)
-    adv_u = _dealias_h_fd(adv_u, p)
+    if getattr(p, 'momentum_tangent_filter_scheme', 'binomial_v1') == 'gram_fourth_v1':
+        adv_u = _filter_tangent_gram_fd(adv_u, p)
+    else:
+        adv_u = _dealias_h_fd(adv_u, p)
     adv_v = _dealias_h_fd(adv_v, p, normal=closed_faces)
     return adv_u * p.wet_mask_z, adv_v * p.wet_mask_z
 
@@ -173,6 +214,8 @@ def _limited_tracer_slope(tracer, wet, axis):
 
 def _horizontal_tracer_fluxes(T, u, v, p, face_transport):
     """Dispatch scalar transport while preserving the historical flux path."""
+    if getattr(p, 'tracer_transport_scheme', 'centered_second') == 'paired_product_fourth':
+        raise ValueError('paired_product_fourth requires integrated faces and paired column moments')
     if getattr(p, 'tracer_transport_scheme', 'centered_second') == 'product_fourth':
         return channel_tracer_fluxes(T, u, v, p, face_transport)
     return _legacy_horizontal_tracer_fluxes(T, u, v, p, face_transport)
@@ -247,7 +290,79 @@ def _legacy_horizontal_tracer_fluxes(T,u,v,p,face_transport):
     return Fx,Fy
 
 
-def _advection_scalar(T, u, v, Fz_in, p, return_boundary=False, face_transport=None):
+def _material_point_scalar_rate(T, Fz, mass_faces, shifted_faces, p, minimum=None,
+                                return_diagnostics=False, *, column_moments=None):
+    """Joint conservative product-moment and point-velocity correction.
+
+    The affine, horizontally constant column product identity motivates the
+    target. General fields and disconnected spans retain projection residuals.
+    Both horizontal and vertical anti-fluxes use one domain-wide Euler blend.
+    """
+    paired = getattr(p, 'tracer_transport_scheme', 'centered_second') == 'paired_product_fourth'
+    if paired:
+        if column_moments is None or len(column_moments) != 2:
+            raise ValueError('paired_product_fourth requires both prepared column moments')
+        shape = getattr(T, 'shape', ())
+        if len(shape) != 3 or min(shape[:2]) < 5 or shape[-1] < 6:
+            raise ValueError('paired_product_fourth requires a full (nx, ny, nz) tracer array')
+        if len(mass_faces) != 2 or len(shifted_faces) != 2:
+            raise ValueError('paired_product_fourth requires both integrated face pairs')
+        fields = (('tracer', T, shape), ('Fz', Fz, shape[:-1]+(shape[-1]+1,)),
+                  ('Mx', mass_faces[0], shape), ('My', mass_faces[1], shape),
+                  ('Gx', shifted_faces[0], shape), ('Gy', shifted_faces[1], shape),
+                  ('column moments x', column_moments[0], shape[:-1]),
+                  ('column moments y', column_moments[1], shape[:-1]),
+                  ('dz_node', p.dz_node, (1, 1, shape[-1])),
+                  ('dz_iface', p.dz_iface, (1, 1, shape[-1]-1)))
+        for name, field, expected_shape in fields:
+            if (getattr(field, 'shape', None) != expected_shape
+                    or getattr(field, 'dtype', None) != jnp.dtype('float64')):
+                raise ValueError(f'paired_product_fourth {name} requires shape {expected_shape} and float64')
+    elif column_moments is not None:
+        raise ValueError('prepared column moments require paired_product_fourth')
+    gradient_operator = (fourth_uniform_tracer_gradient
+                         if getattr(p, 'material_point_gradient_scheme', 'minmod_v1') == 'fourth_uniform_v1'
+                         else physical_tracer_gradient)
+    reference = T.reshape(-1)[0]
+    shifted = T-reference
+    h = p.dz_node
+    mass_numerator = _face_transport_divergence(*mass_faces, p)
+    shifted_numerator = _face_transport_divergence(*shifted_faces, p)
+    baseline_params = p._replace(vertical_tracer_scheme='muscl_band_v3')
+    low_rate, boundary = integrated_reference_scalar_rate(T, Fz, shifted_numerator,
+                                                         mass_numerator, baseline_params, minimum)
+    anti_faces = []
+    for axis, mass, base in zip((0, 1), mass_faces, shifted_faces, strict=True):
+        if paired:
+            moment = column_moments[axis]
+        else:
+            face_q = .5*(shifted+jnp.roll(shifted, -1, axis=axis))
+            gradient = gradient_operator(face_q, p)
+            point_integral = point_mass_integral(mass, p)
+            moment = face_q[..., 0]*jnp.sum(mass, -1)+jnp.sum(h*gradient*point_integral, -1)
+        magnitude = jnp.sum(jnp.abs(mass), -1, keepdims=True)
+        anti_faces.append(jnp.abs(mass)/jnp.where(magnitude > 0., magnitude, 1.)
+                          *(moment-jnp.sum(base, -1))[..., None])
+    anti_faces[1] = anti_faces[1].at[:, -1].set(0.)
+    horizontal_anti = _face_transport_divergence(*anti_faces, p)
+    mass_residual = mass_numerator+(Fz[..., 1:]-Fz[..., :-1])
+    vertical_divergence = -(Fz[..., 1:]-Fz[..., :-1])/h
+    point_w = cubic_point_integral(vertical_divergence, p)
+    point_w = point_w.at[..., 0].set(Fz[..., 0]).at[..., -1].set(0.)
+    desired = (-(shifted_numerator-shifted*mass_numerator)/h
+               -point_w*gradient_operator(shifted, p)-T*mass_residual/h)
+    anti_vertical = point_vertical_antiflux(desired-low_rate, horizontal_anti, Fz, p)
+    delta = -(horizontal_anti+(anti_vertical[..., 1:]-anti_vertical[..., :-1]))/h
+    blend, feasible = joint_scalar_blend(T, low_rate, delta, Fz, p, minimum)
+    rate = low_rate+blend*delta
+    if return_diagnostics:
+        return rate, boundary, dict(blend=blend, feasible=feasible,
+                                   anti_horizontal=tuple(anti_faces), anti_vertical=anti_vertical,
+                                   desired=desired, low_rate=low_rate, delta=delta)
+    return rate, boundary
+
+
+def _advection_scalar(T, u, v, Fz_in, p, return_boundary=False, face_transport=None, minimum=None):
     """3D FLUX-FORM scalar advection (FD, land-masked, NOT dealiased).
 
     Flux form (-div(uT)) rather than advective form: the two differ by +T*div(u), a
@@ -272,6 +387,27 @@ def _advection_scalar(T, u, v, Fz_in, p, return_boundary=False, face_transport=N
     overshoot at a sharp front.
     """
     wm = p.wet_mask_z
+    if getattr(p, 'tracer_flux_arithmetic', 'legacy') == 'integrated_reference_v1':
+        if face_transport is None:
+            face_transport = _layer_face_transports(u, v, p)
+        reference = T.reshape(-1)[0]
+        if getattr(p, 'tracer_transport_scheme', 'centered_second') == 'paired_product_fourth':
+            faces, moments = channel_paired_product_fluxes(T-reference, u, v, p, face_transport)
+            rate, boundary = _material_point_scalar_rate(
+                T, Fz_in, face_transport, faces, p, minimum, column_moments=moments)
+            return (rate, boundary) if return_boundary else rate
+        fx, fy = _horizontal_tracer_fluxes(T-reference, u, v, p, face_transport)
+        shifted_numerator = _face_transport_divergence(fx*p.dz_node, fy*p.dz_node, p)
+        mass_numerator = _face_transport_divergence(*face_transport, p)
+        if getattr(p, 'vertical_tracer_scheme', 'donor_cell') == 'material_point_v4':
+            rate, boundary = _material_point_scalar_rate(T, Fz_in, face_transport,
+                                                         (fx*p.dz_node, fy*p.dz_node), p, minimum)
+            return (rate, boundary) if return_boundary else rate
+        rate, boundary = integrated_reference_scalar_rate(T, Fz_in, shifted_numerator,
+                                                         mass_numerator, p, minimum=minimum)
+        return (rate, boundary) if return_boundary else rate
+    if face_transport is None and getattr(p, 'column_mean_weights', None) is not None:
+        face_transport = _layer_face_transports(u, v, p)
     partial = getattr(p, 'column_geometry', 'legacy') == 'fixed_partial_v1'
     if partial and face_transport is None:
         face_transport = _layer_face_transports(u, v, p)
@@ -309,7 +445,7 @@ def _advection_scalar(T, u, v, Fz_in, p, return_boundary=False, face_transport=N
     T_shallow = T[..., :-1]                           # node k-1 (above iface k)
     # Optional limited donor reconstruction removes the first-order face bias
     # of a resolved vertical gradient, retaining the actual mass transports.
-    if getattr(p, 'vertical_tracer_scheme', 'donor_cell') == 'muscl_nodal_v1':
+    if getattr(p, 'vertical_tracer_scheme', 'donor_cell') in ('muscl_nodal_v1', 'muscl_endpoint_v2', 'muscl_band_v3'):
         T_shallow, T_deep = _vertical_tracer_face_values(T, p)
     wet_iface = wm[..., :-1] * wm[..., 1:]
     # Internal interfaces are Fz_in[..., 1:-1] (indices 1..nz-1, count nz-1):
@@ -327,6 +463,10 @@ def _advection_scalar(T, u, v, Fz_in, p, return_boundary=False, face_transport=N
     Fz_top = Fz_in[:, :, :1] * T[..., :1]
     up = jnp.concatenate([Fz_top, Fz_int], axis=-1)
     dn = jnp.concatenate([Fz_int, jnp.zeros_like(Fz_int[..., :1])], axis=-1)
+    if getattr(p, 'vertical_tracer_scheme', 'donor_cell') in ('muscl_endpoint_v2', 'muscl_band_v3'):
+        raw_flux = jnp.concatenate((Fz_top, Fz_int, jnp.zeros_like(Fz_top)), axis=-1)
+        corrected = _conservative_endpoint_flux(T, Fz_in, raw_flux, horizontal_div, p, minimum=minimum)
+        up, dn = corrected[..., :-1], corrected[..., 1:]
     div_z = (dn-up)/p.dz_node
     adv_T = -(horizontal_div+div_z)
     tendency = adv_T * p.wet_mask_z

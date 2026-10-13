@@ -1,0 +1,50 @@
+{
+  "index": 2,
+  "source": "be647d70fc7394f3014dca8bc776e207d4f02ae3",
+  "producer_bundle": "67ecb7e0b1a77cc8ea0480b4c11c8b9a311dc2f403fd678a4ddab0aaa6866188",
+  "timing": {
+    "compile": 20.756259608000004,
+    "windows": [
+      0.34567720000000435,
+      0.08286946999999856
+    ],
+    "parent_wall": 34.485600898,
+    "peak_rss": 1374797824
+  },
+  "header_only_initial_npz_member_bytes": {
+    "u.npy": 798848,
+    "v.npy": 798848,
+    "T.npy": 798848,
+    "S.npy": 798848,
+    "eta.npy": 12416,
+    "ice.npy": 12416,
+    "rho.npy": 798848,
+    "pressure_anomaly_Pa.npy": 798848,
+    "w_native.npy": 798848,
+    "Fz.npy": 811136,
+    "pressure_acceleration_x.npy": 798848,
+    "pressure_acceleration_y.npy": 798848,
+    "x.npy": 384,
+    "y.npy": 512,
+    "z.npy": 648,
+    "dz_node.npy": 648,
+    "area.npy": 12416
+  },
+  "header_npz_sha256": "6ed677249fc99958190602b49415a1cdeabae37c9f83b7c7d181568a82631a25",
+  "snapshot_bytes_upper": 8040208,
+  "history41_bytes_upper": 329648528,
+  "memory_formula": "1.25*(measuredlargestprefixRSS+3*41*ALL initialNPY member bytes+64MiB)",
+  "memory_rationale": "All initial fields include extra accel/coordinates not in run history; three full history equivalents cover list snapshots+stacked archive+I/O temporary, plus64MiB and25%remaining margin. Oldmediumactual prefix1447505920/full1448624128 used context only, notblindRSSx8. Runtime sampledcap stillauthoritative.",
+  "forecast_rss_bytes": 3038565340,
+  "forecast_seconds": 259.1347213470026,
+  "time_formula": "1.5*(actualparentwall+400*slower12window)",
+  "limits": {
+    "cpu": 1,
+    "wall_seconds": 600,
+    "memory_mib": 4096
+  },
+  "population": "oneoriginalcase2 full4800steps41outputs only",
+  "timing_receipt_sha": "ff7e20652ad409c21359eede7db0305875790e0ed6d684310e51768709c236c1",
+  "timing_resources_sha": "7953fef3ec3027096b78e53258e4e079c41ffdf1a4bee69c5c36152782b207f4",
+  "science_arrays_decoded_for_planning": 0
+}

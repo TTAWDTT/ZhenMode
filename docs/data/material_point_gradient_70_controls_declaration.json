@@ -1,0 +1,20 @@
+{
+  "base_production": "ece37c7b7ad383314e4dcfd982641d9ca541e1c3",
+  "best_configuration_source": "3c8e86bef2ee1fbfd50cca4343d6fc61694d9edc",
+  "evidence": "scalar-point-gradient-parity-3c8/result.json",
+  "scope": "explicit material_point_gradient_scheme=minmod_v1 default/fourth_uniform_v1 optional; onlymaterialpoint desired andhorizontalmoments; oldlimitedbaseline unchanged; candidate momentumdual_face_v1",
+  "new_controls": [
+    "degree0..4 gradient original1e-14C/m gate andconstant exactzero; uniformphysicalnodes>=6/float64 factoryguard",
+    "same actualFz andmomentum exact across gradientselector/defaultcontractdigest unchanged; serializednondefaultselector/tamper rejected",
+    "actualscalarconstant1e-17 andbadmassnegative; gaugeC/K1e-13; boundaryinventory1e-13; stagnantfacepins/existingfloor/envelope controls preserved",
+    "manufactured oddbilinear desired parity regression1e-20C/s fixed from analyticzero, outputrate remainsprojected andno totalaccuracyclaim"
+  ],
+  "original_controls": "existing157 controls unchanged; candidate optin meaningful affected tests andfresh independent profiles afterfreeze",
+  "native_gate": "newsource0legacy17exact+1pilot originalscreens; strictscore<3c8 .005388509039568577; T oldrepair8.530755561576719e-7C originalstock/stability thresholds unchanged; no remainingbatchuntilallnewgatespass",
+  "resource": {
+    "cpu": 1,
+    "wall_s": 180,
+    "memory_mib": 4096
+  },
+  "source_review_required_beforefreeze": true
+}

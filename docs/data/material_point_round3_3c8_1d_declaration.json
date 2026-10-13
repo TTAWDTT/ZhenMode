@@ -1,0 +1,12 @@
+{
+  "source":"3c8e86bef2ee1fbfd50cca4343d6fc61694d9edc",
+  "scope":"NEW independent analytic characteristic data for current point-column core with local horizontal compensation; does not certify actual 2D horizontal owner",
+  "grids":[35,69,137],"dt":0.0025,"final_time":0.25,"heun_steps":100,
+  "profile":"q0(d)=5+0.18 exp(0.45d)+0.065d^2+0.035d^3, d in [0,1]",
+  "flow":"a(d)=0.25 sin(pi d); physical midpoint mass faces, zero top/bed; exact foot=2/pi atan(exp(-0.25 pi t)tan(pi d/2))",
+  "purpose":"Fresh monotone nonaffine profile; derivative >=0.081 chosen analytically, no numerical error or alpha selection. No mandatory active-branch assertion for this core-only time evolution.",
+  "gates":{"constant_rhs_and_final":1e-17,"finest_normalized_weighted_L1":0.05,"each_refinement_min":1.25,"budget_scale":1e-12,"badmass_constant_exclusive":1e-12,"minimum_Euler":-1e-14,"all_feasible":true},
+  "lineage":"Independent closed-form characteristic and tracer profile; shares PDE/geometry/JAX and production cubic_point_integral, stable integrated baseline, projection and joint blend. Local Nm-distributed horizontal compensation is core emulation, not actual 2D owner. No old dense/legacy substitutes.",
+  "timing":"35node 5Heun timing-only pilot with no analytic reference evaluation/display; fixed three-grid complete once after declared projection; CPU1/180s/4096MiB sampled aggregate RSS, no GPU.",
+  "contact":"Unseen declaration after source freeze; all values become contacted at full evaluation; previous 362 profile and grids are REUSED only, never requalified here."
+}

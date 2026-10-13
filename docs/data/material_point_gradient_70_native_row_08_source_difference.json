@@ -1,0 +1,143 @@
+{
+  "index": 8,
+  "utc": "2026-10-12T21:16:27.177998+00:00",
+  "current_source": "70d408583aa99db63e49d958d89dcaccad273f0e",
+  "old_source": "3c8e86bef2ee1fbfd50cca4343d6fc61694d9edc",
+  "old_output_sha256": "d1af25f255a41d50278735201edf21a8e056fbb5fa4b7c705ae65b2af0652cd1",
+  "old_contract_sha256": "ec1853788b9705ca5ec49e737f61a0906b56b67ea280716a4760e0c141b43afd",
+  "trajectory_difference": {
+    "T": {
+      "max_abs": 0.0,
+      "raw_rms": 0.0,
+      "initial_max_abs": 0.0,
+      "final_max_abs": 0.0,
+      "changed_elements": 0,
+      "total_elements": 20480
+    },
+    "S": {
+      "max_abs": 0.0,
+      "raw_rms": 0.0,
+      "initial_max_abs": 0.0,
+      "final_max_abs": 0.0,
+      "changed_elements": 0,
+      "total_elements": 20480
+    },
+    "eta": {
+      "max_abs": 0.0,
+      "raw_rms": 0.0,
+      "initial_max_abs": 0.0,
+      "final_max_abs": 0.0,
+      "changed_elements": 0,
+      "total_elements": 1280
+    },
+    "u": {
+      "max_abs": 0.0,
+      "raw_rms": 0.0,
+      "initial_max_abs": 0.0,
+      "final_max_abs": 0.0,
+      "changed_elements": 0,
+      "total_elements": 20480
+    },
+    "v": {
+      "max_abs": 0.0,
+      "raw_rms": 0.0,
+      "initial_max_abs": 0.0,
+      "final_max_abs": 0.0,
+      "changed_elements": 0,
+      "total_elements": 20480
+    }
+  },
+  "old_metrics": {
+    "metrics": {
+      "eta_error": 0.0,
+      "u_error": 0.0,
+      "v_error": 0.0,
+      "T_error_C": 0.0,
+      "S_error_psu": 0.0,
+      "volume": 0.0,
+      "T_inventory": 0.0,
+      "S_inventory": 0.0
+    },
+    "limits": {
+      "eta_error": 0.1,
+      "u_error": 0.1,
+      "v_error": 0.1,
+      "T_error_C": 2e-05,
+      "S_error_psu": 1e-10,
+      "volume": 1e-10,
+      "T_inventory": 1e-08,
+      "S_inventory": 1e-08
+    },
+    "failed_metrics": [],
+    "normalized_error_ratios": {
+      "eta_error": 0.0,
+      "u_error": 0.0,
+      "v_error": 0.0,
+      "T_error_C": 0.0,
+      "S_error_psu": 0.0
+    },
+    "composite": 0.0,
+    "null_absolute_errors": {
+      "eta": 0.0,
+      "u": 0.0,
+      "v": 0.0,
+      "T": 0.0,
+      "S": 0.0,
+      "h": 0.0
+    },
+    "initial_errors": {
+      "T": 0.0,
+      "S": 0.0,
+      "eta": 0.0,
+      "u": 0.0,
+      "v": 0.0
+    }
+  },
+  "current_metrics": {
+    "metrics": {
+      "eta_error": 0.0,
+      "u_error": 0.0,
+      "v_error": 0.0,
+      "T_error_C": 0.0,
+      "S_error_psu": 0.0,
+      "volume": 0.0,
+      "T_inventory": 0.0,
+      "S_inventory": 0.0
+    },
+    "limits": {
+      "eta_error": 0.1,
+      "u_error": 0.1,
+      "v_error": 0.1,
+      "T_error_C": 2e-05,
+      "S_error_psu": 1e-10,
+      "volume": 1e-10,
+      "T_inventory": 1e-08,
+      "S_inventory": 1e-08
+    },
+    "failed_metrics": [],
+    "normalized_error_ratios": {
+      "eta_error": 0.0,
+      "u_error": 0.0,
+      "v_error": 0.0,
+      "T_error_C": 0.0,
+      "S_error_psu": 0.0
+    },
+    "composite": 0.0,
+    "null_absolute_errors": {
+      "eta": 0.0,
+      "u": 0.0,
+      "v": 0.0,
+      "T": 0.0,
+      "S": 0.0,
+      "h": 0.0
+    },
+    "initial_errors": {
+      "T": 0.0,
+      "S": 0.0,
+      "eta": 0.0,
+      "u": 0.0,
+      "v": 0.0
+    }
+  },
+  "scope": "Descriptive source change only; no new equivalencegate"
+}

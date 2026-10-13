@@ -1,0 +1,13 @@
+{
+  "source_revision": "ece37c7b7ad383314e4dcfd982641d9ca541e1c3",
+  "run_id": 38293318389,
+  "status": "completed",
+  "conclusion": "success",
+  "pytest_passed": 1737,
+  "warnings": 6710,
+  "pytest_s": 1589.16,
+  "MMS": "ALL PASS",
+  "ruff": "PASS",
+  "original_lint_only_run": 38292930386,
+  "raw_log": "D:/Github/ocean-solver/outputs/vertical-mean-round3-20261012/ci-ece-full-attempt02.log"
+}

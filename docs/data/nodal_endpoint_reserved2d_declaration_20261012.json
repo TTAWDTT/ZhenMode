@@ -1,0 +1,25 @@
+{
+  "status": "PRE-EVALUATION; wait for frozen v3 isolated identity before execution",
+  "case": "New nonlinear stationary streamline dye data; continuous material tendency zero",
+  "Lx_m": 10000,
+  "Ly_m": 7200,
+  "H_m": 90,
+  "U_m_s": 0.0006,
+  "grid_rows": [[8,20,21],[8,40,41],[8,80,81]],
+  "streamfunction_shape": "psi=sin(pi*y/Ly)*sin(pi*d/H)",
+  "velocities": "u=0; v=U*sin(pi*y/Ly)*cos(pi*d/H); a_down=-(U*H/Ly)*cos(pi*y/Ly)*sin(pi*d/H)",
+  "tracer": "q=13+0.3*sin(psi)+0.2*psi^2",
+  "normalization_per_s": "A*U*pi/Ly, A=0.3*sin(1)+0.2 (total q variation for psi in [0,1])",
+  "sampling": "Uniform y cell centres with closed outer faces; physical d nodes including top0 and bedH; nodal_dual capacities, 8 x-periodic centres",
+  "fixed_options": "No mixing/source/ice/drag/polar processes; unsplit legacy; symmetric external mode; closed_faces; centered_fourth pressure/continuity; centered_second horizontal tracer; linear_density surface load and joint_shear; muscl_band_v3; trapezoidal pressure integral for spatial scalar check; constructor dt=10s only, no time integration",
+  "gates": {
+    "finest_normalized_weighted_L1_max": 0.05,
+    "each_refinement_ratio_min": 1.25,
+    "constant_rhs_abs_max": 1e-17,
+    "inventory_balance_abs_max": "1e-12*max(1,sum(abs(rhs)*dx*dy*h))",
+    "surface_mass_flux_abs_max": 1e-15,
+    "reversed_Fz_constant_defect_min": 1e-12
+  },
+  "execution": "One valid isolated pure spatial evaluation per three fixed meshes; source132/wheel hashes and imported module paths before/after; no native integral, no parameter/threshold adjustment from result; failure published OPEN",
+  "lineage": "New tracer function and meshes were not evaluated in previous diagnosis or method development. Same known continuous PDE, node sampling and production continuity operator shared. Previously reserved 051 data now contacted evidence and is not untouched for v3. This new data provides narrow spatial evidence only; not full independent physical certification."
+}

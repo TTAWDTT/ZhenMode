@@ -1,0 +1,12 @@
+{
+  "scope": "Timing only; no numerical output/reference comparison",
+  "call_s": [
+    3.208341010999999,
+    0.001289363999999793,
+    0.0006172590000002032,
+    0.00048506200000097976
+  ],
+  "elapsed_s": 5.520786486999999,
+  "source_unchanged": true,
+  "source": "70d408583aa99db63e49d958d89dcaccad273f0e"
+}

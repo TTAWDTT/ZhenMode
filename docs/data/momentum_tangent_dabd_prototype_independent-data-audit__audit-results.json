@@ -1,0 +1,362 @@
+{
+  "checks": [
+    "Fraction_T1_positive",
+    "Fraction_null_affine_[Fraction(0, 1), Fraction(0, 1), Fraction(0, 1), Fraction(0, 1)]",
+    "Fraction_null_affine_[Fraction(7, 1), Fraction(7, 1), Fraction(7, 1), Fraction(7, 1)]",
+    "Fraction_null_affine_[Fraction(0, 1), Fraction(1, 1), Fraction(2, 1), Fraction(3, 1)]",
+    "Fraction_wrong_coefficient_trap",
+    "Fraction_comparator_mismatch_caught",
+    "numerical_positive_comparator",
+    "source_manifests_133_equal",
+    "source_133_actual_bytes_match",
+    "source_script_seal_plan_same",
+    "declaration_identity",
+    "run_seal_identity",
+    "terminal_clean_complete",
+    "resource_bounds",
+    "no_production_or_step_claim",
+    "journal_exactly_two_rows",
+    "loadedpaths_frozen",
+    "cosine_projector_symmetric",
+    "cosine_projector_idempotent",
+    "cosine_projector_constant",
+    "array_denominator_30",
+    "Ny12_old_analytic_u_shape",
+    "Ny12_old_analytic_u_finite",
+    "Ny12_new_analytic_u_shape",
+    "Ny12_new_analytic_u_finite",
+    "Ny12_old_native_u_shape",
+    "Ny12_old_native_u_finite",
+    "Ny12_new_native_u_shape",
+    "Ny12_new_native_u_finite",
+    "Ny12_normal_old_shape",
+    "Ny12_normal_old_finite",
+    "Ny12_normal_new_shape",
+    "Ny12_normal_new_finite",
+    "Ny12_raw_native_u_shape",
+    "Ny12_raw_native_u_finite",
+    "Ny12_truth_u_shape",
+    "Ny12_truth_u_finite",
+    "Ny12_truth_v_shape",
+    "Ny12_truth_v_finite",
+    "Ny12_actualh_shape",
+    "Ny12_actualh_finite",
+    "Ny12_w_analytic_shape",
+    "Ny12_w_analytic_finite",
+    "Ny12_w_native_shape",
+    "Ny12_w_native_finite",
+    "Ny12_Fz_shape",
+    "Ny12_Fz_finite",
+    "Ny12_u_shape",
+    "Ny12_u_finite",
+    "Ny12_v_shape",
+    "Ny12_v_finite",
+    "Ny12_h_exact_fixed_positive",
+    "Ny12_u_declared",
+    "Ny12_v_declared",
+    "Ny12_w_analytic_declared",
+    "Ny12_truth_u_factorized",
+    "Ny12_truth_v_factorized",
+    "Ny12_actual_w_upper_dualface",
+    "Ny12_native_Ft_dense",
+    "Ny12_native_original_edge_dense",
+    "Ny12_analytic_Ft_dense",
+    "Ny12_analytic_original_edge_dense",
+    "Ny12_normal_numerical_gate",
+    "Ny12_normal_recorded_bit_report",
+    "Ny12_normal_recorded_difference",
+    "Ny12_float64_weighted_norm",
+    "Ny12_float64_weighted_sum",
+    "Ny12_float64_strict_analytic_u_improvement",
+    "Ny12_float64_analytic_w_u_RMS_old_recorded",
+    "Ny12_float64_analytic_w_u_RMS_new_recorded",
+    "Ny12_float64_actual_native_w_u_RMS_old_recorded",
+    "Ny12_float64_actual_native_w_u_RMS_new_recorded",
+    "Ny12_float64_norm_input_recorded",
+    "Ny12_float64_norm_output_recorded",
+    "Ny12_longdouble_weighted_norm",
+    "Ny12_longdouble_weighted_sum",
+    "Ny12_longdouble_strict_analytic_u_improvement",
+    "Ny12_longdouble_analytic_w_u_RMS_old_recorded",
+    "Ny12_longdouble_analytic_w_u_RMS_new_recorded",
+    "Ny12_longdouble_actual_native_w_u_RMS_old_recorded",
+    "Ny12_longdouble_actual_native_w_u_RMS_new_recorded",
+    "Ny12_longdouble_norm_input_recorded",
+    "Ny12_longdouble_norm_output_recorded",
+    "Ny24_old_analytic_u_shape",
+    "Ny24_old_analytic_u_finite",
+    "Ny24_new_analytic_u_shape",
+    "Ny24_new_analytic_u_finite",
+    "Ny24_old_native_u_shape",
+    "Ny24_old_native_u_finite",
+    "Ny24_new_native_u_shape",
+    "Ny24_new_native_u_finite",
+    "Ny24_normal_old_shape",
+    "Ny24_normal_old_finite",
+    "Ny24_normal_new_shape",
+    "Ny24_normal_new_finite",
+    "Ny24_raw_native_u_shape",
+    "Ny24_raw_native_u_finite",
+    "Ny24_truth_u_shape",
+    "Ny24_truth_u_finite",
+    "Ny24_truth_v_shape",
+    "Ny24_truth_v_finite",
+    "Ny24_actualh_shape",
+    "Ny24_actualh_finite",
+    "Ny24_w_analytic_shape",
+    "Ny24_w_analytic_finite",
+    "Ny24_w_native_shape",
+    "Ny24_w_native_finite",
+    "Ny24_Fz_shape",
+    "Ny24_Fz_finite",
+    "Ny24_u_shape",
+    "Ny24_u_finite",
+    "Ny24_v_shape",
+    "Ny24_v_finite",
+    "Ny24_h_exact_fixed_positive",
+    "Ny24_u_declared",
+    "Ny24_v_declared",
+    "Ny24_w_analytic_declared",
+    "Ny24_truth_u_factorized",
+    "Ny24_truth_v_factorized",
+    "Ny24_actual_w_upper_dualface",
+    "Ny24_native_Ft_dense",
+    "Ny24_native_original_edge_dense",
+    "Ny24_analytic_Ft_dense",
+    "Ny24_analytic_original_edge_dense",
+    "Ny24_normal_numerical_gate",
+    "Ny24_normal_recorded_bit_report",
+    "Ny24_normal_recorded_difference",
+    "Ny24_float64_weighted_norm",
+    "Ny24_float64_weighted_sum",
+    "Ny24_float64_strict_analytic_u_improvement",
+    "Ny24_float64_analytic_w_u_RMS_old_recorded",
+    "Ny24_float64_analytic_w_u_RMS_new_recorded",
+    "Ny24_float64_actual_native_w_u_RMS_old_recorded",
+    "Ny24_float64_actual_native_w_u_RMS_new_recorded",
+    "Ny24_float64_norm_input_recorded",
+    "Ny24_float64_norm_output_recorded",
+    "Ny24_longdouble_weighted_norm",
+    "Ny24_longdouble_weighted_sum",
+    "Ny24_longdouble_strict_analytic_u_improvement",
+    "Ny24_longdouble_analytic_w_u_RMS_old_recorded",
+    "Ny24_longdouble_analytic_w_u_RMS_new_recorded",
+    "Ny24_longdouble_actual_native_w_u_RMS_old_recorded",
+    "Ny24_longdouble_actual_native_w_u_RMS_new_recorded",
+    "Ny24_longdouble_norm_input_recorded",
+    "Ny24_longdouble_norm_output_recorded",
+    "original_all_improved_flag",
+    "inputs_unchanged_by_audit"
+  ],
+  "rows": [
+    {
+      "Ny": 12,
+      "field_checks": {
+        "u": {
+          "maxabs_defect": 0.0,
+          "budget": 1.327546014537887e-12
+        },
+        "v": {
+          "maxabs_defect": 0.0,
+          "budget": 2.4387683437809183e-14
+        },
+        "w_analytic": {
+          "maxabs_defect": 0.0,
+          "budget": 1.356744626194803e-16
+        }
+      },
+      "analytic_truth_checks": {
+        "truth_u": {
+          "maxabs_defect": 1.550963648536927e-25,
+          "budget": 1.715602902361768e-20
+        },
+        "truth_v": {
+          "maxabs_defect": 1.0339757656912846e-25,
+          "budget": 5.20349619758277e-21
+        }
+      },
+      "dense_filters": {
+        "native_Ft": {
+          "maxabs_defect": 6.203854594147708e-25,
+          "budget": 1.7219999685677096e-20
+        },
+        "native_edge": {
+          "maxabs_defect": 6.203854594147708e-25,
+          "budget": 1.7219999685677096e-20
+        },
+        "analytic_Ft": {
+          "maxabs_defect": 5.169878828456423e-25,
+          "budget": 1.6983510695681293e-20
+        },
+        "analytic_edge": {
+          "maxabs_defect": 6.203854594147708e-25,
+          "budget": 1.6983510695681293e-20
+        }
+      },
+      "normal_maxdiff": 0.0,
+      "normal_same_uint64_bits": true,
+      "float64": {
+        "norm2_input": "1.6212015688435953e-15",
+        "norm2_output": "1.6171767013179698e-15",
+        "sum_defect": "1.3997446928045765e-23",
+        "sum_budget": "3.560599748108434e-19",
+        "own_truth_RMS": {
+          "analytic_old": "3.441087017974907e-11",
+          "analytic_new": "1.0510264130749766e-11",
+          "native_old": "3.2960575812384003e-11",
+          "native_new": "1.5845021529123718e-11"
+        },
+        "analytic_u_strict_improvement": true,
+        "w_native_minus_analytic_RMS": "3.5758732938907597e-07"
+      },
+      "longdouble": {
+        "norm2_input": "1.6212015688435952578e-15",
+        "norm2_output": "1.6171767013179697991e-15",
+        "sum_defect": "1.3895059093435319621e-23",
+        "sum_budget": "3.560599748108434612e-19",
+        "own_truth_RMS": {
+          "analytic_old": "3.4410870179749070933e-11",
+          "analytic_new": "1.0510264130749765245e-11",
+          "native_old": "3.2960575812383999693e-11",
+          "native_new": "1.584502152912371629e-11"
+        },
+        "analytic_u_strict_improvement": true,
+        "w_native_minus_analytic_RMS": "3.5758732938907597205e-07"
+      },
+      "w_scope": {
+        "actual_native_min": -7.266541649050447e-06,
+        "actual_native_max": 7.266541649050426e-06,
+        "native_bottom_maxabs": 9.08317706131301e-07,
+        "analytic_bottom_maxabs": 0.0,
+        "original_upper_dualface_positioning_retained": true
+      }
+    },
+    {
+      "Ny": 24,
+      "field_checks": {
+        "u": {
+          "maxabs_defect": 0.0,
+          "budget": 2.6548384089790192e-12
+        },
+        "v": {
+          "maxabs_defect": 0.0,
+          "budget": 4.8670935071072384e-14
+        },
+        "w_analytic": {
+          "maxabs_defect": 0.0,
+          "budget": 2.707679463609016e-16
+        }
+      },
+      "analytic_truth_checks": {
+        "truth_u": {
+          "maxabs_defect": 4.1359030627651384e-25,
+          "budget": 3.431501910456748e-20
+        },
+        "truth_v": {
+          "maxabs_defect": 7.754818242684634e-26,
+          "budget": 1.0317959132543196e-20
+        }
+      },
+      "dense_filters": {
+        "native_Ft": {
+          "maxabs_defect": 1.0339757656912846e-24,
+          "budget": 3.473539416786793e-20
+        },
+        "native_edge": {
+          "maxabs_defect": 8.271806125530277e-25,
+          "budget": 3.473539416786793e-20
+        },
+        "analytic_Ft": {
+          "maxabs_defect": 6.203854594147708e-25,
+          "budget": 3.423055223493563e-20
+        },
+        "analytic_edge": {
+          "maxabs_defect": 6.203854594147708e-25,
+          "budget": 3.423055223493563e-20
+        }
+      },
+      "normal_maxdiff": 0.0,
+      "normal_same_uint64_bits": true,
+      "float64": {
+        "norm2_input": "3.2925949881558554e-15",
+        "norm2_output": "3.2919995845387924e-15",
+        "sum_defect": "1.433833581329711e-24",
+        "sum_budget": "7.175339231313176e-19",
+        "own_truth_RMS": {
+          "analytic_old": "9.3643099538012e-12",
+          "analytic_new": "3.5259669519843405e-12",
+          "native_old": "1.9218026687526408e-11",
+          "native_new": "1.9033427330367812e-11"
+        },
+        "analytic_u_strict_improvement": true,
+        "w_native_minus_analytic_RMS": "3.5763890172617686e-07"
+      },
+      "longdouble": {
+        "norm2_input": "3.2925949881558556217e-15",
+        "norm2_output": "3.2919995845387921087e-15",
+        "sum_defect": "1.42932129695184687e-24",
+        "sum_budget": "7.1753392313131757996e-19",
+        "own_truth_RMS": {
+          "analytic_old": "9.364309953801200501e-12",
+          "analytic_new": "3.5259669519843404483e-12",
+          "native_old": "1.9218026687526408757e-11",
+          "native_new": "1.9033427330367812069e-11"
+        },
+        "analytic_u_strict_improvement": true,
+        "w_native_minus_analytic_RMS": "3.576389017261768647e-07"
+      },
+      "w_scope": {
+        "actual_native_min": -7.314616505704116e-06,
+        "actual_native_max": 7.314616505704122e-06,
+        "native_bottom_maxabs": 9.143270632130173e-07,
+        "analytic_bottom_maxabs": 0.0,
+        "original_upper_dualface_positioning_retained": true
+      }
+    }
+  ],
+  "controls": {
+    "numerical_mismatch_caught": "{'check': 'deliberate_numeric_mismatch', 'details': {'defect': 0.009999999999999787, 'budget': np.float64(8.526512829121202e-14)}}"
+  },
+  "limitations": [
+    "No analytic-w v output arrays archived: reported analytic-v RMS not independently reconstructed. Native normal unchanged is independently bit-checked.",
+    "Owner constant-zero and other-force control outputs are scalar receipts plus frozen code; actual archived raw-to-filter equality independently checked.",
+    "Float64 source data cap accuracy; longdouble only raises archive arithmetic precision, not physical/source precision.",
+    "Archived data and declared manufactured fields are shared; this is finite consumer/source/data audit, not a holdout, whole-model, time-step, or physics grade."
+  ],
+  "original_execution": {
+    "returncode": 0,
+    "wall_seconds": 17.64331575,
+    "sampled_RSS_peak": 833368064,
+    "source_manifest_count": 133
+  },
+  "input_sha256": {
+    "arrays.npz": "219a577a5866c1fd2e10328a05681e9aaf60ca319b0d8460466cd51db3710533",
+    "row-journal.jsonl": "13ea100078ca5d3998f553157d19af8dbd42d355582458ddbc90165023be6e10",
+    "result.json": "e256e9bdfc1c771cae1d2207d5959dcc0c364e898f00db34dd95cce326494f12",
+    "complete-resources.json": "967618061867394cac014ff1ffa2903908e8e2096c958da00b8f41a3e1c77e7c",
+    "declaration.json": "8f690a94dd37329023189baee16c8d6f48f3c2c7a2dae2f70b998888218ddced",
+    "finite-plan.json": "17470d265431b7f4da065b9ab7b89960182685c55302c996f8c8ee558d707f5c",
+    "static-interface-seal.json": "8151ffca84b785ab588bdf7751d577081745acb319f956ee6f927d859187326c",
+    "pre-execution-addendum01.json": "34b139a703c55ba8667072699dac11a5347b5162a86e85009f11d95103b47d5d",
+    "prototype.py": "828d4dceccab0dcb5b8a0b2b130fcfb0aee12a98dc02c327839f6019f6f56ef8",
+    "run.py": "698382204dbff55792656d61447841be1ab4d900b9bb3e0bd09cc289436a7dcc"
+  },
+  "verdict": "PASS_FINITE_STANDALONE_DATA_ARITHMETIC_AND_SOURCE_IDENTITY",
+  "timing": {
+    "wall_seconds": 1.1113484959999997,
+    "sampled_RSS_peak_bytes": 37253120,
+    "RSS_samples": 105,
+    "affinity": [
+      0
+    ],
+    "address_space_cap": 4294967296,
+    "CPU_cap_s": 180,
+    "wall_cap_s": 180
+  },
+  "environment": {
+    "python": "3.12.3 (main, Aug 31 2026, 10:18:26) [GCC 13.3.0]",
+    "numpy": "2.5.3",
+    "longdouble_mantissa_bits": 63,
+    "script_sha256": "276b3b8bb7f4a8fc8d67238ae5cf6dd4e364e59ce9e4b73f429690ff09e53799"
+  }
+}

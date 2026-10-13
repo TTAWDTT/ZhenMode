@@ -1,0 +1,83 @@
+{
+  "scope": "same six development grid/amplitude groups; reuse immutable frozen MOM6/Oceananigans outputs, no global SOTA claim",
+  "source_revision": "70d408583aa99db63e49d958d89dcaccad273f0e",
+  "selection_sha256": "479ed6b1140dd3f33cb0057ecad0a275b83b34dad54ba3314c2dc97b4ad543dc",
+  "groups": [
+    {
+      "profile": "primary",
+      "control": "main",
+      "mom6": 0.036699334480504484,
+      "oceananigans": 0.12285950114586117,
+      "zhenmode_3c8": 0.005388509039568577,
+      "zhenmode_70": 0.0053878283060362665,
+      "new_T_C": 7.088858339175954e-9,
+      "original_screens_pass": true,
+      "strictly_below_both_frozen": true,
+      "strictly_below_3c8": true
+    },
+    {
+      "profile": "primary",
+      "control": "half",
+      "mom6": 0.03639019551928815,
+      "oceananigans": 0.12288309188059326,
+      "zhenmode_3c8": 0.0027012892996825487,
+      "zhenmode_70": 0.0027004846904144834,
+      "new_T_C": 1.908573432363888e-9,
+      "original_screens_pass": true,
+      "strictly_below_both_frozen": true,
+      "strictly_below_3c8": true
+    },
+    {
+      "profile": "horizontal-coarse",
+      "control": "main",
+      "mom6": 0.08869339763321504,
+      "oceananigans": 0.13654384226339566,
+      "zhenmode_3c8": 0.0051097907013557325,
+      "zhenmode_70": 0.005106513974973408,
+      "new_T_C": 9.381114645517458e-9,
+      "original_screens_pass": true,
+      "strictly_below_both_frozen": true,
+      "strictly_below_3c8": true
+    },
+    {
+      "profile": "horizontal-coarse",
+      "control": "half",
+      "mom6": 0.08856800026656829,
+      "oceananigans": 0.13656578723702445,
+      "zhenmode_3c8": 0.002597085100116228,
+      "zhenmode_70": 0.00259374876381348,
+      "new_T_C": 3.6198929976445806e-9,
+      "original_screens_pass": true,
+      "strictly_below_both_frozen": true,
+      "strictly_below_3c8": true
+    },
+    {
+      "profile": "vertical-fine",
+      "control": "main",
+      "mom6": 0.030172678193749452,
+      "oceananigans": 0.04403194602861599,
+      "zhenmode_3c8": 0.005413792384326902,
+      "zhenmode_70": 0.00541372630872662,
+      "new_T_C": 6.837669984707866e-9,
+      "original_screens_pass": true,
+      "strictly_below_both_frozen": true,
+      "strictly_below_3c8": true
+    },
+    {
+      "profile": "vertical-fine",
+      "control": "half",
+      "mom6": 0.029792652883607818,
+      "oceananigans": 0.04403889090009892,
+      "zhenmode_3c8": 0.0027071644764075703,
+      "zhenmode_70": 0.0027070690927476562,
+      "new_T_C": 1.7202503670645237e-9,
+      "original_screens_pass": true,
+      "strictly_below_both_frozen": true,
+      "strictly_below_3c8": true
+    }
+  ],
+  "baseline_recomputed": false,
+  "native_performance_comparison": false,
+  "global_SOTA": false,
+  "baseline_limits": "finite111selection/node-layer-observers/MOMhistoricalfullbuildgap preserved"
+}

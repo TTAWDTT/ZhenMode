@@ -1,0 +1,50 @@
+{
+  "scope": "same six physical grid/amplitude groups; MOM/OA immutable outputs reused, internal wave now development",
+  "selection_sha256": "479ed6b1140dd3f33cb0057ecad0a275b83b34dad54ba3314c2dc97b4ad543dc",
+  "new_source_revision": "4095464479fca8c73be98cac93d9f859eb7e3bc6",
+  "groups": [
+    {
+      "profile": "primary",
+      "control": "main",
+      "mom6": 0.036699334480504484,
+      "oceananigans": 0.12285950114586117,
+      "zhenmode_v3": 0.0524039393437639
+    },
+    {
+      "profile": "primary",
+      "control": "half",
+      "mom6": 0.03639019551928815,
+      "oceananigans": 0.12288309188059326,
+      "zhenmode_v3": 0.05219678373040916
+    },
+    {
+      "profile": "horizontal-coarse",
+      "control": "main",
+      "mom6": 0.08869339763321504,
+      "oceananigans": 0.13654384226339566,
+      "zhenmode_v3": 0.05207124195854207
+    },
+    {
+      "profile": "horizontal-coarse",
+      "control": "half",
+      "mom6": 0.08856800026656829,
+      "oceananigans": 0.13656578723702445,
+      "zhenmode_v3": 0.0518857154312009
+    },
+    {
+      "profile": "vertical-fine",
+      "control": "main",
+      "mom6": 0.030172678193749452,
+      "oceananigans": 0.04403194602861599,
+      "zhenmode_v3": 0.013479603952965834
+    },
+    {
+      "profile": "vertical-fine",
+      "control": "half",
+      "mom6": 0.029792652883607818,
+      "oceananigans": 0.04403889090009892,
+      "zhenmode_v3": 0.01263850656354917
+    }
+  ],
+  "global_SOTA": false
+}

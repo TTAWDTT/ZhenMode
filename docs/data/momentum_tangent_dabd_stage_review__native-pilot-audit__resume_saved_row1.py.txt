@@ -1,0 +1,80 @@
+"""One-shot metadata-harness recovery; imports own original audit, no project code.
+
+Only saved candidate row1 resumes. Original completed row0 and source bridge
+receipts are retrieved, not recomputed. All original criteria remain fixed.
+"""
+import audit_saved_pilot as audit
+from pathlib import Path
+import json, sys, time, resource, os, traceback
+
+def expected_development(base):
+    result=dict(base);result['momentum_tangent_filter_scheme']='gram_fourth_v1';return result
+
+def run():
+    a=audit
+    controls=a.read(a.HERE/'controls-result.json');a.require(controls['verdict']=='PASS','existing controls')
+    base={'problem':'internal-wave'};clean={'problem':'internal-wave','momentum_tangent_filter_scheme':'gram_fourth_v1'}
+    broken={'problem':'internal-wave','momentum_tangent_filter_scheme':'wrong'}
+    a.require(expected_development(base)==clean and expected_development(base)!=broken,'new metadata comparator clean/negative twin')
+    a.save('metadata-recovery-controls.json',dict(utc=a.utc(),positive_exact_selector_tag=True,negative_wrong_tag_detected=True,no_numeric_threshold_changed=True))
+    ledger=[json.loads(x) for x in (a.HERE/'audited-row-ledger.jsonl').read_text().splitlines()]
+    a.require(len(ledger)==1 and ledger[0]['index']==0,'resume denominator exactly index1 only')
+    row0=a.read(a.HERE/'row-00-result.json');a.require(all(row0['default17_exact'].values()),'retrieved row0 exact17')
+    receipt=a.read(a.STAGE/'review/source-identity-result.json');bridge=a.read(a.HERE/'source-bridge-result.json')
+    a.require(a.file_sha(a.STAGE/'review/source-identity-result.json')==bridge['receipt_sha256'],'preserved source bridge bytes')
+    a.require(receipt['revision']==bridge['source']==a.REV,'same source bridge')
+    registry=bridge['registry'];plan=a.read(a.NATIVE/'declared-plan.json')
+    a.require(registry==plan['package_source_sha256'],'source registry still matches plan')
+    journal=[json.loads(x) for x in (a.NATIVE/'row-journal.jsonl').read_text().splitlines()]
+    a.require(len(journal)==2 and {x['index'] for x in journal}=={0,1},'native completed denominator2 only')
+    row=next(x for x in journal if x['index']==1)
+    result,c,arrays,raw,score=a.metadata_and_arrays(1,row,plan,registry)
+    measured=a.independently_measure(c,arrays)
+    agreement={key:a.arithmetic_equal(value,score['metrics'][key],key in ('volume','T_inventory','S_inventory')) for key,value in measured['metrics'].items()}
+    a.require(all(agreement.values()),'independent candidate arithmetic')
+    a.require(measured['failed_metrics']==score['failed_metrics'] and (not measured['failed_metrics'])==score['engineering_screen_pass'],'original screens unchanged')
+    a.require(a.arithmetic_equal(measured['composite'],score['composite']),'candidate composite readback')
+    before=a.npz(a.BASE/'zhenmode/output.npz');bc=a.read(a.BASE/'contract.json');bs=a.read(a.BASE/'zhenmode/score.json')
+    a.require(before['metadata']['source_sha']==bs['source_sha']==a.PARENT,'frozen70 source')
+    a.require(a.file_sha(a.BASE/'zhenmode/output.npz')==bs['output_sha256'],'frozen70 byte hash')
+    options=dict(bc['ocean_options']);options['momentum_tangent_filter_scheme']='gram_fourth_v1'
+    a.require(c['ocean_options']==options,'only explicit tangent option difference')
+    a.require(c['development']==expected_development(bc['development']),'only explicit provenance selector tag difference')
+    unchanged_c={k:v for k,v in c.items() if k not in ('ocean_options','development')}
+    unchanged_bc={k:v for k,v in bc.items() if k not in ('ocean_options','development')}
+    a.require(unchanged_c==unchanged_bc,'all physical/threshold/analytic data unchanged')
+    prior=a.independently_measure(bc,before)
+    baseline_agreement={key:a.arithmetic_equal(value,bs['metrics'][key],key in ('volume','T_inventory','S_inventory')) for key,value in prior['metrics'].items()}
+    a.require(all(baseline_agreement.values()),'frozen70 independent arithmetic')
+    strict_pass=a.strict(measured['composite'],prior['composite']);temperature_pass=measured['metrics']['T_error_C']<=8.530755561576719e-7
+    a.require(temperature_pass,'original temperature repair criterion')
+    # Static capacities can be compared to retrieved row0 geometric receipt;
+    # no reopening completed row0 arrays. Actual stored c initial_h equals row0.
+    row0_contract=a.read(a.NATIVE/'00-previous-primary-main/contract.json')
+    a.require(c['initial_h_m']==row0_contract['initial_h_m'],'same declared node capacities across default/candidate')
+    decision=a.read(a.NATIVE/'pilot-decision.json');comparison=a.read(a.STAGE/'primary-vs-frozen70.json')
+    a.require(decision['checks']['score_improved_vs_frozen70']==strict_pass==comparison['strict_latest_score_PASS'],'same strict FAIL')
+    a.require(decision['allow_expansion']==comparison['allow_expansion']==False,'no expansion after FAIL')
+    result.update(independent_arithmetic=measured,published_metrics=score['metrics'],published_composite=score['composite'],metric_agreement=agreement,original_screen_pass=not measured['failed_metrics'],
+                  frozen70_baseline=dict(path=str(a.BASE),source=a.PARENT,output_sha256=bs['output_sha256'],published_metrics=bs['metrics'],published_composite=bs['composite'],independent_arithmetic=prior,metric_agreement=baseline_agreement),
+                  strict_latest_composite_pass=strict_pass,strict_scientific_verdict='PASS' if strict_pass else 'FAIL',relative_score_change=measured['composite']/prior['composite']-1.,temperature_repair_pass=temperature_pass,
+                  allow_expansion=False,unexecuted_indices=list(range(2,10)),resumed_after_metadata_harness=True,original_metrics_not_overwritten=True,elapsed_row_audit_s=time.monotonic()-a.START)
+    a.save('row-01-result.json',result)
+    with (a.HERE/'audited-row-ledger.jsonl').open('a') as f:f.write(json.dumps(dict(index=1,utc=a.utc(),file='row-01-result.json',result_sha256=a.file_sha(a.HERE/'row-01-result.json'),mode='resume_metadata_harness_only'))+'\n')
+    failure_paths=sorted(a.HERE.glob('failure-full-*.json'))
+    a.require(len(failure_paths)==1,'one original harness failure retained')
+    a.require(not any(x=='zhenmode' or x.startswith('zhenmode.') for x in sys.modules),'no project imports')
+    summary=dict(utc=a.utc(),data_readback_verdict='SCOPE_PASS_TWO_COMPLETED_ROWS_AFTER_ONE_METADATA_HARNESS_RECOVERY',scientific_promotion='FAIL_RETAINED_STRICT_LATEST_COMPOSITE',source=a.REV,
+                 audited_denominator=2,audited_indices=[0,1],unexecuted_indices=list(range(2,10)),allow_expansion=False,default17_exact_retrieved=True,original_screens_all2_pass=True,
+                 candidate_composite_recomputed=measured['composite'],frozen70_composite_recomputed=prior['composite'],candidate_composite_published=score['composite'],frozen70_composite_published=bs['composite'],relative_score_change=result['relative_score_change'],
+                 independent_harness_failure=dict(path=str(failure_paths[0]),sha256=a.file_sha(failure_paths[0]),root_cause='development provenance also records same selector, not a changed physical parameter or numeric gate'),
+                 first_native_startup=a.read(a.STAGE/'native-attempt01-launch-failure.json'),limits=result['provenance_limits']+['Contacted linear development reference; no untouched holdout/fullphysics','Source133/144 chain is retrieved bridge','No fine/null/thermal/indices2..9 native executed','Candidate raw arrays were read in stopped audit and finite metadata recovery; no new solver run'],
+                 elapsed_resume_s=time.monotonic()-a.START,peak_RSS_bytes=resource.getrusage(resource.RUSAGE_SELF).ru_maxrss*1024,cpu_affinity=list(os.sched_getaffinity(0)),memory_cap_bytes=4294967296,
+                 declaration_sha256=a.file_sha(a.HERE/'audit-declaration.json'),resume_declaration_sha256=a.file_sha(a.HERE/'resume-declaration.json'),original_script_sha256=a.file_sha(a.HERE/'audit_saved_pilot.py'),resume_script_sha256=a.file_sha(__file__),new_native_runs=0,full_CI='PENDING_NOT_GRADED_UNTIL_TERMINAL_RAW_LOG_READBACK')
+    a.save('audit-summary.json',summary);print(json.dumps(summary,ensure_ascii=False),flush=True)
+
+if __name__=='__main__':
+    try:run()
+    except Exception as error:
+        audit.save('failure-resume-'+audit.datetime.datetime.now(audit.datetime.timezone.utc).strftime('%Y%m%dT%H%M%S%f')+'.json',dict(utc=audit.utc(),error=repr(error),traceback=traceback.format_exc(),new_native_runs=0))
+        raise

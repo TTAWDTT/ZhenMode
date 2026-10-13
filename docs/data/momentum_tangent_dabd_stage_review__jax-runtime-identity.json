@@ -1,0 +1,11 @@
+{
+  "executable": "/root/.venvs/zhenmode-managed-bench-20261005/bin/python",
+  "python": "3.12.3 (main, Aug 31 2026, 10:18:26) [GCC 13.3.0]",
+  "jax": "0.11.2",
+  "numpy": "2.5.3",
+  "platforms": "cpu",
+  "cpu_affinity": [
+    0
+  ],
+  "scope": "runtime identity only, no manufacture or model called"
+}

@@ -1,0 +1,186 @@
+{
+  "tag": "n4-pilot",
+  "sizes": [
+    4
+  ],
+  "rows": [
+    {
+      "name": "known-answer rational",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "weighted-Cauchy local SOS",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "sine recurrence",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "left odd endpoint",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "right odd endpoint reduced at k*pi",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "sine-norm telescoping summand",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "F normal symbol",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "B normal symbol",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "small-theta departures",
+      "passed": true,
+      "details": {
+        "F": "t**4/16",
+        "B": "-5*t**4/48 + t**2/2"
+      }
+    },
+    {
+      "name": "n4 Gram defect identity",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "n4 bilinear Green identity",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "n4 complement identity",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "n4 symmetry",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "n4 affine kernel and rank",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "n4 fixed affine and sum",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "n4 transpose loop equals Gram",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "n4 alternating kill",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "n4 B polynomial",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "T1 exact",
+      "passed": true,
+      "details": [
+        "-1/8",
+        "9/8",
+        "33/8",
+        "71/8"
+      ]
+    },
+    {
+      "name": "T2 exact",
+      "passed": true,
+      "details": [
+        "5/8",
+        "9/8",
+        "9/8",
+        "5/8"
+      ]
+    },
+    {
+      "name": "Ft 1/4 plant CAUGHT",
+      "passed": true,
+      "details": {
+        "output": [
+          "0",
+          "2",
+          "-2",
+          "0"
+        ],
+        "norm2": "8",
+        "quadratic": "-4"
+      }
+    },
+    {
+      "name": "Fn 1/4 plant CAUGHT",
+      "passed": true,
+      "details": {
+        "norm2": "36"
+      }
+    },
+    {
+      "name": "Ft positivity and TVD exclusion",
+      "passed": true,
+      "details": {
+        "output": [
+          "15/16",
+          "1/8",
+          "-1/16",
+          "0"
+        ],
+        "TV": "17/16"
+      }
+    },
+    {
+      "name": "Fn positivity and TVD exclusion",
+      "passed": true,
+      "details": {
+        "e0_output": [
+          "3/8",
+          "5/16",
+          "-1/16",
+          "0"
+        ],
+        "TV_Fn_ones": "1"
+      }
+    },
+    {
+      "name": "unequal-weight exclusions",
+      "passed": true,
+      "details": {
+        "Ft": "313/128",
+        "Fn": "2537/256",
+        "input": "1"
+      }
+    }
+  ],
+  "elapsed_seconds": 0.6600395210000016,
+  "sampledRSS_peak_bytes": 68501504,
+  "rss_sample_count": 56,
+  "affinity": [
+    0
+  ],
+  "memory_limit_bytes": 4294967296,
+  "cpu_seconds_limit": 180,
+  "sympy_version": "1.14.0"
+}
