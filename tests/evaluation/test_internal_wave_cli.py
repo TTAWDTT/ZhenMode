@@ -2,6 +2,8 @@
 
 import hashlib
 import json
+import struct
+import zipfile
 
 import numpy as np
 import pytest
@@ -10,7 +12,7 @@ from tests.support.internal_wave import planted
 from zhenmode.benchmarks.internal_wave import contract, development_contract
 from zhenmode.benchmarks.standing_wave import digest
 from zhenmode.cli import main
-from zhenmode.evaluation import channel_dynamics, internal_wave
+from zhenmode.evaluation import channel_dynamics, internal_wave, native_channel
 from zhenmode.evaluation.native_channel import load
 
 
@@ -160,3 +162,139 @@ def test_help_discovers_offline_route(capsys, arguments):
     if "internal-wave" in arguments:
         for flag in ("--contract", "--output", "--report"):
             assert flag in help_text
+
+
+@pytest.mark.parametrize("phase", ("before-decode", "during-score"))
+def test_receipt_hash_and_scores_bind_one_snapshot_when_file_changes(tmp_path, monkeypatch, phase):
+    c = contract("zhenmode", control="null")
+    a = planted(c)
+    paths = inputs(tmp_path, c, a)
+    original = paths[1].read_bytes()
+    expected = internal_wave.score(c, a)
+    expected["output_sha256"] = hashlib.sha256(original).hexdigest()
+    if phase == "before-decode":
+        reader = native_channel.np.load
+
+        def replace_before_decode(source, **kwargs):
+            paths[1].write_bytes(b"replacement after the snapshot was read")
+            return reader(source, **kwargs)
+
+        monkeypatch.setattr(native_channel.np, "load", replace_before_decode)
+    else:
+        scorer = internal_wave.score
+
+        def replace_during_score(c, a):
+            paths[1].write_bytes(b"replacement during scoring")
+            return scorer(c, a)
+
+        monkeypatch.setattr(internal_wave, "score", replace_during_score)
+    assert main(command(paths)) == 0
+    assert paths[1].read_bytes() != original
+    assert json.loads(paths[2].read_text()) == expected
+
+
+@pytest.mark.parametrize("damage", ("encrypted", "unsupported-compression", "eof"))
+def test_archive_reader_errors_are_cli_errors_without_report(tmp_path, capsys, monkeypatch, damage):
+    c = contract("zhenmode", control="null")
+    paths = inputs(tmp_path, c, planted(c))
+    if damage == "eof":
+        def incomplete_archive(*args, **kwargs):
+            raise EOFError("incomplete archive member")
+
+        monkeypatch.setattr(native_channel.np, "load", incomplete_archive)
+    else:
+        raw = bytearray(paths[1].read_bytes())
+        with zipfile.ZipFile(paths[1]) as archive:
+            offsets = [info.header_offset for info in archive.infolist()]
+        for offset in offsets:
+            if damage == "encrypted":
+                flags = struct.unpack_from("<H", raw, offset + 6)[0]
+                struct.pack_into("<H", raw, offset + 6, flags | 1)
+            else:
+                struct.pack_into("<H", raw, offset + 8, 99)
+        offset = raw.find(b"PK\x01\x02")
+        while offset != -1:
+            if damage == "encrypted":
+                flags = struct.unpack_from("<H", raw, offset + 8)[0]
+                struct.pack_into("<H", raw, offset + 8, flags | 1)
+            else:
+                struct.pack_into("<H", raw, offset + 10, 99)
+            offset = raw.find(b"PK\x01\x02", offset + 4)
+        paths[1].write_bytes(raw)
+    with pytest.raises(SystemExit) as error:
+        main(command(paths))
+    assert error.value.code == 2
+    assert "zhenmode evaluate internal-wave: error:" in capsys.readouterr().err
+    assert not paths[2].exists()
+
+
+@pytest.mark.parametrize("c", ([], None, True, 1, "contract"))
+def test_channel_non_object_contract_is_rejected_before_output_io(tmp_path, capsys, c):
+    with pytest.raises(ValueError, match="JSON object"):
+        channel_dynamics.score(c, {})
+    with pytest.raises(ValueError, match="JSON object"):
+        channel_dynamics.reference_surface(c, [0.0], [0.0])
+    paths = (tmp_path / "contract.json", tmp_path / "missing.npz", tmp_path / "report.json")
+    paths[0].write_text(json.dumps(c), encoding="utf-8")
+    with pytest.raises(SystemExit) as error:
+        main(command(paths, "channel"))
+    assert error.value.code == 2
+    assert "JSON object" in capsys.readouterr().err
+    assert not paths[2].exists()
+
+
+@pytest.mark.parametrize("field", ("T", "u"))
+def test_finite_trajectory_overflow_emits_complete_failed_json_report(tmp_path, field):
+    c = contract("zhenmode", control="null")
+    a = planted(c)
+    a[field][1:] = 1e200
+    assert np.isfinite(a[field]).all()
+    paths = inputs(tmp_path, c, a)
+    with np.errstate(over="ignore", invalid="ignore"):
+        expected = internal_wave.score(c, a)
+        assert main(command(paths)) == 0
+    metric = "T_error_C" if field == "T" else "u_error"
+    assert np.isinf(expected["metrics"][metric])
+
+    def reject_nonstandard(value):
+        pytest.fail("nonstandard JSON numeric constant: " + value)
+
+    report = json.loads(paths[2].read_text(), parse_constant=reject_nonstandard)
+    assert report["metrics"][metric] is None
+    assert report["non_finite_derived_values"]["/metrics/" + metric] == "Infinity"
+    assert set(expected["failed_metrics"]) <= set(report["failed_metrics"])
+    assert "non_finite_derived_values" in report["failed_metrics"]
+    assert not report["engineering_screen_pass"]
+    assert report["output_sha256"] == hashlib.sha256(paths[1].read_bytes()).hexdigest()
+
+
+def test_json_serialization_failure_does_not_create_partial_report(tmp_path, capsys, monkeypatch):
+    c = contract("zhenmode", control="null")
+    paths = inputs(tmp_path, c, planted(c))
+    scorer = internal_wave.score
+
+    def unsupported_result(c, a):
+        return scorer(c, a) | {"unsupported": object()}
+
+    monkeypatch.setattr(internal_wave, "score", unsupported_result)
+    with pytest.raises(SystemExit) as error:
+        main(command(paths))
+    assert error.value.code == 2
+    assert "not JSON serializable" in capsys.readouterr().err
+    assert not paths[2].exists()
+
+
+def test_finite_signed_overflow_inventory_is_explicitly_failed(tmp_path):
+    c = contract("zhenmode", control="null")
+    a = planted(c)
+    a["T"][1:] = 1e308
+    a["T"][1:, :, c["nz"] // 2:] *= -1
+    assert np.isfinite(a["T"]).all()
+    paths = inputs(tmp_path, c, a)
+    with np.errstate(over="ignore", invalid="ignore"):
+        assert main(command(paths)) == 0
+    report = json.loads(paths[2].read_text())
+    assert report["metrics"]["T_inventory"] is None
+    assert report["non_finite_derived_values"]["/metrics/T_inventory"] == "NaN"
+    assert not report["engineering_screen_pass"]
+    assert "non_finite_derived_values" in report["failed_metrics"]

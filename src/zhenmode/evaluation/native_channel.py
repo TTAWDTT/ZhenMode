@@ -1,5 +1,7 @@
 """Shared native flat-channel output reader and geometry/provenance checks."""
 
+import hashlib
+import io
 import json
 import re
 import zipfile
@@ -44,12 +46,27 @@ def require(condition, message):
 def load(path):
     """Small declared NPZ adapter output; allow_pickle is always disabled."""
     require(Path(path).stat().st_size <= 128 * 1024**2, "output exceeds 128 MiB file budget")
-    with zipfile.ZipFile(path) as z:
+    return _load_archive(path)
+
+
+def load_snapshot(path):
+    """Decode and hash one bounded immutable snapshot of a native output file."""
+    limit = 128 * 1024**2
+    with Path(path).open("rb") as stream:
+        payload = stream.read(limit + 1)
+    require(len(payload) <= limit, "output exceeds 128 MiB file budget")
+    return _load_archive(io.BytesIO(payload)), hashlib.sha256(payload).hexdigest()
+
+
+def _load_archive(source):
+    with zipfile.ZipFile(source) as z:
         require(
             sum(info.file_size for info in z.infolist()) <= 128 * 1024**2,
             "decoded output exceeds 128 MiB budget",
         )
-    with np.load(path, allow_pickle=False) as a:
+    if hasattr(source, "seek"):
+        source.seek(0)
+    with np.load(source, allow_pickle=False) as a:
         require(set(a.files) == FIELDS, "missing or unknown output arrays")
         result = {name: a[name] for name in a.files}
     require(

@@ -2,6 +2,7 @@
 
 import argparse
 import json
+import math
 import zipfile
 from pathlib import Path
 
@@ -9,10 +10,8 @@ import numpy as np
 
 from zhenmode.benchmarks.internal_wave import validate_contract
 from zhenmode.benchmarks.standing_wave import digest
-from zhenmode.evaluation.native_channel import load, require
+from zhenmode.evaluation.native_channel import load_snapshot, require
 from zhenmode.evaluation.native_channel import validate as validate_native
-from zhenmode.execution.runs import write_json
-from zhenmode.provenance.sources import sha256_file
 
 
 def geometry(c, a, component=None):
@@ -108,6 +107,28 @@ def score(c, a):
                 reference=c["reference"], units=dict(T_error_C="degC", S_error_psu="absolute psu", other="relative"))
 
 
+def _json_report(result):
+    """Represent overflow explicitly without changing the scientific scorer."""
+    nonfinite = {}
+
+    def encode(value, path=""):
+        if isinstance(value, float) and not math.isfinite(value):
+            nonfinite[path] = "NaN" if math.isnan(value) else "Infinity" if value > 0 else "-Infinity"
+            return None
+        if isinstance(value, dict):
+            return {key: encode(item, path + "/" + key) for key, item in value.items()}
+        if isinstance(value, list):
+            return [encode(item, path + "/" + str(i)) for i, item in enumerate(value)]
+        return value
+
+    report = encode(result)
+    if nonfinite:
+        report["non_finite_derived_values"] = nonfinite
+        report["engineering_screen_pass"] = False
+        report["failed_metrics"].append("non_finite_derived_values")
+    return report
+
+
 def main(argv=None):
     """Score existing contract/output files without running the model."""
     parser = argparse.ArgumentParser(
@@ -119,9 +140,14 @@ def main(argv=None):
     try:
         c = json.loads(args.contract.read_text(encoding="utf-8"))
         require(isinstance(c, dict), "contract must be a JSON object")
-        result = score(c, load(args.output))
-        result["output_sha256"] = sha256_file(args.output)
-        write_json(args.report, result, create=True)
-    except (ValueError, TypeError, OSError, KeyError, zipfile.BadZipFile) as error:
+        arrays, output_sha256 = load_snapshot(args.output)
+        result = _json_report(score(c, arrays))
+        result["output_sha256"] = output_sha256
+        # Complete serialization before creating a report, so encoding failures
+        # cannot leave a truncated evidence file that prevents retries.
+        encoded = json.dumps(result, indent=2, ensure_ascii=False, sort_keys=True, allow_nan=False) + "\n"
+        with args.report.open("x", encoding="utf-8") as stream:
+            stream.write(encoded)
+    except (ValueError, TypeError, OSError, KeyError, EOFError, RuntimeError, zipfile.BadZipFile) as error:
         parser.error(str(error))
     return 0

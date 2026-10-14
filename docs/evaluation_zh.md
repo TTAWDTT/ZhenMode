@@ -24,6 +24,8 @@ zhenmode evaluate internal-wave --contract outputs/RUN/contract.json --output ou
 
 `zhenmode evaluate channel` 继续处理旋转调整和热风（含热风 development 契约）；内部波契约会被明确拒绝并提示使用上述专用入口。
 
+内部波 CLI 从同一份有界字节快照解码输出并计算哈希；即使原文件在评分期间被另一进程替换，报告仍绑定实际评分的字节。若合法输出的有限值在评分运算中溢出，报告将对应非有限派生值写为 JSON `null`，在 `non_finite_derived_values` 中逐项记录 `Infinity`、`-Infinity` 或 `NaN`，并明确标记验收失败。报告在创建文件前完成严格 JSON 序列化，避免序列化异常留下半份文件。正常有限评分值与 Python API 保持一致。
+
 ## 协议冻结与空间、时间含义
 
 协议 JSON v1 拒绝未知和重复字段，温度须为 `degC`，时间窗口为有限非负模式日且起点小于终点。窗口终点必须与完整结果末日一致；数据须覆盖窗口、时间严格递增。报告同时记录请求窗口和实际选中的保存时刻，不能把缺失预热期或错误窗口静默替代成全程。

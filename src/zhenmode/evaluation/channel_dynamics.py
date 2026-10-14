@@ -15,6 +15,7 @@ from zhenmode.provenance.sources import sha256_file
 
 
 def _require_channel_reference(c):
+    require(isinstance(c, dict), "contract must be a JSON object")
     if c.get("benchmark") == "internal-wave":
         raise ValueError(
             "internal-wave contracts require zhenmode evaluate internal-wave "
@@ -179,6 +180,7 @@ def validate(c, a, definition_validator=validate_contract):
 
 
 def score(c, a):
+    _require_channel_reference(c)
     if "wind_stress" in c:
         raise ValueError("forced trajectories require the dedicated response/budget evaluator")
     validate(c, a)
