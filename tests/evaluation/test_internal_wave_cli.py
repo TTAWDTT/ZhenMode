@@ -193,7 +193,7 @@ def test_receipt_hash_and_scores_bind_one_snapshot_when_file_changes(tmp_path, m
     assert json.loads(paths[2].read_text()) == expected
 
 
-@pytest.mark.parametrize("damage", ("encrypted", "unsupported-compression", "eof"))
+@pytest.mark.parametrize("damage", ("encrypted", "unsupported-compression", "invalid-deflate", "eof"))
 def test_archive_reader_errors_are_cli_errors_without_report(tmp_path, capsys, monkeypatch, damage):
     c = contract("zhenmode", control="null")
     paths = inputs(tmp_path, c, planted(c))
@@ -210,14 +210,19 @@ def test_archive_reader_errors_are_cli_errors_without_report(tmp_path, capsys, m
             if damage == "encrypted":
                 flags = struct.unpack_from("<H", raw, offset + 6)[0]
                 struct.pack_into("<H", raw, offset + 6, flags | 1)
-            else:
+            elif damage == "unsupported-compression":
                 struct.pack_into("<H", raw, offset + 8, 99)
+            else:
+                name_length, extra_length = struct.unpack_from("<HH", raw, offset + 26)
+                start = offset + 30 + name_length + extra_length
+                # DEFLATE block type 3 is reserved and must be rejected.
+                raw[start] = (raw[start] & 0xF8) | 7
         offset = raw.find(b"PK\x01\x02")
         while offset != -1:
             if damage == "encrypted":
                 flags = struct.unpack_from("<H", raw, offset + 8)[0]
                 struct.pack_into("<H", raw, offset + 8, flags | 1)
-            else:
+            elif damage == "unsupported-compression":
                 struct.pack_into("<H", raw, offset + 10, 99)
             offset = raw.find(b"PK\x01\x02", offset + 4)
         paths[1].write_bytes(raw)

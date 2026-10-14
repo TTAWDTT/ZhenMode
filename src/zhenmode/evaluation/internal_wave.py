@@ -4,6 +4,7 @@ import argparse
 import json
 import math
 import zipfile
+import zlib
 from pathlib import Path
 
 import numpy as np
@@ -148,6 +149,6 @@ def main(argv=None):
         encoded = json.dumps(result, indent=2, ensure_ascii=False, sort_keys=True, allow_nan=False) + "\n"
         with args.report.open("x", encoding="utf-8") as stream:
             stream.write(encoded)
-    except (ValueError, TypeError, OSError, KeyError, EOFError, RuntimeError, zipfile.BadZipFile) as error:
+    except (ValueError, TypeError, OSError, KeyError, EOFError, RuntimeError, zipfile.BadZipFile, zlib.error) as error:
         parser.error(str(error))
     return 0
