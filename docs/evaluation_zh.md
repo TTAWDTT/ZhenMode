@@ -12,6 +12,20 @@ zhenmode evaluate score --input outputs/RUN/model/global_run.npz --protocol prot
 
 运行 manifest 必须有稳定 `run_id`、`case_id`、`method`、`config_hash`、`execution_status=completed`，以及实际模型产物的 `result_path/result_sha256` 或 `outputs` 的 `model_result` 项。随便选择另一 NPZ 配一个 completed 标签会被拒绝。失败和未完成执行保持在运行索引，不补成指标通过。
 
+## 内部波原生输出的离线评分
+
+已有内部波 benchmark 的契约与原生 NPZ 可通过安装后的专用入口离线评分：
+
+```sh
+zhenmode evaluate internal-wave --contract outputs/RUN/contract.json --output outputs/RUN/output.npz --report outputs/RUN/internal-wave-report.json
+```
+
+该命令只读取文件，调用 `zhenmode.evaluation.internal_wave.score`，不启动模型。契约和输出须通过原有身份、几何、时间与初态校验；评分定义与阈值沿用专用评分器。报告保留 API 的评分字段和 `contract_sha256`，增加 NPZ 原文件字节的 `output_sha256`；`--report` 必须指向尚不存在的文件，已有报告不会被覆盖。有效输入即使科学屏障未通过也会生成报告并返回 0，验收应读取 `engineering_screen_pass` 和 `failed_metrics`；无效输入或无法创建报告返回错误。
+
+`zhenmode evaluate channel` 继续处理旋转调整和热风（含热风 development 契约）；内部波契约会被明确拒绝并提示使用上述专用入口。
+
+内部波 CLI 从同一份有界字节快照解码输出并计算哈希；即使原文件在评分期间被另一进程替换，报告仍绑定实际评分的字节。若合法输出的有限值在评分运算中溢出，报告将对应非有限派生值写为 JSON `null`，在 `non_finite_derived_values` 中逐项记录 `Infinity`、`-Infinity` 或 `NaN`，并明确标记验收失败。报告在创建文件前完成严格 JSON 序列化，避免序列化异常留下半份文件。正常有限评分值与 Python API 保持一致。
+
 ## 协议冻结与空间、时间含义
 
 协议 JSON v1 拒绝未知和重复字段，温度须为 `degC`，时间窗口为有限非负模式日且起点小于终点。窗口终点必须与完整结果末日一致；数据须覆盖窗口、时间严格递增。报告同时记录请求窗口和实际选中的保存时刻，不能把缺失预热期或错误窗口静默替代成全程。
