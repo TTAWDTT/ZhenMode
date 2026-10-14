@@ -14,7 +14,16 @@ from zhenmode.execution.runs import write_json
 from zhenmode.provenance.sources import sha256_file
 
 
+def _require_channel_reference(c):
+    if c.get("benchmark") == "internal-wave":
+        raise ValueError(
+            "internal-wave contracts require zhenmode evaluate internal-wave "
+            "(Python API: zhenmode.evaluation.internal_wave.score)"
+        )
+
+
 def temperature_front(c, y):
+    _require_channel_reference(c)
     # Reference derivation is separate from the native initialization producer.
     o = c["thermal_wind"]
     angle = np.pi * (np.asarray(y) - c["Ly_m"] / 2) / (2 * o["front_width_m"])
@@ -28,6 +37,7 @@ def temperature_front(c, y):
 
 
 def reference_surface(c, time, y, width=0):
+    _require_channel_reference(c)
     y = np.asarray(y)
     time = np.asarray(time)
     if c["benchmark"] == "geostrophic-adjustment":
@@ -53,6 +63,7 @@ def reference_surface(c, time, y, width=0):
 
 
 def reference_velocity(c, time, y, z, component):
+    _require_channel_reference(c)
     time = np.asarray(time)
     y = np.asarray(y)
     if c["benchmark"] == "geostrophic-adjustment":
@@ -107,6 +118,7 @@ def native_depths(c, a, component=None):
 
 
 def reference_tracers(c, a, quadrature=32):
+    _require_channel_reference(c)
     shape = a["T"].shape
     if c["benchmark"] == "geostrophic-adjustment":
         return np.full(shape, c["T_C"]), np.full(shape, c["S_psu"])
@@ -138,6 +150,7 @@ def reference_tracers(c, a, quadrature=32):
 
 
 def validate(c, a, definition_validator=validate_contract):
+    _require_channel_reference(c)
     validate_native(c, a, definition_validator)
     width = 0 if a["metadata"]["model"] == "ocean-solver" else c["Ly_m"] / c["ny"]
     eta = reference_surface(c, a["time"][:1], a["y_eta"], width)[0]
@@ -246,6 +259,10 @@ def main(argv=None):
         parser.add_argument("--" + name, type=Path, required=True)
     args = parser.parse_args(argv)
     c = json.loads(args.contract.read_text())
+    try:
+        _require_channel_reference(c)
+    except ValueError as error:
+        parser.error(str(error))
     result = score(c, load(args.output))
     result["output_sha256"] = sha256_file(args.output)
     write_json(args.report, result, create=True)

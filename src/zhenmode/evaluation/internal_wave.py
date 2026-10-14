@@ -1,11 +1,18 @@
 """Separate analytic oracle on evolving native geometry for the frozen internal mode."""
 
+import argparse
+import json
+import zipfile
+from pathlib import Path
+
 import numpy as np
 
 from zhenmode.benchmarks.internal_wave import validate_contract
 from zhenmode.benchmarks.standing_wave import digest
-from zhenmode.evaluation.native_channel import require
+from zhenmode.evaluation.native_channel import load, require
 from zhenmode.evaluation.native_channel import validate as validate_native
+from zhenmode.execution.runs import write_json
+from zhenmode.provenance.sources import sha256_file
 
 
 def geometry(c, a, component=None):
@@ -99,3 +106,22 @@ def score(c, a):
                 null_absolute_errors=null_errors, industrial_qualified=False, performance_comparison=False,
                 source_sha=a["metadata"]["source_sha"], executable_sha256=a["metadata"]["executable_sha256"],
                 reference=c["reference"], units=dict(T_error_C="degC", S_error_psu="absolute psu", other="relative"))
+
+
+def main(argv=None):
+    """Score existing contract/output files without running the model."""
+    parser = argparse.ArgumentParser(
+        prog="zhenmode evaluate internal-wave", description=__doc__
+    )
+    for name in ("contract", "output", "report"):
+        parser.add_argument("--" + name, type=Path, required=True)
+    args = parser.parse_args(argv)
+    try:
+        c = json.loads(args.contract.read_text(encoding="utf-8"))
+        require(isinstance(c, dict), "contract must be a JSON object")
+        result = score(c, load(args.output))
+        result["output_sha256"] = sha256_file(args.output)
+        write_json(args.report, result, create=True)
+    except (ValueError, TypeError, OSError, KeyError, zipfile.BadZipFile) as error:
+        parser.error(str(error))
+    return 0

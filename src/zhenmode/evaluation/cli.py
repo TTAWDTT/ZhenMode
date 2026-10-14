@@ -21,11 +21,15 @@ def main(argv=None):
     if arguments and arguments[0] == "channel":
         from zhenmode.evaluation.channel_dynamics import main as channel
         return channel(arguments[1:])
+    if arguments and arguments[0] == "internal-wave":
+        from zhenmode.evaluation.internal_wave import main as internal_wave
+        return internal_wave(arguments[1:])
     parser = argparse.ArgumentParser(prog="zhenmode evaluate")
     commands = parser.add_subparsers(dest="command", required=True)
     commands.add_parser("wave", help="freeze, score or compare native standing-wave trajectories")
     commands.add_parser("wave-study", help="analyze five frozen separate space/time controls")
     commands.add_parser("channel", help="score native rotating/stratified channel trajectories")
+    commands.add_parser("internal-wave", help="score a completed native internal-wave trajectory offline")
     score = commands.add_parser("score", help="validate a protocol and score one completed run")
     for name in ("input", "protocol", "run-manifest", "out-dir"):
         score.add_argument("--" + name, required=True)
